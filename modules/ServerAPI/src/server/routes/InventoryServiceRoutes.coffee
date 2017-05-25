@@ -6,10 +6,12 @@ config = require '../conf/compiled/conf.js'
 RUN_CUSTOM_FLAG = "0"
 
 
+
 exports.setupAPIRoutes = (app) ->
 	app.post '/api/getContainersInLocationWithTypeAndKind', exports.getContainersInLocationWithTypeAndKind
 	app.post '/api/getContainersInLocation', exports.getContainersInLocation
 	app.post '/api/getContainerCodesByLabels', exports.getContainerCodesByLabels
+	app.post '/api/getContainerCodesByLabelsLikeMaxResults', exports.getContainerCodesByLabelsLikeMaxResults
 	app.post '/api/getContainersByLabels', exports.getContainersByLabels
 	app.post '/api/getContainersByCodeNames', exports.getContainersByCodeNames
 	app.post '/api/getWellCodesByPlateBarcodes', exports.getWellCodesByPlateBarcodes
@@ -57,6 +59,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/getContainersInLocationWithTypeAndKind', loginRoutes.ensureAuthenticated, exports.getContainersInLocationWithTypeAndKind
 	app.post '/api/getContainersInLocation', loginRoutes.ensureAuthenticated, exports.getContainersInLocation
 	app.post '/api/getContainerCodesByLabels', loginRoutes.ensureAuthenticated, exports.getContainerCodesByLabels
+	app.post '/api/getContainerCodesByLabelsLikeMaxResults', loginRoutes.ensureAuthenticated, exports.getContainerCodesByLabelsLikeMaxResults
 	app.post '/api/getContainersByLabels', loginRoutes.ensureAuthenticated, exports.getContainersByLabels
 	app.post '/api/getContainersByCodeNames', loginRoutes.ensureAuthenticated, exports.getContainersByCodeNames
 	app.post '/api/getWellCodesByPlateBarcodes', loginRoutes.ensureAuthenticated, exports.getWellCodesByPlateBarcodes
@@ -198,6 +201,7 @@ exports.getContainersByLabelsInternal = (containerLabels, containerType, contain
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getContainersByLabelsInternalResponse
 	else
+		console.warn "getContainerCodesByLabelsInternal is deprecated please use getContainerCodesByLabelsLikeMaxResultsInternal"
 		console.debug 'incoming getContainersByLabelsInternal request: ', JSON.stringify(containerLabels), containerType, containerKind, labelType, labelKind
 		exports.getContainerCodesByLabelsInternal containerLabels, containerType, containerKind, labelType, labelKind, (containerCodes, statusCode) =>
 			if statusCode == 500
@@ -233,6 +237,54 @@ exports.getContainersByLabelsInternal = (containerLabels, containerType, contain
 								resp.message = container.message
 							response.push resp
 						callback response, statusCode
+
+exports.getContainerCodesByLabelsLikeMaxResults = (req, resp) ->
+	#req.setTimeout 86400000
+	exports.getContainerCodesByLabelsLikeMaxResultsInternal req.body, req.query.containerType, req.query.containerKind, req.query.labelType, req.query.labelKind, req.query.likeParameter, req.query.maxResults, (json, statusCode) ->
+		resp.statusCode = statusCode
+		resp.json json
+
+exports.getContainerCodesByLabelsLikeMaxResultsInternal = (containerCodesJSON, containerType, containerKind, labelType, labelKind, likeParameter, maxResults, callback) ->
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		resp.json inventoryServiceTestJSON.getContainerCodesByLabelsResponse
+	else
+		console.debug 'incoming getContainerCodesByLabelsInternal request: ', JSON.stringify(containerCodesJSON), containerType, containerKind, labelType, labelKind, likeParameter, maxResults
+		config = require '../conf/compiled/conf.js'
+		queryParams = []
+		if containerType?
+			queryParams.push "containerType="+containerType
+		if containerKind?
+			queryParams.push "containerKind="+containerKind
+		if labelType?
+			queryParams.push "labelType="+labelType
+		if labelKind?
+			queryParams.push "labelKind="+labelKind
+		if likeParameter?
+			queryParams.push "like="+likeParameter
+		if maxResults?
+			queryParams.push "maxResults="+maxResults
+		queryString = queryParams.join "&"
+		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainerCodesByLabels?"+queryString
+		console.debug 'base url: ', baseurl
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: baseurl
+			body: JSON.stringify containerCodesJSON
+			json: true
+			timeout: 86400000
+			headers: 'content-type': 'application/json'
+		, (error, response, json) =>
+			if !error && json[0] != "<"
+				callback json, response.statusCode
+			else
+				console.error 'got ajax error trying to get getContainerCodesByLabels'
+				console.error error
+				console.error json
+				console.error response
+				callback JSON.stringify("getContainerCodesByLabels failed"), 500
+		)
 
 exports.getContainerCodesByLabels = (req, resp) ->
 	req.setTimeout 86400000
