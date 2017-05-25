@@ -249,7 +249,7 @@ exports.getContainerCodesByLabelsLikeMaxResultsInternal = (containerCodesJSON, c
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getContainerCodesByLabelsResponse
 	else
-		console.debug 'incoming getContainerCodesByLabelsInternal request: ', JSON.stringify(containerCodesJSON), containerType, containerKind, labelType, labelKind, likeParameter, maxResults
+		console.debug 'incoming getContainerCodesByLabelsLikeMaxResultsInternal request: ', JSON.stringify(containerCodesJSON), containerType, containerKind, labelType, labelKind, likeParameter, maxResults
 		config = require '../conf/compiled/conf.js'
 		queryParams = []
 		if containerType?
