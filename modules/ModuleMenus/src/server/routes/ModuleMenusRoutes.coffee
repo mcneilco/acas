@@ -5,24 +5,25 @@ exports.setupChannels = (io, sessionStore, loginRoutes) ->
 	connectedUsers = {}
 	nsp.on('connection', (socket) =>
 		userName = getUserNameFromSession(socket)
-		unless connectedUsers[userName]?
-			connectedUsers[userName] = []
-		connectedUsers[userName].push socket.id
+		sessionID = getSessionID(socket)
+		unless connectedUsers[sessionID]?
+			connectedUsers[sessionID] = []
+		connectedUsers[sessionID].push socket.id
 		totalNumberOfConnectionsForUser = _.size(connectedUsers[userName])
 		broadcastMessageToSpecificClients(connectedUsers[userName], 'loggedOn', totalNumberOfConnectionsForUser, socket)
 		socket.emit('loggedOn', totalNumberOfConnectionsForUser)
 
 		socket.on('disconnect', =>
 			clientConnections = connectedUsers[userName]
-			connectedUsers[userName] = _.without(clientConnections, socket.id)
-			totalNumberOfConnectionsForUser = _.size(connectedUsers[userName])
-			broadcastMessageToSpecificClients(connectedUsers[userName], 'loggedOff', totalNumberOfConnectionsForUser, socket)
+			connectedUsers[sessionID] = _.without(clientConnections, socket.id)
+			totalNumberOfConnectionsForUser = _.size(connectedUsers[sessionID])
+			broadcastMessageToSpecificClients(connectedUsers[sessionID], 'loggedOff', totalNumberOfConnectionsForUser, socket)
 		)
 
 		socket.on('changeUserName', (updatedUsername) =>
 			sessionID = getSessionID(socket)
 			updateUserNameInSession(updatedUsername, sessionStore, sessionID)
-			broadcastMessageToSpecificClients(connectedUsers[userName], 'usernameUpdated', updatedUsername, socket)
+			broadcastMessageToSpecificClients(connectedUsers[sessionID], 'usernameUpdated', updatedUsername, socket)
 			socket.emit('usernameUpdated', updatedUsername)
 		)
 	)
