@@ -1,6 +1,6 @@
 _ = require 'underscore'
 
-exports.setupChannels = (io, loginRoutes) ->
+exports.setupChannels = (io, sessionStore, loginRoutes) ->
 	nsp = io.of('/user:loggedin')
 	connectedUsers = {}
 	nsp.on('connection', (socket) =>
@@ -11,8 +11,8 @@ exports.setupChannels = (io, loginRoutes) ->
 		totalNumberOfConnectionsForUser = _.size(connectedUsers[userName])
 		broadcastMessageToSpecificClients(connectedUsers[userName], 'loggedOn', totalNumberOfConnectionsForUser, socket)
 		socket.emit('loggedOn', totalNumberOfConnectionsForUser)
+
 		socket.on('disconnect', =>
-			userName = getUserNameFromSession(socket)
 			clientConnections = connectedUsers[userName]
 			connectedUsers[userName] = _.without(clientConnections, socket.id)
 			totalNumberOfConnectionsForUser = _.size(connectedUsers[userName])
@@ -20,21 +20,32 @@ exports.setupChannels = (io, loginRoutes) ->
 		)
 
 		socket.on('changeUserName', (updatedUsername) =>
-			userName = getUserNameFromSession(socket)
-			updateUserFirstNameInSession(updatedUsername, socket)
+			sessionID = getSessionID(socket)
+			updateUserNameInSession(updatedUsername, sessionStore, sessionID)
 			broadcastMessageToSpecificClients(connectedUsers[userName], 'usernameUpdated', updatedUsername, socket)
 			socket.emit('usernameUpdated', updatedUsername)
 		)
 	)
 
 getUserNameFromSession = (socket) ->
-	return socket.request.user.username
+	unless socket.request.user.originalLoginUserName?
+		console.log "using original login name"
+		return socket.request.user.originalLoginUserName
+	else
+		return socket.request.user.username
 
-updateUserFirstNameInSession = (updatedFirstName, socket) ->
-	socket.request.user.firstName = updatedFirstName
+updateUserNameInSession = (updatedUserName, sessionStore, sessionId) ->
+	parsedCookie = JSON.parse(sessionStore.sessions[sessionId])
+	unless parsedCookie.passport.user.originalLoginUserName?
+		parsedCookie.passport.user.originalLoginUserName = parsedCookie.passport.user.username
+	parsedCookie.passport.user.username = updatedUserName
+	parsedCookie.passport.user.firstName = updatedUserName
+	sessionStore.sessions[sessionId] = JSON.stringify(parsedCookie)
 
 broadcastMessageToSpecificClients = (socketIds, messageName, payload, socket) ->
-	console.log "broadcastMessageToSpecificClients"
 	_.each(socketIds, (socketId) ->
 		socket.broadcast.to(socketId).emit(messageName, payload)
 	)
+
+getSessionID = (socket) ->
+	socket.request.sessionID

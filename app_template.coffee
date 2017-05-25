@@ -109,11 +109,8 @@ startApp = ->
 		#TODO hack to prevent bug: https://github.com/mikeal/request/issues/418
 		process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
 	io = require('socket.io')(httpServer)
-	bundle = require('socket.io-bundle')
 	passportSocketIo = require('passport.socketio')
 	cookieParser = require('cookie-parser')
-#	sharedsession = require("express-socket.io-session")
-#	io.use(sharedsession(express.session))
 
 	io.use(passportSocketIo.authorize({
 		key: 'connect.sid',

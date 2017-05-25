@@ -124,3 +124,4 @@ class window.ModuleMenusController extends Backbone.View
 
 	handleNameChanged: (updatedFirstName) =>
 		@$(".bv_loginUserFirstName").html updatedFirstName
+		AppLaunchParams.loginUserName = updatedFirstName
