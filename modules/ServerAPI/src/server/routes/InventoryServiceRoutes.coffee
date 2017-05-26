@@ -277,12 +277,6 @@ exports.getContainerCodesByLabels = (req, resp) ->
 		resp.statusCode = statusCode
 		resp.json json
 	)
-	#console.log 'queryPayload in getContainersByLabels', queryPayload
-
-
-	# exports.getContainerCodesByLabelsInternal req.body, req.query.containerType, req.query.containerKind, req.query.labelType, req.query.labelKind, (json, statusCode) ->
-	# 	resp.statusCode = statusCode
-	# 	resp.json json
 
 exports.getContainerCodesByLabelsLikeMaxResultsInternal = (requestObject, callback) ->
 	if global.specRunnerTestmode
@@ -372,38 +366,6 @@ exports.getContainerCodesByLabelsInternal = (containerCodesJSON, containerType, 
 		exports.getContainerCodesByLabelsLikeMaxResultsInternal(queryPayload, (json, statusCode) ->
 			callback json, statusCode
 		)
-
-		#
-		# queryParams = []
-		# if containerType?
-		# 	queryParams.push "containerType="+containerType
-		# if containerKind?
-		# 	queryParams.push "containerKind="+containerKind
-		# if labelType?
-		# 	queryParams.push "labelType="+labelType
-		# if labelKind?
-		# 	queryParams.push "labelKind="+labelKind
-		# queryString = queryParams.join "&"
-		# baseurl = config.all.client.service.persistence.fullpath+"containers/getContainerCodesByLabels?"+queryString
-		# console.debug 'base url: ', baseurl
-		# request = require 'request'
-		# request(
-		# 	method: 'POST'
-		# 	url: baseurl
-		# 	body: JSON.stringify containerCodesJSON
-		# 	json: true
-		# 	timeout: 86400000
-		# 	headers: 'content-type': 'application/json'
-		# , (error, response, json) =>
-		# 	if !error && json[0] != "<"
-		# 		callback json, response.statusCode
-		# 	else
-		# 		console.error 'got ajax error trying to get getContainerCodesByLabels'
-		# 		console.error error
-		# 		console.error json
-		# 		console.error response
-		# 		callback JSON.stringify("getContainerCodesByLabels failed"), 500
-		# )
 
 exports.getWellCodesByPlateBarcodes = (req, resp) ->
 	req.setTimeout 86400000
