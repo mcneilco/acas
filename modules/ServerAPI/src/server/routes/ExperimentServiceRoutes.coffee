@@ -98,6 +98,9 @@ exports.experimentByCodename = (req, resp) ->
 							else
 								resp.statusCode = 500
 								resp.end JSON.stringify "Experiment does not exist"
+					else
+						resp.statusCode = statusCode
+						resp.json json
 				else
 					resp.statusCode = statusCode
 					resp.end JSON.stringify json
