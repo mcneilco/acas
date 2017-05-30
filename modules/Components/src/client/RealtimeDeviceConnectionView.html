@@ -1,0 +1,123 @@
+<script type="text/template" id="RealtimeDeviceConnectionView" xmlns="http://www.w3.org/1999/html">
+    <div class="alert bv_connectionStatusAlert hide">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        Not connected to the server....
+    </div>
+    <h4 class="bv_moduleHeader">Tare Single Vial</h4>
+
+    <form class="form-horizontal">
+        <div class="row">
+            <div class="control-group">
+                <label class="control-label">
+                    Device:
+                </label>
+                <div class="controls">
+                    <select class="bv_deviceSelectContainer"></select>
+                    <span class="label label-info bv_connecting hide">Connecting</span>
+                    <span class="label label-success bv_connected hide">Connected</span>
+                    <span class="label label-info bv_disconnected hide">Disconnected</span>
+                    <span class="label label-error bv_deviceNotConnected hide">Device Not Connected</span>
+                    <span class="label label-error bv_deviceServerOffline hide">Device Server Offline</span>
+                    <span class="label label-error bv_deviceServerInUse hide">Currently In Use</span>
+                    <span class="bv_deviceServerInUseButIdle hide">
+                        <span class="label label-info">
+                            Reserved by: <span class="bv_deviceUsedBy"></span>
+                        </span>
+                        <a href="#" class="bv_kickUserOff" style="padding-left: 0.3em;">Kick them off?</a>
+                    </span>
+
+                    <a href="#" class="bv_disconnect hide" style="padding-left: 0.3em;">disconnect</a>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="control-group bv_subformContainer">
+
+            </div>
+        </div>
+        <div class="alert alert-info hide bv_disconnectedByAUserMessage">
+            <button type="button" class="close bv_dismissDisconnectMessage">&times;</button>
+            You have been disconnected from the device by: <span class="bv_disconnectingUserName"></span>
+        </div>
+    </form>
+
+    <div class="modal hide bv_vialAlreadyExpiredModal">
+        <div class="modal-header">
+            <h4><i class="icon-exclamation-sign" style="margin-top: 5px;"></i> Error</h4>
+        </div>
+        <div class="modal-body">
+            Vial is already expired: <span class="bv_alreadyExpiredVialBarcode"></span>
+        </div>
+        <div class="modal-footer">
+            <a href="#" class="btn" data-dismiss="bv_vialAlreadyExpiredModal">OK</a>
+        </div>
+    </div>
+
+    <div class="modal hide bv_vialAlreadyRegisteredModal">
+        <div class="modal-header">
+            <h4><i class="icon-exclamation-sign" style="margin-top: 5px;"></i> Error</h4>
+        </div>
+        <div class="modal-body">
+            Vial is already registered with contents: <span class="bv_alreadyRegisteredContents"></span>
+        </div>
+        <div class="modal-footer">
+            <a href="#" class="btn">OK</a>
+        </div>
+    </div>
+
+    <div class="modal hide bv_vialAlreadyTaredModal">
+        <div class="modal-header">
+            <h4><i class="icon-info-sign" style="margin-top: 5px;"></i> Warning</h4>
+        </div>
+        <div class="modal-body">
+            Vial has already been tared: <span class="bv_alreadyRegisteredContents"></span>
+            <br />
+            Retare?
+        </div>
+        <div class="modal-footer">
+            <a href="#" class="btn pull-left">OK</a>
+            <a href="#" class="btn pull-right">Cancel</a>
+        </div>
+    </div>
+
+    <div class="modal hide bv_nonNumericWeightValueModal">
+        <div class="modal-header">
+            <h4><i class="icon-exclamation-sign" style="margin-top: 5px;"></i> Error</h4>
+        </div>
+        <div class="modal-body">
+            Vial does not have numeric weight value: <span class="bv_nonNumericWeightValue"></span>
+        </div>
+        <div class="modal-footer">
+            <a href="#" class="btn">OK</a>
+        </div>
+    </div>
+
+    <div class="modal hide bv_deviceInUse">
+        <div class="modal-header">
+            <h4>Warning</h4>
+        </div>
+        <div class="modal-body">
+
+            Device already being used by: <span class="bv_alreadyConnectedUserName"></span>
+            <br />
+            Disconnect them?
+        </div>
+        <div class="modal-footer">
+            <a href="#" class="btn btn-primary bv_deviceInUseDismiss">No</a>
+            <a href="#" class="btn bv_bootCurrentUserOffDevice">Yes</a>
+        </div>
+    </div>
+
+    <div class="modal hide bv_disconnectedByAnotherUser">
+        <div class="modal-header">
+            <h4><i class="icon-exclamation-sign" style="margin-top: 5px;"></i></h4>
+        </div>
+        <div class="modal-body">
+            You have been disconnected from the device by: <span class="bv_disconnectingUserName"></span>
+        </div>
+        <div class="modal-footer">
+            <a href="#" class="btn bv_disconnectedByAnotherUserDismiss pull-right">OK</a>
+        </div>
+    </div>
+
+</script>
