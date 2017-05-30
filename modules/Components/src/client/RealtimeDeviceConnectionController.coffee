@@ -14,7 +14,6 @@ deviceStubs = [
 		name: 'Balance Not Available'
 		url: 'http://192.168.0.193:1337/'
 	}
-
 ]
 
 
@@ -53,11 +52,8 @@ class window.RealtimeDeviceConnectionController extends Backbone.View
 		@socket.emit('connectToDevice', {deviceName: selectedDevice.get('code'), deviceUrl: selectedDevice.get('url'), userName: AppLaunchParams.loginUserName}, @connectToDeviceCallback)
 
 	connectToDeviceCallback: (err, data) =>
-		console.log "err", err
-		console.log "data", data
 		if err
 			@setStateToDisconnected()
-			console.log "err.status", err.status
 			switch err.status
 				when "not_available"
 					@clientIdOfConnectedUser = err.clientId
@@ -102,10 +98,11 @@ class window.RealtimeDeviceConnectionController extends Backbone.View
 			@connectToDevice()
 
 	handleBootCurrentUserOffDevice: =>
-		@socket.emit('bootUser', {userToBootClientId: @clientIdOfConnectedUser, userNameToAdd: AppLaunchParams.loginUserName}, (err, data) =>
-			@setStateToConnected()
-			@$(".bv_deviceInUse").modal "hide"
-		)
+		@socket.emit('bootUser', {userToBootClientId: @clientIdOfConnectedUser, userNameToAdd: AppLaunchParams.loginUserName}, @handleBootCurrentUserOffDeviceCallback)
+
+	handleBootCurrentUserOffDeviceCallback: (err, data) =>
+		@setStateToConnected()
+		@$(".bv_deviceInUse").modal "hide"
 
 	handleDismissDisconnectMessage: =>
 		@$(".bv_disconnectedByAUserMessage").hide()
@@ -193,3 +190,6 @@ class window.RealtimeDeviceConnectionController extends Backbone.View
 		@completeInitialization()
 
 		@
+
+	completeInitialization: =>
+		console.info "override in concrete instance of controller"
