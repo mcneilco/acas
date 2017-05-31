@@ -4,15 +4,15 @@ deviceStubs = [
 	{
 		code: 'balanceIsIdle',
 		name: 'Balance Is Idle'
-		url: 'http://192.168.0.193:1337/'
+		url: 'http://192.168.0.193:1337/api/weigh/balanceIsIdle'
 	}, {
 		code: 'balanceNotConnected',
 		name: 'Balance Not Connected'
-		url: 'http://192.168.0.193:1337/'
+		url: 'http://192.168.0.193:1337/api/weigh/balanceNotConnected'
 	}, {
 		code: 'balanceNotAvailable',
 		name: 'Balance Not Available'
-		url: 'http://192.168.0.193:1337/'
+		url: 'http://192.168.0.193:1337/api/weigh/balanceNotAvailable'
 	}
 ]
 
@@ -47,9 +47,9 @@ class window.RealtimeDeviceConnectionController extends Backbone.View
 		@socket.on('disconnectedByAnotherUser', @disconnectedByAnotherUser)
 
 	connectToDevice: =>
-		selectedDevice = @devicePickList.getSelectedModel()
+		@selectedDevice = @devicePickList.getSelectedModel()
 		@$(".bv_connecting").removeClass "hide"
-		@socket.emit('connectToDevice', {deviceName: selectedDevice.get('code'), deviceUrl: selectedDevice.get('url'), userName: AppLaunchParams.loginUserName}, @connectToDeviceCallback)
+		@socket.emit('connectToDevice', {deviceName: @selectedDevice.get('code'), deviceUrl: @selectedDevice.get('url'), userName: AppLaunchParams.loginUserName}, @connectToDeviceCallback)
 
 	connectToDeviceCallback: (err, data) =>
 		if err
@@ -67,6 +67,7 @@ class window.RealtimeDeviceConnectionController extends Backbone.View
 					@displayStatusMessage(".bv_deviceServerInUse")
 
 		else
+
 			@setStateToConnected()
 
 		@$(".bv_connectionStatusAlert").addClass "hide"
