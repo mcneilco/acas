@@ -1,19 +1,18 @@
 # ---------------------------------------------- Requires
 
 gulp = require('gulp')
-gutil = require('gutil')
 coffee = require('gulp-coffee')
-del = require('del')
 flatten = require('gulp-flatten')
 rename = require('gulp-rename')
 plumber = require('gulp-plumber')
 jeditor = require('gulp-json-editor')
 argv = require('yargs').argv
 path = require('path')
-run = require('gulp-run')
 gulpif = require('gulp-if')
 _ = require('underscore')
+notify = require("gulp-notify")
 node = undefined
+os = require('os');
 
 # ---------------------------------------------- Functions
 getGlob = (paths) ->
@@ -352,6 +351,23 @@ createExecuteTask = (options) =>
     watchTasks.push watchTaskName
   return taskName
 
+
+onError = (err) ->
+  process.stdout.write '\x07'
+  if os.platform() == 'darwins'
+    return notify.onError(
+      title: '<%= error.message %>'
+      # subtitle: 'Failure!'
+      message: 'Error: <%= error.stack %>'
+      sound: false) err
+  else
+    return notify.onError((options, callback) ->
+      console.log "\x1b[34m[#{options.message}]\x1b[0m \x1b[31mError: #{options.stack}\x1b[0m"
+      return
+    ) err
+  @emit 'end'
+
+
 createTask = (options, type) ->
   taskName = "#{type}:#{options.taskName}"
   taskOptions = options.options
@@ -362,7 +378,7 @@ createTask = (options, type) ->
   renameFunction = options.renameFunction
   gulp.task taskName, ->
     gulp.src(src, _.extend(taskOptions, {since: gulp.lastRun(taskName)}))
-    .pipe(plumber())
+    .pipe(plumber({errorHandler: onError}))
     .pipe(gulpif(shouldFlatten,flatten()))
     .pipe(gulpif(renameFunction?,rename(renameFunction)))
     .pipe(gulpif(type=="coffee",coffee(bare: true)))
