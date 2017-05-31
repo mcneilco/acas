@@ -247,21 +247,6 @@ exports.getContainerCodesByLabels = (req, resp) ->
 	likeParameter = req.query.like
 	maxResults = req.query.maxResults
 
-	if !(containerLabels)?
-		containerLabels = null
-	if !(containerType)?
-		containerType = null
-	if !(containerKind)?
-		containerKind = null
-	if !(labelType)?
-		labelType = null
-	if !(labelKind)?
-		labelKind = null
-	if !(likeParameter)?
-		likeParameter = null
-	if !(maxResults)?
-		maxResults = null
-
 	queryPayload =
 		containerLabels: req.body
 		containerType: containerType
@@ -339,17 +324,6 @@ exports.getContainerCodesByLabelsInternal = (containerCodesJSON, containerType, 
 		console.warn "getContainerCodesByLabelsInternal is deprecated please use getContainerCodesByLabelsLikeMaxResultsInternal"
 		console.debug 'incoming getContainerCodesByLabelsInternal request: ', JSON.stringify(containerCodesJSON), containerType, containerKind, labelType, labelKind
 		config = require '../conf/compiled/conf.js'
-
-		if !(containerCodesJSON)?
-			containerLabels = null
-		if !(containerType)?
-			containerType = null
-		if !(containerKind)?
-			containerKind = null
-		if !(labelType)?
-			labelType = null
-		if !(labelKind)?
-			labelKind = null
 
 		likeParameter = null
 		maxResults = null
@@ -596,7 +570,6 @@ exports.updateContainersByContainerCodesInternal = (updateInformation, callCusto
 		codeNames = _.pluck updateInformation, "codeName"
 		console.debug "calling getContainersByCodeNamesInternal"
 		exports.getContainersByCodeNamesInternal codeNames, (containers, statusCode) =>
-			console.debug "containers from service"
 			if statusCode == 400
 				console.error "got errors requesting code names: #{JSON.stringify containers}"
 				callback "error when requesting code names", 400
