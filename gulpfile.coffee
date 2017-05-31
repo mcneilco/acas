@@ -354,7 +354,7 @@ createExecuteTask = (options) =>
 
 onError = (err) ->
   process.stdout.write '\x07'
-  if os.platform() == 'darwins'
+  if os.platform() == 'darwin'
     return notify.onError(
       title: '<%= error.message %>'
       # subtitle: 'Failure!'
