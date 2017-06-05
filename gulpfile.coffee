@@ -11,6 +11,8 @@ path = require('path')
 gulpif = require('gulp-if')
 _ = require('underscore')
 notify = require("gulp-notify")
+coffeeify = require('gulp-coffeeify')
+
 node = undefined
 os = require('os');
 
@@ -240,6 +242,12 @@ taskConfigs =
       dest: build + '/conf'
       options: _.extend _.clone(globalCopyOptions), {}
     ,
+      taskName: "moduleConf"
+      src: getGlob('modules/**/conf/**', '!modules/**/conf/*.coffee')
+      dest: build + '/public/conf'
+      options: _.extend _.clone(globalCopyOptions), {}
+      renameFunction: getFirstFolderName
+    ,
       taskName: "nodeModulesCustomized"
       src: getGlob('node_modules_customized/**')
       dest: build+"/node_modules_customized"
@@ -376,12 +384,23 @@ createTask = (options, type) ->
   watch = options.watch
   shouldFlatten = options.flatten ? false
   renameFunction = options.renameFunction
+  shouldCoffeify = (file) ->
+    if type=="coffee" && (file.path.indexOf("client/ExcelApp") > -1)
+       return true
+    else
+      return false
+  shouldCoffee = (file) ->
+    if type=="coffee" && !(file.path.indexOf("client/ExcelApp") > -1)
+       return true
+    else
+      return false
   gulp.task taskName, ->
     gulp.src(src, _.extend(taskOptions, {since: gulp.lastRun(taskName)}))
     .pipe(plumber({errorHandler: onError}))
     .pipe(gulpif(shouldFlatten,flatten()))
+    .pipe(gulpif(shouldCoffeify, coffeeify({options:{paths:[build]}})))
+    .pipe(gulpif(shouldCoffee,coffee(bare: true)))
     .pipe(gulpif(renameFunction?,rename(renameFunction)))
-    .pipe(gulpif(type=="coffee",coffee(bare: true)))
     .pipe gulp.dest(dest)
   unless watch == false
     watchTaskName = "watch:#{taskName}"
