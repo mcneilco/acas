@@ -117,7 +117,7 @@ cd ..
 ##### Build
 
 ```
-docker build -t mcneilco/cmpdreg-oss:latest .
+docker build -t mcneilco/acas-cmpdreg-roo-server-oss:latest .
 ```
 
 #### ACAS
