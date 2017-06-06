@@ -153,7 +153,6 @@ cp -r <path/to/marvinjs-16.10.17-all> chemaxon/marvinjs
 #### Start acas stack
 
 ```
-export ACAS_TAG=latest
 cd ~/Documents/mcneilco/oss/acas
 docker-compose up -d
 ```
