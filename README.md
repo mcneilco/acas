@@ -83,7 +83,6 @@ cd acas-roo-server
 
 ##### Build
 ```
-cd ~/Documents/mcneilco/oss/acas-roo-server
 docker build -t mcneilco/acas-roo-server-oss:latest .
 ```
 
