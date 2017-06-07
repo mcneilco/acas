@@ -64,3 +64,12 @@ body {
 .bv_BulkLoadSampleTransfersController {
     background-color: green;
 }*/
+
+.bv_fastUserSelect {
+    background-color: transparent;
+    color: #999999;
+    margin-top: 0px;
+    margin-bottom: 6px;
+    height: 0px;
+    border: none;
+}

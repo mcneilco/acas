@@ -9,22 +9,29 @@ exports.setupChannels = (io, sessionStore, loginRoutes) ->
 		unless connectedUsers[sessionID]?
 			connectedUsers[sessionID] = []
 		connectedUsers[sessionID].push socket.id
-		totalNumberOfConnectionsForUser = _.size(connectedUsers[userName])
-		broadcastMessageToSpecificClients(connectedUsers[userName], 'loggedOn', totalNumberOfConnectionsForUser, socket)
+		totalNumberOfConnectionsForUser = _.size(connectedUsers[sessionID])
+		broadcastMessageToSpecificClients(connectedUsers[sessionID], 'loggedOn', totalNumberOfConnectionsForUser, socket)
 		socket.emit('loggedOn', totalNumberOfConnectionsForUser)
 
 		socket.on('disconnect', =>
-			clientConnections = connectedUsers[userName]
+			parsedCookie = JSON.parse(sessionStore.sessions[sessionID])
+
+			clientConnections = connectedUsers[sessionID]
 			connectedUsers[sessionID] = _.without(clientConnections, socket.id)
 			totalNumberOfConnectionsForUser = _.size(connectedUsers[sessionID])
-			broadcastMessageToSpecificClients(connectedUsers[sessionID], 'loggedOff', totalNumberOfConnectionsForUser, socket)
+			if parsedCookie.passport.user?
+				console.log "got disconnect"
+				broadcastMessageToSpecificClients(connectedUsers[sessionID], 'tabClosed', totalNumberOfConnectionsForUser, socket)
+			else
+				console.log "got logoff"
+				broadcastMessageToSpecificClients(connectedUsers[sessionID], 'loggedOff', totalNumberOfConnectionsForUser, socket)
 		)
 
 		socket.on('changeUserName', (updatedUsername) =>
 			sessionID = getSessionID(socket)
-			updateUserNameInSession(updatedUsername, sessionStore, sessionID)
-			broadcastMessageToSpecificClients(connectedUsers[sessionID], 'usernameUpdated', updatedUsername, socket)
-			socket.emit('usernameUpdated', updatedUsername)
+			updateUserNameInSession updatedUsername, sessionStore, sessionID, (newUser) ->
+				broadcastMessageToSpecificClients(connectedUsers[sessionID], 'usernameUpdated', newUser, socket)
+				socket.emit('usernameUpdated', newUser)
 		)
 	)
 
@@ -35,13 +42,31 @@ getUserNameFromSession = (socket) ->
 	else
 		return socket.request.user.username
 
-updateUserNameInSession = (updatedUserName, sessionStore, sessionId) ->
+updateUserNameInSession = (updatedUserName, sessionStore, sessionId, callback) ->
 	parsedCookie = JSON.parse(sessionStore.sessions[sessionId])
+	if updatedUserName == parsedCookie.passport.user.username
+		return #nothing to change
+
 	unless parsedCookie.passport.user.originalLoginUserName?
 		parsedCookie.passport.user.originalLoginUserName = parsedCookie.passport.user.username
-	parsedCookie.passport.user.username = updatedUserName
-	parsedCookie.passport.user.firstName = updatedUserName
-	sessionStore.sessions[sessionId] = JSON.stringify(parsedCookie)
+
+	config = require '../conf/compiled/conf.js'
+	csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
+	csUtilities.getUser updatedUserName, (messgage, user) ->
+		newUser =
+			id: user.id
+			username: user.username
+			email: user.email
+			firstName: user.firstName
+			lastName: user.lastName
+		if config.all.client.moduleMenus.fastUserSwitchingChangeUserRoles
+			newUser.roles = user.roles
+		else
+			newUser.roles = parsedCookie.passport.user.roles
+
+		parsedCookie.passport.user = newUser
+		sessionStore.sessions[sessionId] = JSON.stringify(parsedCookie)
+		callback newUser
 
 broadcastMessageToSpecificClients = (socketIds, messageName, payload, socket) ->
 	_.each(socketIds, (socketId) ->
