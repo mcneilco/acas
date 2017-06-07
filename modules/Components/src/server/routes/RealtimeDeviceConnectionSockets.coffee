@@ -2,23 +2,25 @@
 request = require 'request'
 _ = require 'underscore'
 
-promise = require 'promise'
+Promise = require 'promise'
 
 
 class BalanceAccess
-	constructor: (balanceName, balanceUrl) ->
+	constructor: (balanceName, balanceUrl, room) ->
 		@balanceName = balanceName
 		@balanceUrl = balanceUrl
 		@isAvailable = true
 		@currentConnectedUser = null
 		@status = "idle"
 		@balanceConnectQueue = []
+		@room = room
+		@heartBeat = null
 
 	###
 	get the current status of the balance from the node server connected to the balance
 	###
 	getBalanceStatus: =>
-		balanceStatusURL = @balanceUrl + "api/getBalanceStatus/#{@balanceName}"
+		balanceStatusURL = @balanceUrl + "api/getBalanceStatus?balanceId=#{@balanceName}"
 		return new Promise((resolve, reject) =>
 			request(
 				method: 'GET'
@@ -32,6 +34,25 @@ class BalanceAccess
 			)
 		)
 
+	startHeartBeat: =>
+		unless @heartBeat?
+			@heartBeat = setInterval( =>
+				@getBalanceStatus().then((balanceStatus) =>
+					unless balanceStatus is @status
+						@status = balanceStatus
+						switch @status
+							when "idle"
+								@room.emit('youShouldTryConnecting')
+							when "in_use"
+								@room.emit('in_use')
+				).catch((err) =>
+					@room.emit("device_server_offline")
+				)
+			, 1000)
+
+	clearHeartBeat: =>
+		clearInterval(@heartBeat)
+		@heartBeat = null
 
 	removeUserFromQueue: (clientId) =>
 		if @currentConnectedUser.clientId is clientId
@@ -61,6 +82,7 @@ class BalanceAccess
 		return new Promise((resolve, reject) =>
 			@getBalanceStatus().then((balanceStatus) =>
 				@status = balanceStatus
+				@startHeartBeat()
 				switch @status
 					when "idle"
 						if @isAvailable
@@ -120,10 +142,6 @@ class DeviceSocketController
 
 	setupEventListeners: =>
 		@nameSpacedRoom.on('connection', (socket) =>
-			console.log "socket.request.username"
-			console.log socket.request.user
-			console.log socket.request.session
-			#console.log socket.request.session.passport.user
 			socket.on('connectToDevice', (payload, callback) =>
 				@handleConnectToDevice(socket, payload, callback)
 			)
@@ -143,7 +161,7 @@ class DeviceSocketController
 
 	handleConnectToDevice: (socket, payload, callback) ->
 		unless @balances[payload.deviceName]
-			@balances[payload.deviceName] = new BalanceAccess(payload.deviceName, payload.deviceUrl)
+			@balances[payload.deviceName] = new BalanceAccess(payload.deviceName, payload.deviceUrl, @nameSpacedRoom)
 		socket.join(payload.deviceName)
 		@usersInRoom[socket.id] = payload.deviceName
 		balanceAccess = @balances[payload.deviceName]
@@ -173,6 +191,7 @@ class DeviceSocketController
 			socket.broadcast.to(nextUserInQueue.clientId).emit('youShouldTryConnecting')
 		else
 			socket.broadcast.emit('alertAllDisconnectedFromDevice')
+			balanceAccess.clearHeartBeat()
 		socket.leave(@usersInRoom[socket.id])
 		socket.emit('disconnectedFromDevice')
 
@@ -185,6 +204,7 @@ class DeviceSocketController
 			socket.broadcast.to(nextUserInQueue.clientId).emit('youShouldTryConnecting')
 		else
 			socket.broadcast.emit('alertAllDisconnectedFromDevice')
+			balanceAccess.clearHeartBeat()
 
 	handleBootUser: (socket, payload, callback) ->
 		balanceAccess = @balances[@usersInRoom[socket.id]]

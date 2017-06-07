@@ -4,15 +4,15 @@ deviceStubs = [
 	{
 		code: 'balanceIsIdle',
 		name: 'Balance Is Idle'
-		url: 'http://192.168.0.193:1337/api/weigh/balanceIsIdle'
+		url: 'http://192.168.0.193:1337/'
 	}, {
 		code: 'balanceNotConnected',
 		name: 'Balance Not Connected'
-		url: 'http://192.168.0.193:1337/api/weigh/balanceNotConnected'
+		url: 'http://192.168.0.193:1337/'
 	}, {
 		code: 'balanceNotAvailable',
 		name: 'Balance Not Available'
-		url: 'http://192.168.0.193:1337/api/weigh/balanceNotAvailable'
+		url: 'http://192.168.0.193:1337/'
 	}
 ]
 
@@ -32,7 +32,10 @@ class window.RealtimeDeviceConnectionController extends Backbone.View
 	initialize: ->
 		@isConnectedToDevice = false
 		@testMode = @options.testMode
+		if @options.socket?
+			@socket = @options.socket
 		@deviceCollection = new DeviceCollection(deviceStubs)
+		@connected = false
 		unless @testMode
 			@setupSocketEventHandlers()
 
@@ -45,14 +48,19 @@ class window.RealtimeDeviceConnectionController extends Backbone.View
 		@socket.on('disconnectedFromDevice', @disconnectedFromDevice)
 		@socket.on('alertAllDisconnectedFromDevice', @alertAllDisconnectedFromDevice)
 		@socket.on('disconnectedByAnotherUser', @disconnectedByAnotherUser)
+		@socket.on('in_use', @displayUnavailableMessage)
+
+
 
 	connectToDevice: =>
-		@selectedDevice = @devicePickList.getSelectedModel()
-		@$(".bv_connecting").removeClass "hide"
-		@socket.emit('connectToDevice', {deviceName: @selectedDevice.get('code'), deviceUrl: @selectedDevice.get('url'), userName: AppLaunchParams.loginUserName}, @connectToDeviceCallback)
+		unless @connected
+			@selectedDevice = @devicePickList.getSelectedModel()
+			@$(".bv_connecting").removeClass "hide"
+			@socket.emit('connectToDevice', {deviceName: @selectedDevice.get('code'), deviceUrl: @selectedDevice.get('url'), userName: AppLaunchParams.loginUserName}, @connectToDeviceCallback)
 
 	connectToDeviceCallback: (err, data) =>
 		if err
+			@connected = false
 			@setStateToDisconnected()
 			switch err.status
 				when "not_available"
@@ -67,14 +75,17 @@ class window.RealtimeDeviceConnectionController extends Backbone.View
 					@displayStatusMessage(".bv_deviceServerInUse")
 
 		else
-
+			@connected = true
 			@setStateToConnected()
 
 		@$(".bv_connectionStatusAlert").addClass "hide"
 
+	displayUnavailableMessage: =>
+		unless @connected
+			@displayStatusMessage(".bv_deviceServerInUse")
+
 	displayStatusMessage: (messageSelector) =>
 		@resetStatusMessages()
-
 		@$(messageSelector).removeClass "hide"
 
 	resetStatusMessages: =>
@@ -91,7 +102,6 @@ class window.RealtimeDeviceConnectionController extends Backbone.View
 		@resetStatusMessages()
 		@displayStatusMessage(".bv_deviceServerInUseButIdle")
 		@$(".bv_deviceUsedBy").html @userNameOfConnectedUser
-
 
 	handleDeviceSelectChange: =>
 		deviceName = @devicePickList.getSelectedCode()
@@ -120,23 +130,20 @@ class window.RealtimeDeviceConnectionController extends Backbone.View
 
 	disableDisconnectButton: =>
 		@$(".bv_disconnect").addClass "hide"
-#@disableButton(".bv_disconnect")
 
 	enableDisconnectButton: =>
-#@enableButton(".bv_disconnect")
 		@$(".bv_disconnect").removeClass "hide"
 
-	disableButton: (cssSelector) =>
+	disableElement: (cssSelector) =>
 		@$(cssSelector).prop "disabled", true
 		@$(cssSelector).addClass "disabled"
 
-	enableButton: (cssSelector) =>
+	enableElement: (cssSelector) =>
 		@$(cssSelector).prop "disabled", false
 		@$(cssSelector).removeClass "disabled"
 
 	handleDisconnectClicked: (e) =>
 		e.preventDefault()
-		console.log "handleDisconnectClicked"
 		@socket.emit('disconnected')
 
 	setStateToDisconnected: =>
@@ -152,12 +159,9 @@ class window.RealtimeDeviceConnectionController extends Backbone.View
 		@displayStatusMessage ".bv_connected"
 
 	disconnectedFromDevice: =>
-		console.log "you've been successfully disconnected"
 		@setStateToDisconnected()
 
 	alertAllDisconnectedFromDevice: =>
-		console.log "alertAllDisconnectedFromDevice"
-		console.log "@isConnectedToDevice", @isConnectedToDevice
 		unless @isConnectedToDevice
 			@connectToDevice()
 
@@ -168,7 +172,6 @@ class window.RealtimeDeviceConnectionController extends Backbone.View
 	displayDisconnectedModal: (disconnectingUserName) =>
 		@$(".bv_disconnectingUserName").html disconnectingUserName
 		@$(".bv_disconnectedByAUserMessage").show "slide", {direction: "right"}
-#@$(".bv_disconnectedByAnotherUser").modal "show"
 
 	dismissDeviceInUse: =>
 		@$(".bv_deviceInUse").modal "hide"
@@ -186,7 +189,6 @@ class window.RealtimeDeviceConnectionController extends Backbone.View
 		@
 
 	renderSubform: =>
-
 		@$(".bv_subformContainer").html @subFormTemplate()
 		@completeInitialization()
 
