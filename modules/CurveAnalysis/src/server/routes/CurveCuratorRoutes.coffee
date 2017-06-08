@@ -1,4 +1,12 @@
 
+exports.setupAPIRoutes = (app, loginRoutes) ->
+	app.get '/api/curves/stubs/:exptCode', exports.getCurveStubs
+	app.get '/api/curve/detail/:id', exports.getCurveDetail
+	app.put '/api/curve/detail/:id', exports.updateCurveDetail
+	app.post '/api/curve/stub/:id', exports.updateCurveStub
+	app.get  '/api/curve/render/*', exports.renderCurve
+	app.get '/curveCurator/*', exports.curveCuratorIndex
+
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/curves/stubs/:exptCode', loginRoutes.ensureAuthenticated, exports.getCurveStubs
 	app.get '/api/curve/detail/:id', loginRoutes.ensureAuthenticated, exports.getCurveDetail
