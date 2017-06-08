@@ -120,12 +120,14 @@ def make_acas_live_report(api, compound_ids, assays_to_add, experiment_code, log
 
 def findassay(assay_tree, assay_name):
 	if 'name' in assay_tree and assay_tree['name'] == assay_name: return assay_tree
+	elif 'name' in assay_tree and assay_name in assay_tree['name'] and 'column_folder_node_type' in assay_tree and assay_tree['column_folder_node_type']=='ROLLUP': return assay_tree
 	for sub_tree in assay_tree['children']:
 		item = findassay(sub_tree, assay_name)
 		if item is not None:
 			return item  
 			
 def extract_endpoints(assay, endpoints):
+	#print json.dumps(assay)
 	if 'addable_column_ids' in assay and len(assay['addable_column_ids']) > 0:
 		endpoints.extend(assay['addable_column_ids'])
 	for sub_assay in assay['children']:
