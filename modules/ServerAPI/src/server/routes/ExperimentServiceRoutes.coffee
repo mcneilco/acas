@@ -76,7 +76,7 @@ exports.experimentByCodename = (req, resp) ->
 		fullObjectFlag = "with=fullobject"
 		if req.query.fullObject
 			baseurl += "?#{fullObjectFlag}"
-		if req.user?
+		if req.user? && config.all.server.project.roles.enable
 			serverUtilityFunctions.getRestrictedEntityFromACASServer baseurl, req.user.username, "metadata", "experiment metadata", resp
 		else
 			serverUtilityFunctions.getFromACASServer(baseurl, resp)
