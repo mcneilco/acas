@@ -41,7 +41,7 @@
 		"useProjectRolesToRestrictLotDetails": false,
 		"showTareWeight": false,
 		"showTotalAmoundStored": false,
-		"disableAliasEdit": true
+		"disableAliasEdit": false
     },
     "serverSettings": {
 		"corpPrefix": "CMPD",

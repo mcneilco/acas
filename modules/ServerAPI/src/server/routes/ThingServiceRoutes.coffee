@@ -160,7 +160,11 @@ exports.thingsByTypeAndKinds = (req, resp) ->
 
 exports.thingByCodeName = (req, resp) ->
 	getThing req, req.params.code, (thing) ->
-		resp.json thing
+		if typeof thing is 'string'
+			resp.statusCode = 500
+			resp.end thing
+		else
+			resp.json thing
 
 
 #	if req.query.testMode or global.specRunnerTestmode
@@ -189,7 +193,7 @@ getThing = (req, codeName, callback) ->
 		callback thingTestJSON.thingParent
 	else
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind+"/"+codeName
+		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind+"/"+ encodeURIComponent codeName
 		if req.query.nestedstub
 			nestedstub = "with=nestedstub"
 			baseurl += "?#{nestedstub}"
@@ -215,7 +219,7 @@ getThing = (req, codeName, callback) ->
 				console.log error
 				console.log json
 				console.log response
-				callback "getting lsThing after post/put failed"
+				callback "getting lsThing by codeName failed"
 		)
 
 
@@ -411,9 +415,12 @@ exports.validateName = (req, resp) ->
 			if !error && response.statusCode == 202
 				resp.json json
 			else if response.statusCode == 409
-				resp.json "not unique name"
+				console.log "not unique name"
+				console.log json
+				resp.statusCode = 409
+				resp.json json
 			else
-				console.log 'got ajax error trying to save thing parent'
+				console.log 'got ajax error trying to save validate thing name'
 				console.log error
 				console.log json
 				console.log response
