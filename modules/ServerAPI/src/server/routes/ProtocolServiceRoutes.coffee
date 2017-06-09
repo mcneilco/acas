@@ -56,7 +56,7 @@ exports.protocolByCodename = (req, resp) ->
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"protocols/codename/"+req.params.code
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
-		if req.user?
+		if req.user? && config.all.server.project.roles.enable
 			serverUtilityFunctions.getRestrictedEntityFromACASServer baseurl, req.user.username, "metadata", "protocol metadata", resp
 		else
 			serverUtilityFunctions.getFromACASServer baseurl, resp
