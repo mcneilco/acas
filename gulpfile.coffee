@@ -40,6 +40,18 @@ getRPath = (path) ->
   path.dirname = outputDirname
   return path
 
+getLegacyRPath = (path) ->
+  console.warn  "Warning: All R code in modules path 'modules/**/src/server/**/*.{R,r}' should be moved to 'modules/**/src/server/r/*.{R,r}'"
+  module = path.dirname.split('/')[0]
+  additionalPath =  path.dirname.replace(module + '/src/server/', '')
+  console.log "Warning: Please move '#{path.dirname}/#{path.basename}#{path.extname}' to '#{module}/src/server/r/#{additionalPath}/#{path.basename}#{path.extname}'"
+  if path.basename == 'r' and path.extname == ''
+    path.basename = ''
+    path.dirname = ''
+  outputDirname = module + '/' + path.dirname.replace(module + '/src/server/', '')
+  path.dirname = outputDirname
+  return path
+
 editPackageJson = () ->
   func = jeditor((json) ->
       delete json.scripts.postinstall
@@ -258,6 +270,12 @@ taskConfigs =
       options: _.extend _.clone(globalCopyOptions), {}
       renameFunction: getFirstFolderName
     ,
+      taskName: "legacyServerR"
+      src: getGlob('modules/**/src/server/**/*.{R,r}', '!modules/**/src/server/*.{R,r}','!modules/**/src/server/r/*.{R,r}')
+      dest: build + '/src/r'
+      options: _.extend _.clone(globalCopyOptions), {}
+      renameFunction: getLegacyRPath
+    ,
       taskName: "html"
       src: getGlob('modules/**/src/client/*.html')
       dest: build + '/public/html'
@@ -328,6 +346,8 @@ createExecuteTask = (options) =>
     watchOptions = watch?.options ? {}
     gulp.task watchTaskName, ->
       gulp.watch options.src, watchOptions, gulp.series(taskName)
+        .on('error', console.error)
+
       return
     watchTasks.push watchTaskName
   return taskName

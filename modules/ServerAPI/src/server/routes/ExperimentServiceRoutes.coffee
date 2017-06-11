@@ -77,7 +77,33 @@ exports.experimentByCodename = (req, resp) ->
 		if req.query.fullObject
 			baseurl += "?#{fullObjectFlag}"
 		if req.user? && config.all.server.project.roles.enable
-			serverUtilityFunctions.getRestrictedEntityFromACASServer baseurl, req.user.username, "metadata", "experiment metadata", resp
+			serverUtilityFunctions.getRestrictedEntityFromACASServerInternal baseurl, req.user.username, "metadata", "experiment metadata", (statusCode, json) =>
+				#if expt is deleted, need to check if user has privs to view deleted experiments
+				if json.codeName?
+					if json.ignored
+						if json.deleted
+							resp.statusCode = 500
+							resp.end JSON.stringify "Experiment does not exist"
+						else
+							if config.all.client.entity?.viewDeletedRoles?
+								viewDeletedRoles = config.all.client.entity.viewDeletedRoles.split(",")
+							else
+								viewDeletedRoles = []
+							grantedRoles = _.map req.user.roles, (role) ->
+								role.roleEntry.roleName
+							canViewDeleted = (viewDeletedRoles in grantedRoles)
+							if canViewDeleted
+								resp.statusCode = statusCode
+								resp.end JSON.stringify json
+							else
+								resp.statusCode = 500
+								resp.end JSON.stringify "Experiment does not exist"
+					else
+						resp.statusCode = statusCode
+						resp.json json
+				else
+					resp.statusCode = statusCode
+					resp.end JSON.stringify json
 		else
 			serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
