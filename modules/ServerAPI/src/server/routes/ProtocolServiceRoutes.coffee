@@ -57,7 +57,7 @@ exports.protocolByCodename = (req, resp) ->
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"protocols/codename/"+req.params.code
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
-		if req.user?
+		if req.user? && config.all.server.project.roles.enable
 			serverUtilityFunctions.getRestrictedEntityFromACASServerInternal baseurl, req.user.username, "metadata", "protocol metadata", (statusCode, json) =>
 			#if prot is deleted, need to check if user has privs to view deleted protocols
 				if json.codeName? and json.ignored and !json.deleted
@@ -77,7 +77,8 @@ exports.protocolByCodename = (req, resp) ->
 				else
 					resp.statusCode = statusCode
 					resp.end JSON.stringify json
-		else
+
+          else
 			serverUtilityFunctions.getFromACASServer baseurl, resp
 
 exports.protocolById = (req, resp) ->
