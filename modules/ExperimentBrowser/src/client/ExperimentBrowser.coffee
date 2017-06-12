@@ -325,7 +325,7 @@ class window.ExperimentSummaryTableController extends Backbone.View
 				return false
 			unless UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, rolesToTest
 				return false
-		return false
+		return true
 
 class window.ExperimentBrowserController extends Backbone.View
 	#template: _.template($("#ExperimentBrowserView").html())
@@ -376,24 +376,23 @@ class window.ExperimentBrowserController extends Backbone.View
 
 	selectedExperimentUpdated: (experiment) =>
 		@trigger "selectedExperimentUpdated"
-		$.ajax
-			type: 'GET'
-			url: "/api/getControllerRedirectConf"
-			success: (dict) =>
-				@controllerRedirectConf = dict
-				@setupExperimentController experiment
-			error: (err) =>
-				console.log "error reading controller redirect conf"
-			dataType: 'json'
-		
-	setupExperimentController: (experiment) =>
-		lsKind = experiment.get('lsKind')
-		if @controllerRedirectConf['EXPT']?[lsKind]?['modelClass']? and @controllerRedirectConf['EXPT']?[lsKind]?['controllerClass']?
-			if @controllerRedirectConf['EXPT']?[lsKind]?['protocolKindFilter']?
-				protocolKindFilter = @controllerRedirectConf['EXPT'][lsKind]['protocolKindFilter']
-			@experimentController = new window[@controllerRedirectConf['EXPT'][lsKind]['controllerClass']]
-				protocolKindFilter: protocolKindFilter
-				model: new window[@controllerRedirectConf['EXPT'][lsKind]['modelClass']] JSON.parse(JSON.stringify(experiment))
+		if experiment.get('lsKind') is "Parent Bio Activity"
+			@experimentController = new ParentExperimentMetadataController
+				model: new ParentExperiment experiment.attributes
+				readOnly: true
+		else if experiment.get('lsKind') is "Bio Activity Screen"
+			@experimentController = new ExperimentBaseController
+				model: new ScreeningExperiment experiment.attributes
+				readOnly: true
+		else if experiment.get('lsKind') is "Bio Activity"
+			@experimentController = new ExperimentBaseController
+				protocolKindFilter: "?protocolKind=Bio Activity"
+				model: new PrimaryScreenExperiment experiment.attributes
+				readOnly: true
+		else if experiment.get('lsKind') is "study"
+			@experimentController = new StudyTrackerExperimentController
+				protocolKindFilter: "?protocolKind=study"
+				model: new StudyTrackerExperiment experiment.attributes
 				readOnly: true
 		else
 			if window.conf.experiment?.mainControllerClassName?
@@ -409,6 +408,7 @@ class window.ExperimentBrowserController extends Backbone.View
 				model: model
 				readOnly: true
 
+		$('.bv_experimentBaseController').html @experimentController.render().el
 		#hide the Open in Data Viewer button
 		console.log "hiding bv_openInQueryToolWrapper"
 		@experimentController.$('.bv_openInQueryToolWrapper').hide()
@@ -417,7 +417,6 @@ class window.ExperimentBrowserController extends Backbone.View
 			@experimentController.$('.bv_group_protocolCode').hide()
 		$(".bv_experimentBaseController").removeClass("hide")
 		$(".bv_experimentBaseControllerContainer").removeClass("hide")
-		$('.bv_experimentBaseController').html @experimentController.render().el
 		if experiment.getStatus().get('codeValue') is "deleted"
 			@$('.bv_openInQueryTool').hide()
 			@$('.bv_deleteExperiment').hide()

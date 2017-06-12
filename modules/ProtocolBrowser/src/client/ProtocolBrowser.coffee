@@ -156,7 +156,7 @@ class window.ProtocolSummaryTableController extends Backbone.View
 				return false
 			unless UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, rolesToTest
 				return false
-		return false
+		return true
 
 class window.ProtocolBrowserController extends Backbone.View
 	#template: _.template($("#ProtocolBrowserView").html())

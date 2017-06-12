@@ -264,11 +264,6 @@ csUtilities.getConfServiceVars sysEnv, (confVars) ->
 		for configFile in configFiles
 			allConf = _.extend allConf, propertiesParser.read(configFile)
 
-		# add any conf/*.env files to the process environment
-		envFiles = glob.sync("#{acasHome}/conf/**/*.env")
-		for envFile in envFiles
-			sysEnv =  _.extend propertiesParser.read(envFile), sysEnv
-
 		configString = ""
 		for attr, value of allConf
 			if value != null

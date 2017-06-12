@@ -15,6 +15,7 @@ class window.Label extends Backbone.Model
 
 	handleLabelTextChanged: =>
 		unless @isNew()
+			console.log "replace old label"
 			newText = @get 'labelText'
 			@set
 				ignored: true
@@ -62,31 +63,6 @@ class window.LabelList extends Backbone.Collection
 					(if (rd is "") then rd else -1)
 			else
 				current = @getCurrent()
-				bestLabel = _.max current, (lab) ->
-					rd = lab.get 'recordedDate'
-					(if (rd is "") then rd else -1)
-		return bestLabel
-
-	pickBestNonEmptyLabel: ->
-		preferred = @getCurrent()
-		if preferred.length > 0
-			preferred = _.filter preferred, (lab) ->
-				lab.get('labelText') != ""
-			bestLabel =  _.max preferred, (lab) ->
-				rd = lab.get 'recordedDate'
-				(if (rd is "") then rd else -1)
-		else
-			names = @getNames()
-			if names.length > 0
-				names = _.filter names, (lab) ->
-					lab.get('labelText') != ""
-				bestLabel = _.max names, (lab) ->
-					rd = lab.get 'recordedDate'
-					(if (rd is "") then rd else -1)
-			else
-				current = @getCurrent()
-				current = _.filter current, (lab) ->
-					lab.get('labelText') != ""
 				bestLabel = _.max current, (lab) ->
 					rd = lab.get 'recordedDate'
 					(if (rd is "") then rd else -1)
@@ -178,7 +154,7 @@ class window.Value extends Backbone.Model
 					modifiedBy: window.AppLaunchParams.loginUser.username
 					modifiedDate: new Date().getTime()
 					isDirty: true
-				@trigger 'createNewValue', @get('lsKind'), newVal, @get('key')
+				@trigger 'createNewValue', @get('lsKind'), newVal
 
 class window.ValueList extends Backbone.Collection
 	model: Value

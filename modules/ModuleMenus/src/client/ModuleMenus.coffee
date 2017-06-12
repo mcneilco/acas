@@ -48,10 +48,7 @@ class window.ModuleMenusController extends Backbone.View
 			@$('.bv_homePageWrapper').show()
 
 		if window.conf.moduleMenus.logoText?
-			logoInfo = window.conf.moduleMenus.logoText
-			if window.conf.moduleMenus.logoImageFilePath?
-				logoInfo = '<img src='+window.conf.moduleMenus.logoImageFilePath+' style="margin-right: 10px;">'+logoInfo
-			@$('.bv_headerName').html logoInfo
+			@$('.bv_headerName').html(window.conf.moduleMenus.logoText)
 		if window.conf.moduleMenus.homePageMessage?
 			@$('.bv_homePageMessage').html(window.conf.moduleMenus.homePageMessage)
 		if window.conf.moduleMenus.copyrightMessage?

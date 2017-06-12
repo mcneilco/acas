@@ -815,12 +815,6 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun, r
   require(rjson)
   require(RCurl)
   
-  # Throw errors for value kinds greater than 64 characters
-  valueKindsTooLong <- unique(neededValueKinds)[which(nchar(unique(neededValueKinds)) > 64)]
-  if(length(valueKindsTooLong) > 0) {
-    stopUser(paste0("The value kind(s) are too long: ",sqliz(valueKindsTooLong), ". Value kinds must be 64 characters or less. <br>* Note: Values are typically grouped by assay so the value kind should just be a descriptor of the value (i.e. EC50, Comment, Max).  Units are recorded seperately so are not included in the character limit."))
-  }
-
   # Throw errors for words used with special meanings by the loader
   usedReservedWords <- reserved %in% neededValueKinds
   if (any(usedReservedWords)) {
