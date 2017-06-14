@@ -79,13 +79,11 @@ Due to license restrictions, this is one of the images that must be built by the
 cd ~/Documents/mcneilco/oss/
 git clone git@github.com:mcneilco/acas-roo-server.git
 cd acas-roo-server
-git checkout 1.10-release
 ```
 
 ##### Build
 ```
-cd ~/Documents/mcneilco/oss/acas-roo-server
-docker build -t mcneilco/acas-roo-server-oss:1.10.0 .
+docker build -t mcneilco/acas-roo-server-oss:latest .
 ```
 
 #### Building a working image for Compound Registration ROO Server
@@ -95,17 +93,31 @@ docker build -t mcneilco/acas-roo-server-oss:1.10.0 .
 cd ~/Documents/mcneilco/oss/
 git clone git@github.com:mcneilco/acas-cmpdreg-roo-server.git
 cd acas-cmpdreg-roo-server
-git checkout 1.10-release
 ```
 
-##### Build
+##### Add chemaxon jar file
+
+
+* Go to [https://www.chemaxon.com](https://www.chemaxon.com)
+* Login and/or Sign-Up
+* Click Download > JChem Suite > JChem
+* Scroll down to Archives and select 16.4.25.0, click Get Archive
+* Download jchem-merged-lib-16.4.25.0.zip
+* Unzip it and rename jchem.jar to jchem-16.4.25.0.jar
+
+##### Add chemaxon jar file to a lib folder in the checkout
+
 ```
 cd ~/Documents/mcneilco/oss/acas-cmpdreg-roo-server
 mkdir lib
 cd lib
-curl -O http://trac.labsynch.com/maven-repository/com/chemaxon/jchem/16.4.25.0/jchem-16.4.25.0.jar
+cp <jchem-16.4.25.0.jar> .
 cd ..
-docker build -t mcneilco/cmpdreg-oss:1.10.0 .
+```
+##### Build
+
+```
+docker build -t mcneilco/acas-cmpdreg-roo-server-oss:latest .
 ```
 
 #### ACAS
@@ -116,7 +128,6 @@ The acas repository contains a docker-compose.yml file that orchestrates the cre
 cd ~/Documents/mcneilco/oss/
 git clone git@github.com:mcneilco/acas.git
 cd acas
-git checkout 1.10-release
 ```
 
 ##### Add chemaxon licenses and download marvin4js
