@@ -109,7 +109,7 @@ class window.ModuleMenusController extends Backbone.View
 	setupUserSwitchingSelect: ->
 		@altUserList = new PickListList()
 		@getAllAvailableUsers @altUserList, =>
-			@altUserListController = new PickListSelectController
+			@altUserListController = new PickListSelect2Controller
 				el: @$('.bv_fastUserSelect')
 				collection: @altUserList
 				autoFetch: false
@@ -181,4 +181,3 @@ class window.ModuleMenusController extends Backbone.View
 
 #TODO config docs in readme.md file
 #TODO should some code in mmroutes be rafactored to a general socket utility?
-

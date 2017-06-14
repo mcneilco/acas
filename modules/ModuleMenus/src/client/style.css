@@ -66,10 +66,41 @@ body {
 }*/
 
 .bv_fastUserSelect {
-    background-color: transparent;
-    color: #999999;
-    margin-top: 0px;
-    margin-bottom: 6px;
-    height: 0px;
-    border: none;
+  width: 150px;
+  height: 30px;
+  border-color: #999999;
+  background-color: transparent;
+  margin-bottom: 2px;
+}
+
+.bv_userInfo select2-hidden-accessible {
+  display: none;
+}
+
+.bv_userInfo .select2-container {
+  width: 175px !important;
+}
+
+.bv_userInfo .select2-container .select2-selection--single {
+  width: 175px;
+  height: 30px;
+  border-color: #999999;
+  background-color: transparent;
+}
+
+.bv_userInfo .select2-container--default .select2-selection--single .select2-selection__rendered {
+  color: #999999;
+}
+
+.bv_userInfo .select2-container--default .select2-selection--single .select2-selection__clear {
+  display: none;
+}
+
+.bv_userInfo .select2-container {
+  margin-bottom: 2px;
+}
+
+.bv_userInfo .bv_logout {
+  margin-top:0px;
+  margin-bottom: 2px;
 }

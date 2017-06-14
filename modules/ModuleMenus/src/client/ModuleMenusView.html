@@ -4,16 +4,19 @@
         <div class="navbar navbar-inverse navbar-fixed-top">
             <div class="navbar-inner">
                 <div class="container-fluid">
-                    <p class="navbar-text pull-right bv_userInfo" style="">
 
-                        Logged in as
+                    <div class="navbar-text pull-right bv_userInfo" style="">
+
+                        <span>Logged in as</span>
                         <span class="bv_username">
                             <a href="#" class="navbar-link bv_loginUserFirstName">First Name</a>
                             <a href="#" class="navbar-link bv_loginUserLastName">Last Name</a>
                             <select class="bv_fastUserSelect"></select>
                         </span>
-                        <a href="/logout" class="btn btn-small bv_logout" style="margin-top:0px;margin-left:5px;">Logout</a>
-                    </p>
+                        <a href="/logout" class="btn btn-inverse bv_logout">Logout</a>
+                    </div>
+
+
                     <ul class="nav" >
                         <li class="bv_toggleModuleMenuControl">
                             <img src="/img/hamburgerwhite.png" style="width:20px;" />
