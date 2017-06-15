@@ -230,11 +230,12 @@ exports.getAuthors = (req, resp) -> #req passed in as input to be able to filter
 	#TODO: need to change if want to filter users by roles
 	serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
-exports.getAllAuthorObjects = (req, resp) ->
+exports.getAllAuthorObjectsInternal = (callback) ->
 	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 	serverUtilityFunctions = require "#{ACAS_HOME}/routes/ServerUtilityFunctions.js"
 	baseurl = config.all.client.service.persistence.fullpath+"authors"
-	serverUtilityFunctions.getFromACASServer(baseurl, resp)
+	serverUtilityFunctions.getFromACASServerInternal baseurl, (statusCode, json) ->
+		callback statusCode, json
 
 exports.relocateEntityFile = (fileValue, entityCodePrefix, entityCode, callback) ->
 	config = require "#{ACAS_HOME}/conf/compiled/conf.js"

@@ -44,6 +44,8 @@ class window.ModuleMenusController extends Backbone.View
 
 		if window.AppLaunchParams.moduleLaunchParams?
 			@moduleLauncherMenuListController.launchModule window.AppLaunchParams.moduleLaunchParams.moduleName
+		else if window.conf.moduleMenus?.moduleAutoLaunchName?
+			@$(".bv_launch_#{window.conf.moduleMenus.moduleAutoLaunchName}").click()
 		else
 			@$('.bv_homePageWrapper').show()
 
@@ -57,9 +59,6 @@ class window.ModuleMenusController extends Backbone.View
 			for module in $.parseJSON window.conf.moduleMenus.modules.external
 				modLink = '<li><a href="'+module.href+'"target="_blank">'+module.displayName+'</a></li>'
 				@$('.bv_externalACASModules').append modLink
-
-		if window.conf.moduleMenus?.moduleAutoLaunchName?
-			@$(".bv_launch_#{window.conf.moduleMenus.moduleAutoLaunchName}").click()
 
 	render: =>
 		if window.AppLaunchParams.deployMode?

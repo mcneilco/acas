@@ -20,6 +20,7 @@ exports.setupAPIRoutes = (app) ->
 	app.put '/api/experiments/parentExperiment/:id', exports.putParentExperiment
 	app.get '/api/experiments/genericSearch/:searchTerm', exports.genericExperimentSearch
 	app.get '/api/experiments/:lsType/:lsKind', exports.experimentsByTypeKind
+	app.get '/api/getExperimentByLabel/:exptLabel', exports.getExperimentByLabel
 	app.post '/api/experiments/getExperimentCodeByLabel/:exptType/:exptKind', exports.getExperimentCodeByLabel
 	app.post '/api/bulkPostExperiments', exports.bulkPostExperiments
 	app.put '/api/bulkPostExperiments', exports.bulkPutExperiments
@@ -47,6 +48,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/experiments/parentExperiment', loginRoutes.ensureAuthenticated, exports.postParentExperiment
 	app.put '/api/experiments/parentExperiment/:id', loginRoutes.ensureAuthenticated, exports.putParentExperiment
 	app.get '/api/experiments/:lsType/:lsKind', loginRoutes.ensureAuthenticated, exports.experimentsByTypeKind
+	app.get '/api/getExperimentByLabel/:exptLabel', loginRoutes.ensureAuthenticated, exports.getExperimentByLabel
 	app.post '/api/experiments/getExperimentCodeByLabel/:exptType/:exptKind', loginRoutes.ensureAuthenticated, exports.getExperimentCodeByLabel
 	app.post '/api/bulkPostExperiments', loginRoutes.ensureAuthenticated, exports.bulkPostExperiments
 	app.put '/api/bulkPostExperiments', loginRoutes.ensureAuthenticated, exports.bulkPutExperiments
@@ -899,6 +901,25 @@ exports.experimentsByTypeKind = (req, resp) ->
 		baseurl = config.all.client.service.persistence.fullpath+"experiments/bytypekind/"+req.params.lsType+"/"+req.params.lsKind
 		console.log baseurl
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
+
+exports.getExperimentByLabel = (req, resp) ->
+	config = require '../conf/compiled/conf.js'
+	url = config.all.client.service.persistence.fullpath+"experiments?FindByExperimentName&experimentName=#{req.params.exptLabel}"
+	request = require 'request'
+	request(
+		method: 'GET'
+		url: url
+		json: true
+	, (error, response, json) =>
+		console.log response.statusCode
+		console.log json
+		if !error and !json.error
+			resp.json json
+		else
+			console.log 'got ajax error trying to get experiment by label'
+			resp.statusCode = 500
+			resp.json json.errorMessages
+	)
 
 exports.getExperimentCodeByLabel = (req, resp) ->
 	if global.specRunnerTestmode

@@ -25,8 +25,14 @@ exports.redirectToEditor = (req, resp) ->
 		else
 			prefixKeyIndex +=1
 
+	console.log "in redirectToEditor"
 	if req.params.code.substring(0,5) is "STUDY"
 		resp.redirect "/study_tracker_experiment/codeName/#{req.params.code}"
+	else if req.params.code.substring(0,3) is "EXP" #TODO: refactor to get expt and then figure out kind and deeplink appropriately
+		resp.redirect "/experiment_base/codeName/#{req.params.code}"
+	else if req.params.code.substring(0,3) is "PRT" #TODO: refactor to get prot and then figure out kind and deeplink appropriately
+		resp.redirect "/protocol_base/codeName/#{req.params.code}"
+
 	else if queryPrefix != null
 		request
 			json: true

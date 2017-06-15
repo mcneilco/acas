@@ -8,6 +8,7 @@ exports.setupAPIRoutes = (app) ->
 	app.get '/api/protocolKindCodes', exports.protocolKindCodeList
 	app.get '/api/protocols/genericSearch/:searchTerm', exports.genericProtocolSearch
 	app.delete '/api/protocols/browser/:id', exports.deleteProtocol
+	app.get '/api/getProtocolByLabel/:protLabel', exports.getProtocolByLabel
 
 
 exports.setupRoutes = (app, loginRoutes) ->
@@ -20,6 +21,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/protocolKindCodes', loginRoutes.ensureAuthenticated, exports.protocolKindCodeList
 	app.get '/api/protocols/genericSearch/:searchTerm', loginRoutes.ensureAuthenticated, exports.genericProtocolSearch
 	app.delete '/api/protocols/browser/:id', loginRoutes.ensureAuthenticated, exports.deleteProtocol
+	app.get '/api/getProtocolByLabel/:protLabel', loginRoutes.ensureAuthenticated, exports.getProtocolByLabel
 
 serverUtilityFunctions = require './ServerUtilityFunctions.js'
 csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
@@ -467,3 +469,22 @@ exports.deleteProtocol = (req, res) ->
 				console.log error
 				console.log response
 		)
+
+exports.getProtocolByLabel = (req, resp) ->
+	config = require '../conf/compiled/conf.js'
+	url = config.all.client.service.persistence.fullpath+"protocols?FindByProtocolName&protocolName=#{req.params.protLabel}"
+	request = require 'request'
+	request(
+		method: 'GET'
+		url: url
+		json: true
+	, (error, response, json) =>
+		console.log response.statusCode
+		console.log json
+		if !error and !json.error
+			resp.json json
+		else
+			console.log 'got ajax error trying to get protocol by label'
+			resp.statusCode = 500
+			resp.json json.errorMessages
+	)
