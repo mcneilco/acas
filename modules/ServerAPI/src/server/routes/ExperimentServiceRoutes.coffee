@@ -903,8 +903,15 @@ exports.experimentsByTypeKind = (req, resp) ->
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 exports.getExperimentByLabel = (req, resp) ->
+	exports.getExperimentByLabelInternal req.params.exptLabel, (statusCode, json) ->
+		resp.statusCode = statusCode
+		resp.json json
+
+exports.getExperimentByLabelInternal = (label, callback) ->
 	config = require '../conf/compiled/conf.js'
-	url = config.all.client.service.persistence.fullpath+"experiments?FindByExperimentName&experimentName=#{req.params.exptLabel}"
+	url = config.all.client.service.persistence.fullpath+"experiments?FindByExperimentName&experimentName=#{label}"
+	console.log "getExperimentByLabelInternal url"
+	console.log url
 	request = require 'request'
 	request(
 		method: 'GET'
@@ -914,11 +921,10 @@ exports.getExperimentByLabel = (req, resp) ->
 		console.log response.statusCode
 		console.log json
 		if !error and !json.error
-			resp.json json
+			callback response.statusCode, json
 		else
 			console.log 'got ajax error trying to get experiment by label'
-			resp.statusCode = 500
-			resp.json json.errorMessages
+			callback 500, json.errorMessages
 	)
 
 exports.getExperimentCodeByLabel = (req, resp) ->

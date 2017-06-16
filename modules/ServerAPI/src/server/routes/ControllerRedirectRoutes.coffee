@@ -14,36 +14,71 @@ config = require '../conf/compiled/conf.js'
 
 
 exports.redirectToEditor = (req, resp) ->
+	code = req.params.code
 	controllerRedirectConfFile = require '../src/javascripts/ServerAPI/ControllerRedirectConf.js'
 	controllerRedirectConf = controllerRedirectConfFile.controllerRedirectConf
 	queryPrefix = null
 	prefixKeyIndex = 0
 	while queryPrefix is null and prefixKeyIndex < (Object.keys(controllerRedirectConf)).length
 		prefix = Object.keys(controllerRedirectConf)[prefixKeyIndex] #prefix = possible entity prefix
-		if req.params.code.indexOf(prefix) > -1 #the requested route has a known entity prefix
+		if code.indexOf(prefix) > -1 #the requested route has a known entity prefix
 			queryPrefix = prefix
 		else
 			prefixKeyIndex +=1
 
 	console.log "in redirectToEditor"
-	if req.params.code.substring(0,5) is "STUDY"
-		resp.redirect "/study_tracker_experiment/codeName/#{req.params.code}"
-	else if req.params.code.substring(0,3) is "EXP" #TODO: refactor to get expt and then figure out kind and deeplink appropriately
-		resp.redirect "/experiment_base/codeName/#{req.params.code}"
-	else if req.params.code.substring(0,3) is "PRT" #TODO: refactor to get prot and then figure out kind and deeplink appropriately
-		resp.redirect "/protocol_base/codeName/#{req.params.code}"
+	console.log config.all.client.entity.saveInitialsCorpName
 
-	else if queryPrefix != null
+	getEntityByName = (protOrExpt, resp) =>
+		console.log "getEntityByName"
+		protocolServiceRoutes = require './ProtocolServiceRoutes.js'
+		experimentServiceRoutes = require './ExperimentServiceRoutes.js'
+		if protOrExpt is 'protocols'
+			protocolServiceRoutes.getProtocolByLabelInternal code, (statusCode, json) ->
+				console.log "getEntityByName - getProtocolByLabelInternal "
+				if statusCode is 500
+					resp.redirect "/"
+				else
+					kind = json[0].lsKind
+					deepLink = controllerRedirectConf[queryPrefix][kind]["deepLink"]
+					console.log "/"+deepLink+"/codeName/"+code
+					resp.redirect "/"+deepLink+"/codeName/"+code
+
+		else if protOrExpt is 'experiments'
+			experimentServiceRoutes.getExperimentByLabelInternal code, (statusCode, json) ->
+				console.log "getEntityByName - getExperimentByLabelInternal"
+				if statusCode is 500
+					resp.redirect "/"
+				else
+					kind = json[0].lsKind
+					deepLink = controllerRedirectConf[queryPrefix][kind]["deepLink"]
+					console.log controllerRedirectConf[queryPrefix][kind]["deepLink"]
+					resp.redirect "/"+deepLink+"/codeName/"+code
+
+	getEntityByCodeName = (resp) =>
 		request
 			json: true
-			url: config.all.server.nodeapi.path+"/api/"+controllerRedirectConf[queryPrefix]["entityName"]+"/codename/"+req.params.code #get protocol
+			url: config.all.server.nodeapi.path+"/api/"+controllerRedirectConf[queryPrefix]["entityName"]+"/codename/"+code
 		, (error, response, body) =>
 			console.log error
 			console.log response
 			console.log body
 			kind = response.body.lsKind
 			deepLink = controllerRedirectConf[queryPrefix][kind]["deepLink"]
-			resp.redirect "/"+deepLink+"/codeName/"+req.params.code
+			resp.redirect "/"+deepLink+"/codeName/"+code
+
+	if queryPrefix != null
+		console.log "url to get entity - in redirectToEditor"
+
+		if config.all.client.entity.saveInitialsCorpName
+			entityName = controllerRedirectConf[queryPrefix]["entityName"]
+			if entityName is "protocols" or entityName is "experiments"
+				#get entity by name
+				getEntityByName entityName, resp
+			else
+				getEntityByCodeName resp
+		else
+			getEntityByCodeName resp
 	else
 		resp.redirect "/#"
 

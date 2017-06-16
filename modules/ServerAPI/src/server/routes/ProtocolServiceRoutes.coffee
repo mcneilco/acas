@@ -471,8 +471,13 @@ exports.deleteProtocol = (req, res) ->
 		)
 
 exports.getProtocolByLabel = (req, resp) ->
+	exports.getProtocolByLabelInternal req.params.protLabel, (statusCode, json) ->
+		resp.statusCode = statusCode
+		resp.json json
+		
+exports.getProtocolByLabelInternal = (label, callback) ->
 	config = require '../conf/compiled/conf.js'
-	url = config.all.client.service.persistence.fullpath+"protocols?FindByProtocolName&protocolName=#{req.params.protLabel}"
+	url = config.all.client.service.persistence.fullpath+"protocols?FindByProtocolName&protocolName=#{label}"
 	request = require 'request'
 	request(
 		method: 'GET'
@@ -482,9 +487,8 @@ exports.getProtocolByLabel = (req, resp) ->
 		console.log response.statusCode
 		console.log json
 		if !error and !json.error
-			resp.json json
+			callback response.statusCode, json
 		else
 			console.log 'got ajax error trying to get protocol by label'
-			resp.statusCode = 500
-			resp.json json.errorMessages
+			callback 500, json.errorMessages
 	)
