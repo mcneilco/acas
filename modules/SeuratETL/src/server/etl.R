@@ -158,7 +158,7 @@ bulkLoadSelFolder <- function(foldersLocation, dryRunMode, user = "unassigned") 
   on.exit(setwd(originalWD))
   folderFullPath <- normalizePath(foldersLocation)
   setwd(racas::applicationSettings$appHome)
-  source(file.path(racas::applicationSettings$appHome,"public/src/modules/GenericDataParser/src/server/generic_data_parser.R"))
+  source(file.path(racas::applicationSettings$appHome,"src/r/GenericDataParser/generic_data_parser.R"))
   fileList <- list.files(folderFullPath, recursive=TRUE, full.names=TRUE)
   
   parseGenericDataWrapper <- function(fileFullPath) {

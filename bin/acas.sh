@@ -78,6 +78,13 @@ export PATH=/usr/local/bin:${PATH:=}
 export MANPATH=/usr/local/man:${MANPATH:=}
 export LD_LIBRARY_PATH=/usr/local/lib:${LD_LIBRARY_PATH:=}
 
+# Get default locale
+# Ubuntu
+[ -f /etc/default/locale ] && . /etc/default/locale
+
+# Centos
+[ -f /etc/sysconfig/i18n ] && . /etc/sysconfig/i18n
+export LANG
 
 ################################################################################
 ################################################################################

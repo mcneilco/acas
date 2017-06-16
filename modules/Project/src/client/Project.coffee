@@ -149,7 +149,7 @@ class window.Project extends Thing
 			codeType: 'project'
 			codeKind: 'restricted'
 			codeOrigin: 'ACAS DDICT'
-			value: 'true'
+			value: window.conf.projectEditor.isRestricted.default.toString()
 		]
 
 		defaultFirstLsThingItx: [
@@ -163,6 +163,12 @@ class window.Project extends Thing
 		errors = []
 		bestName = attrs.lsLabels.pickBestName()
 		nameError = true
+		if attrs.codeName? and @isNew()
+			validChars = attrs.codeName.match(/[a-zA-Z0-9 _\-+]/g)
+			unless validChars.length is attrs.codeName.length
+				errors.push
+					attribute: 'projectCode'
+					message: "CodeName can not contain special characters"
 		if bestName?
 			nameError = true
 			if bestName.get('labelText') != "" and bestName.get('labelText') != "unassigned"
@@ -917,6 +923,10 @@ class window.ProjectController extends AbstractFormController
 					@checkFormValid()
 
 	setupIsRestrictedCheckbox: ->
+		if window.conf.projectEditor.restrictedCheckbox.show
+			@$('.bv_group_restrictedData').show()
+		else
+			@$('.bv_group_restrictedData').hide()
 		if @model.get('is restricted').get('value') is "false"
 			@$('.bv_restrictedData').removeAttr 'checked'
 		else
@@ -1049,16 +1059,15 @@ class window.ProjectController extends AbstractFormController
 			url: validateURL
 			data: dataToPost
 			success: (response) =>
-				@handleValidateReturn(response)
+				@handleValidateSuccess(response)
 			error: (err) =>
+				@handleValidateError(JSON.parse err.responseText)
 				@serviceReturn = null
 			dataType: 'json'
 
-	handleValidateReturn: (validateResp) =>
+	handleValidateSuccess: (validateResp) =>
 		if validateResp?[0]?.errorLevel?
-			alert 'The requested project name has already been registered. Please choose a new project name.'
-			@$('.bv_saving').hide()
-			@$('.bv_saveFailed').show()
+			@handleValidateError(validateResp)
 		else if validateResp is "validate name failed"
 			alert 'There was an error validating the project name. Please try again and/or enter a different name.'
 			@$('.bv_saving').hide()
@@ -1066,6 +1075,12 @@ class window.ProjectController extends AbstractFormController
 		else
 			@saveProjectAndRoles()
 
+	handleValidateError: (err) =>
+		if err?[0]?.errorLevel? and err?[0]?.matchingThingCodeName?
+			alert "The requested project name has already been registered as #{err[0].matchingThingCodeName}. Please choose a new project name."
+		@$('.bv_saving').hide()
+		@$('.bv_saveFailed').show()
+		
 	saveProjectAndRoles: =>
 		@prepareToSaveAttachedFiles()
 		@prepareToSaveProjectLeaders()

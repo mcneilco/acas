@@ -452,7 +452,7 @@ validateTreatmentGroupData <- function(treatmentGroupData,calculatedResults,temp
   }
   return(NULL) 
 }
-validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, testMode = FALSE, replaceFakeCorpBatchId="", mainCode, inputFormat, projectCode, errorEnv = NULL) {
+validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, testMode = FALSE, replaceFakeCorpBatchId="", mainCode, inputFormat, projectCode, errorEnv = NULL, user=recordedBy, configList=configList) {
   # Valides the calculated results (for now, this only validates the mainCode)
   #
   # Args:
@@ -574,16 +574,34 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
         batchProjects <- getProjectForBatch(unique(calculatedResults$batchCode[batchesToCheck]), "Corporate Batch ID")
         batchProjectRestriced <- merge(batchProjects, projectDF, by.x="Project.Code", by.y="code")
         # Compounds in a restricted project may not be entered into another project
-        rCompounds <- batchProjectRestriced[batchProjectRestriced$isRestricted & batchProjectRestriced$Project.Code!=projectCode, "Requested.Name"]
+        rCompoundsDF <- batchProjectRestriced[batchProjectRestriced$isRestricted & batchProjectRestriced$Project.Code!=projectCode,]
+        rCompounds <- rCompoundsDF$Requested.Name
         if (length(rCompounds) > 0) {
-          addError(paste0("Compounds '", paste(rCompounds, collapse = "', '"), 
-                          "' are in a restricted project that does not match the one entered for this experiment."))
+          addProjectError <- TRUE
+          shouldCheckRole <- configList$server.project.roles.enable & !is.null(configList$client.roles.crossProjectLoaderRole)
+          if(shouldCheckRole) {
+            response <- getURL(URLencode(paste0(racas::applicationSettings$server.nodeapi.path, racas::applicationSettings$client.service.users.path, "/", user)))
+            if(response=="") {
+              addError(paste0("Username '",user,"' could not be found in the system"))
+            } else {
+              recordedByUser <- fromJSON(response)
+              userRoles <- unlist(lapply(recordedByUser$roles, function(role) role$roleEntry$roleName))
+              if(configList$client.roles.crossProjectLoaderRole %in% userRoles) {
+                addProjectError <- FALSE
+                warnUser(paste0("This assay data will be associated with project '",currentProj$name,"' but will reference compounds that are associated with project(s): ",paste0("'",unique(rCompoundsDF$name),"'", collapse = ", ")))
+              }
+            }
+          }
+          if(addProjectError) {
+            addError(paste0("Compounds '", paste(rCompounds, collapse = "', '"),
+                            "' are in a restricted project that does not match the one entered for this experiment."))
+          }
         }
       }
     }
   }
 
-  
+
   # Return the validated results
   return(calculatedResults)
 }
@@ -797,6 +815,12 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun, r
   require(rjson)
   require(RCurl)
   
+  # Throw errors for value kinds greater than 64 characters
+  valueKindsTooLong <- unique(neededValueKinds)[which(nchar(unique(neededValueKinds)) > 64)]
+  if(length(valueKindsTooLong) > 0) {
+    stopUser(paste0("The value kind(s) are too long: ",sqliz(valueKindsTooLong), ". Value kinds must be 64 characters or less. <br>* Note: Values are typically grouped by assay so the value kind should just be a descriptor of the value (i.e. EC50, Comment, Max).  Units are recorded seperately so are not included in the character limit."))
+  }
+
   # Throw errors for words used with special meanings by the loader
   usedReservedWords <- reserved %in% neededValueKinds
   if (any(usedReservedWords)) {
@@ -1729,6 +1753,22 @@ createNewProtocol <- function(metaData, lsTransaction, recordedBy) {
                                                                     lsKind="protocol name",
                                                                     labelText=metaData$'Protocol Name'[1],
                                                                     preferred=TRUE)
+
+  if (toupper(configList$client.entity.saveInitialsCorpName) == "TRUE"){
+	  protocolCorpNameList <- unlist(getAutoLabels(thingTypeAndKind="document_protocol", 
+                                  labelTypeAndKind=paste0("corpName initials_", recordedBy), 
+                                  numberOfLabels=1),
+                                  use.names=FALSE)
+
+     protocolLabels[[length(protocolLabels)+1]] <- createProtocolLabel(lsTransaction = lsTransaction, 
+                                                                    recordedBy=recordedBy, 
+                                                                    lsType="corpName", 
+                                                                    lsKind="protocol corpName",
+                                                                    labelText=protocolCorpNameList[1],
+                                                                    preferred=FALSE)
+  }
+
+
   
   # Create the protocol
   protocol <- createProtocol(lsTransaction = lsTransaction,
@@ -1857,6 +1897,22 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
                                                                           labelText=experimentName,
                                                                           preferred=TRUE)
   
+  if (toupper(configList$client.entity.saveInitialsCorpName) == "TRUE"){
+	  experimentCorpNameList <- unlist(getAutoLabels(thingTypeAndKind="document_experiment", 
+                                  labelTypeAndKind=paste0("corpName initials_", recordedBy), 
+                                  numberOfLabels=1),
+                                  use.names=FALSE)
+
+     experimentLabels[[length(experimentLabels)+1]] <- createExperimentLabel(lsTransaction = lsTransaction, 
+                                                                          recordedBy=recordedBy, 
+                                                                          lsType="corpName", 
+                                                                          lsKind="experiment corpName",
+                                                                          labelText=experimentCorpNameList[1],
+                                                                          preferred=FALSE) 
+   
+  }
+
+
   # Create LS Tags
   if("Experiment Keywords" %in% names(metaData)) {
     tagList <- splitOnSemicolon(metaData$"Experiment Keywords"[[1]])
@@ -2710,8 +2766,10 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   # Validate the Calculated Results
   calculatedResults <- validateCalculatedResults(
     calculatedResults, dryRun, curveNames=formatParameters$curveNames, testMode=testMode,
-    replaceFakeCorpBatchId=formatParameters$replaceFakeCorpBatchId, mainCode, inputFormat, 
-    projectCode = validatedMetaData$Project)
+    replaceFakeCorpBatchId=formatParameters$replaceFakeCorpBatchId, mainCode, inputFormat,
+    projectCode = validatedMetaData$Project,
+    user = recordedBy,
+    configList = configList)
   
   # Subject and TreatmentGroupData
   subjectAndTreatmentData <- getSubjectAndTreatmentData(precise, genericDataFileDataFrame, calculatedResults, inputFormat, mainCode, formatParameters, errorEnv)

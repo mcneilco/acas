@@ -3,7 +3,7 @@ $(function() {
 	window.Lot = Lot_Abstract.extend({
 		defaults: {
 			corpName: '',
-            asDrawnStruct: null,
+			asDrawnStruct: null,
 			lotMolWeight: null,
 			synthesisDate: '',
 			color: '',
@@ -20,17 +20,21 @@ $(function() {
 			comments: '',
 			chemist: null,
 			project: null,
-            supplierLot: null,
-            meltingPoint: null,
-            boilingPoint: null,
-            buid: null,
-            isVirtual: false,
-            lotNumber: null,
-            retain: null,
-            retainUnits: null,
-            solutionAmount: null,
-            solutionAmountUnits: null,
-            vendor: null
+			supplierLot: null,
+			meltingPoint: null,
+			boilingPoint: null,
+			buid: null,
+			isVirtual: false,
+			lotNumber: null,
+			retain: null,
+			retainUnits: null,
+			solutionAmount: null,
+			solutionAmountUnits: null,
+			tareWeight: null,
+			tareWeightUnits: null,
+			totalAmountStored: null,
+			totalAmountStoredUnits: null,
+			vendor: null
 		},
 		
 		initialize: function(){
@@ -43,6 +47,8 @@ $(function() {
                     amountUnits: new PickList(js.amountUnits),
                     retainUnits: new PickList(js.retainUnits),
                     solutionAmountUnits: new PickList(js.solutionAmountUnits),
+                    tareWeightUnits: new PickList(js.tareWeightUnits),
+                    totalAmountStoredUnits: new PickList(js.totalAmountStoredUnits),
                     purityMeasuredBy: new PickList(js.purityMeasuredBy),
                     purityOperator: new PickList(js.purityOperator),
                     chemist: new PickList(js.chemist),
@@ -113,6 +119,16 @@ $(function() {
 			if (attr.solutionAmount!=null) {
 				if(isNaN(attr.solutionAmount) && attr.solutionAmount!='') {
 					errors.push({'attribute': 'solutionAmount', 'message':  "Solution Amount must be a number if provided"});
+				}
+			}
+			if (attr.tareWeight!=null) {
+				if(isNaN(attr.tareWeight) && attr.tareWeight!='') {
+					errors.push({'attribute': 'tareWeight', 'message':  "Tare weight must be a number if provided"});
+				}
+			}
+			if (attr.totalAmountStored!=null) {
+				if(isNaN(attr.totalAmountStored) && attr.totalAmountStored!='') {
+					errors.push({'attribute': 'totalAmountStored', 'message':  "Total amount stored must be a number if provided"});
 				}
 			}
 			if (attr.purity!=null) {
@@ -189,12 +205,35 @@ $(function() {
                     code: "unassigned",
                     name: "Select Units"
                   })
+                this.tareWeightUnitsCodeController =
+                    this.setupCodeController('tareWeightUnitsCode', 'units', 'tareWeightUnits');
+                this.tareWeightUnitsCodeController.insertFirstOption = new PickList({
+                    code: "unassigned",
+                    name: "Select Units"
+                  })
+                this.totalAmountStoredUnitsCodeController =
+                    this.setupCodeController('totalAmountStoredUnitsCode', 'units', 'totalAmountStoredUnits');
+                this.totalAmountStoredUnitsCodeController.insertFirstOption = new PickList({
+                    code: "unassigned",
+                    name: "Select Units"
+                  })
                 this.purityMeasuredByCodeController =
                     this.setupCodeController('purityMeasuredByCode', 'purityMeasuredBys', 'purityMeasuredBy');
                 this.purityMeasuredByCodeController.insertFirstOption = new PickList({
                     code: "unassigned",
                     name: "Select Method"
                   })
+
+                if (window.configuration.metaLot.showTareWeight) {
+                    this.$('.bv_tareWeightContainer').show();
+			    } else {
+				    this.$('.bv_tareWeightContainer').hide();
+			    }
+                if (window.configuration.metaLot.showTotalAmoundStored) {
+                    this.$('.bv_totalAmountStoredContainer').show();
+			    } else {
+				    this.$('.bv_totalAmountStoredContainer').hide();
+			    }
 
                 this.fileListRenderer = new FileRenderer(this.model.get('fileList'));
                 this.$('.analyticalFiles').append(this.fileListRenderer.el);
@@ -246,6 +285,10 @@ $(function() {
                     retainUnits: null,
                     solutionAmount: null,
                     solutionAmountUnits: null,
+                    tareWeight: null,
+                    tareWeightUnits: null,
+                    totalAmountStored: null,
+                    totalAmountStoredUnits: null,
                     vendor: null
                 });
             } else {
@@ -263,6 +306,12 @@ $(function() {
                 var solutionAmountUnits; 
             	if (this.solutionAmountUnitsCodeController.getSelectedModel().isNew()) solutionAmountUnits = null;
             	else solutionAmountUnits = this.solutionAmountUnitsCodeController.getSelectedModel();
+                var tareWeightUnits; 
+            	if (this.tareWeightUnitsCodeController.getSelectedModel().isNew()) tareWeightUnits = null;
+            	else tareWeightUnits = this.tareWeightUnitsCodeController.getSelectedModel();
+                var totalAmountStoredUnits; 
+            	if (this.totalAmountStoredUnitsCodeController.getSelectedModel().isNew()) totalAmountStoredUnits = null;
+            	else totalAmountStoredUnits = this.totalAmountStoredUnitsCodeController.getSelectedModel();
                 var purityMeasuredBy; 
             	if (this.purityMeasuredByCodeController.getSelectedModel().isNew()) purityMeasuredBy = null;
             	else purityMeasuredBy = this.purityMeasuredByCodeController.getSelectedModel();
@@ -286,6 +335,12 @@ $(function() {
                     solutionAmount:
                         (jQuery.trim(this.$('.solutionAmount').val())=='') ? null :
                         parseFloat(jQuery.trim(this.$('.solutionAmount').val())),
+                    tareWeight:
+                        (jQuery.trim(this.$('.tareWeight').val())=='') ? null :
+                        parseFloat(jQuery.trim(this.$('.tareWeight').val())),
+                    totalAmountStored:
+                        (jQuery.trim(this.$('.totalAmountStored').val())=='') ? null :
+                        parseFloat(jQuery.trim(this.$('.totalAmountStored').val())),
                     purity:
                         (jQuery.trim(this.$('.purity').val())=='') ? null :
                         parseFloat(jQuery.trim(this.$('.purity').val())),
@@ -294,6 +349,8 @@ $(function() {
                     amountUnits: amountUnits,
                     retainUnits: retainUnits,
                     solutionAmountUnits: solutionAmountUnits,
+                    tareWeightUnits: tareWeightUnits,
+                    totalAmountStoredUnits: totalAmountStoredUnits,
                     purityMeasuredBy: purityMeasuredBy,
                     project: this.projectCodeController.getSelectedModel(),
                     vendor: vendor,
