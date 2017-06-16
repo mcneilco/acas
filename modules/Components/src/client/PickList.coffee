@@ -252,9 +252,11 @@ class window.PickListSelect2Controller extends PickListSelectController
 				obj.id = obj.id || obj.code
 				obj.text = obj.text || obj.name
 				mappedData.push(obj)
-
+		@placeholder = ""
+		if @options.placeholder?
+			@placeholder = @options.placeholder
 		$(@el).select2
-			placeholder: ""
+			placeholder: @placeholder
 			data: mappedData
 			openOnEnter: false
 			allowClear: true
@@ -275,6 +277,16 @@ class window.PickListSelect2Controller extends PickListSelectController
 		if not result? and  @insertFirstOption.get('code') is "unassigned"
 			result = "unassigned"
 		result
+
+	getSelectedCodeNotId: ->
+		results = $(@el).select2('data')
+		if results.length > 0
+			results[0].code
+		else
+			if @insertFirstOption.get('code') is "unassigned"
+				"unassigned"
+			else
+				null
 
 	setSelectedCode: (code) ->
 		if code?
@@ -557,7 +569,7 @@ class window.EditablePickListSelect2Controller extends EditablePickListSelectCon
 				name: "Select "+pascalCaseParameterName
 			selectedCode: @options.selectedCode
 
-class window.ThingLabelComboBoxController extends Backbone.View
+class window.ThingLabelComboBoxController extends PickListSelect2Controller
 
 	initialize: ->
 		@thingType = @options.thingType
@@ -567,6 +579,7 @@ class window.ThingLabelComboBoxController extends Backbone.View
 		@queryUrl = if @options.queryUrl? then @options.queryUrl else null
 		unless @queryUrl? or (@thingType? and @thingKind?)
 			alert("ThingLabelComboBoxController URL misconfigured - crash to follow")
+		@$el.append('<option></option>')
 
 	render: =>
 		@selectController = @$el.select2
@@ -593,6 +606,14 @@ class window.ThingLabelComboBoxController extends Backbone.View
 					results = for option in data
 						{id: option.code, text: option.name}
 					return {results: results}
+			sorter: (data) ->
+				data.sort( (a, b) ->
+					if a.text.toUpperCase() > b.text.toUpperCase()
+						return 1
+					if a.text.toUpperCase() < b.text.toUpperCase()
+						return -1
+					return 0
+				)
 		@
 
 	getSelectedCode: ->
