@@ -1754,7 +1754,7 @@ createNewProtocol <- function(metaData, lsTransaction, recordedBy) {
                                                                     labelText=metaData$'Protocol Name'[1],
                                                                     preferred=TRUE)
 
-  if (toupper(configList$client.entity.saveInitialsCorpName) == "TRUE"){
+  if (toupper(racas::applicationSettings$client.entity.saveInitialsCorpName) == "TRUE"){
 	  protocolCorpNameList <- unlist(getAutoLabels(thingTypeAndKind="document_protocol", 
                                   labelTypeAndKind=paste0("corpName initials_", recordedBy), 
                                   numberOfLabels=1),
@@ -1897,7 +1897,7 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
                                                                           labelText=experimentName,
                                                                           preferred=TRUE)
   
-  if (toupper(configList$client.entity.saveInitialsCorpName) == "TRUE"){
+  if (toupper(racas::applicationSettings$client.entity.saveInitialsCorpName) == "TRUE"){
 	  experimentCorpNameList <- unlist(getAutoLabels(thingTypeAndKind="document_experiment", 
                                   labelTypeAndKind=paste0("corpName initials_", recordedBy), 
                                   numberOfLabels=1),
