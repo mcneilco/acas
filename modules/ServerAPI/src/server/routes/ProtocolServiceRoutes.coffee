@@ -11,6 +11,7 @@ exports.setupAPIRoutes = (app) ->
 	app.get '/api/getProtocolByLabel/:protLabel', exports.getProtocolByLabel
 
 
+
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/protocols/codename/:code', loginRoutes.ensureAuthenticated, exports.protocolByCodename
 	app.get '/api/protocols/:id', loginRoutes.ensureAuthenticated, exports.protocolById
@@ -62,25 +63,24 @@ exports.protocolByCodename = (req, resp) ->
 		if req.user? && config.all.server.project.roles.enable
 			serverUtilityFunctions.getRestrictedEntityFromACASServerInternal baseurl, req.user.username, "metadata", "protocol metadata", (statusCode, json) =>
 			#if prot is deleted, need to check if user has privs to view deleted protocols
-				if json.codeName? and json.ignored and !json.deleted
-					if config.all.client.entity?.viewDeletedRoles?
-						viewDeletedRoles = config.all.client.entity.viewDeletedRoles.split(",")
-					else
-						viewDeletedRoles = []
-					grantedRoles = _.map req.user.roles, (role) ->
-						role.roleEntry.roleName
-					canViewDeleted = (config.all.client.entity?.viewDeletedRoles? && config.all.client.entity.viewDeletedRoles in grantedRoles)
-					if canViewDeleted
-						resp.statusCode = statusCode
-						resp.end JSON.stringify json
-					else
-						resp.statusCode = 500
-						resp.end JSON.stringify "Protocol does not exist"
+			if json.codeName? and json.ignored and !json.deleted
+				if config.all.client.entity?.viewDeletedRoles?
+					viewDeletedRoles = config.all.client.entity.viewDeletedRoles.split(",")
 				else
+					viewDeletedRoles = []
+				grantedRoles = _.map req.user.roles, (role) ->
+					role.roleEntry.roleName
+				canViewDeleted = (config.all.client.entity?.viewDeletedRoles? && config.all.client.entity.viewDeletedRoles in grantedRoles)
+				if canViewDeleted
 					resp.statusCode = statusCode
 					resp.end JSON.stringify json
-
-          else
+				else
+					resp.statusCode = 500
+					resp.end JSON.stringify "Protocol does not exist"
+			else
+				resp.statusCode = statusCode
+				resp.end JSON.stringify json
+		else
 			serverUtilityFunctions.getFromACASServer baseurl, resp
 
 exports.protocolById = (req, resp) ->

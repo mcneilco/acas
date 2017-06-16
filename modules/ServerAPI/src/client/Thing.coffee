@@ -1,6 +1,7 @@
 class window.Thing extends Backbone.Model
 	lsProperties: {}
 	className: "Thing"
+	deleteEmptyLabelsBeforeSave: true
 #	urlRoot: "/api/things"
 
 	defaults: () ->
@@ -68,11 +69,11 @@ class window.Thing extends Backbone.Model
 
 	toJSON: (options) ->
 		attsToSave = super(options)
-
-		toDel = attsToSave.lsLabels.filter (lab) ->
-			(lab.get('ignored') || lab.get('labelText')=="") && lab.isNew()
-		for lab in toDel
-			attsToSave.lsLabels.remove lab
+		if @deleteEmptyLabelsBeforeSave
+			toDel = attsToSave.lsLabels.filter (lab) ->
+				(lab.get('ignored') || lab.get('labelText')=="") && lab.isNew()
+			for lab in toDel
+				attsToSave.lsLabels.remove lab
 
 		if attsToSave.firstLsThings?
 			toDel = attsToSave.firstLsThings.filter (itx) ->
