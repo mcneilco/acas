@@ -53,6 +53,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/createTubes', exports.createTubes
 	app.post '/api/throwInTrash', exports.throwInTrash
 	app.post '/api/updateContainerHistoryLogs', exports.updateContainerHistoryLogs
+	app.post '/api/getContainerInfoFromBatchCode', exports.getContainerInfoFromBatchCode
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/getContainersInLocationWithTypeAndKind', loginRoutes.ensureAuthenticated, exports.getContainersInLocationWithTypeAndKind
@@ -101,7 +102,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/createTubes', loginRoutes.ensureAuthenticated, exports.createTubes
 	app.post '/api/throwInTrash', loginRoutes.ensureAuthenticated, exports.throwInTrash
 	app.post '/api/updateContainerHistoryLogs', loginRoutes.ensureAuthenticated, exports.updateContainerHistoryLogs
-
+	app.post '/api/getContainerInfoFromBatchCode', loginRoutes.ensureAuthenticated, exports.getContainerInfoFromBatchCode
 
 exports.getContainersInLocation = (req, resp) ->
 	req.setTimeout 86400000
@@ -2304,3 +2305,43 @@ formatContainers = (containers, modifiedBy, modifiedDate, callback) ->
 # 	console.log 'locationArrayString '
 # 	console.log locationArrayString
 # 	callback locationArrayString
+
+exports.getContainerInfoFromBatchCode = (req, resp) =>
+
+	requestObject =
+		batchCode: req.body.batchCode
+
+	exports.getContainerInfoFromBatchCodeInternal(requestObject, (json, statusCode) =>
+		resp.statusCode = statusCode
+		resp.json json
+	)
+
+exports.getContainerInfoFromBatchCodeInternal = (requestObject, callback) =>
+
+	queryPayload =
+		{
+			"containerType": "well",
+			"containerKind": "default",
+			"stateType": "status",
+			"stateKind": "content",
+			"valueType": "codeValue",
+			"valueKind": "batch code",
+			"value": requestObject.batchCode,
+			"maxResults": 600,
+			"like": true,
+			"rightLike": true
+		}
+
+	exports.getContainerCodeNamesByContainerValueInternal(queryPayload, (json) =>
+		statusCode = 200
+		if json.maxResults?
+			warningMessage = "Max results of #{maxResults} reached."
+			return callback {warningMessage: warningMessage, statusMessage: ""},statusCode
+		else
+			if json.length > 0
+				exports.getWellContentInternal(json, (response) =>
+					return callback response, statusCode
+				)
+			else
+				return callback {warningMessage: "No results found for #{queryPayload.value}", statusMessage: ""}, statusCode
+	)
