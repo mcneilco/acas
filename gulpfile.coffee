@@ -73,7 +73,7 @@ addREnvironmentCleanUp = (file,contents) ->
   # over as buffers 
   if path.extname(file.path) in [".R",".r"] && contents.match('# ROUTE:.*')
     cleanFunction = "racas::cleanEnvironment()"
-    contents = "#{cleanFunction}\n\r#{contents}\r\n#{cleanFunction}"
+    contents = "#{cleanFunction}\n\r#{contents}\r\n#{cleanFunction}\r\n"
   return contents
 
 modify = (options = {}) ->
