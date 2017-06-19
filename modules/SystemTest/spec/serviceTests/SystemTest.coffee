@@ -251,7 +251,7 @@ describe "D. Access to rApache", ->
 					@responseJSON = body
 					done()
 			it "should not return an error", ->
-				assert.equal(@responseJSON,undefined,@responseJSON)
+				assert.equal(@responseJSON,"",@responseJSON)
 
 #############################
 # E. System Tests           #

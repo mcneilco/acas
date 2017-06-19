@@ -66,6 +66,16 @@ getPythonPath = (path) ->
   path.dirname = outputDirname
   return
 
+getAssetsPath = (path) ->
+  module = path.dirname.split('/')[0]
+  if path.basename == 'assets' and path.extname == ''
+    path.basename = ''
+    path.dirname = ''
+  outputDirname = module + '/' + path.dirname.replace(module + '/src/server/assets', '')
+  path.dirname = outputDirname
+  return
+
+
 # ------------------------------------------------- Read Inputs
 
 build = argv.buildPath or process.env.BUILD_PATH or ''
@@ -286,6 +296,18 @@ taskConfigs =
       src: getGlob('modules/CmpdReg/src/**')
       dest: build + '/public/CmpdReg'
       options: _.extend _.clone(globalCopyOptions), {}
+    ,
+      taskName: "serverAssets"
+      src: getGlob('modules/**/src/server/assets/**')
+      dest: build + '/src/assets'
+      options: _.extend _.clone(globalCopyOptions), {}
+      renameFunction: getAssetsPath
+    ,
+      taskName: "clientAssets"
+      src: getGlob('modules/**/src/client/assets/**')
+      dest: build + '/public/assets'
+      options: _.extend _.clone(globalCopyOptions), {}
+      renameFunction: getFirstFolderName
   ],
   others:
     packageJSON:
