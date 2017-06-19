@@ -24,14 +24,15 @@ services:
     # Add chemaxon marvinjs here
      - ./chemaxon/marvinjs:/home/runner/build/public/CmpdReg/marvinjs
      # Please add any dev volumes below this line
-     # - ./:/home/runner/acas
+     - ./:/home/runner/acas
+     - /Users/bbolt/Documents/mcneilco/oss/racas/racas:/home/runner/racas
      # - ./modules/BuildUtilities/:/home/runner/acas/modules/BuildUtilities
     env_file:
       - ./conf/docker/acas/environment/acas.env
 # Dev Command
-#    command: ["bin/acas.sh", "run", "acas", "dev"]
+    command: ["bin/acas.sh", "run", "acas", "dev"]
 # Start command
-    command: ["bin/acas.sh", "run", "acas", "start"]
+#    command: ["bin/acas.sh", "run", "acas", "start"]
   rservices:
     image: mcneilco/racas-oss:${ACAS_TAG}
     restart: always
