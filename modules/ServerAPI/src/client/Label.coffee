@@ -15,13 +15,15 @@ class window.Label extends Backbone.Model
 
 	handleLabelTextChanged: =>
 		unless @isNew()
+			newText = @get 'labelText'
 			@set
 				ignored: true
 				modifiedBy: window.AppLaunchParams.loginUser.username
 				modifiedDate: new Date().getTime()
 				isDirty: true
-			@set labelText: @previous 'labelText'
-			@trigger 'createNewLabel', @get('lsKind'), @get('labelText')
+				labelText: @previous 'labelText'
+			, silent: true
+			@trigger 'createNewLabel', @get('lsKind'), newText, @get('key')
 
 	changeLabelText: (options) ->
 		@set labelText: options
@@ -31,11 +33,11 @@ class window.LabelList extends Backbone.Collection
 
 	getCurrent: ->
 		@filter (lab) ->
-			!(lab.get 'ignored')
+			!lab.get('ignored') #&& (lab.get('labelText') != "")
 
 	getNames: ->
 		_.filter @getCurrent(), (lab) ->
-			lab.get('lsType') == "name"
+			lab.get('lsType').toLowerCase() == "name"
 
 	getPreferred: ->
 		_.filter @getCurrent(), (lab) ->
@@ -60,6 +62,31 @@ class window.LabelList extends Backbone.Collection
 					(if (rd is "") then rd else -1)
 			else
 				current = @getCurrent()
+				bestLabel = _.max current, (lab) ->
+					rd = lab.get 'recordedDate'
+					(if (rd is "") then rd else -1)
+		return bestLabel
+
+	pickBestNonEmptyLabel: ->
+		preferred = @getCurrent()
+		if preferred.length > 0
+			preferred = _.filter preferred, (lab) ->
+				lab.get('labelText') != ""
+			bestLabel =  _.max preferred, (lab) ->
+				rd = lab.get 'recordedDate'
+				(if (rd is "") then rd else -1)
+		else
+			names = @getNames()
+			if names.length > 0
+				names = _.filter names, (lab) ->
+					lab.get('labelText') != ""
+				bestLabel = _.max names, (lab) ->
+					rd = lab.get 'recordedDate'
+					(if (rd is "") then rd else -1)
+			else
+				current = @getCurrent()
+				current = _.filter current, (lab) ->
+					lab.get('labelText') != ""
 				bestLabel = _.max current, (lab) ->
 					rd = lab.get 'recordedDate'
 					(if (rd is "") then rd else -1)
@@ -151,7 +178,7 @@ class window.Value extends Backbone.Model
 					modifiedBy: window.AppLaunchParams.loginUser.username
 					modifiedDate: new Date().getTime()
 					isDirty: true
-				@trigger 'createNewValue', @get('lsKind'), newVal
+				@trigger 'createNewValue', @get('lsKind'), newVal, @get('key')
 
 class window.ValueList extends Backbone.Collection
 	model: Value
@@ -186,6 +213,15 @@ class window.State extends Backbone.Model
 		value = @get('lsValues').filter (val) ->
 			val.id == id
 		value
+
+	getLsValues: ->
+		@get('lsValues')
+
+	resetLsValues: (vals) =>
+		@attributes.lsValues.reset(vals)
+
+	setLsValues: (vals) =>
+		@attributes.lsValues.add(vals)
 
 	getValueHistory: (type, kind) ->
 		@get('lsValues').filter (value) ->
@@ -228,12 +264,7 @@ class window.StateList extends Backbone.Collection
 		mStates = @getStatesByTypeAndKind sType, sKind
 		mState = mStates[0] #TODO should do something smart if there are more than one
 		unless mState?
-			mState = new State
-				lsType: sType
-				lsKind: sKind
-			@.add mState
-			mState.on 'change', =>
-				@trigger('change')
+			mState = @createStateByTypeAndKind sType, sKind
 		return mState
 
 	getOrCreateValueByTypeAndKind: (sType, sKind, vType, vKind) ->
@@ -243,6 +274,16 @@ class window.StateList extends Backbone.Collection
 		unless descVal?
 			descVal = @createValueByTypeAndKind(sType, sKind, vType, vKind)
 		return descVal
+
+	createStateByTypeAndKind: (sType, sKind) ->
+		mState = new State
+			lsType: sType
+			lsKind: sKind
+		@.add mState
+		mState.on 'change', =>
+			@trigger('change')
+
+		return mState
 
 	createValueByTypeAndKind: (sType, sKind, vType, vKind) ->
 		descVal = new Value

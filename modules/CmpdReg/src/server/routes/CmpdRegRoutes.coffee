@@ -37,7 +37,13 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/cmpdReg/export/searchResults', loginRoutes.ensureAuthenticated, exports.exportSearchResults
 	app.post '/cmpdReg/validateParent', loginRoutes.ensureAuthenticated, exports.validateParent
 	app.post '/cmpdReg/updateParent', loginRoutes.ensureAuthenticated, exports.updateParent
-
+	app.post '/cmpdReg/api/v1/lotServices/update/lot/metadata', loginRoutes.ensureAuthenticated, exports.updateLotMetadata
+	app.post '/cmpdReg/api/v1/lotServices/update/lot/metadata/jsonArray', loginRoutes.ensureAuthenticated, exports.updateLotsMetadata
+	app.post '/cmpdReg/api/v1/parentServices/update/parent/metadata', loginRoutes.ensureAuthenticated, exports.updateParentMetadata
+	app.post '/cmpdReg/api/v1/parentServices/update/parent/metadata/jsonArray', loginRoutes.ensureAuthenticated, exports.updateParentsMetadata
+	app.post '/cmpdReg/api/v1/lotServices/reparent/lot', loginRoutes.ensureAuthenticated, exports.reparentLot
+	app.post '/cmpdReg/api/v1/lotServices/reparent/lot/jsonArray', loginRoutes.ensureAuthenticated, exports.reparentLots
+	
 exports.cmpdRegIndex = (req, res) ->
 	scriptPaths = require './RequiredClientScripts.js'
 	config = require '../conf/compiled/conf.js'
@@ -636,3 +642,166 @@ exports.updateParent = (req, resp) ->
 			resp.statusCode = 500
 			resp.end "Error trying to update parent: " + error;
 	)
+	
+	
+exports.updateLotMetadata = (req, resp) ->
+	grantedRoles = _.map req.user.roles, (role) ->
+		role.roleEntry.roleName
+	console.log grantedRoles
+	request = require 'request'
+	config = require '../conf/compiled/conf.js'
+	console.log 'in update lot metaData'
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parentLot/updateLot/metadata'
+	console.log cmpdRegCall
+
+	request(
+		method: 'POST'
+		url: cmpdRegCall
+		body: req.body
+		json: true
+		timeout: 6000000
+	, (error, response, json) =>
+		if !error
+			resp.setHeader('Content-Type', 'plain/text')
+			resp.json json
+		else
+			console.log 'got ajax error trying to update Lot metadata'
+			console.log error
+			console.log json
+			console.log response
+			resp.statusCode = 500
+			resp.end "Error trying to update lot: " + error;
+	)
+		
+exports.updateLotsMetadata = (req, resp) ->
+	request = require 'request'
+	config = require '../conf/compiled/conf.js'
+	console.log 'in update lot array metaData'
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parentLot/updateLot/metadata/jsonArray'
+	console.log cmpdRegCall
+
+	request(
+		method: 'POST'
+		url: cmpdRegCall
+		body: req.body
+		json: true
+		timeout: 6000000
+	, (error, response, json) =>
+		if !error
+			resp.setHeader('Content-Type', 'plain/text')
+			resp.json json
+		else
+			console.log 'got ajax error trying to update Lot array metadata'
+			console.log error
+			console.log json
+			console.log response
+			resp.statusCode = 500
+			resp.end "Error trying to update lot: " + error;
+	)
+
+exports.updateParentMetadata = (req, resp) ->
+	request = require 'request'
+	config = require '../conf/compiled/conf.js'
+	console.log 'in update parent metaData'
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parents/updateParent/metadata'
+	console.log cmpdRegCall
+
+	request(
+		method: 'POST'
+		url: cmpdRegCall
+		body: req.body
+		json: true
+		timeout: 6000000
+	, (error, response, json) =>
+		if !error
+			resp.setHeader('Content-Type', 'plain/text')
+			resp.json json
+		else
+			console.log 'got ajax error trying to update parent metadata'
+			console.log error
+			console.log json
+			console.log response
+			resp.statusCode = 500
+			resp.end "Error trying to update parent: " + error;
+	)
+	
+exports.updateParentsMetadata = (req, resp) ->
+	request = require 'request'
+	config = require '../conf/compiled/conf.js'
+	console.log 'in update parent array metaData'
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parents/updateParent/metadata/jsonArray'
+	console.log cmpdRegCall
+
+	request(
+		method: 'POST'
+		url: cmpdRegCall
+		body: req.body
+		json: true
+		timeout: 6000000
+	, (error, response, json) =>
+		if !error
+			resp.setHeader('Content-Type', 'plain/text')
+			resp.json json
+		else
+			console.log 'got ajax error trying to update parent array metadata'
+			console.log error
+			console.log json
+			console.log response
+			resp.statusCode = 500
+			resp.end "Error trying to update parent: " + error;
+	)
+
+exports.reparentLot = (req, resp) ->
+	request = require 'request'
+	config = require '../conf/compiled/conf.js'
+	console.log 'in reparent lot'
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parentLot/reparentLot'
+	console.log cmpdRegCall
+
+	request(
+		method: 'POST'
+		url: cmpdRegCall
+		body: req.body
+		json: true
+		timeout: 6000000
+	, (error, response, json) =>
+		if !error
+			resp.setHeader('Content-Type', 'plain/text')
+			resp.json json
+		else
+			console.log 'got ajax error trying to reparent lot'
+			console.log error
+			console.log json
+			console.log response
+			resp.statusCode = 500
+			resp.end "Error trying to reparent lot: " + error;
+	)
+
+exports.reparentLots = (req, resp) ->
+	request = require 'request'
+	config = require '../conf/compiled/conf.js'
+	console.log 'in reparent lot'
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parentLot/reparentLot/jsonArray'
+	console.log cmpdRegCall
+
+	request(
+		method: 'POST'
+		url: cmpdRegCall
+		body: req.body
+		json: true
+		timeout: 6000000
+	, (error, response, json) =>
+		if !error
+			resp.setHeader('Content-Type', 'plain/text')
+			resp.json json
+		else
+			console.log 'got ajax error trying to reparent lot array'
+			console.log error
+			console.log json
+			console.log response
+			resp.statusCode = 500
+			resp.end "Error trying to reparent lot array: " + error;
+	)
+
+
+	

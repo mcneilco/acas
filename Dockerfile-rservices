@@ -1,7 +1,8 @@
-FROM mcneilco/racas-oss:1.9.0
+FROM mcneilco/racas-oss:${ACAS_TAG}
 
 # RSTUDIO INSTALL
 USER root
+RUN yum install -y yum-plugin-ovl; yum clean all
 RUN  yum install -y passwd && \
      echo "runner" | passwd --stdin runner && \
      wget https://download2.rstudio.org/rstudio-server-rhel-0.99.489-x86_64.rpm --no-verbose && \

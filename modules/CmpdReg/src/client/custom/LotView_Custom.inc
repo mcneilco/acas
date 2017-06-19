@@ -101,6 +101,19 @@
                 <select class="FormInput solutionAmountUnitsCode"></select>
             </div>
 
+
+            <div class="bv_tareWeightContainer" >
+                <label class="FormLabel">Tare Weight:</label>
+                <input type="textfield" class="FormInput tareWeight" value="<%= tareWeight %>" />
+                <select class="FormInput tareWeightUnitsCode"></select>
+            </div>
+            <div class="bv_totalAmountStoredContainer" >
+                <label class="FormLabel">Total Amount Stored:</label>
+                <input type="textfield" class="FormInput totalAmountStored" value="<%= totalAmountStored %>" />
+                <select class="FormInput totalAmountStoredUnitsCode"></select>
+            </div>
+
+
         </div> 
 		<div class="notForVirtual3 notForVirtual" >
 			<label class="FormLabel">Analytical Files:</label>

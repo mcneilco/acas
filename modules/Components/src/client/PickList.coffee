@@ -109,6 +109,14 @@ class window.PickListSelectController extends Backbone.View
 			@insertFirstOption = @options.insertFirstOption
 		else
 			@insertFirstOption = null
+		if @options.insertSecondOption?
+			@insertSecondOption = @options.insertSecondOption
+		else
+			@insertSecondOption = null
+		if @options.insertThirdOption?
+			@insertThirdOption = @options.insertThirdOption
+		else
+			@insertThirdOption = null
 
 		if @options.insertSelectedCode?
 			@insertSelectedCode = @options.insertSelectedCode
@@ -127,6 +135,14 @@ class window.PickListSelectController extends Backbone.View
 			@handleListReset()
 
 	handleListReset: =>
+		if @insertThirdOption
+			@collection.add @insertThirdOption,
+				at: 0
+				silent: true
+		if @insertSecondOption
+			@collection.add @insertSecondOption,
+				at: 0
+				silent: true
 		if @insertFirstOption
 			@collection.add @insertFirstOption,
 				at: 0
@@ -541,3 +557,57 @@ class window.EditablePickListSelect2Controller extends EditablePickListSelectCon
 				name: "Select "+pascalCaseParameterName
 			selectedCode: @options.selectedCode
 
+class window.ThingLabelComboBoxController extends Backbone.View
+
+	initialize: ->
+		@thingType = @options.thingType
+		@thingKind = @options.thingKind
+		@labelType = if @options.labelType? then @options.labelType else null
+		@placeholder = if @options.placeholder? then @options.placeholder else null
+		@queryUrl = if @options.queryUrl? then @options.queryUrl else null
+		unless @queryUrl? or (@thingType? and @thingKind?)
+			alert("ThingLabelComboBoxController URL misconfigured - crash to follow")
+
+	render: =>
+		@selectController = @$el.select2
+			placeholder: @placeholder
+			openOnEnter: false
+			allowClear: true
+			width: "100%"
+			ajax:
+				url: (params) =>
+					if !params.term?
+						params.term = '%'
+					params.term = encodeURIComponent params.term
+					if @queryUrl?
+						urlStr = @queryUrl + params.term
+					else
+						urlStr = "/api/getThingCodeTablesByLabelText/#{@thingType}/#{@thingKind}/#{params.term}"
+					if @labelType?
+						urlStr += "?labelType="+@labelType
+					return urlStr
+				dataType: 'json'
+				delay: 250
+				processResults: (data, params) =>
+					@latestData = data
+					results = for option in data
+						{id: option.code, text: option.name}
+					return {results: results}
+		@
+
+	getSelectedCode: ->
+		result = @$el.val()
+		# if result is null then we'll return the "unassigned" instead if it
+		# was inserted as the first option
+#		if not result? #and  @insertFirstOption.get('code') is "unassigned"
+#			result = "unassigned"
+		result
+
+	getSelectedID: ->
+		code = @getSelectedCode()
+		match = _.where @latestData, code: code, ignored: false
+		match[0]?.id
+
+	setSelectedCode: (selection) ->
+		newOption = $('<option selected="selected"></option>').val(selection.code).text(selection.label)
+		@$el.append(newOption).trigger('change')

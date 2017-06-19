@@ -1,13 +1,13 @@
 class window.ThingItx extends Backbone.Model
 	className: "ThingItx"
 
-	defaults: () =>
-		@set lsType: "interaction"
-		@set lsKind: "interaction"
-		@set lsTypeAndKind: @_lsTypeAndKind()
-		@set lsStates: new StateList()
-		@set recordedBy: window.AppLaunchParams.loginUser.username
-		@set recordedDate: new Date().getTime()
+	defaults: () ->
+		lsType: "interaction"
+		lsKind: "interaction"
+		lsTypeAndKind: @_lsTypeAndKind()
+		lsStates: new StateList()
+		recordedBy: window.AppLaunchParams.loginUser.username
+		recordedDate: new Date().getTime()
 
 	_lsTypeAndKind: ->
 		@get('lsType') + '_' + @get('lsKind')
@@ -24,42 +24,36 @@ class window.ThingItx extends Backbone.Model
 		resp
 
 	reformatBeforeSaving: =>
-		if @attributes.attributes?
-			delete @attributes.attributes
-		for i of @attributes
-			if _.isFunction(@attributes[i])
-				delete @attributes[i]
-			else if !isNaN(i)
-				delete @attributes[i]
-
-		delete @attributes._changing
-		delete @attributes._previousAttributes
-		delete @attributes.cid
-		delete @attributes.changed
-		delete @attributes._pending
-		delete @attributes.collection
+		delete @getItxThing().version
 
 class window.FirstThingItx extends ThingItx
 	className: "FirstThingItx"
 
-	defaults: () =>
+	defaults: ->
 		super()
-		@set firstLsThing: {}
+		firstLsThing: {}
 
-	setItxThing: (thing) =>
+	getItxThing: ->
+		@get 'firstLsThing'
+
+	setItxThing: (thing) ->
 		@set firstLsThing: thing
 
 class window.SecondThingItx extends ThingItx
 	className: "SecondThingItx"
 
-	defaults: () =>
+	defaults: ->
 		super()
-		@set secondLsThing: {}
+		secondLsThing: {}
 
-	setItxThing: (thing) =>
+	getItxThing: ->
+		@get 'secondLsThing'
+
+	setItxThing: (thing) ->
 		@set secondLsThing: thing
 
 class window.LsThingItxList extends Backbone.Collection
+	model: "ThingItx"
 	getAllItxByTypeAndKind: (type, kind) -> #returns all itxs of given type/kind, including ignored itxs
 		@filter (itx) ->
 			(itx.get('lsType')==type) and (itx.get('lsKind')==kind)
@@ -73,14 +67,21 @@ class window.LsThingItxList extends Backbone.Collection
 			lsType: itxType
 			lsKind: itxKind
 			lsTypeAndKind: "#{itxType}_#{itxKind}"
-		@.add itx
+		@add itx
 		itx.on 'change', =>
 			@trigger('change')
 		return itx
 
+	getOrCreateItxByTypeAndKind: (itxType, itxKind) ->
+		itx = @getItxByTypeAndKind itxType, itxKind
+		if itx.length > 0
+			return itx[0]
+		else
+			return @createItxByTypeAndKind itxType, itxKind
+
 	getItxByItxThingTypeAndKind: (itxType, itxKind, itxThing, itxThingType, itxThingKind) ->
-#function for getting first/second lsThing by it's type and kind
-#example itxThing: firstLsThing, secondLsThing
+		#function for getting first/second lsThing by it's type and kind
+		#example itxThing: firstLsThing, secondLsThing
 		itxArray = @getItxByTypeAndKind(itxType, itxKind)
 		itxByItxThing = _.filter itxArray, (itx) ->
 			if itx.get(itxThing) instanceof Backbone.Model
@@ -102,9 +103,9 @@ class window.LsThingItxList extends Backbone.Collection
 		orderedItx
 
 	reformatBeforeSaving: =>
-		@each((model) ->
-			model.reformatBeforeSaving()
-		)
+#		@each((model) ->
+#			model.reformatBeforeSaving()
+#		)
 
 class window.FirstLsThingItxList extends LsThingItxList
 	model: FirstThingItx

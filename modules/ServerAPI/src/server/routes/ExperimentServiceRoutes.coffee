@@ -76,8 +76,34 @@ exports.experimentByCodename = (req, resp) ->
 		fullObjectFlag = "with=fullobject"
 		if req.query.fullObject
 			baseurl += "?#{fullObjectFlag}"
-		if req.user?
-			serverUtilityFunctions.getRestrictedEntityFromACASServer baseurl, req.user.username, "metadata", "experiment metadata", resp
+		if req.user? && config.all.server.project.roles.enable
+			serverUtilityFunctions.getRestrictedEntityFromACASServerInternal baseurl, req.user.username, "metadata", "experiment metadata", (statusCode, json) =>
+				#if expt is deleted, need to check if user has privs to view deleted experiments
+				if json.codeName?
+					if json.ignored
+						if json.deleted
+							resp.statusCode = 500
+							resp.end JSON.stringify "Experiment does not exist"
+						else
+							if config.all.client.entity?.viewDeletedRoles?
+								viewDeletedRoles = config.all.client.entity.viewDeletedRoles.split(",")
+							else
+								viewDeletedRoles = []
+							grantedRoles = _.map req.user.roles, (role) ->
+								role.roleEntry.roleName
+							canViewDeleted = (viewDeletedRoles in grantedRoles)
+							if canViewDeleted
+								resp.statusCode = statusCode
+								resp.end JSON.stringify json
+							else
+								resp.statusCode = 500
+								resp.end JSON.stringify "Experiment does not exist"
+					else
+						resp.statusCode = statusCode
+						resp.json json
+				else
+					resp.statusCode = statusCode
+					resp.end JSON.stringify json
 		else
 			serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
@@ -132,9 +158,14 @@ exports.experimentsAll = (req, resp) ->
 		resp.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer
 	else
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"experiments"
-		serverUtilityFunctions = require './ServerUtilityFunctions.js'
-		serverUtilityFunctions.getFromACASServer(baseurl, resp)
+		if req.query?.lsType? && req.query?.lsKind?
+			baseurl = config.all.client.service.persistence.fullpath+"experiments/bytypekind/"+req.query.lsType+"/"+req.query.lsKind
+			serverUtilityFunctions = require './ServerUtilityFunctions.js'
+			serverUtilityFunctions.getFromACASServer(baseurl, resp)
+		else
+			baseurl = config.all.client.service.persistence.fullpath+"experiments"
+			serverUtilityFunctions = require './ServerUtilityFunctions.js'
+			serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 updateExpt = (expt, testMode, callback) ->
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
@@ -289,24 +320,23 @@ exports.postExperiment = (req, resp) ->
 	exptExptItxsToIgnore = []
 	if req.body.exptExptItxsToIgnore?
 		exptExptItxsToIgnore = req.body.exptExptItxsToIgnore
+		exptExptItxsToIgnore = JSON.parse exptExptItxsToIgnore
 		delete req.body.exptExptItxsToIgnore
 	if req.body.newExptExptItxs?
 		newExptExptItxs = req.body.newExptExptItxs
+		newExptExptItxs = JSON.parse newExptExptItxs
 		delete req.body.newExptExptItxs
 		
 	postExperiment req.body, req.query.testMode, (response) =>
 		if response.codeName? and (newExptExptItxs.length > 0 or exptExptItxsToIgnore.length > 0)
-			exptExptItxsToIgnore = JSON.parse exptExptItxsToIgnore
 			if response.lsKind is "study"
 				_.each exptExptItxsToIgnore, (itx) =>
 					itx.firstExperiment = {id: response.id}
-				newExptExptItxs = JSON.parse newExptExptItxs
 				_.each newExptExptItxs, (itx) =>
 					itx.firstExperiment = {id: response.id}
 			else #is default/expt base
 				_.each exptExptItxsToIgnore, (itx) =>
 					itx.secondExperiment = {id: response.id}
-				newExptExptItxs = JSON.parse newExptExptItxs
 				_.each newExptExptItxs, (itx) =>
 					itx.secondExperiment = {id: response.id}
 			console.log "exptExptItxsToIgnore"

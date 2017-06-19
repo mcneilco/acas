@@ -2,6 +2,11 @@ class window.ModuleMenusController extends Backbone.View
 
 	template: _.template($("#ModuleMenusView").html())
 
+	events: ->
+		'click .bv_headerName': "handleHome"
+		'click .bv_toggleModuleMenuControl': "handleToggleMenus"
+#		'click .bv_showModuleMenuControl': "handleShowMenus"
+
 	window.onbeforeunload = () ->
 		if window.conf.leaveACASMessage == "WARNING: There are unsaved changes."
 			return window.conf.leaveACASMessage
@@ -43,7 +48,10 @@ class window.ModuleMenusController extends Backbone.View
 			@$('.bv_homePageWrapper').show()
 
 		if window.conf.moduleMenus.logoText?
-			@$('.bv_headerName').html(window.conf.moduleMenus.logoText)
+			logoInfo = window.conf.moduleMenus.logoText
+			if window.conf.moduleMenus.logoImageFilePath?
+				logoInfo = '<img src='+window.conf.moduleMenus.logoImageFilePath+' style="margin-right: 10px;">'+logoInfo
+			@$('.bv_headerName').html logoInfo
 		if window.conf.moduleMenus.homePageMessage?
 			@$('.bv_homePageMessage').html(window.conf.moduleMenus.homePageMessage)
 		if window.conf.moduleMenus.copyrightMessage?
@@ -60,9 +68,28 @@ class window.ModuleMenusController extends Backbone.View
 
 		@
 
-	events: ->
-		'click .bv_headerName': "handleHome"
-
 	handleHome: =>
 		$('.bv_mainModuleWrapper').hide()
 		$('.bv_homePageWrapper').show()
+
+	handleHideMenus: =>
+		console.log "got handleHideMenus"
+		@$('.bv_moduleMenuWellWrapper').hide()
+		@$('.bv_showModuleMenuControl').show()
+
+	handleShowMenus: =>
+		@$('.bv_showModuleMenuControl').hide()
+		@$('.bv_moduleMenuWellWrapper').show()
+
+	handleToggleMenus: =>
+		if @$('.bv_moduleMenuWellWrapper').is ':hidden'
+			@$('.bv_moduleMenuWellWrapper').show()
+			@$('.bv_mainModuleWellWrapper').removeClass 'span11'
+			@$('.bv_mainModuleWellWrapper').addClass 'span9'
+		else
+			@$('.bv_moduleMenuWellWrapper').hide()
+			@$('.bv_mainModuleWellWrapper').removeClass 'span9'
+			@$('.bv_mainModuleWellWrapper').addClass 'span11'
+
+
+
