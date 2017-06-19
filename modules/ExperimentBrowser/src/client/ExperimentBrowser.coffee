@@ -570,7 +570,7 @@ class window.ExperimentBrowserController extends Backbone.View
 #			code = @experimentController.model.get("codeName")
 		window.open("/entity/edit/codeName/#{code}",'_blank');
 
-	handleDuplicateExperimentClicked: => #TODO: refactor
+	handleDuplicateExperimentClicked: =>
 		experimentKind = @experimentController.model.get('lsKind')
 		if @experimentController.model.get('lsLabels') not instanceof LabelList
 			@experimentController.model.set 'lsLabels',  new LabelList @experimentController.model.get('lsLabels')

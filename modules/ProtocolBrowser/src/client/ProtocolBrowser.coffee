@@ -103,7 +103,7 @@ class window.ProtocolRowSummaryController extends Backbone.View
 
 		toDisplay =
 			protocolName: @model.get('lsLabels').pickBestName().get('labelText')
-			protocolCode: @model.get('codeName')
+			protocolCode: code
 			protocolKind: @model.get('lsKind')
 			scientist: @model.getScientist().get('codeValue')
 			assayStage: @model.getAssayStage().get("codeValue")
