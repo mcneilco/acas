@@ -440,7 +440,7 @@ exports.getOrCreateCmpdRegBobInternal = (callback)->
 						code: bob.username
 						name: bob.firstName + " " + bob.lastName
 						isChemist: !config.all.client.roles.cmpdreg?.chemistRole? || (config.all.client.roles.cmpdreg?.chemistRole? && config.all.client.roles.cmpdreg.chemistRole in grantedRoles)
-						isAdmin = !config.all.client.roles.cmpdreg?.adminRole? || (config.all.client.roles.cmpdreg?.adminRole? && config.all.client.roles.cmpdreg.adminRole in grantedRoles)
+						isAdmin: !config.all.client.roles.cmpdreg?.adminRole? || (config.all.client.roles.cmpdreg?.adminRole? && config.all.client.roles.cmpdreg.adminRole in grantedRoles)
 						]
 					json: true
 				request options, (error, response, body) ->
@@ -575,7 +575,7 @@ exports.getOrCreateCmpdsInternal = (callback) ->
 						headers:
 							accept: 'application/json, text/javascript, */*; q=0.01'
 							'content-type': 'application/x-www-form-urlencoded; charset=UTF-8'
-						body: "fileName=#{encodeURIComponent(body[0].name)}&mappings%5B0%5D%5BdbProperty%5D=Parent+Corp+Name&mappings%5B0%5D%5Brequired%5D=false&mappings%5B0%5D%5BsdfProperty%5D=Parent+Corp+Name&mappings%5B0%5D%5BdefaultVal%5D=&mappings%5B1%5D%5BdbProperty%5D=Lot+Corp+Name&mappings%5B1%5D%5Brequired%5D=false&mappings%5B1%5D%5BsdfProperty%5D=Lot+Corp+Name&mappings%5B1%5D%5BdefaultVal%5D=&mappings%5B2%5D%5BsdfProperty%5D=&mappings%5B2%5D%5BdbProperty%5D=Lot+Chemist&mappings%5B2%5D%5BdefaultVal%5D=bob&mappings%5B2%5D%5Brequired%5D=true&mappings%5B3%5D%5BsdfProperty%5D=&mappings%5B3%5D%5BdbProperty%5D=Parent+Stereo+Category&mappings%5B3%5D%5BdefaultVal%5D=racemic&mappings%5B3%5D%5Brequired%5D=true&mappings%5B4%5D%5BdbProperty%5D=Project&mappings%5B4%5D%5Brequired%5D=true&mappings%5B4%5D%5BsdfProperty%5D=&mappings%5B4%5D%5BdefaultVal%5D=#{globalProjectCode}&userName=bob&fileDate=1472799600000"
+						body: "fileName=#{encodeURIComponent(body.files[0].name)}&mappings%5B0%5D%5BdbProperty%5D=Parent+Corp+Name&mappings%5B0%5D%5Brequired%5D=false&mappings%5B0%5D%5BsdfProperty%5D=Parent+Corp+Name&mappings%5B0%5D%5BdefaultVal%5D=&mappings%5B1%5D%5BdbProperty%5D=Lot+Corp+Name&mappings%5B1%5D%5Brequired%5D=false&mappings%5B1%5D%5BsdfProperty%5D=Lot+Corp+Name&mappings%5B1%5D%5BdefaultVal%5D=&mappings%5B2%5D%5BsdfProperty%5D=&mappings%5B2%5D%5BdbProperty%5D=Lot+Chemist&mappings%5B2%5D%5BdefaultVal%5D=bob&mappings%5B2%5D%5Brequired%5D=true&mappings%5B3%5D%5BsdfProperty%5D=&mappings%5B3%5D%5BdbProperty%5D=Parent+Stereo+Category&mappings%5B3%5D%5BdefaultVal%5D=racemic&mappings%5B3%5D%5Brequired%5D=true&mappings%5B4%5D%5BdbProperty%5D=Project&mappings%5B4%5D%5Brequired%5D=true&mappings%5B4%5D%5BsdfProperty%5D=&mappings%5B4%5D%5BdefaultVal%5D=#{globalProjectCode}&userName=bob&fileDate=1472799600000"
 					request options, (error, response, body) ->
 						if error
 							throw new Error(error)
@@ -672,7 +672,7 @@ exports.loadSELFileInternal = (username, callback)->
 			headers:
 				accept: 'application/json, text/javascript, */*; q=0.01'
 				'content-type': 'application/x-www-form-urlencoded; charset=UTF-8'
-			body: "fileToParse=#{encodeURIComponent(body[0].name)}&reportFile=&imagesFile=&dryRunMode=false&user=#{username}&requireDoseResponse=true"
+			body: "fileToParse=#{encodeURIComponent(body.files[0].name)}&reportFile=&imagesFile=&dryRunMode=false&user=#{username}&requireDoseResponse=true"
 		request options, (error, response, body) =>
 			if error
 				throw new Error(error)
@@ -881,7 +881,7 @@ exports.runSystemTestInternal = (force, callback) ->
 
 
 exports.systemReport = (req, resp) ->
-	fs.readFile path.resolve(path.join(config.all.server.datafiles.relative_path, "systemReport/systemReport.html")), (err, data) =>
+	fs.readFile path.resolve(path.join(config.all.server.datafiles.relative_path, "systemReport/mochawesome.html")), (err, data) =>
 		if err?
 			resp.send 400, "no system report found"
 		else
