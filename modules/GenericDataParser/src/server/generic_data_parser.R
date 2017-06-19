@@ -2911,7 +2911,15 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     summaryInfo$info$"Flagged Data Points" <- sum(subjectData$valueKind == "flag")
   }
   if(!dryRun) {
-    summaryInfo$info$"Experiment Code Name" <- experiment$codeName
+    if (toupper(racas::applicationSettings$client.entity.saveInitialsCorpName) == "TRUE"){
+      exptLabels <- flattenLabels(experiment$lsLabels)
+      exptCorpName <- exptLabels$labelText[exptLabels$lsType=='corpName' && exptLabels$lsKind=='experiment corpName' && exptLabels$ignored==FALSE]
+      summaryInfo$info$"Experiment Corp Name" <- exptCorpName
+      viewerLink <- paste0("/openExptInQueryTool?experiment=", URLencode(exptCorpName, reserved = TRUE))
+    } else {
+      summaryInfo$info$"Experiment Code Name" <- experiment$codeName
+    }
+
     if (!is.null(viewerLink)) {       
       summaryInfo$viewerLink <- viewerLink
     }
