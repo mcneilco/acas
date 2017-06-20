@@ -2913,7 +2913,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   if(!dryRun) {
     if (toupper(racas::applicationSettings$client.entity.saveInitialsCorpName) == "TRUE"){
       exptLabels <- flattenLabels(experiment$lsLabels)
-      exptCorpName <- exptLabels$labelText[exptLabels$lsType=='corpName' && exptLabels$lsKind=='experiment corpName' && exptLabels$ignored==FALSE]
+      exptCorpName <- exptLabels$labelText[exptLabels$lsType=='corpName' & exptLabels$lsKind=='experiment corpName' & exptLabels$ignored==FALSE]
       summaryInfo$info$"Experiment Corp Name" <- exptCorpName
       viewerLink <- paste0("/openExptInQueryTool?experiment=", URLencode(exptCorpName, reserved = TRUE))
     } else {
