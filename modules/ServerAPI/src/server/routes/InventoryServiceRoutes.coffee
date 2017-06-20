@@ -2014,8 +2014,17 @@ exports.getContainerCodeNamesByContainerValueInternal = (requestObject, callback
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		callback inventoryServiceTestJSON.getContainerCodeNamesByContainerValueResponse
 	else
+		queryParams = []
+		if requestObject.like?
+			queryParams.push "like="+requestObject.like
+		if requestObject.rightLike?
+			queryParams.push "rightLike="+requestObject.rightLike
+		if requestObject.maxResults?
+			queryParams.push "maxResults="+requestObject.maxResults
+		queryString = queryParams.join "&"
+		console.log 'request object in getContainerCodeNamesByContainerValue', requestObject
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainerCodeNamesByContainerValue"
+		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainerCodeNamesByContainerValue?"+queryString
 		request = require 'request'
 		console.debug 'calling service', baseurl
 		request(
