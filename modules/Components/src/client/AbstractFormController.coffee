@@ -100,6 +100,7 @@ class window.AbstractThingFormController extends AbstractFormController
 				formLabel: field.fieldSettings.formLabel
 				placeholder: field.fieldSettings.placeholder
 				required: field.fieldSettings.required
+				url: field.fieldSettings.url
 				thingRef: @model
 				insertUnassigned: field.fieldSettings.insertUnassigned
 
@@ -117,6 +118,7 @@ class window.AbstractThingFormController extends AbstractFormController
 					opts.labelType = field.fieldSettings.labelType
 					newField = new ACASFormLSThingInteractionFieldController opts
 				when 'stringValue' then newField = new ACASFormLSStringValueFieldController opts
+				when 'dateValue' then newField = new ACASFormLSDateValueFieldController opts
 
 			@$("."+field.fieldSettings.fieldWrapper).append newField.render().el
 			newField.afterRender()

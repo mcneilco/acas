@@ -1,3 +1,71 @@
+ExampleThingConf =
+	formFieldDefinitions:
+		labels: [
+			key: 'example thing name'
+			modelDefaults:
+				type: 'name'
+				kind: 'example thing'
+				preferred: true
+			fieldSettings:
+				fieldType: 'label'
+				required: true
+				inputClass: ""
+				formLabel: "*Name"
+				placeholder: "name"
+				fieldWrapper: "bv_thingName"
+		]
+		values: [
+			key: 'scientist'
+			modelDefaults:
+				stateType: 'metadata'
+				stateKind: 'example thing parent'
+				type: 'codeValue'
+				kind: 'scientist'
+				codeOrigin: window.conf.scientistCodeOrigin
+				value: "unassigned"
+			fieldSettings:
+				fieldType: 'codeValue'
+				required: true
+				formLabel: "*Scientist"
+				fieldWrapper: "bv_scientist_date"
+				url: "/api/authors"
+		,
+			key: 'completion date'
+			modelDefaults:
+				stateType: 'metadata'
+				stateKind: 'example thing parent'
+				type: 'dateValue'
+				kind: 'completion date'
+				value: null
+			fieldSettings:
+				fieldType: 'dateValue'
+				formLabel: "*Date"
+				fieldWrapper: "bv_scientist_date"
+				placeholder: "yyyy-mm-dd"
+				required: true
+		,
+			key: 'notebook'
+			modelDefaults:
+				stateType: 'metadata'
+				stateKind: 'example thing parent'
+				type: 'stringValue'
+				kind: 'notebook'
+				value: ""
+			fieldSettings:
+				fieldType: 'stringValue'
+				formLabel: "Notebook"
+				fieldWrapper: "bv_notebook"
+				placeholder: "notebook and page"
+				required: false
+		]
+
+
+		stateTables: []
+		firstLsThingItxs: []
+		secondLsThingItxs: []
+
+
+
 class window.ExampleThingParent extends Thing
 	urlRoot: "/api/things/parent/example thing"
 	url: ->
@@ -11,39 +79,24 @@ class window.ExampleThingParent extends Thing
 		@.set
 			lsType: "parent"
 			lsKind: "Example Thing"
+		for label in ExampleThingConf.formFieldDefinitions.labels
+			label.modelDefaults.key = label.key
+			@lsProperties.defaultLabels.push label.modelDefaults
+		for value in ExampleThingConf.formFieldDefinitions.values
+			value.modelDefaults.key = value.key
+			@lsProperties.defaultValues.push value.modelDefaults
+		for itx in ExampleThingConf.formFieldDefinitions.firstLsThingItxs
+			itx.modelDefaults.key = itx.key
+			@lsProperties.defaultFirstLsThingItx.push itx.modelDefaults
+		for itx in ExampleThingConf.formFieldDefinitions.secondLsThingItxs
+			itx.modelDefaults.key = itx.key
+			@lsProperties.defaultSecondLsThingItx.push itx.modelDefaults
 		super()
 
 	lsProperties:
 		defaultLabels: [
-			key: 'example thing name'
-			type: 'name'
-			kind: 'example thing'
-			preferred: true
-#			labelText: "" #gets created when createDefaultLabels is called
 		]
 		defaultValues: [
-			key: 'scientist'
-			stateType: 'metadata'
-			stateKind: 'example thing parent'
-			type: 'codeValue'
-			kind: 'scientist'
-			codeOrigin: window.conf.scientistCodeOrigin
-			value: "unassigned"
-		,
-			key: 'completion date'
-			stateType: 'metadata'
-			stateKind: 'example thing parent'
-			type: 'dateValue'
-			kind: 'completion date'
-			value: NaN
-		,
-			key: 'notebook'
-			stateType: 'metadata'
-			stateKind: 'example thing parent'
-			type: 'stringValue'
-			kind: 'notebook'
-			value: ""
-		,
 			key: 'structural file'
 			stateType: 'metadata'
 			stateKind: 'example thing parent'
@@ -62,35 +115,7 @@ class window.ExampleThingParent extends Thing
 
 	validate: (attrs) ->
 		errors = []
-		bestName = attrs.lsLabels.pickBestName()
-		nameError = true
-		if bestName?
-			nameError = true
-			if bestName.get('labelText') != ""
-				nameError = false
-		if nameError
-			errors.push
-				attribute: 'thingName'
-				message: "Name must be set"
-		if attrs.scientist?
-			scientist = attrs.scientist.get('value')
-			if scientist is "" or scientist is "unassigned" or scientist is undefined or scientist is null
-				errors.push
-					attribute: 'scientist'
-					message: "Scientist must be set"
-		if attrs["completion date"]?
-			cDate = attrs["completion date"].get('value')
-			if cDate is undefined or cDate is "" or cDate is null then cDate = "fred"
-			if isNaN(cDate)
-				errors.push
-					attribute: 'completionDate'
-					message: "Date must be set"
-		if attrs.notebook?
-			notebook = attrs.notebook.get('value')
-			if notebook is "" or notebook is undefined or notebook is null
-				errors.push
-					attribute: 'notebook'
-					message: "Notebook must be set"
+
 		if errors.length > 0
 			return errors
 		else
@@ -98,19 +123,13 @@ class window.ExampleThingParent extends Thing
 
 	duplicate: =>
 		copiedThing = super()
-#		copiedThing.get("batch number").set value: 0
 		copiedThing
 
-class window.ExampleThingController extends AbstractFormController
+class window.ExampleThingController extends AbstractThingFormController
 	template: _.template($("#ExampleThingView").html())
 	moduleLaunchName: "example_thing"
 
 	events: ->
-		"keyup .bv_thingName": "attributeChanged"
-		"change .bv_scientist": "attributeChanged"
-		"keyup .bv_completionDate": "attributeChanged"
-		"click .bv_completionDateIcon": "handleCompletionDateIconClicked"
-		"keyup .bv_notebook": "attributeChanged"
 		"click .bv_saveThing": "handleUpdateThing"
 		"click .bv_deleteSavedFile": "handleDeleteSavedStructuralFile"
 
@@ -133,63 +152,13 @@ class window.ExampleThingController extends AbstractFormController
 		else
 			@readOnly = false
 		@listenTo @model, 'sync', @modelSaveCallback
-#		@listenTo @model, 'change', @modelChangeCallback
-
-
-#		if @model?
-#			@completeInitialization()
-#		else
-#			if window.AppLaunchParams.moduleLaunchParams?
-#				if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
-#					launchCode = window.AppLaunchParams.moduleLaunchParams.code
-#					if launchCode.indexOf("-") == -1
-#						@batchCodeName = "new batch"
-#					else
-#						@batchCodeName = launchCode
-#						launchCode =launchCode.split("-")[0]
-#					$.ajax
-#						type: 'GET'
-#						url: "/api/things/parent/Example Thing/codename/"+launchCode
-#						dataType: 'json'
-#						error: (err) =>
-#							alert 'Could not get parent for code in this URL, creating new one'
-#							@completeInitialization()
-#						success: (json) =>
-#							if json.length == 0
-#								alert 'Could not get parent for code in this URL, creating new one'
-#							else
-#								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
-##								cbp = new CationicBlockParent json
-#								cbp = new ExampleThing json
-#								cbp.set cbp.parse(cbp.attributes)
-#								@model = cbp
-#							@completeInitialization()
-#				else
-#					@completeInitialization()
-#			else
-#				@completeInitialization()
-
-#	completeInitialization: =>
-#		unless @model?
-#			@model=new ExampleThing()
-#		@errorOwnerName = 'ExampleThingController'
-#		@setBindings()
-#		if @options.readOnly?
-#			@readOnly = @options.readOnly
-#		else
-#			@readOnly = false
-#		@listenTo @model, 'sync', @modelSaveCallback
-#		@listenTo @model, 'change', @modelChangeCallback
-#		@render()
 
 	render: =>
 		unless @hasRendered
 			$(@el).empty()
 			$(@el).html @template(@model.attributes)
-			@setupScientistSelect()
+			@setupFormFields(ExampleThingConf.formFieldDefinitions)
 			@setupStructuralFileController()
-			@$('.bv_completionDate').datepicker();
-			@$('.bv_completionDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
 			@hasRendered = true
 
 		@
@@ -198,15 +167,6 @@ class window.ExampleThingController extends AbstractFormController
 		codeName = @model.get('codeName')
 		@$('.bv_thingCode').val(codeName)
 		@$('.bv_thingCode').html(codeName)
-		bestName = @model.get('lsLabels').pickBestName()
-		if bestName?
-			@$('.bv_thingName').val bestName.get('labelText')
-		@$('.bv_scientist').val @model.get('scientist').get('value')
-		compDate = @model.get('completion date').get('value')
-		if compDate?
-			unless isNaN(compDate)
-				@$('.bv_completionDate').val UtilityFunctions::convertMSToYMDDate(@model.get('completion date').get('value'))
-		@$('.bv_notebook').val @model.get('notebook').get('value')
 		if @readOnly is true
 			@displayInReadOnlyMode()
 		@$('.bv_saveThing').attr('disabled','disabled')
@@ -221,6 +181,7 @@ class window.ExampleThingController extends AbstractFormController
 			@model.set codeName: null
 			return
 
+		@fillFieldsFromModels()
 		@$('.bv_saveThing').show()
 		@$('.bv_saveThing').attr('disabled', 'disabled')
 		@$('.bv_saveThingComplete').show()
@@ -241,21 +202,6 @@ class window.ExampleThingController extends AbstractFormController
 		else
 			@$('.bv_structuralFile').html '<a href="'+window.conf.datafiles.downloadurl.prefix+structuralFileValue+'">'+@model.get('structural file').get('comments')+'</a>'
 			@$('.bv_deleteSavedFile').show()
-
-	setupScientistSelect: ->
-		defaultOption = "Select Scientist"
-		@scientistList = new PickListList()
-		@scientistList.url = "/api/authors"
-		@scientistListController = new PickListSelectController
-			el: @$('.bv_scientist')
-			collection: @scientistList
-			insertFirstOption: new PickList
-				code: "unassigned"
-				name: defaultOption
-			selectedCode: @model.get('scientist').get('value')
-
-	handleCompletionDateIconClicked: =>
-		@$( ".bv_completionDate" ).datepicker( "show" )
 
 	createNewFileChooser: =>
 		@structuralFileController = new LSFileChooserController
@@ -289,10 +235,7 @@ class window.ExampleThingController extends AbstractFormController
 		@createNewFileChooser()
 
 	updateModel: =>
-		@model.get("example thing name").set("labelText", UtilityFunctions::getTrimmedInput @$('.bv_thingName'))
-		@model.get("scientist").set("value", @scientistListController.getSelectedCode())
-		@model.get("notebook").set("value", UtilityFunctions::getTrimmedInput @$('.bv_notebook'))
-		@model.get("completion date").set("value", UtilityFunctions::convertYMDDateToMs(UtilityFunctions::getTrimmedInput @$('.bv_completionDate')))
+
 
 	validationError: =>
 		super()
@@ -319,7 +262,6 @@ class window.ExampleThingController extends AbstractFormController
 		@disableAllInputs()
 
 
-#TODO switch to form fields
 #TODO add state table example
 #TODO add pick list/ddict example
 #TODO add thing interaction to project with field
