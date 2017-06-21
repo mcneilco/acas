@@ -1,25 +1,30 @@
-class window.ExampleThing extends Thing
-	urlRoot: "/api/things/parent/cationic block"
-	className: "CationicBlockParent"
+class window.ExampleThingParent extends Thing
+	urlRoot: "/api/things/parent/example thing"
+	url: ->
+		if @isNew() and !@has('codeName')
+			return "/api/things/Material/example thing?nestedstub=true"
+		else
+			return "/api/things/parent/thing/#{@get 'codeName'}?nestedstub=true"
+	className: "ExampleThingParent"
 
 	initialize: ->
 		@.set
 			lsType: "parent"
-			lsKind: "cationic block"
+			lsKind: "Example Thing"
 		super()
 
 	lsProperties:
 		defaultLabels: [
-			key: 'cationic block name'
+			key: 'example thing name'
 			type: 'name'
-			kind: 'cationic block'
+			kind: 'example thing'
 			preferred: true
 #			labelText: "" #gets created when createDefaultLabels is called
 		]
 		defaultValues: [
 			key: 'scientist'
 			stateType: 'metadata'
-			stateKind: 'cationic block parent'
+			stateKind: 'example thing parent'
 			type: 'codeValue'
 			kind: 'scientist'
 			codeOrigin: window.conf.scientistCodeOrigin
@@ -27,31 +32,24 @@ class window.ExampleThing extends Thing
 		,
 			key: 'completion date'
 			stateType: 'metadata'
-			stateKind: 'cationic block parent'
+			stateKind: 'example thing parent'
 			type: 'dateValue'
 			kind: 'completion date'
 			value: NaN
 		,
 			key: 'notebook'
 			stateType: 'metadata'
-			stateKind: 'cationic block parent'
+			stateKind: 'example thing parent'
 			type: 'stringValue'
 			kind: 'notebook'
 			value: ""
 		,
 			key: 'structural file'
 			stateType: 'metadata'
-			stateKind: 'cationic block parent'
+			stateKind: 'example thing parent'
 			type: 'fileValue'
 			kind: 'structural file'
 			value: ""
-		,
-			key: 'batch number'
-			stateType: 'metadata'
-			stateKind: 'cationic block parent'
-			type: 'numericValue'
-			kind: 'batch number'
-			value: 0
 		]
 
 		defaultFirstLsThingItx: [
@@ -61,8 +59,6 @@ class window.ExampleThing extends Thing
 		defaultSecondLsThingItx: [
 
 		]
-
-
 
 	validate: (attrs) ->
 		errors = []
@@ -100,34 +96,14 @@ class window.ExampleThing extends Thing
 		else
 			return null
 
-	prepareToSave: ->
-		rBy = @get('recordedBy')
-		rDate = new Date().getTime()
-		@set recordedDate: rDate
-		@get('lsLabels').each (lab) ->
-			unless lab.get('recordedBy') != ""
-				lab.set recordedBy: rBy
-			unless lab.get('recordedDate') != null
-				lab.set recordedDate: rDate
-		@get('lsStates').each (state) ->
-			unless state.get('recordedBy') != ""
-				state.set recordedBy: rBy
-			unless state.get('recordedDate') != null
-				state.set recordedDate: rDate
-			state.get('lsValues').each (val) ->
-				unless val.get('recordedBy') != ""
-					val.set recordedBy: rBy
-				unless val.get('recordedDate') != null
-					val.set recordedDate: rDate
-
 	duplicate: =>
 		copiedThing = super()
-		copiedThing.get("batch number").set value: 0
+#		copiedThing.get("batch number").set value: 0
 		copiedThing
 
 class window.ExampleThingController extends AbstractFormController
 	template: _.template($("#ExampleThingView").html())
-	moduleLaunchName: "cationic_block"
+	moduleLaunchName: "example_thing"
 
 	events: ->
 		"keyup .bv_thingName": "attributeChanged"
@@ -139,42 +115,17 @@ class window.ExampleThingController extends AbstractFormController
 		"click .bv_deleteSavedFile": "handleDeleteSavedStructuralFile"
 
 	initialize: =>
-		if @model?
-			@completeInitialization()
-		else
-			if window.AppLaunchParams.moduleLaunchParams?
-				if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
-					launchCode = window.AppLaunchParams.moduleLaunchParams.code
-					if launchCode.indexOf("-") == -1
-						@batchCodeName = "new batch"
-					else
-						@batchCodeName = launchCode
-						launchCode =launchCode.split("-")[0]
-					$.ajax
-						type: 'GET'
-						url: "/api/things/parent/cationic block/codename/"+launchCode
-						dataType: 'json'
-						error: (err) ->
-							alert 'Could not get parent for code in this URL, creating new one'
-							@completeInitialization()
-						success: (json) =>
-							if json.length == 0
-								alert 'Could not get parent for code in this URL, creating new one'
-							else
-								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
-#								cbp = new CationicBlockParent json
-								cbp = new ExampleThing json
-								cbp.set cbp.parse(cbp.attributes)
-								@model = cbp
-							@completeInitialization()
-				else
-					@completeInitialization()
-			else
-				@completeInitialization()
+		@hasRendered = false
+		if window.AppLaunchParams.moduleLaunchParams?
+			if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
+				launchCode = window.AppLaunchParams.moduleLaunchParams.code
+				@model = new ExampleThingParent {codeName: launchCode}
+				@model.fetch()
 
-	completeInitialization: =>
 		unless @model?
-			@model=new ExampleThing()
+			@model = new ExampleThingParent()
+			@modelSaveCallback()
+
 		@errorOwnerName = 'ExampleThingController'
 		@setBindings()
 		if @options.readOnly?
@@ -182,17 +133,68 @@ class window.ExampleThingController extends AbstractFormController
 		else
 			@readOnly = false
 		@listenTo @model, 'sync', @modelSaveCallback
-		@listenTo @model, 'change', @modelChangeCallback
-		$(@el).empty()
-		$(@el).html @template(@model.attributes)
-		@setupScientistSelect()
-		@render()
+#		@listenTo @model, 'change', @modelChangeCallback
 
+
+#		if @model?
+#			@completeInitialization()
+#		else
+#			if window.AppLaunchParams.moduleLaunchParams?
+#				if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
+#					launchCode = window.AppLaunchParams.moduleLaunchParams.code
+#					if launchCode.indexOf("-") == -1
+#						@batchCodeName = "new batch"
+#					else
+#						@batchCodeName = launchCode
+#						launchCode =launchCode.split("-")[0]
+#					$.ajax
+#						type: 'GET'
+#						url: "/api/things/parent/Example Thing/codename/"+launchCode
+#						dataType: 'json'
+#						error: (err) =>
+#							alert 'Could not get parent for code in this URL, creating new one'
+#							@completeInitialization()
+#						success: (json) =>
+#							if json.length == 0
+#								alert 'Could not get parent for code in this URL, creating new one'
+#							else
+#								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
+##								cbp = new CationicBlockParent json
+#								cbp = new ExampleThing json
+#								cbp.set cbp.parse(cbp.attributes)
+#								@model = cbp
+#							@completeInitialization()
+#				else
+#					@completeInitialization()
+#			else
+#				@completeInitialization()
+
+#	completeInitialization: =>
+#		unless @model?
+#			@model=new ExampleThing()
+#		@errorOwnerName = 'ExampleThingController'
+#		@setBindings()
+#		if @options.readOnly?
+#			@readOnly = @options.readOnly
+#		else
+#			@readOnly = false
+#		@listenTo @model, 'sync', @modelSaveCallback
+#		@listenTo @model, 'change', @modelChangeCallback
+#		@render()
 
 	render: =>
-		unless @model?
-			@model = new ExampleThing()
-		@setupStructuralFileController()
+		unless @hasRendered
+			$(@el).empty()
+			$(@el).html @template(@model.attributes)
+			@setupScientistSelect()
+			@setupStructuralFileController()
+			@$('.bv_completionDate').datepicker();
+			@$('.bv_completionDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
+			@hasRendered = true
+
+		@
+
+	renderModelContent: ->
 		codeName = @model.get('codeName')
 		@$('.bv_thingCode').val(codeName)
 		@$('.bv_thingCode').html(codeName)
@@ -200,8 +202,6 @@ class window.ExampleThingController extends AbstractFormController
 		if bestName?
 			@$('.bv_thingName').val bestName.get('labelText')
 		@$('.bv_scientist').val @model.get('scientist').get('value')
-		@$('.bv_completionDate').datepicker();
-		@$('.bv_completionDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
 		compDate = @model.get('completion date').get('value')
 		if compDate?
 			unless isNaN(compDate)
@@ -214,16 +214,20 @@ class window.ExampleThingController extends AbstractFormController
 			@$('.bv_saveThing').html("Save")
 		else
 			@$('.bv_saveThing').html("Update")
-		@
 
 	modelSaveCallback: (method, model) =>
+		console.log "got model save callback"
+		if @model.isNew() # model not found
+			@model.set codeName: null
+			return
+
 		@$('.bv_saveThing').show()
 		@$('.bv_saveThing').attr('disabled', 'disabled')
 		@$('.bv_saveThingComplete').show()
 		@$('.bv_updatingThing').hide()
 		@trigger 'amClean'
 		@trigger 'thingSaved'
-		@render()
+		@renderModelContent()
 
 	modelChangeCallback: (method, model) =>
 		@trigger 'amDirty'
@@ -271,7 +275,7 @@ class window.ExampleThingController extends AbstractFormController
 		@structuralFileController.on('fileDeleted', @handleFileRemoved) #update model with filename
 
 	handleFileUpload: (nameOnServer) =>
-		newFileValue = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "cationic block parent", "fileValue", "structural file"
+		newFileValue = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "example thing parent", "fileValue", "structural file"
 		@model.set "structural file", newFileValue
 		@model.get("structural file").set("value", nameOnServer)
 
@@ -285,7 +289,7 @@ class window.ExampleThingController extends AbstractFormController
 		@createNewFileChooser()
 
 	updateModel: =>
-		@model.get("cationic block name").set("labelText", UtilityFunctions::getTrimmedInput @$('.bv_thingName'))
+		@model.get("example thing name").set("labelText", UtilityFunctions::getTrimmedInput @$('.bv_thingName'))
 		@model.get("scientist").set("value", @scientistListController.getSelectedCode())
 		@model.get("notebook").set("value", UtilityFunctions::getTrimmedInput @$('.bv_notebook'))
 		@model.get("completion date").set("value", UtilityFunctions::convertYMDDateToMs(UtilityFunctions::getTrimmedInput @$('.bv_completionDate')))
@@ -297,27 +301,6 @@ class window.ExampleThingController extends AbstractFormController
 	clearValidationErrorStyles: =>
 		super()
 		@$('.bv_saveThing').removeAttr('disabled')
-
-	validateThingName: ->
-		@$('.bv_saveThing').attr('disabled', 'disabled')
-		lsKind = @model.get('lsKind')
-		name= [@model.get(lsKind+' name').get('labelText')]
-		$.ajax
-			type: 'POST'
-			url: "/api/validateName/"+lsKind
-			data:
-				requestName: name
-			success: (response) =>
-				@handleValidateReturn(response)
-			error: (err) =>
-				@serviceReturn = null
-			dataType: 'json'
-
-	handleValidateReturn: (validNewLabel) =>
-		if validNewLabel is true
-			@handleUpdateThing()
-		else
-			alert 'The requested thing name has already been registered. Please choose a new thing name.'
 
 	handleUpdateThing: =>
 		@model.prepareToSave()
@@ -335,5 +318,9 @@ class window.ExampleThingController extends AbstractFormController
 			return false
 		@disableAllInputs()
 
-	updateBatchNumber: =>
-		@model.fetch()
+
+#TODO switch to form fields
+#TODO add state table example
+#TODO add pick list/ddict example
+#TODO add thing interaction to project with field
+#TODO file upload is broken
