@@ -2257,6 +2257,16 @@ formatContainers = (containers, modifiedBy, modifiedDate, callback) ->
 	return callback formattedContainers
 	#callback(formattedContainers, statusCode)
 
+exports.getContainerInfoFromBatchCode = (req, resp) =>
+
+	requestObject =
+		batchCode: req.body.batchCode
+
+	exports.getContainerInfoFromBatchCodeInternal(requestObject, (json, statusCode) =>
+		resp.statusCode = statusCode
+		resp.json json
+	)
+
 
 # getLocationBreadcrumb = (container, callback) ->
 # 	exports.getBreadCrumbByContainerCodeInternal([container.containerCodeName], "<", (breadcrumb) ->
@@ -2315,16 +2325,6 @@ formatContainers = (containers, modifiedBy, modifiedDate, callback) ->
 # 	console.log locationArrayString
 # 	callback locationArrayString
 
-exports.getContainerInfoFromBatchCode = (req, resp) =>
-
-	requestObject =
-		batchCode: req.body.batchCode
-
-	exports.getContainerInfoFromBatchCodeInternal(requestObject, (json, statusCode) =>
-		resp.statusCode = statusCode
-		resp.json json
-	)
-
 exports.getContainerInfoFromBatchCodeInternal = (requestObject, callback) =>
 
 	queryPayload =
@@ -2335,22 +2335,19 @@ exports.getContainerInfoFromBatchCodeInternal = (requestObject, callback) =>
 			"stateKind": "content",
 			"valueType": "codeValue",
 			"valueKind": "batch code",
-			"value": requestObject.batchCode,
-			"maxResults": 600,
-			"like": true,
-			"rightLike": true
+			"value": requestObject.batchCode
 		}
 
 	exports.getContainerCodeNamesByContainerValueInternal(queryPayload, (json) =>
 		statusCode = 200
 		if json.maxResults?
 			warningMessage = "Max results of #{maxResults} reached."
-			return callback {warningMessage: warningMessage, statusMessage: ""},statusCode
+			return callback {warningMessage: warningMessage}, statusCode
 		else
 			if json.length > 0
 				exports.getWellContentInternal(json, (response) =>
 					return callback response, statusCode
 				)
 			else
-				return callback {warningMessage: "No results found for #{queryPayload.value}", statusMessage: ""}, statusCode
+				return callback {warningMessage: "No results found for #{queryPayload.value}"}, statusCode
 	)
