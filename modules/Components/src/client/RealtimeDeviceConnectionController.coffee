@@ -1,21 +1,55 @@
 class window.DeviceCollection extends PickListList
 
-deviceStubs = [
-	{
-		code: 'balanceIsIdle',
-		name: 'Balance Is Idle'
-		url: 'http://192.168.0.193:1337/'
-	}, {
-		code: 'balanceNotConnected',
-		name: 'Balance Not Connected'
-		url: 'http://192.168.0.193:1337/'
-	}, {
-		code: 'balanceNotAvailable',
-		name: 'Balance Not Available'
-		url: 'http://192.168.0.193:1337/'
-	}
-]
+class window.DeviceModel extends Container
+	urlRoot: "/api/containers"
 
+	initialize: ->
+		@.set
+			lsType: "instrument"
+			lsKind: "balance"
+		super()
+
+	lsProperties:
+		defaultLabels: [
+			key: 'common'
+			type: 'name'
+			kind: 'common'
+			preferred: true
+		,
+			key: 'corpName'
+			type: 'corpName'
+			kind: 'ACAS LsContainer'
+			preferred: false
+		]
+		defaultValues: [
+			key: 'description'
+			stateType: 'metadata'
+			stateKind: 'information'
+			type: 'stringValue'
+			kind: 'description'
+		,
+			key: 'url'
+			stateType: 'metadata'
+			stateKind: 'information'
+			type: 'stringValue'
+			kind: 'url'
+		,
+			key: 'createdUser'
+			stateType: 'metadata'
+			stateKind: 'information'
+			type: 'codeValue'
+			kind: 'created user'
+		,
+			key: 'person responsible'
+			stateType: 'metadata'
+			stateKind: 'information'
+			type: 'codeValue'
+			kind: 'person responsible'
+		]
+
+class window.DeviceCollection extends Backbone.Collection
+	url: 'api/containers/instrument/balance'
+	model: DeviceModel
 
 class window.RealtimeDeviceConnectionController extends Backbone.View
 	template: _.template($("#RealtimeDeviceConnectionView").html())
@@ -28,37 +62,85 @@ class window.RealtimeDeviceConnectionController extends Backbone.View
 		"click .bv_deviceInUseDismiss": "dismissDeviceInUse"
 		"change .bv_deviceSelectContainer": "handleDeviceSelectChange"
 		"click .bv_dismissDisconnectMessage": "handleDismissDisconnectMessage"
+		"click .bv_zeroBalance": "handleZeroBalanceClick"
 
 	initialize: ->
 		@isConnectedToDevice = false
 		@testMode = @options.testMode
 		if @options.socket?
 			@socket = @options.socket
-		@deviceCollection = new DeviceCollection(deviceStubs)
+
+		@deviceCollection = new DeviceCollection()
+		@deviceCollection.comparator = (instrument) =>
+			return instrument.get("lsLabels").pickBestName().get("labelText").toLowerCase()
+
+		@listenTo @deviceCollection, "sync", @renderSelectListOfExistingInstruments
 		@connected = false
 		unless @testMode
 			@setupSocketEventHandlers()
 
+	renderSelectListOfExistingInstruments: =>
+		@$(".bv_loadingMessage").addClass "hide"
+		@$(".bv_formContainer").removeClass "hide"
+		deviceSelectList = ''
+		@$(".bv_deviceSelectContainer").empty()
+		@deviceCollection.sort()
+		_.each(@deviceCollection.models, (instrument) =>
+			deviceSelectList += "<option value='" + instrument.get("codeName") + "'>" + instrument.get("lsLabels").pickBestName().get("labelText") + "</option>"
+		)
+		@$(".bv_deviceSelectContainer").append deviceSelectList
+		@$(".bv_loadingMessage").addClass "hide"
+		@$(".bv_formContainer").removeClass "hide"
+
+		@handleDeviceSelectChange()
 
 	setupSocketEventHandlers: =>
 		@socket = io('/deviceChannel')
-		@socket.on('connect', @handleDeviceSelectChange)
+		#@socket.on('connect', @handleDeviceSelectChange)
 		@socket.on('connect_error', @handleConnectError)
 		@socket.on('youShouldTryConnecting', @connectToDevice)
 		@socket.on('disconnectedFromDevice', @disconnectedFromDevice)
 		@socket.on('alertAllDisconnectedFromDevice', @alertAllDisconnectedFromDevice)
 		@socket.on('disconnectedByAnotherUser', @disconnectedByAnotherUser)
 		@socket.on('in_use', @displayUnavailableMessage)
+		@socket.on('zeroingComplete', =>
+			console.log "zeroingComplete"
+			if @connected
+				console.log "zeroingComplete"
+				@resetForm()
+				@enableElement(".bv_disconnect")
+				@enableElement(".bv_zeroBalance")
+				@$(".bv_zeroBalance").html "Zero Balance"
+			else
+				@displayInUseMessage()
+		)
 
+
+	handleZeroBalanceClick: =>
+		if @connected
+			@disableAllFields()
+			@disableElement(".bv_disconnect")
+			@disableElement(".bv_zeroBalance")
+			@$(".bv_zeroBalance").html "Zeroing..."
+			@socket.emit('zeroBalance', {deviceName: @selectedDevice.get('description').get('value'), deviceUrl: @selectedDevice.get('url').get('value'), userName: AppLaunchParams.loginUserName}, @zeroBalanceCallback)
+
+	zeroBalanceCallback: (err, data) =>
 
 
 	connectToDevice: =>
 		unless @connected
-			@selectedDevice = @devicePickList.getSelectedModel()
+			#@selectedDevice = @devicePickList.getSelectedModel()
+			@selectedInstrumentCode = @$('.bv_deviceSelectContainer').val()
+			@selectedDevice = @deviceCollection.findWhere({"codeName": @selectedInstrumentCode})
+			console.log "@selectedDevice.get('url').get('value')"
+			console.log @selectedDevice.get('url').get('value')
 			@$(".bv_connecting").removeClass "hide"
-			@socket.emit('connectToDevice', {deviceName: @selectedDevice.get('code'), deviceUrl: @selectedDevice.get('url'), userName: AppLaunchParams.loginUserName}, @connectToDeviceCallback)
+			@$(".bv_deviceServerOffline").addClass "hide"
+			@socket.emit('connectToDevice', {deviceName: @selectedDevice.get('description').get('value'), deviceUrl: @selectedDevice.get('url').get('value'), userName: AppLaunchParams.loginUserName}, @connectToDeviceCallback)
 
 	connectToDeviceCallback: (err, data) =>
+		console.log "err", err
+		console.log "data", data
 		if err
 			@connected = false
 			@setStateToDisconnected()
@@ -77,7 +159,7 @@ class window.RealtimeDeviceConnectionController extends Backbone.View
 		else
 			@connected = true
 			@setStateToConnected()
-
+		@enableElement(".bv_deviceSelectContainer")
 		@$(".bv_connectionStatusAlert").addClass "hide"
 
 	displayUnavailableMessage: =>
@@ -96,6 +178,8 @@ class window.RealtimeDeviceConnectionController extends Backbone.View
 		@$(".bv_deviceServerInUse").addClass "hide"
 		@$(".bv_deviceServerOffline").addClass "hide"
 		@$(".bv_deviceServerInUseButIdle").addClass "hide"
+		@$(".bv_disconnect").addClass "hide"
+		@$(".bv_zeroBalance").addClass "hide"
 		@handleDismissDisconnectMessage()
 
 	displayInUseMessage: =>
@@ -104,8 +188,13 @@ class window.RealtimeDeviceConnectionController extends Backbone.View
 		@$(".bv_deviceUsedBy").html @userNameOfConnectedUser
 
 	handleDeviceSelectChange: =>
-		deviceName = @devicePickList.getSelectedCode()
-		unless deviceName is ""
+		@disableElement(".bv_deviceSelectContainer")
+		@selectedInstrumentCode = @$('.bv_deviceSelectContainer').val()
+		selectedInstrument = @deviceCollection.findWhere({"codeName": @selectedInstrumentCode})
+		@connected = false
+		@resetStatusMessages()
+		@socket.emit('disconnected')
+		unless selectedInstrument is ""
 			@connectToDevice()
 
 	handleBootCurrentUserOffDevice: =>
@@ -151,12 +240,15 @@ class window.RealtimeDeviceConnectionController extends Backbone.View
 		@isConnectedToDevice = false
 		@$(".bv_connecting").addClass "hide"
 		@$(".bv_connected").addClass "hide"
+		@$(".bv_zeroBalance").addClass "hide"
 		@$(".bv_disconnected").removeClass "hide"
 
 	setStateToConnected: =>
 		@enableDisconnectButton()
 		@isConnectedToDevice = true
 		@displayStatusMessage ".bv_connected"
+		@$(".bv_zeroBalance").removeClass "hide"
+		@$(".bv_disconnect").removeClass "hide"
 
 	disconnectedFromDevice: =>
 		@setStateToDisconnected()
@@ -182,8 +274,7 @@ class window.RealtimeDeviceConnectionController extends Backbone.View
 	render: =>
 		$(@el).empty()
 		$(@el).html @template()
-
-		@devicePickList = new PickListSelectController({collection: @deviceCollection, autoFetch: false, el: @$(".bv_deviceSelectContainer")})
+		@deviceCollection.fetch()
 		@renderSubform()
 
 		@

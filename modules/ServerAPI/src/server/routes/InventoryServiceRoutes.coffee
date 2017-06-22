@@ -849,6 +849,23 @@ exports.containerByCodeName = (req, resp) ->
 		baseurl = config.all.client.service.persistence.fullpath+"containers/"+req.params.code
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
+exports.containerByCodeNameInteral = (containerCodeName, callback) ->
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.persistence.fullpath+"containers/" + containerCodeName
+	request = require 'request'
+	request(
+		method: 'GET'
+		url: baseurl
+		json: true
+	, (error, response, json) =>
+		if !error && response.statusCode == 200
+			callback response.statusCode, json
+		else
+			console.log 'got ajax error'
+			console.log error
+			console.log json
+			callback 500, {error: true, message:error}
+	)
 
 updateContainer = (container, testMode, callback) ->
 	if testMode or global.specRunnerTestmode
