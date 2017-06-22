@@ -19,6 +19,8 @@ class window.ACASFormStateTableController extends Backbone.View
 	initialize: ->
 		@thingRef = @options.thingRef
 		@tableDef = @options.tableDef
+		@tableSetupComplete = false
+		@callWhenSetupComplete = null
 
 	getCollection: ->
 		#TODO get states by type and kind
@@ -33,6 +35,12 @@ class window.ACASFormStateTableController extends Backbone.View
 
 #Subclass to extend
 	renderModelContent: =>
+		if @tableSetupComplete
+			@completeRenderModelContent()
+		else
+			@callWhenSetupComplete = @completeRenderModelContent
+
+	completeRenderModelContent: ->
 		for state in @getCurrentStates()
 			@renderState state
 
@@ -59,6 +67,10 @@ class window.ACASFormStateTableController extends Backbone.View
 			@fetchPickLists =>
 				@defineColumns()
 				@setupHot()
+				@tableSetupComplete = true
+				if @callWhenSetupComplete?
+					@callWhenSetupComplete.call @
+					@callWhenSetupComplete = null
 
 	fetchPickLists: (callback) =>
 		@pickLists = {}
@@ -90,11 +102,9 @@ class window.ACASFormStateTableController extends Backbone.View
 					json: true
 					self: @
 					kind: kind
-#					success: makeRetFunct()
 					success: (response) ->
 						this.self.pickLists[this.kind] = new PickListList response
 						doneYet()
-
 
 	defineColumns: ->
 		unless @colHeaders?
@@ -300,7 +310,6 @@ class window.ACASFormStateTableController extends Backbone.View
 				rowValues = state.getValuesByTypeAndKind 'numericValue', @rowNumberKind
 				if rowValues.length == 1
 					rowValues[0].set numericValue: rowNum + amount
-
 
 	handleRowRemoved: (index, amount) =>
 		for rowNum in [index..(index+amount-1)]

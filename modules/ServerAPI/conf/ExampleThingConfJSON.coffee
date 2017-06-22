@@ -15,6 +15,9 @@
 			[
 				typeName: "metadata"
 				kindName: "example thing parent"
+			,
+				typeName: "metadata"
+				kindName: "example thing data"
 			]
 
 		valuetypes:
@@ -28,6 +31,8 @@
 				typeName: "clobValue"
 			,
 				typeName: "fileValue"
+			,
+				typeName: "numericValue"
 			]
 
 		valuekinds:
@@ -46,6 +51,28 @@
 			,
 				typeName: "fileValue"
 				kindName: "structural file"
+			,
+				typeName: "stringValue"
+				kindName: "media component"
+			,
+				typeName: "numericValue"
+				kindName: "Volume"
+			,
+				typeName: "codeValue"
+				kindName: "performed by"
+			,
+				typeName: "dateValue"
+				kindName: "performed date"
+			]
+		unittypes:
+			[
+				typeName: "volume"
+			]
+
+		unitkinds:
+			[
+				typeName: "volume"
+				kindName: "mL"
 			]
 
 		labeltypes:
@@ -61,14 +88,47 @@
 
 		ddicttypes:
 			[
+				typeName: "metadata"
 			]
 
 		ddictkinds:
 			[
+				typeName: "metadata"
+				kindName: "category"
+			,
+				typeName: "metadata"
+				kindName: "color"
 			]
 
 		codetables:
 			[
+				codeType: "metadata"
+				codeKind: "category"
+				codeOrigin: "ACAS DDICT"
+				code: "alpha"
+				name: "Alpha"
+				ignored: false
+			,
+				codeType: "metadata"
+				codeKind: "category"
+				codeOrigin: "ACAS DDICT"
+				code: "beta"
+				name: "Beta"
+				ignored: false
+			,
+				codeType: "metadata"
+				codeKind: "color"
+				codeOrigin: "ACAS DDICT"
+				code: "blue"
+				name: "Blue"
+				ignored: false
+			,
+				codeType: "metadata"
+				codeKind: "color"
+				codeOrigin: "ACAS DDICT"
+				code: "purple"
+				name: "Purple"
+				ignored: false
 			]
 
 		labelsequences:
@@ -80,7 +140,7 @@
 				labelTypeAndKind: "corpName_Example Thing"
 				thingTypeAndKind: "parent_Example Thing"
 				latestNumber:1
-            ,
+			,
 				digits: 8
 				groupDigits: false
 				labelPrefix: "THING"

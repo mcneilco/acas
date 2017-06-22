@@ -44,6 +44,22 @@ ExampleThingConf =
 				placeholder: "yyyy-mm-dd"
 				required: true
 		,
+			key: 'color'
+			modelDefaults:
+				stateType: 'metadata'
+				stateKind: 'example thing parent'
+				type: 'codeValue'
+				kind: 'color'
+				codeType: 'metadata'
+				codeKind: "color"
+				codeOrigin: 'ACAS DDict'
+				value: null
+			fieldSettings:
+				fieldType: 'codeValue'
+				required: false
+				formLabel: "Color"
+				fieldWrapper: "bv_scientist_date"
+		,
 			key: 'notebook'
 			modelDefaults:
 				stateType: 'metadata'
@@ -60,7 +76,70 @@ ExampleThingConf =
 		]
 
 
-		stateTables: []
+		stateTables: [
+			key: 'exampleThingTable'
+			stateType: 'metadata'
+			stateKind: 'example thing data'
+			tableWrapper: "bv_dataTable"
+			tableLabel: "Example Thing Data Table"
+			values: [
+				modelDefaults:
+					type: 'stringValue'
+					kind: 'media component'
+					value: ""
+				fieldSettings:
+					fieldType: 'stringValue'
+					formLabel: "Media Component"
+					required: true
+					width: 215
+			,
+				modelDefaults:
+					type: 'numericValue'
+					kind: 'volume'
+					value: null
+					unitType: 'volume'
+					unitKind: 'mL'
+				fieldSettings:
+					fieldType: 'numericValue'
+					formLabel: "Volume"
+					required: false
+			,
+				modelDefaults:
+					type: 'codeValue'
+					kind: 'category'
+					codeType: 'metadata'
+					codeKind: "category"
+					codeOrigin: 'ACAS DDict'
+					value: null
+				fieldSettings:
+					fieldType: 'codeValue'
+					required: false
+					formLabel: "Category"
+					required: true
+					width:150
+			,
+				modelDefaults:
+					type: 'codeValue'
+					kind: 'performed by'
+					value: ""
+				fieldSettings:
+					fieldType: 'stringValue'
+					formLabel: "Performed By"
+					required: true
+					width: 150
+			,
+				modelDefaults:
+					type: 'dateValue'
+					kind: 'performed time'
+					value: null
+					codeOrigin: window.conf.scientistCodeOrigin
+				fieldSettings:
+					fieldType: 'dateValue'
+					formLabel: "Added date"
+					required: true
+					width: 150
+			]
+		]
 		firstLsThingItxs: []
 		secondLsThingItxs: []
 
@@ -262,7 +341,5 @@ class window.ExampleThingController extends AbstractThingFormController
 		@disableAllInputs()
 
 
-#TODO add state table example
-#TODO add pick list/ddict example
 #TODO add thing interaction to project with field
 #TODO file upload is broken
