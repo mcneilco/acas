@@ -201,6 +201,10 @@ class window.ACASFormLSNumericValueFieldController extends ACASFormAbstractField
 			value: null
 			ignored: true
 
+	setInputValue: (inputValue) ->
+		@$('input').val inputValue
+
+
 	renderModelContent: =>
 		@$('input').val @getModel().get('value')
 		if @getModel().has 'unitKind'
@@ -217,6 +221,11 @@ class window.ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldCon
 		"change select": "handleInputChanged"
 
 	template: _.template($("#ACASFormLSCodeValueFieldView").html())
+
+	applyOptions: ->
+		super()
+		if @options.url?
+			@url = @options.url
 
 	handleInputChanged: =>
 		@clearError()
@@ -241,7 +250,10 @@ class window.ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldCon
 	setupSelect: ->
 		@pickList = new PickListList()
 		mdl = @getModel()
-		@pickList.url = "/api/codetables/#{mdl.get 'codeType'}/#{mdl.get 'codeKind'}"
+		if @url?
+			@pickList.url = @url
+		else
+			@pickList.url = "/api/codetables/#{mdl.get 'codeType'}/#{mdl.get 'codeKind'}"
 		plOptions =
 			el: @$('select')
 			collection: @pickList
@@ -444,6 +456,57 @@ class window.ACASFormLSStringValueFieldController extends ACASFormAbstractFieldC
 			value: null
 			ignored: true
 
+	setInputValue: (inputValue) ->
+		@$('input').val inputValue
+
+
 	renderModelContent: =>
 		@$('input').val @getModel().get('value')
 		super()
+
+
+class window.ACASFormLSDateValueFieldController extends ACASFormAbstractFieldController
+	###
+		Launching controller must:
+		- Initialize the model with an LSValue
+    Do whatever else is required or optional in ACASFormAbstractFieldController
+	###
+
+	template: _.template($("#ACASFormLSDateValueFieldView").html())
+	events: ->
+		"change input": "handleInputChanged"
+		"click .bv_dateIcon": "handleDateIconClicked"
+
+	render: ->
+		super()
+		@$('input').datepicker();
+		@$('input').datepicker( "option", "dateFormat", "yy-mm-dd" );
+
+		@
+
+	handleInputChanged: =>
+		@clearError()
+		@userInputEvent = true
+		value = UtilityFunctions::convertYMDDateToMs(UtilityFunctions::getTrimmedInput(@$('input')))
+		if value == "" || isNaN(value)
+			@setEmptyValue()
+		else
+			@getModel().set
+				value: value
+				ignored: false
+		super()
+
+	setEmptyValue: ->
+		@getModel().set
+			value: null
+			ignored: true
+
+	renderModelContent: =>
+		compDate = @getModel().get('value')
+		if compDate?
+			unless isNaN(compDate)
+				@$('input').val UtilityFunctions::convertMSToYMDDate(compDate)
+		super()
+
+	handleDateIconClicked: =>
+		@$('input').datepicker( "show" )

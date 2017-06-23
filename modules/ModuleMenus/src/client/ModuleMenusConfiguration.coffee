@@ -31,7 +31,7 @@ window.ModuleMenusConfiguration =
 	,
 		isHeader: false, menuName: "Example Thing"
 		mainControllerClassName: "ExampleThingController"
-		autoLaunchName:"cationic_block"
+		autoLaunchName:"example_thing"
 	,
 		isHeader: true
 		menuName: "Search and Edit"
