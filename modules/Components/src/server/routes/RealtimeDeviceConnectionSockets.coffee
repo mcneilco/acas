@@ -61,10 +61,8 @@ class BalanceAccess
 		disconnectFromBalanceURL = @balanceUrl + "api/disconnectFromBalance"
 		return new Promise((resolve, reject) =>
 			request(
-				method: 'POST'
+				method: 'GET'
 				url: disconnectFromBalanceURL
-				json: true
-				body: {'callbackURL': global.app.get('port') + '/api/tareSingleVia/disconnectFromBalanceComplete'}
 			, (error, response, json) ->
 				if error?
 					reject error
@@ -100,8 +98,6 @@ class BalanceAccess
 			@balanceConnectQueue.push {clientId: clientId, userName: userName, socket: socket}
 		return new Promise((resolve, reject) =>
 			@getBalanceStatus().then((balanceStatus) =>
-				console.log "balanceStatus"
-				console.log balanceStatus
 				@status = balanceStatus
 				@startHeartBeat()
 				switch @status
@@ -248,6 +244,7 @@ class DeviceSocketController
 		else
 			socket.broadcast.emit('alertAllDisconnectedFromDevice')
 			balanceAccess.clearHeartBeat()
+			balanceAccess.disconnectFromBalance()
 
 	handleBootUser: (socket, payload, callback) ->
 		balanceAccess = @balances[@usersInRoom[socket.id]]
@@ -268,7 +265,6 @@ class DeviceSocketController
 		@nameSpacedRoom.emit(eventName)
 
 	handleZeroBalance: (socket) ->
-		console.log "handleZeroBalance"
 		balanceAccess = @balances[@usersInRoom[socket.id]]
 		balanceAccessPromise = balanceAccess.zeroBalance()
 		balanceAccessPromise.then(() =>
