@@ -357,7 +357,7 @@ class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractF
 		else
 			opts.thingType = @thingType
 			opts.thingKind = @thingKind
-		@thingSelectController = new ThingLabelComboBoxController opt
+		@thingSelectController = new ThingLabelComboBoxController opts
 		@thingSelectController.render()
 
 	render: =>
