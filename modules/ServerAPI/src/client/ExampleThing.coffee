@@ -140,6 +140,70 @@ ExampleThingConf =
 					width: 150
 			]
 		]
+		stateDisplayTables: [
+			key: 'exampleStateDisplay'
+			stateType: 'metadata'
+			stateKind: 'example thing data'
+			tableWrapper: "bv_stateDisplayTable"
+			tableLabel: "Example Thing State Display Table"
+			values: [
+				modelDefaults:
+					type: 'stringValue'
+					kind: 'media component'
+					value: ""
+				fieldSettings:
+					fieldType: 'stringValue'
+					formLabel: "Media Component"
+					required: true
+					width: 215
+			,
+				modelDefaults:
+					type: 'numericValue'
+					kind: 'volume'
+					value: null
+					unitType: 'volume'
+					unitKind: 'mL'
+				fieldSettings:
+					fieldType: 'numericValue'
+					formLabel: "Volume"
+					required: false
+			,
+				modelDefaults:
+					type: 'codeValue'
+					kind: 'category'
+					codeType: 'metadata'
+					codeKind: "category"
+					codeOrigin: 'ACAS DDict'
+					value: null
+				fieldSettings:
+					fieldType: 'codeValue'
+					required: false
+					formLabel: "Category"
+					required: true
+					width:150
+			,
+				modelDefaults:
+					type: 'codeValue'
+					kind: 'performed by'
+					value: ""
+				fieldSettings:
+					fieldType: 'stringValue'
+					formLabel: "Performed By"
+					required: true
+					width: 150
+			,
+				modelDefaults:
+					type: 'dateValue'
+					kind: 'performed time'
+					value: null
+					codeOrigin: window.conf.scientistCodeOrigin
+				fieldSettings:
+					fieldType: 'dateValue'
+					formLabel: "Added date"
+					required: true
+					width: 150
+			]
+		]
 		firstLsThingItxs: []
 		secondLsThingItxs: []
 
