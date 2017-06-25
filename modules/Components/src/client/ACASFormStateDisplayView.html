@@ -1,28 +1,39 @@
-<!--<script type="text/template" id="ACASFormStateDisplayUpdateRowView" xmlns="http://www.w3.org/1999/html">-->
-    <!--<h5 class="bv_tableLabel">launching controller must provide or set table label</h5>-->
-    <!--<table class="table table-bordered table-striped table-hover" style="margin: 0px; padding: 0px; border: 0px; width: 100%; ">-->
-        <!--<thead style="">-->
-        <!--<tr>-->
-        <!--</tr>-->
-        <!--</thead>-->
-        <!--<tbody style="">-->
-
-        <!--</tbody>-->
-    <!--</table>-->
-
-<!--</script>-->
-
 
 <script type="text/template" id="ACASFormStateDisplayUpdateView" xmlns="http://www.w3.org/1999/html">
     <h5 class="bv_tableLabel">launching controller must provide or set table label</h5>
-    <table class="table table-bordered table-striped table-hover" style="margin: 0px; padding: 0px; border: 0px; width: 100%; ">
+    <table class="table table-bordered table-striped table-hover bv_stateDisplayUpdateTable" style="margin: 0px; padding: 0px; border: 0px; width: 100%; ">
         <thead style="">
-        <tr>
-        </tr>
         </thead>
         <tbody style="">
 
         </tbody>
     </table>
+
+    <div class="bv_valueEditor"></div>
+</script>
+
+<script type="text/template" id="ACASFormStateDisplayOldValueView" xmlns="http://www.w3.org/1999/html">
+    <td class="<%=valueClass%>"><%=value%></td>
+    <td><%=changedBy%></td>
+    <td><%=changedDate%></td>
+    <td><%=reason%></td>
+</script>
+
+<script type="text/template" id="ACASFormStateDisplayValueEditView" xmlns="http://www.w3.org/1999/html">
+    <h5>launching controller must provide or set table label</h5>
+    <table class="table table-bordered table-striped table-hover bv_valueHistoryTable" style="margin: 0px; padding: 0px; border: 0px; width: 100%; ">
+        <thead style="">
+            <th>Old Value</th>
+            <th>Changed By</th>
+            <th>Changed Date</th>
+            <th>Reason</th>
+        </thead>
+        <tbody style="">
+        </tbody>
+    </table>
+    <div class="control-group span9">
+        <button type="button" class="btn bv_saveThing pull-right" style="margin-right:119px;">Update</button>
+        <div class="bv_updatingThing pull-right hide" style="margin-right:5px;padding-top:5px;color:red;">Saving...</div>
+    </div>
 
 </script>

@@ -123,8 +123,10 @@ class window.AbstractThingFormController extends AbstractFormController
 			@$("."+field.fieldSettings.fieldWrapper).append newField.render().el
 			newField.afterRender()
 			@formFields[field.key] = newField
-		@setupFormTables fieldDefs.stateTables
-		@setupFormStateDisplayTables fieldDefs.stateDisplayTables
+		if fieldDefs.stateTables?
+			@setupFormTables fieldDefs.stateTables
+		if fieldDefs.stateDisplayTables?
+			@setupFormStateDisplayTables fieldDefs.stateDisplayTables
 
 	fillFieldsFromModels: =>
 		for modelKey, formField of @formFields

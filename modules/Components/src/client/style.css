@@ -41,3 +41,7 @@
   border-color: #bbbbbb;
   /* base width matches edit prot and expt */
 }
+
+.bv_stateDisplayUpdateTable .valueWasEdited {
+    color: red;
+}
