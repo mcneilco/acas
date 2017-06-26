@@ -8,6 +8,8 @@ exports.setupAPIRoutes = (app) ->
 	app.get '/api/protocolKindCodes', exports.protocolKindCodeList
 	app.get '/api/protocols/genericSearch/:searchTerm', exports.genericProtocolSearch
 	app.delete '/api/protocols/browser/:id', exports.deleteProtocol
+	app.get '/api/getProtocolByLabel/:protLabel', exports.getProtocolByLabel
+
 
 
 exports.setupRoutes = (app, loginRoutes) ->
@@ -20,6 +22,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/protocolKindCodes', loginRoutes.ensureAuthenticated, exports.protocolKindCodeList
 	app.get '/api/protocols/genericSearch/:searchTerm', loginRoutes.ensureAuthenticated, exports.genericProtocolSearch
 	app.delete '/api/protocols/browser/:id', loginRoutes.ensureAuthenticated, exports.deleteProtocol
+	app.get '/api/getProtocolByLabel/:protLabel', loginRoutes.ensureAuthenticated, exports.getProtocolByLabel
 
 serverUtilityFunctions = require './ServerUtilityFunctions.js'
 csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
@@ -60,25 +63,24 @@ exports.protocolByCodename = (req, resp) ->
 		if req.user? && config.all.server.project.roles.enable
 			serverUtilityFunctions.getRestrictedEntityFromACASServerInternal baseurl, req.user.username, "metadata", "protocol metadata", (statusCode, json) =>
 			#if prot is deleted, need to check if user has privs to view deleted protocols
-				if json.codeName? and json.ignored and !json.deleted
-					if config.all.client.entity?.viewDeletedRoles?
-						viewDeletedRoles = config.all.client.entity.viewDeletedRoles.split(",")
-					else
-						viewDeletedRoles = []
-					grantedRoles = _.map req.user.roles, (role) ->
-						role.roleEntry.roleName
-					canViewDeleted = (config.all.client.entity?.viewDeletedRoles? && config.all.client.entity.viewDeletedRoles in grantedRoles)
-					if canViewDeleted
-						resp.statusCode = statusCode
-						resp.end JSON.stringify json
-					else
-						resp.statusCode = 500
-						resp.end JSON.stringify "Protocol does not exist"
+			if json.codeName? and json.ignored and !json.deleted
+				if config.all.client.entity?.viewDeletedRoles?
+					viewDeletedRoles = config.all.client.entity.viewDeletedRoles.split(",")
 				else
+					viewDeletedRoles = []
+				grantedRoles = _.map req.user.roles, (role) ->
+					role.roleEntry.roleName
+				canViewDeleted = (config.all.client.entity?.viewDeletedRoles? && config.all.client.entity.viewDeletedRoles in grantedRoles)
+				if canViewDeleted
 					resp.statusCode = statusCode
 					resp.end JSON.stringify json
-
-          else
+				else
+					resp.statusCode = 500
+					resp.end JSON.stringify "Protocol does not exist"
+			else
+				resp.statusCode = statusCode
+				resp.end JSON.stringify json
+		else
 			serverUtilityFunctions.getFromACASServer baseurl, resp
 
 exports.protocolById = (req, resp) ->
@@ -487,3 +489,26 @@ exports.deleteProtocol = (req, res) ->
 				console.log error
 				console.log response
 		)
+
+exports.getProtocolByLabel = (req, resp) ->
+	exports.getProtocolByLabelInternal req.params.protLabel, (statusCode, json) ->
+		resp.statusCode = statusCode
+		resp.json json
+		
+exports.getProtocolByLabelInternal = (label, callback) ->
+	config = require '../conf/compiled/conf.js'
+	url = config.all.client.service.persistence.fullpath+"protocols?FindByProtocolName&protocolName=#{label}"
+	request = require 'request'
+	request(
+		method: 'GET'
+		url: url
+		json: true
+	, (error, response, json) =>
+		console.log response.statusCode
+		console.log json
+		if !error and !json.error
+			callback response.statusCode, json
+		else
+			console.log 'got ajax error trying to get protocol by label'
+			callback 500, json.errorMessages
+	)

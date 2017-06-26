@@ -7,8 +7,8 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/chemStructure/calculateMoleculeProperties', exports.calculateMoleculeProperties
 	app.post '/api/chemStructure/renderMolStructure', exports.renderMolStructure
 	app.post '/api/chemStructure/renderMolStructureBase64', exports.renderMolStructureBase64
-	app.post '/api/chemStructure/acasStructureMetaSearch', loginRoutes.ensureAuthenticated, exports.acasStructureMetaSearch
-	app.post '/api/chemStructure/acasStructureSearch', loginRoutes.ensureAuthenticated, exports.acasStructureSearch
+	app.post '/api/chemStructure/acasStructureMetaSearch', exports.acasStructureMetaSearch
+	app.post '/api/chemStructure/acasStructureSearch', exports.acasStructureSearch
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/chemStructure/renderStructureByThingCode', loginRoutes.ensureAuthenticated, exports.renderStructureByThingCode

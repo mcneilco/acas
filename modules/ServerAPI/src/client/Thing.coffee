@@ -1,6 +1,7 @@
 class window.Thing extends Backbone.Model
 	lsProperties: {}
 	className: "Thing"
+	deleteEmptyLabelsAndValsBeforeSave: true
 #	urlRoot: "/api/things"
 
 	defaults: () ->
@@ -68,11 +69,11 @@ class window.Thing extends Backbone.Model
 
 	toJSON: (options) ->
 		attsToSave = super(options)
-
-		toDel = attsToSave.lsLabels.filter (lab) ->
-			(lab.get('ignored') || lab.get('labelText')=="") && lab.isNew()
-		for lab in toDel
-			attsToSave.lsLabels.remove lab
+		if @deleteEmptyLabelsAndValsBeforeSave
+			toDel = attsToSave.lsLabels.filter (lab) ->
+				(lab.get('ignored') || lab.get('labelText')=="") && lab.isNew()
+			for lab in toDel
+				attsToSave.lsLabels.remove lab
 
 		if attsToSave.firstLsThings?
 			toDel = attsToSave.firstLsThings.filter (itx) ->
@@ -102,17 +103,18 @@ class window.Thing extends Backbone.Model
 			for itx in @lsProperties.defaultSecondLsThingItx
 				delete attsToSave[itx.key]
 
-		if @lsProperties.defaultValues?
-			for dValue in @lsProperties.defaultValues
-				if attsToSave[dValue.key]?
-					val = attsToSave[dValue.key].get('value')
-					if val is undefined or val is "" or val is null
-						lsStates = attsToSave.lsStates.getStatesByTypeAndKind dValue.stateType, dValue.stateKind
-						values = lsStates[0].getValuesByTypeAndKind dValue.type, dValue.kind
-						if values[0]?
-							if values[0].isNew()
-								lsStates[0].get('lsValues').remove values[0]
-					delete attsToSave[dValue.key]
+		if @deleteEmptyLabelsAndValsBeforeSave
+			if @lsProperties.defaultValues?
+				for dValue in @lsProperties.defaultValues
+					if attsToSave[dValue.key]?
+						val = attsToSave[dValue.key].get('value')
+						if val is undefined or val is "" or val is null
+							lsStates = attsToSave.lsStates.getStatesByTypeAndKind dValue.stateType, dValue.stateKind
+							values = lsStates[0].getValuesByTypeAndKind dValue.type, dValue.kind
+							if values[0]?
+								if values[0].isNew()
+									lsStates[0].get('lsValues').remove values[0]
+						delete attsToSave[dValue.key]
 
 		if attsToSave.attributes?
 			delete attsToSave.attributes

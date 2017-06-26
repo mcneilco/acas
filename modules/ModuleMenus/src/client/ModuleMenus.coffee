@@ -44,6 +44,8 @@ class window.ModuleMenusController extends Backbone.View
 
 		if window.AppLaunchParams.moduleLaunchParams?
 			@moduleLauncherMenuListController.launchModule window.AppLaunchParams.moduleLaunchParams.moduleName
+		else if window.conf.moduleMenus?.moduleAutoLaunchName?
+			@$(".bv_launch_#{window.conf.moduleMenus.moduleAutoLaunchName}").click()
 		else
 			@$('.bv_homePageWrapper').show()
 
