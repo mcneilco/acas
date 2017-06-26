@@ -62,7 +62,6 @@ exports.loginPost = (req, res) ->
 		else
 			res.redirect '/'
 
-
 exports.changePost = (req, res) ->
 	console.log req.session
 	#	res.redirect '/'

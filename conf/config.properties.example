@@ -513,3 +513,8 @@ client.projectEditor.restrictedCheckbox.show=true
 client.projectEditor.isRestricted.default=false
 
 client.roles.crossProjectLoaderRole=ROLE_ACAS-CROSS-PROJECT-LOADER
+
+#Add user roles that represent groups allowed to fast user switch
+#client.moduleMenus.fastUserSwitchingRoles=[]
+client.moduleMenus.fastUserSwitchingRoles=[{"lsKind":"PROJ-00000001","lsType":"Project","roleName":"User"},{"lsKind":"PROJ-00000002","lsType":"Project","roleName":"User"}]
+client.moduleMenus.fastUserSwitchingChangeUserRoles=true
