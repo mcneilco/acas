@@ -5,8 +5,6 @@ class window.ModuleMenusController extends Backbone.View
 	events: ->
 		'click .bv_headerName': "handleHome"
 		'click .bv_toggleModuleMenuControl': "handleToggleMenus"
-		'click .bv_loginUserFirstName': 'handleLoginUserFirstNameClick'
-		'click .bv_changeNameBtn': 'handleChangeNameBtnClick'
 #		'click .bv_showModuleMenuControl': "handleShowMenus"
 
 	window.onbeforeunload = () ->
@@ -63,15 +61,6 @@ class window.ModuleMenusController extends Backbone.View
 				modLink = '<li><a href="'+module.href+'"target="_blank">'+module.displayName+'</a></li>'
 				@$('.bv_externalACASModules').append modLink
 
-		@socket = io('/user:loggedin')
-		@socket.on('connect', @handleConnected)
-		@socket.on('connect_error', @handleConnectError)
-		@socket.on('loggedOn', @handleLoggedOn)
-		@socket.on('loggedOff', @handleLoggedOn)
-		@socket.on('usernameUpdated', @handleNameChanged)
-
-		@disconnectedAfterLogin = false
-
 	render: =>
 		if window.AppLaunchParams.deployMode?
 			unless window.AppLaunchParams.deployMode.toUpperCase() =="PROD"
@@ -102,29 +91,5 @@ class window.ModuleMenusController extends Backbone.View
 			@$('.bv_mainModuleWellWrapper').removeClass 'span9'
 			@$('.bv_mainModuleWellWrapper').addClass 'span11'
 
-	handleConnected: =>
-		console.log "handleConnected"
 
-	handleConnectError: =>
-		@disconnectedAfterLogin = true
-		console.log "handleConnectError"
 
-	handleLoggedOn: (numberOfLogins) ->
-		console.log "you're loggedin in this many places: ", numberOfLogins
-
-	handleLoggedOff: (numberOfLogins) ->
-		console.log "you're loggedin in this many places: ", numberOfLogins
-
-	handleLoginUserFirstNameClick: =>
-		@$(".bv_changeUserName").modal "show"
-
-	handleChangeNameBtnClick: (e) =>
-		e.preventDefault()
-		firstName = @$(".bv_firstName").val()
-		@socket.emit('changeUserName', firstName)
-		@$(".bv_firstName").val('')
-		@$(".bv_changeUserName").modal "hide"
-
-	handleNameChanged: (updatedFirstName) =>
-		@$(".bv_loginUserFirstName").html updatedFirstName
-		AppLaunchParams.loginUserName = updatedFirstName
