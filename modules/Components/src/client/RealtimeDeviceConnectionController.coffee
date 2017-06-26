@@ -137,6 +137,10 @@ class window.RealtimeDeviceConnectionController extends Backbone.View
 			@$(".bv_connecting").removeClass "hide"
 			@$(".bv_deviceServerOffline").addClass "hide"
 			@socket.emit('connectToDevice', {deviceName: @selectedDevice.get('description').get('value'), deviceUrl: @selectedDevice.get('url').get('value'), userName: AppLaunchParams.loginUserName}, @connectToDeviceCallback)
+			@focusOnDefaultElement()
+
+	focusOnDefaultElement: =>
+		console.info "overide if needed"
 
 	connectToDeviceCallback: (err, data) =>
 		console.log "err", err
@@ -284,6 +288,16 @@ class window.RealtimeDeviceConnectionController extends Backbone.View
 		@completeInitialization()
 
 		@
+
+	disableAllFields: =>
+		@disableElement(".bv_deviceSelectContainer")
+		@disableElement(".bv_disconnect")
+		@disableElement(".bv_zeroBalance")
+
+	enableFields: =>
+		@enableElement(".bv_deviceSelectContainer")
+		@enableElement(".bv_disconnect")
+		@enableElement(".bv_zeroBalance")
 
 	completeInitialization: =>
 		console.info "override in concrete instance of controller"
