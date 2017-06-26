@@ -21,14 +21,8 @@
 				entityName: "experiments"
 				default:
 					deepLink: "experiment_base"
-				study:
-					deepLink: "study_tracker_experiment"
-				"Bio Activity":
-					deepLink: "primary_screen_experiment"
-				"Bio Activity Screen":
-					deepLink: "screening_campaign"
-				"Parent Bio Activity":
-					deepLink: "parent_experiment"
+					#don't need to specify modelClass and controllerClass because will default to correct ones based on the window.conf.experiment.mainControllerClassName config
+					#can't seem to access window.conf.experiment.mainControllerClassName in this file
 				relatedFilesRelativePath: "experiments"
 			PROJ:
 				entityName: "things/project/project"

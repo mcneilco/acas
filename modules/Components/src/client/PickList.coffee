@@ -90,10 +90,15 @@ class window.PickListOptionControllerForLsThing extends Backbone.View
 
 
 class window.PickListSelectController extends Backbone.View
-	initialize: ->
+	initialize: (options) ->
 		@rendered = false
 		@collection.bind "add", @addOne
 		@collection.bind "reset", @handleListReset
+		# NOTE: Backbone 1.1.0 no longer automatically attaches options passed
+		# to View constructors as this.options. So, in order to be compatible
+		# with Backbone 1.0.0 and versions greater or equal to 1.1.0, we'll
+		# attach it ourselves here.
+		@options = options || {}
 
 		unless @options.selectedCode is ""
 			@selectedCode = @options.selectedCode
@@ -109,6 +114,14 @@ class window.PickListSelectController extends Backbone.View
 			@insertFirstOption = @options.insertFirstOption
 		else
 			@insertFirstOption = null
+		if @options.insertSecondOption?
+			@insertSecondOption = @options.insertSecondOption
+		else
+			@insertSecondOption = null
+		if @options.insertThirdOption?
+			@insertThirdOption = @options.insertThirdOption
+		else
+			@insertThirdOption = null
 
 		if @options.insertSelectedCode?
 			@insertSelectedCode = @options.insertSelectedCode
@@ -127,6 +140,14 @@ class window.PickListSelectController extends Backbone.View
 			@handleListReset()
 
 	handleListReset: =>
+		if @insertThirdOption
+			@collection.add @insertThirdOption,
+				at: 0
+				silent: true
+		if @insertSecondOption
+			@collection.add @insertSecondOption,
+				at: 0
+				silent: true
 		if @insertFirstOption
 			@collection.add @insertFirstOption,
 				at: 0
@@ -228,17 +249,45 @@ class window.ComboBoxController extends PickListSelectController
 
 class window.PickListSelect2Controller extends PickListSelectController
 
+	# maps the 'code' property to the select2 required 'id' property and
+	# the 'name' property to the select2 required 'text' property
+	acasPropertyMap = 
+		id: 'code'
+		text: 'name'
+
+	# @param options.propertyMap String ('select2' or 'acas', where 'select2'
+	# does no mapping and 'acas' uses the 'acasPropertyMap' defined above) or
+	# an Object with 'id' and 'text' properties to use.	 If
+	# 'options.propertyMap' is not specified, it defaults to using the
+	# 'acasPropertyMap'
+	initialize: (options) ->
+		@propertyMap = acasPropertyMap
+		if options.propertyMap?
+			if _.isObject(options.propertyMap) and options.propertyMap.id? and options.propertyMap.text?
+				@propertyMap = options.propertyMap
+			else if options.propertyMap is 'select2'
+				@propertyMap = null
+			else if options.propertyMap isnt 'acas'				 
+				throw new Error ('PickListSelect2Controller.initialize(): Invalid propertyMap value encountered')
+		super(options)
+
 	render: =>
-# convert model objects to array of json objects which have 'id' and 'text' properties
+		# convert model objects to array of json objects which have 'id' and 'text' properties if propertyMap specified
 		mappedData = []
 		for obj in @collection.toJSON()
 			if (not obj.ignored? or (obj.ignored is false) or (@showIgnored? and @showIgnored is true))
-				obj.id = obj.id || obj.code
-				obj.text = obj.text || obj.name
+				if @propertyMap?
+					obj.id = obj[@propertyMap.id]
+					obj.text = obj[@propertyMap.text]
 				mappedData.push(obj)
 
+		# if a first option was inserted, use it for select's placeholder object
+		@placeholder = ""
+		if @insertFirstOption?
+			@placeholder = mappedData[0]
+
 		$(@el).select2
-			placeholder: ""
+			placeholder: @placeholder
 			data: mappedData
 			openOnEnter: false
 			allowClear: true
@@ -256,7 +305,7 @@ class window.PickListSelect2Controller extends PickListSelectController
 		result = $(@el).val()
 		# if result is null then we'll return the "unassigned" instead if it
 		# was inserted as the first option
-		if not result? and  @insertFirstOption.get('code') is "unassigned"
+		if not result? and @insertFirstOption.get('code') is "unassigned"
 			result = "unassigned"
 		result
 
@@ -544,15 +593,16 @@ class window.EditablePickListSelect2Controller extends EditablePickListSelectCon
 class window.ThingLabelComboBoxController extends Backbone.View
 
 	initialize: ->
-		console.dir @options
 		@thingType = @options.thingType
 		@thingKind = @options.thingKind
 		@labelType = if @options.labelType? then @options.labelType else null
 		@placeholder = if @options.placeholder? then @options.placeholder else null
 		@queryUrl = if @options.queryUrl? then @options.queryUrl else null
+		unless @queryUrl? or (@thingType? and @thingKind?)
+			alert("ThingLabelComboBoxController URL misconfigured - crash to follow")
 
 	render: =>
-		@$el.select2
+		@selectController = @$el.select2
 			placeholder: @placeholder
 			openOnEnter: false
 			allowClear: true
@@ -571,7 +621,8 @@ class window.ThingLabelComboBoxController extends Backbone.View
 					return urlStr
 				dataType: 'json'
 				delay: 250
-				processResults: (data, params) ->
+				processResults: (data, params) =>
+					@latestData = data
 					results = for option in data
 						{id: option.code, text: option.name}
 					return {results: results}
@@ -584,3 +635,12 @@ class window.ThingLabelComboBoxController extends Backbone.View
 #		if not result? #and  @insertFirstOption.get('code') is "unassigned"
 #			result = "unassigned"
 		result
+
+	getSelectedID: ->
+		code = @getSelectedCode()
+		match = _.where @latestData, code: code, ignored: false
+		match[0]?.id
+
+	setSelectedCode: (selection) ->
+		newOption = $('<option selected="selected"></option>').val(selection.code).text(selection.label)
+		@$el.append(newOption).trigger('change')

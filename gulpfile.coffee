@@ -1,19 +1,20 @@
 # ---------------------------------------------- Requires
 
 gulp = require('gulp')
-gutil = require('gutil')
 coffee = require('gulp-coffee')
-del = require('del')
 flatten = require('gulp-flatten')
 rename = require('gulp-rename')
 plumber = require('gulp-plumber')
 jeditor = require('gulp-json-editor')
 argv = require('yargs').argv
 path = require('path')
-run = require('gulp-run')
 gulpif = require('gulp-if')
 _ = require('underscore')
+notify = require("gulp-notify")
+coffeeify = require('gulp-coffeeify')
+
 node = undefined
+os = require('os');
 
 # ---------------------------------------------- Functions
 getGlob = (paths) ->
@@ -37,6 +38,18 @@ getRPath = (path) ->
     path.basename = ''
     path.dirname = ''
   outputDirname = module + '/' + path.dirname.replace(module + '/src/server/r', '')
+  path.dirname = outputDirname
+  return path
+
+getLegacyRPath = (path) ->
+  console.warn  "Warning: All R code in modules path 'modules/**/src/server/**/*.{R,r}' should be moved to 'modules/**/src/server/r/*.{R,r}'"
+  module = path.dirname.split('/')[0]
+  additionalPath =  path.dirname.replace(module + '/src/server/', '')
+  console.log "Warning: Please move '#{path.dirname}/#{path.basename}#{path.extname}' to '#{module}/src/server/r/#{additionalPath}/#{path.basename}#{path.extname}'"
+  if path.basename == 'r' and path.extname == ''
+    path.basename = ''
+    path.dirname = ''
+  outputDirname = module + '/' + path.dirname.replace(module + '/src/server/', '')
   path.dirname = outputDirname
   return path
 
@@ -229,6 +242,12 @@ taskConfigs =
       dest: build + '/conf'
       options: _.extend _.clone(globalCopyOptions), {}
     ,
+      taskName: "moduleConf"
+      src: getGlob('modules/**/conf/**', '!modules/**/conf/*.coffee')
+      dest: build + '/public/conf'
+      options: _.extend _.clone(globalCopyOptions), {}
+      renameFunction: getFirstFolderName
+    ,
       taskName: "nodeModulesCustomized"
       src: getGlob('node_modules_customized/**')
       dest: build+"/node_modules_customized"
@@ -257,6 +276,12 @@ taskConfigs =
       dest: build + '/src/r'
       options: _.extend _.clone(globalCopyOptions), {}
       renameFunction: getFirstFolderName
+    ,
+      taskName: "legacyServerR"
+      src: getGlob('modules/**/src/server/**/*.{R,r}', '!modules/**/src/server/*.{R,r}','!modules/**/src/server/r/*.{R,r}')
+      dest: build + '/src/r'
+      options: _.extend _.clone(globalCopyOptions), {}
+      renameFunction: getLegacyRPath
     ,
       taskName: "html"
       src: getGlob('modules/**/src/client/*.html')
@@ -328,9 +353,28 @@ createExecuteTask = (options) =>
     watchOptions = watch?.options ? {}
     gulp.task watchTaskName, ->
       gulp.watch options.src, watchOptions, gulp.series(taskName)
+        .on('error', console.error)
+
       return
     watchTasks.push watchTaskName
   return taskName
+
+
+onError = (err) ->
+  process.stdout.write '\x07'
+  if os.platform() == 'darwin'
+    return notify.onError(
+      title: '<%= error.message %>'
+      # subtitle: 'Failure!'
+      message: 'Error: <%= error.stack %>'
+      sound: false) err
+  else
+    return notify.onError((options, callback) ->
+      console.log "\x1b[34m[#{options.message}]\x1b[0m \x1b[31mError: #{options.stack}\x1b[0m"
+      return
+    ) err
+  @emit 'end'
+
 
 createTask = (options, type) ->
   taskName = "#{type}:#{options.taskName}"
@@ -340,12 +384,23 @@ createTask = (options, type) ->
   watch = options.watch
   shouldFlatten = options.flatten ? false
   renameFunction = options.renameFunction
+  shouldCoffeify = (file) ->
+    if type=="coffee" && (file.path.indexOf("client/ExcelApp") > -1)
+       return true
+    else
+      return false
+  shouldCoffee = (file) ->
+    if type=="coffee" && !(file.path.indexOf("client/ExcelApp") > -1)
+       return true
+    else
+      return false
   gulp.task taskName, ->
     gulp.src(src, _.extend(taskOptions, {since: gulp.lastRun(taskName)}))
-    .pipe(plumber())
+    .pipe(plumber({errorHandler: onError}))
     .pipe(gulpif(shouldFlatten,flatten()))
+    .pipe(gulpif(shouldCoffeify, coffeeify({options:{paths:[build]}})))
+    .pipe(gulpif(shouldCoffee,coffee(bare: true)))
     .pipe(gulpif(renameFunction?,rename(renameFunction)))
-    .pipe(gulpif(type=="coffee",coffee(bare: true)))
     .pipe gulp.dest(dest)
   unless watch == false
     watchTaskName = "watch:#{taskName}"

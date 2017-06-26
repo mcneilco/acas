@@ -2,7 +2,7 @@ version: '2'
 services:
   acas:
 #    build: .
-    image: mcneilco/acas-oss:RC-1.11.0
+    image: mcneilco/acas-oss:develop
     restart: always
     ports:
      - "3000:3000"
@@ -12,7 +12,7 @@ services:
      - APP_NAME=ACAS-OPEN
      - PREPARE_MODULE_CONF_JSON=true
      - PREPARE_CONFIG_FILES=true
-     - RUN_SYSTEM_TEST=true
+     - RUN_SYSTEM_TEST=false
      - DOCKER_HOST_IP=localhost
      - NODE_ENV=integration
     volumes:
@@ -24,16 +24,16 @@ services:
     # Add chemaxon marvinjs here
      - ./chemaxon/marvinjs:/home/runner/build/public/CmpdReg/marvinjs
      # Please add any dev volumes below this line
-     # - ./:/home/runner/acas
+     - ./:/home/runner/acas
      # - ./modules/BuildUtilities/:/home/runner/acas/modules/BuildUtilities
     env_file:
       - ./conf/docker/acas/environment/acas.env
 # Dev Command
 #    command: ["bin/acas.sh", "run", "acas", "dev"]
 # Start command
-    command: ["bin/acas.sh", "run", "acas", "start"]
+    command: ["bin/acas.sh", "run", "acas", "dev"]
   rservices:
-    image: mcneilco/racas-oss:RC-1.11.0
+    image: mcneilco/racas-oss:develop
     restart: always
     ports:
      - "1080:1080"
@@ -60,7 +60,7 @@ services:
     ports:
      - "5432:5432"
   tomcat:
-    image: mcneilco/tomcat-maven
+    image: mcneilco/tomcat-maven:develop
     restart: always
     depends_on:
      - db
@@ -81,12 +81,12 @@ services:
       - ./conf/docker/cmpdreg/environment/cmpdreg.env
     command: catalina.sh run
   roo:
-    image: mcneilco/acas-roo-server-oss:RC-1.11.0
+    image: mcneilco/acas-roo-server-oss:develop
     volumes:
      - /usr/local/tomcat/webapps/acas
     command: /bin/true
   cmpdreg:
-    image: mcneilco/cmpdreg-oss:RC-1.11.0
+    image: mcneilco/acas-cmpdreg-roo-server-oss:1.10.0
     volumes:
      - /usr/local/tomcat/webapps/cmpdreg
     # Add chemaxon license files here
