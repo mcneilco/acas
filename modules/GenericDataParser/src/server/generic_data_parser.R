@@ -1753,6 +1753,22 @@ createNewProtocol <- function(metaData, lsTransaction, recordedBy) {
                                                                     lsKind="protocol name",
                                                                     labelText=metaData$'Protocol Name'[1],
                                                                     preferred=TRUE)
+
+  if (toupper(racas::applicationSettings$client.entity.saveInitialsCorpName) == "TRUE"){
+	  protocolCorpNameList <- unlist(getAutoLabels(thingTypeAndKind="document_protocol", 
+                                  labelTypeAndKind=paste0("corpName initials_", recordedBy), 
+                                  numberOfLabels=1),
+                                  use.names=FALSE)
+
+     protocolLabels[[length(protocolLabels)+1]] <- createProtocolLabel(lsTransaction = lsTransaction, 
+                                                                    recordedBy=recordedBy, 
+                                                                    lsType="corpName", 
+                                                                    lsKind="protocol corpName",
+                                                                    labelText=protocolCorpNameList[1],
+                                                                    preferred=FALSE)
+  }
+
+
   
   # Create the protocol
   protocol <- createProtocol(lsTransaction = lsTransaction,
@@ -1881,6 +1897,22 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
                                                                           labelText=experimentName,
                                                                           preferred=TRUE)
   
+  if (toupper(racas::applicationSettings$client.entity.saveInitialsCorpName) == "TRUE"){
+	  experimentCorpNameList <- unlist(getAutoLabels(thingTypeAndKind="document_experiment", 
+                                  labelTypeAndKind=paste0("corpName initials_", recordedBy), 
+                                  numberOfLabels=1),
+                                  use.names=FALSE)
+
+     experimentLabels[[length(experimentLabels)+1]] <- createExperimentLabel(lsTransaction = lsTransaction, 
+                                                                          recordedBy=recordedBy, 
+                                                                          lsType="corpName", 
+                                                                          lsKind="experiment corpName",
+                                                                          labelText=experimentCorpNameList[1],
+                                                                          preferred=FALSE) 
+   
+  }
+
+
   # Create LS Tags
   if("Experiment Keywords" %in% names(metaData)) {
     tagList <- splitOnSemicolon(metaData$"Experiment Keywords"[[1]])
@@ -2879,7 +2911,15 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     summaryInfo$info$"Flagged Data Points" <- sum(subjectData$valueKind == "flag")
   }
   if(!dryRun) {
-    summaryInfo$info$"Experiment Code Name" <- experiment$codeName
+    if (toupper(racas::applicationSettings$client.entity.saveInitialsCorpName) == "TRUE"){
+      exptLabels <- flattenLabels(experiment$lsLabels)
+      exptCorpName <- exptLabels$labelText[exptLabels$lsType=='corpName' & exptLabels$lsKind=='experiment corpName' & exptLabels$ignored==FALSE]
+      summaryInfo$info$"Experiment Corp Name" <- exptCorpName
+      viewerLink <- paste0("/openExptInQueryTool?experiment=", URLencode(exptCorpName, reserved = TRUE))
+    } else {
+      summaryInfo$info$"Experiment Code Name" <- experiment$codeName
+    }
+
     if (!is.null(viewerLink)) {       
       summaryInfo$viewerLink <- viewerLink
     }
