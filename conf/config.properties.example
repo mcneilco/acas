@@ -331,6 +331,7 @@ client.moduleMenus.summaryStats=false
 # For navigation to external ACAS modules from ACAS homepage
 client.moduleMenus.modules.external=[{"displayName": "Compound Registration", "href": "/cmpdreg/"},\
                                      {"displayName": "Compound Registration Bulk Loader", "href":"/CmpdRegBulkLoader"}]
+client.moduleMenus.dataViewerDeepLink=/dataViewer
 
 client.leaveACASMessage=There are no unsaved changes.
 client.scientistCodeOrigin=ACAS authors
