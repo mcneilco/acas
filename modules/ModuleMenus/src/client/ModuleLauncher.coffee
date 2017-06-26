@@ -13,7 +13,11 @@ class window.ModuleLauncher extends Backbone.Model
 		if @get('externalLink')?
 			window.open(@get('externalLink'),'_blank');
 		else if @get('autoLaunchName') is "dataViewer"
-			window.open("/dataViewer",'_blank');
+			if window.conf.moduleMenus?.dataViewerDeepLink?
+				dataViewerDeepLink = window.conf.moduleMenus.dataViewerDeepLink
+			else
+				dataViewerDeepLink = '/dataViewer'
+			window.open(dataViewerDeepLink,'_blank');
 		else
 			@trigger 'activationRequested', @
 			@set isActive: true

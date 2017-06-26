@@ -1429,6 +1429,27 @@ class Container extends Backbone.Model
 					additionalValues: additionalValues
 				response.push responseObject
 		return response
+		
+	getLocationHistory: ->
+		lsStates = @get('lsStates').getStatesByTypeAndKind 'metadata', 'location history'
+		response = []
+		if lsStates?
+			lsStates.forEach (lsState) =>
+				additionalValues = lsState.get('lsValues').filter (value) ->
+					(!value.get('ignored')) and
+					 !((value.get('lsType')=='stringValue') and (value.get('lsKind')=='location')) and
+					 !((value.get('lsType')=='codeValue') and (value.get('lsKind')=='moved by')) and
+					 !((value.get('lsType')=='dateValue') and (value.get('lsKind')=='moved date'))
+				responseObject = 
+					codeName: @get('codeName')
+					recordedBy: lsState.get('recordedBy')
+					recordedDate: lsState.get('recordedDate')
+					location: lsState.getValuesByTypeAndKind('stringValue', 'location')[0].get('stringValue')
+					movedBy: lsState.getValuesByTypeAndKind('codeValue', 'moved by')[0]?.get('codeValue')
+					movedDate: lsState.getValuesByTypeAndKind('dateValue', 'moved date')[0]?.get('dateValue')
+					additionalValues: additionalValues
+				response.push responseObject
+		return response
 
 	getLocationHistory: ->
 		lsStates = @get('lsStates').getStatesByTypeAndKind 'metadata', 'location history'

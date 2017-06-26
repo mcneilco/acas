@@ -331,6 +331,7 @@ client.moduleMenus.summaryStats=false
 # For navigation to external ACAS modules from ACAS homepage
 client.moduleMenus.modules.external=[{"displayName": "Compound Registration", "href": "/cmpdreg/"},\
                                      {"displayName": "Compound Registration Bulk Loader", "href":"/CmpdRegBulkLoader"}]
+client.moduleMenus.dataViewerDeepLink=/dataViewer
 # For auto-starting a module when opening up ACAS
 client.moduleMenus.moduleAutoLaunchName=
 
