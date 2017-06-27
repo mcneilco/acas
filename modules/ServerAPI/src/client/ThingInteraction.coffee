@@ -30,9 +30,9 @@ class window.FirstThingItx extends ThingItx
 	className: "FirstThingItx"
 
 	defaults: ->
-		super()
-		firstLsThing: {}
-
+		_(super()).extend(
+			firstLsThing: {}
+		)
 	getItxThing: ->
 		@get 'firstLsThing'
 
@@ -43,8 +43,9 @@ class window.SecondThingItx extends ThingItx
 	className: "SecondThingItx"
 
 	defaults: ->
-		super()
-		secondLsThing: {}
+		_(super()).extend(
+			secondLsThing: {}
+		)
 
 	getItxThing: ->
 		@get 'secondLsThing'

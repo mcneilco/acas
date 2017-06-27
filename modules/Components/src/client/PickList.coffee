@@ -204,8 +204,8 @@ class window.PickListSelectController extends Backbone.View
 
 class window.PickListForLsThingsSelectController extends PickListSelectController
 
-	initialize: ->
-		super()
+	initialize: (options) ->
+		super(options)
 		if @options.displayName? #examples are codeName, corpName
 			@displayName = @options.displayName
 		else

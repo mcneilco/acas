@@ -1,7 +1,7 @@
 class window.Thing extends Backbone.Model
 	lsProperties: {}
 	className: "Thing"
-	deleteEmptyLabelsAndValsBeforeSave: true
+	deleteEmptyLabelsValsItxsBeforeSave: true
 #	urlRoot: "/api/things"
 
 	defaults: () ->
@@ -69,41 +69,42 @@ class window.Thing extends Backbone.Model
 
 	toJSON: (options) ->
 		attsToSave = super(options)
-		if @deleteEmptyLabelsAndValsBeforeSave
+		if @deleteEmptyLabelsValsItxsBeforeSave
 			toDel = attsToSave.lsLabels.filter (lab) ->
 				(lab.get('ignored') || lab.get('labelText')=="") && lab.isNew()
 			for lab in toDel
 				attsToSave.lsLabels.remove lab
 
-		if attsToSave.firstLsThings?
-			toDel = attsToSave.firstLsThings.filter (itx) ->
-				!itx.getItxThing().id?
-			for itx in toDel
-				attsToSave.firstLsThings.remove itx
-			if attsToSave.firstLsThings.length == 0
-				delete attsToSave.firstLsThings
+			if attsToSave.firstLsThings?
+				toDel = attsToSave.firstLsThings.filter (itx) ->
+					!itx.getItxThing().id?
+				for itx in toDel
+					attsToSave.firstLsThings.remove itx
+				if attsToSave.firstLsThings.length == 0
+					delete attsToSave.firstLsThings
 
-		if attsToSave.secondLsThings?
-			toDel = attsToSave.secondLsThings.filter (itx) ->
-				!itx.getItxThing().id?
-			for itx in toDel
-				attsToSave.secondLsThings.remove itx
-			if attsToSave.secondLsThings.length == 0
-				delete attsToSave.secondLsThings
+			if attsToSave.secondLsThings?
+				toDel = attsToSave.secondLsThings.filter (itx) ->
+					!itx.getItxThing().id?
+				for itx in toDel
+					attsToSave.secondLsThings.remove itx
+				if attsToSave.secondLsThings.length == 0
+					delete attsToSave.secondLsThings
 
-		if @lsProperties.defaultLabels?
-			for dLabel in @lsProperties.defaultLabels
-				delete attsToSave[dLabel.key]
+			if @lsProperties.defaultLabels?
+				for dLabel in @lsProperties.defaultLabels
+					delete attsToSave[dLabel.key]
 
-		if @lsProperties.defaultFirstLsThingItx?
-			for itx in @lsProperties.defaultFirstLsThingItx
-				delete attsToSave[itx.key]
+			if @lsProperties.defaultFirstLsThingItx?
+				for itx in @lsProperties.defaultFirstLsThingItx
+					delete attsToSave[itx.key]
 
-		if @lsProperties.defaultSecondLsThingItx?
-			for itx in @lsProperties.defaultSecondLsThingItx
-				delete attsToSave[itx.key]
+			if @lsProperties.defaultSecondLsThingItx?
+				console.log "deleting empty 2nd ls thing itxs"
 
-		if @deleteEmptyLabelsAndValsBeforeSave
+				for itx in @lsProperties.defaultSecondLsThingItx
+					delete attsToSave[itx.key]
+
 			if @lsProperties.defaultValues?
 				for dValue in @lsProperties.defaultValues
 					if attsToSave[dValue.key]?
