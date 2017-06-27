@@ -2,29 +2,34 @@
 request = require 'request'
 _ = require 'underscore'
 
-promise = require 'promise'
+Promise = require 'promise'
 
 
 class BalanceAccess
-	constructor: (balanceName, balanceUrl) ->
+	constructor: (balanceName, balanceUrl, room) ->
 		@balanceName = balanceName
 		@balanceUrl = balanceUrl
 		@isAvailable = true
 		@currentConnectedUser = null
 		@status = "idle"
 		@balanceConnectQueue = []
+		@room = room
+		@heartBeat = null
 
 	###
 	get the current status of the balance from the node server connected to the balance
 	###
 	getBalanceStatus: =>
-		balanceStatusURL = @balanceUrl + "api/getBalanceStatus/#{@balanceName}"
+		balanceStatusURL = @balanceUrl + "api/getBalanceStatus?balanceId=#{@balanceName}"
 		return new Promise((resolve, reject) =>
 			request(
 				method: 'GET'
 				url: balanceStatusURL
 				json: true
+				timeout: 2000
 			, (error, response, json) =>
+#				console.log "error", error
+#				console.log "json", json
 				if error?
 					reject error
 				else
@@ -32,6 +37,39 @@ class BalanceAccess
 			)
 		)
 
+	startHeartBeat: =>
+		unless @heartBeat?
+			@heartBeat = setInterval( =>
+				@getBalanceStatus().then((balanceStatus) =>
+					unless balanceStatus is @status
+						@status = balanceStatus
+						switch @status
+							when "idle"
+								@room.emit('youShouldTryConnecting')
+							when "in_use"
+								@room.emit('in_use')
+				).catch((err) =>
+					@room.emit("device_server_offline")
+				)
+			, 1000)
+
+	clearHeartBeat: =>
+		clearInterval(@heartBeat)
+		@heartBeat = null
+
+	disconnectFromBalance: =>
+		disconnectFromBalanceURL = @balanceUrl + "api/disconnectFromBalance"
+		return new Promise((resolve, reject) =>
+			request(
+				method: 'GET'
+				url: disconnectFromBalanceURL
+			, (error, response, json) ->
+				if error?
+					reject error
+				else
+					resolve json.message
+			)
+		)
 
 	removeUserFromQueue: (clientId) =>
 		if @currentConnectedUser.clientId is clientId
@@ -61,6 +99,7 @@ class BalanceAccess
 		return new Promise((resolve, reject) =>
 			@getBalanceStatus().then((balanceStatus) =>
 				@status = balanceStatus
+				@startHeartBeat()
 				switch @status
 					when "idle"
 						if @isAvailable
@@ -79,6 +118,8 @@ class BalanceAccess
 					when "in_use"
 						reject {status: "in_use"}
 			).catch((err) =>
+				console.log "err"
+				console.log err
 				reject {status: "device_server_offline"}
 			)
 		)
@@ -108,6 +149,20 @@ class BalanceAccess
 		@balanceConnectQueue.shift()
 		@currentConnectedUser = null
 
+	zeroBalance: =>
+		zeroBalanceURL = @balanceUrl + "api/zeroBalance"
+		console.log "zeroBalanceURL", zeroBalanceURL
+		return new Promise((resolve, reject) =>
+			request(
+				method: 'POST'
+				url: zeroBalanceURL
+				json: true
+				body: {'callbackURL': global.app.get('port') + '/api/tareSingleVial/zeroBalanceComplete'}
+			, (error, response, json) ->
+				resolve json
+			)
+		)
+
 
 class DeviceSocketController
 	constructor: (io, nameSpace) ->
@@ -120,10 +175,6 @@ class DeviceSocketController
 
 	setupEventListeners: =>
 		@nameSpacedRoom.on('connection', (socket) =>
-			console.log "socket.request.username"
-			console.log socket.request.user
-			console.log socket.request.session
-			#console.log socket.request.session.passport.user
 			socket.on('connectToDevice', (payload, callback) =>
 				@handleConnectToDevice(socket, payload, callback)
 			)
@@ -139,20 +190,25 @@ class DeviceSocketController
 			socket.on('disconnectAllUsers', (callback) =>
 				@handleDisconnectAllUsers(socket, callback)
 			)
+			socket.on('zeroBalance', (payload) =>
+				@handleZeroBalance(socket, payload)
+			)
 		)
 
 	handleConnectToDevice: (socket, payload, callback) ->
-		unless @balances[payload.deviceName]
-			@balances[payload.deviceName] = new BalanceAccess(payload.deviceName, payload.deviceUrl)
-		socket.join(payload.deviceName)
-		@usersInRoom[socket.id] = payload.deviceName
-		balanceAccess = @balances[payload.deviceName]
+		unless @balances[payload.deviceUrl]
+			@balances[payload.deviceUrl] = new BalanceAccess(payload.deviceName, payload.deviceUrl, @nameSpacedRoom)
+		socket.join(payload.deviceUrl)
+		@usersInRoom[socket.id] = payload.deviceUrl
+		balanceAccess = @balances[payload.deviceUrl]
 		balanceAccessPromise = balanceAccess.connectClient(socket.id, payload.userName, socket)
 		balanceAccessPromise.then(() =>
+			console.log "balanceAccessPromise.then"
 			@currentlyConnectedSocket = socket
 			return callback(null, 'Connected to device')
 		)
 		balanceAccessPromise.catch((err) =>
+			console.log "balanceAccessPromise.catch err"
 			if err.status is "not_available"
 				return callback({status: "not_available", userName: err.connectedUser.userName, clientId: err.connectedUser.clientId}, null)
 			else
@@ -173,6 +229,8 @@ class DeviceSocketController
 			socket.broadcast.to(nextUserInQueue.clientId).emit('youShouldTryConnecting')
 		else
 			socket.broadcast.emit('alertAllDisconnectedFromDevice')
+			balanceAccess.clearHeartBeat()
+			balanceAccess.disconnectFromBalance()
 		socket.leave(@usersInRoom[socket.id])
 		socket.emit('disconnectedFromDevice')
 
@@ -185,6 +243,8 @@ class DeviceSocketController
 			socket.broadcast.to(nextUserInQueue.clientId).emit('youShouldTryConnecting')
 		else
 			socket.broadcast.emit('alertAllDisconnectedFromDevice')
+			balanceAccess.clearHeartBeat()
+			balanceAccess.disconnectFromBalance()
 
 	handleBootUser: (socket, payload, callback) ->
 		balanceAccess = @balances[@usersInRoom[socket.id]]
@@ -200,6 +260,20 @@ class DeviceSocketController
 		balanceAccess.clearAllUsers()
 		socket.broadcast.emit('alertAllDisconnectedFromDevice')
 		callback()
+
+	broadCastToAllUsers: (eventName) ->
+		@nameSpacedRoom.emit(eventName)
+
+	handleZeroBalance: (socket) ->
+		balanceAccess = @balances[@usersInRoom[socket.id]]
+		balanceAccessPromise = balanceAccess.zeroBalance()
+		balanceAccessPromise.then(() =>
+			console.log "balanceAccessPromise.then"
+		)
+		balanceAccessPromise.catch((err) =>
+			console.log "balanceAccessPromise.catch err"
+		)
+		socket.broadcast.emit('in_use')
 
 
 exports.DeviceSocketController = DeviceSocketController
