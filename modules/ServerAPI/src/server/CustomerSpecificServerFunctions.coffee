@@ -227,7 +227,11 @@ exports.getAuthors = (req, resp) -> #req passed in as input to be able to filter
 	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 	serverUtilityFunctions = require "#{ACAS_HOME}/routes/ServerUtilityFunctions.js"
 	baseurl = config.all.client.service.persistence.fullpath+"authors/codeTable"
-	#TODO: need to change if want to filter users by roles
+
+	if req.query.roleType? and req.query.roleKind? and req.query.roleName?
+		baseurl = config.all.client.service.persistence.fullpath+"authors/findByRoleTypeKindAndName"
+		baseurl += "?roleType=#{req.query.roleType}&roleKind=#{req.query.roleKind}&roleName=#{req.query.roleName}&format=codeTable"
+
 	serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 exports.relocateEntityFile = (fileValue, entityCodePrefix, entityCode, callback) ->
