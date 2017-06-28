@@ -1,0 +1,15 @@
+extends layout
+block content
+	script(type='text/javascript', src='/lib/JSME_2017-02-26/jsme/jsme.nocache.js')
+	script
+        $(function() {
+            window.jsmeOnLoad = function() {
+				var sketcher = new JSApplet.JSME("bv_sketcherCanvas", "500px", "300px", {
+					//optional parameters
+				"options": "query,hydrogens"
+				});
+				sketcher.repaint();
+            };
+
+
+

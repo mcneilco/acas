@@ -1,0 +1,14 @@
+!!! 5
+html
+    head
+
+        title= title
+        meta(http-equiv="X-UA-Compatible" content="chrome=1")
+        script(type='text/javascript', src='/lib/JSME_2017-02-26/jsme/jsme.nocache.js')
+    body
+        div#bv_sketcherCanvas
+    script
+        window.jsmeOnLoad = function() {
+            var sketcher = new JSApplet.JSME("bv_sketcherCanvas", "500px", "300px", {"options": "oldlook,star"});
+        };
+
