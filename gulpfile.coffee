@@ -80,25 +80,15 @@ getPythonPath = (path) ->
   path.dirname = outputDirname
   return
 
-addREnvironmentCleanUp = (file,contents) ->
-  # file contents are handed 
-  # over as buffers 
-  if path.extname(file.path) in [".R",".r"] && contents.match('# ROUTE:.*')
-    cleanFunction = "racas::cleanEnvironment()"
-    contents = "#{cleanFunction}\n\r#{contents}\r\n#{cleanFunction}\r\n"
-  return contents
+getAssetsPath = (path) ->
+  module = path.dirname.split('/')[0]
+  if path.basename == 'assets' and path.extname == ''
+    path.basename = ''
+    path.dirname = ''
+  outputDirname = module + '/' + path.dirname.replace(module + '/src/server/assets', '')
+  path.dirname = outputDirname
+  return
 
-modify = (options = {}) ->
-  through.obj (file, enc, next) ->
-    error = null
-    if file.isBuffer()
-      if fileModifier = options.fileModifier
-        try
-          content = fileModifier file, file.contents.toString 'utf8'
-          file.contents = new Buffer content
-        catch _error
-          console.log _error
-    next error, file
 
 # ------------------------------------------------- Read Inputs
 
@@ -327,6 +317,18 @@ taskConfigs =
       src: getGlob('modules/CmpdReg/src/**')
       dest: build + '/public/CmpdReg'
       options: _.extend _.clone(globalCopyOptions), {}
+    ,
+      taskName: "serverAssets"
+      src: getGlob('modules/**/src/server/assets/**')
+      dest: build + '/src/assets'
+      options: _.extend _.clone(globalCopyOptions), {}
+      renameFunction: getAssetsPath
+    ,
+      taskName: "clientAssets"
+      src: getGlob('modules/**/src/client/assets/**')
+      dest: build + '/public/assets'
+      options: _.extend _.clone(globalCopyOptions), {}
+      renameFunction: getFirstFolderName
   ],
   others:
     packageJSON:
