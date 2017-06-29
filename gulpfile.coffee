@@ -89,6 +89,25 @@ getAssetsPath = (path) ->
   path.dirname = outputDirname
   return
 
+addREnvironmentCleanUp = (file,contents) ->
+  # file contents are handed 
+  # over as buffers 
+  if path.extname(file.path) in [".R",".r"] && contents.match('# ROUTE:.*')
+    cleanFunction = "racas::cleanEnvironment()"
+    contents = "#{cleanFunction}\n\r#{contents}\r\n#{cleanFunction}\r\n"
+  return contents
+
+modify = (options = {}) ->
+  through.obj (file, enc, next) ->
+    error = null
+    if file.isBuffer()
+      if fileModifier = options.fileModifier
+        try
+          content = fileModifier file, file.contents.toString 'utf8'
+          file.contents = new Buffer content
+        catch _error
+          console.log _error
+    next error, file
 
 # ------------------------------------------------- Read Inputs
 
