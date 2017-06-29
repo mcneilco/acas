@@ -259,7 +259,7 @@ postThing = (isBatch, req, resp) ->
 		transactionOptions = {
 			comments: "new experiment"
 		}
-	transactionOptions.recordedBy = req.session.passport.user.username
+	transactionOptions.recordedBy = if req.session?.passport?.user?.username? then req.session.passport.user.username else "acas"
 	transactionOptions.status = "PENDING"
 	transactionOptions.type = "NEW"
 	serverUtilityFunctions.createLSTransaction2 thingToSave.recordedDate, transactionOptions, (transaction) ->
