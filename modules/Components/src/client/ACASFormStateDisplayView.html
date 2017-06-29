@@ -16,14 +16,14 @@
     <td class="<%=valueClass%>"><%=value%></td>
     <td><%=changedBy%></td>
     <td><%=changedDate%></td>
-    <td><%=reason%></td>
+    <td class="bv_reason"><%=reason%></td>
 </script>
 
 <script type="text/template" id="ACASFormStateDisplayValueEditView" xmlns="http://www.w3.org/1999/html">
     <h5>launching controller must provide or set table label</h5>
     <table class="table table-bordered table-striped table-hover bv_valueHistoryTable" style="margin: 0px; padding: 0px; border: 0px; width: 100%; ">
         <thead style="">
-            <th>Old Value</th>
+            <th>Value</th>
             <th>Changed By</th>
             <th>Changed Date</th>
             <th>Reason</th>
@@ -31,9 +31,26 @@
         <tbody style="">
         </tbody>
     </table>
-    <div class="control-group span9">
-        <button type="button" class="btn bv_saveThing pull-right" style="margin-right:119px;">Update</button>
-        <div class="bv_updatingThing pull-right hide" style="margin-right:5px;padding-top:5px;color:red;">Saving...</div>
+
+    <div class="modal-header">
+        <h4>Update Value</h4>
     </div>
+
+    <div class="control-group bv_group_state">
+        <label class="control-label">New Value</label>
+        <div class="controls">
+            <input class="bv_newValue" type="text"/>
+        </div>
+    </div>
+
+    <div class="controls modal-body">
+        <label for="message-text" class="form-control-label">Reason:</label>
+        <textarea class="form-control bv_reasonForUpdate" maxlength="250" style="width:95%"></textarea>
+        <label class="form-control bv_charactersRemaining" style="width:95%">250 characters remaining</label>
+    </div>
+    <div class="modal-footer">
+        <button class="btn bv_saveBtn" disabled="disabled" data-dismiss="modal" aria-hidden="true">OK</button>
+    </div>
+
 
 </script>

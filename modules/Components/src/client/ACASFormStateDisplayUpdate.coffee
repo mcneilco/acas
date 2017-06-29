@@ -154,20 +154,26 @@ class window.ACASFormStateDisplayOldValueController extends Backbone.View
 			attrs.changedDate = UtilityFunctions::convertMSToYMDDate @model.get('modifiedDate')
 		else
 			attrs.changedDate = UtilityFunctions::convertMSToYMDDate @model.get('recordedDate')
-
-		if @model.get 'ignored'
-			attrs.reason = "not implemented"
-		else
-			attrs.reason = "current value"
+		attrs.reason = "current value"
 
 		$(@el).empty()
 		$(@el).html @template(attrs)
 
+		if @model.get 'ignored'
+			$.ajax
+				type: 'GET'
+				url: "/api/transaction/"+@model.get 'lsTransaction'
+				json: true
+				success: (response) =>
+					@$('.bv_reason').html response.comments
+
 		@
 
 class window.ACASFormStateDisplayValueEditController extends Backbone.View
-
 	template: _.template($("#ACASFormStateDisplayValueEditView").html())
+
+	events: ->
+		"keyup .bv_reasonForUpdate": "reasonForUpdateChanged"
 
 	initialize: ->
 
@@ -184,9 +190,10 @@ class window.ACASFormStateDisplayValueEditController extends Backbone.View
 
 		@
 
+	setupEditor: ->
+		
+
 #TODO value editor:
-# - new node service to fetch transaction to display change reason
-# http://localhost:8080/acas/lstransactions/42
 # - maybe show transaction creator as modified by and date?
 # - style value editor so it floats or slides down from top of table or something. It should be modal
 # - trigger save at thing level, wait for success to close

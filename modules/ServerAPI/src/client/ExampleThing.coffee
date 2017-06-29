@@ -357,8 +357,8 @@ ExampleTableAuditConf =
 			stateType: 'metadata'
 			stateKind: 'example thing data'
 			tableWrapper: "bv_dataTable"
-			tableLabel: "Example Thing Data Table - Audit Mode"
-			auditMode: true
+			tableLabel: "Example Thing Data Table - Edit Mode"
+			allowEdit: true
 #			sortKind: 'media component'
 			values: [
 				modelDefaults:
@@ -462,7 +462,6 @@ class window.ExampleTableAuditController extends AbstractThingFormController
 
 	modelChangeCallback: (method, model) =>
 		@trigger 'amDirty'
-
 
 	updateModel: =>
 
