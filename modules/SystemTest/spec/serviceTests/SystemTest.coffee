@@ -221,9 +221,6 @@ describe "D. Access to rApache -nondestructive", ->
 	describe "and then to racas runfunction", ->
 		before (done) ->
 			@.timeout(20000)
-			console.log "brian"
-			console.dir JSON.stringify(runRFunctionServiceTestJSON.runRFunctionRequest)
-			console.log(config.all.client.service.rapache.fullpath + "runfunction")
 			request.post
 				url: config.all.client.service.rapache.fullpath + "runfunction"
 				json: true
