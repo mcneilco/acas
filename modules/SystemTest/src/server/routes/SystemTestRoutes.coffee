@@ -826,15 +826,18 @@ exports.runSystemTestInternal = (force, callback) ->
 		else if force || err.code == 'ENOENT'
 			Mocha = require('mocha')
 			# Instantiate a Mocha instance.
-			mocha = new Mocha {
+			mochaOpts =
 				reporter: 'mochawesome'
-				reporterOptions: {
+				reporterOptions:
 					reportDir: path.resolve(path.join(config.all.server.datafiles.relative_path, "systemReport/")),
 					reportName: 'systemReport',
 					reportTitle: 'ACAS System Report',
 					inlineAssets: true
-				}
-			}
+
+			unless config.all.server.systemTest.runDestructive
+				mochaOpts.grep = "-nondestructive"
+
+			mocha = new Mocha mochaOpts
 
 			testDir = "src/spec/SystemTest/serviceTests"
 			# Add each .js file to the mocha instance
