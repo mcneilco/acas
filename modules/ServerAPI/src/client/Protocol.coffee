@@ -66,6 +66,20 @@ class window.Protocol extends BaseEntity
 
 		projectCodeValue
 
+	getCurveDisplayMin: ->
+		minY = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "screening assay", "numericValue", "curve display min"
+		if (minY.get('numericValue') is undefined or minY.get('numericValue') is "") and @isNew()
+			minY.set numericValue: -20.0
+
+		minY
+
+	getCurveDisplayMax: ->
+		maxY = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "screening assay", "numericValue", "curve display max"
+		if (maxY.get('numericValue') is undefined or maxY.get('numericValue') is "") and @isNew()
+			maxY.set numericValue: 120.0
+
+		maxY
+
 	validate: (attrs) ->
 		errors = []
 		errors.push super(attrs)...
@@ -89,6 +103,28 @@ class window.Protocol extends BaseEntity
 					errors.push
 						attribute: 'assayTreeRule'
 						message: "Assay tree rule should not end with '/'"
+		if window.conf.protocol?.showCurveDisplayParams?
+			showCurveDisplayParams = window.conf.protocol.showCurveDisplayParams
+		else
+			showCurveDisplayParams = true
+		if showCurveDisplayParams
+			maxY = @getCurveDisplayMax().get('numericValue')
+			if isNaN(maxY) and maxY != "" and maxY?
+				errors.push
+					attribute: 'maxY'
+					message: "maxY must be a number"
+			minY = @getCurveDisplayMin().get('numericValue')
+			if isNaN(minY) and minY != "" and minY?
+				errors.push
+					attribute: 'minY'
+					message: "minY must be a number"
+			if maxY<minY and (maxY!="" and maxY? and minY!="" and minY?)
+				errors.push
+					attribute: 'maxY'
+					message: "maxY must be greater than minY"
+				errors.push
+					attribute: 'minY'
+					message: "minY must be less than maxY"
 
 		if errors.length > 0
 			return errors
@@ -119,6 +155,8 @@ class window.ProtocolBaseController extends BaseEntityController
 			"keyup .bv_assayPrinciple": "handleAssayPrincipleChanged"
 			"change .bv_creationDate": "handleCreationDateChanged"
 			"click .bv_creationDateIcon": "handleCreationDateIconClicked"
+			"keyup .bv_maxY": "handleCurveDisplayMaxChanged"
+			"keyup .bv_minY": "handleCurveDisplayMinChanged"
 			"click .bv_closeDeleteProtocolModal": "handleCloseProtocolModal"
 			"click .bv_confirmDeleteProtocolButton": "handleConfirmDeleteProtocolClicked"
 			"click .bv_cancelDelete": "handleCancelDeleteClicked"
@@ -215,6 +253,14 @@ class window.ProtocolBaseController extends BaseEntityController
 			@$('.bv_creationDate').val UtilityFunctions::convertMSToYMDDate(@model.getCreationDate().get('dateValue'))
 		@$('.bv_assayTreeRule').val @model.getAssayTreeRule().get('stringValue')
 		@$('.bv_assayPrinciple').val @model.getAssayPrinciple().get('clobValue')
+		showCurveDisplayParams = true
+		if window.conf.protocol?.showCurveDisplayParams?
+			showCurveDisplayParams = window.conf.protocol.showCurveDisplayParams
+		if showCurveDisplayParams
+			@$('.bv_maxY').val(@model.getCurveDisplayMax().get('numericValue'))
+			@$('.bv_minY').val(@model.getCurveDisplayMin().get('numericValue'))
+		else
+			@$('.bv_group_assayStageWrapper').hide()
 		super()
 		@
 
@@ -340,3 +386,16 @@ class window.ProtocolBaseController extends BaseEntityController
 	handleAssayTreeRuleChanged: =>
 		value = UtilityFunctions::getTrimmedInput @$('.bv_assayTreeRule')
 		@handleValueChanged "AssayTreeRule", value
+
+	handleCurveDisplayMaxChanged: =>
+		value = UtilityFunctions::getTrimmedInput @$('.bv_maxY')
+		unless value is ""
+			value = parseFloat value
+		@handleValueChanged "CurveDisplayMax", value
+
+	handleCurveDisplayMinChanged: =>
+		value = UtilityFunctions::getTrimmedInput @$('.bv_minY')
+		unless value is ""
+			value = parseFloat value
+		@handleValueChanged "CurveDisplayMin", value
+

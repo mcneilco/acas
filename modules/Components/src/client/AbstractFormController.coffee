@@ -87,7 +87,7 @@ class window.AbstractThingFormController extends AbstractFormController
 		unless @formFields?
 			@formFields = {}
 
-		for field in fieldDefs.labels.concat(fieldDefs.values)
+		for field in fieldDefs.labels.concat(fieldDefs.values).concat(fieldDefs.firstLsThingItxs).concat(fieldDefs.secondLsThingItxs)
 			opts =
 				modelKey: field.key
 				inputClass: field.fieldSettings.inputClass
@@ -101,12 +101,23 @@ class window.AbstractThingFormController extends AbstractFormController
 				when 'label' then newField = new ACASFormLSLabelFieldController opts
 				when 'numericValue' then newField = new ACASFormLSNumericValueFieldController opts
 				when 'codeValue' then newField = new ACASFormLSCodeValueFieldController opts
+				when 'htmlClobValue'
+					opts.rows = field.fieldSettings?.rows
+					newField = new ACASFormLSHTMLClobValueFieldController opts
+				when 'thingInteractionSelect'
+					opts.thingType = field.fieldSettings.thingType
+					opts.thingKind = field.fieldSettings.thingKind
+					opts.queryUrl = field.fieldSettings.queryUrl
+					opts.labelType = field.fieldSettings.labelType
+					newField = new ACASFormLSThingInteractionFieldController opts
+				when 'stringValue' then newField = new ACASFormLSStringValueFieldController opts
 
 			@$("."+field.fieldSettings.fieldWrapper).append newField.render().el
+			newField.afterRender()
 			@formFields[field.key] = newField
 		@setupFormTables fieldDefs.stateTables
 
-	fillFieldsFromModels: ->
+	fillFieldsFromModels: =>
 		for modelKey, formField of @formFields
 			formField.renderModelContent()
 		for stateKey, formTable of @formTables
