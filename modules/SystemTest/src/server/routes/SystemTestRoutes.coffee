@@ -810,12 +810,13 @@ exports.deleteSELFileInternal = (callback) ->
 
 exports.runSystemTest = (req, resp) ->
 	force = req.body.force == true
+	grepTerms = if req.body.grepTerms? then req.body.grepTerms else []
 	req.setTimeout 86400000
-	exports.runSystemTestInternal force, (statusCode, response) ->
+	exports.runSystemTestInternal force, grepTerms, (statusCode, response) ->
 		resp.statusCode = statusCode
-		resp.end response
+		resp.json response
 
-exports.runSystemTestInternal = (force, callback) ->
+exports.runSystemTestInternal = (force, grepTerms, callback) ->
 	fs = require('fs')
 	if !force?
 		force = false
@@ -835,7 +836,9 @@ exports.runSystemTestInternal = (force, callback) ->
 					inlineAssets: true
 
 			unless config.all.server.systemTest.runDestructive
-				mochaOpts.grep = "-nondestructive"
+				grepTerms.push "-nondestructive"
+			if grepTerms.length > 0
+				mochaOpts.grep = grepTerms.join '|'
 
 			mocha = new Mocha mochaOpts
 
@@ -862,9 +865,9 @@ exports.runSystemTestInternal = (force, callback) ->
 						if err
 							throw err
 						console.log "successfully deleted #{systemTestProgressFile}"
-					fs.readFile path.resolve(path.join(config.all.server.datafiles.relative_path, "systemReport/systemReport.html")), (err, data) =>
+					fs.readFile path.resolve(path.join(config.all.server.datafiles.relative_path, "systemReport/mochawesome.json")), (err, data) =>
 						if callback?
-							callback 200, data
+							callback 200, JSON.parse(data)
 					return
 				).on('pass', (test) ->
 					console.debug 'Test passed'

@@ -142,7 +142,7 @@ startApp = ->
 	csUtilities.logUsage("ACAS Node server started", "started", "")
 
 	if config.all.server.systemTest?.runOnStart? && config.all.server.systemTest.runOnStart
-		systemTest.runSystemTestInternal false, (status, output) ->
+		systemTest.runSystemTestInternal true, [], (status, output) ->
 			console.log "system test completed"
 
 startApp()
