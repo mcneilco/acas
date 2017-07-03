@@ -337,6 +337,12 @@ taskConfigs =
       dest: build + '/public/CmpdReg'
       options: _.extend _.clone(globalCopyOptions), {}
     ,
+      taskName: "spec"
+      src: getGlob("modules/**/spec/**", "!modules/**/spec/**/*.coffee", "!modules/**/spec/testFixtures/*.coffee")
+      dest: build + '/src/spec'
+      options: _.extend _.clone(globalCopyOptions), {}
+      renameFunction: getTestFixuresPath
+    ,
       taskName: "serverAssets"
       src: getGlob('modules/**/src/server/assets/**')
       dest: build + '/src/assets'
