@@ -20,37 +20,35 @@
 </script>
 
 <script type="text/template" id="ACASFormStateDisplayValueEditView" xmlns="http://www.w3.org/1999/html">
-    <h5>launching controller must provide or set table label</h5>
-    <table class="table table-bordered table-striped table-hover bv_valueHistoryTable" style="margin: 0px; padding: 0px; border: 0px; width: 100%; ">
-        <thead style="">
-            <th>Value</th>
-            <th>Changed By</th>
-            <th>Changed Date</th>
-            <th>Reason</th>
-        </thead>
-        <tbody style="">
-        </tbody>
-    </table>
+    <div class="modal hide bv_myPanel">
+        <div class="modal-header">
+            <h4 class="bv_header">launching controller must provide or set table label</h4>
+        </div>
+        <table class="table table-bordered table-striped table-hover bv_valueHistoryTable" style="margin: 0px; padding: 0px; border: 0px; width: 100%; ">
+            <thead style="">
+                <th>Value</th>
+                <th>Changed By</th>
+                <th>Changed Date</th>
+                <th>Reason</th>
+            </thead>
+            <tbody style="">
+            </tbody>
+        </table>
 
-    <div class="modal-header">
-        <h4>Update Value</h4>
-    </div>
+        <div class="modal-header">
+            <h5>Change Value</h5>
+        </div>
 
-    <div class="control-group bv_group_state">
-        <label class="control-label">New Value</label>
-        <div class="controls">
-            <input class="bv_newValue" type="text"/>
+        <div class="bv_valueField"></div>
+        <div class="controls modal-body">
+            <label for="message-text" class="form-control-label">Reason:</label>
+            <textarea class="form-control bv_reasonForUpdate" maxlength="250" style="width:95%"></textarea>
+            <label class="form-control bv_charactersRemaining" style="width:95%">250 characters remaining</label>
+        </div>
+        <div class="modal-footer">
+            <button class="btn bv_cancelBtn" aria-hidden="true">Cancel</button>
+            <button class="btn bv_saveBtn" disabled="disabled" aria-hidden="true">OK</button>
         </div>
     </div>
-
-    <div class="controls modal-body">
-        <label for="message-text" class="form-control-label">Reason:</label>
-        <textarea class="form-control bv_reasonForUpdate" maxlength="250" style="width:95%"></textarea>
-        <label class="form-control bv_charactersRemaining" style="width:95%">250 characters remaining</label>
-    </div>
-    <div class="modal-footer">
-        <button class="btn bv_saveBtn" disabled="disabled" data-dismiss="modal" aria-hidden="true">OK</button>
-    </div>
-
 
 </script>

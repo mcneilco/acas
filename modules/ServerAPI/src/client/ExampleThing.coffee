@@ -359,6 +359,7 @@ ExampleTableAuditConf =
 			tableWrapper: "bv_dataTable"
 			tableLabel: "Example Thing Data Table - Edit Mode"
 			allowEdit: true
+			moduleName: "ExampleThing"
 #			sortKind: 'media component'
 			values: [
 				modelDefaults:
@@ -441,6 +442,7 @@ class window.ExampleTableAuditController extends AbstractThingFormController
 			$(@el).empty()
 			$(@el).html @template()
 			@setupFormFields(ExampleTableAuditConf.formFieldDefinitions)
+			@formDisplayTables['exampleThingTable'].on 'thingSaveRequested', @handleUpdateThing
 			@hasRendered = true
 
 		@
@@ -465,7 +467,8 @@ class window.ExampleTableAuditController extends AbstractThingFormController
 
 	updateModel: =>
 
-	handleUpdateThing: =>
+	handleUpdateThing: (transactionComment) =>
+		@model.set 'transactionOptions', comments: transactionComment
 		@model.prepareToSave()
 		@model.reformatBeforeSaving()
 		@model.save()

@@ -79,11 +79,13 @@ class window.ACASFormStateDisplayUpdateController extends Backbone.View
 			@callWhenSetupComplete = @completeRenderModelContent
 
 	completeRenderModelContent: ->
-		@headerController = new ACASFormStateDisplayUpdateHeaderRowController
-			tableDef: @options.tableDef
-			showUnits: @options.showUnits
-		@$("thead").append @headerController.render().el
+		unless @headerController?
+			@headerController = new ACASFormStateDisplayUpdateHeaderRowController
+				tableDef: @options.tableDef
+				showUnits: @options.showUnits
+			@$("thead").append @headerController.render().el
 
+		@$("tbody").empty()
 		@getCurrentStates().each (state) =>
 			rowController = new ACASFormStateDisplayUpdateRowController
 				collection: state.get 'lsValues'
@@ -94,7 +96,10 @@ class window.ACASFormStateDisplayUpdateController extends Backbone.View
 				@currentCellEditor = new ACASFormStateDisplayValueEditController
 					collection: values
 					el: @$('.bv_valueEditor')
+					tableDef: @tableDef
+					stateID: state.id
 				@currentCellEditor.render()
+				@currentCellEditor.on 'saveNewValue', @handleCellUpdate
 
 	applyOptions: ->
 		if @tableDef?.tableLabel?
@@ -136,6 +141,28 @@ class window.ACASFormStateDisplayUpdateController extends Backbone.View
 		states.sort()
 		return states
 
+	handleCellUpdate: (valInfo) =>
+		stateToUpdate = @getCurrentStates().findWhere id: valInfo.stateID
+		if !stateToUpdate?
+			window.alert "internal problem finding state to update"
+			return
+
+		oldValue = stateToUpdate.getValuesByTypeAndKind valInfo.newValue.get('lsType'), valInfo.newValue.get('lsKind')
+		if oldValue.length != 1
+			window.alert "internal problem finding value to update"
+			return
+		oldValue[0].set
+			ignored: true
+			modifiedBy: window.AppLaunchParams.loginUser.username
+			modifiedDate: new Date().getTime()
+			isDirty: true
+		valInfo.newValue.set
+			recoerdedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
+
+		stateToUpdate.get('lsValues').add valInfo.newValue
+		@trigger 'thingSaveRequested', valInfo.comment
+
 class window.ACASFormStateDisplayOldValueController extends Backbone.View
 	tagName: 'tr'
 	template: _.template($("#ACASFormStateDisplayOldValueView").html())
@@ -174,24 +201,94 @@ class window.ACASFormStateDisplayValueEditController extends Backbone.View
 
 	events: ->
 		"keyup .bv_reasonForUpdate": "reasonForUpdateChanged"
+		"click .bv_cancelBtn": "handleCancelClicked"
+		"click .bv_saveBtn": "handleSaveClicked"
 
 	initialize: ->
+		@tableDef = @options.tableDef
+		for valDef in @tableDef.values
+			if valDef.modelDefaults.kind == @collection.at(0).get('lsKind')
+				@valueDef = valDef
+		unless @valueDef?
+			console.log "There is a configuration problem with ACASFormStateDisplayValueEditController. Trying to edit a value whose kind does not have a matching definition"
+		@moduleName = if @tableDef.moduleName then @tableDef.moduleName else "State Editor"
+		@commentPrefix = @moduleName+":"
+		@allowedCommentLength = 250 - @commentPrefix.length
 
 	render: =>
 		$(@el).empty()
 		$(@el).html @template()
 
+		@$('.bv_header').html "\"#{@valueDef.fieldSettings.formLabel}\" Value History and Edit"
 		@collection.comparator = 'id'
 		@collection.sort()
 		@collection.each (val) =>
 			oldRow = new ACASFormStateDisplayOldValueController
 				model: val
 			@$("tbody").append oldRow.render().el
+		@setupEditor()
+		@$('.bv_myPanel').modal
+			backdrop: "static"
+		@$('.bv_myPanel').modal "show"
 
-		@
+	reasonForUpdateChanged: ->
+		@comment = @commentPrefix + @$('.bv_reasonForUpdate').val()
+		labelText =  @allowedCommentLength-@comment.length + " characters remaining"
+		@$('.bv_charactersRemaining').text(labelText)
+		@formUpdated()
+
+	formUpdated: =>
+		if @comment == @commentPrefix or @newField.isEmpty()
+			@$('.bv_saveBtn').attr('disabled','disabled')
+		else
+			@$('.bv_saveBtn').removeAttr('disabled')
+
+	handleCancelClicked: =>
+		@$('.bv_myPanel').modal "hide"
+		$(@el).empty()
+
+	handleSaveClicked: =>
+		@trigger 'saveNewValue',
+			newValue: @newValue
+			comment: @comment
+			stateID: @options.stateID
+
+		@$('.bv_myPanel').modal "hide"
+		$(@el).empty()
+
 
 	setupEditor: ->
-		
+		currentValue = @collection.findWhere ignored: false
+
+		@newValue = new Value
+			lsType: @valueDef.modelDefaults.type
+			lsKind: @valueDef.modelDefaults.kind
+			unitType: @valueDef.modelDefaults.unitType
+			unitKind: @valueDef.modelDefaults.unitKind
+			codeType: @valueDef.modelDefaults.codeType
+			codeKind: @valueDef.modelDefaults.codeKind
+			codeOrigin: @valueDef.modelDefaults.codeOrigin
+		if currentValue?
+			opts =
+				modelKey: @valueDef.modelDefaults.kind
+				inputClass: @valueDef.fieldSettings.inputClass
+				formLabel: @valueDef.fieldSettings.formLabel
+				required: true
+				url: @valueDef.fieldSettings.url
+				thingRef: @newValue
+
+			switch @valueDef.fieldSettings.fieldType
+				when 'numericValue' then @newField = new ACASFormLSNumericValueFieldController opts
+				when 'codeValue' then @newField = new ACASFormLSCodeValueFieldController opts
+				when 'stringValue' then @newField = new ACASFormLSStringValueFieldController opts
+				when 'dateValue' then @newField = new ACASFormLSDateValueFieldController opts
+
+			@$('.bv_valueField').append @newField.render().el
+			@newField.afterRender()
+			@newField.on 'formFieldChanged', @formUpdated
+
+
+
 
 #TODO value editor:
 # - maybe show transaction creator as modified by and date?
