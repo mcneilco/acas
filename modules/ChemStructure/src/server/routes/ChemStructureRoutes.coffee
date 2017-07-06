@@ -9,6 +9,9 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/chemStructure/renderMolStructureBase64', exports.renderMolStructureBase64
 	app.post '/api/chemStructure/acasStructureMetaSearch', exports.acasStructureMetaSearch
 	app.post '/api/chemStructure/acasStructureSearch', exports.acasStructureSearch
+	app.get '/api/chemStructure/ketcher/knocknock', exports.ketcherKnocknock
+	app.get '/api/chemStructure/ketcher/layout', exports.ketcherConvertSmiles
+	app.post '/api/chemStructure/ketcher/layout', exports.ketcherLayout
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/chemStructure/renderStructureByThingCode', loginRoutes.ensureAuthenticated, exports.renderStructureByThingCode
@@ -21,6 +24,9 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/chemStructure/renderMolStructureBase64', loginRoutes.ensureAuthenticated, exports.renderMolStructureBase64
 	app.post '/api/chemStructure/acasStructureMetaSearch', loginRoutes.ensureAuthenticated, exports.acasStructureMetaSearch
 	app.post '/api/chemStructure/acasStructureSearch', loginRoutes.ensureAuthenticated, exports.acasStructureSearch
+	app.get '/api/chemStructure/ketcher/knocknock', loginRoutes.ensureAuthenticated, exports.ketcherKnocknock
+	app.get '/api/chemStructure/ketcher/layout', loginRoutes.ensureAuthenticated, exports.ketcherConvertSmiles
+	app.post '/api/chemStructure/ketcher/layout', loginRoutes.ensureAuthenticated, exports.ketcherLayout
 
 _ = require 'underscore'
 
@@ -252,4 +258,61 @@ exports.acasStructureMetaSearch = (req, resp) ->
 				console.log response
 				resp.statusCode = 500
 				resp.end JSON.stringify "ACAS structure search failed"
+		)
+
+exports.ketcherKnocknock = (req, resp) ->
+	resp.end "You are welcome!"
+
+exports.ketcherConvertSmiles = (req, resp) ->
+	if global.specRunnerTestmode
+		resp.end "Ok.\n\n  -INDIGO-06301717442D\n\n  4  3  0  0  0  0  0  0  0  0999 V2000\n   -1.3856   -0.8000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.3856   -0.8000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.7713    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0  0  0  0\n  2  3  1  0  0  0  0\n  3  4  1  0  0  0  0\nM  END\n"
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"structure/convertSmilesToMol"
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: baseurl
+			body: req.query.smiles
+			json: true
+		, (error, response, json) =>
+			console.log response
+			console.log json
+			if !error && response.statusCode == 200
+				statusMessage = "Ok.\n"
+				resp.end statusMessage+json
+			else
+				console.log 'got ajax error trying to convert smiles to MOL'
+				console.log error
+				console.log json
+				console.log response
+				resp.statusCode = 500
+				resp.end JSON.stringify "Smiles to MOL conversion failed"
+		)
+
+exports.ketcherLayout = (req, resp) ->
+	if global.specRunnerTestmode
+		resp.end "Ok.\n\n  -INDIGO-06301717442D\n\n  4  3  0  0  0  0  0  0  0  0999 V2000\n   -1.3856   -0.8000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.3856   -0.8000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.7713    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0  0  0  0\n  2  3  1  0  0  0  0\n  3  4  1  0  0  0  0\nM  END\n"
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"structure/cleanMolStructure"
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: baseurl
+			body: req.body.moldata
+			json: true
+		, (error, response, json) =>
+			console.log response
+			console.log json
+			if !error && response.statusCode == 200
+				statusMessage = "Ok.\n"
+				resp.end statusMessage+json
+			else
+				console.log 'got ajax error trying to clean MOL'
+				console.log error
+				console.log json
+				console.log response
+				resp.statusCode = 500
+				resp.end JSON.stringify "Cleaning MOL conversion failed"
 		)

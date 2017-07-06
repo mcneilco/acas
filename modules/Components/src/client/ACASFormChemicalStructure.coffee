@@ -71,7 +71,7 @@ class window.KetcherChemicalStructureController extends Backbone.View
 		$(@el).empty()
 		$(@el).html @template()
 
-		searchFrameURL = "/lib/ketcher-2.0.0-alpha.3/ketcher.html"
+		searchFrameURL = "/lib/ketcher-2.0.0-alpha.3/ketcher.html?api_path=/api/chemStructure/ketcher/"
 
 		@$('.bv_sketcherIFrame').attr 'src', searchFrameURL
 
