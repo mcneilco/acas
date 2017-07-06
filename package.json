@@ -35,7 +35,7 @@
     "jasmine-core": "^2.4.1",
     "jasmine-jquery": "^2.1.1",
     "jquery": "^2.2.0",
-    "jquery-file-upload-middleware": ">=0.1.7",
+    "jquery-file-upload-middleware": "https://github.com/mcneilco/jquery-file-upload-middleware.git",
     "jszip": "*",
     "less": "^2.6.0",
     "lodash": "^4.0.0",
@@ -57,18 +57,15 @@
     "underscore-deep-extend": ">= 0.0.0",
     "winston": "*",
     "winston-mongodb": "*",
-    "style-loader": "*",
     "bootstrap": "*",
     "exports-loader": "*",
-    "extract-text-webpack-plugin": "*",
     "url-loader": "*",
-    "file-loader": "*",
-    "jquery-file-upload-middleware": "https://github.com/mcneilco/jquery-file-upload-middleware.git",
     "yamljs": "*",
     "request-promise": "*",
-	"bluebird": "*"
+    "bluebird": "*"
   },
   "devDependencies": {
+    "coffee-script": "^1.12.4",
     "del": "^2.2.2",
     "gulp": "github:gulpjs/gulp#4.0",
     "gulp-browserify": "^0.5.1",
@@ -84,7 +81,7 @@
     "gulp-run": "^1.7.1",
     "gulp-watch": "^4.3.11",
     "gutil": "^1.6.4",
-    "coffee-script": "^1.12.4",
+    "through2": "^2.0.3",
     "yargs": "^7.0.2"
   }
 }

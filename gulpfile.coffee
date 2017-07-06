@@ -13,6 +13,8 @@ path = require('path')
 run = require('gulp-run')
 gulpif = require('gulp-if')
 _ = require('underscore')
+through = require('through2')
+
 node = undefined
 
 # ---------------------------------------------- Functions
@@ -77,6 +79,26 @@ getPythonPath = (path) ->
   outputDirname = module + '/' + path.dirname.replace(module + '/src/server/python', '')
   path.dirname = outputDirname
   return
+
+addREnvironmentCleanUp = (file,contents) ->
+  # file contents are handed 
+  # over as buffers 
+  if path.extname(file.path) in [".R",".r"] && contents.match('# ROUTE:.*')
+    cleanFunction = "racas::cleanEnvironment();gc()"
+    contents = "#{cleanFunction}\n\r#{contents}\r\n#{cleanFunction}\r\n"
+  return contents
+
+modify = (options = {}) ->
+  through.obj (file, enc, next) ->
+    error = null
+    if file.isBuffer()
+      if fileModifier = options.fileModifier
+        try
+          content = fileModifier file, file.contents.toString 'utf8'
+          file.contents = new Buffer content
+        catch _error
+          console.log _error
+    next error, file
 
 # ------------------------------------------------- Read Inputs
 
@@ -269,6 +291,7 @@ taskConfigs =
       dest: build + '/src/r'
       options: _.extend _.clone(globalCopyOptions), {}
       renameFunction: getFirstFolderName
+      modifyFunction: addREnvironmentCleanUp
     ,
       taskName: "legacyServerR"
       src: getGlob('modules/**/src/server/**/*.{R,r}', '!modules/**/src/server/*.{R,r}','!modules/**/src/server/r/*.{R,r}')
@@ -360,10 +383,12 @@ createTask = (options, type) ->
   watch = options.watch
   shouldFlatten = options.flatten ? false
   renameFunction = options.renameFunction
+  modifyFunction = options.modifyFunction
   gulp.task taskName, ->
     gulp.src(src, _.extend(taskOptions, {since: gulp.lastRun(taskName)}))
     .pipe(plumber())
     .pipe(gulpif(shouldFlatten,flatten()))
+    .pipe(gulpif(modifyFunction?, modify(fileModifier: modifyFunction)))
     .pipe(gulpif(renameFunction?,rename(renameFunction)))
     .pipe(gulpif(type=="coffee",coffee(bare: true)))
     .pipe gulp.dest(dest)
