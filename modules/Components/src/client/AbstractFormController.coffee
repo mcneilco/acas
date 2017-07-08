@@ -103,7 +103,8 @@ class window.AbstractThingFormController extends AbstractFormController
 				url: field.fieldSettings.url
 				thingRef: @model
 				insertUnassigned: field.fieldSettings.insertUnassigned
-
+			if field.multiple? and field.multiple
+				opts.modelKey = field.key + 0
 			switch field.fieldSettings.fieldType
 				when 'label' then newField = new ACASFormLSLabelFieldController opts
 				when 'numericValue' then newField = new ACASFormLSNumericValueFieldController opts
