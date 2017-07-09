@@ -1,7 +1,10 @@
 # ---------------------------------------------- Requires
 
 gulp = require('gulp')
+debug = require('gulp-debug')
+newer = require('gulp-newer')
 coffee = require('gulp-coffee')
+sourcemaps = require('gulp-sourcemaps')
 flatten = require('gulp-flatten')
 rename = require('gulp-rename')
 plumber = require('gulp-plumber')
@@ -144,12 +147,6 @@ taskConfigs =
       taskName: "conf"
       src: getGlob('modules/**/conf/*.coffee')
       dest: build + '/public/javascripts/conf'
-      options: _.extend _.clone(globalCoffeeOptions), {}
-      renameFunction: getFirstFolderName
-    ,
-      taskName: "client"
-      src: getGlob('modules/**/src/client/*.coffee')
-      dest: build + '/public/javascripts/src'
       options: _.extend _.clone(globalCoffeeOptions), {}
       renameFunction: getFirstFolderName
     ,
@@ -420,6 +417,40 @@ coffeeTasks = (createTask(taskConfig,'coffee') for taskConfig in taskConfigs.cof
 coffeeTasks = _.filter coffeeTasks, (item) -> item != "coffee:publicConf"
 gulp.task 'coffee', gulp.parallel coffeeTasks
 
+# --------- Build-related Tasks for Client Compilation and Source Map Generation
+
+# TODO: for now, just compile/generate sourcemaps for  client-side coffeescript
+coffeePattern = 'modules/**/src/client/*.coffee'
+
+# Compiles coffeescript in place and generates external sourcemap files but
+# only does it if coffeescript is newer than its corresponding .js
+gulp.task 'compile', ->
+  gulp.src(getGlob(coffeePattern), {base: '.'})
+    .pipe(newer({dest: '.', ext: '.js'}))
+    .pipe(sourcemaps.init())
+    .pipe(coffee(bare: true))
+    .pipe(sourcemaps.mapSources( (sourcePath, file)  ->
+      path.basename(sourcePath)
+    ))
+    .pipe(sourcemaps.write('.'))
+    .pipe(debug())
+    .pipe gulp.dest('.')
+
+# Copies client-specific coffee/js/sourcemaps files to the build dir
+gulp.task 'copy:client', ->
+  gulp.src(getGlob('modules/**/src/client/*.+(coffee|js|map)'), {base: '.'})
+    .pipe(flatten({includeParents: -3}))
+    .pipe(flatten({subPath: [0,1]}))
+    .pipe(newer({dest: build + '/public/javascripts/src'}))
+    .pipe(debug())
+    .pipe gulp.dest(build + '/public/javascripts/src')
+
+gulp.task 'watch:client', ->
+  gulp.watch getGlob(coffeePattern), globalWatchOptions, gulp.series(['compile', 'copy:client'])
+
+watchTasks.push "watch:client"
+    
+
 # --------- Copy/Watch:Copy Tasks
 copyTasks = (createTask(taskConfig,'copy') for taskConfig in taskConfigs.copy)
 
@@ -474,7 +505,7 @@ gulp.task 'execute', gulp.series executeTasks
 gulp.task 'watch', gulp.parallel watchTasks
 
 # --------- Build Task
-gulp.task('build', gulp.series(gulp.parallel('copy','coffee'), 'coffee:publicConf', 'execute'));
+gulp.task('build', gulp.series(gulp.parallel('copy','coffee'), 'compile', 'copy:client', 'coffee:publicConf', 'execute'));
 
 # --------- Dev Task
 gulp.task('dev', gulp.series(gulp.series('build'), gulp.parallel('watch', 'watch:app', 'app')));
