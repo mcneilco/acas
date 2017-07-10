@@ -1,4 +1,13 @@
 #!/bin/bash
+### BEGIN INIT INFO
+# Provides:		acas
+# Required-Start:	$local_fs
+# Required-Stop:	$local_fs
+# Default-Start:	2 3 4 5
+# Default-Stop:		0 1 6
+# Short-Description: start and stop the acas app.js, server.js and apache instance
+# Description: start and stop the acas app.js, server.js and apache instance
+### END INIT INFO
 # chkconfig: 2345 64 02
 # description: start and stop the acas app.js, server.js and apache instance
 # processname: acas
