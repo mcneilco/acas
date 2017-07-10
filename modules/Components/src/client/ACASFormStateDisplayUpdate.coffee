@@ -30,6 +30,8 @@ class window.ACASFormStateDisplayUpdateCellController extends Backbone.View
 		else
 			val = @collection.findWhere ignored: false
 			content = val.get(val.get('lsType'))
+		if val.get('lsType') == 'dateValue'
+			content = UtilityFunctions::convertMSToYMDDate val.get('dateValue')
 		$(@el).html content
 		$(@el).addClass if @collection.length > 1 then "valueWasEdited" else ""
 
@@ -227,9 +229,9 @@ class window.ACASFormStateDisplayValueEditController extends Backbone.View
 				model: val
 			@$("tbody").append oldRow.render().el
 		@setupEditor()
-		@$('.bv_myPanel').modal
+		@$('.bv_aCASFormStateDisplayValueEdit').modal
 			backdrop: "static"
-		@$('.bv_myPanel').modal "show"
+		@$('.bv_aCASFormStateDisplayValueEdit').modal "show"
 
 	reasonForUpdateChanged: ->
 		@comment = @commentPrefix + @$('.bv_reasonForUpdate').val()
@@ -244,7 +246,7 @@ class window.ACASFormStateDisplayValueEditController extends Backbone.View
 			@$('.bv_saveBtn').removeAttr('disabled')
 
 	handleCancelClicked: =>
-		@$('.bv_myPanel').modal "hide"
+		@$('.bv_aCASFormStateDisplayValueEdit').modal "hide"
 		$(@el).empty()
 
 	handleSaveClicked: =>
@@ -253,7 +255,7 @@ class window.ACASFormStateDisplayValueEditController extends Backbone.View
 			comment: @comment
 			stateID: @options.stateID
 
-		@$('.bv_myPanel').modal "hide"
+		@$('.bv_aCASFormStateDisplayValueEdit').modal "hide"
 		$(@el).empty()
 
 
@@ -292,8 +294,6 @@ class window.ACASFormStateDisplayValueEditController extends Backbone.View
 
 #TODO value editor:
 # - maybe show transaction creator as modified by and date?
-# - style value editor so it floats or slides down from top of table or something. It should be modal
-# - trigger save at thing level, wait for success to close
-# - pass reason to thing to add to transaction
 # - add new value where none existed?
+# show human readable codevalue instead of code
 
