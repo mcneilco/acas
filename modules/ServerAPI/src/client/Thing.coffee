@@ -308,9 +308,9 @@ class window.Thing extends Backbone.Model
 		copiedThing.set
 			version: 0
 		@resetClonedAttrs(copiedThing)
-		copiedThing.get('notebook').set value: ""
-		copiedThing.get('scientist').set value: "unassigned"
-		copiedThing.get('completion date').set value: null
+		copiedThing.get('notebook')?.set value: ""
+		copiedThing.get('scientist')?.set value: "unassigned"
+		copiedThing.get('completion date')?.set value: null
 
 		delete copiedThing.attributes.firstLsThings
 
