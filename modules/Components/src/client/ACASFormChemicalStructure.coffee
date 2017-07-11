@@ -63,3 +63,28 @@ class window.ACASFormChemicalStructureController extends Backbone.View
 
 #TODO Why is it making a call to WebHQ outside our server, and make it stop
 
+class window.KetcherChemicalStructureController extends Backbone.View
+	tagName: "DIV"
+	template: _.template($("#KetcherChemicalStructureControllerView").html())
+
+	render: =>
+		$(@el).empty()
+		$(@el).html @template()
+
+		searchFrameURL = "/lib/ketcher-2.0.0-alpha.3/ketcher.html?api_path=/api/chemStructure/ketcher/"
+
+		@$('.bv_sketcherIFrame').attr 'src', searchFrameURL
+
+		@$('.bv_sketcherIFrame').on 'load', @startSketcher
+
+		@
+
+	startSketcher: =>
+		@windowObj = @$('.bv_sketcherIFrame')[0].contentWindow
+		@trigger 'sketcherLoaded'
+
+	getMol: ->
+		@windowObj.ketcher.getMolfile();
+
+	setMol: (molStr) ->
+		molStruct = @windowObj.ketcher.setMolecule molStr
