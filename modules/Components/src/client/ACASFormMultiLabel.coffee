@@ -1,19 +1,61 @@
+class window.ACASFormMultiLabelController extends Backbone.View
+	###
+		Launched by ACASFormMultiLabelListController to control one element/row in the list
+	###
+
+	template: _.template($("#ACASFormMultiLabelView").html())
+
+	events: ->
+		"click .bv_removeLabelButton": "handleRemoveLabelButtonClicked"
+
+	initialize: ->
+		options =
+			modelKey: @options.labelKey
+			inputClass: @options.inputClass
+			formLabel: @options.formLabel
+			placeholder: @options.placeholder
+			required: @options.required
+			url: @options.url
+			thingRef: @options.thingRef
+			insertUnassigned: @options.insertUnassigned
+		@lc = new ACASFormLSLabelFieldController options
+
+	render: ->
+		$(@el).empty()
+		$(@el).html @template()
+		@$('.bv_multiLabel').html @lc.render().el
+		@lc.renderModelContent()
+		@
+
+	handleRemoveLabelButtonClicked: ->
+		@lc.setEmptyValue()
+		$(@el).hide()
+
+
 class window.ACASFormMultiLabelListController extends ACASFormAbstractFieldController
+	###
+  	Launching controller must instantiate with the full field conf including modelDefaults, not just the fieldDefinition.
+  	Controls a flexible-length list of LSLabel input fields within ACASFormMultiLabelControllers with an add button.
+	###
 	template: _.template($("#ACASFormMultiLabelListView").html())
-	#model should be a collection of LSLabels i.e. Labels
-	#instantiate me with the full conf, not just the fieldDefinition
+
+	events: ->
+		"click .bv_addLabelButton": "handleAddLabelButtonClicked"
 
 	initialize: ->
 		super()
 		@opts = @options
+
+	render: =>
+		$(@el).empty()
+		$(@el).html @template()
+		@
+
+	renderModelContent: ->
+		@render()
 		multiLabels = @thingRef.get('lsLabels').getLabelByTypeAndKind(@opts.modelDefaults.type, @opts.modelDefaults.kind)
 		_.each multiLabels, (label) =>
 			@addOneLabel(label)
-		#TODO: initialize the first new label- do I have to?
-#		opts.modelKey = opts.key + 0
-
-	events: ->
-		"click .bv_addLabelButton": "handleAddLabelButtonClicked"
 
 	handleAddLabelButtonClicked: =>
 		@addNewLabel()
@@ -24,11 +66,8 @@ class window.ACASFormMultiLabelListController extends ACASFormAbstractFieldContr
 			lsType: @opts.modelDefaults.type
 			lsKind: @opts.modelDefaults.kind
 			preferred: @opts.modelDefaults.preferred
-		#count up number of current labels
-		#TODO: can this be replaced with some get collection??
 		currentMultiLabels = @thingRef.get('lsLabels').filter (label) ->
 			label.has('key') and (label.get('key').indexOf(keyBase) > -1)
-		console.log currentMultiLabels
 		newKey = keyBase + currentMultiLabels.length
 		newModel.set key: newKey
 		@thingRef.set newKey, newModel
@@ -38,30 +77,13 @@ class window.ACASFormMultiLabelListController extends ACASFormAbstractFieldContr
 			newModel.trigger 'amDirty'
 
 	addOneLabel: (label) ->
-		opts =
-			modelKey: label.get('key')
-			inputClass: @opts.inputClass
-			formLabel: @opts.formLabel
-			placeholder: @opts.placeholder
-			required: @opts.required
-			url: @opts.url
-			thingRef: @thingRef
-			insertUnassigned:@opts.insertUnassigned
-			model: label
-		lc = new ACASFormMultiLabelRowController opts
-		console.log lc
-		console.log lc.getModel()
+		labelOpts = @opts
+		labelOpts.labelKey = label.get('key')
+		lc = new ACASFormMultiLabelController labelOpts
+		console.log label.get('key')
 		@$('.bv_multiLabels').append lc.render().el
-		lc.renderModelContent()
 		lc.on 'updateState', =>
 			@trigger 'updateState'
 
-class window.ACASFormMultiLabelRowController extends ACASFormLSLabelFieldController
-	###
-		Launching controller must:
-		- Initialize the model with an LSLabel
-    Do whatever else is required or optional in ACASFormAbstractFieldController
-	###
 
-	template: _.template($("#ACASFormMultiLabelRowView").html())
 
