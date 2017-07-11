@@ -18,17 +18,17 @@ class window.ACASFormMultiLabelController extends Backbone.View
 			url: @options.url
 			thingRef: @options.thingRef
 			insertUnassigned: @options.insertUnassigned
-		@lc = new ACASFormLSLabelFieldController options
+		@labelController = new ACASFormLSLabelFieldController options
 
 	render: ->
 		$(@el).empty()
 		$(@el).html @template()
-		@$('.bv_multiLabel').html @lc.render().el
-		@lc.renderModelContent()
+		@$('.bv_multiLabel').html @labelController.render().el
+		@labelController.renderModelContent()
 		@
 
 	handleRemoveLabelButtonClicked: ->
-		@lc.setEmptyValue()
+		@labelController.setEmptyValue()
 		$(@el).hide()
 
 
@@ -79,10 +79,9 @@ class window.ACASFormMultiLabelListController extends ACASFormAbstractFieldContr
 	addOneLabel: (label) ->
 		labelOpts = @opts
 		labelOpts.labelKey = label.get('key')
-		lc = new ACASFormMultiLabelController labelOpts
-		console.log label.get('key')
-		@$('.bv_multiLabels').append lc.render().el
-		lc.on 'updateState', =>
+		multiLabelController = new ACASFormMultiLabelController labelOpts
+		@$('.bv_multiLabels').append multiLabelController.render().el
+		multiLabelController.on 'updateState', =>
 			@trigger 'updateState'
 
 
