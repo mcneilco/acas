@@ -79,8 +79,6 @@ exports.logout = (req, res) ->
 
 exports.ensureAuthenticated = (req, res, next) ->
 	console.log "checking for login for path: "+req.url
-	console.log "req"
-	console.log req
 	if req.isAuthenticated()
 		return next()
 	if req.session?
