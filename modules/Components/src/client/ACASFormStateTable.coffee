@@ -128,6 +128,7 @@ class window.ACASFormStateTableController extends Backbone.View
 			colOpts = data: val.modelDefaults.kind
 			if val.modelDefaults.type == 'numericValue'
 				colOpts.type = 'numeric'
+				colOpts.format = val.fieldSettings.format
 			else if val.modelDefaults.type == 'dateValue'
 				colOpts.type = 'date'
 				colOpts.dateFormat = 'YYYY-MM-DD'
@@ -177,6 +178,7 @@ class window.ACASFormStateTableController extends Backbone.View
 				if @tableReadOnly
 					cellProperties.readOnly = true
 				return cellProperties;
+		@hot.addHook 'afterChange', @validateUniqueness
 
 	readOnlyRenderer: (instance, td, row, col, prop, value, cellProperties) =>
 		Handsontable.renderers.TextRenderer.apply(this, arguments)
@@ -383,6 +385,30 @@ class window.ACASFormStateTableController extends Backbone.View
 #			manualColumnResize: true
 #			manualRowResize: true
 #			comments: true
+
+	validateUniqueness: (changes, source) =>
+		uniqueColumnIndices = @tableDef.values.map (value, idx) ->
+			if value.fieldSettings.unique? and value.fieldSettings.unique
+				idx
+			else
+				null
+		uniqueColumnIndices = uniqueColumnIndices.filter (idx) ->
+			idx?
+		_.each uniqueColumnIndices, (columnIndex) =>
+			column = @hot.getDataAtCol columnIndex
+			column.forEach (value, row) =>
+				data = extend [], column
+				idx = data.indexOf value
+				data.splice idx, 1
+				secondIdx = data.indexOf value
+				cell = @hot.getCellMeta row, columnIndex
+				if idx > -1 and secondIdx > -1 and value? and value != ''
+					cell.valid = false
+					cell.comment = 'Error: Duplicates not allowed'
+				else
+					cell.valid = true
+					cell.comment = ''
+		@hot.render()
 
 
 
