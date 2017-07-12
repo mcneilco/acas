@@ -13,6 +13,20 @@ ExampleThingConf =
 				formLabel: "*Name"
 				placeholder: "name"
 				fieldWrapper: "bv_thingName"
+		,
+			key: 'alias_'
+			multiple: true
+			modelDefaults:
+				type: 'name'
+				kind: 'alias'
+				preferred: false
+			fieldSettings:
+				fieldType: 'label'
+				required: false
+				inputClass: ""
+				formLabel: "Alias"
+				placeholder: "alias"
+				fieldWrapper: "bv_aliasWrapper"
 		]
 		values: [
 			key: 'scientist'
@@ -91,6 +105,7 @@ ExampleThingConf =
 					fieldType: 'stringValue'
 					formLabel: "Media Component"
 					required: true
+					unique: true
 					width: 215
 			,
 				modelDefaults:
@@ -102,6 +117,7 @@ ExampleThingConf =
 				fieldSettings:
 					fieldType: 'numericValue'
 					formLabel: "Volume"
+					format: "0.00"
 					required: false
 			,
 				modelDefaults:

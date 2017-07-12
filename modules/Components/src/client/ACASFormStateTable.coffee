@@ -164,6 +164,7 @@ class window.ACASFormStateTableController extends Backbone.View
 			minSpareRows: 1,
 			allowInsertRow: true
 			contextMenu: true
+			comments: true
 			startRows: 1,
 			className: "htCenter",
 			colHeaders: _.pluck @colHeaders, 'displayName'
