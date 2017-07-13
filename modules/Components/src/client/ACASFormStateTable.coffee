@@ -371,21 +371,21 @@ class window.ACASFormStateTableController extends Backbone.View
 		@hot.updateSettings
 			readOnly: true
 			contextMenu: false
+			comments: false
 #Other options I decided not to use
 #			disableVisualSelection: true
 #			manualColumnResize: false
 #			manualRowResize: false
-#			comments: false
 
 	enableInput: ->
 		@hot.updateSettings
 			readOnly: false
 			contextMenu: true
+			comments: true
 #Other options I decided not to use
 #			disableVisualSelection: false
 #			manualColumnResize: true
 #			manualRowResize: true
-#			comments: true
 
 	validateUniqueness: (changes, source) =>
 		uniqueColumnIndices = @tableDef.values.map (value, idx) ->
