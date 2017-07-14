@@ -55,6 +55,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/updateContainerHistoryLogs', exports.updateContainerHistoryLogs
 	app.post '/api/getContainerInfoFromBatchCode', exports.getContainerInfoFromBatchCode
 	app.post '/api/getContainerStatesByContainerValue', exports.getContainerStatesByContainerValue
+	app.post '/api/getContainerLogsByContainerCodes', exports.getContainerLogsByContainerCodes
 
 
 exports.setupRoutes = (app, loginRoutes) ->
@@ -106,7 +107,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/updateContainerHistoryLogs', loginRoutes.ensureAuthenticated, exports.updateContainerHistoryLogs
 	app.post '/api/getContainerInfoFromBatchCode', loginRoutes.ensureAuthenticated, exports.getContainerInfoFromBatchCode
 	app.post '/api/getContainerStatesByContainerValue', loginRoutes.ensureAuthenticated, exports.getContainerStatesByContainerValue
-
+	app.post '/api/getContainerLogsByContainerCodes', loginRoutes.ensureAuthenticated, exports.getContainerLogsByContainerCodes
 
 exports.getContainersInLocation = (req, resp) ->
 	req.setTimeout 86400000
@@ -1854,6 +1855,37 @@ exports.getContainerLogsInternal = (labels, containerType, containerKind, labelT
 					responseObject.logs = container[0].getLogs()
 				response.push responseObject
 			callback response, 200
+
+exports.getContainerLogsByContainerCodes = (req, resp) ->
+	req.setTimeout 86400000
+
+	exports.getContainerLogsByContainerCodesInternal req.body, (json, statusCode) ->
+		resp.statusCode = statusCode
+		resp.json json
+
+exports.getContainerLogsByContainerCodesInternal = (containerCodes, callback) =>
+	console.log 'containerCodes', containerCodes
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		resp.json inventoryServiceTestJSON.getContainerAndDefinitionContainerByContainerLabelInternalResponse
+	else
+		console.debug "incoming getContainerLogsByContainerCodesInternal request: '#{JSON.stringify(containerCodes)}'"
+		exports.getContainersByCodeNamesInternal(containerCodes, (containersByCodeNamesResponse, statusCode) =>
+			response = []
+			for getContainer in containersByCodeNamesResponse
+				label = getContainer.container.lsLabels[0].labelText
+				codeName = getContainer.container.codeName
+				responseObject =
+					label: label
+					codeName: codeName
+					logs: []
+				if getContainer.container?
+					container = getContainerModels([getContainer])
+					responseObject.logs = container[0].getLogs()
+				response.push responseObject
+			callback response, 200
+		)
+
 
 exports.getContainerLocationHistory = (req, resp) ->
 	exports.getContainerLocationHistoryInternal [req.params.label], req.query.containerType, req.query.containerKind, req.query.labelType, req.query.labelKind, (json, statusCode) ->
