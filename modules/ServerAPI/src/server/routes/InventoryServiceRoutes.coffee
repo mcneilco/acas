@@ -3,8 +3,11 @@ csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFuncti
 _ = require 'underscore'
 preferredEntityCodeService = require '../routes/PreferredEntityCodeService.js'
 config = require '../conf/compiled/conf.js'
+RUN_CUSTOM_FLAG = "0"
+
 
 exports.setupAPIRoutes = (app) ->
+	app.post '/api/getContainersInLocationWithTypeAndKind', exports.getContainersInLocationWithTypeAndKind
 	app.post '/api/getContainersInLocation', exports.getContainersInLocation
 	app.post '/api/getContainerCodesByLabels', exports.getContainerCodesByLabels
 	app.post '/api/getContainersByLabels', exports.getContainersByLabels
@@ -48,8 +51,10 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/createTube', exports.createTube
 	app.post '/api/createTubes', exports.createTubes
 	app.post '/api/throwInTrash', exports.throwInTrash
+	app.post '/api/updateContainerHistoryLogs', exports.updateContainerHistoryLogs
 
 exports.setupRoutes = (app, loginRoutes) ->
+	app.post '/api/getContainersInLocationWithTypeAndKind', loginRoutes.ensureAuthenticated, exports.getContainersInLocationWithTypeAndKind
 	app.post '/api/getContainersInLocation', loginRoutes.ensureAuthenticated, exports.getContainersInLocation
 	app.post '/api/getContainerCodesByLabels', loginRoutes.ensureAuthenticated, exports.getContainerCodesByLabels
 	app.post '/api/getContainersByLabels', loginRoutes.ensureAuthenticated, exports.getContainersByLabels
@@ -94,6 +99,8 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/createTube', loginRoutes.ensureAuthenticated, exports.createTube
 	app.post '/api/createTubes', loginRoutes.ensureAuthenticated, exports.createTubes
 	app.post '/api/throwInTrash', loginRoutes.ensureAuthenticated, exports.throwInTrash
+	app.post '/api/updateContainerHistoryLogs', loginRoutes.ensureAuthenticated, exports.updateContainerHistoryLogs
+
 
 exports.getContainersInLocation = (req, resp) ->
 	req.setTimeout 86400000
@@ -101,8 +108,14 @@ exports.getContainersInLocation = (req, resp) ->
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getContainersInLocationResponse
 	else
+		queryParams = []
+		if req.query.containerType?
+			queryParams.push "containerType="+req.query.containerType
+		if req.query.containerKind?
+			queryParams.push "containerKind="+req.query.containerKind
+		queryString = queryParams.join "&"
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainersInLocation"
+		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainersInLocation?"+queryString
 		request = require 'request'
 		request(
 			method: 'POST'
@@ -120,6 +133,59 @@ exports.getContainersInLocation = (req, resp) ->
 				console.error response
 				resp.end JSON.stringify "getContainersInLocation failed"
   		)
+
+exports.getContainersInLocationWithTypeAndKind = (req, resp) ->
+	req.setTimeout 86400000
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		resp.json inventoryServiceTestJSON.getContainersInLocationResponse
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainersInLocation?containerType=location&containerKind=default"
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: baseurl
+			body: req.body.values
+			json: true
+			timeout: 86400000
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				resp.json json
+			else
+				console.error 'got ajax error trying to get getContainersInLocation'
+				console.error error
+				console.error json
+				console.error response
+				resp.end JSON.stringify "getContainersInLocation failed"
+		)
+
+exports.getContainersInLocationWithTypeAndKindInternal = (values, callback) ->
+	#req.setTimeout 86400000
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		resp.json inventoryServiceTestJSON.getContainersInLocationResponse
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainersInLocation?containerType=location&containerKind=default"
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: baseurl
+			body: values
+			json: true
+			timeout: 86400000
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				callback json, response.statusCode
+			else
+				console.error 'got ajax error trying to get getContainersInLocation'
+				console.error error
+				console.error json
+				console.error response
+				#resp.end JSON.stringify "getContainersInLocation failed"
+				callback response, response.statusCode
+		)
 
 exports.getContainersByLabels = (req, resp) ->
 	req.setTimeout 86400000
@@ -219,6 +285,32 @@ exports.getWellCodesByPlateBarcodes = (req, resp) ->
 			resp.statusCode = 500
 		else
 			resp.json json
+
+exports.getContainersInBoxPositionInternal = (values, callback) ->
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		resp.json inventoryServiceTestJSON.getContainersInLocationResponse
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainersInLocation?containerType=container&containerKind=tube"
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: baseurl
+			body: values
+			json: true
+			timeout: 86400000
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				callback json, response.statusCode
+			else
+				console.error 'got ajax error trying to get getContainersInLocation'
+				console.error error
+				console.error json
+				console.error response
+				#resp.end JSON.stringify "getContainersInLocation failed"
+				callback response, response.statusCode
+		)
 
 exports.getWellCodesByPlateBarcodes = (req, resp) ->
 	req.setTimeout 86400000
@@ -426,7 +518,7 @@ exports.updateContainersByContainerCodesInternal = (updateInformation, callCusto
 			else
 				barcodes = _.pluck updateInformation, "barcode"
 				console.debug "calling getContainerCodesByLabelsInternal"
-				exports.getContainerCodesByLabelsInternal barcodes, null, null, "barcode", "barcode", (containerCodes, statusCode) =>
+				exports.getContainerCodesByLabelsInternal barcodes, "container", null, "barcode", "barcode", (containerCodes, statusCode) =>
 					if statusCode == 500
 						console.error "updateContainerMetadataByContainerCodeInternal failed: #{JSON.stringify containerCodes}"
 						callback "updateContainersByContainerCodesInternal failed", 500
@@ -585,6 +677,8 @@ exports.getBreadCrumbByContainerCodeInternal = (codeNamesJSON, delimeter, callba
 			headers: 'content-type': 'application/json'
 		, (error, response, json) =>
 			if !error && response.statusCode == 200
+				console.log 'json in getBreadCrumbByContainerCodeInternal'
+				console.log json
 				callback json
 			else
 				console.error 'got ajax error trying to get getBreadCrumbByContainerCode'
@@ -1161,41 +1255,52 @@ exports.moveToLocation = (req, resp) ->
 		resp.json json
 
 exports.moveToLocationInternal = (input, callCustom, callback) ->
-	callCustom  = callCustom != "0"
-	if global.specRunnerTestmode
-		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
-		resp.json inventoryServiceTestJSON.moveToLocationResponse
-	else
-		console.debug 'incoming moveToLocationJSON request: ', JSON.stringify(input)
-		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"containers/moveToLocation"
-		console.debug 'base url: ', baseurl
-		request = require 'request'
-		request(
-			method: 'POST'
-			url: baseurl
-			body: input
-			json: true
-			timeout: 86400000
-			headers: 'content-type': 'application/json'
-		, (error, response, json) =>
-			console.debug "response statusCode: #{response.statusCode}"
-			if !error
-				if callCustom && csUtilities.moveToLocation?
-					console.log "running customer specific server function moveToLocation"
-					csUtilities.moveToLocation input, (customerResponse, statusCode) ->
-						json = _.extend json, customerResponse
-						callback json, statusCode
+	#exports.updateContainerHistoryLogsInternal(input, (json, statusCode) ->
+	# 	console.log 'updated history logs before moving to temp'
+	# )
+		callCustom  = callCustom != "0"
+		if global.specRunnerTestmode
+			inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+			resp.json inventoryServiceTestJSON.moveToLocationResponse
+		else
+			console.debug 'incoming moveToLocationJSON request: ', JSON.stringify(input)
+			config = require '../conf/compiled/conf.js'
+			baseurl = config.all.client.service.persistence.fullpath+"containers/moveToLocation"
+			console.debug 'base url: ', baseurl
+			request = require 'request'
+			console.log 'request into moveToLocation'
+			console.log input
+			request(
+				method: 'POST'
+				url: baseurl
+				body: input
+				json: true
+				timeout: 86400000
+				headers: 'content-type': 'application/json'
+			, (error, response, json) =>
+				#add the call to updateContainerHistoryLogs here...
+				console.debug "response statusCode: #{response.statusCode}"
+				if !error
+					console.log 'container down here...did it pull through??'
+					console.log input[0].containerCodeName
+					exports.updateContainerHistoryLogsInternal(input, (json, statusCode) ->
+						if callCustom && csUtilities.moveToLocation?
+							console.log "running customer specific server function moveToLocation"
+							csUtilities.moveToLocation input, (customerResponse, statusCode) ->
+								json = _.extend json, customerResponse
+								callback json, statusCode
+						else
+							console.warn "could not find customer specific server function moveToLocation so not running it"
+							callback json, response.statusCode
+						)
 				else
-					console.warn "could not find customer specific server function moveToLocation so not running it"
-					callback json, response.statusCode
-			else
-				console.error 'got ajax error trying to get moveToLocation'
-				console.error error
-				console.error json
-				console.error response
-				callback JSON.stringify("updateWellContent failed"), 500
-		)
+					console.error 'got ajax error trying to get moveToLocation'
+					console.error error
+					console.error json
+					console.error response
+					callback JSON.stringify("updateWellContent failed"), 500
+			)
+		#)
 
 exports.getWellContentByContainerLabel = (req, resp) ->
 	req.setTimeout 86400000
@@ -1484,8 +1589,11 @@ exports.mergeContainersInternal = (input, callback) ->
 						isOdd = (num) ->
 							return (num % 2) == 1
 						alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-						_.map originWellContent, (originWells) ->
-							quadrant = _.findWhere input.quadrants, {"codeName": originWells.containerCodeName}
+						# for each quadrant
+						_.map input.quadrants, (quadrant) ->
+							# find plate whose name matches the quadrant name
+							originWells = _.findWhere originWellContent, {"containerCodeName": quadrant.codeName}
+							# map plate wells to merged plate wells
 							_.map originWells.wellContent, (wellContent) ->
 								wellContent = _.omit(wellContent, ['containerCodeName', 'wellName', 'recordedDate'])
 								wellContent.recordedDate = 1455323242544
@@ -1623,6 +1731,7 @@ exports.containerLogsInternal = (inputs, callCustom, callback) ->
 				callback json, statusCode
 
 exports.containerLocationHistory = (req, resp) ->
+	req.setTimeout 86400000
 	exports.containerLocationHistoryInternal req.body, req.query.callCustom, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
@@ -1636,7 +1745,9 @@ exports.containerLocationHistoryInternal = (inputs, callCustom, callback) ->
 			exports.addContainerLocationHistory inputs, callCustom, (json, statusCode) ->
 				callback json, statusCode
 
+
 exports.getContainerLogs = (req, resp) ->
+	req.setTimeout 86400000
 	exports.getContainerLogsInternal [req.params.label], req.query.containerType, req.query.containerKind, req.query.labelType, req.query.labelKind, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
@@ -1754,7 +1865,6 @@ exports.addContainerLocationHistory = (inputs, callCustom, callback) ->
 				if csUtilities.addContainerLocationHistory?
 					console.log "running customer specific server function addContainerLocationHistory"
 					csUtilities.addContainerLocationHistory inputs, (response) ->
-						console.log response
 				else
 					console.warn "could not find customer specific server function addContainerLocationHistory so not running it"
 			callback json, statusCode
@@ -1980,33 +2090,155 @@ exports.throwInTrash = (req, resp) ->
 		resp.json json
 
 exports.throwInTrashInternal = (input, callCustom, callback) ->
-	config = require '../conf/compiled/conf.js'
-	baseurl = config.all.client.service.persistence.fullpath + "containers/throwInTrash"
-	console.log baseurl
-	request = require 'request'
-	request(
-		method: 'POST'
-		url: baseurl
-		body: JSON.stringify input
-		json: true
-		timeout: 6000000
-	, (error, response, json) =>
-		if !error  && response.statusCode == 204
-# If call custom doesn't equal 0 then call custom
-			callCustom  = callCustom != "0"
-			if callCustom && csUtilities.throwInTrash?
-				console.log "running customer specific server function throwInTrash"
-				csUtilities.throwInTrash input, (customerResponse, statusCode) ->
-#					json = _.extend json, customerResponse
-					callback json, response.statusCode
+	#exports.updateContainerHistoryLogsInternal(input, (json, statusCode) ->
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath + "containers/throwInTrash"
+		console.log baseurl
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: baseurl
+			body: JSON.stringify input
+			json: true
+			timeout: 6000000
+		, (error, response, json) =>
+			if !error  && response.statusCode == 204
+				exports.updateContainerHistoryLogsInternal(input, (json, statusCode) ->
+	# If call custom doesn't equal 0 then call custom
+					callCustom  = callCustom != "0"
+					if callCustom && csUtilities.throwInTrash?
+						console.log "running customer specific server function throwInTrash"
+						csUtilities.throwInTrash input, (customerResponse, statusCode) ->
+		#					json = _.extend json, customerResponse
+							callback json, response.statusCode
+					else
+						console.warn "could not find customer specific server function throwInTrash so not running it"
+						callback json, response.statusCode
+				)
+			else if response.statusCode == 400
+				callback response.body, response.statusCode
 			else
-				console.warn "could not find customer specific server function throwInTrash so not running it"
-				callback json, response.statusCode
-		else if response.statusCode == 400
-			callback response.body, response.statusCode
-		else
-			console.log 'got ajax error trying to create tube'
-			console.log error
-			console.log response
-			callback response.body, 500
+				console.log 'got ajax error trying to create tube'
+				console.log error
+				console.log response
+				callback response.body, 500
+		)
+	#)
+
+exports.updateContainerHistoryLogsInternal = (containers, callback) ->
+	formattedContainers = []
+	index = 0
+	#_.each(containers, (container) ->
+	formatContainersForLocationHistoryUpdate(containers, (statusCode, formattedContainers) ->
+		exports.containerLocationHistoryInternal(formattedContainers, RUN_CUSTOM_FLAG, (json, statusCode) ->
+			return callback json,statusCode
+		)
+		# else
+		# 	return callback null, 500
 	)
+
+formatContainersForLocationHistoryUpdate = (containers, callback) ->
+	createContainersWithBreadcrumb(containers, (containersWithBreadcrumb, modifiedBy, modifiedDate) ->
+		formatLocationStrings(containersWithBreadcrumb, (formattedContainersWithBreadcrumb) ->
+			formatContainers(formattedContainersWithBreadcrumb, modifiedBy, modifiedDate, (formattedContainers) ->
+				return callback 200, formattedContainers
+				)
+			)
+		)
+
+createContainersWithBreadcrumb = (containers, callback) ->
+	containerCodeNames = []
+	modifiedBy = containers[0].modifiedBy
+	modifiedDate = containers[0].modifiedDate
+	_.each(containers, (container) ->
+		containerCodeNames.push(container.containerCodeName)
+	)
+	exports.getBreadCrumbByContainerCodeInternal(containerCodeNames, "<", (containersWithBreadcrumb) ->
+		return callback containersWithBreadcrumb, modifiedBy, modifiedDate
+	)
+
+formatLocationStrings = (containersWithBreadcrumb, callback) ->
+	formattedContainersWithBreadcrumb = []
+	_.each(containersWithBreadcrumb, (container) ->
+		locationArray = container.labelBreadCrumb.split("<")
+		locationArrayString = JSON.stringify(locationArray)
+		container.locationArrayString = locationArrayString
+		formattedContainersWithBreadcrumb.push(container)
+	)
+	return callback formattedContainersWithBreadcrumb
+
+formatContainers = (containers, modifiedBy, modifiedDate, callback) ->
+	formattedContainers = []
+	_.each(containers, (container) ->
+		formattedContainer = {
+			"codeName": container.containerCode
+			"recordedBy": modifiedBy
+			"recordedDate": modifiedDate
+			"location": container.locationArrayString
+			"movedBy": modifiedBy
+			"movedDate": modifiedDate
+			"additionalValues": []
+		}
+		formattedContainers.push(formattedContainer)
+	)
+	statusCode = 200
+	return callback formattedContainers
+	#callback(formattedContainers, statusCode)
+
+
+# getLocationBreadcrumb = (container, callback) ->
+# 	exports.getBreadCrumbByContainerCodeInternal([container.containerCodeName], "<", (breadcrumb) ->
+# 		labelBreadCrumb = breadcrumb[0].labelBreadCrumb
+# 		callback labelBreadCrumb
+# 		# console.log 'breadcrumb for move to locations'
+# 		# console.log breadcrumb[0].labelBreadCrumb
+# 		# #test breadCrumb = 'CAGE00002<SHELF1<E0059101<A01'
+# 		# locationArray = breadcrumb[0].labelBreadCrumb.split("<")
+# 		#callback locationArray
+# 	)
+#
+# formatContainerForLocationHistoryUpdate = (container, callback) ->
+# 	getLocationBreadcrumb(container, (labelBreadCrumb) ->
+# 		createLocationArray(labelBreadCrumb, (locationArrayString) ->
+# 			#buildLocationArrayString(locationArray, (locationArrayString) ->
+# 			formatContainer(container, locationArrayString, (formattedContainer, statusCode) ->
+# 				callback statusCode, formattedContainer
+# 				)
+# 			)
+# 		)
+#
+# createLocationArray = (labelBreadCrumb, callback) ->
+# 	locationArray = labelBreadCrumb.split("<")
+# 	locationArrayString = JSON.stringify(locationArray)
+# 	callback locationArrayString.toUpperCase()
+#
+# formatContainer = (container, locationArrayString, callback) ->
+#
+# 	formattedContainer = {
+# 		"codeName": container.containerCodeName
+# 		"recordedBy": container.modifiedBy
+# 		"recordedDate": container.modifiedDate
+# 		"location": locationArrayString
+# 		"movedBy": container.modifiedBy
+# 		"movedDate": container.modifiedDate
+# 		"additionalValues": []
+# 	}
+#
+# 	statusCode = 200
+# 	callback(formattedContainer, statusCode)
+
+# buildLocationArrayString = (locationArray, callback) ->
+# 	locationSeparator = '\",\"'
+# 	locationArrayString = '[\"' +
+# 		locationArray[0] +
+# 		locationSeparator +
+# 		locationArray[1] +
+# 		locationSeparator +
+# 		locationArray[2] +
+# 		locationSeparator +
+# 		locationArray[3] +
+# 		'\"]'
+#
+# 	console.log 'locationArrayString '
+# 	console.log locationArrayString
+# 	callback locationArrayString

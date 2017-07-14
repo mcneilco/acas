@@ -30,11 +30,6 @@
     margin-bottom: 10px;
 }
 
-.select2-container {
-  width: 350px !important;
-  /* base width matches edit prot and expt */
-}
-
 .select2-container .select2-selection--single {
   width: 350px;
   height: 30px;
