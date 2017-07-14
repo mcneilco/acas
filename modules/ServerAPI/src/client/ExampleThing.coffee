@@ -87,6 +87,19 @@ ExampleThingConf =
 				fieldWrapper: "bv_notebook"
 				placeholder: "notebook and page"
 				required: false
+		,
+			key: 'exampleFile'
+			modelDefaults:
+				stateType: 'metadata'
+				stateKind: 'example thing parent'
+				type: 'fileValue'
+				kind: 'example file'
+				value: ""
+			fieldSettings:
+				fieldType: 'fileValue'
+				formLabel: "Example File"
+				fieldWrapper: "bv_notebook"
+				required: false
 		]
 
 
@@ -159,8 +172,6 @@ ExampleThingConf =
 		firstLsThingItxs: []
 		secondLsThingItxs: []
 
-
-
 class window.ExampleThingParent extends Thing
 	urlRoot: "/api/things/parent/example thing"
 	url: ->
@@ -176,6 +187,7 @@ class window.ExampleThingParent extends Thing
 			lsKind: "Example Thing"
 		for label in ExampleThingConf.formFieldDefinitions.labels
 			label.modelDefaults.key = label.key
+			label.modelDefaults.multiple = label.multiple
 			@lsProperties.defaultLabels.push label.modelDefaults
 		for value in ExampleThingConf.formFieldDefinitions.values
 			value.modelDefaults.key = value.key
@@ -192,12 +204,6 @@ class window.ExampleThingParent extends Thing
 		defaultLabels: [
 		]
 		defaultValues: [
-			key: 'structural file'
-			stateType: 'metadata'
-			stateKind: 'example thing parent'
-			type: 'fileValue'
-			kind: 'structural file'
-			value: ""
 		]
 
 		defaultFirstLsThingItx: [
@@ -226,7 +232,6 @@ class window.ExampleThingController extends AbstractThingFormController
 
 	events: ->
 		"click .bv_saveThing": "handleUpdateThing"
-		"click .bv_deleteSavedFile": "handleDeleteSavedStructuralFile"
 
 	initialize: =>
 		@hasRendered = false
@@ -253,7 +258,6 @@ class window.ExampleThingController extends AbstractThingFormController
 			$(@el).empty()
 			$(@el).html @template(@model.attributes)
 			@setupFormFields(ExampleThingConf.formFieldDefinitions)
-			@setupStructuralFileController()
 			@hasRendered = true
 
 		@
@@ -289,48 +293,7 @@ class window.ExampleThingController extends AbstractThingFormController
 		@trigger 'amDirty'
 		@$('.bv_saveThingComplete').hide()
 
-	setupStructuralFileController: =>
-		structuralFileValue = @model.get('structural file').get('value')
-		if structuralFileValue is null or structuralFileValue is "" or structuralFileValue is undefined
-			@createNewFileChooser()
-			@$('.bv_deleteSavedFile').hide()
-		else
-			@$('.bv_structuralFile').html '<a href="'+window.conf.datafiles.downloadurl.prefix+structuralFileValue+'">'+@model.get('structural file').get('comments')+'</a>'
-			@$('.bv_deleteSavedFile').show()
-
-	createNewFileChooser: =>
-		@structuralFileController = new LSFileChooserController
-			el: @$('.bv_structuralFile')
-			formId: 'fieldBlah',
-			maxNumberOfFiles: 1,
-			requiresValidation: false
-			url: UtilityFunctions::getFileServiceURL()
-			allowedFileTypes: ['png', 'jpeg']
-			hideDelete: false
-		@structuralFileController.on 'amDirty', =>
-			@trigger 'amDirty'
-		@structuralFileController.on 'amClean', =>
-			@trigger 'amClean'
-		@structuralFileController.render()
-		@structuralFileController.on('fileUploader:uploadComplete', @handleFileUpload) #update model with filename
-		@structuralFileController.on('fileDeleted', @handleFileRemoved) #update model with filename
-
-	handleFileUpload: (nameOnServer) =>
-		newFileValue = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "example thing parent", "fileValue", "structural file"
-		@model.set "structural file", newFileValue
-		@model.get("structural file").set("value", nameOnServer)
-
-	handleFileRemoved: =>
-		@model.get("structural file").set("ignored", true)
-		@model.unset "structural file"
-
-	handleDeleteSavedStructuralFile: =>
-		@handleFileRemoved()
-		@$('.bv_deleteSavedFile').hide()
-		@createNewFileChooser()
-
 	updateModel: =>
-
 
 	validationError: =>
 		super()
@@ -358,4 +321,3 @@ class window.ExampleThingController extends AbstractThingFormController
 
 
 #TODO add thing interaction to project with field
-#TODO file upload is broken
