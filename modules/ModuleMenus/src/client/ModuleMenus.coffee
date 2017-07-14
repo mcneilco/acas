@@ -17,7 +17,12 @@ class window.ModuleMenusController extends Backbone.View
 
 		$(@el).html @template()
 
-		@moduleLauncherList = new ModuleLauncherList(@options.menuListJSON)
+		if window.conf.moduleMenus.menuConfigurationSettings?
+			menuListJSON = window[window.conf.moduleMenus.menuConfigurationSettings]
+		else
+			menuListJSON = @options.menuListJSON
+
+		@moduleLauncherList = new ModuleLauncherList(menuListJSON)
 		@moduleLauncherMenuListController = new ModuleLauncherMenuListController
 			el: @$('.bv_modLaunchMenuWrapper')
 			collection: @moduleLauncherList
