@@ -104,6 +104,8 @@ class window.AbstractThingFormController extends AbstractFormController
 				thingRef: @model
 				insertUnassigned: field.fieldSettings.insertUnassigned
 				modelDefaults: field.modelDefaults
+				allowedFileTypes: field.fieldSettings.allowedFileTypes
+
 			switch field.fieldSettings.fieldType
 				when 'label'
 					if field.multiple? and field.multiple
@@ -123,6 +125,7 @@ class window.AbstractThingFormController extends AbstractFormController
 					newField = new ACASFormLSThingInteractionFieldController opts
 				when 'stringValue' then newField = new ACASFormLSStringValueFieldController opts
 				when 'dateValue' then newField = new ACASFormLSDateValueFieldController opts
+				when 'fileValue' then newField = new ACASFormLSFileValueFieldController opts
 
 			@$("."+field.fieldSettings.fieldWrapper).append newField.render().el
 			newField.afterRender()
