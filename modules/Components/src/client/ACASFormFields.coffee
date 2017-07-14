@@ -564,7 +564,7 @@ class window.ACASFormLSFileValueFieldController extends ACASFormAbstractFieldCon
 			@createNewFileChooser()
 			@$('.bv_deleteSavedFile').hide()
 		else
-			@$('.bv_File').html '<a href="'+window.conf.datafiles.downloadurl.prefix+fileValue+'">'+@getModel().get('comments')+'</a>'
+			@$('.bv_file').html '<a href="'+window.conf.datafiles.downloadurl.prefix+fileValue+'">'+@getModel().get('comments')+'</a>'
 			@$('.bv_deleteSavedFile').show()
 
 	createNewFileChooser: ->
@@ -572,9 +572,8 @@ class window.ACASFormLSFileValueFieldController extends ACASFormAbstractFieldCon
 			@fileController.render()
 		else
 			@fileController = new LSFileChooserController
-				el: @$('.bv_File')
-				formId: 'fieldBlah',
-				maxNumberOfFiles: 1,
+				el: @$('.bv_file')
+				maxNumberOfFiles: 1
 				requiresValidation: false
 				url: UtilityFunctions::getFileServiceURL()
 				allowedFileTypes: @allowedFileTypes
