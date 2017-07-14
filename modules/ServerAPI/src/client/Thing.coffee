@@ -2,6 +2,7 @@ class window.Thing extends Backbone.Model
 	lsProperties: {}
 	className: "Thing"
 	deleteEmptyLabelsValsItxsBeforeSave: true
+	noUpdateThingsInInteractions: false
 #	urlRoot: "/api/things"
 
 	defaults: () ->
@@ -287,10 +288,11 @@ class window.Thing extends Backbone.Model
 		attachFileList
 
 	reformatBeforeSaving: =>
-		if @get('firstLsThings')? and @get('firstLsThings') instanceof FirstLsThingItxList
-			@get('firstLsThings').reformatBeforeSaving()
-		if @get('secondLsThings')? and @get('secondLsThings') instanceof SecondLsThingItxList
-			@get('secondLsThings').reformatBeforeSaving()
+		if @noUpdateThingsInInteractions? && @noUpdateThingsInInteractions
+			if @get('firstLsThings')? and @get('firstLsThings') instanceof FirstLsThingItxList
+				@get('firstLsThings').reformatBeforeSaving()
+			if @get('secondLsThings')? and @get('secondLsThings') instanceof SecondLsThingItxList
+				@get('secondLsThings').reformatBeforeSaving()
 
 
 	deleteInteractions : =>
@@ -308,9 +310,9 @@ class window.Thing extends Backbone.Model
 		copiedThing.set
 			version: 0
 		@resetClonedAttrs(copiedThing)
-		copiedThing.get('notebook').set value: ""
-		copiedThing.get('scientist').set value: "unassigned"
-		copiedThing.get('completion date').set value: null
+		copiedThing.get('notebook')?.set value: ""
+		copiedThing.get('scientist')?.set value: "unassigned"
+		copiedThing.get('completion date')?.set value: null
 
 		delete copiedThing.attributes.firstLsThings
 
