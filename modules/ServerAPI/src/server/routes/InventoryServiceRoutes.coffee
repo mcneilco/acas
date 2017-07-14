@@ -54,6 +54,8 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/throwInTrash', exports.throwInTrash
 	app.post '/api/updateContainerHistoryLogs', exports.updateContainerHistoryLogs
 	app.post '/api/getContainerInfoFromBatchCode', exports.getContainerInfoFromBatchCode
+	app.post '/api/getContainerStatesByContainerValue', exports.getContainerStatesByContainerValue
+
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/getContainersInLocationWithTypeAndKind', loginRoutes.ensureAuthenticated, exports.getContainersInLocationWithTypeAndKind
@@ -103,6 +105,8 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/throwInTrash', loginRoutes.ensureAuthenticated, exports.throwInTrash
 	app.post '/api/updateContainerHistoryLogs', loginRoutes.ensureAuthenticated, exports.updateContainerHistoryLogs
 	app.post '/api/getContainerInfoFromBatchCode', loginRoutes.ensureAuthenticated, exports.getContainerInfoFromBatchCode
+	app.post '/api/getContainerStatesByContainerValue', loginRoutes.ensureAuthenticated, exports.getContainerStatesByContainerValue
+
 
 exports.getContainersInLocation = (req, resp) ->
 	req.setTimeout 86400000
@@ -2368,3 +2372,56 @@ exports.getContainerInfoFromBatchCodeInternal = (requestObject, callback) =>
 			else
 				return callback {warningMessage: "No results found for #{queryPayload.value}"}, statusCode
 	)
+
+exports.getContainerStatesByContainerValue = (req, resp) =>
+
+	exports.getContainerStatesByContainerValueInternal(req.body, (json, statusCode) =>
+		resp.statusCode = statusCode
+		resp.json json
+	)
+
+exports.getContainerStatesByContainerValueInternal = (requestObject, callback) =>
+
+	queryParams = []
+	if requestObject.like?
+		queryParams.push "like="+requestObject.like
+	if requestObject.rightLike?
+		queryParams.push "rightLike="+requestObject.rightLike
+	if requestObject.maxResults?
+		queryParams.push "maxResults="+requestObject.maxResults
+	if requestObject.with?
+		queryParams.push "with="+requestObject.with
+	queryString = queryParams.join "&"
+
+
+	queryPayload =
+		{
+			containerType: requestObject.containerType
+			containerKind: requestObject.containerKind
+			stateType: requestObject.stateType
+			stateKind: requestObject.stateKind
+			valueType: requestObject.valueType
+			valueKind: requestObject.valueKind
+			value: requestObject.value
+		}
+
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.persistence.fullpath+"containerstates/getContainerStatesByContainerValue?"+queryString
+	request = require 'request'
+	request(
+		method: 'POST'
+		url: baseurl
+		body: queryPayload
+		json: true
+		timeout: 86400000
+	, (error, response, json) =>
+		if !error && response.statusCode == 200
+			callback json, response.statusCode
+		else
+			console.error 'got ajax error trying to get getContainerStatesByContainerValue'
+			console.error error
+			console.error json
+			console.error response
+			callback null, 500
+			#resp.end JSON.stringify "getContainerStatesByContainerValue failed"
+		)
