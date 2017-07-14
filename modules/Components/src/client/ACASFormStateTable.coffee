@@ -280,6 +280,8 @@ class window.ACASFormStateTableController extends Backbone.View
 						switch valueDef.modelDefaults.type
 							when 'stringValue'
 								value.set stringValue: if cellContent? then cellContent else ""
+							when 'clobValue'
+								value.set clobValue: if cellContent? then cellContent else ""
 							when 'numericValue'
 								numVal = parseFloat(cellContent)
 								if isNaN(numVal) or isNaN(Number(numVal))
