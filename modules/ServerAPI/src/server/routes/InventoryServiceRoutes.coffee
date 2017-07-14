@@ -1864,7 +1864,6 @@ exports.getContainerLogsByContainerCodes = (req, resp) ->
 		resp.json json
 
 exports.getContainerLogsByContainerCodesInternal = (containerCodes, callback) =>
-	console.log 'containerCodes', containerCodes
 	if global.specRunnerTestmode
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getContainerAndDefinitionContainerByContainerLabelInternalResponse
