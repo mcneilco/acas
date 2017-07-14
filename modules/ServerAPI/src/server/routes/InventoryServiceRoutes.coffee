@@ -1872,10 +1872,13 @@ exports.getContainerLogsByContainerCodesInternal = (containerCodes, callback) =>
 		exports.getContainersByCodeNamesInternal(containerCodes, (containersByCodeNamesResponse, statusCode) =>
 			response = []
 			for getContainer in containersByCodeNamesResponse
-				label = getContainer.container.lsLabels[0].labelText
+				lsLabels = getContainer.container.lsLabels
+				preferredLabelObject = _.filter(lsLabels, (label) ->
+  				label.preferred == true
+				)
 				codeName = getContainer.container.codeName
 				responseObject =
-					label: label
+					label: preferredLabelObject[0].labelText
 					codeName: codeName
 					logs: []
 				if getContainer.container?
