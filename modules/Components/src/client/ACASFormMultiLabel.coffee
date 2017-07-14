@@ -61,8 +61,6 @@ class window.ACASFormMultiLabelListController extends ACASFormAbstractFieldContr
 		@addNewLabel()
 
 	addNewLabel: (skipAmDirtyTrigger) =>
-		console.log "addNewLabel"
-		console.log @opts
 		keyBase = @modelKey
 		newModel = new Label
 			lsType: @opts.modelDefaults.type
