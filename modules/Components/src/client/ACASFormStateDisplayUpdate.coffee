@@ -30,10 +30,13 @@ class window.ACASFormStateDisplayUpdateCellController extends Backbone.View
 		else
 			val = @collection.findWhere ignored: false
 			content = val.get(val.get('lsType'))
-		if val.get('lsType') == 'dateValue'
-			content = UtilityFunctions::convertMSToYMDDate val.get('dateValue')
+			if val.get('lsType') == 'dateValue'
+				content = UtilityFunctions::convertMSToYMDDate val.get('dateValue')
+
 		$(@el).html content
 		$(@el).addClass if @collection.length > 1 then "valueWasEdited" else ""
+		if @options.cellDef.editable? and !@options.cellDef.editable
+			$(@el).addClass 'valueNotEditable'
 
 
 		@
@@ -95,6 +98,8 @@ class window.ACASFormStateDisplayUpdateController extends Backbone.View
 			@$("tbody").append rowController.render().el
 
 			rowController.on 'cellClicked', (values) =>
+				if @currentCellEditor?
+					@currentCellEditor.undelegateEvents()
 				@currentCellEditor = new ACASFormStateDisplayValueEditController
 					collection: values
 					el: @$('.bv_valueEditor')
@@ -159,7 +164,7 @@ class window.ACASFormStateDisplayUpdateController extends Backbone.View
 			modifiedDate: new Date().getTime()
 			isDirty: true
 		valInfo.newValue.set
-			recoerdedBy: window.AppLaunchParams.loginUser.username
+			recordedBy: window.AppLaunchParams.loginUser.username
 			recordedDate: new Date().getTime()
 
 		stateToUpdate.get('lsValues').add valInfo.newValue
@@ -219,19 +224,22 @@ class window.ACASFormStateDisplayValueEditController extends Backbone.View
 
 	render: =>
 		$(@el).empty()
-		$(@el).html @template()
 
-		@$('.bv_header').html "\"#{@valueDef.fieldSettings.formLabel}\" Value History and Edit"
-		@collection.comparator = 'id'
-		@collection.sort()
-		@collection.each (val) =>
-			oldRow = new ACASFormStateDisplayOldValueController
-				model: val
-			@$("tbody").append oldRow.render().el
-		@setupEditor()
-		@$('.bv_aCASFormStateDisplayValueEdit').modal
-			backdrop: "static"
-		@$('.bv_aCASFormStateDisplayValueEdit').modal "show"
+		#only display editor if value is editable
+		if !@valueDef.editable? or (@valueDef.editable? and @valueDef.editable)
+			$(@el).html @template()
+
+			@$('.bv_header').html "\"#{@valueDef.fieldSettings.formLabel}\" Value History and Edit"
+			@collection.comparator = 'id'
+			@collection.sort()
+			@collection.each (val) =>
+				oldRow = new ACASFormStateDisplayOldValueController
+					model: val
+				@$("tbody").append oldRow.render().el
+			@setupEditor()
+			@$('.bv_aCASFormStateDisplayValueEdit').modal
+				backdrop: "static"
+			@$('.bv_aCASFormStateDisplayValueEdit').modal "show"
 
 	reasonForUpdateChanged: ->
 		@comment = @commentPrefix + @$('.bv_reasonForUpdate').val()
@@ -270,6 +278,7 @@ class window.ACASFormStateDisplayValueEditController extends Backbone.View
 			codeType: @valueDef.modelDefaults.codeType
 			codeKind: @valueDef.modelDefaults.codeKind
 			codeOrigin: @valueDef.modelDefaults.codeOrigin
+		@newValue.set 'value', currentValue.get(currentValue.get('lsType'))
 		if currentValue?
 			opts =
 				modelKey: @valueDef.modelDefaults.kind

@@ -45,3 +45,7 @@
 .bv_stateDisplayUpdateTable .valueWasEdited {
     color: red;
 }
+
+.bv_stateDisplayUpdateTable .valueNotEditable {
+    color: #9D9D9D;
+}
