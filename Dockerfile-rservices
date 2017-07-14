@@ -1,4 +1,4 @@
-FROM mcneilco/racas-oss:1.10-release
+FROM mcneilco/racas-oss:develop
 
 # RSTUDIO INSTALL
 USER root

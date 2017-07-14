@@ -6,7 +6,6 @@ config = require '../conf/compiled/conf.js'
 RUN_CUSTOM_FLAG = "0"
 
 
-
 exports.setupAPIRoutes = (app) ->
 	app.post '/api/getContainersInLocationWithTypeAndKind', exports.getContainersInLocationWithTypeAndKind
 	app.post '/api/getContainersInLocation', exports.getContainersInLocation
@@ -105,9 +104,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/createTubes', loginRoutes.ensureAuthenticated, exports.createTubes
 	app.post '/api/throwInTrash', loginRoutes.ensureAuthenticated, exports.throwInTrash
 	app.post '/api/updateContainerHistoryLogs', loginRoutes.ensureAuthenticated, exports.updateContainerHistoryLogs
-	app.post '/api/getContainerInfoFromBatchCode', loginRoutes.ensureAuthenticated, exports.getContainerInfoFromBatchCode
-	app.post '/api/getContainerStatesByContainerValue', loginRoutes.ensureAuthenticated, exports.getContainerStatesByContainerValue
-	app.post '/api/getContainerLogsByContainerCodes', loginRoutes.ensureAuthenticated, exports.getContainerLogsByContainerCodes
+
 
 exports.getContainersInLocation = (req, resp) ->
 	req.setTimeout 86400000

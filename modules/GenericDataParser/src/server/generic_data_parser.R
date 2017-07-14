@@ -815,6 +815,12 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun, r
   require(rjson)
   require(RCurl)
   
+  # Throw errors for value kinds greater than 64 characters
+  valueKindsTooLong <- unique(neededValueKinds)[which(nchar(unique(neededValueKinds)) > 64)]
+  if(length(valueKindsTooLong) > 0) {
+    stopUser(paste0("The value kind(s) are too long: ",sqliz(valueKindsTooLong), ". Value kinds must be 64 characters or less. <br>* Note: Values are typically grouped by assay so the value kind should just be a descriptor of the value (i.e. EC50, Comment, Max).  Units are recorded seperately so are not included in the character limit."))
+  }
+
   # Throw errors for words used with special meanings by the loader
   usedReservedWords <- reserved %in% neededValueKinds
   if (any(usedReservedWords)) {
@@ -1747,6 +1753,22 @@ createNewProtocol <- function(metaData, lsTransaction, recordedBy) {
                                                                     lsKind="protocol name",
                                                                     labelText=metaData$'Protocol Name'[1],
                                                                     preferred=TRUE)
+
+  if (toupper(racas::applicationSettings$client.entity.saveInitialsCorpName) == "TRUE"){
+	  protocolCorpNameList <- unlist(getAutoLabels(thingTypeAndKind="document_protocol", 
+                                  labelTypeAndKind=paste0("corpName initials_", recordedBy), 
+                                  numberOfLabels=1),
+                                  use.names=FALSE)
+
+     protocolLabels[[length(protocolLabels)+1]] <- createProtocolLabel(lsTransaction = lsTransaction, 
+                                                                    recordedBy=recordedBy, 
+                                                                    lsType="corpName", 
+                                                                    lsKind="protocol corpName",
+                                                                    labelText=protocolCorpNameList[1],
+                                                                    preferred=FALSE)
+  }
+
+
   
   # Create the protocol
   protocol <- createProtocol(lsTransaction = lsTransaction,
@@ -1875,6 +1897,22 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
                                                                           labelText=experimentName,
                                                                           preferred=TRUE)
   
+  if (toupper(racas::applicationSettings$client.entity.saveInitialsCorpName) == "TRUE"){
+	  experimentCorpNameList <- unlist(getAutoLabels(thingTypeAndKind="document_experiment", 
+                                  labelTypeAndKind=paste0("corpName initials_", recordedBy), 
+                                  numberOfLabels=1),
+                                  use.names=FALSE)
+
+     experimentLabels[[length(experimentLabels)+1]] <- createExperimentLabel(lsTransaction = lsTransaction, 
+                                                                          recordedBy=recordedBy, 
+                                                                          lsType="corpName", 
+                                                                          lsKind="experiment corpName",
+                                                                          labelText=experimentCorpNameList[1],
+                                                                          preferred=FALSE) 
+   
+  }
+
+
   # Create LS Tags
   if("Experiment Keywords" %in% names(metaData)) {
     tagList <- splitOnSemicolon(metaData$"Experiment Keywords"[[1]])
@@ -2873,7 +2911,15 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     summaryInfo$info$"Flagged Data Points" <- sum(subjectData$valueKind == "flag")
   }
   if(!dryRun) {
-    summaryInfo$info$"Experiment Code Name" <- experiment$codeName
+    if (toupper(racas::applicationSettings$client.entity.saveInitialsCorpName) == "TRUE"){
+      exptLabels <- flattenLabels(experiment$lsLabels)
+      exptCorpName <- exptLabels$labelText[exptLabels$lsType=='corpName' & exptLabels$lsKind=='experiment corpName' & exptLabels$ignored==FALSE]
+      summaryInfo$info$"Experiment Corp Name" <- exptCorpName
+      viewerLink <- paste0("/openExptInQueryTool?experiment=", URLencode(exptCorpName, reserved = TRUE))
+    } else {
+      summaryInfo$info$"Experiment Code Name" <- experiment$codeName
+    }
+
     if (!is.null(viewerLink)) {       
       summaryInfo$viewerLink <- viewerLink
     }

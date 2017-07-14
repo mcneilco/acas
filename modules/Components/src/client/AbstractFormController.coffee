@@ -100,11 +100,18 @@ class window.AbstractThingFormController extends AbstractFormController
 				formLabel: field.fieldSettings.formLabel
 				placeholder: field.fieldSettings.placeholder
 				required: field.fieldSettings.required
+				url: field.fieldSettings.url
 				thingRef: @model
 				insertUnassigned: field.fieldSettings.insertUnassigned
+				modelDefaults: field.modelDefaults
+				allowedFileTypes: field.fieldSettings.allowedFileTypes
 
 			switch field.fieldSettings.fieldType
-				when 'label' then newField = new ACASFormLSLabelFieldController opts
+				when 'label'
+					if field.multiple? and field.multiple
+						newField = new ACASFormMultiLabelListController opts
+					else
+						newField = new ACASFormLSLabelFieldController opts
 				when 'numericValue' then newField = new ACASFormLSNumericValueFieldController opts
 				when 'codeValue' then newField = new ACASFormLSCodeValueFieldController opts
 				when 'htmlClobValue'
@@ -117,6 +124,8 @@ class window.AbstractThingFormController extends AbstractFormController
 					opts.labelType = field.fieldSettings.labelType
 					newField = new ACASFormLSThingInteractionFieldController opts
 				when 'stringValue' then newField = new ACASFormLSStringValueFieldController opts
+				when 'dateValue' then newField = new ACASFormLSDateValueFieldController opts
+				when 'fileValue' then newField = new ACASFormLSFileValueFieldController opts
 
 			@$("."+field.fieldSettings.fieldWrapper).append newField.render().el
 			newField.afterRender()

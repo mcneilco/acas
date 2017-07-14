@@ -19,6 +19,8 @@ class window.ACASFormStateTableController extends Backbone.View
 	initialize: ->
 		@thingRef = @options.thingRef
 		@tableDef = @options.tableDef
+		@tableSetupComplete = false
+		@callWhenSetupComplete = null
 
 	getCollection: ->
 		#TODO get states by type and kind
@@ -33,6 +35,12 @@ class window.ACASFormStateTableController extends Backbone.View
 
 #Subclass to extend
 	renderModelContent: =>
+		if @tableSetupComplete
+			@completeRenderModelContent()
+		else
+			@callWhenSetupComplete = @completeRenderModelContent
+
+	completeRenderModelContent: ->
 		for state in @getCurrentStates()
 			@renderState state
 
@@ -59,6 +67,10 @@ class window.ACASFormStateTableController extends Backbone.View
 			@fetchPickLists =>
 				@defineColumns()
 				@setupHot()
+				@tableSetupComplete = true
+				if @callWhenSetupComplete?
+					@callWhenSetupComplete.call @
+					@callWhenSetupComplete = null
 
 	fetchPickLists: (callback) =>
 		@pickLists = {}
@@ -90,11 +102,9 @@ class window.ACASFormStateTableController extends Backbone.View
 					json: true
 					self: @
 					kind: kind
-#					success: makeRetFunct()
 					success: (response) ->
 						this.self.pickLists[this.kind] = new PickListList response
 						doneYet()
-
 
 	defineColumns: ->
 		unless @colHeaders?
@@ -118,6 +128,7 @@ class window.ACASFormStateTableController extends Backbone.View
 			colOpts = data: val.modelDefaults.kind
 			if val.modelDefaults.type == 'numericValue'
 				colOpts.type = 'numeric'
+				colOpts.format = val.fieldSettings.format
 			else if val.modelDefaults.type == 'dateValue'
 				colOpts.type = 'date'
 				colOpts.dateFormat = 'YYYY-MM-DD'
@@ -153,6 +164,7 @@ class window.ACASFormStateTableController extends Backbone.View
 			minSpareRows: 1,
 			allowInsertRow: true
 			contextMenu: true
+			comments: true
 			startRows: 1,
 			className: "htCenter",
 			colHeaders: _.pluck @colHeaders, 'displayName'
@@ -167,6 +179,7 @@ class window.ACASFormStateTableController extends Backbone.View
 				if @tableReadOnly
 					cellProperties.readOnly = true
 				return cellProperties;
+		@hot.addHook 'afterChange', @validateUniqueness
 
 	readOnlyRenderer: (instance, td, row, col, prop, value, cellProperties) =>
 		Handsontable.renderers.TextRenderer.apply(this, arguments)
@@ -301,7 +314,6 @@ class window.ACASFormStateTableController extends Backbone.View
 				if rowValues.length == 1
 					rowValues[0].set numericValue: rowNum + amount
 
-
 	handleRowRemoved: (index, amount) =>
 		for rowNum in [index..(index+amount-1)]
 			state = @getStateForRow rowNum, false
@@ -359,21 +371,45 @@ class window.ACASFormStateTableController extends Backbone.View
 		@hot.updateSettings
 			readOnly: true
 			contextMenu: false
+			comments: false
 #Other options I decided not to use
 #			disableVisualSelection: true
 #			manualColumnResize: false
 #			manualRowResize: false
-#			comments: false
 
 	enableInput: ->
 		@hot.updateSettings
 			readOnly: false
 			contextMenu: true
+			comments: true
 #Other options I decided not to use
 #			disableVisualSelection: false
 #			manualColumnResize: true
 #			manualRowResize: true
-#			comments: true
+
+	validateUniqueness: (changes, source) =>
+		uniqueColumnIndices = @tableDef.values.map (value, idx) ->
+			if value.fieldSettings.unique? and value.fieldSettings.unique
+				idx
+			else
+				null
+		uniqueColumnIndices = uniqueColumnIndices.filter (idx) ->
+			idx?
+		_.each uniqueColumnIndices, (columnIndex) =>
+			column = @hot.getDataAtCol columnIndex
+			column.forEach (value, row) =>
+				data = extend [], column
+				idx = data.indexOf value
+				data.splice idx, 1
+				secondIdx = data.indexOf value
+				cell = @hot.getCellMeta row, columnIndex
+				if idx > -1 and secondIdx > -1 and value? and value != ''
+					cell.valid = false
+					cell.comment = 'Error: Duplicates not allowed'
+				else
+					cell.valid = true
+					cell.comment = ''
+		@hot.render()
 
 
 

@@ -331,6 +331,9 @@ client.moduleMenus.summaryStats=false
 # For navigation to external ACAS modules from ACAS homepage
 client.moduleMenus.modules.external=[{"displayName": "Compound Registration", "href": "/cmpdreg/"},\
                                      {"displayName": "Compound Registration Bulk Loader", "href":"/CmpdRegBulkLoader"}]
+client.moduleMenus.dataViewerDeepLink=/dataViewer
+# For auto-starting a module when opening up ACAS
+client.moduleMenus.moduleAutoLaunchName=
 
 client.leaveACASMessage=There are no unsaved changes.
 client.scientistCodeOrigin=ACAS authors
@@ -380,6 +383,7 @@ client.cmpdReg.showFileDate=true
 client.curvefit.modelfitparameter.classes=[{"code":"4 parameter D-R", "parametersController":"DoseResponseAnalysisParametersController", "parametersClass": "DoseResponseAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveLL4", "RSource":"src/r/CurveAnalysis/ll4.R"}, \
                                             {"code":"Ki Fit", "parametersController":"DoseResponseKiAnalysisParametersController", "parametersClass": "DoseResponseKiAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveKi", "RSource":"src/r/CurveAnalysis/ki.R"}, \
                                             {"code":"4 parameter D-R IC50", "parametersController":"DoseResponseAnalysisParametersController", "parametersClass": "DoseResponseIC50AnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveLL4IC50", "RSource":"src/r/CurveAnalysis/ll4IC50.R"},\
+                                            {"code":"4 parameter D-R IC50/DMax", "parametersController":"DoseResponseAnalysisParametersController", "parametersClass": "DoseResponseIC50AnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveLL4IC50", "RSource":"src/r/CurveAnalysis/ll4IC50DMax.R"},\
                                             {"code":"Michaelis-Menten", "parametersController":"DoseResponseKmAnalysisParametersController", "parametersClass": "DoseResponseKmAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveKm", "RSource":"src/r/CurveAnalysis/mm2.R"},\
                                             {"code":"Substrate Inhibition", "parametersController":"DoseResponseSubstrateInhibitionAnalysisParametersController", "parametersClass": "DoseResponseSubstrateInhibitionAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveSubstrateInhibition", "RSource":"src/r/CurveAnalysis/substrateInhibition.R"}]
 
@@ -390,6 +394,13 @@ client.curvefit.modelfitparameter.classes=[{"code":"4 parameter D-R", "parameter
 # Example: client.experiment.lockwhenapproved.filter=[{"lsType": "Bio Activity"}]
 #
 client.experiment.lockwhenapproved.filter=[{"lsType": "Bio Activity"}]
+
+#Configs for whether notebook attributes for protocols and experiments should be visible and/or required
+#Note that notebook page can't be visible if notebook is not visible and page can't be required if notebook is not required
+client.entity.notebook.save=true
+client.entity.notebook.require=true
+client.entity.notebookPage.save=true
+client.entity.notebookPage.require=false
 
 # Protocols and experiments which should be hidden (to non-admin users) in the protocol/expt browser when the status is in the config below
 client.entity.hideStatuses=["deleted"]
@@ -405,6 +416,7 @@ client.entity.deletingRoles=
 client.entity.viewDeletedRoles=
 
 client.protocol.showAssayTreeRule=false
+client.protocol.showCurveDisplayParams=true
 client.experiment.uneditableFileTypes=["source file", "annotation file"]
 
 # If project select is shown separately in the Configuration part of the GUI
@@ -497,6 +509,7 @@ flyway.database.password=${server.database.password}
 server.acas.license=/home/runner/build/conf/acas.lic
 
 server.systemTest.runOnStart=${env.RUN_SYSTEM_TEST}
+server.systemTest.runDestructive=false
 
 
 # Required configs for which base entity to use
@@ -513,6 +526,9 @@ client.projectEditor.restrictedCheckbox.show=true
 client.projectEditor.isRestricted.default=false
 
 client.roles.crossProjectLoaderRole=ROLE_ACAS-CROSS-PROJECT-LOADER
+
+# For whether protocols and experiments should have sequential user defined corpName labels
+client.entity.saveInitialsCorpName=false
 
 #Add user roles that represent groups allowed to fast user switch
 client.moduleMenus.fastUserSwitchingRoles=[]

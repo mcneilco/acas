@@ -12,6 +12,7 @@ gulpif = require('gulp-if')
 _ = require('underscore')
 notify = require("gulp-notify")
 coffeeify = require('gulp-coffeeify')
+through = require('through2')
 
 node = undefined
 os = require('os');
@@ -78,6 +79,35 @@ getPythonPath = (path) ->
   outputDirname = module + '/' + path.dirname.replace(module + '/src/server/python', '')
   path.dirname = outputDirname
   return
+
+getAssetsPath = (path) ->
+  module = path.dirname.split('/')[0]
+  if path.basename == 'assets' and path.extname == ''
+    path.basename = ''
+    path.dirname = ''
+  outputDirname = module + '/' + path.dirname.replace(module + '/src/server/assets', '')
+  path.dirname = outputDirname
+  return
+
+addREnvironmentCleanUp = (file,contents) ->
+  # file contents are handed 
+  # over as buffers 
+  if path.extname(file.path) in [".R",".r"] && contents.match('# ROUTE:.*')
+    cleanFunction = "racas::cleanEnvironment();gc()"
+    contents = "#{cleanFunction}\n\r#{contents}\r\n#{cleanFunction}\r\n"
+  return contents
+
+modify = (options = {}) ->
+  through.obj (file, enc, next) ->
+    error = null
+    if file.isBuffer()
+      if fileModifier = options.fileModifier
+        try
+          content = fileModifier file, file.contents.toString 'utf8'
+          file.contents = new Buffer content
+        catch _error
+          console.log _error
+    next error, file
 
 # ------------------------------------------------- Read Inputs
 
@@ -276,6 +306,7 @@ taskConfigs =
       dest: build + '/src/r'
       options: _.extend _.clone(globalCopyOptions), {}
       renameFunction: getFirstFolderName
+      modifyFunction: addREnvironmentCleanUp
     ,
       taskName: "legacyServerR"
       src: getGlob('modules/**/src/server/**/*.{R,r}', '!modules/**/src/server/*.{R,r}','!modules/**/src/server/r/*.{R,r}')
@@ -311,6 +342,24 @@ taskConfigs =
       src: getGlob('modules/CmpdReg/src/**')
       dest: build + '/public/CmpdReg'
       options: _.extend _.clone(globalCopyOptions), {}
+    ,
+      taskName: "spec"
+      src: getGlob("modules/**/spec/**", "!modules/**/spec/**/*.coffee", "!modules/**/spec/testFixtures/*.coffee")
+      dest: build + '/src/spec'
+      options: _.extend _.clone(globalCopyOptions), {}
+      renameFunction: getTestFixuresPath
+    ,
+      taskName: "serverAssets"
+      src: getGlob('modules/**/src/server/assets/**')
+      dest: build + '/src/assets'
+      options: _.extend _.clone(globalCopyOptions), {}
+      renameFunction: getAssetsPath
+    ,
+      taskName: "clientAssets"
+      src: getGlob('modules/**/src/client/assets/**')
+      dest: build + '/public/assets'
+      options: _.extend _.clone(globalCopyOptions), {}
+      renameFunction: getFirstFolderName
   ],
   others:
     packageJSON:
@@ -384,6 +433,7 @@ createTask = (options, type) ->
   watch = options.watch
   shouldFlatten = options.flatten ? false
   renameFunction = options.renameFunction
+  modifyFunction = options.modifyFunction
   shouldCoffeify = (file) ->
     if type=="coffee" && (file.path.indexOf("client/ExcelApp") > -1)
        return true
@@ -398,6 +448,7 @@ createTask = (options, type) ->
     gulp.src(src, _.extend(taskOptions, {since: gulp.lastRun(taskName)}))
     .pipe(plumber({errorHandler: onError}))
     .pipe(gulpif(shouldFlatten,flatten()))
+    .pipe(gulpif(modifyFunction?, modify(fileModifier: modifyFunction)))
     .pipe(gulpif(shouldCoffeify, coffeeify({options:{paths:[build]}})))
     .pipe(gulpif(shouldCoffee,coffee(bare: true)))
     .pipe(gulpif(renameFunction?,rename(renameFunction)))

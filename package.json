@@ -69,6 +69,7 @@
   },
   "devDependencies": {
     "coffee-script": "^1.12.4",
+    "del": "^2.2.2",
     "gulp": "github:gulpjs/gulp#4.0",
     "gulp-coffee": "^2.3.3",
     "gulp-coffeeify": "^0.1.8",
@@ -82,6 +83,8 @@
     "gulp-rename": "^1.2.2",
     "gulp-replace": "^0.5.4",
     "gulp-watch": "^4.3.11",
+    "gutil": "^1.6.4",
+    "through2": "^2.0.3",
     "yargs": "^7.0.2"
   }
 }
