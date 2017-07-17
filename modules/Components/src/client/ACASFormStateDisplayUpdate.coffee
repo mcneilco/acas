@@ -37,7 +37,8 @@ class window.ACASFormStateDisplayUpdateCellController extends Backbone.View
 		$(@el).addClass if @collection.length > 1 then "valueWasEdited" else ""
 		if @options.cellDef.editable? and !@options.cellDef.editable
 			$(@el).addClass 'valueNotEditable'
-
+		else
+			$(@el).addClass 'valueEditable'
 
 		@
 
