@@ -723,11 +723,12 @@ exports.containersByTypeKindInternal = (lsType, lsKind, format, stub, testMode, 
 		callback JSON.stringify(thingServiceTestJSON.batchList), 200
 	else
 		baseurl = config.all.client.service.persistence.fullpath+"containers?lsType="+lsType+"&lsKind="+lsKind
-		stubFlag = "with=stub"
-		if stub
-			baseurl += "?#{stubFlag}"
-		if format? and format=="codetable"
-			baseurl += "&format=codetable"
+		if format?
+			if format=="codetable"
+				baseurl += "&format=codetable"
+			else if format == "stub"
+				baseurl += "&format=stub"
+
 		request = require 'request'
 		request(
 			method: 'GET'

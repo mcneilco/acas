@@ -30,6 +30,8 @@ class window.ACASFormStateDisplayUpdateCellController extends Backbone.View
 		else
 			val = @collection.findWhere ignored: false
 			content = val.get(val.get('lsType'))
+			if @options.cellDef.displayOverride?
+				content = @options.cellDef.displayOverride content
 			if val.get('lsType') == 'dateValue'
 				content = UtilityFunctions::convertMSToYMDDate val.get('dateValue')
 
@@ -169,6 +171,8 @@ class window.ACASFormStateDisplayUpdateController extends Backbone.View
 			recordedDate: new Date().getTime()
 
 		stateToUpdate.get('lsValues').add valInfo.newValue
+		if valInfo.valueDef?.autoUpdate?
+			updatedStates = valInfo.valueDef.autoUpdate valInfo, @
 		@trigger 'thingSaveRequested', valInfo.comment
 
 class window.ACASFormStateDisplayOldValueController extends Backbone.View
@@ -176,8 +180,12 @@ class window.ACASFormStateDisplayOldValueController extends Backbone.View
 	template: _.template($("#ACASFormStateDisplayOldValueView").html())
 
 	render: =>
+		value = @model.get(@model.get('lsType'))
+		if @options.valueDef.displayOverride?
+			value = @options.valueDef.displayOverride value
+
 		attrs =
-			value: @model.get(@model.get('lsType'))
+			value: value
 		attrs.valueClass = if @model.get 'ignored' then "valueWasEdited" else ""
 
 		if @model.has('modifiedBy') &&  @model.get('modifiedBy')!=""
@@ -236,11 +244,14 @@ class window.ACASFormStateDisplayValueEditController extends Backbone.View
 			@collection.each (val) =>
 				oldRow = new ACASFormStateDisplayOldValueController
 					model: val
+					valueDef: @valueDef
 				@$("tbody").append oldRow.render().el
 			@setupEditor()
 			@$('.bv_aCASFormStateDisplayValueEdit').modal
 				backdrop: "static"
 			@$('.bv_aCASFormStateDisplayValueEdit').modal "show"
+		@$('.bv_valueHeader').html @tableDef.valueHeader
+		@$('.bv_changeValueHeader').html @tableDef.changeValueHeader
 
 	reasonForUpdateChanged: ->
 		@comment = @commentPrefix + @$('.bv_reasonForUpdate').val()
@@ -263,6 +274,7 @@ class window.ACASFormStateDisplayValueEditController extends Backbone.View
 			newValue: @newValue
 			comment: @comment
 			stateID: @options.stateID
+			valueDef: @valueDef
 
 		@$('.bv_aCASFormStateDisplayValueEdit').modal "hide"
 		$(@el).empty()
