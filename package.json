@@ -36,7 +36,7 @@
     "jasmine-jquery": "^2.1.1",
     "jquery": "^2.2.0",
     "jquery-file-upload-middleware": "https://github.com/mcneilco/jquery-file-upload-middleware.git",
-	"json2csv": "*",
+    "json2csv": "^3.9.1",
     "jszip": "*",
     "less": "^2.6.0",
     "lodash": "^4.0.0",
