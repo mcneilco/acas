@@ -213,7 +213,6 @@ class window.ACASFormStateTableController extends Backbone.View
 			for valDef in @tableDef.values
 				cellInfo = []
 				value = state.getOrCreateValueByTypeAndKind valDef.modelDefaults.type, valDef.modelDefaults.kind
-				#TODO look for ignored values of the same type and kind. Add styling if this was edited
 				if valDef.modelDefaults.type == 'codeValue'
 					if valDef.fieldSettings.fieldType == 'stringValue'
 						displayVal = value.get 'codeValue'
@@ -248,10 +247,6 @@ class window.ACASFormStateTableController extends Backbone.View
 			return null
 
 	handleCellChanged: (changes, source) =>
-		#TODO if audit mode call configured function after change
-# that function shoiuld popup a panel to capture a reason, then update the thing
-# there should be a cancel option, and this function will have to have undo if cancel pushed
-# so I'll have to save the old value ( I have oldValue in a vairable)
 		if changes?
 			for change in changes
 				unless change[2] == change[3] or source == "autofill"
