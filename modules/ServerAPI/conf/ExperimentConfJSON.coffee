@@ -319,8 +319,15 @@
 				codeType: "experiment"
 				codeKind: "review status"
 				codeOrigin: "ACAS DDICT"
-				code: "reviewed"
-				name: "Reviewed"
+				code: "reviewed ok"
+				name: "Reviewed - OK"
+				ignored: false
+			,
+				codeType: "experiment"
+				codeKind: "review status"
+				codeOrigin: "ACAS DDICT"
+				code: "reviewed not ok"
+				name: "Reviewed - Not OK"
 				ignored: false
 			,
 				codeType: "analysis"
