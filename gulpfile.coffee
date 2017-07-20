@@ -1,21 +1,21 @@
 # ---------------------------------------------- Requires
 
 gulp = require('gulp')
-gutil = require('gutil')
 coffee = require('gulp-coffee')
-del = require('del')
 flatten = require('gulp-flatten')
 rename = require('gulp-rename')
 plumber = require('gulp-plumber')
 jeditor = require('gulp-json-editor')
 argv = require('yargs').argv
 path = require('path')
-run = require('gulp-run')
 gulpif = require('gulp-if')
 _ = require('underscore')
+notify = require("gulp-notify")
+coffeeify = require('gulp-coffeeify')
 through = require('through2')
 
 node = undefined
+os = require('os');
 
 # ---------------------------------------------- Functions
 getGlob = (paths) ->
@@ -272,6 +272,12 @@ taskConfigs =
       dest: build + '/conf'
       options: _.extend _.clone(globalCopyOptions), {}
     ,
+      taskName: "moduleConf"
+      src: getGlob('modules/**/conf/**', '!modules/**/conf/*.coffee')
+      dest: build + '/public/conf'
+      options: _.extend _.clone(globalCopyOptions), {}
+      renameFunction: getFirstFolderName
+    ,
       taskName: "nodeModulesCustomized"
       src: getGlob('node_modules_customized/**')
       dest: build+"/node_modules_customized"
@@ -402,6 +408,23 @@ createExecuteTask = (options) =>
     watchTasks.push watchTaskName
   return taskName
 
+
+onError = (err) ->
+  process.stdout.write '\x07'
+  if os.platform() == 'darwin'
+    return notify.onError(
+      title: '<%= error.message %>'
+      # subtitle: 'Failure!'
+      message: 'Error: <%= error.stack %>'
+      sound: false) err
+  else
+    return notify.onError((options, callback) ->
+      console.log "\x1b[34m[#{options.message}]\x1b[0m \x1b[31mError: #{options.stack}\x1b[0m"
+      return
+    ) err
+  @emit 'end'
+
+
 createTask = (options, type) ->
   taskName = "#{type}:#{options.taskName}"
   taskOptions = options.options
@@ -411,13 +434,24 @@ createTask = (options, type) ->
   shouldFlatten = options.flatten ? false
   renameFunction = options.renameFunction
   modifyFunction = options.modifyFunction
+  shouldCoffeify = (file) ->
+    if type=="coffee" && (file.path.indexOf("client/ExcelApp") > -1)
+       return true
+    else
+      return false
+  shouldCoffee = (file) ->
+    if type=="coffee" && !(file.path.indexOf("client/ExcelApp") > -1)
+       return true
+    else
+      return false
   gulp.task taskName, ->
     gulp.src(src, _.extend(taskOptions, {since: gulp.lastRun(taskName)}))
-    .pipe(plumber())
+    .pipe(plumber({errorHandler: onError}))
     .pipe(gulpif(shouldFlatten,flatten()))
     .pipe(gulpif(modifyFunction?, modify(fileModifier: modifyFunction)))
+    .pipe(gulpif(shouldCoffeify, coffeeify({options:{paths:[build]}})))
+    .pipe(gulpif(shouldCoffee,coffee(bare: true)))
     .pipe(gulpif(renameFunction?,rename(renameFunction)))
-    .pipe(gulpif(type=="coffee",coffee(bare: true)))
     .pipe gulp.dest(dest)
   unless watch == false
     watchTaskName = "watch:#{taskName}"

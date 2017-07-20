@@ -52,6 +52,10 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/createTubes', exports.createTubes
 	app.post '/api/throwInTrash', exports.throwInTrash
 	app.post '/api/updateContainerHistoryLogs', exports.updateContainerHistoryLogs
+	app.post '/api/getContainerInfoFromBatchCode', exports.getContainerInfoFromBatchCode
+	app.post '/api/getContainerStatesByContainerValue', exports.getContainerStatesByContainerValue
+	app.post '/api/getContainerLogsByContainerCodes', exports.getContainerLogsByContainerCodes
+
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/getContainersInLocationWithTypeAndKind', loginRoutes.ensureAuthenticated, exports.getContainersInLocationWithTypeAndKind
@@ -189,6 +193,7 @@ exports.getContainersInLocationWithTypeAndKindInternal = (values, callback) ->
 
 exports.getContainersByLabels = (req, resp) ->
 	req.setTimeout 86400000
+
 	exports.getContainersByLabelsInternal req.body, req.query.containerType, req.query.containerKind, req.query.labelType, req.query.labelKind, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
@@ -236,18 +241,50 @@ exports.getContainersByLabelsInternal = (containerLabels, containerType, contain
 
 exports.getContainerCodesByLabels = (req, resp) ->
 	req.setTimeout 86400000
-	exports.getContainerCodesByLabelsInternal req.body, req.query.containerType, req.query.containerKind, req.query.labelType, req.query.labelKind, (json, statusCode) ->
+
+	containerLabels = req.body
+	containerType = req.query.containerType
+	containerKind = req.query.containerKind
+	labelType = req.query.labelType
+	labelKind = req.query.labelKind
+	likeParameter = req.query.like
+	maxResults = req.query.maxResults
+
+	queryPayload =
+		containerLabels: req.body
+		containerType: containerType
+		containerKind: containerKind
+		labelType: labelType
+		labelKind: labelKind
+		likeParameter: likeParameter
+		maxResults: maxResults
+
+	console.log 'queryPayload', queryPayload
+
+	exports.getContainerCodesByLabelsLikeMaxResultsInternal(queryPayload, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
+	)
 
-exports.getContainerCodesByLabelsInternal = (containerCodesJSON, containerType, containerKind, labelType, labelKind, callback) ->
+exports.getContainerCodesByLabelsLikeMaxResultsInternal = (requestObject, callback) ->
 	if global.specRunnerTestmode
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getContainerCodesByLabelsResponse
 	else
-		console.debug 'incoming getContainerCodesByLabelsInternal request: ', JSON.stringify(containerCodesJSON), containerType, containerKind, labelType, labelKind
 		config = require '../conf/compiled/conf.js'
+
+		containerLabels = requestObject.containerLabels
+		containerType = requestObject.containerType
+		containerKind = requestObject.containerKind
+		labelType = requestObject.labelType
+		labelKind = requestObject.labelKind
+		likeParameter = requestObject.likeParameter
+		maxResults = requestObject.maxResults
+
+		console.debug 'incoming getContainerCodesByLabelsLikeMaxResultsInternal: ', JSON.stringify(containerLabels), containerType, containerKind, labelType, labelKind, likeParameter, maxResults
+
 		queryParams = []
+
 		if containerType?
 			queryParams.push "containerType="+containerType
 		if containerKind?
@@ -256,6 +293,10 @@ exports.getContainerCodesByLabelsInternal = (containerCodesJSON, containerType, 
 			queryParams.push "labelType="+labelType
 		if labelKind?
 			queryParams.push "labelKind="+labelKind
+		if likeParameter?
+			queryParams.push "like="+likeParameter
+		if maxResults?
+			queryParams.push "maxResults="+maxResults
 		queryString = queryParams.join "&"
 		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainerCodesByLabels?"+queryString
 		console.debug 'base url: ', baseurl
@@ -263,7 +304,7 @@ exports.getContainerCodesByLabelsInternal = (containerCodesJSON, containerType, 
 		request(
 			method: 'POST'
 			url: baseurl
-			body: JSON.stringify containerCodesJSON
+			body: JSON.stringify containerLabels
 			json: true
 			timeout: 86400000
 			headers: 'content-type': 'application/json'
@@ -276,6 +317,31 @@ exports.getContainerCodesByLabelsInternal = (containerCodesJSON, containerType, 
 				console.error json
 				console.error response
 				callback JSON.stringify("getContainerCodesByLabels failed"), 500
+		)
+
+exports.getContainerCodesByLabelsInternal = (containerCodesJSON, containerType, containerKind, labelType, labelKind, callback) ->
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		resp.json inventoryServiceTestJSON.getContainerCodesByLabelsResponse
+	else
+		console.warn "getContainerCodesByLabelsInternal is deprecated please use getContainerCodesByLabelsLikeMaxResultsInternal"
+		console.debug 'incoming getContainerCodesByLabelsInternal request: ', JSON.stringify(containerCodesJSON), containerType, containerKind, labelType, labelKind
+		config = require '../conf/compiled/conf.js'
+
+		likeParameter = null
+		maxResults = null
+
+		queryPayload =
+			containerLabels: containerCodesJSON
+			containerType: containerType
+			containerKind: containerKind
+			labelType: labelType
+			labelKind: labelKind
+			likeParameter: likeParameter
+			maxResults: maxResults
+
+		exports.getContainerCodesByLabelsLikeMaxResultsInternal(queryPayload, (json, statusCode) ->
+			callback json, statusCode
 		)
 
 exports.getWellCodesByPlateBarcodes = (req, resp) ->
@@ -507,7 +573,6 @@ exports.updateContainersByContainerCodesInternal = (updateInformation, callCusto
 		codeNames = _.pluck updateInformation, "codeName"
 		console.debug "calling getContainersByCodeNamesInternal"
 		exports.getContainersByCodeNamesInternal codeNames, (containers, statusCode) =>
-			console.debug "containers from service"
 			if statusCode == 400
 				console.error "got errors requesting code names: #{JSON.stringify containers}"
 				callback "error when requesting code names", 400
@@ -849,6 +914,23 @@ exports.containerByCodeName = (req, resp) ->
 		baseurl = config.all.client.service.persistence.fullpath+"containers/"+req.params.code
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
+exports.containerByCodeNameInteral = (containerCodeName, callback) ->
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.persistence.fullpath+"containers/" + containerCodeName
+	request = require 'request'
+	request(
+		method: 'GET'
+		url: baseurl
+		json: true
+	, (error, response, json) =>
+		if !error && response.statusCode == 200
+			callback response.statusCode, json
+		else
+			console.log 'got ajax error'
+			console.log error
+			console.log json
+			callback 500, {error: true, message:error}
+	)
 
 updateContainer = (container, testMode, callback) ->
 	if testMode or global.specRunnerTestmode
@@ -1771,6 +1853,39 @@ exports.getContainerLogsInternal = (labels, containerType, containerKind, labelT
 				response.push responseObject
 			callback response, 200
 
+exports.getContainerLogsByContainerCodes = (req, resp) ->
+	req.setTimeout 86400000
+
+	exports.getContainerLogsByContainerCodesInternal req.body, (json, statusCode) ->
+		resp.statusCode = statusCode
+		resp.json json
+
+exports.getContainerLogsByContainerCodesInternal = (containerCodes, callback) =>
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		resp.json inventoryServiceTestJSON.getContainerAndDefinitionContainerByContainerLabelInternalResponse
+	else
+		console.debug "incoming getContainerLogsByContainerCodesInternal request: '#{JSON.stringify(containerCodes)}'"
+		exports.getContainersByCodeNamesInternal(containerCodes, (containersByCodeNamesResponse, statusCode) =>
+			response = []
+			for getContainer in containersByCodeNamesResponse
+				lsLabels = getContainer.container.lsLabels
+				preferredLabelObject = _.filter(lsLabels, (label) ->
+  				label.preferred == true
+				)
+				codeName = getContainer.container.codeName
+				responseObject =
+					label: preferredLabelObject[0].labelText
+					codeName: codeName
+					logs: []
+				if getContainer.container?
+					container = getContainerModels([getContainer])
+					responseObject.logs = container[0].getLogs()
+				response.push responseObject
+			callback response, 200
+		)
+
+
 exports.getContainerLocationHistory = (req, resp) ->
 	exports.getContainerLocationHistoryInternal [req.params.label], req.query.containerType, req.query.containerKind, req.query.labelType, req.query.labelKind, (json, statusCode) ->
 		resp.statusCode = statusCode
@@ -1951,8 +2066,17 @@ exports.getContainerCodeNamesByContainerValueInternal = (requestObject, callback
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		callback inventoryServiceTestJSON.getContainerCodeNamesByContainerValueResponse
 	else
+		queryParams = []
+		if requestObject.like?
+			queryParams.push "like="+requestObject.like
+		if requestObject.rightLike?
+			queryParams.push "rightLike="+requestObject.rightLike
+		if requestObject.maxResults?
+			queryParams.push "maxResults="+requestObject.maxResults
+		queryString = queryParams.join "&"
+		console.log 'request object in getContainerCodeNamesByContainerValue', requestObject
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainerCodeNamesByContainerValue"
+		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainerCodeNamesByContainerValue?"+queryString
 		request = require 'request'
 		console.debug 'calling service', baseurl
 		request(
@@ -2185,6 +2309,16 @@ formatContainers = (containers, modifiedBy, modifiedDate, callback) ->
 	return callback formattedContainers
 	#callback(formattedContainers, statusCode)
 
+exports.getContainerInfoFromBatchCode = (req, resp) =>
+
+	requestObject =
+		batchCode: req.body.batchCode
+
+	exports.getContainerInfoFromBatchCodeInternal(requestObject, (json, statusCode) =>
+		resp.statusCode = statusCode
+		resp.json json
+	)
+
 
 # getLocationBreadcrumb = (container, callback) ->
 # 	exports.getBreadCrumbByContainerCodeInternal([container.containerCodeName], "<", (breadcrumb) ->
@@ -2242,3 +2376,83 @@ formatContainers = (containers, modifiedBy, modifiedDate, callback) ->
 # 	console.log 'locationArrayString '
 # 	console.log locationArrayString
 # 	callback locationArrayString
+
+exports.getContainerInfoFromBatchCodeInternal = (requestObject, callback) =>
+
+	queryPayload =
+		{
+			"containerType": "well",
+			"containerKind": "default",
+			"stateType": "status",
+			"stateKind": "content",
+			"valueType": "codeValue",
+			"valueKind": "batch code",
+			"value": requestObject.batchCode
+		}
+
+	exports.getContainerCodeNamesByContainerValueInternal(queryPayload, (json) =>
+		statusCode = 200
+		if json.maxResults?
+			warningMessage = "Max results of #{maxResults} reached."
+			return callback {warningMessage: warningMessage}, statusCode
+		else
+			if json.length > 0
+				exports.getWellContentInternal(json, (response) =>
+					return callback response, statusCode
+				)
+			else
+				return callback {warningMessage: "No results found for #{queryPayload.value}"}, statusCode
+	)
+
+exports.getContainerStatesByContainerValue = (req, resp) =>
+
+	exports.getContainerStatesByContainerValueInternal(req.body, (json, statusCode) =>
+		resp.statusCode = statusCode
+		resp.json json
+	)
+
+exports.getContainerStatesByContainerValueInternal = (requestObject, callback) =>
+
+	queryParams = []
+	if requestObject.like?
+		queryParams.push "like="+requestObject.like
+	if requestObject.rightLike?
+		queryParams.push "rightLike="+requestObject.rightLike
+	if requestObject.maxResults?
+		queryParams.push "maxResults="+requestObject.maxResults
+	if requestObject.with?
+		queryParams.push "with="+requestObject.with
+	queryString = queryParams.join "&"
+
+
+	queryPayload =
+		{
+			containerType: requestObject.containerType
+			containerKind: requestObject.containerKind
+			stateType: requestObject.stateType
+			stateKind: requestObject.stateKind
+			valueType: requestObject.valueType
+			valueKind: requestObject.valueKind
+			value: requestObject.value
+		}
+
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.persistence.fullpath+"containerstates/getContainerStatesByContainerValue?"+queryString
+	request = require 'request'
+	request(
+		method: 'POST'
+		url: baseurl
+		body: queryPayload
+		json: true
+		timeout: 86400000
+	, (error, response, json) =>
+		if !error && response.statusCode == 200
+			callback json, response.statusCode
+		else
+			console.error 'got ajax error trying to get getContainerStatesByContainerValue'
+			console.error error
+			console.error json
+			console.error response
+			callback null, 500
+			#resp.end JSON.stringify "getContainerStatesByContainerValue failed"
+		)
