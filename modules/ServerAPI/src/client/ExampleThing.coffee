@@ -289,6 +289,11 @@ class window.ExampleThingController extends AbstractThingFormController
 		@trigger 'thingSaved'
 		@renderModelContent()
 
+		@auditTableController = new ExampleTableAuditController
+			el: @$('.bv_exampleTableAudit')
+			thingCode: @model.get 'codeName'
+		@auditTableController.render()
+
 	modelChangeCallback: (method, model) =>
 		@trigger 'amDirty'
 		@$('.bv_saveThingComplete').hide()
@@ -321,3 +326,128 @@ class window.ExampleThingController extends AbstractThingFormController
 
 
 #TODO add thing interaction to project with field
+
+
+ExampleTableAuditConf =
+	formFieldDefinitions:
+		stateTables: []
+		stateDisplayTables: [
+			key: 'exampleThingTable'
+			stateType: 'metadata'
+			stateKind: 'example thing data'
+			tableWrapper: "bv_dataTable"
+			tableLabel: "Example Thing Data Table - Edit Mode"
+			allowEdit: true
+			moduleName: "ExampleThing"
+#			sortKind: 'media component'
+			values: [
+				modelDefaults:
+					type: 'stringValue'
+					kind: 'media component'
+					value: ""
+				fieldSettings:
+					fieldType: 'stringValue'
+					formLabel: "Media Component"
+					required: true
+					width: 215
+			,
+				modelDefaults:
+					type: 'numericValue'
+					kind: 'volume'
+					value: null
+					unitType: 'volume'
+					unitKind: 'mL'
+				fieldSettings:
+					fieldType: 'numericValue'
+					formLabel: "Volume"
+					required: false
+			,
+				modelDefaults:
+					type: 'codeValue'
+					kind: 'category'
+					codeType: 'metadata'
+					codeKind: "category"
+					codeOrigin: 'ACAS DDict'
+					value: null
+				fieldSettings:
+					fieldType: 'codeValue'
+					required: false
+					formLabel: "Category"
+					required: true
+					width:150
+			,
+				modelDefaults:
+					type: 'codeValue'
+					kind: 'performed by'
+					value: ""
+				fieldSettings:
+					fieldType: 'stringValue'
+					formLabel: "Performed By"
+					required: true
+					width: 150
+			,
+				modelDefaults:
+					type: 'dateValue'
+					kind: 'performed time'
+					value: null
+					codeOrigin: window.conf.scientistCodeOrigin
+				fieldSettings:
+					fieldType: 'dateValue'
+					formLabel: "Added date"
+					required: true
+					width: 150
+			]
+		]
+		firstLsThingItxs: []
+		secondLsThingItxs: []
+
+
+class window.ExampleTableAuditController extends AbstractThingFormController
+	template: _.template($("#ExampleTableAuditView").html())
+
+	events: ->
+
+	initialize: =>
+		@hasRendered = false
+		@model = new ExampleThingParent codeName: @options.thingCode
+		@model.fetch()
+
+		@errorOwnerName = 'ExampleTableAuditController'
+		@setBindings()
+		@listenTo @model, 'sync', @modelSaveCallback
+
+	render: =>
+		unless @hasRendered
+			$(@el).empty()
+			$(@el).html @template()
+			@setupFormFields(ExampleTableAuditConf.formFieldDefinitions)
+			@formDisplayTables['exampleThingTable'].on 'thingSaveRequested', @handleUpdateThing
+			@hasRendered = true
+
+		@
+
+	renderModelContent: ->
+		codeName = @model.get('codeName')
+		@$('.bv_thingCode').html(codeName)
+
+	modelSaveCallback: (method, model) =>
+		console.log "got model save callback"
+		if @model.isNew() # model not found
+			@model.set codeName: null
+			return
+
+		@fillFieldsFromModels()
+		@trigger 'amClean'
+		@trigger 'thingSaved'
+		@renderModelContent()
+
+	modelChangeCallback: (method, model) =>
+		@trigger 'amDirty'
+
+	updateModel: =>
+
+	handleUpdateThing: (transactionComment) =>
+		@model.set 'transactionOptions', comments: transactionComment
+		@model.prepareToSave()
+		@model.reformatBeforeSaving()
+		@model.save()

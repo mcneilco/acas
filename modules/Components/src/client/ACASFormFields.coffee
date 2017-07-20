@@ -33,10 +33,14 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 		@userInputEvent = true
 
 	getModel: ->
-		@thingRef.get @modelKey
+		if @thingRef instanceof Thing
+			return @thingRef.get @modelKey
+		else
+			return @thingRef
 
 	handleInputChanged: =>
 		@checkEmptyAndRequired()
+		@trigger 'formFieldChanged'
 
 	checkEmptyAndRequired: ->
 		if @required and @isEmpty() and !@errorSet
