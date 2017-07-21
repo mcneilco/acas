@@ -190,11 +190,13 @@ class window.RealtimeDeviceConnectionController extends Backbone.View
 		@disableElement(".bv_deviceSelectContainer")
 		@selectedInstrumentCode = @$('.bv_deviceSelectContainer').val()
 		selectedInstrument = @deviceCollection.findWhere({"codeName": @selectedInstrumentCode})
-		@isConnectedToDevice = false
+		#@isConnectedToDevice = false
 		@resetStatusMessages()
-		@socket.emit('disconnected')
-		unless selectedInstrument is ""
-			@connectToDevice()
+		if @isConnectedToDevice
+			@socket.emit('disconnected')
+		else
+			unless selectedInstrument is ""
+				@connectToDevice()
 
 	handleBootCurrentUserOffDevice: =>
 		@socket.emit('bootUser', {userToBootClientId: @clientIdOfConnectedUser, userNameToAdd: AppLaunchParams.loginUserName}, @handleBootCurrentUserOffDeviceCallback)
@@ -251,6 +253,9 @@ class window.RealtimeDeviceConnectionController extends Backbone.View
 
 	disconnectedFromDevice: =>
 		@setStateToDisconnected()
+		selectedInstrument = @deviceCollection.findWhere({"codeName": @selectedInstrumentCode})
+		unless selectedInstrument is ""
+			@connectToDevice()
 
 	alertAllDisconnectedFromDevice: =>
 		unless @isConnectedToDevice
@@ -260,7 +265,8 @@ class window.RealtimeDeviceConnectionController extends Backbone.View
 		@displayDisconnectedModal(msg.username)
 
 	balanceReserved: (msg) =>
-		@connectToDeviceCallback(msg, null)
+		if msg.balanceUrl is @selectedDevice.get('url').get('value')
+			@connectToDeviceCallback(msg, null)
 
 	displayDisconnectedModal: (disconnectingUserName) =>
 		@$(".bv_disconnectingUserName").html disconnectingUserName

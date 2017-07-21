@@ -135,7 +135,10 @@ class BalanceAccess
 
 	removeUserToAddFromQueue: (clientId) =>
 		@balanceConnectQueue = _.reject(@balanceConnectQueue, (user) ->
-			return user.clientId is clientId
+			if user?
+				return user.clientId is clientId
+			else
+				return false
 		)
 
 	clearAllUsers: =>
@@ -220,10 +223,30 @@ class DeviceSocketController
 	handleDisconnected: (socket) ->
 		balanceAccess = @balances[@usersInRoom[socket.id]]
 		if balanceAccess?
-			if balanceAccess.getNextUser().clientId is socket.id
-				balanceAccess.disconnectCurrentUser()
+			nextUserInQueue = balanceAccess.getNextUser()
+			if nextUserInQueue?
+				if nextUserInQueue.clientId is socket.id
+					balanceAccess.disconnectCurrentUser()
+				else
+					balanceAccess.removeUserToAddFromQueue(socket.id)
+
+			nextUserInQueue = balanceAccess.getNextUser()
+			if nextUserInQueue?
+				balanceAccess.isAvailable = true
+				socket.broadcast.to(nextUserInQueue.clientId).emit('youShouldTryConnecting')
 			else
-				balanceAccess.removeUserToAddFromQueue(socket.id)
+				socket.broadcast.emit('alertAllDisconnectedFromDevice')
+				balanceAccess.clearHeartBeat()
+				balanceAccess.disconnectFromBalance()
+				balanceAccess.isAvailable = true
+		socket.leave(@usersInRoom[socket.id])
+		socket.emit('disconnectedFromDevice')
+
+
+	handleDisconnect: (socket) ->
+		balanceAccess = @balances[@usersInRoom[socket.id]]
+		if balanceAccess?
+			balanceAccess.removeUserFromQueue(socket.id)
 			nextUserInQueue = balanceAccess.getNextUser()
 			if nextUserInQueue?
 				socket.broadcast.to(nextUserInQueue.clientId).emit('youShouldTryConnecting')
@@ -231,26 +254,14 @@ class DeviceSocketController
 				socket.broadcast.emit('alertAllDisconnectedFromDevice')
 				balanceAccess.clearHeartBeat()
 				balanceAccess.disconnectFromBalance()
-		socket.leave(@usersInRoom[socket.id])
-		socket.emit('disconnectedFromDevice')
-
-	handleDisconnect: (socket) ->
-		balanceAccess = @balances[@usersInRoom[socket.id]]
-		balanceAccess.removeUserFromQueue(socket.id)
-		nextUserInQueue = balanceAccess.getNextUser()
-		if nextUserInQueue?
-			socket.broadcast.to(nextUserInQueue.clientId).emit('youShouldTryConnecting')
-		else
-			socket.broadcast.emit('alertAllDisconnectedFromDevice')
-			balanceAccess.clearHeartBeat()
-			balanceAccess.disconnectFromBalance()
 
 	handleBootUser: (socket, payload, callback) ->
 		balanceAccess = @balances[@usersInRoom[socket.id]]
 		balanceAccess.swapCurrentUser({userName: payload.userNameToAdd, clientId: socket.id}, socket)
 		@currentlyConnectedSocket = socket
-		socket.broadcast.to(@usersInRoom[socket.id]).emit('balance_reserved', {status: "not_available", userName: payload.userNameToAdd, clientId: socket.id})
-		socket.broadcast.to(payload.userToBootClientId).emit('disconnectedByAnotherUser', {username: payload.userNameToAdd, socketId: socket.id})
+		socket.broadcast.to(@usersInRoom[socket.id]).emit('balance_reserved', {status: "not_available", userName: payload.userNameToAdd, clientId: socket.id, balanceUrl: @usersInRoom[socket.id]})
+		if @usersInRoom[socket.id] is @usersInRoom[payload.userToBootClientId]
+			socket.broadcast.to(payload.userToBootClientId).emit('disconnectedByAnotherUser', {username: payload.userNameToAdd, socketId: socket.id})
 		callback(null, 'did this connect? ')
 
 	handleDisconnectAllUsers: (socket, callback) ->
