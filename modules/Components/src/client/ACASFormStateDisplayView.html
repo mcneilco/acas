@@ -1,0 +1,55 @@
+
+<script type="text/template" id="ACASFormStateDisplayUpdateView" xmlns="http://www.w3.org/1999/html">
+    <h5 class="bv_tableLabel">launching controller must provide or set table label</h5>
+    <table class="table table-bordered table-striped table-hover bv_stateDisplayUpdateTable" style="margin: 0px; padding: 0px; border: 0px; width: 100%; ">
+        <thead style="">
+        </thead>
+        <tbody style="">
+
+        </tbody>
+    </table>
+
+    <div class="bv_valueEditor"></div>
+</script>
+
+<script type="text/template" id="ACASFormStateDisplayOldValueView" xmlns="http://www.w3.org/1999/html">
+    <td class="<%=valueClass%>"><%=value%></td>
+    <td><%=changedBy%></td>
+    <td><%=changedDate%></td>
+    <td class="bv_reason"><%=reason%></td>
+</script>
+
+<script type="text/template" id="ACASFormStateDisplayValueEditView" xmlns="http://www.w3.org/1999/html">
+    <div class="modal hide bv_aCASFormStateDisplayValueEdit">
+        <div class="modal-header">
+            <h4 class="bv_header">launching controller must provide or set table label</h4>
+        </div>
+        <div class="modal-body">
+            <table class="table table-bordered table-striped table-hover bv_valueHistoryTable" style="margin: 0px; padding: 0px; border: 0px; width: 100%; ">
+                <thead style="">
+                    <th class="bv_valueHeader">Value</th>
+                    <th>Changed By</th>
+                    <th>Changed Date</th>
+                    <th>Reason For Correction</th>
+                </thead>
+                <tbody style="">
+                </tbody>
+            </table>
+            <h5 class="bv_changeValueHeader">Change Value</h5>
+
+            <div class="bv_valueField"></div>
+            <div class="control-group">
+                <label for="message-text" class="control-label">Reason</label>
+                <div class="controls">
+                    <textarea class="bv_reasonForUpdate" maxlength="250" rows="4" style="width:95%"></textarea>
+                    <label class="form-control bv_charactersRemaining" style="width:95%">250 characters remaining</label>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn bv_cancelBtn" aria-hidden="true">Cancel</button>
+            <button class="btn bv_saveBtn" disabled="disabled" aria-hidden="true">OK</button>
+        </div>
+    </div>
+
+</script>

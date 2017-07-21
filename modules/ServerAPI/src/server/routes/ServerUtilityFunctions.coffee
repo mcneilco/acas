@@ -511,13 +511,15 @@ class Label extends Backbone.Model
 
 	handleLabelTextChanged: =>
 		unless @isNew()
+			newText = @get 'labelText'
 			@set
 				ignored: true
 				modifiedBy: AppLaunchParams.loginUser.username
 				modifiedDate: new Date().getTime()
 				isDirty: true
-			@set labelText: @previous 'labelText'
-			@trigger 'createNewLabel', @get('lsKind'), @get('labelText')
+				labelText: @previous 'labelText'
+			, silent: true
+			@trigger 'createNewLabel', @get('lsKind'), newText, @get('key')
 
 	changeLabelText: (options) ->
 		@set labelText: options
@@ -836,9 +838,20 @@ class Thing extends Backbone.Model
 		if @lsProperties.defaultLabels?
 			for dLabel in @lsProperties.defaultLabels
 				newLabel = @get('lsLabels').getOrCreateLabelByTypeAndKind dLabel.type, dLabel.kind
+				@listenTo newLabel, 'createNewLabel', @createNewLabel
 				@set dLabel.key, newLabel
 				#			if newLabel.get('preferred') is undefined
 				newLabel.set preferred: dLabel.preferred
+
+	createNewLabel: (lKind, newText) =>
+		dLabel = _.where(@lsProperties.defaultLabels, {key: lKind})[0]
+		oldLabel = @get(lKind)
+		@unset(lKind)
+		newLabel = @get('lsLabels').getOrCreateLabelByTypeAndKind dLabel.type, dLabel.kind
+		newLabel.set
+			labelText: newText
+			preferred: oldLabel.get 'preferred'
+		@set lKind, newLabel
 
 	createDefaultStates: =>
 		if @lsProperties.defaultValues?
@@ -1187,10 +1200,20 @@ class Container extends Backbone.Model
 		if @lsProperties.defaultLabels?
 			for dLabel in @lsProperties.defaultLabels
 				newLabel = @get('lsLabels').getOrCreateLabelByTypeAndKind dLabel.type, dLabel.kind
+				@listenTo newLabel, 'createNewLabel', @createNewLabel
 				@set dLabel.key, newLabel
 				#			if newLabel.get('preferred') is undefined
 				newLabel.set preferred: dLabel.preferred
 
+	createNewLabel: (lKind, newText) =>
+		dLabel = _.where(@lsProperties.defaultLabels, {key: lKind})[0]
+		oldLabel = @get(lKind)
+		@unset(lKind)
+		newLabel = @get('lsLabels').getOrCreateLabelByTypeAndKind dLabel.type, dLabel.kind
+		newLabel.set
+			labelText: newText
+			preferred: oldLabel.get 'preferred'
+		@set lKind, newLabel
 
 	createDefaultStates: =>
 		if @lsProperties.defaultValues?
@@ -1625,10 +1648,20 @@ class Experiment extends Backbone.Model
 		if @lsProperties.defaultLabels?
 			for dLabel in @lsProperties.defaultLabels
 				newLabel = @get('lsLabels').getOrCreateLabelByTypeAndKind dLabel.type, dLabel.kind
+				@listenTo newLabel, 'createNewLabel', @createNewLabel
 				@set dLabel.key, newLabel
 				#			if newLabel.get('preferred') is undefined
 				newLabel.set preferred: dLabel.preferred
 
+	createNewLabel: (lKind, newText) =>
+		dLabel = _.where(@lsProperties.defaultLabels, {key: lKind})[0]
+		oldLabel = @get(lKind)
+		@unset(lKind)
+		newLabel = @get('lsLabels').getOrCreateLabelByTypeAndKind dLabel.type, dLabel.kind
+		newLabel.set
+			labelText: newText
+			preferred: oldLabel.get 'preferred'
+		@set lKind, newLabel
 
 	createDefaultStates: =>
 		if @lsProperties.defaultValues?

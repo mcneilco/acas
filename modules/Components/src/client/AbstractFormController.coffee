@@ -130,13 +130,18 @@ class window.AbstractThingFormController extends AbstractFormController
 			@$("."+field.fieldSettings.fieldWrapper).append newField.render().el
 			newField.afterRender()
 			@formFields[field.key] = newField
-		@setupFormTables fieldDefs.stateTables
+		if fieldDefs.stateTables?
+			@setupFormTables fieldDefs.stateTables
+		if fieldDefs.stateDisplayTables?
+			@setupFormStateDisplayTables fieldDefs.stateDisplayTables
 
 	fillFieldsFromModels: =>
 		for modelKey, formField of @formFields
 			formField.renderModelContent()
 		for stateKey, formTable of @formTables
 			formTable.renderModelContent()
+		for stateKey, formDisplayTable of @formDisplayTables
+			formDisplayTable.renderModelContent()
 
 	setupFormTables: (tableDefs) ->
 		unless @formTables?
@@ -150,6 +155,19 @@ class window.AbstractThingFormController extends AbstractFormController
 				thingRef: @model
 			fTable.render()
 			@formTables[tDef.key] = fTable
+
+	setupFormStateDisplayTables: (tableDefs) ->
+		unless @formDisplayTables?
+			@formDisplayTables = {}
+		for tDef in tableDefs
+			tdiv = $("<div>")
+			@$("."+tDef.tableWrapper).append tdiv
+			fTable = new ACASFormStateDisplayUpdateController
+				el: tdiv
+				tableDef: tDef
+				thingRef: @model
+			fTable.render()
+			@formDisplayTables[tDef.key] = fTable
 
 	disableAllInputs: ->
 		super()
