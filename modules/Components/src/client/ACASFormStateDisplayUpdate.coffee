@@ -183,29 +183,24 @@ class window.ACASFormStateDisplayOldValueController extends Backbone.View
 		value = @model.get(@model.get('lsType'))
 		if @options.valueDef.displayOverride?
 			value = @options.valueDef.displayOverride value
+		if @options.previousLsTransaction
+			prevLsTransaction = @options.previousLsTransaction
 
 		attrs =
 			value: value
 		attrs.valueClass = if @model.get 'ignored' then "valueWasEdited" else ""
 
-		if @model.has('modifiedBy') &&  @model.get('modifiedBy')!=""
-			attrs.changedBy = @model.get('modifiedBy')
-		else
-			attrs.changedBy = @model.get('recordedBy')
-
-		if @model.has('modifiedDate') &&  !isNaN(@model.get('modifiedBy'))
-			attrs.changedDate = UtilityFunctions::convertMSToYMDDate @model.get('modifiedDate')
-		else
-			attrs.changedDate = UtilityFunctions::convertMSToYMDDate @model.get('recordedDate')
-		attrs.reason = "current value"
+		attrs.recordedBy = @model.get('recordedBy')
+		attrs.recordedDate = UtilityFunctions::convertMSToYMDDate @model.get('recordedDate')
+		attrs.reason = "initial value"
 
 		$(@el).empty()
 		$(@el).html @template(attrs)
 
-		if @model.get 'ignored'
+		unless @options.initialVal? and @options.initialVal
 			$.ajax
 				type: 'GET'
-				url: "/api/transaction/"+@model.get 'lsTransaction'
+				url: "/api/transaction/"+prevLsTransaction
 				json: true
 				success: (response) =>
 					@$('.bv_reason').html response.comments
@@ -241,11 +236,23 @@ class window.ACASFormStateDisplayValueEditController extends Backbone.View
 			@$('.bv_header').html "\"#{@valueDef.fieldSettings.formLabel}\" Value History and Edit"
 			@collection.comparator = 'id'
 			@collection.sort()
-			@collection.each (val) =>
+			index = 0
+			while index < @collection.length
+				val = @collection.at(index)
+				if index is 0
+					initialVal = true
+				else
+					initialVal = false
+					previousLsTransaction = @collection.at(index-1).get('lsTransaction')
 				oldRow = new ACASFormStateDisplayOldValueController
 					model: val
 					valueDef: @valueDef
+					initialVal: initialVal
+					previousLsTransaction: previousLsTransaction
 				@$("tbody").append oldRow.render().el
+
+				index++
+
 			@setupEditor()
 			@$('.bv_aCASFormStateDisplayValueEdit').modal
 				backdrop: "static"

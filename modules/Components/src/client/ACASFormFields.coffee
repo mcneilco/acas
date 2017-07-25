@@ -568,7 +568,10 @@ class window.ACASFormLSFileValueFieldController extends ACASFormAbstractFieldCon
 			@createNewFileChooser()
 			@$('.bv_deleteSavedFile').hide()
 		else
-			@$('.bv_file').html '<a href="'+window.conf.datafiles.downloadurl.prefix+fileValue+'">'+@getModel().get('comments')+'</a>'
+			displayText = @getModel().get('comments')
+			if !displayText?
+				displayText = fileValue
+			@$('.bv_file').html '<a href="'+window.conf.datafiles.downloadurl.prefix+fileValue+'">'+displayText+'</a>'
 			@$('.bv_deleteSavedFile').show()
 
 	createNewFileChooser: ->
