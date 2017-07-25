@@ -182,8 +182,8 @@ class DeviceSocketController
 			socket.on('disconnected', =>
 				@handleDisconnected(socket)
 			)
-			socket.on('disconnect', =>
-				@handleDisconnect(socket)
+			socket.on('disconnectFromBalance', (callback) =>
+				@handleDisconnect(socket, callback)
 			)
 			socket.on('bootUser', (payload, callback) =>
 				@handleBootUser(socket, payload, callback)
@@ -205,6 +205,7 @@ class DeviceSocketController
 		balanceAccessPromise = balanceAccess.connectClient(socket.id, payload.userName, socket)
 		balanceAccessPromise.then(() =>
 			@currentlyConnectedSocket = socket
+			socket.broadcast.to(@usersInRoom[socket.id]).emit('balance_reserved', {status: "not_available", userName: payload.userName, clientId: socket.id, balanceUrl: @usersInRoom[socket.id]})
 			return callback(null, 'Connected to device')
 		)
 		balanceAccessPromise.catch((err) =>
@@ -222,6 +223,7 @@ class DeviceSocketController
 
 	handleDisconnected: (socket) ->
 		balanceAccess = @balances[@usersInRoom[socket.id]]
+
 		if balanceAccess?
 			nextUserInQueue = balanceAccess.getNextUser()
 			if nextUserInQueue?
@@ -239,21 +241,24 @@ class DeviceSocketController
 				balanceAccess.clearHeartBeat()
 				balanceAccess.disconnectFromBalance()
 				balanceAccess.isAvailable = true
-		socket.leave(@usersInRoom[socket.id])
+		#
 		socket.emit('disconnectedFromDevice')
 
 
-	handleDisconnect: (socket) ->
+	handleDisconnect: (socket, callback) ->
 		balanceAccess = @balances[@usersInRoom[socket.id]]
 		if balanceAccess?
 			balanceAccess.removeUserFromQueue(socket.id)
 			nextUserInQueue = balanceAccess.getNextUser()
+
 			if nextUserInQueue?
 				socket.broadcast.to(nextUserInQueue.clientId).emit('youShouldTryConnecting')
 			else
 				socket.broadcast.emit('alertAllDisconnectedFromDevice')
 				balanceAccess.clearHeartBeat()
 				balanceAccess.disconnectFromBalance()
+		socket.leave(@usersInRoom[socket.id])
+		callback()
 
 	handleBootUser: (socket, payload, callback) ->
 		balanceAccess = @balances[@usersInRoom[socket.id]]
