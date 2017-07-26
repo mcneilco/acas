@@ -330,7 +330,7 @@ class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractF
 
 	setEmptyValue: ->
 		@getModel().set ignored: true
-		@setItxThing null
+		@getModel().setItxThing null
 
 	isEmpty: ->
 		empty = true
