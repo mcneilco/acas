@@ -243,9 +243,12 @@ class window.ExperimentRowSummaryController extends Backbone.View
 		if @model.get('lsLabels') not instanceof LabelList
 			@model.set 'lsLabels',  new LabelList @model.get('lsLabels')
 		subclass = @model.get('subclass')
+		protocolCode = @model.get('protocol').get('codeName')
 		if window.conf.entity?.saveInitialsCorpName? and window.conf.entity.saveInitialsCorpName is true
 			if @model.get('lsLabels').getLabelByTypeAndKind("corpName", subclass + ' corpName').length > 0
 				code = @model.get('lsLabels').getLabelByTypeAndKind('corpName', subclass + ' corpName')[0].get('labelText')
+				if @model.get('protocol').get('lsLabels').getLabelByTypeAndKind("corpName", 'protocol corpName').length > 0
+					protocolCode = @model.get('protocol').get('lsLabels').getLabelByTypeAndKind('corpName', 'protocol corpName')[0].get('labelText')
 			else
 				code = @model.get("codeName")
 		else if @model.get('lsKind') is "study" and @model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
@@ -256,7 +259,7 @@ class window.ExperimentRowSummaryController extends Backbone.View
 		toDisplay =
 			experimentName: experimentBestName
 			experimentCode: code
-			protocolCode: @model.get('protocol').get("codeName")
+			protocolCode: protocolCode
 			protocolName: protocolBestName
 			scientist: @model.getScientist().get('codeValue')
 			status: @model.getStatus().get("codeValue")

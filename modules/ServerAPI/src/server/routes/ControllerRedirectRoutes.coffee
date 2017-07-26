@@ -33,7 +33,7 @@ exports.redirectToEditor = (req, resp) ->
 		console.log "getEntityByName"
 		protocolServiceRoutes = require './ProtocolServiceRoutes.js'
 		experimentServiceRoutes = require './ExperimentServiceRoutes.js'
-		if protOrExpt is 'protocols'
+		if protOrExpt is 'protocolsWithCorpNames'
 			protocolServiceRoutes.getProtocolByLabelInternal code, (statusCode, json) ->
 				console.log "getEntityByName - getProtocolByLabelInternal "
 				if statusCode is 500
@@ -44,7 +44,7 @@ exports.redirectToEditor = (req, resp) ->
 					console.log "/"+deepLink+"/codeName/"+code
 					resp.redirect "/"+deepLink+"/codeName/"+code
 
-		else if protOrExpt is 'experiments'
+		else if protOrExpt is 'experimentsWithCorpNames'
 			experimentServiceRoutes.getExperimentByLabelInternal code, (statusCode, json) ->
 				console.log "getEntityByName - getExperimentByLabelInternal"
 				if statusCode is 500
@@ -72,7 +72,7 @@ exports.redirectToEditor = (req, resp) ->
 
 		if config.all.client.entity.saveInitialsCorpName
 			entityName = controllerRedirectConf[queryPrefix]["entityName"]
-			if entityName is "protocols" or entityName is "experiments"
+			if entityName is "protocolsWithCorpNames" or entityName is "experimentsWithCorpNames"
 				#get entity by name
 				getEntityByName entityName, resp
 			else
