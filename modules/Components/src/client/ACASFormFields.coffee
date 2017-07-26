@@ -314,6 +314,8 @@ class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractF
 			@labelType = @options.labelType
 		if @options.queryUrl?
 			@queryUrl = @options.queryUrl
+		if @options.placeholder?
+			@placeholder = @options.placeholder
 
 
 	handleInputChanged: =>
