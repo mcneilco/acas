@@ -314,6 +314,8 @@ class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractF
 			@labelType = @options.labelType
 		if @options.queryUrl?
 			@queryUrl = @options.queryUrl
+		if @options.placeholder?
+			@placeholder = @options.placeholder
 
 
 	handleInputChanged: =>
@@ -328,7 +330,7 @@ class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractF
 
 	setEmptyValue: ->
 		@getModel().set ignored: true
-		@setItxThing null
+		@getModel().setItxThing null
 
 	isEmpty: ->
 		empty = true
