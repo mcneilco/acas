@@ -28,6 +28,7 @@ exports.redirectToEditor = (req, resp) ->
 
 	console.log "in redirectToEditor"
 	console.log config.all.client.entity.saveInitialsCorpName
+	console.log queryPrefix
 
 	getEntityByName = (protOrExpt, resp) =>
 		console.log "getEntityByName"
@@ -69,14 +70,11 @@ exports.redirectToEditor = (req, resp) ->
 
 	if queryPrefix != null
 		console.log "url to get entity - in redirectToEditor"
-
-		if config.all.client.entity.saveInitialsCorpName
-			entityName = controllerRedirectConf[queryPrefix]["entityName"]
-			if entityName is "protocolsWithCorpNames" or entityName is "experimentsWithCorpNames"
-				#get entity by name
-				getEntityByName entityName, resp
-			else
-				getEntityByCodeName resp
+		console.log queryPrefix
+		entityName = controllerRedirectConf[queryPrefix]["entityName"]
+		if entityName is "protocolsWithCorpNames" or entityName is "experimentsWithCorpNames"
+			#get entity by name
+			getEntityByName entityName, resp
 		else
 			getEntityByCodeName resp
 	else
