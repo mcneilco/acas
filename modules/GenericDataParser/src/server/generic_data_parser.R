@@ -1972,7 +1972,6 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
                                  lsTags=lsTags)
   
   # Save the experiment to the server
-  #saveSession('/tmp/experiment.rda')
   experiment <- saveExperiment(experiment)
   experiment <- getExperimentById(experiment$id)
   return(experiment)
@@ -2916,7 +2915,6 @@ lsTransaction <- 1234
     } else {
       calculatedResults$experimentID <- experiment$id
       calculatedResults$experimentVersion <- experiment$version
-      saveSession('/tmp/beforeUploadData.rda')
       uploadData(metaData = validatedMetaData,lsTransaction,calculatedResults,treatmentGroupData, subjectData,
                  xLabel,yLabel,tempIdLabel,testOutputLocation,developmentMode,protocol,experiment, 
                  fileStartLocation = pathToGenericDataFormatExcelFile, configList=configList, 
@@ -3570,10 +3568,7 @@ createColumnOrderStates <- function(exptDataColumns=selColumnOrderInfo, errorEnv
 exptDataColumns=selColumnOrderInfo  
     experimentStates <- list() 
     if ((class(exptDataColumns) == 'data.frame') && (nrow(exptDataColumns) > 0)){
-      ## create new experiment state to store the column order information (we will have state tuples for each order)      
-
-#saveSession('/tmp/scratchData')
-      
+      ## create new experiment state to store the column order information (we will have state tuples for each order)            
       ## note: save the exptColumns dataframe as a json object for future hydration
       ## continue to save the info as a set to state tuples until we refactor the dataviewer code
       ## may just need to keep the data condition info
