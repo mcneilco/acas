@@ -1255,10 +1255,6 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
                                   hiddenColumns, linkColumns, classRow, stateKindRow, stateTypeRow, 
                                   codeAssignments = codeAssignments, conditionColumns)
 
-#(valueKindsVector, ignoreHeaders = NULL, uncertaintyType, uncertaintyCodeWord, 
-#                              commentCol, commentCodeWord, stateAssignments, hiddenColumns, linkColumns, classRow,
-#                              stateKindRow, stateTypeRow, codeAssignments = NULL)
-
   
   if (any(duplicated(valueKinds$reshapeText[!is.na(valueKinds$uncertaintyType)]))) {
     stopUser("Only one standard deviation may be assigned for a column. Remove the duplicate standard deviation.")
@@ -2751,17 +2747,6 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   if (!file.exists(fullPathToFile)) {
     stop("SEL: Cannot find input file")
   }
-
-## TEST ###
-.libPaths('/opt/acas-dataexplorer/acas/r_libs')
-library(racas)
-library('RCurl')
-source('/opt/acas-dataexplorer/acas/src/r/GenericDataParser/generic_data_parser.R')
-fullPathToFile <- '/opt/acas-dataexplorer/acas/privateUploads/Tier1c_SEL_test3 (21).xlsx'
-recordedBy <- 'goshiro'
-configList <- racas::applicationSettings
-lsTransaction <- 1234
-## TEST ###
   
   genericDataFileDataFrame <- readExcelOrCsv(fullPathToFile)
   
@@ -3565,7 +3550,6 @@ generateExptColStateValues <- function(dataRow, recordedBy, lsTransaction){
 	return(values)
 }
 createColumnOrderStates <- function(exptDataColumns=selColumnOrderInfo, errorEnv, recordedBy, lsTransaction){
-exptDataColumns=selColumnOrderInfo  
     experimentStates <- list() 
     if ((class(exptDataColumns) == 'data.frame') && (nrow(exptDataColumns) > 0)){
       ## create new experiment state to store the column order information (we will have state tuples for each order)            
