@@ -1519,11 +1519,17 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
   } else {
     notMainCode <- (is.null(link) | (calculatedResultsValueKindRow != "link"))
   }
-  valueKinds$dataClass <- classRow[notMainCode]
+  
+ # valueKinds$dataClass <- classRow[notMainCode]
   valueKinds$valueType <- translateClassToValueType(valueKinds$dataClass)
   hideColumn <- hiddenColumns[2:length(hiddenColumns)]
   conditionColumn <- conditionColumns[2:length(conditionColumns)]
-  valueKinds <- cbind(valueKinds, hideColumn, conditionColumn)
+  if (is.null(concColumn)){
+    valueKinds <- cbind(valueKinds, hideColumn, conditionColumn)
+  } else {
+    valueKinds$hideColumn <- !valueKinds$publicData
+    valueKinds$conditionColumn <- FALSE
+  }
   valueKinds$order <- seq(1:nrow(valueKinds))
   valueKinds <- valueKinds[ order(valueKinds$order), ]
 
