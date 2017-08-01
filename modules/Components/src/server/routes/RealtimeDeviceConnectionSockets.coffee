@@ -182,6 +182,9 @@ class DeviceSocketController
 			socket.on('disconnected', =>
 				@handleDisconnected(socket)
 			)
+			socket.on('disconnect', =>
+				@handleDisconnected(socket)
+			)
 			socket.on('disconnectFromBalance', (callback) =>
 				@handleDisconnect(socket, callback)
 			)
@@ -237,10 +240,10 @@ class DeviceSocketController
 				balanceAccess.isAvailable = true
 				socket.broadcast.to(nextUserInQueue.clientId).emit('youShouldTryConnecting')
 			else
-				socket.broadcast.emit('alertAllDisconnectedFromDevice')
 				balanceAccess.clearHeartBeat()
 				balanceAccess.disconnectFromBalance()
 				balanceAccess.isAvailable = true
+				socket.broadcast.emit('alertAllDisconnectedFromDevice')
 		#
 		socket.emit('disconnectedFromDevice')
 
@@ -252,11 +255,13 @@ class DeviceSocketController
 			nextUserInQueue = balanceAccess.getNextUser()
 
 			if nextUserInQueue?
+				balanceAccess.isAvailable = true
 				socket.broadcast.to(nextUserInQueue.clientId).emit('youShouldTryConnecting')
 			else
-				socket.broadcast.emit('alertAllDisconnectedFromDevice')
 				balanceAccess.clearHeartBeat()
 				balanceAccess.disconnectFromBalance()
+				balanceAccess.isAvailable = true
+				socket.broadcast.emit('alertAllDisconnectedFromDevice')
 		socket.leave(@usersInRoom[socket.id])
 		callback()
 

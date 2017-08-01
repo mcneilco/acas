@@ -67,6 +67,7 @@ class window.RealtimeDeviceConnectionController extends Backbone.View
 
 	initialize: ->
 		@isConnectedToDevice = false
+		@isConnectingToDevice = false
 		@testMode = @options.testMode
 		if @options.socket?
 			@socket = @options.socket
@@ -125,7 +126,8 @@ class window.RealtimeDeviceConnectionController extends Backbone.View
 	zeroBalanceCallback: (err, data) =>
 
 	connectToDevice: =>
-		unless @isConnectedToDevice
+		unless @isConnectedToDevice or @isConnectingToDevice
+			@isConnectingToDevice = true
 			@selectedInstrumentCode = @$('.bv_deviceSelectContainer').val()
 			@selectedDevice = @deviceCollection.findWhere({"codeName": @selectedInstrumentCode})
 			@$(".bv_connecting").removeClass "hide"
@@ -137,6 +139,7 @@ class window.RealtimeDeviceConnectionController extends Backbone.View
 		console.info "overide if needed"
 
 	connectToDeviceCallback: (err, data) =>
+		@isConnectingToDevice = false
 		if err
 			@isConnectedToDevice = false
 			@setStateToDisconnected()
@@ -263,8 +266,7 @@ class window.RealtimeDeviceConnectionController extends Backbone.View
 		@setStateToDisconnected()
 
 	alertAllDisconnectedFromDevice: =>
-		unless @isConnectedToDevice
-			@connectToDevice()
+		@connectToDevice()
 
 	disconnectedByAnotherUser: (msg) =>
 		@displayDisconnectedModal(msg.username)
