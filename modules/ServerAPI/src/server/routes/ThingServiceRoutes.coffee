@@ -37,6 +37,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/getThingThingItxsByFirstThing/exclude/:lsType/:lsKind/:firstThingId', loginRoutes.ensureAuthenticated, exports.getThingThingItxsByFirstThingAndExcludeItxTypeKind
 	app.get '/api/getThingThingItxsBySecondThing/exclude/:lsType/:lsKind/:secondThingId', loginRoutes.ensureAuthenticated, exports.getThingThingItxsBySecondThingAndExcludeItxTypeKind
 	app.post '/api/things/:lsType/:lsKind/codeNames/jsonArray', loginRoutes.ensureAuthenticated, exports.getThingsByCodeNames
+	app.get '/api/transaction/:id', loginRoutes.ensureAuthenticated, exports.getTransaction
 
 
 exports.thingsByTypeKind = (req, resp) ->
@@ -538,3 +539,9 @@ exports.getThingsByCodeNames = (req, resp) ->
 				throw new Error(error)
 			resp.json body
 			return
+
+exports.getTransaction = (req, resp) ->
+	config = require '../conf/compiled/conf.js'
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+	baseurl = config.all.client.service.persistence.fullpath+"lstransactions/"+req.params.id
+	serverUtilityFunctions.getFromACASServer baseurl, resp

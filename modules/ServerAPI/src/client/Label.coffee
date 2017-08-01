@@ -203,6 +203,9 @@ class window.State extends Backbone.Model
 		@get('lsValues').filter (value) ->
 			(value.get('lsType')==type) and (value.get('lsKind')==kind)
 
+	getFirstValueOfKind: (kind) ->
+		@get('lsValues').findWhere lsKind: kind
+
 	getOrCreateValueByTypeAndKind: (vType, vKind) ->
 		descVals = @getValuesByTypeAndKind vType, vKind
 		descVal = descVals[0] #TODO should do something smart if there are more than one
