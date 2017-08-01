@@ -51,6 +51,8 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 		mdl = @getModel()
 		if mdl.has 'labelText'
 			if mdl.get('labelText')=="" then empty = true
+		else if mdl.has 'itxThing'
+			if !mdl.get('itxThing').get('id') then empty = true
 		else
 			if mdl.get('value')=="" or !mdl.get('value')? or mdl.get('value')=="unassigned" then empty = true
 
@@ -324,13 +326,13 @@ class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractF
 			thingID = @thingSelectController.getSelectedID()
 			if thingID?
 				@getModel().setItxThing id: thingID
+				@getModel().set ignored: false
 			else
 				@setEmptyValue()
 		super()
 
 	setEmptyValue: ->
 		@getModel().set ignored: true
-		@getModel().setItxThing null
 
 	isEmpty: ->
 		empty = true
@@ -344,7 +346,7 @@ class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractF
 
 	renderModelContent: =>
 		@userInputEvent = false
-		if  @getModel().getItxThing().id?
+		if  @getModel()? and @getModel().getItxThing().id?
 			labels = new LabelList @getModel().getItxThing().lsLabels
 			labelText = labels.pickBestNonEmptyLabel().get('labelText')
 			@thingSelectController.setSelectedCode

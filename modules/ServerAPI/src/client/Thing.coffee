@@ -167,9 +167,10 @@ class window.Thing extends Backbone.Model
 			else
 				thing = itx.get 'secondLsThing'
 #			delete thing['version']
-			delete thing['lsLabels']
-			delete thing['lsStates']
-			delete thing['lsTransaction']
+			if thing?
+				delete thing['lsLabels']
+				delete thing['lsStates']
+				delete thing['lsTransaction']
 
 
 	setRByAndRDate: (data) ->
