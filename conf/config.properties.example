@@ -248,7 +248,7 @@ client.fullpath=http://${client.host}:${client.port}
 
 # Query tool settings
 client.service.result.viewer.displayName=Data Viewer
-client.service.result.viewer.configuredViewers=DataViewer
+client.service.result.viewer.configuredViewers=DataViewer,CurveCurator
 client.service.result.viewer.defaultViewer=DataViewer
 client.service.result.viewer.dataViewer.exptTree.showOnlyMatches=false
 client.service.result.viewer.liveDesign.baseUrl=
