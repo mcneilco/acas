@@ -26,7 +26,7 @@ get_curve_stubs <- function(myMessenger, GET) {
     if(myMessenger$errors[[1]]$message == "no experiment results found") {
       return(handle_response(HTTP_NOT_FOUND , "no experiment results found"))
     } else if (myMessenger$errors[[1]]$message == "experiment not fit") {
-      return(handle_response(HTTP_BAD_REQUEST, "Experiment has not been not fit"))
+      return(handle_response(HTTP_BAD_REQUEST, "Experiment has not been fit"))
     } else if (myMessenger$errors[[1]]$message == "experiment has been deleted") {
       return(handle_response(HTTP_BAD_REQUEST, "Experiment has been deleted"))
     } else {
