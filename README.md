@@ -79,13 +79,11 @@ Due to license restrictions, this is one of the images that must be built by the
 cd ~/Documents/mcneilco/oss/
 git clone git@github.com:mcneilco/acas-roo-server.git
 cd acas-roo-server
-git checkout 1.10-release
 ```
 
 ##### Build
 ```
-cd ~/Documents/mcneilco/oss/acas-roo-server
-docker build -t mcneilco/acas-roo-server-oss:1.10.0 .
+docker build -t mcneilco/acas-roo-server-oss:latest .
 ```
 
 #### Building a working image for Compound Registration ROO Server
@@ -95,7 +93,6 @@ docker build -t mcneilco/acas-roo-server-oss:1.10.0 .
 cd ~/Documents/mcneilco/oss/
 git clone git@github.com:mcneilco/acas-cmpdreg-roo-server.git
 cd acas-cmpdreg-roo-server
-git checkout 1.10-release
 ```
 
 ##### Add chemaxon jar file
@@ -120,7 +117,7 @@ cd ..
 ##### Build
 
 ```
-docker build -t mcneilco/cmpdreg-oss:1.10.0 .
+docker build -t mcneilco/acas-cmpdreg-roo-server-oss:latest .
 ```
 
 #### ACAS
@@ -131,7 +128,6 @@ The acas repository contains a docker-compose.yml file that orchestrates the cre
 cd ~/Documents/mcneilco/oss/
 git clone git@github.com:mcneilco/acas.git
 cd acas
-git checkout 1.10-release
 ```
 
 ##### Add chemaxon licenses and download marvin4js

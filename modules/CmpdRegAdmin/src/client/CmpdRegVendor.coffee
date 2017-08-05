@@ -1,3 +1,6 @@
+############################################################################
+# models
+############################################################################
 class window.Vendor extends Backbone.Model
 	urlRoot: "/api/cmpdRegAdmin/vendors"
 	defaults:
@@ -8,8 +11,14 @@ class window.Vendor extends Backbone.Model
 	isEditable: ->
 		return true
 
+############################################################################
 class window.Vendors extends Backbone.Collection
 	model: Vendor
+############################################################################
+
+############################################################################
+# controllers
+############################################################################
 
 class window.VendorController extends AbstractFormController
 	template: _.template($("#VendorView").html())
@@ -26,7 +35,7 @@ class window.VendorController extends AbstractFormController
 		"click .bv_confirmClear": "handleConfirmClearClicked"
 
 	initialize: ->
-		console.log 'initialize vendorController -- line 30'
+		console.log 'initialize vendorController -- line 38'
 		template = _.template( $("#VendorView").html());
 		$(@el).empty()
 		$(@el).html template
@@ -51,19 +60,19 @@ class window.VendorController extends AbstractFormController
 	render: =>
 		unless @model?
 			@model = new Vendor()
-		codeName = @model.get('code')
-		@$('.bv_vendorCode').val(codeName)
-		@$('.bv_vendorCode').html(codeName)
+		code = @model.get('code')
+		@$('.bv_vendorCode').val(code)
+		@$('.bv_vendorCode').html(code)
 		if @model.isNew()
-			console.log 'new vendor model -- line 56'
-			@$('.bv_vendorCode').removeAttr 'disabled'
+			console.log 'new vendor model -- line 67'
+			@$('.bv_vendorCode').removeAttr('disabled')
 			@$('.bv_save').removeAttr('disabled')
 			@$('.bv_cancel').removeAttr('disabled')
 			@$('.VendorView').show()
 			@$('.bv_vendorCode').show()
 			@$('.bv_vendorName').show()
 		else
-			console.log 'old vendor model -- line 59'
+			console.log 'old vendor model -- line 75'
 			@$('.bv_vendorCode').attr 'disabled', 'disabled'
 		bestName = @model.get('name')
 		if bestName?
@@ -129,26 +138,37 @@ class window.VendorController extends AbstractFormController
 		@disableAllInputs()
 
 	handleVendorCodeNameChanged: =>
-		codeName = UtilityFunctions::getTrimmedInput @$('.bv_vendorCode')
-		if codeName is ""
-			delete @model.attributes.codeName
+		code = UtilityFunctions::getTrimmedInput @$('.bv_vendorCode')
+		console.log 'here is the codeName change -- line 142'
+		console.log code
+		if code is ""
+			console.log 'deleting the code attribute -- line 145'
+			delete @model.attributes.code
 			@model.trigger 'change'
 		else
 			#validate codeName
+			console.log ' 150 -- checking codeName'
+			console.log code
 			$.ajax
 				type: 'GET'
-				url: "/api/cmpdRegAdmin/vendors/findByCode/"+codeName
+				url: "/api/cmpdRegAdmin/vendors/findByCode/"+code
 				dataType: 'json'
 				error: (err) =>
 					#codename is new
-					@model.set codeName: codeName
+					console.log 'hit error searching for vendor by code -- line 158'
+					@model.set code: code
+					console.log JSON.stringify(@model)
 					@clearValidationErrorStyles
-				success: (json) =>
+				success: (json, status) =>
 					#codeName is not unique
+
+					console.log 'service did not return an error -- but what is the status code'
+					console.log status
+					console.log code
 					@$('.bv_notUniqueModalTitle').html "Error: Vendor code is not unique"
 					@$('.bv_notUniqueModalBody').html "The entered vendor code is already used by another vendor. Please enter in a new code."
 					@$('.bv_notUniqueModal').modal('show')
-					@$('.bv_vendorCode').val @model.get 'codeName'
+					@$('.bv_vendorCode').val @model.get 'code'
 
 	handleNewEntityClicked: =>
 		@$('.bv_confirmClearEntity').modal('show')
@@ -181,40 +201,47 @@ class window.VendorController extends AbstractFormController
 		@$('.bv_cancelComplete').show()
 
 	updateModel: =>
+		console.log 'line 204 -- updating model'
 		@model.set("name", UtilityFunctions::getTrimmedInput @$('.bv_vendorName'))
 		@model.set("code", UtilityFunctions::getTrimmedInput @$('.bv_vendorCode'))
 
 	handleSaveClicked: =>
+		console.log 'save clicked -- 194'
 		@callNameValidationService()
 
 		@$('.bv_saving').show()
 		@$('.bv_saveFailed').hide()
 		@$('.bv_saveComplete').hide()
 
-	callNameValidationService: ->
+
+	callNameValidationService: =>
+		@updateModel()
 		@$('.bv_saving').show()
 		@$('.bv_save').attr('disabled', 'disabled')
-		reformattedModel = @model.clone()
-		reformattedModel.reformatBeforeSaving()
-		validateURL = "/api/cmpdRegAdmin/vendors/validate"
+		validateURL = "/api/cmpdRegAdmin/vendors/validateBeforeSave"
 		dataToPost =
 			data: #dataToPost needs wrapping key, not sure why
-				JSON.stringify(
-					lsThing: reformattedModel
-					uniqueName: true
-				)
-
+				JSON.stringify(@model)
+		console.log 'posting data to validate function --- line 225'
+		console.log validateURL
+		console.log dataToPost
 		$.ajax
 			type: 'POST'
 			url: validateURL
 			data: dataToPost
+			dataType: 'json'
 			success: (response) =>
+				console.log 'line 234 -- success return from validating vendor'
+				console.log response
 				@handleValidateReturn(response)
 			error: (err) =>
+				console.log 'line 238 -- error return from validating vendor'
+				console.log err
 				@serviceReturn = null
-			dataType: 'json'
 
 	handleValidateReturn: (validateResp) =>
+		console.log "ValidateResp next line -- 224"
+		console.log JSON.stringify validateResp
 		if validateResp?[0]?.errorLevel?
 			alert 'The requested vendor name has already been registered. Please choose a new vendor name.'
 			@$('.bv_saving').hide()
@@ -224,12 +251,10 @@ class window.VendorController extends AbstractFormController
 			@$('.bv_saving').hide()
 			@$('.bv_saveFailed').show()
 		else
-			@saveVendorAndRoles()
+			@saveVendor()
 
-	saveVendorAndRoles: =>
-		console.log "saveVendorAndRoles - handle tags changed"
-		@model.prepareToSave()
-		@model.reformatBeforeSaving()
+	saveVendor: =>
+		console.log "saveVendor - handle tags changed"
 		if @model.isNew()
 			@$('.bv_saveComplete').html('Save Complete')
 			newVendor = true
@@ -237,10 +262,12 @@ class window.VendorController extends AbstractFormController
 			@$('.bv_saveComplete').html('Update Complete')
 			newVendor = false
 		@$('.bv_save').attr('disabled', 'disabled')
-		if @model.isNew() #if vendor was new, trigger roleKind and user/admin lsRole creation
+		if @model.isNew() #if vendor was new
 			@model.save null,
 				success: (model, response) =>
-					if response is "update lsThing failed"
+					console.log 'line 268 -- response from saveVendor'
+					console.log response
+					if response is "update vendor failed"
 						@model.trigger 'saveFailed'
 		else
 			if UtilityFunctions::testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [@adminRole]) or UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, [window.conf.roles.acas.adminRole])
@@ -248,9 +275,13 @@ class window.VendorController extends AbstractFormController
 			else
 				@model.save null,
 					success: (model, response) =>
+						console.log 'line 271 -- save vendor response'
+						console.log response
 						if response is "update lsThing failed"
 							@model.trigger 'saveFailed'
 					error: (err) =>
+						console.log 'line 271 -- save vendor err'
+						console.log err
 						@model.trigger 'saveFailed'
 
 	validationError: =>

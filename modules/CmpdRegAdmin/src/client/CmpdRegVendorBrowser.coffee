@@ -1,15 +1,24 @@
+############################################################################
+# models
+############################################################################
 class window.VendorSearch extends Backbone.Model
 	defaults:
 		name: null
 		code: null
 		id: null
 
+############################################################################
 class window.VendorList extends Backbone.Collection
 	model: VendorSearch
 
+
+############################################################################
+# controllers
+############################################################################
+
 class window.VendorSimpleSearchController extends AbstractFormController
 	template: _.template($("#VendorSimpleSearchView").html())
-	genericSearchUrl: "/api/CmpdRegAdmin/vendors/"
+	genericSearchUrl: "/api/CmpdRegAdmin/vendors/search/"
 
 	initialize: ->
 		@searchUrl = ""
@@ -59,13 +68,10 @@ class window.VendorSimpleSearchController extends AbstractFormController
 		unless vendorSearchTerm is ""
 			$.ajax
 				type: 'GET'
-				url: @searchUrl
-#			+ vendorSearchTerm
+				url: @searchUrl + vendorSearchTerm
 				dataType: "json"
 				data:
 					testMode: false
-#					lsType: "vendor"
-#					lsKind: "vendor"
 
 #fullObject: true
 				success: (vendor) =>
@@ -78,7 +84,7 @@ class window.VendorSimpleSearchController extends AbstractFormController
 					@$(".bv_doSearch").attr "disabled", false
 
 
-
+############################################################################
 class window.VendorRowSummaryController extends Backbone.View
 	tagName: 'tr'
 	className: 'dataTableRow'
@@ -101,6 +107,7 @@ class window.VendorRowSummaryController extends Backbone.View
 
 		@
 
+############################################################################
 class window.VendorSummaryTableController extends Backbone.View
 	initialize: ->
 
@@ -127,7 +134,7 @@ class window.VendorSummaryTableController extends Backbone.View
 
 		@
 
-
+############################################################################
 class window.VendorBrowserController extends Backbone.View
 	#template: _.template($("#VendorBrowserView").html())
 	includeDuplicateAndEdit: false
@@ -217,7 +224,7 @@ class window.VendorBrowserController extends Backbone.View
 		@$(".bv_confirmDeleteVendor").modal('hide')
 
 	handleEditVendorClicked: =>
-		window.open("/vendor/codeName/#{@vendorController.model.get("code")}",'_blank');
+		window.open("/api/CmpdRegAdmin/vendors/codeName/#{@vendorController.model.get("code")}",'_blank');
 
 	destroyVendorSummaryTable: =>
 		if @vendorSummaryTable?

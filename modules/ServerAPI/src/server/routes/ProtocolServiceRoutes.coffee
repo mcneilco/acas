@@ -43,8 +43,7 @@ exports.protocolByCodenameInternal = (codeName, callback) ->
 	)
 
 exports.protocolByCodename = (req, resp) ->
-	_ = require '../public/lib/underscore.js'
-	
+
 	if global.specRunnerTestmode
 		protocolServiceTestJSON = require '../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'
 		stubSavedProtocol = JSON.parse(JSON.stringify(protocolServiceTestJSON.stubSavedProtocol))
@@ -57,7 +56,7 @@ exports.protocolByCodename = (req, resp) ->
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"protocols/codename/"+req.params.code
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
-		if req.user?
+		if req.user? && config.all.server.project.roles.enable
 			serverUtilityFunctions.getRestrictedEntityFromACASServerInternal baseurl, req.user.username, "metadata", "protocol metadata", (statusCode, json) =>
 			#if prot is deleted, need to check if user has privs to view deleted protocols
 				if json.codeName? and json.ignored and !json.deleted
