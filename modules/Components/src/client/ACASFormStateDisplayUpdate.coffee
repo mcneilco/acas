@@ -261,13 +261,14 @@ class window.ACASFormStateDisplayValueEditController extends Backbone.View
 		@$('.bv_changeValueHeader').html @tableDef.changeValueHeader
 
 	reasonForUpdateChanged: ->
-		@comment = @commentPrefix + @$('.bv_reasonForUpdate').val()
+		reasonForUpdate = UtilityFunctions::getTrimmedInput @$('.bv_reasonForUpdate')
+		@comment = @commentPrefix + reasonForUpdate
 		labelText =  @allowedCommentLength-@comment.length + " characters remaining"
 		@$('.bv_charactersRemaining').text(labelText)
 		@formUpdated()
 
 	formUpdated: =>
-		if @comment == @commentPrefix or @newField.isEmpty()
+		if @comment == @commentPrefix or @newField.isEmpty() or !@comment?
 			@$('.bv_saveBtn').attr('disabled','disabled')
 		else
 			@$('.bv_saveBtn').removeAttr('disabled')
