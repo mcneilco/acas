@@ -8,8 +8,22 @@ class window.Vendor extends Backbone.Model
 		code: null
 		id: null
 
-	isEditable: ->
-		return true
+	validate: (attrs) ->
+		errors = []
+		if attrs.code? and @isNew()
+			validChars = attrs.code.match(/[a-zA-Z0-9 _\-+]/g)
+			unless validChars.length is attrs.code.length
+				errors.push
+					attribute: 'vendorCode'
+					message: "Vendor code can not contain special characters"
+		if !attrs.name? or attrs.name is ""
+			errors.push
+				attribute: 'vendorName'
+				message: "Vendor name must be set and unique"
+		if errors.length > 0
+			return errors
+		else
+			return null
 
 ############################################################################
 class window.Vendors extends Backbone.Collection
@@ -26,8 +40,7 @@ class window.VendorController extends AbstractFormController
 
 	events: ->
 		"change .bv_vendorCode": "handleVendorCodeNameChanged"
-		"keyup .bv_vendorName": "attributeChanged"
-		"keyup .bv_vendorDetails": "attributeChanged"
+		"keyup .bv_vendorName": "handleVendorNameChanged"
 		"click .bv_save": "handleSaveClicked"
 		"click .bv_newEntity": "handleNewEntityClicked"
 		"click .bv_cancel": "handleCancelClicked"
@@ -35,12 +48,29 @@ class window.VendorController extends AbstractFormController
 		"click .bv_confirmClear": "handleConfirmClearClicked"
 
 	initialize: ->
-		console.log 'initialize vendorController -- line 38'
-		template = _.template( $("#VendorView").html());
-		$(@el).empty()
-		$(@el).html template
 		if @model?
 			@completeInitialization()
+		else
+			if window.AppLaunchParams.moduleLaunchParams?
+				if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
+					$.ajax
+						type: 'GET'
+						url: "/api/cmpdRegAdmin/vendors/codeName/"+window.AppLaunchParams.moduleLaunchParams.code
+						dataType: 'json'
+						error: (err) =>
+							alert 'Error getting vendor for code in this URL. Creating a new project'
+							@completeInitialization()
+						success: (json) =>
+							if json.id?
+								@model = new Vendor json
+							else
+								alert 'Could not get vendor for code in this URL. Creating a new project'
+							@completeInitialization()
+				else
+					@completeInitialization()
+			else
+				@completeInitialization()
+
 
 	completeInitialization: =>
 		unless @model?
@@ -52,9 +82,10 @@ class window.VendorController extends AbstractFormController
 		else
 			@readOnly = false
 		@listenTo @model, 'saveFailed', @handleSaveFailed
+		@listenTo @model, 'sync', @modelSaveCallback
 		@listenTo @model, 'change', @modelChangeCallback
 		$(@el).empty()
-		$(@el).html @template(@model.attributes)
+		$(@el).html @template()
 		@render()
 
 	render: =>
@@ -64,38 +95,20 @@ class window.VendorController extends AbstractFormController
 		@$('.bv_vendorCode').val(code)
 		@$('.bv_vendorCode').html(code)
 		if @model.isNew()
-			console.log 'new vendor model -- line 67'
 			@$('.bv_vendorCode').removeAttr('disabled')
-			@$('.bv_save').removeAttr('disabled')
-			@$('.bv_cancel').removeAttr('disabled')
-			@$('.VendorView').show()
-			@$('.bv_vendorCode').show()
-			@$('.bv_vendorName').show()
-		else
-			console.log 'old vendor model -- line 75'
-			@$('.bv_vendorCode').attr 'disabled', 'disabled'
-		bestName = @model.get('name')
-		if bestName?
-			@$('.bv_vendorName').val bestName
-		if @model.isNew()
-			@$('.bv_saveBeforeManagingPermissions').show()
-			if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, [window.conf.roles.cmpdreg.adminRole]
-				@$('.bv_saveBeforeManagingPermissions').show()
-		else
-			@updateEditable()
-		if @readOnly is true
-			@displayInReadOnlyMode()
-#		@$('.bv_save').attr('disabled','disabled')
-#		@$('.bv_cancel').attr('disabled','disabled')
-		@$('.VendorView').show()
-		@$('.bv_vendorCode').show()
-
-		if @model.isNew()
 			@$('.bv_save').html("Save")
 			@$('.bv_newEntity').hide()
 		else
+			@$('.bv_vendorCode').attr 'disabled', 'disabled'
 			@$('.bv_save').html("Update")
 			@$('.bv_newEntity').show()
+		@$('.bv_vendorName').val @model.get('name')
+
+		if @readOnly is true
+			@displayInReadOnlyMode()
+		@$('.bv_save').attr('disabled','disabled')
+		@$('.bv_cancel').attr('disabled','disabled')
+
 		@
 
 	handleSaveFailed: =>
@@ -105,10 +118,11 @@ class window.VendorController extends AbstractFormController
 
 	modelSaveCallback: (method, model) =>
 		@$('.bv_save').show()
-#		@$('.bv_save').attr('disabled', 'disabled')
+		@$('.bv_save').attr('disabled', 'disabled')
 		unless @$('.bv_saveFailed').is(":visible")
 			@$('.bv_saveComplete').show()
 			@$('.bv_saving').hide()
+		@$('.bv_cancel').removeAttr 'disabled'
 		@render()
 		@trigger 'amClean'
 
@@ -120,62 +134,20 @@ class window.VendorController extends AbstractFormController
 		@$('.bv_cancel').removeAttr('disabled')
 		@$('.bv_cancelComplete').hide()
 
-	updateEditable: =>
-		if @model.isEditable()
-			if UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, [window.conf.roles.acas.adminRole])
-				@enableAllInputs()
-				@$('.bv_vendorCode').attr 'disabled', 'disabled'
-				@$('.bv_saveBeforeManagingPermissions').hide()
-			else
-				@enableLimitedEditing()
-				@$('.bv_manageUserPermissions').hide()
-		else
-			@disableAllInputs()
-			@$('.bv_newEntity').removeAttr('disabled')
-		@$('.bv_status').attr 'disabled', 'disabled' #for now, don't allow status editing
-
-	enableLimitedEditing: ->
-		@disableAllInputs()
-
 	handleVendorCodeNameChanged: =>
 		code = UtilityFunctions::getTrimmedInput @$('.bv_vendorCode')
-		console.log 'here is the codeName change -- line 142'
-		console.log code
-		if code is ""
-			console.log 'deleting the code attribute -- line 145'
-			delete @model.attributes.code
-			@model.trigger 'change'
-		else
-			#validate codeName
-			console.log ' 150 -- checking codeName'
-			console.log code
-			$.ajax
-				type: 'GET'
-				url: "/api/cmpdRegAdmin/vendors/findByCode/"+code
-				dataType: 'json'
-				error: (err) =>
-					#codename is new
-					console.log 'hit error searching for vendor by code -- line 158'
-					@model.set code: code
-					console.log JSON.stringify(@model)
-					@clearValidationErrorStyles
-				success: (json, status) =>
-					#codeName is not unique
 
-					console.log 'service did not return an error -- but what is the status code'
-					console.log status
-					console.log code
-					@$('.bv_notUniqueModalTitle').html "Error: Vendor code is not unique"
-					@$('.bv_notUniqueModalBody').html "The entered vendor code is already used by another vendor. Please enter in a new code."
-					@$('.bv_notUniqueModal').modal('show')
-					@$('.bv_vendorCode').val @model.get 'code'
+		if code is ""
+			@model.set 'code', null
+		else
+			@model.set 'code', code
+		@model.trigger 'change'
 
 	handleNewEntityClicked: =>
 		@$('.bv_confirmClearEntity').modal('show')
 		@$('.bv_confirmClear').removeAttr('disabled')
 		@$('.bv_cancelClear').removeAttr('disabled')
 		@$('.bv_closeModalButton').removeAttr('disabled')
-		@$('.bv_save').removeAttr('disabled')
 
 	handleCancelClearClicked: =>
 		@$('.bv_confirmClearEntity').modal('hide')
@@ -200,14 +172,14 @@ class window.VendorController extends AbstractFormController
 		@$('.bv_canceling').hide()
 		@$('.bv_cancelComplete').show()
 
-	updateModel: =>
-		console.log 'line 204 -- updating model'
+	handleVendorNameChanged: =>
 		@model.set("name", UtilityFunctions::getTrimmedInput @$('.bv_vendorName'))
-		@model.set("code", UtilityFunctions::getTrimmedInput @$('.bv_vendorCode'))
 
 	handleSaveClicked: =>
-		console.log 'save clicked -- 194'
-		@callNameValidationService()
+		if @model.isNew()
+			@callNameValidationService()
+		else
+			@saveVendor()
 
 		@$('.bv_saving').show()
 		@$('.bv_saveFailed').hide()
@@ -215,74 +187,47 @@ class window.VendorController extends AbstractFormController
 
 
 	callNameValidationService: =>
-		@updateModel()
 		@$('.bv_saving').show()
 		@$('.bv_save').attr('disabled', 'disabled')
 		validateURL = "/api/cmpdRegAdmin/vendors/validateBeforeSave"
 		dataToPost =
 			data: #dataToPost needs wrapping key, not sure why
 				JSON.stringify(@model)
-		console.log 'posting data to validate function --- line 225'
-		console.log validateURL
-		console.log dataToPost
 		$.ajax
 			type: 'POST'
 			url: validateURL
 			data: dataToPost
 			dataType: 'json'
 			success: (response) =>
-				console.log 'line 234 -- success return from validating vendor'
-				console.log response
 				@handleValidateReturn(response)
 			error: (err) =>
-				console.log 'line 238 -- error return from validating vendor'
-				console.log err
-				@serviceReturn = null
+				@handleValidateError(JSON.parse err.responseText)
+
+	handleValidateError: (err) =>
+		if err?[0]?.level? and err[0].level is "ERROR"
+			alert "The requested code has already been used"
+		@$('.bv_saving').hide()
+		@$('.bv_saveFailed').show()
 
 	handleValidateReturn: (validateResp) =>
-		console.log "ValidateResp next line -- 224"
-		console.log JSON.stringify validateResp
 		if validateResp?[0]?.errorLevel?
 			alert 'The requested vendor name has already been registered. Please choose a new vendor name.'
-			@$('.bv_saving').hide()
-			@$('.bv_saveFailed').show()
-		else if validateResp is "validate name failed"
-			alert 'There was an error validating the vendor name. Please try again and/or enter a different name.'
 			@$('.bv_saving').hide()
 			@$('.bv_saveFailed').show()
 		else
 			@saveVendor()
 
 	saveVendor: =>
-		console.log "saveVendor - handle tags changed"
 		if @model.isNew()
 			@$('.bv_saveComplete').html('Save Complete')
-			newVendor = true
 		else
 			@$('.bv_saveComplete').html('Update Complete')
-			newVendor = false
 		@$('.bv_save').attr('disabled', 'disabled')
-		if @model.isNew() #if vendor was new
-			@model.save null,
-				success: (model, response) =>
-					console.log 'line 268 -- response from saveVendor'
-					console.log response
-					if response is "update vendor failed"
-						@model.trigger 'saveFailed'
-		else
-			if UtilityFunctions::testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [@adminRole]) or UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, [window.conf.roles.acas.adminRole])
-				@updateVendorRoles()
-			else
-				@model.save null,
-					success: (model, response) =>
-						console.log 'line 271 -- save vendor response'
-						console.log response
-						if response is "update lsThing failed"
-							@model.trigger 'saveFailed'
-					error: (err) =>
-						console.log 'line 271 -- save vendor err'
-						console.log err
-						@model.trigger 'saveFailed'
+
+		@model.save null,
+			success: (model, response) =>
+				if response is "update vendor failed"
+					@model.trigger 'saveFailed'
 
 	validationError: =>
 		super()
@@ -308,10 +253,3 @@ class window.VendorController extends AbstractFormController
 			@$('.bv_save').removeAttr('disabled')
 		else
 			@$('.bv_save').attr('disabled', 'disabled')
-
-	isValid: =>
-		validCheck = super()
-		validCheck
-
-
-

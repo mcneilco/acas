@@ -47,7 +47,6 @@ class window.VendorSimpleSearchController extends AbstractFormController
 		$(".bv_vendorTableController").addClass "hide"
 		$(".bv_errorOccurredPerformingSearch").addClass "hide"
 		vendorSearchTerm = $.trim(@$(".bv_vendorSearchTerm").val())
-		$(".bv_vendorSearchTerm").val ""
 		if vendorSearchTerm isnt ""
 			$(".bv_noMatchingVendorsFoundMessage").addClass "hide"
 			$(".bv_vendorBrowserSearchInstructions").addClass "hide"
@@ -224,7 +223,7 @@ class window.VendorBrowserController extends Backbone.View
 		@$(".bv_confirmDeleteVendor").modal('hide')
 
 	handleEditVendorClicked: =>
-		window.open("/api/CmpdRegAdmin/vendors/codeName/#{@vendorController.model.get("code")}",'_blank');
+		window.open("/vendor/codeName/#{@vendorController.model.get("code")}",'_blank');
 
 	destroyVendorSummaryTable: =>
 		if @vendorSummaryTable?
