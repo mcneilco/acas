@@ -118,7 +118,10 @@ body {
     cursor: pointer;
 }
 
-.bv_collapsibleHeaderController li {
+.bv_modLaunchMenuWrapper {
+    width: 267px;
+}
+.bv_modLaunchMenuWrapper .bv_menuItem {
     margin-top: 3px;
 
     /*margin-bottom: 5px;*/
@@ -126,4 +129,11 @@ body {
 
 .bv_notTopHeader {
     margin-top: 5px;
+}
+
+.bv_expandAll, .bv_collapseAll {
+    width: 12px;
+    position: absolute;
+    top: 75px;
+    left: 265px;
 }

@@ -2,6 +2,7 @@ window.ModuleMenusConfiguration =
 	[
 		isHeader: true
 		menuName: "Load Data"
+#		collapsible: true
 	,
 		isHeader: false
 		menuName: "Experiment Loader"

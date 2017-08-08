@@ -34,6 +34,7 @@ class window.ModuleLauncherList extends Backbone.Collection
 class window.ModuleLauncherMenuController extends Backbone.View
 	template: _.template($("#ModuleLauncherMenuView").html())
 	tagName: 'li'
+	className: 'bv_menuItem'
 
 	events:
 		'click .bv_menuName': "handleSelect"
@@ -82,7 +83,7 @@ class window.ModuleLauncherMenuController extends Backbone.View
 
 class window.ModuleLauncherMenuHeaderController extends Backbone.View
 	tagName: 'li'
-	className: "nav-header"
+	className: "nav-header bv_notTopHeader"
 
 	initialize: ->
 		@model.bind "change", @render
@@ -120,12 +121,26 @@ class window.ModuleLauncherMenuCollapsibleHeaderController extends Backbone.View
 		@$('.bv_modules').slideToggle 200
 		@$('.bv_caret').toggle()
 
+	collapse: ->
+		@$('.bv_modules').hide()
+		@$('.bv_caret_collapse').hide()
+		@$('.bv_caret_expand').show()
+
+	expand: ->
+		@$('.bv_modules').show()
+		@$('.bv_caret_expand').hide()
+		@$('.bv_caret_collapse').show()
+
 class window.ModuleLauncherMenuListController extends Backbone.View
+	events:
+		'click .bv_expandAll': "handleExpandAll"
+		'click .bv_collapseAll': "handleCollapseAll"
 
 	template: _.template($("#ModuleLauncherMenuListView").html())
 
 	initialize: ->
 		@lastCollapsibleHeader = null
+		@collapsibleHeaders = []
 		#@collection.bind 'reset', @render()
 
 	render: =>
@@ -134,7 +149,7 @@ class window.ModuleLauncherMenuListController extends Backbone.View
 		$(@el).empty()
 		$(@el).html @template()
 		@collection.each @addOne
-		@$('.bv_collapsibleHeaderController:eq(0)').removeClass "bv_notTopHeader"
+		@$('.bv_notTopHeader:eq(0)').removeClass "bv_notTopHeader"
 
 		@
 
@@ -151,6 +166,7 @@ class window.ModuleLauncherMenuListController extends Backbone.View
 				menuItemCont = new ModuleLauncherMenuCollapsibleHeaderController
 					model: menuItem
 				@lastCollapsibleHeader = menuItemCont
+				@collapsibleHeaders.push menuItemCont
 			else
 				menuItemCont = new ModuleLauncherMenuHeaderController
 					model: menuItem
@@ -171,6 +187,18 @@ class window.ModuleLauncherMenuListController extends Backbone.View
 		#Note that if the names don't match, this fails silently
 		selector = '.bv_launch_'+moduleName
 		@$(selector).click()
+
+	handleExpandAll: =>
+		for header in @collapsibleHeaders
+			header.expand()
+		@$('.bv_expandAll').hide()
+		@$('.bv_collapseAll').show()
+
+	handleCollapseAll: =>
+		for header in @collapsibleHeaders
+			header.collapse()
+		@$('.bv_collapseAll').hide()
+		@$('.bv_expandAll').show()
 
 class window.ModuleLauncherController extends Backbone.View
 	tagName: 'div'
