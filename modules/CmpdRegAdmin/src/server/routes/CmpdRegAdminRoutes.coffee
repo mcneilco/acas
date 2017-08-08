@@ -4,8 +4,8 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.get '/api/cmpdRegAdmin/vendors/codeName/:code', exports.getCmpdRegVendorByCode
 	app.post '/api/cmpdRegAdmin/vendors/validateBeforeSave', exports.validateCmpdRegVendorBeforeSave
 	app.post '/api/cmpdRegAdmin/vendors',  exports.saveCmpdRegVendor
-	app.put '/api/cmpdRegAdmin/vendors', exports.updateCmpdRegVendor
-	app.delete '/api/cmpdRegAdmin/vendors', exports.deleteCmpdRegVendor
+	app.put '/api/cmpdRegAdmin/vendors/:id', exports.updateCmpdRegVendor
+	app.delete '/api/cmpdRegAdmin/vendors/:id', exports.deleteCmpdRegVendor
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/cmpdRegAdmin/vendors/validate/:code', loginRoutes.ensureAuthenticated, exports.validateCmpdRegVendor
@@ -200,7 +200,7 @@ exports.updateCmpdRegVendor = (req, resp) ->
 	config = require '../conf/compiled/conf.js'
 	console.log "exports.updateCmpdRegVendor"
 
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/vendors/updateVendor'
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/vendors'
 	request(
 		method: 'PUT'
 		url: cmpdRegCall
