@@ -104,3 +104,26 @@ body {
   margin-top:0px;
   margin-bottom: 2px;
 }
+
+.bv_collapsibleHeaderController .bv_caret {
+    margin-left: 5px;
+    /*border-bottom-color: #999999;*/
+}
+
+.bv_collapsibleHeaderController .bv_modules {
+    list-style-type: none;
+    margin-left: 15px;
+}
+.bv_collapsibleHeaderController .bv_moduleCategory {
+    cursor: pointer;
+}
+
+.bv_collapsibleHeaderController li {
+    margin-top: 3px;
+
+    /*margin-bottom: 5px;*/
+}
+
+.bv_notTopHeader {
+    margin-top: 5px;
+}

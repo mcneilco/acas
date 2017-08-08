@@ -8,6 +8,7 @@ class window.ModuleLauncher extends Backbone.Model
 		isActive: false
 		isDirty: false
 		autoLaunchName: null
+		collapsible: false
 
 	requestActivation: ->
 		if @get('externalLink')?
@@ -94,11 +95,37 @@ class window.ModuleLauncherMenuHeaderController extends Backbone.View
 
 		@
 
+class window.ModuleLauncherMenuCollapsibleHeaderController extends Backbone.View
+	template: _.template($("#ModuleLauncherMenuCollapsibleHeaderView").html())
+	tagName: 'div'
+	className: 'bv_collapsibleHeaderController bv_notTopHeader'
+
+	events:
+		'click .bv_moduleCategory': "handleClick"
+
+	render: =>
+		if (@model.get('requireUserRoles')? and !UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, @model.get('requireUserRoles'))
+			$(@el).hide()
+		else
+			$(@el).empty()
+			$(@el).html @template()
+			@$('.bv_moduleCategory').prepend @model.get('menuName')
+
+		@
+
+	addSubMenu: (el) ->
+		@$('.bv_modules').append el
+
+	handleClick: =>
+		@$('.bv_modules').slideToggle 200
+		@$('.bv_caret').toggle()
+
 class window.ModuleLauncherMenuListController extends Backbone.View
 
 	template: _.template($("#ModuleLauncherMenuListView").html())
 
 	initialize: ->
+		@lastCollapsibleHeader = null
 		#@collection.bind 'reset', @render()
 
 	render: =>
@@ -107,17 +134,27 @@ class window.ModuleLauncherMenuListController extends Backbone.View
 		$(@el).empty()
 		$(@el).html @template()
 		@collection.each @addOne
+		@$('.bv_collapsibleHeaderController:eq(0)').removeClass "bv_notTopHeader"
 
 		@
 
 	addOne: (menuItem) =>
 		menuItemController = @makeMenuItemController(menuItem)
-		@$('.bv_navList').append menuItemController.render().el
+		if !menuItem.get('isHeader') and @lastCollapsibleHeader?
+			@lastCollapsibleHeader.addSubMenu menuItemController.render().el
+		else
+			@$('.bv_navList').append menuItemController.render().el
 
 	makeMenuItemController: (menuItem) ->
 		if menuItem.get('isHeader')
-			menuItemCont = new ModuleLauncherMenuHeaderController
-				model: menuItem
+			if menuItem.get('collapsible')
+				menuItemCont = new ModuleLauncherMenuCollapsibleHeaderController
+					model: menuItem
+				@lastCollapsibleHeader = menuItemCont
+			else
+				menuItemCont = new ModuleLauncherMenuHeaderController
+					model: menuItem
+				@lastCollapsibleHeader = null
 		else
 			menuItemCont = new ModuleLauncherMenuController
 				model: menuItem
@@ -167,7 +204,6 @@ class window.ModuleLauncherController extends Backbone.View
 					@model.set isDirty: false
 				@moduleController.render()
 				@model.set isLoaded: true
-
 
 	handleDeactivation:  =>
 		$(@el).hide()

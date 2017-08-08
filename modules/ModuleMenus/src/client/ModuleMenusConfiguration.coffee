@@ -35,6 +35,7 @@ window.ModuleMenusConfiguration =
 	,
 		isHeader: true
 		menuName: "Search and Edit"
+		collapsible: true
 	,
 		isHeader: false, menuName: "Protocol Browser"
 		mainControllerClassName: "ProtocolBrowserController"
@@ -47,6 +48,7 @@ window.ModuleMenusConfiguration =
 	,
 		isHeader: true
 		menuName: "Admin"
+		collapsible: true
 	,
 		isHeader: false
 		menuName: "Admin Panel"
