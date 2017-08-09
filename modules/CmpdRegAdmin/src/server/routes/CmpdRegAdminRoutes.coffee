@@ -16,7 +16,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 
 	app.get '/api/cmpdRegAdmin/vendors/:id', loginRoutes.ensureAuthenticated, exports.getCmpdRegVendorById
 	app.post '/api/cmpdRegAdmin/vendors', loginRoutes.ensureAuthenticated, exports.saveCmpdRegVendor
-	app.put '/api/cmpdRegAdmin/vendors', loginRoutes.ensureAuthenticated, exports.updateCmpdRegVendor
+	app.put '/api/cmpdRegAdmin/vendors/:id', loginRoutes.ensureAuthenticated, exports.updateCmpdRegVendor
 	app.delete '/api/cmpdRegAdmin/vendors/:id', loginRoutes.ensureAuthenticated, exports.deleteCmpdRegVendor
 
 exports.validateCmpdRegVendor = (req, resp) ->

@@ -39,10 +39,11 @@ class window.VendorController extends AbstractFormController
 	moduleLaunchName: "vendor"
 
 	events: ->
-		"change .bv_vendorCode": "handleVendorCodeNameChanged"
+		"keyup .bv_vendorCode": "handleVendorCodeNameChanged"
 		"keyup .bv_vendorName": "handleVendorNameChanged"
 		"click .bv_save": "handleSaveClicked"
-		"click .bv_newEntity": "handleNewEntityClicked"
+		"click .bv_backToVendorBrowserBtn": "handleBackToVendorBrowserClicked"
+#		"click .bv_newEntity": "handleNewEntityClicked"
 		"click .bv_cancel": "handleCancelClicked"
 		"click .bv_cancelClear": "handleCancelClearClicked"
 		"click .bv_confirmClear": "handleConfirmClearClicked"
@@ -95,17 +96,16 @@ class window.VendorController extends AbstractFormController
 		@$('.bv_vendorCode').val(code)
 		@$('.bv_vendorCode').html(code)
 		if @model.isNew()
-			@$('.bv_vendorCode').removeAttr('disabled')
 			@$('.bv_save').html("Save")
-			@$('.bv_newEntity').hide()
+#			@$('.bv_newEntity').hide()
 		else
-			@$('.bv_vendorCode').attr 'disabled', 'disabled'
 			@$('.bv_save').html("Update")
-			@$('.bv_newEntity').show()
+#			@$('.bv_newEntity').show()
 		@$('.bv_vendorName').val @model.get('name')
 
 		if @readOnly is true
 			@displayInReadOnlyMode()
+			@$('.bv_backToVendorBrowserBtn').hide()
 		@$('.bv_save').attr('disabled','disabled')
 		@$('.bv_cancel').attr('disabled','disabled')
 
@@ -142,12 +142,16 @@ class window.VendorController extends AbstractFormController
 		else
 			@model.set 'code', code
 		@model.trigger 'change'
+	
+	handleBackToVendorBrowserClicked: =>
+		@trigger 'backToBrowser'
+	
 
-	handleNewEntityClicked: =>
-		@$('.bv_confirmClearEntity').modal('show')
-		@$('.bv_confirmClear').removeAttr('disabled')
-		@$('.bv_cancelClear').removeAttr('disabled')
-		@$('.bv_closeModalButton').removeAttr('disabled')
+#	handleNewEntityClicked: =>
+#		@$('.bv_confirmClearEntity').modal('show')
+#		@$('.bv_confirmClear').removeAttr('disabled')
+#		@$('.bv_cancelClear').removeAttr('disabled')
+#		@$('.bv_closeModalButton').removeAttr('disabled')
 
 	handleCancelClearClicked: =>
 		@$('.bv_confirmClearEntity').modal('hide')
@@ -176,10 +180,7 @@ class window.VendorController extends AbstractFormController
 		@model.set("name", UtilityFunctions::getTrimmedInput @$('.bv_vendorName'))
 
 	handleSaveClicked: =>
-		if @model.isNew()
-			@callNameValidationService()
-		else
-			@saveVendor()
+		@callNameValidationService()
 
 		@$('.bv_saving').show()
 		@$('.bv_saveFailed').hide()
@@ -244,7 +245,7 @@ class window.VendorController extends AbstractFormController
 	displayInReadOnlyMode: =>
 		@$(".bv_save").hide()
 		@$(".bv_cancel").hide()
-		@$(".bv_newEntity").hide()
+#		@$(".bv_newEntity").hide()
 		@$('button').attr 'disabled', 'disabled'
 		@disableAllInputs()
 

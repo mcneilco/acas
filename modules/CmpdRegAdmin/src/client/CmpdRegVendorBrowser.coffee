@@ -27,6 +27,7 @@ class window.VendorSimpleSearchController extends AbstractFormController
 	events:
 		'keyup .bv_vendorSearchTerm': 'updateVendorSearchTerm'
 		'click .bv_doSearch': 'handleDoSearchClicked'
+		"click .bv_createNewVendorBtn": "handleCreateNewVendorClicked"		
 
 	render: =>
 		$(@el).empty()
@@ -82,6 +83,8 @@ class window.VendorSimpleSearchController extends AbstractFormController
 					@$(".bv_vendorSearchTerm").attr "disabled", false
 					@$(".bv_doSearch").attr "disabled", false
 
+	handleCreateNewVendorClicked: =>
+		@trigger 'createNewVendor'
 
 ############################################################################
 class window.VendorRowSummaryController extends Backbone.View
@@ -122,7 +125,6 @@ class window.VendorSummaryTableController extends Backbone.View
 		else
 			$(".bv_noMatchingVendorsFoundMessage").addClass "hide"
 			@collection.each (vend) =>
-				console.log vend
 				prsc = new VendorRowSummaryController
 					model: vend
 				prsc.on "gotClick", @selectedRowChanged
@@ -154,6 +156,7 @@ class window.VendorBrowserController extends Backbone.View
 			el: @$('.bv_vendorSearchController')
 		@searchController.render()
 		@searchController.on "searchReturned", @setupVendorSummaryTable
+		@searchController.on "createNewVendor", @handleCreateNewVendorClicked
 		#@searchController.on "resetSearch", @destroyVendorSummaryTable
 
 	setupVendorSummaryTable: (vendors) =>
@@ -177,6 +180,8 @@ class window.VendorBrowserController extends Backbone.View
 
 	selectedVendorUpdated: (vendor) =>
 		@trigger "selectedVendorUpdated"
+		if @vendorController?
+			@vendorController.undelegateEvents()
 		@vendorController = new VendorController
 			model: new Vendor vendor.attributes
 			readOnly: true
@@ -206,7 +211,7 @@ class window.VendorBrowserController extends Backbone.View
 		@$(".bv_deletingStatusIndicator").removeClass "hide"
 		@$(".bv_deleteButtons").addClass "hide"
 		$.ajax(
-			url: "/api/vendors/#{@vendorController.model.get("id")}",
+			url: "/api/cmpdRegAdmin/vendors/#{@vendorController.model.get("id")}",
 			type: 'DELETE',
 			success: (result) =>
 				@$(".bv_okayButton").removeClass "hide"
@@ -223,7 +228,7 @@ class window.VendorBrowserController extends Backbone.View
 		@$(".bv_confirmDeleteVendor").modal('hide')
 
 	handleEditVendorClicked: =>
-		window.open("/vendor/codeName/#{@vendorController.model.get("code")}",'_blank');
+		@createVendorController @vendorController.model
 
 	destroyVendorSummaryTable: =>
 		if @vendorSummaryTable?
@@ -237,3 +242,28 @@ class window.VendorBrowserController extends Backbone.View
 	render: =>
 
 		@
+
+	handleCreateNewVendorClicked: =>
+		@createVendorController new Vendor()
+	
+	createVendorController: (mdl) =>
+		@$('.bv_vendorBrowserWrapper').hide()
+		@$('.bv_vendorControllerWrapper').show()
+		if @vendorController?
+			@vendorController.undelegateEvents()
+			@$(".bv_vendorControllerWrapper").html ""
+		@vendorController = new VendorController
+			model: mdl
+		@vendorController.on 'backToBrowser', @handleBackToVendorBrowserClicked
+		@vendorController.on 'amDirty', =>
+			@trigger 'amDirty'
+		@vendorController.on 'amClean', =>
+			@trigger 'amClean'
+		@$(".bv_vendorControllerWrapper").append @vendorController.render().el
+		@vendorController.$('.bv_backToVendorBrowserBtn').show()
+
+	handleBackToVendorBrowserClicked: =>
+		@$('.bv_vendorBrowserWrapper').show()
+		@$('.bv_vendorControllerWrapper').hide()
+		@searchController.handleDoSearchClicked()
+		@trigger 'amClean'
