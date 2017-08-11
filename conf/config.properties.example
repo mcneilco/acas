@@ -323,6 +323,7 @@ server.security.authstrategy=database
 ## ACAS Home Page Options
 # If module is customized and the ACAS header name needs to be replaced, you can set the following options
 client.moduleMenus.logoText=ACAS
+client.moduleMenus.logoImageFilePath=
 client.moduleMenus.homePageMessage=Welcome to ACAS
 client.moduleMenus.copyrightMessage=&copy; John McNeil & Company 2012-2017
 # If summary statistics is an included feature, set the following to true
