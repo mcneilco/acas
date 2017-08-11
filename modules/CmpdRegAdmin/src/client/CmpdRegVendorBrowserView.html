@@ -1,0 +1,147 @@
+<script type="text/template" id="VendorSimpleSearchView" xmlns="http://www.w3.org/1999/html">
+    <div class="navbar" style="margin-bottom: 0px; ">
+        <div class="navbar-inner" style="border-bottom-left-radius:	0px; border-bottom-right-radius:	0px;">
+            <!-- <form class="navbar-search pull-left"> -->
+            <div class="control-group" style="margin-top: 5px; margin-bottom: 5px;">
+                <div class="input-append span3">
+                    <input class="bv_vendorSearchTerm" style="
+							padding-right: 14px;
+							border-top-left-radius: 15px;
+							border-bottom-left-radius: 15px;
+							" type="text" placeholder="Search for vendors">
+                    <button class="btn bv_doSearch add-on" style="
+							border-top-right-radius: 15px;
+							border-bottom-right-radius: 15px;
+							height: 30px;
+							margin-top: 0px;
+							background-color: #fff;
+							border-left: 0px;
+							border-bottom: 1px solid #cccccc;
+							border-right: 1px solid #cccccc;
+							border-top: 1px solid #cccccc;
+              box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
+              width: 2.5em; padding-right: 0.8em;transition: border 0.2s linear 0s, box-shadow 0.2s linear 0s;" type="button" disabled>
+                        <i class="icon-search bv_doSearchIcon"></i>
+                        <i class="icon-remove bv_clearSearchIcon hide"></i>
+                    </button>
+                </div>
+                <button type="button" class="btn bv_createNewVendorBtn pull-right" style="margin-top:0px;">Create New Vendor</button>
+            </div>
+            <!-- </form> -->
+        </div>
+    </div>
+
+</script>
+
+<script type="text/template" id="VendorRowSummaryView" xmlns="http://www.w3.org/1999/html">
+    <td class='bv_vendorCode'><%=code%></td>
+    <td class='bv_vendorName'><%=name%></td>
+</script>
+
+<script type="text/template" id="VendorSummaryTableView" xmlns="http://www.w3.org/1999/html">
+    <table class="table table-bordered table-striped table-hover" style="margin: 0px; padding: 0px; border: 0px; width: 100%; ">
+        <thead style="">
+        <tr>
+            <th style="width: 125px;">Vendor Code</th>
+            <th style="width: 200px;">Vendor Name</th>
+        </tr>
+        </thead>
+        <tbody style="">
+
+        </tbody>
+    </table>
+</script>
+
+<script type="text/template" id="VendorBrowserView" xmlns="http://www.w3.org/1999/html">
+
+    <div class="bv_vendorBrowserWrapper">
+        <div class="bv_vendorSearchController" style="padding-bottom: 0px;"></div>
+        <div class="" style=" border: 1px solid #d4d4d4; border-top: 0px; margin: 0px; padding: 0px; ">
+
+            <div class="bv_searchVendorsStatusIndicator" style="height: 280px;">
+                <table width="100%">
+                    <thead>
+                    <tr><td style="display: none;">placeholder</td></tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td style="text-align: center; width: 100%; align-content: center; height: 250px;">
+                            <h5 class="bv_noMatchingVendorsFoundMessage hide">No Matching Vendors Found</h5>
+                            <h5 class="bv_moreSpecificVendorSearchNeeded hide">A more specific search term is required.</h5>
+                            <h5 class="bv_errorOccurredPerformingSearch hide">An error occurred while searching for the vendor.</h5>
+
+                            <div class="bv_vendorBrowserSearchInstructions">
+                                <i class="icon-search bv_doSearchIcon"></i>
+                                Vendor Browser
+                            </div>
+                            <div class="hide bv_searchingVendorsMessage" style="margin: auto;">
+                                <h5>Searching for Vendors containing text "<i class="bv_vendorSearchTerm"></i>"</h5>
+                                <div class="progress progress-striped active " style="width: 90%; margin: auto;">
+                                    <div class="bar" style="width: 100%; margin: auto;"></div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="bv_vendorTableController hide" style="margin:0px; padding:10px; overflow: auto; overflow: auto;"></div>
+        </div>
+        <!--
+        <h5>Selected Vendor Details</h5>
+        -->
+        <div class="well well-small bv_vendorControllerContainer hide" style="margin-top: 10px;">
+            <div>
+                <button class="btn btn-danger bv_deleteVendor">Delete</button>
+                <button class="btn bv_duplicateVendor pull-right hide" style="margin-left: 0.5em;">Duplicate</button>
+                <button class="btn bv_editVendor pull-right">Edit</button>
+            </div>
+            <hr />
+            <div class="">
+                <div class="bv_vendorController hide"></div>
+            </div>
+        </div>
+
+        <div class="modal hide bv_confirmDeleteVendor">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h3>Delete Vendor</h3>
+            </div>
+            <div class="modal-body">
+                <div class="bv_deleteWarningMessage">
+                    <p>Are you sure you would like to delete vendor: <span class="bv_vendorCodeName"></span>?</p>
+                </div>
+                <div class="bv_deletingStatusIndicator hide">
+                    <table width="100%"></table>
+                    <tr>
+                        <td style="text-align: center; width: 100%">
+                            <h4>Deleting Vendor</h4>
+                            <div class="progress progress-striped active" style="width: 100%;">
+                                <div class="bar" style="width: 100%;"></div>
+                            </div>
+                        </td>
+                    </tr>
+                </div>
+                <div class="bv_vendorDeletedSuccessfullyMessage hide">
+                    <p>Vendor <span class="bv_vendorCodeName"></span> has successfully been deleted</p>
+                </div>
+                <div class="bv_errorDeletingVendorMessage hide">
+                    <p>An error occured deleting Vendor <span class="bv_vendorCodeName"></span>.  Please contact support for additional help.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <span class="bv_deleteButtons">
+                  <a href="#" class="btn btn-primary bv_cancelDelete">Cancel</a>
+                  <a href="#" class="btn btn-danger bv_confirmDeleteVendorButton">Delete Vendor</a>
+                  </span>
+                <span class="bv_okayButton hide">
+                    <a href="#" class="btn btn-primary bv_cancelDelete">Okay</a>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="bv_vendorControllerWrapper hide"></div>
+</script>
