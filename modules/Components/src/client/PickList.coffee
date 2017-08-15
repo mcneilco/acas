@@ -109,6 +109,14 @@ class window.PickListSelectController extends Backbone.View
 			@insertFirstOption = @options.insertFirstOption
 		else
 			@insertFirstOption = null
+		if @options.insertSecondOption?
+			@insertSecondOption = @options.insertSecondOption
+		else
+			@insertSecondOption = null
+		if @options.insertThirdOption?
+			@insertThirdOption = @options.insertThirdOption
+		else
+			@insertThirdOption = null
 
 		if @options.insertSelectedCode?
 			@insertSelectedCode = @options.insertSelectedCode
@@ -127,6 +135,14 @@ class window.PickListSelectController extends Backbone.View
 			@handleListReset()
 
 	handleListReset: =>
+		if @insertThirdOption
+			@collection.add @insertThirdOption,
+				at: 0
+				silent: true
+		if @insertSecondOption
+			@collection.add @insertSecondOption,
+				at: 0
+				silent: true
 		if @insertFirstOption
 			@collection.add @insertFirstOption,
 				at: 0
