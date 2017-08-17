@@ -62,7 +62,9 @@
     "url-loader": "*",
     "yamljs": "*",
     "request-promise": "*",
-    "bluebird": "*"
+    "bluebird": "*",
+    "webshot": "0.18.0",
+    "archiver": "2.0.0"
   },
   "devDependencies": {
     "coffee-script": "^1.12.4",
