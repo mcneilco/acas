@@ -229,7 +229,7 @@ $(function() {
 			    } else {
 				    this.$('.bv_tareWeightContainer').hide();
 			    }
-                if (window.configuration.metaLot.showTotalAmoundStored) {
+                if (window.configuration.metaLot.showTotalAmountStored) {
                     this.$('.bv_totalAmountStoredContainer').show();
 			    } else {
 				    this.$('.bv_totalAmountStoredContainer').hide();
