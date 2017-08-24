@@ -1,55 +1,51 @@
 exports.setupAPIRoutes = (app, loginRoutes) ->
-	app.get '/api/cmpdRegAdmin/vendors', exports.getCmpdRegVendors
-	app.get '/api/cmpdRegAdmin/vendors/validate/:code', exports.validateCmpdRegVendor
-	app.get '/api/cmpdRegAdmin/vendors/codeName/:code', exports.getCmpdRegVendorByCode
-	app.post '/api/cmpdRegAdmin/vendors/validateBeforeSave', exports.validateCmpdRegVendorBeforeSave
-	app.post '/api/cmpdRegAdmin/vendors',  exports.saveCmpdRegVendor
-	app.put '/api/cmpdRegAdmin/vendors/:id', exports.updateCmpdRegVendor
-	app.delete '/api/cmpdRegAdmin/vendors/:id', exports.deleteCmpdRegVendor
+	app.get '/api/cmpdRegAdmin/:entityType', exports.getCmpdRegEntities
+	app.get '/api/cmpdRegAdmin/:entityType/validate/:code', exports.validateCmpdRegEntity
+	app.get '/api/cmpdRegAdmin/:entityType/codeName/:code', exports.getCmpdRegEntityByCode
+	app.post '/api/cmpdRegAdmin/:entityType/validateBeforeSave', exports.validateCmpdRegEntityBeforeSave
+	app.post '/api/cmpdRegAdmin/:entityType',  exports.saveCmpdRegEntity
+	app.put '/api/cmpdRegAdmin/:entityType/:id', exports.updateCmpdRegEntity
+	app.delete '/api/cmpdRegAdmin/:entityType/:id', exports.deleteCmpdRegEntity
 
 exports.setupRoutes = (app, loginRoutes) ->
-	app.get '/api/cmpdRegAdmin/vendors/validate/:code', loginRoutes.ensureAuthenticated, exports.validateCmpdRegVendor
-	app.get '/api/cmpdRegAdmin/vendors/codeName/:code', loginRoutes.ensureAuthenticated, exports.getCmpdRegVendorByCode
-	app.get '/api/cmpdRegAdmin/vendors', loginRoutes.ensureAuthenticated, exports.getCmpdRegVendors
-	app.get '/api/cmpdRegAdmin/vendors/search/:searchTerm', loginRoutes.ensureAuthenticated, exports.searchCmpdRegVendors
-	app.post '/api/cmpdRegAdmin/vendors/validateBeforeSave', loginRoutes.ensureAuthenticated, exports.validateCmpdRegVendorBeforeSave
+	app.get '/api/cmpdRegAdmin/:entityType/validate/:code', loginRoutes.ensureAuthenticated, exports.validateCmpdRegEntity
+	app.get '/api/cmpdRegAdmin/:entityType/codeName/:code', loginRoutes.ensureAuthenticated, exports.getCmpdRegEntityByCode
+	app.get '/api/cmpdRegAdmin/:entityType', loginRoutes.ensureAuthenticated, exports.getCmpdRegEntities
+	app.get '/api/cmpdRegAdmin/:entityType/search/:searchTerm', loginRoutes.ensureAuthenticated, exports.searchCmpdRegEntities
+	app.post '/api/cmpdRegAdmin/:entityType/validateBeforeSave', loginRoutes.ensureAuthenticated, exports.validateCmpdRegEntityBeforeSave
 
-	app.get '/api/cmpdRegAdmin/vendors/:id', loginRoutes.ensureAuthenticated, exports.getCmpdRegVendorById
-	app.post '/api/cmpdRegAdmin/vendors', loginRoutes.ensureAuthenticated, exports.saveCmpdRegVendor
-	app.put '/api/cmpdRegAdmin/vendors/:id', loginRoutes.ensureAuthenticated, exports.updateCmpdRegVendor
-	app.delete '/api/cmpdRegAdmin/vendors/:id', loginRoutes.ensureAuthenticated, exports.deleteCmpdRegVendor
+	app.get '/api/cmpdRegAdmin/:entityType/:id', loginRoutes.ensureAuthenticated, exports.getCmpdRegEntityById
+	app.post '/api/cmpdRegAdmin/:entityType', loginRoutes.ensureAuthenticated, exports.saveCmpdRegEntity
+	app.put '/api/cmpdRegAdmin/:entityType/:id', loginRoutes.ensureAuthenticated, exports.updateCmpdRegEntity
+	app.delete '/api/cmpdRegAdmin/:entityType/:id', loginRoutes.ensureAuthenticated, exports.deleteCmpdRegEntity
 
-exports.validateCmpdRegVendor = (req, resp) ->
+exports.validateCmpdRegEntity = (req, resp) ->
 	request = require 'request'
 	config = require '../conf/compiled/conf.js'
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/vendors/validate?code=' + req.params.code
-	console.log 'attempting vendor call to the following route'
-	console.log cmpdRegCall
+	entityType = req.params.entityType
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/#{entityType}/validate?code=' + req.params.code
 	request(
 		method: 'GET'
 		url: cmpdRegCall
 		json: false
 		timeout: 6000000
-	, (error, response, validVendor) =>
+	, (error, response, validEntity) =>
 		if !error
-			console.log validVendor
 			resp.statusCode = response.statusCode
 			resp.setHeader('Content-Type', 'application/json')
-			resp.end validVendor
-			console.log 'done validating the vendor'
+			resp.end validEntity
+			console.log 'done validating the ' + entityType
 		else
-			console.log 'got ajax error trying to do validate vendor'
-			console.log validVendor
-			resp.end JSON.stringify {error: "something went wrong validating the vendor :("}
+			console.log 'got ajax error trying to do validate #{entityType}'
+			console.log validEntity
+			resp.end JSON.stringify {error: "something went wrong validating the #{entityType}"}
 	)
 
-exports.validateCmpdRegVendorBeforeSave = (req, resp) ->
+exports.validateCmpdRegEntityBeforeSave = (req, resp) ->
 	request = require 'request'
 	config = require '../conf/compiled/conf.js'
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/vendors/validateBeforeSave'
-	console.log 'attempting vendor call to the following route --- line 49'
-	console.log cmpdRegCall
-	console.log req.body.data
+	entityType = req.params.entityType
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/#{entityType}/validateBeforeSave'
 	request(
 		method: 'POST'
 		url: cmpdRegCall
@@ -58,27 +54,24 @@ exports.validateCmpdRegVendorBeforeSave = (req, resp) ->
 		timeout: 6000000
 		headers:
 			"Content-Type": 'application/json'
-	, (error, response, validVendor) =>
+	, (error, response, validEntity) =>
 		if !error
-			console.log 'line 60 -- is a valid vendor'
-			console.log validVendor
 			resp.statusCode = response.statusCode
 			resp.setHeader('Content-Type', 'application/json')
-			resp.end JSON.stringify validVendor
+			resp.end JSON.stringify validEntity
 			console.log resp.statusCode
-			console.log 'done validating the vendor'
+			console.log 'done validating the #{entityType}'
 		else
-			console.log 'got ajax error trying to do validate vendor'
-			console.log validVendor
-			resp.end JSON.stringify {error: "something went wrong validating the vendor :("}
+			console.log 'got ajax error trying to do validate #{entityType}'
+			console.log validEntity
+			resp.end JSON.stringify {error: "something went wrong validating the #{entityType} :("}
 	)
 
-exports.getCmpdRegVendorById = (req, resp) ->
+exports.getCmpdRegEntityById = (req, resp) ->
 	request = require 'request'
 	config = require '../conf/compiled/conf.js'
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/vendors/' + req.params.id
-	console.log 'attempting vendor call to the following route'
-	console.log cmpdRegCall
+	entityType = req.params.entityType
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/#{entityType}/' + req.params.id
 	request(
 		method: 'GET'
 		url: cmpdRegCall
@@ -92,17 +85,16 @@ exports.getCmpdRegVendorById = (req, resp) ->
 			resp.json json
 		else
 			resp.statusCode = 404
-			console.log 'got ajax error trying to do find vendor'
+			console.log 'got ajax error trying to do find #{entityType}'
 			console.log json
 			resp.end JSON.stringify {error: "something went wrong :("}
 	)
 
-exports.getCmpdRegVendorByCode = (req, resp) ->
+exports.getCmpdRegEntityByCode = (req, resp) ->
 	request = require 'request'
 	config = require '../conf/compiled/conf.js'
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/vendors/findByCodeEquals?code=' + req.params.code
-	console.log 'attempting vendor call to the following route'
-	console.log cmpdRegCall
+	entityType = req.params.entityType
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/#{entityType}/findByCodeEquals?code=' + req.params.code
 	request(
 		method: 'GET'
 		url: cmpdRegCall
@@ -116,17 +108,16 @@ exports.getCmpdRegVendorByCode = (req, resp) ->
 			resp.json json
 		else
 			resp.statusCode = 404
-			console.log 'got ajax error trying to do find vendor'
+			console.log 'got ajax error trying to do find #{entityType}'
 			console.log json
 			resp.end JSON.stringify {error: "something went wrong :("}
 	)
 
-exports.searchCmpdRegVendors = (req, resp) ->
+exports.searchCmpdRegEntities = (req, resp) ->
 	request = require 'request'
 	config = require '../conf/compiled/conf.js'
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/vendors/search/?searchTerm=' + req.params.searchTerm
-	console.log 'attempting vendor call to the following route'
-	console.log cmpdRegCall
+	entityType = req.params.entityType
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/#{entityType}/search/?searchTerm=' + req.params.searchTerm
 	request(
 		method: 'GET'
 		url: cmpdRegCall
@@ -140,18 +131,17 @@ exports.searchCmpdRegVendors = (req, resp) ->
 			resp.json json
 		else
 			resp.statusCode = 404
-			console.log 'got ajax error trying to do find vendor'
+			console.log 'got ajax error trying to do find #{entityType}'
 			console.log json
 			resp.end JSON.stringify {error: "something went wrong :("}
 	)
 
 
-exports.getCmpdRegVendors = (req, resp) ->
+exports.getCmpdRegEntities = (req, resp) ->
 	request = require 'request'
 	config = require '../conf/compiled/conf.js'
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/vendors'
-	console.log 'attempting vendor call to the following route'
-	console.log cmpdRegCall
+	entityType = req.params.entityType
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/#{entityType}'
 	request(
 		method: 'GET'
 		url: cmpdRegCall
@@ -164,18 +154,16 @@ exports.getCmpdRegVendors = (req, resp) ->
 			resp.setHeader('Content-Type', 'application/json')
 			resp.json json
 		else
-			console.log 'got ajax error trying to do get vendors'
+			console.log 'got ajax error trying to do get #{entityType}s'
 			console.log json
 			resp.end JSON.stringify {error: "something went wrong :("}
 	)
 
-exports.saveCmpdRegVendor = (req, resp) ->
+exports.saveCmpdRegEntity = (req, resp) ->
 	request = require 'request'
 	config = require '../conf/compiled/conf.js'
-	console.log "line 134 --- exports.saveCmpdRegVendor"
-	console.log JSON.stringify req.body
-
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/vendors'
+	entityType = req.params.entityType
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/#{entityType}'
 	request(
 		method: 'POST'
 		url: cmpdRegCall
@@ -189,18 +177,17 @@ exports.saveCmpdRegVendor = (req, resp) ->
 			resp.setHeader('Content-Type', 'plain/text')
 			resp.json json
 		else
-			console.log 'got ajax error trying to save the vendor'
+			console.log 'got ajax error trying to save the #{entityType}'
 			console.log json
 			resp.statusCode = 500
-			resp.end "Error trying to save vendor: " + error;
+			resp.end "Error trying to save #{entityType}: " + error;
 	)
 
-exports.updateCmpdRegVendor = (req, resp) ->
+exports.updateCmpdRegEntity = (req, resp) ->
 	request = require 'request'
 	config = require '../conf/compiled/conf.js'
-	console.log "exports.updateCmpdRegVendor"
-
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/vendors'
+	entityType = req.params.entityType
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/#{entityType}'
 	request(
 		method: 'PUT'
 		url: cmpdRegCall
@@ -214,18 +201,17 @@ exports.updateCmpdRegVendor = (req, resp) ->
 			resp.setHeader('Content-Type', 'plain/text')
 			resp.json json
 		else
-			console.log 'got ajax error trying to update vendor'
+			console.log 'got ajax error trying to update #{entityType}'
 			console.log json
 			resp.statusCode = 500
-			resp.end "Error trying to update vendor: " + error;
+			resp.end "Error trying to update #{entityType}: " + error;
 	)
 
-exports.deleteCmpdRegVendor = (req, resp) ->
+exports.deleteCmpdRegEntity = (req, resp) ->
 	request = require 'request'
 	config = require '../conf/compiled/conf.js'
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/vendors/' + req.params.id
-	console.log 'attempting vendor call to the following route'
-	console.log cmpdRegCall
+	entityType = req.params.entityType
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/#{entityType}/' + req.params.id
 	request(
 		method: 'DELETE'
 		url: cmpdRegCall
@@ -239,7 +225,7 @@ exports.deleteCmpdRegVendor = (req, resp) ->
 			resp.json json
 		else
 			resp.statusCode = 404
-			console.log 'got ajax error trying to delete vendor'
+			console.log 'got ajax error trying to delete #{entityType}'
 			console.log json
 			resp.end JSON.stringify {error: "something went wrong :("}
 	)
