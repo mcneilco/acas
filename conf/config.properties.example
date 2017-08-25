@@ -402,6 +402,12 @@ client.entity.notebook.require=true
 client.entity.notebookPage.save=true
 client.entity.notebookPage.require=false
 
+#Config for whether scientist is editable for protocols and experiments
+client.entity.scientist.editable=true
+
+#Config for default protocol/experiment status
+client.entity.status.default=created
+
 # Protocols and experiments which should be hidden (to non-admin users) in the protocol/expt browser when the status is in the config below
 client.entity.hideStatuses=["deleted"]
 
