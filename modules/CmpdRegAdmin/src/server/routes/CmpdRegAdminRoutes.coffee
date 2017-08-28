@@ -23,21 +23,21 @@ exports.validateCmpdRegEntity = (req, resp) ->
 	request = require 'request'
 	config = require '../conf/compiled/conf.js'
 	entityType = req.params.entityType
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/#{entityType}/validate?code=' + req.params.code
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + "#{entityType}/validate?code=" + req.params.code
 	request(
 		method: 'GET'
 		url: cmpdRegCall
 		json: false
 		timeout: 6000000
 	, (error, response, validEntity) =>
-		if !error
+		if !error and !validEntity.startsWith('<')
 			resp.statusCode = response.statusCode
 			resp.setHeader('Content-Type', 'application/json')
 			resp.end validEntity
-			console.log 'done validating the ' + entityType
+			console.log "done validating the #{entityType} testString"
 		else
 			console.log 'got ajax error trying to do validate #{entityType}'
-			console.log validEntity
+			resp.statusCode = 500
 			resp.end JSON.stringify {error: "something went wrong validating the #{entityType}"}
 	)
 
@@ -45,7 +45,8 @@ exports.validateCmpdRegEntityBeforeSave = (req, resp) ->
 	request = require 'request'
 	config = require '../conf/compiled/conf.js'
 	entityType = req.params.entityType
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/#{entityType}/validateBeforeSave'
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + "#{entityType}/validateBeforeSave"
+	console.log cmpdRegCall
 	request(
 		method: 'POST'
 		url: cmpdRegCall
@@ -55,15 +56,14 @@ exports.validateCmpdRegEntityBeforeSave = (req, resp) ->
 		headers:
 			"Content-Type": 'application/json'
 	, (error, response, validEntity) =>
-		if !error
+		if !error and !validEntity.toString().startsWith('<')
 			resp.statusCode = response.statusCode
 			resp.setHeader('Content-Type', 'application/json')
 			resp.end JSON.stringify validEntity
-			console.log resp.statusCode
-			console.log 'done validating the #{entityType}'
 		else
-			console.log 'got ajax error trying to do validate #{entityType}'
+			console.error "got ajax error trying to do validate #{entityType}"
 			console.log validEntity
+			resp.statusCode = 500
 			resp.end JSON.stringify {error: "something went wrong validating the #{entityType} :("}
 	)
 
@@ -71,7 +71,7 @@ exports.getCmpdRegEntityById = (req, resp) ->
 	request = require 'request'
 	config = require '../conf/compiled/conf.js'
 	entityType = req.params.entityType
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/#{entityType}/' + req.params.id
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + "#{entityType}/" + req.params.id
 	request(
 		method: 'GET'
 		url: cmpdRegCall
@@ -85,7 +85,7 @@ exports.getCmpdRegEntityById = (req, resp) ->
 			resp.json json
 		else
 			resp.statusCode = 404
-			console.log 'got ajax error trying to do find #{entityType}'
+			console.error "got ajax error trying to do find #{entityType}"
 			console.log json
 			resp.end JSON.stringify {error: "something went wrong :("}
 	)
@@ -94,7 +94,7 @@ exports.getCmpdRegEntityByCode = (req, resp) ->
 	request = require 'request'
 	config = require '../conf/compiled/conf.js'
 	entityType = req.params.entityType
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/#{entityType}/findByCodeEquals?code=' + req.params.code
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + "#{entityType}/findByCodeEquals?code=" + req.params.code
 	request(
 		method: 'GET'
 		url: cmpdRegCall
@@ -117,7 +117,8 @@ exports.searchCmpdRegEntities = (req, resp) ->
 	request = require 'request'
 	config = require '../conf/compiled/conf.js'
 	entityType = req.params.entityType
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/#{entityType}/search/?searchTerm=' + req.params.searchTerm
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + "#{entityType}/search/?searchTerm=" + req.params.searchTerm
+	console.debug cmpdRegCall
 	request(
 		method: 'GET'
 		url: cmpdRegCall
@@ -141,7 +142,7 @@ exports.getCmpdRegEntities = (req, resp) ->
 	request = require 'request'
 	config = require '../conf/compiled/conf.js'
 	entityType = req.params.entityType
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/#{entityType}'
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + "#{entityType}"
 	request(
 		method: 'GET'
 		url: cmpdRegCall
@@ -154,8 +155,9 @@ exports.getCmpdRegEntities = (req, resp) ->
 			resp.setHeader('Content-Type', 'application/json')
 			resp.json json
 		else
-			console.log 'got ajax error trying to do get #{entityType}s'
+			console.log "got ajax error trying to do get #{entityType}"
 			console.log json
+			resp.statusCode = 404
 			resp.end JSON.stringify {error: "something went wrong :("}
 	)
 
@@ -163,7 +165,7 @@ exports.saveCmpdRegEntity = (req, resp) ->
 	request = require 'request'
 	config = require '../conf/compiled/conf.js'
 	entityType = req.params.entityType
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/#{entityType}'
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + "#{entityType}"
 	request(
 		method: 'POST'
 		url: cmpdRegCall
@@ -173,11 +175,11 @@ exports.saveCmpdRegEntity = (req, resp) ->
 		headers:
 			"Content-Type": 'application/json'
 	, (error, response, json) =>
-		if !error
+		if !error and !json.toString().startsWith('<')
 			resp.setHeader('Content-Type', 'plain/text')
 			resp.json json
 		else
-			console.log 'got ajax error trying to save the #{entityType}'
+			console.log "got ajax error trying to save the #{entityType}"
 			console.log json
 			resp.statusCode = 500
 			resp.end "Error trying to save #{entityType}: " + error;
@@ -187,7 +189,7 @@ exports.updateCmpdRegEntity = (req, resp) ->
 	request = require 'request'
 	config = require '../conf/compiled/conf.js'
 	entityType = req.params.entityType
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/#{entityType}'
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + "#{entityType}"
 	request(
 		method: 'PUT'
 		url: cmpdRegCall
@@ -197,11 +199,11 @@ exports.updateCmpdRegEntity = (req, resp) ->
 		headers:
 			"Content-Type": 'application/json'
 	, (error, response, json) =>
-		if !error
+		if !error and response.statusCode == 200
 			resp.setHeader('Content-Type', 'plain/text')
 			resp.json json
 		else
-			console.log 'got ajax error trying to update #{entityType}'
+			console.log "got ajax error trying to update #{entityType}"
 			console.log json
 			resp.statusCode = 500
 			resp.end "Error trying to update #{entityType}: " + error;
@@ -211,7 +213,7 @@ exports.deleteCmpdRegEntity = (req, resp) ->
 	request = require 'request'
 	config = require '../conf/compiled/conf.js'
 	entityType = req.params.entityType
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/#{entityType}/' + req.params.id
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + "#{entityType}/" + req.params.id
 	request(
 		method: 'DELETE'
 		url: cmpdRegCall
@@ -225,7 +227,7 @@ exports.deleteCmpdRegEntity = (req, resp) ->
 			resp.json json
 		else
 			resp.statusCode = 404
-			console.log 'got ajax error trying to delete #{entityType}'
+			console.log "got ajax error trying to delete #{entityType}"
 			console.log json
 			resp.end JSON.stringify {error: "something went wrong :("}
 	)

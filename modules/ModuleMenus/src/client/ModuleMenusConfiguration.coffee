@@ -63,4 +63,26 @@ window.ModuleMenusConfiguration =
 		mainControllerClassName: "SystemTestController"
 		autoLaunchName:"system_test"
 		requireUserRoles: []
+	,
+		isHeader: true
+		menuName: "CmpdReg Admin"
+		requireUserRoles: []
+	,
+		isHeader: false
+		menuName: "CmpdReg Vendors"
+		mainControllerClassName: "VendorBrowserController"
+		autoLaunchName: "vendor_browser"
+		requireUserRoles: []
+	,
+		isHeader: false
+		menuName: "CmpdReg Stereo Categories"
+		mainControllerClassName: "StereoCategoryBrowserController"
+		autoLaunchName: "stereo_category_browser"
+		requireUserRoles: []
+	,
+		isHeader: false
+		menuName: "CmpdReg Scientists"
+		mainControllerClassName: "ScientistBrowserController"
+		autoLaunchName: "scientist_browser"
+		requireUserRoles: []
 	]
