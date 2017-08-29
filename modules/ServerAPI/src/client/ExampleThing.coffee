@@ -234,6 +234,8 @@ class window.ExampleThingController extends AbstractThingFormController
 		"click .bv_saveThing": "handleUpdateThing"
 
 	initialize: =>
+		@lockEditingForSessionKey = 'codeName'
+
 		@hasRendered = false
 		if window.AppLaunchParams.moduleLaunchParams?
 			if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
@@ -263,6 +265,8 @@ class window.ExampleThingController extends AbstractThingFormController
 		@
 
 	renderModelContent: ->
+		@socket.emit 'editLockEntity', @errorOwnerName, @model.get(@lockEditingForSessionKey)
+
 		codeName = @model.get('codeName')
 		@$('.bv_thingCode').val(codeName)
 		@$('.bv_thingCode').html(codeName)

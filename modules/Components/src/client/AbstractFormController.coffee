@@ -6,6 +6,15 @@ class window.AbstractFormController extends Backbone.View
 
 	formFieldDefinitions: []
 
+
+#	Setup edit lock check for the user session, form and entity identifier
+#	disable feature if set to null
+#	Override this in initilize() give model key for entity ID like 'codeName'
+#	Form subclass must send request to lock when it has the id in hand
+#	@socket.emit 'editLockEntity', @errorOwnerName, @model.get(@lockEditingForSessionKey)
+#	This is safe to call repeatedly
+	lockEditingForSessionKey: null
+
 	show: ->
 		$(@el).show()
 
@@ -28,6 +37,9 @@ class window.AbstractFormController extends Backbone.View
 	setBindings: ->
 		@model.on 'invalid', @validationError
 		@model.on 'change', @handleModelChange
+		if @lockEditingForSessionKey?
+			@socket = io '/formController:connected'
+			@socket.on 'editLockRequestResult', @handleEditLockRequestResult
 
 	validationError: =>
 		errors = @model.validationError
@@ -54,6 +66,8 @@ class window.AbstractFormController extends Backbone.View
 			@trigger 'valid'
 		else
 			@trigger 'invalid'
+		if @lockEditingForSessionKey?
+			@socket.emit 'updateEditLock', @errorOwnerName, @model.get(@lockEditingForSessionKey)
 
 	disableAllInputs: ->
 		@$('input').not('.dontdisable').attr 'disabled', 'disabled'
@@ -79,6 +93,13 @@ class window.AbstractFormController extends Backbone.View
 		@$(".bv_group_tags input").prop "placeholder", "Add tags"
 		@$(".bv_group_tags div.bootstrap-tagsinput").css "background-color", "#ffffff"
 		@$(".bv_group_tags input").css "background-color", "transparent"
+
+	handleEditLockRequestResult: (result) =>
+		if !result.okToEdit
+			updateDate = new Date	result.lastActivityDate
+			alert "This entity is being edited by #{result.currentEditor}. This was last edited #{updateDate}. After they close the form, reload to edit"
+			@disableAllInputs()
+
 
 
 class window.AbstractThingFormController extends AbstractFormController
