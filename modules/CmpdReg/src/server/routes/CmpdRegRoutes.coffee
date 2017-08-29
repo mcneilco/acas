@@ -645,9 +645,6 @@ exports.updateParent = (req, resp) ->
 	
 	
 exports.updateLotMetadata = (req, resp) ->
-	grantedRoles = _.map req.user.roles, (role) ->
-		role.roleEntry.roleName
-	console.log grantedRoles
 	request = require 'request'
 	config = require '../conf/compiled/conf.js'
 	console.log 'in update lot metaData'
