@@ -334,7 +334,7 @@ class window.ExampleThingController extends AbstractThingFormController
 
 	handleEditLockAvailable: =>
 		super()
-		alert("Document is avaialble to edit. Push OK to attempt to edit (you may not the first requestor)")
+		alert("Document is available to edit. Click OK to attempt to edit (you may be not the first requestor)")
 		@model.fetch()
 
 

@@ -102,7 +102,7 @@ class window.AbstractFormController extends Backbone.View
 	handleEditLockRequestResult: (result) =>
 		if !result.okToEdit
 			updateDate = new Date	result.lastActivityDate
-			alert "This entity is being edited by #{result.currentEditor}. This was last edited #{updateDate}. After they close the form, reload to edit. The form will be displayed read-only."
+			alert "This is being edited by #{result.currentEditor}. It was last edited at #{updateDate}. If you leave this tab open, you will be notified when it becomes available. For now, the form will be displayed as read-only."
 			@disableAllInputs()
 			@trigger 'editLocked'
 		else
