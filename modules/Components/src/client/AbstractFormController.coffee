@@ -10,6 +10,8 @@ class window.AbstractFormController extends Backbone.View
 #	Setup edit lock check for the user session, form and entity identifier
 #	disable feature if set to null
 #	Override this in initilize() give model key for entity ID like 'codeName'
+# Form must open socket, probably during initialize
+# @openFormControllerSocket()
 #	Form subclass must send request to lock when it has the id in hand
 #	@socket.emit 'editLockEntity', @errorOwnerName, @model.get(@lockEditingForSessionKey)
 #	This is safe to call repeatedly
@@ -37,9 +39,6 @@ class window.AbstractFormController extends Backbone.View
 	setBindings: ->
 		@model.on 'invalid', @validationError
 		@model.on 'change', @handleModelChange
-		if @lockEditingForSessionKey?
-			@socket = io '/formController:connected'
-			@socket.on 'editLockRequestResult', @handleEditLockRequestResult
 
 	validationError: =>
 		errors = @model.validationError
@@ -94,13 +93,24 @@ class window.AbstractFormController extends Backbone.View
 		@$(".bv_group_tags div.bootstrap-tagsinput").css "background-color", "#ffffff"
 		@$(".bv_group_tags input").css "background-color", "transparent"
 
+	openFormControllerSocket: ->
+		if @lockEditingForSessionKey?
+			@socket = io '/formController:connected'
+			@socket.on 'editLockRequestResult', @handleEditLockRequestResult
+			@socket.on 'editLockAvailable', @handleEditLockAvailable
+
 	handleEditLockRequestResult: (result) =>
 		if !result.okToEdit
 			updateDate = new Date	result.lastActivityDate
-			alert "This entity is being edited by #{result.currentEditor}. This was last edited #{updateDate}. After they close the form, reload to edit"
+			alert "This entity is being edited by #{result.currentEditor}. This was last edited #{updateDate}. After they close the form, reload to edit. The form will be displayed read-only."
 			@disableAllInputs()
+			@trigger 'editLocked'
+		else
+			@trigger 'editUnLocked'
 
-
+	handleEditLockAvailable: =>
+		@trigger 'editUnLocked'
+		#you should extend this
 
 class window.AbstractThingFormController extends AbstractFormController
 

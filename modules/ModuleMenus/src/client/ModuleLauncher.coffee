@@ -7,6 +7,7 @@ class window.ModuleLauncher extends Backbone.Model
 		isLoaded: false
 		isActive: false
 		isDirty: false
+		isLocked: false
 		autoLaunchName: null
 
 	requestActivation: ->
@@ -54,6 +55,11 @@ class window.ModuleLauncherMenuController extends Backbone.View
 		else
 			@$('.bv_isDirty').hide()
 			window.conf.leaveACASMessage = "There are no unsaved changes."
+
+		if @model.get('isLocked')
+			@$('.bv_isLocked').show()
+		else
+			@$('.bv_isLocked').hide()
 
 		if @model.has 'requireUserRoles'
 			userRoles = []
@@ -165,6 +171,12 @@ class window.ModuleLauncherController extends Backbone.View
 					@model.set isDirty: true
 				@moduleController.bind 'amClean', =>
 					@model.set isDirty: false
+				@moduleController.bind 'editLocked', =>
+					console.log "got editLocked trigger"
+					@model.set isLocked: true
+				@moduleController.bind 'editUnLocked', =>
+					console.log "got editUnLocked trigger"
+					@model.set isLocked: false
 				@moduleController.render()
 				@model.set isLoaded: true
 
