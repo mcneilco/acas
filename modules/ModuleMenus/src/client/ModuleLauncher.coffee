@@ -3,7 +3,7 @@ class window.ModuleLauncher extends Backbone.Model
 	defaults:
 		isHeader: false
 		menuName: "Menu Name Replace Me"
-		mainControllerClassName: "controllerClassNameReplaceMe"
+		mainControllerClassName: null
 		isLoaded: false
 		isActive: false
 		isDirty: false
@@ -46,36 +46,43 @@ class window.ModuleLauncherMenuController extends Backbone.View
 	render: =>
 		$(@el).empty()
 		$(@el).html(@template(@model.toJSON()))
-		@$('.bv_menuName').addClass 'bv_launch_'+@model.get('autoLaunchName')
-		if @model.get('isActive') then $(@el).addClass "active"
-		else $(@el).removeClass "active"
+		if @model.get('mainControllerClassName')?
+			@$('.bv_menuName').addClass 'bv_launch_'+@model.get('autoLaunchName')
+			if @model.get('isActive') then $(@el).addClass "active"
+			else $(@el).removeClass "active"
 
-		@$('.bv_isLoaded').hide()
-		if @model.get('isDirty')
-			@$('.bv_isDirty').show()
-			window.conf.leaveACASMessage = "WARNING: There are unsaved changes."
+			@$('.bv_isLoaded').hide()
+			if @model.get('isDirty')
+				@$('.bv_isDirty').show()
+				window.conf.leaveACASMessage = "WARNING: There are unsaved changes."
+			else
+				@$('.bv_isDirty').hide()
+				window.conf.leaveACASMessage = "There are no unsaved changes."
+			if @model.get('isLocked')
+				@$('.bv_isLocked').show()
+			else
+				@$('.bv_isLocked').hide()
+
+			if @model.has 'requireUserRoles'
+				userRoles = []
+				_.each @model.get('requireUserRoles'), (role) =>
+					if role.indexOf(',')
+						roles = role.split(',')
+						_.each roles, (r) =>
+							userRoles.push $.trim(r)
+					else
+						userRoles.push r
+				if !UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, userRoles
+					$(@el).attr 'title', "User is not authorized to use this feature"
+					@$('.bv_menuName').hide()
+			#				@$('.bv_menuName_disabled').show()
+
 		else
+			@$('.bv_menuName').hide()
+			@$('.bv_menuName_disabled').show()
+			@$('.bv_isLoaded').hide()
 			@$('.bv_isDirty').hide()
-			window.conf.leaveACASMessage = "There are no unsaved changes."
-
-		if @model.get('isLocked')
-			@$('.bv_isLocked').show()
-		else
 			@$('.bv_isLocked').hide()
-
-		if @model.has 'requireUserRoles'
-			userRoles = []
-			_.each @model.get('requireUserRoles'), (role) =>
-				if role.indexOf(',')
-					roles = role.split(',')
-					_.each roles, (r) =>
-						userRoles.push $.trim(r)
-				else
-					userRoles.push r			
-			if !UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, userRoles
-				$(@el).attr 'title', "User is not authorized to use this feature"
-				@$('.bv_menuName').hide()
-		#				@$('.bv_menuName_disabled').show()
 
 		@
 
@@ -237,10 +244,8 @@ class window.ModuleLauncherController extends Backbone.View
 				@moduleController.bind 'amClean', =>
 					@model.set isDirty: false
 				@moduleController.bind 'editLocked', =>
-					console.log "got editLocked trigger"
 					@model.set isLocked: true
 				@moduleController.bind 'editUnLocked', =>
-					console.log "got editUnLocked trigger"
 					@model.set isLocked: false
 				@moduleController.render()
 				@model.set isLoaded: true
