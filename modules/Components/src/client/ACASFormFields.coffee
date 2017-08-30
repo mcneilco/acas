@@ -415,7 +415,10 @@ class window.ACASFormLSHTMLClobValueFieldController extends ACASFormAbstractFiel
 			ignored: true
 
 	renderModelContent: =>
-		@editor.setContent @getModel().get('value')
+		if @editor?
+			@editor.setContent @getModel().get('value')
+		else
+			@contentToLoad = @getModel().get('value')
 		super()
 
 	setupTinyMCE: ->
@@ -429,14 +432,24 @@ class window.ACASFormLSHTMLClobValueFieldController extends ACASFormAbstractFiel
 			setup: (editor) =>
 				editor.on 'init', (e) =>
 					@editor = editor
+					if @contentToLoad?
+						@editor.setContent @contentToLoad
+					if @disableEditor?
+						@editor.getBody().setAttribute('contenteditable', @disableEditor)
 				editor.on 'change', (e) =>
 					@textChanged editor.getContent()
 
 	disableInput: ->
-		@editor.getBody().setAttribute('contenteditable', false)
+		if @editor?
+			@editor.getBody().setAttribute('contenteditable', false)
+		else
+			@disableEditor = true
 
 	enableInput: ->
-		@editor.getBody().setAttribute('contenteditable', true)
+		if @editor?
+			@editor.getBody().setAttribute('contenteditable', true)
+		else
+			@disableEditor = false
 
 class window.ACASFormLSStringValueFieldController extends ACASFormAbstractFieldController
 	###
