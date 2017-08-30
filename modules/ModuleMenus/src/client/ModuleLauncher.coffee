@@ -10,6 +10,7 @@ class window.ModuleLauncher extends Backbone.Model
 		isLocked: false
 		autoLaunchName: null
 		collapsible: false
+		externalLink: null
 
 	requestActivation: ->
 		if @get('externalLink')?
@@ -46,7 +47,7 @@ class window.ModuleLauncherMenuController extends Backbone.View
 	render: =>
 		$(@el).empty()
 		$(@el).html(@template(@model.toJSON()))
-		if @model.get('mainControllerClassName')?
+		if @model.get('mainControllerClassName')? or @model.get('externalLink')?
 			@$('.bv_menuName').addClass 'bv_launch_'+@model.get('autoLaunchName')
 			if @model.get('isActive') then $(@el).addClass "active"
 			else $(@el).removeClass "active"
