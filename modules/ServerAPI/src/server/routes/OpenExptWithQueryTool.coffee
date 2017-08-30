@@ -32,6 +32,9 @@ exports.redirectToQueryToolForExperiment = (req, resp) ->
 		url = url.replace /(\r\n|\n|\r)/gm,""
 		console.log "redirecting to #{url}"
 		resp.redirect '/dataViewer/filterByExpt/'+req.query.experiment
+	else if tool is 'CurveCurator'
+		url = '/curveCurator/'+encodeURIComponent(req.query.experiment)
+		resp.redirect url
 	else
 # Could later add customer specific call here
 		resp.status(500).send('Invalid viewer tool')
