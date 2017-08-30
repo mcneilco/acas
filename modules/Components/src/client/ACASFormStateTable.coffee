@@ -254,21 +254,23 @@ class window.ACASFormStateTableController extends Backbone.View
 	handleBeforeChange: (changes, source) =>
 		prop = changes[0][1]
 		newVal = changes[0][3]
-		parsedDate = newVal.split(/([ ,./-])\w/g)
 		dateDef = _.filter @tableDef.values, (def) ->
 			def.modelDefaults.type == 'dateValue' and def.modelDefaults.kind == prop
-		if dateDef.length == 1 and parsedDate.length < 5
-			currentYear = new Date().getFullYear()
-			newVal = currentYear+"-"+newVal
-			changes[0][3] = newVal
+		if dateDef.length == 1
+			parsedDate = newVal.split(/([ ,./-])\w/g)
+			if parsedDate.length < 5
+				currentYear = new Date().getFullYear()
+				newVal = currentYear+"-"+newVal
+				changes[0][3] = newVal
 
 	handleBeforeValidate: (value, row, prop, sources) =>
-		parsedDate = value.split(/([ ,./-])\w/g)
 		dateDef = _.filter @tableDef.values, (def) ->
 			def.modelDefaults.type == 'dateValue' and def.modelDefaults.kind == prop
-		if dateDef.length == 1 and parsedDate.length < 5
-			currentYear = new Date().getFullYear()
-			value = currentYear+"-"+value
+		if dateDef.length == 1
+			parsedDate = value.split(/([ ,./-])\w/g)
+			if parsedDate.length < 5
+				currentYear = new Date().getFullYear()
+				value = currentYear+"-"+value
 
 	handleCellChanged: (changes, source) =>
 		if changes?
