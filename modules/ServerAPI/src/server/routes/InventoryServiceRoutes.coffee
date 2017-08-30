@@ -1367,7 +1367,6 @@ exports.moveToLocationInternal = (input, callCustom, updateLocationHistory, call
 				#add the call to updateContainerHistoryLogs here...
 				console.debug "response statusCode: #{response.statusCode}"
 				if !error
-					console.log 'container down here...did it pull through??'
 					console.log input[0].containerCodeName
 					if updateLocationHistory
 						exports.updateContainerHistoryLogsInternal(input, (json, statusCode) ->
