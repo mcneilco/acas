@@ -319,15 +319,15 @@
 				codeType: "experiment"
 				codeKind: "review status"
 				codeOrigin: "ACAS DDICT"
-				code: "reviewed ok"
-				name: "Reviewed - OK"
+				code: "read and understood"
+				name: "Read and Understood"
 				ignored: false
 			,
 				codeType: "experiment"
 				codeKind: "review status"
 				codeOrigin: "ACAS DDICT"
-				code: "reviewed not ok"
-				name: "Reviewed - Not OK"
+				code: "needs attention"
+				name: "Needs Attention"
 				ignored: false
 			,
 				codeType: "analysis"

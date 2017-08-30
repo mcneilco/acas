@@ -710,10 +710,6 @@ class window.ExperimentBaseController extends BaseEntityController
 	handleCompletionDateIconClicked: =>
 		@$( ".bv_completionDate" ).datepicker( "show" )
 
-
-	updateEditable: =>
-		super()
-
 	handleSaveClicked: =>
 		@$('.bv_saveFailed').hide()
 		if @model.isNew() and @$('.bv_exptNameChkbx').is(":checked")

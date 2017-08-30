@@ -159,6 +159,8 @@ class window.ACASFormStateTableController extends Backbone.View
 
 	setupHot: ->
 		@hot = new Handsontable @$('.bv_tableWrapper')[0],
+			beforeChange: @handleBeforeChange
+			beforeValidate: @handleBeforeValidate
 			afterChange: @handleCellChanged
 			afterCreateRow: @handleRowCreated
 			minSpareRows: 1,
@@ -248,6 +250,25 @@ class window.ACASFormStateTableController extends Backbone.View
 			return rowValues[0].get('numericValue')
 		else
 			return null
+
+	handleBeforeChange: (changes, source) =>
+		prop = changes[0][1]
+		newVal = changes[0][3]
+		parsedDate = newVal.split(/([ ,./-])\w/g)
+		dateDef = _.filter @tableDef.values, (def) ->
+			def.modelDefaults.type == 'dateValue' and def.modelDefaults.kind == prop
+		if dateDef.length == 1 and parsedDate.length < 5
+			currentYear = new Date().getFullYear()
+			newVal = currentYear+"-"+newVal
+			changes[0][3] = newVal
+
+	handleBeforeValidate: (value, row, prop, sources) =>
+		parsedDate = value.split(/([ ,./-])\w/g)
+		dateDef = _.filter @tableDef.values, (def) ->
+			def.modelDefaults.type == 'dateValue' and def.modelDefaults.kind == prop
+		if dateDef.length == 1 and parsedDate.length < 5
+			currentYear = new Date().getFullYear()
+			value = currentYear+"-"+value
 
 	handleCellChanged: (changes, source) =>
 		if changes?
