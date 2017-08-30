@@ -1333,15 +1333,18 @@ exports.updateAmountInWellInternal = (updateAmountInfo, callback) ->
 
 exports.moveToLocation = (req, resp) ->
 	req.setTimeout 86400000
-	exports.moveToLocationInternal req.body, req.query.callCustom, (json, statusCode) ->
+	exports.moveToLocationInternal req.body, req.query.callCustom, req.query.updateLocationHistory, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
 
-exports.moveToLocationInternal = (input, callCustom, callback) ->
+exports.moveToLocationInternal = (input, callCustom, updateLocationHistory, callback) ->
 	#exports.updateContainerHistoryLogsInternal(input, (json, statusCode) ->
 	# 	console.log 'updated history logs before moving to temp'
 	# )
+		# default for callCustom is true
 		callCustom  = callCustom != "0"
+		# default for updateLocationHistory is false
+		updateLocationHistory = updateLocationHistory == "1"
 		if global.specRunnerTestmode
 			inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 			resp.json inventoryServiceTestJSON.moveToLocationResponse
@@ -1364,24 +1367,28 @@ exports.moveToLocationInternal = (input, callCustom, callback) ->
 				#add the call to updateContainerHistoryLogs here...
 				console.debug "response statusCode: #{response.statusCode}"
 				if !error
-					console.log 'container down here...did it pull through??'
 					console.log input[0].containerCodeName
-					exports.updateContainerHistoryLogsInternal(input, (json, statusCode) ->
-						if callCustom && csUtilities.moveToLocation?
-							console.log "running customer specific server function moveToLocation"
-							csUtilities.moveToLocation input, (customerResponse, statusCode) ->
-								json = _.extend json, customerResponse
-								callback json, statusCode
-						else
-							console.warn "could not find customer specific server function moveToLocation so not running it"
-							callback json, response.statusCode
+					if updateLocationHistory
+						exports.updateContainerHistoryLogsInternal(input, (json, statusCode) ->
+							callback json, statusCode
+							# if callCustom && csUtilities.moveToLocation?
+							# 	console.log "running customer specific server function moveToLocation"
+							# 	csUtilities.moveToLocation input, (customerResponse, statusCode) ->
+							# 		json = _.extend json, customerResponse
+							# 		callback json, statusCode
+							# else
+							# 	console.warn "could not find customer specific server function moveToLocation so not running it"
+							# 	callback json, response.statusCode
+							# )
 						)
+					else
+						callback json, response.statusCode
 				else
 					console.error 'got ajax error trying to get moveToLocation'
 					console.error error
 					console.error json
 					console.error response
-					callback JSON.stringify("updateWellContent failed"), 500
+					callback JSON.stringify("moveToLocation failed"), 500
 			)
 		#)
 

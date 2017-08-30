@@ -74,7 +74,11 @@ class window.BaseEntity extends Backbone.Model
 		valueKind = subclass + " status"
 		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "codeValue", valueKind
 		if status.get('codeValue') is undefined or status.get('codeValue') is ""
-			status.set codeValue: "created"
+			if window.conf.entity?.status?.default?
+				defaultStatus = window.conf.entity.status.default
+			else 
+				defaultStatus = "created"
+			status.set codeValue: defaultStatus
 			status.set codeType: subclass
 			status.set codeKind: "status"
 			status.set codeOrigin: "ACAS DDICT"
@@ -238,7 +242,11 @@ class window.BaseEntity extends Backbone.Model
 			recordedBy: window.AppLaunchParams.loginUser.username
 			recordedDate: new Date().getTime()
 			version: 0
-		copiedEntity.getStatus().set codeValue: "created"
+		if window.conf.entity?.status?.default?
+			defaultStatus = window.conf.entity.status.default
+		else
+			defaultStatus = "created"
+		copiedEntity.getStatus().set codeValue: defaultStatus
 		copiedEntity.getNotebook().set stringValue: ""
 		copiedEntity.getNotebookPage().set stringValue: ""
 		copiedEntity.getScientist().set codeValue: "unassigned"
@@ -559,6 +567,12 @@ class window.BaseEntityController extends AbstractThingFormController #TODO: che
 		else
 			unless @model.getStatus().get('codeValue') is "deleted"
 				@$('.bv_status').removeAttr("disabled")
+		if window.conf.entity?.scientist?.editable? and window.conf.entity.scientist.editable is false
+			@$('.bv_scientist').attr 'disabled', 'disabled'
+		else
+			@$('.bv_scientist').removeAttr 'disabled'
+
+
 		@model.trigger 'statusChanged'
 
 	beginSave: =>
