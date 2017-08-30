@@ -62,27 +62,27 @@ class window.ModuleLauncherMenuController extends Backbone.View
 				@$('.bv_isLocked').show()
 			else
 				@$('.bv_isLocked').hide()
-
-			if @model.has 'requireUserRoles'
-				userRoles = []
-				_.each @model.get('requireUserRoles'), (role) =>
-					if role.indexOf(',')
-						roles = role.split(',')
-						_.each roles, (r) =>
-							userRoles.push $.trim(r)
-					else
-						userRoles.push r
-				if !UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, userRoles
-					$(@el).attr 'title', "User is not authorized to use this feature"
-					@$('.bv_menuName').hide()
-			#				@$('.bv_menuName_disabled').show()
-
 		else
 			@$('.bv_menuName').hide()
 			@$('.bv_menuName_disabled').show()
 			@$('.bv_isLoaded').hide()
 			@$('.bv_isDirty').hide()
 			@$('.bv_isLocked').hide()
+
+		if @model.has 'requireUserRoles'
+			userRoles = []
+			_.each @model.get('requireUserRoles'), (role) =>
+				if role.indexOf(',')
+					roles = role.split(',')
+					_.each roles, (r) =>
+						userRoles.push $.trim(r)
+				else
+					userRoles.push r
+			if !UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, userRoles
+				$(@el).attr 'title', "User is not authorized to use this feature"
+				@$('.bv_menuName').hide()
+				@$('.bv_menuName_disabled').hide()
+
 
 		@
 
