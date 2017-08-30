@@ -1,7 +1,7 @@
 _ = require 'underscore'
 
 exports.setupRoutes = (app, loginRoutes) ->
-	app.get '/api/formController/clearAllLocks', exports.clearAllLocks
+	app.get '/api/formController/clearAllLocks', loginRoutes.ensureAuthenticated, exports.clearAllLocks
 
 global.editLockedEntities = {}
 
