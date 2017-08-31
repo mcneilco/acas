@@ -234,6 +234,7 @@ class window.ExampleThingController extends AbstractThingFormController
 		"click .bv_saveThing": "handleUpdateThing"
 
 	initialize: =>
+		@errorOwnerName = 'ExampleThingController'
 		@lockEditingForSessionKey = 'codeName'
 		@openFormControllerSocket()
 
@@ -248,7 +249,6 @@ class window.ExampleThingController extends AbstractThingFormController
 			@model = new ExampleThingParent()
 			@modelSaveCallback()
 
-		@errorOwnerName = 'ExampleThingController'
 		@setBindings()
 		if @options.readOnly?
 			@readOnly = @options.readOnly
@@ -266,7 +266,8 @@ class window.ExampleThingController extends AbstractThingFormController
 		@
 
 	renderModelContent: ->
-		@socket.emit 'editLockEntity', @errorOwnerName, @model.get(@lockEditingForSessionKey)
+		if !@model.isNew()
+			@socket.emit 'editLockEntity', @errorOwnerName, @model.get(@lockEditingForSessionKey)
 
 		codeName = @model.get('codeName')
 		@$('.bv_thingCode').val(codeName)
