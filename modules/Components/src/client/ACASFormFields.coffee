@@ -558,18 +558,6 @@ class window.ACASFormLSFileValueFieldController extends ACASFormAbstractFieldCon
 
 		@
 
-	handleInputChanged: =>
-		@clearError()
-		@userInputEvent = true
-		value = UtilityFunctions::convertYMDDateToMs(UtilityFunctions::getTrimmedInput(@$('input')))
-		if value == "" || isNaN(value)
-			@setEmptyValue()
-		else
-			@getModel().set
-				value: value
-				ignored: false
-		super()
-
 	setEmptyValue: ->
 		@getModel().set
 			value: null
@@ -611,12 +599,14 @@ class window.ACASFormLSFileValueFieldController extends ACASFormAbstractFieldCon
 			@fileController.on('fileDeleted', @handleFileRemoved) #update model with filename
 
 	handleFileUpload: (nameOnServer) =>
+		@clearError()
 		@getModel().set
 			value: nameOnServer
 			ignored: false
 
 	handleFileRemoved: =>
 		@setEmptyValue()
+		@checkEmptyAndRequired()
 
 	handleDeleteSavedFile: =>
 		@handleFileRemoved()
