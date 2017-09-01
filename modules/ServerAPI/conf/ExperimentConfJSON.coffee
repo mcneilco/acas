@@ -265,6 +265,7 @@
 				codeOrigin: "ACAS DDICT"
 				code: "created"
 				name: "Created"
+				displayOrder: 10
 				ignored: false
 			,
 				codeType: "experiment"
@@ -272,6 +273,7 @@
 				codeOrigin: "ACAS DDICT"
 				code: "in process"
 				name: "In Process"
+				displayOrder: 20
 				ignored: false
 			,
 				codeType: "experiment"
@@ -279,6 +281,7 @@
 				codeOrigin: "ACAS DDICT"
 				code: "complete"
 				name: "Complete"
+				displayOrder: 30
 				ignored: false
 			,
 				codeType: "experiment"
@@ -286,6 +289,7 @@
 				codeOrigin: "ACAS DDICT"
 				code: "approved"
 				name: "Approved"
+				displayOrder: 40
 				ignored: false
 			,
 				codeType: "experiment"
@@ -293,6 +297,7 @@
 				codeOrigin: "ACAS DDICT"
 				code: "rejected"
 				name: "Rejected"
+				displayOrder: 50
 				ignored: false
 			,
 				codeType: "experiment"
@@ -300,6 +305,7 @@
 				codeOrigin: "ACAS DDICT"
 				code: "deleted"
 				name: "Deleted"
+				displayOrder: 60
 				ignored: false
 			,
 				codeType: "experiment"
@@ -307,6 +313,7 @@
 				codeOrigin: "ACAS DDICT"
 				code: "in progress"
 				name: "In Progress"
+				displayOrder: 10
 				ignored: false
 			,
 				codeType: "experiment"
@@ -314,6 +321,7 @@
 				codeOrigin: "ACAS DDICT"
 				code: "ready for review"
 				name: "Ready for Review"
+				displayOrder: 20
 				ignored: false
 			,
 				codeType: "experiment"
@@ -321,6 +329,7 @@
 				codeOrigin: "ACAS DDICT"
 				code: "read and understood"
 				name: "Read and Understood"
+				displayOrder: 30
 				ignored: false
 			,
 				codeType: "experiment"
@@ -328,6 +337,7 @@
 				codeOrigin: "ACAS DDICT"
 				code: "needs attention"
 				name: "Needs Attention"
+				displayOrder: 40
 				ignored: false
 			,
 				codeType: "analysis"

@@ -51,6 +51,13 @@ exports.getCodeTableValues = (req, resp) ->
 			json: true
 		, (error, response, json) =>
 			if !error && response.statusCode == 200
+				if json.length > 0 and !json[0].displayOrder? and json[0].name?
+					json = json.sort (a, b) ->
+						if a.name.toUpperCase() < b.name.toUpperCase()
+							return -1
+						if a.name.toUpperCase() > b.name.toUpperCase()
+							return 1
+						return 0
 				resp.json json
 			else
 				console.log 'got ajax error trying to get code table entries'

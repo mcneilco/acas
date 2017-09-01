@@ -126,8 +126,14 @@ class window.ACASFormStateTableController extends Backbone.View
 				width: if val.fieldSettings.width? then val.fieldSettings.width else 75
 
 			colOpts = data: val.modelDefaults.kind
+			colOpts.readOnly = if val.fieldSettings.readOnly? then val.fieldSettings.readOnly else false
+			colOpts.wordWrap = true
 			if val.modelDefaults.type == 'numericValue'
 				colOpts.type = 'numeric'
+				if val.fieldSettings.fieldFormat?
+					colOpts.format = val.fieldSettings.fieldFormat
+				else
+					colOpts.format = '0.[00]'
 			else if val.modelDefaults.type == 'dateValue'
 				colOpts.type = 'date'
 				colOpts.dateFormat = 'YYYY-MM-DD'
@@ -156,11 +162,15 @@ class window.ACASFormStateTableController extends Backbone.View
 
 				@unitKeyValueMap[val.fieldSettings.unitColumnKey] = val.modelDefaults.kind
 
+		if @tableDef.handleAfterValidate?
+			@handleAfterValidate = @tableDef.handleAfterValidate
+
 	setupHot: ->
 		@hot = new Handsontable @$('.bv_tableWrapper')[0],
 			beforeChange: @handleBeforeChange
 			beforeValidate: @handleBeforeValidate
 			afterChange: @handleCellChanged
+			afterValidate: @handleAfterValidate
 			afterCreateRow: @handleRowCreated
 			minSpareRows: 1,
 			allowInsertRow: true
