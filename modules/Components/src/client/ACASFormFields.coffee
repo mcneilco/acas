@@ -318,6 +318,8 @@ class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractF
 			@queryUrl = @options.queryUrl
 		if @options.placeholder?
 			@placeholder = @options.placeholder
+		if @options.extendedLabel?
+			@extendedLabel = @options.extendedLabel
 
 
 	handleInputChanged: =>
@@ -348,7 +350,10 @@ class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractF
 		@userInputEvent = false
 		if  @getModel()? and @getModel().getItxThing().id?
 			labels = new LabelList @getModel().getItxThing().lsLabels
-			labelText = labels.pickBestNonEmptyLabel().get('labelText')
+			if @extendedLabel? and @extendedLabel
+				labelText = labels.getExtendedNameText()
+			else
+				labelText = labels.pickBestNonEmptyLabel().get('labelText')
 			@thingSelectController.setSelectedCode
 				code: @getModel().getItxThing().codeName
 				label: labelText

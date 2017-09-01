@@ -105,6 +105,21 @@ class window.LabelList extends Backbone.Collection
 			(lab.get('preferred') is false) && (lab.get('lsType') == "name")
 		nonPreferredName[0]
 
+	getExtendedNameText: ->
+		corpNames = @filter (lab) ->
+			!lab.get('ignored') && (lab.get('labelText') != "") && lab.get('lsType').toLowerCase() == "corpname"
+		if corpNames.length > 0
+			bestCorpName = _.max corpNames, (lab) ->
+				rd = lab.get 'recordedDate'
+				(if (rd is "") then rd else -1)
+		names = @filter (lab) ->
+			!lab.get('ignored') && (lab.get('labelText') != "") && lab.get('lsType').toLowerCase() == "name"
+		if names.length > 0
+			bestName = _.max names, (lab) ->
+				rd = lab.get 'recordedDate'
+				(if (rd is "") then rd else -1)
+		return bestCorpName?.get('labelText')+" : "+bestName?.get('labelText')
+
 	setName: (label, currentName) ->
 		if currentName?
 			if currentName.isNew()
