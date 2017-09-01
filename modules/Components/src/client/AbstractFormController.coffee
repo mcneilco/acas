@@ -136,6 +136,7 @@ class window.AbstractThingFormController extends AbstractFormController
 				insertUnassigned: field.fieldSettings.insertUnassigned
 				modelDefaults: field.modelDefaults
 				allowedFileTypes: field.fieldSettings.allowedFileTypes
+				extendedLabel: field.fieldSettings.extendedLabel
 
 			switch field.fieldSettings.fieldType
 				when 'label'
