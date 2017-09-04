@@ -51,6 +51,7 @@ $(function() {
             this.valid = false;
 			this.marvinLoaded = false;
 			this.exportFormat = "mol";
+			this.exportFormat = "mol";
 			if(window.configuration.marvin) {
 				if (window.configuration.marvin.exportFormat) {
 					this.exportFormat = window.configuration.marvin.exportFormat;

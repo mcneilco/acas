@@ -4,6 +4,10 @@ window.ModuleMenusConfiguration =
 		menuName: "Load Data"
 #		collapsible: true
 	,
+#		isHeader: false
+#		menuName: "Chem Struct"
+#		mainControllerClassName: "ACASFormChemicalStructureExampleController"
+#	,
 		isHeader: false
 		menuName: "Experiment Loader"
 		mainControllerClassName: "GenericDataParserController"

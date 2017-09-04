@@ -26,6 +26,11 @@ exports.requiredScripts = [
 	'/lib/spin/js/jquery-spin.js',
 	'/lib/handsontable/dist/handsontable.full.js',
 	'/lib/select2-4.0.2/dist/js/select2.full.js',
+	// Add the following four lines to use MarvinJSChemicalStructureController
+	// '/CmpdReg/marvinjs/js/lib/rainbow/rainbow-custom.min.js',
+	// '/CmpdReg/marvinjs/gui/lib/promise-1.0.0.min.js',
+	// '/CmpdReg/marvinjs/js/marvinjslauncher.js',
+	// '/CmpdReg/client/custom/marvinStructureTemplate.js',
 	'/socket.io/socket.io.js',
 	'/lib/blockUI.js'
 ];
