@@ -83,12 +83,15 @@ $(function() {
 			this.valid = true;
 			this.isEditable = this.options.isEditable;
 
-			this.marvinLoaded = false; // load on demand, not default, to make testing more reliable and fast
+			this.sketcherLoaded = false; // load on demand, not default, to make testing more reliable and fast
 			this.exportFormat = "mol";
 			if(window.configuration.marvin) {
+				this.useMarvin = true;
 				if (window.configuration.marvin.exportFormat) {
 					this.exportFormat = window.configuration.marvin.exportFormat;
 				}
+			} else if(window.configuration.ketcher) {
+				this.useKetcher = true;
 			}
 
 			if ( this.isEditable ) {
@@ -158,7 +161,7 @@ $(function() {
 				this.isosaltEquivListController.updateModel();
 
 				var mol = '';
-				if(this.marvinLoaded && this.$('.structureWrapper').is(':visible')) {
+				if(this.sketcherLoaded && this.$('.structureWrapper').is(':visible')) {
 					self = this;
 					this.marvinSketcherInstance.exportStructure(this.exportFormat).then(function(molecule) {
 						if ( molecule.indexOf("0  0  0  0  0  0  0  0  0  0999")>-1)
@@ -273,27 +276,49 @@ $(function() {
 	  if( this.isEditable) {
 		var self = this;
 		self.$('.saltFormImage').hide();
-		MarvinJSUtil.getEditor("#saltFormMarvinSketch").then(function (sketcherInstance) {
-			self.marvinSketcherInstance = sketcherInstance;
-			if (typeof window.marvinStructureTemplates !== 'undefined') {
-				for (i=0 ; i<window.marvinStructureTemplates.length; i++ ) {
-					sketcherInstance.addTemplate(window.marvinStructureTemplates[i]);
-				}
-			}
-		  if (!self.marvinLoaded) {
-			if( self.model.get('molStructure')!=null && self.model.get('molStructure')!='') {
-			  sketcherInstance.importStructure(this.exportFormat, self.model.get('molStructure')).catch(function(error) {
-					alert(error);
+
+		  if (this.useMarvin) {
+			  this.$('#saltFormMarvinSketch').attr('src',"/CmpdReg/marvinjs/editorws.html");
+			  MarvinJSUtil.getEditor("#saltFormMarvinSketch").then(function (sketcherInstance) {
+				  self.marvinSketcherInstance = sketcherInstance;
+				  if (typeof window.marvinStructureTemplates !== 'undefined') {
+					  for (i = 0; i < window.marvinStructureTemplates.length; i++) {
+						  sketcherInstance.addTemplate(window.marvinStructureTemplates[i]);
+					  }
+				  }
+				  if (!self.sketcherLoaded) {
+					  if( self.model.get('molStructure')!=null && self.model.get('molStructure')!='') {
+						  sketcherInstance.importStructure(this.exportFormat, self.model.get('molStructure')).catch(function(error) {
+							  alert(error);
+						  });
+					  }
+				  }
+				  self.sketcherLoaded = true;
+				  $('.structureWrapper').animate({opacity: 100}, 100, function () {
+					  $(this).slideDown(100);
+				  });
+			  },function (error) {
+				  alert("Cannot retrieve saltFormMarvinSketch sketcher instance from iframe:"+error);
 			  });
-			}
+
+		  } else if (this.useKetcher) {
+			  this.$('#saltFormMarvinSketch').attr('src',"/lib/ketcher-2.0.0-alpha.3/ketcher.html?api_path=/api/chemStructure/ketcher/");
+			  this.$('#saltFormMarvinSketch').on('load', function () {
+				  self.ketcher = self.$('#saltFormMarvinSketch')[0].contentWindow.ketcher;
+				  if (!self.sketcherLoaded) {
+					  if( self.model.get('molStructure')!=null && self.model.get('molStructure')!='') {
+						  self.ketcher.setMolecule(self.model.get('molStructure'));
+					  }
+				  }
+				  self.sketcherLoaded = true;
+				  $('.structureWrapper').animate({opacity: 100}, 100, function () {
+					  $(this).slideDown(100);
+				  });
+			  });
+		  } else {
+			  alert("No search sketcher configured");
 		  }
-		  self.marvinLoaded = true;
-			$('.structureWrapper').animate({opacity: 100}, 100, function () {
-				$(this).slideDown(100);
-			});
-		},function (error) {
-			alert("Cannot retrieve saltFormMarvinSketch sketcher instance from iframe:"+error);
-		});
+
 
 	  } else {
 		self.$('#saltFormMarvinSketch').hide();

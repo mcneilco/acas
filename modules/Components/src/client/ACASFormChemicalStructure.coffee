@@ -131,8 +131,7 @@ class window.KetcherChemicalStructureController extends Backbone.View
 
 
 # To use This MarvinJS sketcher you must uncomment four lines in
-# 	modules/BuildUtilities/src/server/routes/RequiredClientScripts_template.js
-
+#
 class window.MarvinJSChemicalStructureController extends Backbone.View
 	tagName: "DIV"
 	template: _.template($("#MarvinJSChemicalStructureControllerView").html())

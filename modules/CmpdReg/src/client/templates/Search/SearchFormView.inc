@@ -3,7 +3,7 @@
     <div class="StructureMain">
 		<h2><label class="QueryStructure">Query Structure:</label></h2>
 		<div class="marvinContainer">
-			<iframe src="/CmpdReg/marvinjs/editorws.html" id="searchMarvinSketch" class="sketcher-frame" data-toolbars="search"></iframe>
+			<iframe  id="searchMarvinSketch" class="sketcher-frame" data-toolbars="search"></iframe>
 		</div>
 	    <div class="registrationSearchMarvinSize"></div>
 	</div>
