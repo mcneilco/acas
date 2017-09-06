@@ -318,22 +318,23 @@ class window.BaseEntityController extends AbstractThingFormController #TODO: che
 			if requireNotebook
 				console.log "require notebook"
 				@$('.bv_notebookLabel').html "*Notebook"
-				saveNotebookPage = true #default
-				if window.conf.entity?.notebookPage?.save?
-					saveNotebookPage = window.conf.entity.notebookPage.save
-				requireNotebookPage = false #default
-				if window.conf.entity?.notebookPage?.require?
-					requireNotebookPage= window.conf.entity.notebookPage.require
-				if saveNotebookPage
-					@$('.bv_notebookPage').val @model.getNotebookPage().get('stringValue')
-					if requireNotebookPage
-						@$('.bv_notebookPageLabel').html "*Notebook Page"
-					else
-						@$('.bv_notebookPageLabel').html "Notebook Page"
-				else
-					@$('.bv_group_notebookPage').hide()
 			else
 				@$('.bv_notebookLabel').html "Notebook"
+			saveNotebookPage = true #default
+			if window.conf.entity?.notebookPage?.save?
+				saveNotebookPage = window.conf.entity.notebookPage.save
+			requireNotebookPage = false #default
+			if window.conf.entity?.notebookPage?.require?
+				requireNotebookPage= window.conf.entity.notebookPage.require
+			if saveNotebookPage
+				@$('.bv_notebookPage').val @model.getNotebookPage().get('stringValue')
+				if requireNotebookPage
+					@$('.bv_notebookPageLabel').html "*Notebook Page"
+				else
+					@$('.bv_notebookPageLabel').html "Notebook Page"
+			else
+				@$('.bv_group_notebookPage').hide()
+
 
 		else
 			@$('.bv_group_notebook').hide()

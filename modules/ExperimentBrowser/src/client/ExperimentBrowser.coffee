@@ -397,10 +397,10 @@ class window.ExperimentBrowserController extends Backbone.View
 		
 	setupExperimentController: (experiment) =>
 		lsKind = experiment.get('lsKind')
-		if @controllerRedirectConf['EXPT']?[lsKind]?['modelClass']? and @controllerRedirectConf['EXPT']?[lsKind]?['controllerClass']?
+		if @controllerRedirectConf['EXPT']?[lsKind]?['modelClass']? and @controllerRedirectConf['EXPT']?[lsKind]?['browserControllerClass']?
 			if @controllerRedirectConf['EXPT']?[lsKind]?['protocolKindFilter']?
 				protocolKindFilter = @controllerRedirectConf['EXPT'][lsKind]['protocolKindFilter']
-			@experimentController = new window[@controllerRedirectConf['EXPT'][lsKind]['controllerClass']]
+			@experimentController = new window[@controllerRedirectConf['EXPT'][lsKind]['browserControllerClass']]
 				protocolKindFilter: protocolKindFilter
 				model: new window[@controllerRedirectConf['EXPT'][lsKind]['modelClass']] JSON.parse(JSON.stringify(experiment))
 				readOnly: true
