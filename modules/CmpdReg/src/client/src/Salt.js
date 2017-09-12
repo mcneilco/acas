@@ -184,7 +184,7 @@ $(function() {
 				});
 
 			} else if (this.useKetcher) {
-				this.$('#newSaltMarvinSketch').attr('src',"/lib/ketcher-2.0.0-alpha.3/ketcher.html?api_path=/api/chemStructure/ketcher/");
+				this.$('#newSaltMarvinSketch').attr('src',"/lib/ketcher-2.0.0-alpha.3/ketcher.html?api_path=/api/cmpdReg/ketcher/");
 				this.$('#newSaltMarvinSketch').on('load', function () {
 					self.ketcher = self.$('#newSaltMarvinSketch')[0].contentWindow.ketcher;
 					self.sketcherLoaded = true;
@@ -281,6 +281,7 @@ $(function() {
 
 				} else if (this.useKetcher) {
 					mol = this.ketcher.getMolfile();
+					if (mol.indexOf("  0  0  0     0  0            999") > -1) mol = '';
 					gotMol(mol);
 				} else {
 					alert("No new salt sketcher configured");

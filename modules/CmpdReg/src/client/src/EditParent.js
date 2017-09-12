@@ -53,6 +53,10 @@ $(function () {
 				        for (i = 0; i < window.marvinStructureTemplates.length; i++) {
 					        sketcherInstance.addTemplate(window.marvinStructureTemplates[i]);
 				        }
+						var pastePromise = sketcherInstance.importStructure(null, self.options.parentModel.get('molStructure'));
+						pastePromise.then(function() {}, function(error) {
+							alert(error);
+						});
 			        }
 			        self.show();
 			        self.sketcherLoaded = true;
@@ -61,9 +65,10 @@ $(function () {
 		        });
 
 	        } else if (this.useKetcher) {
-		        this.$('#editParentMarvinSketch').attr('src',"/lib/ketcher-2.0.0-alpha.3/ketcher.html?api_path=/api/chemStructure/ketcher/");
+		        this.$('#editParentMarvinSketch').attr('src',"/lib/ketcher-2.0.0-alpha.3/ketcher.html?api_path=/api/cmpdReg/ketcher/");
 		        this.$('#editParentMarvinSketch').on('load', function () {
 			        self.ketcher = self.$('#editParentMarvinSketch')[0].contentWindow.ketcher;
+					self.ketcher.setMolecule(self.options.parentModel.get('molStructure'));
 		        });
 	        } else {
 		        alert("No edit parent sketcher configured");
@@ -113,10 +118,7 @@ $(function () {
 
 	        } else if (this.useKetcher) {
 		        mol = this.ketcher.getMolfile();
-		        if (mol=="")
-		            mol = null;
-                else
-		            mol = molecule;
+				if (mol.indexOf("  0  0  0     0  0            999") > -1) mol = null;
 		        editParentSearch.set({
 			        molStructure: mol,
 			        corpName: jQuery.trim(self.$('.corpName').val())

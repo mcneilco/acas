@@ -106,7 +106,7 @@ $(function() {
 				});
 
 			} else if (this.useKetcher) {
-				this.$('#searchMarvinSketch').attr('src',"/lib/ketcher-2.0.0-alpha.3/ketcher.html?api_path=/api/chemStructure/ketcher/");
+				this.$('#searchMarvinSketch').attr('src',"/lib/ketcher-2.0.0-alpha.3/ketcher.html?api_path=/api/cmpdReg/ketcher/");
 				this.$('#searchMarvinSketch').on('load', function () {
 					self.ketcher = self.$('#searchMarvinSketch')[0].contentWindow.ketcher;
 				});
@@ -159,6 +159,7 @@ $(function() {
 				});
 			} else if (this.useKetcher) {
 				mol = this.ketcher.getMolfile();
+				if (mol.indexOf("  0  0  0     0  0            999") > -1) mol = '';
 				var sf = this.makeSearchFormModel(mol);
 				if (this.isValid()) {
 					this.trigger('searchNext', sf);

@@ -47,7 +47,7 @@ services:
       - logs:/home/runner/logs
     command: ["bin/acas.sh", "run", "rservices"]
   db:
-    image: mcneilco/acas-postgres:${ACAS_TAG}
+    image: mcneilco/acas-postgres:bingo
     restart: always
     volumes:
      - dbstore:/var/lib/postgresql/data
@@ -86,12 +86,12 @@ services:
      - /usr/local/tomcat/webapps/acas
     command: /bin/true
   cmpdreg:
-    image: mcneilco/acas-cmpdreg-roo-server-oss:${ACAS_TAG}
+    image: mcneilco/acas-cmpdreg-roo-server-oss:indigo
     volumes:
      - /usr/local/tomcat/webapps/cmpdreg
     # Add chemaxon license files here
-     - ./chemaxon/licenses/marvin4js-license.cxl:/usr/local/tomcat/webapps/ROOT/marvin4js-license.cxl
-     - ./chemaxon/licenses/license.cxl:/root/.chemaxon/license.cxl
+    # - ./chemaxon/licenses/marvin4js-license.cxl:/usr/local/tomcat/webapps/ROOT/marvin4js-license.cxl
+    # - ./chemaxon/licenses/license.cxl:/root/.chemaxon/license.cxl
     command: /bin/true
 volumes:
   dbstore:
