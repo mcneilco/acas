@@ -826,9 +826,7 @@ exports.ketcherConvertSmiles = (req, resp) ->
 			body: data
 			json: true
 		, (error, response, json) =>
-			console.log response
-			console.log json
-			if !error && response.statusCode == 200
+			if !error && response.statusCode == 200 and json.indexOf('<') != 0
 				statusMessage = "Ok.\n"
 				resp.end statusMessage+json.structure
 			else
@@ -859,9 +857,7 @@ exports.ketcherLayout = (req, resp) ->
 			body: data
 			json: true
 		, (error, response, json) =>
-			console.log response
-			console.log json
-			if !error && response.statusCode == 200
+			if !error && response.statusCode == 200 and json.indexOf('<') != 0
 				statusMessage = "Ok.\n"
 				resp.end statusMessage+json
 			else
@@ -890,7 +886,7 @@ exports.ketcherCalculateCip = (req, resp) ->
 		, (error, response, json) =>
 			console.log response
 			console.log json
-			if !error && response.statusCode == 200
+			if !error && response.statusCode == 200 and json.indexOf('<') != 0
 				statusMessage = "Ok.\n"
 				resp.end statusMessage+json
 			else
