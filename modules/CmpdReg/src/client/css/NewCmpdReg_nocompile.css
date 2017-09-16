@@ -832,6 +832,10 @@ div {
     margin-left: 30px !important;
 }
 
+.LotForm_ParentView .parentStructureForm .bv_labelPrefix {
+    font-size: 18 !important;
+}
+
 .LotForm_ParentView .parentComments {
     width:800px;
 }

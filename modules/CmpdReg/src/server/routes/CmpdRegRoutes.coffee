@@ -43,12 +43,15 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/cmpdReg/api/v1/parentServices/update/parent/metadata/jsonArray', loginRoutes.ensureAuthenticated, exports.updateParentsMetadata
 	app.post '/cmpdReg/api/v1/lotServices/reparent/lot', loginRoutes.ensureAuthenticated, exports.reparentLot
 	app.post '/cmpdReg/api/v1/lotServices/reparent/lot/jsonArray', loginRoutes.ensureAuthenticated, exports.reparentLots
-	
+	app.get '/cmpdReg/labelPrefixes', loginRoutes.ensureAuthenticated, exports.getAuthorizedPrefixes
+
+_ = require 'underscore'
+request = require 'request'
+config = require '../conf/compiled/conf.js'
+
 exports.cmpdRegIndex = (req, res) ->
 	scriptPaths = require './RequiredClientScripts.js'
-	config = require '../conf/compiled/conf.js'
 	cmpdRegConfig = require '../public/CmpdReg/client/custom/configuration.json'
-	_ = require 'underscore'
 	grantedRoles = _.map req.user.roles, (role) ->
 		role.roleEntry.roleName
 	console.log grantedRoles
@@ -94,9 +97,6 @@ exports.cmpdRegIndex = (req, res) ->
 			cmpdRegConfig: cmpdRegConfig
 
 syncCmpdRegUser = (req, cmpdRegUser) ->
-	request = require 'request'
-	config = require '../conf/compiled/conf.js'
-	_ = require "underscore"
 	exports.getScientists req, (scientistResponse) ->
 		foundScientists = JSON.parse scientistResponse
 		if (_.findWhere foundScientists, {code: cmpdRegUser.code})?
@@ -118,8 +118,6 @@ syncCmpdRegUser = (req, cmpdRegUser) ->
 			exports.saveScientists [cmpdRegUser], (saveScientistsResponse) ->
 
 exports.getBasicCmpdReg = (req, resp) ->
-	request = require 'request'
-	config = require '../conf/compiled/conf.js'
 	console.log 'in getBasicCmpdReg'
 	console.log req.originalUrl
 	endOfUrl = (req.originalUrl).replace /\/cmpdreg\//, ""
@@ -133,7 +131,6 @@ exports.getAuthorizedCmpdRegProjects = (req, resp) ->
 		resp.end JSON.stringify response
 
 exports.getAuthorizedCmpdRegProjectsInternal = (req, callback) ->
-	_ = require "underscore"
 	exports.getACASProjects req, (statusCode, acasProjectsResponse)->
 		acasProjects = acasProjectsResponse
 		exports.getProjects req, (cmpdRegProjectsResponse)->
@@ -155,8 +152,6 @@ exports.getACASProjects = (req, callback) ->
 		csUtilities.getProjectsInternal req, callback
 
 exports.getProjects = (req, callback) ->
-	request = require 'request'
-	config = require '../conf/compiled/conf.js'
 	console.log 'in getProjects'
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/projects"
 	request(
@@ -176,8 +171,7 @@ exports.getProjects = (req, callback) ->
 	)
 
 exports.saveProjects = (jsonBody, callback) ->
-	request = require 'request'
-	config = require '../conf/compiled/conf.js'
+
 	console.log 'in saveProjects'
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/projects/jsonArray"
 	request(
@@ -198,8 +192,6 @@ exports.saveProjects = (jsonBody, callback) ->
 	)
 
 exports.updateProjects = (jsonBody, callback) ->
-	request = require 'request'
-	config = require '../conf/compiled/conf.js'
 	console.log 'in updateProjects'
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/projects/jsonArray"
 	request(
@@ -220,8 +212,6 @@ exports.updateProjects = (jsonBody, callback) ->
 	)
 
 exports.getScientists = (req, callback) ->
-	request = require 'request'
-	config = require '../conf/compiled/conf.js'
 	console.log 'in getScientists'
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/scientists"
 	request(
@@ -241,8 +231,6 @@ exports.getScientists = (req, callback) ->
 	)
 
 exports.saveScientists = (jsonBody, callback) ->
-	request = require 'request'
-	config = require '../conf/compiled/conf.js'
 	console.log 'in saveScientists'
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/scientists/jsonArray"
 	request(
@@ -263,8 +251,6 @@ exports.saveScientists = (jsonBody, callback) ->
 	)
 
 exports.updateScientists = (jsonBody, callback) ->
-	request = require 'request'
-	config = require '../conf/compiled/conf.js'
 	console.log 'in updateScientists'
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/scientists/jsonArray"
 	request(
@@ -285,8 +271,6 @@ exports.updateScientists = (jsonBody, callback) ->
 	)
 
 exports.searchCmpds = (req, resp) ->
-	request = require 'request'
-	config = require '../conf/compiled/conf.js'
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/search/cmpds'
 	request(
 		method: 'POST'
@@ -308,16 +292,11 @@ exports.searchCmpds = (req, resp) ->
 	)
 
 exports.getStructureImage = (req, resp) ->
-	request = require 'request'
-	config = require '../conf/compiled/conf.js'
 	imagePath = (req.originalUrl).replace /\/cmpdreg\/structureimage/, ""
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/structureimage' + imagePath
 	req.pipe(request(cmpdRegCall)).pipe(resp)
 
 exports.getMetaLot = (req, resp) ->
-	request = require 'request'
-	_ = require 'underscore'
-	config = require '../conf/compiled/conf.js'
 	endOfUrl = (req.originalUrl).replace /\/cmpdreg\/metalots/, ""
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/metalots' + endOfUrl
 	console.log cmpdRegCall
@@ -369,8 +348,6 @@ exports.getMetaLot = (req, resp) ->
 	)
 
 exports.regSearch = (req, resp) ->
-	request = require 'request'
-	config = require '../conf/compiled/conf.js'
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/regsearches/parent'
 	console.log cmpdRegCall
 	request(
@@ -394,16 +371,12 @@ exports.regSearch = (req, resp) ->
 	)
 
 exports.getMarvinJSLicense = (req, resp) ->
-	request = require 'request'
-	config = require '../conf/compiled/conf.js'
 	cmpdRegCall = (config.all.client.service.cmpdReg.persistence.basepath).replace '\/cmpdreg', "/"
 	licensePath = cmpdRegCall + 'marvin4js-license.cxl'
 	console.log licensePath
 	req.pipe(request(licensePath)).pipe(resp)
 
 exports.getMultipleFilePicker = (req, resp) ->
-	request = require 'request'
-	config = require '../conf/compiled/conf.js'
 	endOfUrl = (req.originalUrl).replace /\/cmpdreg\//, ""
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/" +endOfUrl
 	cmpdRegCall = cmpdRegCall.replace /\\/g, "%5C"
@@ -411,14 +384,10 @@ exports.getMultipleFilePicker = (req, resp) ->
 	req.pipe(request(cmpdRegCall)).pipe(resp)
 
 exports.fileSave = (req, resp) ->
-	request = require 'request'
-	config = require '../conf/compiled/conf.js'
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/filesave'
 	req.pipe(request[req.method.toLowerCase()](cmpdRegCall)).pipe(resp)
 
 exports.metaLots = (req, resp) ->
-	request = require 'request'
-	config = require '../conf/compiled/conf.js'
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/metalots'
 	request(
 		method: 'POST'
@@ -441,8 +410,6 @@ exports.metaLots = (req, resp) ->
 	)
 
 exports.saveSalts = (req, resp) ->
-	request = require 'request'
-	config = require '../conf/compiled/conf.js'
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/salts'
 	request(
 		method: 'POST'
@@ -465,8 +432,6 @@ exports.saveSalts = (req, resp) ->
 	)
 
 exports.saveIsotopes = (req, resp) ->
-	request = require 'request'
-	config = require '../conf/compiled/conf.js'
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/isotopes'
 	request(
 		method: 'POST'
@@ -489,8 +454,6 @@ exports.saveIsotopes = (req, resp) ->
 	)
 
 exports.molConvert = (req, resp) ->
-	request = require 'request'
-	config = require '../conf/compiled/conf.js'
 	endOfUrl = (req.originalUrl).replace /\/cmpdreg\//, ""
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/" +endOfUrl
 	#	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/api/v1/structureServices/molconvert'
@@ -515,8 +478,6 @@ exports.molConvert = (req, resp) ->
 	)
 
 exports.genericStructureService = (req, resp) ->
-	request = require 'request'
-	config = require '../conf/compiled/conf.js'
 	endOfUrl = (req.originalUrl).replace /\/cmpdreg\//, ""
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/" +endOfUrl
 	request(
@@ -541,8 +502,6 @@ exports.genericStructureService = (req, resp) ->
 
 exports.exportSearchResults = (req, resp) ->
 	path = require 'path'
-	request = require 'request'
-	config = require '../conf/compiled/conf.js'
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/export/searchResults'
@@ -594,8 +553,6 @@ exports.exportSearchResults = (req, resp) ->
 			)
 
 exports.validateParent = (req, resp) ->
-	request = require 'request'
-	config = require '../conf/compiled/conf.js'
 	console.log "exports.validateParent"
 
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parents/validateParent'
@@ -619,8 +576,6 @@ exports.validateParent = (req, resp) ->
 	)
 
 exports.updateParent = (req, resp) ->
-	request = require 'request'
-	config = require '../conf/compiled/conf.js'
 	console.log "exports.updateParent"
 
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parents/updateParent'
@@ -671,8 +626,6 @@ exports.updateLotMetadata = (req, resp) ->
 	)
 		
 exports.updateLotsMetadata = (req, resp) ->
-	request = require 'request'
-	config = require '../conf/compiled/conf.js'
 	console.log 'in update lot array metaData'
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parentLot/updateLot/metadata/jsonArray'
 	console.log cmpdRegCall
@@ -697,8 +650,6 @@ exports.updateLotsMetadata = (req, resp) ->
 	)
 
 exports.updateParentMetadata = (req, resp) ->
-	request = require 'request'
-	config = require '../conf/compiled/conf.js'
 	console.log 'in update parent metaData'
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parents/updateParent/metadata'
 	console.log cmpdRegCall
@@ -723,8 +674,6 @@ exports.updateParentMetadata = (req, resp) ->
 	)
 	
 exports.updateParentsMetadata = (req, resp) ->
-	request = require 'request'
-	config = require '../conf/compiled/conf.js'
 	console.log 'in update parent array metaData'
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parents/updateParent/metadata/jsonArray'
 	console.log cmpdRegCall
@@ -749,8 +698,6 @@ exports.updateParentsMetadata = (req, resp) ->
 	)
 
 exports.reparentLot = (req, resp) ->
-	request = require 'request'
-	config = require '../conf/compiled/conf.js'
 	console.log 'in reparent lot'
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parentLot/reparentLot'
 	console.log cmpdRegCall
@@ -775,8 +722,6 @@ exports.reparentLot = (req, resp) ->
 	)
 
 exports.reparentLots = (req, resp) ->
-	request = require 'request'
-	config = require '../conf/compiled/conf.js'
 	console.log 'in reparent lot'
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parentLot/reparentLot/jsonArray'
 	console.log cmpdRegCall
@@ -801,4 +746,19 @@ exports.reparentLots = (req, resp) ->
 	)
 
 
-	
+exports.getAuthorizedPrefixes = (req, resp) ->
+	labelSeqRoutes = require './ACASLabelSequencesRoutes.js'
+	req.query =
+		labelTypeAndKind: 'id_corpName'
+		thingTypeAndKind: 'parent_compound'
+	labelSeqRoutes.getAuthorizedLabelSequencesInternal req, (statusCode, json) ->
+		codeTables = []
+		_.each json, (labelSeq) ->
+			codeTable =
+				id: labelSeq.id
+				name: labelSeq.labelPrefix
+				code: "#{labelSeq.labelPrefix}_#{labelSeq.labelTypeAndKind}_#{labelSeq.thingTypeAndKind}"
+				labelTypeAndKind: labelSeq.labelTypeAndKind
+				thingTypeAndKind: labelSeq.thingTypeAndKind
+			codeTables.push codeTable
+		resp.json codeTables

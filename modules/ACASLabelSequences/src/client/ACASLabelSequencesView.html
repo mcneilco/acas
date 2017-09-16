@@ -1,0 +1,71 @@
+<script type="text/template" id="ACASLabelSequenceView" xmlns="http://www.w3.org/1999/html">
+    <h4 class="title">Create Entity Prefix</h4>
+    <div class="span12">
+        <div class="form-horizontal bv_acasLabelSequenceForm">
+            <div class="control-group bv_group_labelPreview">
+                <label class="control-label">Preview</label>
+                <input class="form-control bv_labelPreview" type="text" disabled/>
+            </div>
+            <div class="control-group bv_group_labelPrefix">
+                <label class="control-label">Corp Prefix</label>
+                <input class="form-control bv_labelPrefix" type="text"/>
+            </div>
+            <div class="control-group" style="width:670px;">
+                <label class="control-label" style="width:100px;margin-left:40px;">Linked Roles</label>
+                <div class="controls">
+                    <span class="bv_acasLabelSequenceRoleList"></span>
+                </div>
+            </div>
+            <div class="control-group bv_group_startingNumber">
+                <label class="control-label">Starting Number</label>
+                <input class="form-control bv_startingNumber" type="text"/>
+            </div>
+            <div class="control-group bv_group_digits">
+                <label class="control-label">Number of Digits</label>
+                <input class="form-control bv_digits" type="text"/>
+            </div>
+            <div class="control-group bv_group_labelSeparator">
+                <label class="control-label">Label Separator</label>
+                <input class="form-control bv_labelSeparator" type="text"/>
+            </div>
+            <div class="control-group bv_group_labelTypeAndKind">
+                <label class="control-label">Label Type_Kind</label>
+                <div class="controls">
+                    <select class="bv_labelTypeAndKind" style="width:350px;">
+                    </select>
+                </div>
+            </div>
+            <div class="control-group bv_group_thingTypeAndKind">
+                <label class="control-label">Thing Type_Kind</label>
+                <div class="controls">
+                    <select class="bv_thingTypeAndKind" style="width:350px;">
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12">
+        <button type="button" class="btn btn-success bv_save pull-right" style="margin-right:10px;">Save</button>
+        <button type="button" class="btn btn-danger bv_cancel pull-right" style="margin-right:5px;margin-left:5px;"disabled="disabled">Cancel</button>
+        <div class="bv_saveComplete pull-right hide" style="padding-right:5px;padding-top:5px;color:#62c462;"></div>
+        <div class="bv_saving pull-right hide" style="padding-right:5px;padding-top:5px;color:red;">Saving...</div>
+        <div class="bv_saveFailed pull-right hide" style="padding-right:5px;padding-top:5px;color:red;">Save Failed</div>
+        <div class="bv_canceling pull-right hide" style="padding-top:5px;color:red;margin-right:5px;">Canceling...</div>
+        <div class="bv_cancelComplete pull-right hide" style="padding-top:5px;color:#62c462;margin-right:5px;">Cancel Complete</div>
+    </div>
+</script>
+
+
+<script type="text/template" id="ACASLabelSequenceRoleView" xmlns="http://www.w3.org/1999/html">
+    <div class="span5 bv_labelSequenceRoleWrapper" style="width:510px;">
+        <span class="control-group bv_group_role">
+            <select class="bv_role" style="margin-right:10px;margin-bottom:9px;width:350px;display: inline-block;"></select>
+            <button class="close bv_deleteLabelSequenceRole" style="margin-right:130px;margin-top:3px;">&times;</button>
+        </span>
+    </div>
+</script>
+
+<script type="text/template" id="ACASLabelSequenceRoleListView" xmlns="http://www.w3.org/1999/html">
+    <span class="bv_labelSequenceRoleInfo pull-right"></span>
+    <button class="btn bv_addLabelSequenceRoleButton" style="margin-left: 228px;">Add Ls Role</button>
+</script>

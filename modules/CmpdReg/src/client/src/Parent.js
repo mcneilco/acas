@@ -11,7 +11,8 @@ $(function() {
             comment: '',
             corpName: '',
             chemist: null,
-			isMixture: false
+			isMixture: false,
+			labelPrefix: null
 		},
 
 		initialize: function() {
@@ -188,6 +189,15 @@ $(function() {
 				this.$('.bv_parentAnnotationContainer').hide();
 			}
 
+			if (this.model.isNew() && window.configuration.serverSettings.corpParentFormat != null && window.configuration.serverSettings.corpParentFormat == 'ACASLabelSequence') {
+				var optionToInsert = null;
+				this.labelPrefixCodeController =
+					this.setupCodeController('labelPrefix', 'labelPrefixes', 'labelPrefix', optionToInsert);
+
+			} else {
+				this.$('.bv_labelPrefix').hide();
+			}
+
             this.$('.stereoComment').val(this.model.get('stereoComment'));
             this.$('.comment').val(this.model.get('comment'));
             //this.$('.commonName').val(this.model.get('commonName'));
@@ -278,6 +288,9 @@ $(function() {
 			};
 			if(this.parentAnnotationCodeController != null){
 				this.model.set({parentAnnotation: this.parentAnnotationCodeController.getSelectedModel()})
+			};
+			if (this.labelPrefixCodeController != null){
+				this.model.set({labelPrefix: this.labelPrefixCodeController.getSelectedModel()})
 			};
 		},
 		editParent: function() {
