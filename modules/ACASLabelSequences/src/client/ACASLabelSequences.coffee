@@ -75,7 +75,7 @@ class window.ACASLabelSequenceRoleController extends AbstractFormController
 		"click .bv_deleteLabelSequenceRole": "clear"
 
 	initialize: ->
-		@errorOwnerName = 'ProjectLeaderController'
+		@errorOwnerName = 'ACASLabelSequenceRoleController'
 		@setBindings()
 		@model.on "destroy", @remove, @
 
@@ -134,8 +134,8 @@ class window.ACASLabelSequenceRoleListController extends Backbone.View
 		$(@el).empty()
 		$(@el).html @template()
 
-		@collection.each (leaderInfo) =>
-			@addProjectLeader(leaderInfo)
+		@collection.each (roleInfo) =>
+			@addLabelSequenceRole(roleInfo)
 		if @collection.length == 0
 			@addNewLabelSequenceRole()
 		@trigger 'renderComplete'
@@ -209,16 +209,16 @@ class window.ACASLabelSequenceController extends AbstractFormController
 				if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
 					$.ajax
 						type: 'GET'
-						url: "/api/projects"
+						url: "/api/labelsequences/getAuthorizedLabelSequences"
 						dataType: 'json'
 						error: (err) =>
-							alert 'Could not get projects for this user. Creating a new project'
+							alert 'Could not get label sequences for this user. Creating a new label sequence'
 							@completeInitialization()
-						success: (projectsList) =>
-							if _.where(projectsList, {code: window.AppLaunchParams.moduleLaunchParams.code}).length > 0
+						success: (labelSequencesList) =>
+							if _.where(labelSequencesList, {code: window.AppLaunchParams.moduleLaunchParams.code}).length > 0
 								@getACASLabelSequence()
 							else
-								alert 'Could not get project for code in this URL, creating new one'
+								alert 'Could not get label sequence for code in this URL, creating new one'
 								@completeInitialization()
 				else
 					@completeInitialization()
@@ -243,15 +243,15 @@ class window.ACASLabelSequenceController extends AbstractFormController
 			url: "/api/labelsequences/"+window.AppLaunchParams.moduleLaunchParams.code
 			dataType: 'json'
 			error: (err) =>
-				alert 'Could not get project for code in this URL, creating new one'
+				alert 'Could not get label sequence for code in this URL, creating new one'
 				@completeInitialization()
 			success: (json) =>
 				if json.length == 0
-					alert 'Could not get project for code in this URL, creating new one'
+					alert 'Could not get label sequence for code in this URL, creating new one'
 				else
-					proj = new ACASLabelSequence json
-					proj.set proj.parse(proj.attributes)
-					@model = proj
+					labelSeq = new ACASLabelSequence json
+					labelSeq.set labelSeq.parse(labelSeq.attributes)
+					@model = labelSeq
 				@completeInitialization()
 
 
@@ -361,34 +361,6 @@ class window.ACASLabelSequenceController extends AbstractFormController
 				name: "Select Thing Type And Kind"
 			selectedCode: @model.get('thingTypeAndKind')
 
-	updateEditable: =>
-		if @model.isEditable()
-			if UtilityFunctions::testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [@adminRole]) or UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, [window.conf.roles.acas.adminRole])
-				@enableAllInputs()
-				@$('.bv_projectCode').attr 'disabled', 'disabled'
-				@$('.bv_manageUserPermissions').show()
-				@$('.bv_saveBeforeManagingPermissions').hide()
-			else
-				@enableLimitedEditing()
-				@$('.bv_manageUserPermissions').hide()
-		else
-			@disableAllInputs()
-			@$('.bv_newEntity').removeAttr('disabled')
-			if UtilityFunctions::testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [@adminRole]) or UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, [window.conf.roles.acas.adminRole])
-				@$('.bv_manageUserPermissions').show()
-			else
-				@$('.bv_manageUserPermissions').hide()
-		@$('.bv_status').attr 'disabled', 'disabled' #for now, don't allow status editing
-
-	enableLimitedEditing: ->
-		@disableAllInputs()
-		@$('.bv_shortDescription').removeAttr 'disabled'
-		@$('.bv_projectDetails').removeAttr 'disabled'
-		@$('.bv_fileType').removeAttr 'disabled'
-		@$('button').removeAttr 'disabled'
-		@$('.bv_deleteProjectLeader').attr 'disabled', 'disabled'
-		@$('.bv_addProjectLeaderButton').attr 'disabled', 'disabled'
-
 	handleCancelClicked: =>
 		if @model.isNew()
 			@model = null
@@ -428,7 +400,6 @@ class window.ACASLabelSequenceController extends AbstractFormController
 		@$('.bv_saveComplete').hide()
 
 	saveLabelSequence: =>
-#		@model.prepareToSave()
 		@prepareToSaveLabelSequenceRoles()
 		console.log @model
 		if @model.isNew()
@@ -439,23 +410,20 @@ class window.ACASLabelSequenceController extends AbstractFormController
 		if @model.isNew()
 			@model.save null,
 				success: (model, response) =>
-					if response is "update lsThing failed"
+					if response is "save label sequence failed"
 						@model.trigger 'saveFailed'
 					else
 						@modelSaveCallback
 
 		else
-			if UtilityFunctions::testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [@adminRole]) or UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, [window.conf.roles.acas.adminRole])
-				@updateProjectRoles()
-			else
-				@model.save null,
-					success: (model, response) =>
-						if response is "update lsThing failed"
-							@model.trigger 'saveFailed'
-						else
-							@modelSaveCallback
-					error: (err) =>
+			@model.save null,
+				success: (model, response) =>
+					if response is "update label sequence failed"
 						@model.trigger 'saveFailed'
+					else
+						@modelSaveCallback
+				error: (err) =>
+					@model.trigger 'saveFailed'
 
 	validationError: =>
 		super()

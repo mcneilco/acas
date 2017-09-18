@@ -340,6 +340,7 @@ class window.AssignSdfPropertiesController extends Backbone.View
 
 	events:
 		"change .bv_dbProject": "handleDbProjectChanged"
+		"change .bv_labelPrefix": "handleLabelPrefixChanged"
 		"keyup .bv_fileDate": "handleFileDateChanged"
 		"change .bv_fileDate": "handleFileDateChanged" #have this here too for when you set date using date icon
 		"click .bv_fileDateIcon": "handleFileDateIconClicked"
@@ -364,9 +365,14 @@ class window.AssignSdfPropertiesController extends Backbone.View
 			@$('.bv_group_fileDate').hide()
 		if window.conf.cmpdReg.showProjectSelect
 			@setupProjectSelect()
-			@isValid()
 		else
 			@$('.bv_group_dbProject').hide()
+		if window.AppLaunchParams.cmpdRegConfig.serverSettings.corpParentFormat? and window.AppLaunchParams.cmpdRegConfig.serverSettings.corpParentFormat == 'ACASLabelSequence'
+			@setupPrefixSelect()
+		else
+			@$('.bv_group_labelPrefix').hide()
+		@isValid()
+
 		@setupAssignedPropertiesListController()
 
 	getAndFormatTemplateOptions: ->
@@ -413,6 +419,17 @@ class window.AssignSdfPropertiesController extends Backbone.View
 				name: "Select Project"
 			selectedCode: "unassigned"
 
+	setupPrefixSelect: ->
+		@prefixList = new PickListList()
+		@prefixList.url = "/cmpdreg/labelPrefixes"
+		@prefixListController = new PickListSelectController
+			el: @$('.bv_labelPrefix')
+			collection: @prefixList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Prefix"
+			selectedCode: "unassigned"
+
 	setupAssignedPropertiesListController: ->
 		@assignedPropertiesListController= new AssignedPropertiesListController
 			el: @$('.bv_assignedPropertiesList')
@@ -454,6 +471,12 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		@project = project # set the selected
 		@isValid()
 		@trigger 'projectChanged', project
+
+	handleLabelPrefixChanged: ->
+		labelPrefix = @prefixListController.getSelectedModel()
+		@labelPrefix = labelPrefix.attributes
+		@labelPrefix.labelPrefix = labelPrefix.get('name')
+		@isValid()
 
 	handleFileDateChanged: ->
 		if UtilityFunctions::getTrimmedInput(@$('.bv_fileDate')) is ""
@@ -533,6 +556,8 @@ class window.AssignSdfPropertiesController extends Backbone.View
 			otherErrors.push @getProjectErrors()...
 		if window.conf.cmpdReg.showFileDate
 			otherErrors.push @getFileDateErrors()...
+		if window.AppLaunchParams.cmpdRegConfig.serverSettings.corpParentFormat? and window.AppLaunchParams.cmpdRegConfig.serverSettings.corpParentFormat == 'ACASLabelSequence'
+			otherErrors.push @getPrefixErrors()
 		if @assignedPropertiesList?
 			otherErrors.push @assignedPropertiesList.checkDuplicates()...
 			otherErrors.push @assignedPropertiesList.checkSaltProperties()...
@@ -540,9 +565,8 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		@showValidationErrors(otherErrors)
 		unless @$('.bv_unassignedProperties').html() == ""
 			validCheck = false
-		if otherErrors.length > 0
+		if (_.flatten otherErrors).length > 0
 			validCheck = false
-
 		if validCheck
 			@$('.bv_regCmpds').removeAttr('disabled')
 		else
@@ -557,6 +581,14 @@ class window.AssignSdfPropertiesController extends Backbone.View
 				attribute: 'dbProject'
 				message: 'Project must be selected'
 		projectError
+
+	getPrefixErrors: ->
+		prefixError = []
+		if @prefixListController.getSelectedCode() is "unassigned" or @prefixListController.getSelectedCode() is null
+			prefixError =
+				attribute: 'labelPrefix'
+				message: 'Prefix must be selected'
+		prefixError
 
 	validateAssignedProperties: ->
 		validCheck = true
@@ -666,6 +698,8 @@ class window.AssignSdfPropertiesController extends Backbone.View
 			fileName: @fileName
 			mappings: JSON.parse(JSON.stringify(@assignedPropertiesListController.collection.models))
 			userName: window.AppLaunchParams.loginUser.username
+		if window.AppLaunchParams.cmpdRegConfig.serverSettings.corpParentFormat? and window.AppLaunchParams.cmpdRegConfig.serverSettings.corpParentFormat == 'ACASLabelSequence'
+			dataToPost.labelPrefix = @labelPrefix
 		if window.conf.cmpdReg.showFileDate
 			dataToPost.fileDate = @fileDate
 		$.ajax
