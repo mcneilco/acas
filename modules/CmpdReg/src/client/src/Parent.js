@@ -88,6 +88,11 @@ $(function() {
                     errors.push({attribute: 'compoundTypeCode', message: "Compound type must be supplied"});
                 }
             }
+			if (this.isNew() && window.configuration.serverSettings.corpParentFormat != null && window.configuration.serverSettings.corpParentFormat == 'ACASLabelSequence' && attr.labelPrefix != null) {
+				if (attr.labelPrefix.get('code')=='not_set') {
+					errors.push({attribute: 'labelPrefix', message: "Prefix must be supplied"});
+				}
+			}
 			if (errors.length > 0) {return errors;}
 		},
 
@@ -190,7 +195,12 @@ $(function() {
 			}
 
 			if (this.model.isNew() && window.configuration.serverSettings.corpParentFormat != null && window.configuration.serverSettings.corpParentFormat == 'ACASLabelSequence') {
-				var optionToInsert = null;
+				var optionToInsert = new PickList({
+					"code": "not_set",
+					"id": 0,
+					"name": "Select Prefix",
+					"version": 0
+				});
 				this.labelPrefixCodeController =
 					this.setupCodeController('labelPrefix', 'labelPrefixes', 'labelPrefix', optionToInsert);
 
