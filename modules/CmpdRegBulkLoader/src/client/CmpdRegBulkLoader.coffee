@@ -585,7 +585,7 @@ class window.AssignSdfPropertiesController extends Backbone.View
 	getPrefixErrors: ->
 		prefixError = []
 		if @prefixListController.getSelectedCode() is "unassigned" or @prefixListController.getSelectedCode() is null
-			prefixError =
+			prefixError.push
 				attribute: 'labelPrefix'
 				message: 'Prefix must be selected'
 		prefixError

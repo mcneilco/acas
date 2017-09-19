@@ -42,15 +42,24 @@ class window.ACASLabelSequence extends Backbone.Model
 			errors.push
 				attribute: 'labelPrefix'
 				message: "Label prefix must be set"
-		if isNaN(attrs.startingNumber) or attrs.startingNumber is undefined
+		if isNaN(attrs.startingNumber) or attrs.startingNumber is undefined or attrs.startingNumber is null or attrs.startingNumber.length < 1
 			errors.push
 				attribute: 'startingNumber'
 				message: "Starting Number must set and be a number"
-		if isNaN(attrs.digits) or attrs.digits is undefined
+		if isNaN(attrs.digits) or attrs.digits is undefined or attrs.digits is null or attrs.digits.length < 1
 			errors.push
 				attribute: 'digits'
 				message: "Number of digits must set and be a number"
-		#TODO: Add more validation
+		labelTypeAndKind = @get('labelTypeAndKind')
+		if labelTypeAndKind is "unassigned" or labelTypeAndKind is undefined or labelTypeAndKind is "" or labelTypeAndKind is null
+			errors.push
+				attribute: 'labelTypeAndKind'
+				message: "Label Type and Kind must be set"
+		thingTypeAndKind = @get('thingTypeAndKind')
+		if thingTypeAndKind is "unassigned" or thingTypeAndKind is undefined or thingTypeAndKind is "" or thingTypeAndKind is null
+			errors.push
+				attribute: 'thingTypeAndKind'
+				message: "Thing Type and Kind must be set"
 		if errors.length > 0
 			return errors
 		else
@@ -228,6 +237,7 @@ class window.ACASLabelSequenceController extends AbstractFormController
 	attributeChanged: =>
 		super()
 		@updatePreview()
+		@isValid()
 
 	updatePreview: =>
 		prefix = @model.get('labelPrefix')
