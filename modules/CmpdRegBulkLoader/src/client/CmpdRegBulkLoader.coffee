@@ -557,7 +557,7 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		if window.conf.cmpdReg.showFileDate
 			otherErrors.push @getFileDateErrors()...
 		if window.AppLaunchParams.cmpdRegConfig.serverSettings.corpParentFormat? and window.AppLaunchParams.cmpdRegConfig.serverSettings.corpParentFormat == 'ACASLabelSequence'
-			otherErrors.push @getPrefixErrors()
+			otherErrors.push @getPrefixErrors()...
 		if @assignedPropertiesList?
 			otherErrors.push @assignedPropertiesList.checkDuplicates()...
 			otherErrors.push @assignedPropertiesList.checkSaltProperties()...
@@ -565,7 +565,7 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		@showValidationErrors(otherErrors)
 		unless @$('.bv_unassignedProperties').html() == ""
 			validCheck = false
-		if (_.flatten otherErrors).length > 0
+		if otherErrors.length > 0
 			validCheck = false
 		if validCheck
 			@$('.bv_regCmpds').removeAttr('disabled')
