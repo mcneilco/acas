@@ -20,6 +20,7 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.get '/api/getThingCodeTablesByLabelText/:lsType/:lsKind/:labelText', exports.getThingsByTypeAndKindAndLabelTypeAndLabelText
 	app.post '/api/things/:lsType/:lsKind/codeNames/jsonArray', exports.getThingsByCodeNames
 	app.get '/api/thingKinds', exports.getThingKinds
+	app.post '/api/things/jsonArray', exports.postThings
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/things/:lsType/:lsKind', loginRoutes.ensureAuthenticated, exports.thingsByTypeKind
@@ -44,6 +45,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/things/:lsType/:lsKind/codeNames/jsonArray', loginRoutes.ensureAuthenticated, exports.getThingsByCodeNames
 	app.get '/api/thingKinds', loginRoutes.ensureAuthenticated, exports.getThingKinds
 	app.get '/api/transaction/:id', loginRoutes.ensureAuthenticated, exports.getTransaction
+	app.post '/api/things/jsonArray', loginRoutes.ensureAuthenticated, exports.postThings
 
 
 exports.thingsByTypeKind = (req, resp) ->
@@ -645,3 +647,38 @@ exports.getTransaction = (req, resp) ->
 	baseurl = config.all.client.service.persistence.fullpath+"lstransactions/"+req.params.id
 	serverUtilityFunctions.getFromACASServer baseurl, resp
 
+exports.postThings = (req, resp) ->
+	exports.postThingsInternal {things: req.body.things}, (output, err) ->
+			if err?
+				resp.statusCode = 500
+				resp.json err
+				
+exports.postThingsInternal = (input, callback) ->
+	request = require 'request'
+	config = require '../conf/compiled/conf.js'
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+	baseurl = config.all.client.service.persistence.fullpath+"lsthings/jsonArray"
+	requestOptions = 
+		method: 'POST'
+		url: baseurl
+		body: input.things
+		json: true
+	request requestOptions, (error, response, object) ->
+			if !error 
+				if response.statusCode == 500
+					callback object, response
+				else 
+					callback object, null
+			else
+				console.log 'got ajax error trying to save validate thing name'
+				console.log error
+				console.log json
+				console.log response
+				callback object, error
+
+	
+	
+		
+
+	
+	
