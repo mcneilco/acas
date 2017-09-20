@@ -22,7 +22,7 @@ services:
      - /home/runner/build/src/r
      - /home/runner/build/conf/compiled
     # Add chemaxon marvinjs here
-     - ./chemaxon/marvinjs:/home/runner/build/public/CmpdReg/marvinjs
+    # - ./chemaxon/marvinjs:/home/runner/build/public/CmpdReg/marvinjs
      # Please add any dev volumes below this line
      - ./:/home/runner/acas
      # - ./modules/BuildUtilities/:/home/runner/acas/modules/BuildUtilities
@@ -60,7 +60,7 @@ services:
     ports:
      - "5432:5432"
   tomcat:
-    image: mcneilco/tomcat-maven
+    image: mcneilco/tomcat-maven:openjdk7
     restart: always
     depends_on:
      - db
