@@ -166,6 +166,10 @@ class window.ACASFormStateTableController extends Backbone.View
 			@handleAfterValidate = @tableDef.handleAfterValidate
 
 	setupHot: ->
+		if @tableDef.contextMenu?
+			contextMenu = @tableDef.contextMenu
+		else
+			contextMenu = true
 		@hot = new Handsontable @$('.bv_tableWrapper')[0],
 			beforeChange: @handleBeforeChange
 			beforeValidate: @handleBeforeValidate
@@ -173,8 +177,7 @@ class window.ACASFormStateTableController extends Backbone.View
 			afterValidate: @handleAfterValidate
 			afterCreateRow: @handleRowCreated
 			minSpareRows: 1,
-			allowInsertRow: true
-			contextMenu: true
+			contextMenu: contextMenu
 			startRows: 1,
 			className: "htCenter",
 			colHeaders: _.pluck @colHeaders, 'displayName'
@@ -408,9 +411,13 @@ class window.ACASFormStateTableController extends Backbone.View
 #			comments: false
 
 	enableInput: ->
+		if @tableDef.contextMenu?
+			contextMenu = @tableDef.contextMenu
+		else
+			contextMenu = true
 		@hot.updateSettings
 			readOnly: false
-			contextMenu: true
+			contextMenu: contextMenu
 #Other options I decided not to use
 #			disableVisualSelection: false
 #			manualColumnResize: true
