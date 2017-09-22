@@ -543,3 +543,4 @@ client.roles.crossProjectLoaderRole=ROLE_ACAS-CROSS-PROJECT-LOADER
 # For whether protocols and experiments should have sequential user defined corpName labels
 client.entity.saveInitialsCorpName=false
 
+client.compoundInventory.enforceUppercaseBarcodes=false
