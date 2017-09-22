@@ -4,6 +4,8 @@ _ = require 'underscore'
 preferredEntityCodeService = require '../routes/PreferredEntityCodeService.js'
 config = require '../conf/compiled/conf.js'
 RUN_CUSTOM_FLAG = "0"
+fs = require('fs')
+parse = require('csv-parse')
 
 
 exports.setupAPIRoutes = (app) ->
@@ -55,6 +57,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/getContainerInfoFromBatchCode', exports.getContainerInfoFromBatchCode
 	app.post '/api/getContainerStatesByContainerValue', exports.getContainerStatesByContainerValue
 	app.post '/api/getContainerLogsByContainerCodes', exports.getContainerLogsByContainerCodes
+	app.post '/api/loadParentVialsFromCSV', exports.loadParentVialsFromCSV
 
 
 exports.setupRoutes = (app, loginRoutes) ->
@@ -1205,6 +1208,38 @@ getContainerCodesFromLabels = (req, callback) ->
 		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainerCodesByLabels?"
 		url = baseurl+"containerType=#{req.body.containerType}&containerKind=#{req.body.containerKind}"
 		postBody = req.body.labels
+		console.debug postBody
+		console.debug url
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: url
+			body: postBody
+			json: true
+			timeout: 86400000
+		, (error, response, json) =>
+			console.debug response.statusCode
+			console.debug json
+			if !error and !json.error
+				callback json
+			else
+				console.error 'got ajax error trying to lookup lsContainer name'
+				console.error error
+				console.error response
+				callback json
+		)
+
+getContainerCodesFromLabelsInternal = (barcodes, containerType, containerKind, callback) ->
+	if global.specRunnerTestmode
+		response =
+			codeName: 'CONT-0000001'
+			label: 'test label'
+		callback response
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainerCodesByLabels?"
+		url = baseurl+"containerType=#{containerType}&containerKind=#{containerKind}"
+		postBody = barcodes
 		console.debug postBody
 		console.debug url
 		request = require 'request'
@@ -2464,3 +2499,277 @@ exports.getContainerStatesByContainerValueInternal = (requestObject, callback) =
 			callback null, 500
 			#resp.end JSON.stringify "getContainerStatesByContainerValue failed"
 		)
+
+PARENT_COMPOUND_LOT_INDEX = 0
+PARENT_DESTINATION_VIAL_INDEX = 1
+PARENT_AMOUNT_INDEX = 2
+PARENT_AMOUNT_UNITS_INDEX = 3
+PARENT_PREPARED_BY_INDEX = 4
+PARENT_PREPARED_DATE_INDEX = 5
+PARENT_PHYSICAL_STATE_INDEX = 6
+PARENT_CONCENTRATION_INDEX = 7
+PARENT_CONC_UNITS_INDEX = 8
+PARENT_SOLVENT_INDEX = 9
+
+DAUGHTER_SOURCE_VIAL_INDEX = 0
+DAUGHTER_DESTINATION_VIAL_INDEX = 1
+DAUGHTER_AMOUNT_INDEX = 2
+DAUGHTER_AMOUNT_UNITS_INDEX = 3
+DAUGHTER_PREPARED_BY_INDEX = 4
+DAUGHTER_PREPARED_DATE_INDEX = 5
+DAUGHTER_PHYSICAL_STATE_INDEX = 6
+DAUGHTER_CONCENTRATION_INDEX = 7
+DAUGHTER_CONC_UNITS_INDEX = 8
+DAUGHTER_SOLVENT_INDEX = 9
+
+exports.loadParentVialsFromCSV = (req, resp) ->
+	exports.loadParentVialsFromCSVInternal req.body.fileToParse, req.body.dryRunMode, req.body.user, (response) ->
+		resp.json response
+
+exports.loadParentVialsFromCSVInternal = (csvFileName, dryRun, user, callback) ->
+	if dryRun
+		exports.validateParentVialsFromCSVInternal csvFileName, (validationResponse) ->
+			callback validationResponse
+	else
+		exports.createParentVialsFromCSVInternal csvFileName, user, (createVialsResponse) ->
+			callback createVialsResponse
+
+exports.validateParentVialsFromCSV = (req, resp) ->
+	exports.validateParentVialsFromCSVInternal req.body.csvFileName, (validationResponse) ->
+		resp.json validationResponse
+
+exports.validateParentVialsFromCSVInternal = (csvFileName, callback) ->
+	getFileExists csvFileName, (exists, path) ->
+		validationResponse =
+			results:
+				dryRun: true
+				fileToParse: csvFileName
+				htmlSummary: ''
+			hasError: true
+			hasWarning: false
+			errorMessages: []
+			transactionId: null
+		if exists
+			validationResponse.results.path = path
+			createParentVialFileEntryArray csvFileName, (fileEntryArray) ->
+				console.log fileEntryArray
+				checkRequiredAttributes fileEntryArray, (requiredAttributeErrors) ->
+					if requiredAttributeErrors?
+						validationResponse.errorMessages.push requiredAttributeErrors...
+					checkDataTypeErrors fileEntryArray, (dataTypeErrors) ->
+						if dataTypeErrors?
+							validationResponse.errorMessages.push dataTypeErrors...
+						checkBatchCodesExist fileEntryArray, (missingBatchCodeErrors) ->
+							if missingBatchCodeErrors? and missingBatchCodeErrors.length > 1
+								error =
+									level: 'error'
+									message: "The following batches do not exist: "+ missingBatchCodeErrors.join ', '
+								validationResponse.errorMessages.push error
+							barcodes = _.pluck fileEntryArray, 'destinationVialBarcode'
+							checkBarcodesExist barcodes, (existingBarcodes, newBarcodes) ->
+								if existingBarcodes? and existingBarcodes.length > 1
+									error =
+										level: 'error'
+										message: "The following barcodes already exist: " + existingBarcodes.join ', '
+									validationResponse.errorMessages.push error
+								if validationResponse.errorMessages.length < 1
+									validationResponse.hasError = false
+								validationResponse.results.htmlSummary = prepareValidationHTMLSummary validationResponse.hasError, validationResponse.errorMessages
+								callback validationResponse
+		else
+			error =
+				level: 'error'
+				message: "File cannot be found"
+			validationResponse.errorMessages.push error
+			callback validationResponse
+
+getFileExists = (csvFileName, callback) =>
+	exists = false
+	path = config.all.server.file.server.path + '/'
+	fileName = csvFileName
+	fs.stat path+fileName, (err, stats) ->
+		console.log 'path+fileName', path+fileName
+		console.log stats
+		console.log err
+		if stats?.isFile()
+			exists = true
+			callback exists, path+fileName
+		else
+			callback exists, path+fileName
+
+createParentVialFileEntryArray = (csvFileName, callback) =>
+	csvFileEntries = []
+	path = config.all.server.file.server.path + '/'
+	fileName = csvFileName
+	rowCount = 0
+	fs.createReadStream(path + fileName)
+	.pipe(parse({delimiter: ','}))
+	.on('data', (csvrow) ->
+		fileEntry =
+			batchCode: csvrow[PARENT_COMPOUND_LOT_INDEX].trim()
+			destinationVialBarcode: csvrow[PARENT_DESTINATION_VIAL_INDEX].trim()
+			amount: csvrow[PARENT_AMOUNT_INDEX].trim()
+			amountUnits: csvrow[PARENT_AMOUNT_UNITS_INDEX].trim()
+			preparedBy: csvrow[PARENT_PREPARED_BY_INDEX].trim()
+			preparedDate: csvrow[PARENT_PREPARED_DATE_INDEX].trim()
+			physicalState: csvrow[PARENT_PHYSICAL_STATE_INDEX].trim()
+			concentration: csvrow[PARENT_CONCENTRATION_INDEX].trim()
+			concUnits:csvrow[PARENT_CONC_UNITS_INDEX].trim()
+			solvent: csvrow[PARENT_SOLVENT_INDEX].trim()
+			rowNumber: rowCount
+		if rowCount? and rowCount > 0
+			csvFileEntries.push(fileEntry)
+		rowCount++
+	)
+	.on('end', () ->
+		return callback csvFileEntries, 200
+	)
+
+createDaughterVialFileEntryArray = (csvFileName, callback) =>
+	csvFileEntries = []
+	path = config.all.server.file.server.path + '/'
+	fileName = csvFileName
+	rowCount = 0
+	fs.createReadStream(path + fileName)
+	.pipe(parse({delimiter: ','}))
+	.on('data', (csvrow) ->
+		fileEntry =
+			sourceVialBarcode: csvrow[DAUGHTER_SOURCE_VIAL_INDEX].trim()
+			destinationVialBarcode: csvrow[DAUGHTER_DESTINATION_VIAL_INDEX].trim()
+			amount: csvrow[DAUGHTER_AMOUNT_INDEX].trim()
+			amountUnits: csvrow[DAUGHTER_AMOUNT_UNITS_INDEX].trim()
+			preparedBy: csvrow[DAUGHTER_PREPARED_BY_INDEX].trim()
+			preparedDate: csvrow[DAUGHTER_PREPARED_DATE_INDEX].trim()
+			physicalState: csvrow[DAUGHTER_PHYSICAL_STATE_INDEX].trim()
+			concentration: csvrow[DAUGHTER_CONCENTRATION_INDEX].trim()
+			concUnits: csvrow[DAUGHTER_CONC_UNITS_INDEX].trim()
+			solvent: csvrow[DAUGHTER_SOLVENT_INDEX].trim()
+			rowNumber: rowCount
+		if rowCount? and rowCount > 0
+			csvFileEntries.push(fileEntry)
+		rowCount++
+	)
+	.on('end', () ->
+		return callback csvFileEntries, 200
+	)
+
+checkRequiredAttributes = (fileEntryArray, callback) ->
+	requiredAttributeErrors = []
+	_.each fileEntryArray, (entry) ->
+		missingAttributes = []
+		for attr in ['batchCode', 'destinationVialBarcode', 'sourceVialBarcode', 'amount', 'amountUnits', 'preparedBy', 'preparedDate', 'physicalState', 'concentration', 'concUnits', 'solvent']
+			if entry[attr]?
+				if attr in ['concentration', 'concUnits', 'solvent']
+					if entry.physicalState == 'solution'
+						if entry[attr] == ""
+							missingAttributes.push attr
+				else
+					if entry[attr] == ""
+						missingAttributes.push attr
+		if missingAttributes.length > 0
+			error =
+				level: 'error'
+				message: "Row #{entry.rowNumber} is missing the required attributes: " + missingAttributes.join ', '
+			requiredAttributeErrors.push error
+	callback requiredAttributeErrors
+
+checkDataTypeErrors = (fileEntryArray, callback) ->
+	dataTypeErrors = []
+	_.each fileEntryArray, (entry) ->
+		if entry.amount? and entry.amount.length > 0 and isNaN(parseFloat(entry.amount))
+			error =
+				level: 'error'
+				message: "Row #{entry.rowNumber} contains the invalid amount: #{entry.amount}"
+			dataTypeErrors.push error
+		if entry.concentration? and entry.concentration.length > 0 and isNaN(parseFloat(entry.concentration))
+			error =
+				level: 'error'
+				message: "Row #{entry.rowNumber} contains the invalid concentration: #{entry.concentration}"
+			dataTypeErrors.push error
+	callback dataTypeErrors
+
+checkBatchCodesExist = (fileEntryArray, callback) ->
+	requests = []
+	_.each fileEntryArray, (entry) ->
+		request =
+			requestName: entry.batchCode
+		requests.push request
+	csUtilities.getPreferredBatchIds requests, (batchIdResponse) ->
+		missingBatchCodes = []
+		_.each batchIdResponse, (batchCodeRequest) ->
+			if batchCodeRequest.preferredName.length < 1
+				missingBatchCodes.push batchCodeRequest.requestName
+		callback missingBatchCodes
+
+checkBarcodesExist = (barcodes, callback) ->
+	getContainerCodesFromLabelsInternal barcodes, 'container', 'tube', (containerCodes) ->
+		existingBarcodes = []
+		newBarcodes = []
+		_.each containerCodes, (containerCodeEntry) ->
+			if containerCodeEntry.foundCodeNames? and containerCodeEntry.foundCodeNames.length > 0
+				existingBarcodes.push containerCodeEntry.requestLabel
+			else
+				newBarcodes.push containerCodeEntry.requestLabel
+		callback existingBarcodes, newBarcodes
+
+prepareValidationHTMLSummary = (hasError, errorMessages) ->
+	
+	'html summary goes here'
+
+exports.createParentVialsFromCSVInternal = (csvFileName, user, callback) ->
+	getFileExists csvFileName, (exists, path) ->
+		createResponse =
+			results:
+				dryRun: true
+				fileToParse: csvFileName
+				htmlSummary: ''
+			hasError: true
+			hasWarning: false
+			errorMessages: []
+			transactionId: null
+		if exists
+			createResponse.results.path = path
+			createParentVialFileEntryArray csvFileName, (fileEntryArray) ->
+				getContainerTubeDefinitionCode (definitionCode) ->
+					if !definitionCode?
+						error =
+							level: 'error'
+							message: 'Could not find definition container for tube'
+						createResponse.errorMessages.push error
+					tubesToCreate = []
+					_.each fileEntryArray, (entry) ->
+						tube =
+							barcode: entry.destinationVialBarcode
+							definition: definitionCode
+							recordedBy: user
+							createdUser: entry.preparedBy
+							createdDate: entry.createdDate
+							physicalState: entry.physicalState
+							wells: [
+								wellName: "A001"
+								batchCode: entry.batchCode
+								amount: parseFloat(entry.amount)
+								amountUnits: entry.amountUnits
+								physicalState: entry.physicalState
+								recordedBy: user
+								recordedDate: (new Date()).getTime()
+							]
+						if entry.physicalState == 'solution'
+							tube.wells[0].batchConcentration = parseFloat(entry.concentration)
+							tube.wells[0].batchConcUnits = entry.concUnits
+							tube.wells[0].solventCode = entry.solvent
+						tubesToCreate.push tube
+					console.log JSON.stringify tubesToCreate
+					exports.createTubesInternal tubesToCreate, 0, (json, statusCode) ->
+						console.log json
+						callback json
+		else
+			error =
+				level: 'error'
+				message: "File cannot be found"
+			createResponse.errorMessages.push error
+			callback createResponse
+
+getContainerTubeDefinitionCode = (callback) ->
+	exports.containersByTypeKindInternal 'definition container', 'tube', 'codetable', false, false, (definitionContainers) ->
+		callback definitionContainers[0].code
