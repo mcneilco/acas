@@ -40,8 +40,9 @@
 	    "useExactMass": true,
 		"useProjectRolesToRestrictLotDetails": false,
 		"showTareWeight": false,
-		"showTotalAmoundStored": false,
-		"disableAliasEdit": false
+		"showTotalAmountStored": false,
+		"disableAliasEdit": false,
+		"disableEditMyLots": false
     },
     "serverSettings": {
 		"corpPrefix": "CMPD",

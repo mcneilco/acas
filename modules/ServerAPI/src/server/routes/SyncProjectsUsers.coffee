@@ -43,6 +43,7 @@ exports.getGroupsJSON = (callback) ->
 		_.each acasGroupsAndProjects.projects, (project) ->
 			projectGroups =
 				alias: project.code
+				active: if project.active? then project.active else true
 				groups: project.groups
 			groupsJSON.projects.push projectGroups
 		callback groupsJSON, acasGroupsAndProjects
@@ -178,7 +179,12 @@ exports.validateLiveDesignConfigs = (configJSON) ->
 exports.syncLiveDesignRoles = (caughtPythonErrors, pythonErrors, configJSON, groupsJSON, callback) ->
 	if exports.validateLiveDesignConfigs(configJSON)
 		exec = require('child_process').exec
+		_ = require "underscore"
 		config = require '../conf/compiled/conf.js'
+		#Filter out ignored projects
+		filteredProjects = _.filter groupsJSON.projects, (project) ->
+			project.active
+		groupsJSON.projects = filteredProjects
 		#Call ld_entitlements.py to update list of user-project ACLs in LiveDesign
 		command = "python ./src/python/ServerAPI/syncProjectsUsers/ld_entitlements.py "
 		command += "\'"+(JSON.stringify configJSON.ld_server)+"\' "+"\'"+(JSON.stringify groupsJSON)+"\'"
