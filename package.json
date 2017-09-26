@@ -30,6 +30,7 @@
     "each": ">= 0.0.0",
     "exports-loader": "*",
     "express": "3.0.2",
+    "extract-text-webpack-plugin": "*",
     "file-loader": "*",
     "flat": "*",
     "forever-monitor": "*",
@@ -39,6 +40,7 @@
     "jasmine-jquery": "^2.1.1",
     "jquery": "^2.2.0",
     "jquery-file-upload-middleware": "https://github.com/mcneilco/jquery-file-upload-middleware.git",
+    "json2csv": "^3.9.1",
     "jszip": "*",
     "less": "^2.6.0",
     "lodash": "^4.0.0",
@@ -65,7 +67,9 @@
     "url-loader": "*",
     "winston": "*",
     "winston-mongodb": "*",
-    "yamljs": "*"
+    "yamljs": "*",
+    "webshot": "0.18.0",
+    "archiver": "2.0.0"
   },
   "devDependencies": {
     "coffee-script": "^1.12.4",
@@ -82,6 +86,7 @@
     "gulp-plumber": "^1.1.0",
     "gulp-rename": "^1.2.2",
     "gulp-replace": "^0.5.4",
+    "gulp-run": "^1.7.1",
     "gulp-watch": "^4.3.11",
     "gutil": "^1.6.4",
     "through2": "^2.0.3",

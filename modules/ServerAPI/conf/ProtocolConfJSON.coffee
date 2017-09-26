@@ -296,8 +296,15 @@
 				codeType: "protocol"
 				codeKind: "review status"
 				codeOrigin: "ACAS DDICT"
-				code: "reviewed"
-				name: "Reviewed"
+				code: "read and understood"
+				name: "Read and Understood"
+				ignored: false
+			,
+				codeType: "protocol"
+				codeKind: "review status"
+				codeOrigin: "ACAS DDICT"
+				code: "needs attention"
+				name: "Needs Attention"
 				ignored: false
 			,
 				codeType: "assay"

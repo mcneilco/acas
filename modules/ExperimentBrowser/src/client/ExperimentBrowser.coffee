@@ -243,9 +243,14 @@ class window.ExperimentRowSummaryController extends Backbone.View
 		if @model.get('lsLabels') not instanceof LabelList
 			@model.set 'lsLabels',  new LabelList @model.get('lsLabels')
 		subclass = @model.get('subclass')
+		protocolCode = @model.get('protocol').get('codeName')
 		if window.conf.entity?.saveInitialsCorpName? and window.conf.entity.saveInitialsCorpName is true
 			if @model.get('lsLabels').getLabelByTypeAndKind("corpName", subclass + ' corpName').length > 0
 				code = @model.get('lsLabels').getLabelByTypeAndKind('corpName', subclass + ' corpName')[0].get('labelText')
+				if @model.get('protocol').get('lsLabels').getLabelByTypeAndKind("corpName", 'protocol corpName').length > 0
+					protocolCode = @model.get('protocol').get('lsLabels').getLabelByTypeAndKind('corpName', 'protocol corpName')[0].get('labelText')
+			else if @model.get('lsKind') is "study" and @model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
+				code = @model.get('lsLabels').getLabelByTypeAndKind('id', 'study id')[0].get('labelText')
 			else
 				code = @model.get("codeName")
 		else if @model.get('lsKind') is "study" and @model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
@@ -256,7 +261,7 @@ class window.ExperimentRowSummaryController extends Backbone.View
 		toDisplay =
 			experimentName: experimentBestName
 			experimentCode: code
-			protocolCode: @model.get('protocol').get("codeName")
+			protocolCode: protocolCode
 			protocolName: protocolBestName
 			scientist: @model.getScientist().get('codeValue')
 			status: @model.getStatus().get("codeValue")
@@ -494,6 +499,8 @@ class window.ExperimentBrowserController extends Backbone.View
 		if window.conf.entity?.saveInitialsCorpName? and window.conf.entity.saveInitialsCorpName is true
 			if @experimentController.model.get('lsLabels').getLabelByTypeAndKind("corpName", subclass + ' corpName').length > 0
 				code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('corpName', subclass + ' corpName')[0].get('labelText')
+			else if @model.get('lsKind') is "study" and @model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
+				code = @model.get('lsLabels').getLabelByTypeAndKind('id', 'study id')[0].get('labelText')
 			else
 				code = @experimentController.model.get("codeName")
 		else if @experimentController.model.get('lsKind') is "study" and @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
@@ -501,15 +508,6 @@ class window.ExperimentBrowserController extends Backbone.View
 		else
 			code = @experimentController.model.get('codeName')
 
-#		if @experimentController.model.get('lsKind') is "study"
-#			if @experimentController.model.get('lsLabels') not instanceof LabelList
-#				@experimentController.model.set 'lsLabels',  new LabelList @model.get('lsLabels')
-#			if @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
-#				code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id')[0].get('labelText')
-#			else
-#				code = @experimentController.model.get("codeName")
-#		else
-#			code = @experimentController.model.get("codeName")
 		@$(".bv_experimentCodeName").html code
 		@$(".bv_deleteButtons").removeClass "hide"
 		@$(".bv_okayButton").addClass "hide"
@@ -552,6 +550,8 @@ class window.ExperimentBrowserController extends Backbone.View
 		if window.conf.entity?.saveInitialsCorpName? and window.conf.entity.saveInitialsCorpName is true
 			if @experimentController.model.get('lsLabels').getLabelByTypeAndKind("corpName", subclass + ' corpName').length > 0
 				code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('corpName', subclass + ' corpName')[0].get('labelText')
+			else if @experimentController.model.get('lsKind') is "study" and @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
+				code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id')[0].get('labelText')
 			else
 				code = @experimentController.model.get("codeName")
 		else if @experimentController.model.get('lsKind') is "study" and @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
@@ -578,6 +578,8 @@ class window.ExperimentBrowserController extends Backbone.View
 		if window.conf.entity?.saveInitialsCorpName? and window.conf.entity.saveInitialsCorpName is true
 			if @experimentController.model.get('lsLabels').getLabelByTypeAndKind("corpName", subclass + ' corpName').length > 0
 				code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('corpName', subclass + ' corpName')[0].get('labelText')
+			else if @experimentController.model.get('lsKind') is "study" and @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
+				code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id')[0].get('labelText')
 			else
 				code = @experimentController.model.get("codeName")
 		else if @experimentController.model.get('lsKind') is "study" and @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
@@ -606,6 +608,8 @@ class window.ExperimentBrowserController extends Backbone.View
 			if window.conf.entity?.saveInitialsCorpName? and window.conf.entity.saveInitialsCorpName is true
 				if @experimentController.model.get('lsLabels').getLabelByTypeAndKind("corpName", subclass + ' corpName').length > 0
 					code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('corpName', subclass + ' corpName')[0].get('labelText')
+				else if @experimentController.model.get('lsKind') is "study" and @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
+					code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id')[0].get('labelText')
 				else
 					code = @experimentController.model.get("codeName")
 			else if @experimentController.model.get('lsKind') is "study" and @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
@@ -613,17 +617,6 @@ class window.ExperimentBrowserController extends Backbone.View
 			else
 				code = @experimentController.model.get('codeName')
 
-
-			#			experimentKind = @experimentController.model.get('lsKind')
-#			if experimentKind is "study"
-#				if @experimentController.model.get('lsLabels') not instanceof LabelList
-#					@experimentController.model.set 'lsLabels',  new LabelList @experimentController.model.get('lsLabels')
-#				if @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
-#					code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id')[0].get('labelText')
-#				else
-#					code = @experimentController.model.get("codeName")
-#			else
-#					code = @experimentController.model.get("codeName")
 			window.open("/openExptInQueryTool?experiment=#{code}",'_blank')
 
 	formatOpenInQueryToolButton: =>
@@ -640,6 +633,8 @@ class window.ExperimentBrowserController extends Backbone.View
 				if window.conf.entity?.saveInitialsCorpName? and window.conf.entity.saveInitialsCorpName is true
 					if @experimentController.model.get('lsLabels').getLabelByTypeAndKind("corpName", subclass + ' corpName').length > 0
 						code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('corpName', subclass + ' corpName')[0].get('labelText')
+					else if @experimentController.model.get('lsKind') is "study" and @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
+						code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id')[0].get('labelText')
 					else
 						code = @experimentController.model.get("codeName")
 				else if @experimentController.model.get('lsKind') is "study" and @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0

@@ -60,12 +60,14 @@ class window.RealtimeDeviceConnectionController extends Backbone.View
 		"click .bv_disconnectedByAnotherUserDismiss": "hideDisconnectedModal"
 		"click .bv_kickUserOff": "displayInUseModal"
 		"click .bv_deviceInUseDismiss": "dismissDeviceInUse"
+		"click .bv_reconnect": "handleReconnectClicked"
 		"change .bv_deviceSelectContainer": "handleDeviceSelectChange"
 		"click .bv_dismissDisconnectMessage": "handleDismissDisconnectMessage"
 		"click .bv_zeroBalance": "handleZeroBalanceClick"
 
 	initialize: ->
 		@isConnectedToDevice = false
+		@isConnectingToDevice = false
 		@testMode = @options.testMode
 		if @options.socket?
 			@socket = @options.socket
@@ -75,7 +77,6 @@ class window.RealtimeDeviceConnectionController extends Backbone.View
 			return instrument.get("lsLabels").pickBestName().get("labelText").toLowerCase()
 
 		@listenTo @deviceCollection, "sync", @renderSelectListOfExistingInstruments
-		@connected = false
 		unless @testMode
 			@setupSocketEventHandlers()
 
@@ -96,17 +97,16 @@ class window.RealtimeDeviceConnectionController extends Backbone.View
 
 	setupSocketEventHandlers: =>
 		@socket = io('/deviceChannel')
-		#@socket.on('connect', @handleDeviceSelectChange)
 		@socket.on('connect_error', @handleConnectError)
 		@socket.on('youShouldTryConnecting', @connectToDevice)
 		@socket.on('disconnectedFromDevice', @disconnectedFromDevice)
 		@socket.on('alertAllDisconnectedFromDevice', @alertAllDisconnectedFromDevice)
 		@socket.on('disconnectedByAnotherUser', @disconnectedByAnotherUser)
 		@socket.on('in_use', @displayUnavailableMessage)
+		@socket.on('balance_reserved', @balanceReserved)
+		@socket.on('device_server_offline', @displayServerOfflineMessage)
 		@socket.on('zeroingComplete', =>
-			console.log "zeroingComplete"
-			if @connected
-				console.log "zeroingComplete"
+			if @isConnectedToDevice
 				@resetForm()
 				@enableElement(".bv_disconnect")
 				@enableElement(".bv_zeroBalance")
@@ -115,9 +115,8 @@ class window.RealtimeDeviceConnectionController extends Backbone.View
 				@displayInUseMessage()
 		)
 
-
 	handleZeroBalanceClick: =>
-		if @connected
+		if @isConnectedToDevice
 			@disableAllFields()
 			@disableElement(".bv_disconnect")
 			@disableElement(".bv_zeroBalance")
@@ -126,14 +125,11 @@ class window.RealtimeDeviceConnectionController extends Backbone.View
 
 	zeroBalanceCallback: (err, data) =>
 
-
 	connectToDevice: =>
-		unless @connected
-			#@selectedDevice = @devicePickList.getSelectedModel()
+		unless @isConnectedToDevice or @isConnectingToDevice
+			@isConnectingToDevice = true
 			@selectedInstrumentCode = @$('.bv_deviceSelectContainer').val()
 			@selectedDevice = @deviceCollection.findWhere({"codeName": @selectedInstrumentCode})
-			console.log "@selectedDevice.get('url').get('value')"
-			console.log @selectedDevice.get('url').get('value')
 			@$(".bv_connecting").removeClass "hide"
 			@$(".bv_deviceServerOffline").addClass "hide"
 			@socket.emit('connectToDevice', {deviceName: @selectedDevice.get('description').get('value'), deviceUrl: @selectedDevice.get('url').get('value'), userName: AppLaunchParams.loginUserName}, @connectToDeviceCallback)
@@ -143,10 +139,9 @@ class window.RealtimeDeviceConnectionController extends Backbone.View
 		console.info "overide if needed"
 
 	connectToDeviceCallback: (err, data) =>
-		console.log "err", err
-		console.log "data", data
+		@isConnectingToDevice = false
 		if err
-			@connected = false
+			@isConnectedToDevice = false
 			@setStateToDisconnected()
 			switch err.status
 				when "not_available"
@@ -156,19 +151,23 @@ class window.RealtimeDeviceConnectionController extends Backbone.View
 				when "device_not_connected"
 					@displayStatusMessage(".bv_deviceNotConnected")
 				when "device_server_offline"
-					@displayStatusMessage(".bv_deviceServerOffline")
+					@displayServerOfflineMessage()
 				when "in_use"
 					@displayStatusMessage(".bv_deviceServerInUse")
 
 		else
-			@connected = true
+			@isConnectedToDevice = true
 			@setStateToConnected()
 		@enableElement(".bv_deviceSelectContainer")
 		@$(".bv_connectionStatusAlert").addClass "hide"
 
 	displayUnavailableMessage: =>
-		unless @connected
+		unless @isConnectedToDevice
 			@displayStatusMessage(".bv_deviceServerInUse")
+
+	displayServerOfflineMessage: =>
+		@displayStatusMessage(".bv_deviceServerOffline")
+		@isConnectedToDevice = false
 
 	displayStatusMessage: (messageSelector) =>
 		@resetStatusMessages()
@@ -195,11 +194,20 @@ class window.RealtimeDeviceConnectionController extends Backbone.View
 		@disableElement(".bv_deviceSelectContainer")
 		@selectedInstrumentCode = @$('.bv_deviceSelectContainer').val()
 		selectedInstrument = @deviceCollection.findWhere({"codeName": @selectedInstrumentCode})
-		@connected = false
 		@resetStatusMessages()
-		@socket.emit('disconnected')
-		unless selectedInstrument is ""
-			@connectToDevice()
+		if @isConnectedToDevice
+			@socket.emit('disconnectFromBalance', @disconnectCallback)
+		else
+			unless selectedInstrument is ""
+				@connectToDevice()
+
+	disconnectCallback: =>
+		@isConnectedToDevice = false
+		@connectToDevice()
+
+	handleReconnectClicked: =>
+		@$(".bv_disconnected").addClass "hide"
+		@connectToDevice()
 
 	handleBootCurrentUserOffDevice: =>
 		@socket.emit('bootUser', {userToBootClientId: @clientIdOfConnectedUser, userNameToAdd: AppLaunchParams.loginUserName}, @handleBootCurrentUserOffDeviceCallback)
@@ -258,12 +266,14 @@ class window.RealtimeDeviceConnectionController extends Backbone.View
 		@setStateToDisconnected()
 
 	alertAllDisconnectedFromDevice: =>
-		unless @isConnectedToDevice
-			@connectToDevice()
+		@connectToDevice()
 
-	disconnectedByAnotherUser: (disconnectingUserName) =>
-		@displayDisconnectedModal(disconnectingUserName)
-		@setStateToDisconnected()
+	disconnectedByAnotherUser: (msg) =>
+		@displayDisconnectedModal(msg.username)
+
+	balanceReserved: (msg) =>
+		if msg.balanceUrl is @selectedDevice.get('url').get('value')
+			@connectToDeviceCallback(msg, null)
 
 	displayDisconnectedModal: (disconnectingUserName) =>
 		@$(".bv_disconnectingUserName").html disconnectingUserName

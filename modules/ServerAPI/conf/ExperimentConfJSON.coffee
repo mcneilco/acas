@@ -40,6 +40,9 @@
 			,
 				typeName: "metadata"
 				kindName: "data column order"
+			,
+				typeName: "metadata"
+				kindName: "data column object"
 			]
 
 		valuetypes:
@@ -158,6 +161,21 @@
 			,
 				typeName: "stringValue"
 				kindName: "hide column"	
+			,
+				typeName: "numericValue"
+				kindName: "column concentration"	
+			,
+				typeName: "stringValue"
+				kindName: "column conc units"	
+			,
+				typeName: "numericValue"
+				kindName: "column time"	
+			,
+				typeName: "stringValue"
+				kindName: "column time units"	
+			,
+				typeName: "stringValue"
+				kindName: "condition column"	
 			,
 				typeName: "codeValue"
 				kindName: "agonist batch code"
@@ -319,8 +337,15 @@
 				codeType: "experiment"
 				codeKind: "review status"
 				codeOrigin: "ACAS DDICT"
-				code: "reviewed"
-				name: "Reviewed"
+				code: "read and understood"
+				name: "Read and Understood"
+				ignored: false
+			,
+				codeType: "experiment"
+				codeKind: "review status"
+				codeOrigin: "ACAS DDICT"
+				code: "needs attention"
+				name: "Needs Attention"
 				ignored: false
 			,
 				codeType: "analysis"
