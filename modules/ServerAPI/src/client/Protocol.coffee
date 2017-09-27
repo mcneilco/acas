@@ -260,7 +260,7 @@ class window.ProtocolBaseController extends BaseEntityController
 			@$('.bv_maxY').val(@model.getCurveDisplayMax().get('numericValue'))
 			@$('.bv_minY').val(@model.getCurveDisplayMin().get('numericValue'))
 		else
-			@$('.bv_group_assayStageWrapper').hide()
+			@$('.bv_group_curveDisplayWrapper').hide()
 		super()
 		@
 
