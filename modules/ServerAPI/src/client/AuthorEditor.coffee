@@ -352,15 +352,20 @@ class window.AuthorEditorController extends AbstractFormController
 		@$('.bv_lastName').val(@model.get('lastName'))
 		@$('.bv_userName').val(@model.get('userName'))
 		@$('.bv_emailAddress').val(@model.get('emailAddress'))
-		@$('.bv_activationDate').datepicker();
-		@$('.bv_activationDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
-		if @model.get('activationDate')?
-			@$('.bv_activationDate').val UtilityFunctions::convertMSToYMDDate(@model.get('activationDate'))
-		enabled = @$('.bv_enabled').is(":checked")
-		if enabled
-			@$('.bv_enabled').attr 'checked', 'checked'
-		else
-			@$('.bv_enabled').removeAttr 'checked'
+
+		if window.conf.security?.authstrategy? and window.conf.security.authStrategy is 'database'
+			@$('.bv_activationDate').datepicker();
+			@$('.bv_activationDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
+			if @model.get('activationDate')?
+				@$('.bv_activationDate').val UtilityFunctions::convertMSToYMDDate(@model.get('activationDate'))
+			enabled = @$('.bv_enabled').is(":checked")
+			if enabled
+				@$('.bv_enabled').attr 'checked', 'checked'
+			else
+				@$('.bv_enabled').removeAttr 'checked'
+		else if window.conf.security?.authstrategy? and window.conf.security.authstrategy is 'ldap'
+			@$('.bv_group_activationDate').hide()
+			@$('.bv_group_enabled').hide()
 		if @model.isNew()
 			@$('.bv_save').html("Save")
 			@$('.bv_newEntity').hide()
