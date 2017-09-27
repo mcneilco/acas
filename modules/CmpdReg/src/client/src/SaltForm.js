@@ -161,20 +161,27 @@ $(function() {
 				this.isosaltEquivListController.updateModel();
 
 				var mol = '';
-				if(this.sketcherLoaded && this.$('.structureWrapper').is(':visible')) {
-					self = this;
-					this.marvinSketcherInstance.exportStructure(this.exportFormat).then(function(molecule) {
-						if ( molecule.indexOf("0  0  0  0  0  0  0  0  0  0999")>-1)
-							mol = '';
-						else
-							mol = molecule;
-						self.model.set({molStructure: mol});
+				if (this.sketcherLoaded && this.$('.structureWrapper').is(':visible')) {
+					if (this.useMarvin) {
+						self = this;
+						this.marvinSketcherInstance.exportStructure(this.exportFormat).then(function (molecule) {
+							if (molecule.indexOf("0  0  0  0  0  0  0  0  0  0999") > -1)
+								mol = '';
+							else
+								mol = molecule;
+							self.model.set({molStructure: mol});
+							callback();
+						}, function (error) {
+							alert("Molecule export failed from search sketcher:" + error);
+						});
+					}else if (this.useKetcher) {
+						mol = this.ketcher.getMolfile();
+						if (mol.indexOf("  0  0  0     0  0            999") > -1) mol = '';
+						this.model.set({molStructure: mol});
 						callback();
-					}, function(error) {
-						alert("Molecule export failed from search sketcher:"+error);
-					});
+					}
 				} else {
-		  this.model.set({molStructure: mol});
+					this.model.set({molStructure: mol});
 					callback();
 				}
 			} else {
