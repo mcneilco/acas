@@ -2,7 +2,7 @@
 
 usage ()
 {
-  echo 'Usage : Script -d <backup_directory> -u <backup_user>'
+  echo 'Usage : Script -d <backup_directory> -u <backup_user> -p <docker_project>'
   echo ''
   exit
 }
