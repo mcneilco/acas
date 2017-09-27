@@ -166,9 +166,9 @@ exports.getLsRoleCodeTables = (req, resp) ->
 	else
 		baseurl = config.all.client.service.persistence.fullpath+"lsRoles?format=codeTable"
 		if req.query.lsType?
-			baseurl += "&lsType=#{lsType}"
+			baseurl += "&lsType=#{req.query.lsType}"
 		if req.query.lsKind?
-			baseurl += "&lsKind=#{lsKind}"
+			baseurl += "&lsKind=#{req.query.lsKind}"
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 exports.getLabelTypeAndKindCodeTables = (req, resp) ->

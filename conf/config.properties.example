@@ -318,7 +318,13 @@ server.service.external.inventory.database.password=
 ## options for auth. strategy are: properties, database, ldap
 server.security.authstrategy=database
 #server.security.properties.path=/opt/seurat/SeuratServer/users.txt
+#to make authstrategy config accessible to the client
+client.security.authstrategy=${server.security.authstrategy}
 
+#Controls whether Roo syncs the AuthorRole table with authorities granted in LDAP
+server.security.syncLdapAuthRoles=false
+#to make authstrategy config accessible to the client
+client.security.syncLdapAuthRoles=${server.security.syncLdapAuthRoles}
 
 ## ACAS Home Page Options
 # If module is customized and the ACAS header name needs to be replaced, you can set the following options

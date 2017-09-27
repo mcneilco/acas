@@ -49,6 +49,12 @@ window.ModuleMenusConfiguration =
 		menuName: "Admin"
 	,
 		isHeader: false
+		menuName: "Author Editor"
+		mainControllerClassName: "AuthorEditorController"
+		autoLaunchName: "author"
+		requireUserRoles: []
+	,
+		isHeader: false
 		menuName: "Admin Panel"
 		mainControllerClassName: "AdminPanelController"
 		autoLaunchName: "admin_panel"

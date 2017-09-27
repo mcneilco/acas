@@ -1,10 +1,12 @@
 exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.get '/api/authorByUsername/:username', exports.getAuthorByUsername
+	app.get '/api/authorByCodename/:codename', exports.getAuthorByCodename
 	app.get '/api/authorModulePreferences/:userName/:moduleName', exports.getAuthorModulePreferences
 	app.put '/api/authorModulePreferences/:userName/:moduleName', exports.updateAuthorModulePreferences
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/authorByUsername/:username', loginRoutes.ensureAuthenticated, exports.getAuthorByUsername
+	app.get '/api/authorByCodename/:codename', exports.getAuthorByCodename
 	app.get '/api/authorModulePreferences/:userName/:moduleName', loginRoutes.ensureAuthenticated, exports.getAuthorModulePreferences
 	app.put '/api/authorModulePreferences/:userName/:moduleName', loginRoutes.ensureAuthenticated, exports.updateAuthorModulePreferences
 
@@ -54,6 +56,34 @@ exports.getAuthorByUsernameInternal = (username, callback) ->
 				console.error json
 				console.error response
 				callback JSON.stringify("getContainersInLocation failed"), 500
+		)
+
+exports.getAuthorByCodename = (req, resp) ->
+	exports.getAuthorByCodenameInternal req.params.codeName, (json, statusCode) ->
+		resp.statusCode = statusCode
+		resp.json json
+
+exports.getAuthorByCodenameInternal = (codename, callback) ->
+	if global.specRunnerTestmode
+		authorServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/AuthorServiceTestJSON.js'
+		resp.json authorServiceTestJSON.getAuthorByUsernameInternalResponse
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"authors?find=ByCodeName&codeName="+codename
+		request = require 'request'
+		request(
+			method: 'GET'
+			url: baseurl
+			json: true
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				callback json, 200
+			else
+				console.error 'got ajax error trying to get author by codename'
+				console.error error
+				console.error json
+				console.error response
+				callback JSON.stringify("get author by codename failed"), 500
 		)
 
 exports.getAuthorModulePreferences = (req, resp) ->
