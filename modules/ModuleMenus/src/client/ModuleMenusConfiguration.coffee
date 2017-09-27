@@ -70,4 +70,9 @@ window.ModuleMenusConfiguration =
 		mainControllerClassName: "SystemTestController"
 		autoLaunchName:"system_test"
 		requireUserRoles: []
+	,
+		isHeader: false
+		menuName: "Label Sequence"
+		mainControllerClassName: "ACASLabelSequenceController"
+		autoLaunchName: "acasLabelSequence"
 	]
