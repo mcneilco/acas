@@ -126,9 +126,14 @@ class window.ACASFormStateTableController extends Backbone.View
 				width: if val.fieldSettings.width? then val.fieldSettings.width else 75
 
 			colOpts = data: val.modelDefaults.kind
+			colOpts.readOnly = if val.fieldSettings.readOnly? then val.fieldSettings.readOnly else false
+			colOpts.wordWrap = true
 			if val.modelDefaults.type == 'numericValue'
 				colOpts.type = 'numeric'
-				colOpts.format = val.fieldSettings.format
+				if val.fieldSettings.fieldFormat?
+					colOpts.format = val.fieldSettings.fieldFormat
+				else
+					colOpts.format = '0.[00]'
 			else if val.modelDefaults.type == 'dateValue'
 				colOpts.type = 'date'
 				colOpts.dateFormat = 'YYYY-MM-DD'
@@ -157,15 +162,23 @@ class window.ACASFormStateTableController extends Backbone.View
 
 				@unitKeyValueMap[val.fieldSettings.unitColumnKey] = val.modelDefaults.kind
 
+		if @tableDef.handleAfterValidate?
+			@handleAfterValidate = @tableDef.handleAfterValidate
+
 	setupHot: ->
+		if @tableDef.contextMenu?
+			contextMenu = @tableDef.contextMenu
+		else
+			contextMenu = true
 		@hot = new Handsontable @$('.bv_tableWrapper')[0],
 			beforeChange: @handleBeforeChange
 			beforeValidate: @handleBeforeValidate
 			afterChange: @handleCellChanged
+			afterValidate: @handleAfterValidate
 			afterCreateRow: @handleRowCreated
 			minSpareRows: 1,
 			allowInsertRow: true
-			contextMenu: true
+			contextMenu: contextMenu
 			comments: true
 			startRows: 1,
 			className: "htCenter",
@@ -403,9 +416,13 @@ class window.ACASFormStateTableController extends Backbone.View
 #			manualRowResize: false
 
 	enableInput: ->
+		if @tableDef.contextMenu?
+			contextMenu = @tableDef.contextMenu
+		else
+			contextMenu = true
 		@hot.updateSettings
 			readOnly: false
-			contextMenu: true
+			contextMenu: contextMenu
 			comments: true
 #Other options I decided not to use
 #			disableVisualSelection: false
