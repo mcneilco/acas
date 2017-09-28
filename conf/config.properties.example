@@ -180,6 +180,30 @@ client.service.external.structure.url=http://tomcat:8080/cmpdreg/structureimage/
 client.service.external.lotDetails.url=/cmpdreg/#lot/
 
 ################################
+# Module Menus ACAS Home Page Options
+################################
+# If module is customized and the ACAS header name needs to be replaced, you can set the following options
+client.moduleMenus.logoText=ACAS
+client.moduleMenus.logoImageFilePath=
+client.moduleMenus.homePageMessage=Welcome to ACAS
+client.moduleMenus.copyrightMessage=&copy; John McNeil & Company 2012-2017
+# client.moduleMenus.menuConfigurationSettings=ModuleMenusConfiguration
+# If summary statistics is an included feature, set the following to true
+client.moduleMenus.summaryStats=false
+# For navigation to external ACAS modules from ACAS homepage
+client.moduleMenus.modules.external=[{"displayName": "Compound Registration", "href": "/cmpdreg/"},\
+                                     {"displayName": "Compound Registration Bulk Loader", "href":"/CmpdRegBulkLoader"}]
+client.moduleMenus.dataViewerDeepLink=/dataViewer
+# For auto-starting a module when opening up ACAS
+client.moduleMenus.moduleAutoLaunchName=
+
+client.leaveACASMessage=There are no unsaved changes.
+#Add user roles that represent groups allowed to fast user switch
+#client.moduleMenus.fastUserSwitchingRoles=[{"lsKind":"PROJ-00000001","lsType":"Project","roleName":"User"},{"lsKind":"PROJ-00000002","lsType":"Project","roleName":"User"}]
+client.moduleMenus.fastUserSwitchingRoles=[]
+client.moduleMenus.fastUserSwitchingChangeUserRoles=false
+
+################################
 # Uncategorized
 ################################
 
@@ -248,7 +272,7 @@ client.fullpath=http://${client.host}:${client.port}
 
 # Query tool settings
 client.service.result.viewer.displayName=Data Viewer
-client.service.result.viewer.configuredViewers=DataViewer
+client.service.result.viewer.configuredViewers=DataViewer,CurveCurator
 client.service.result.viewer.defaultViewer=DataViewer
 client.service.result.viewer.dataViewer.exptTree.showOnlyMatches=false
 client.service.result.viewer.liveDesign.baseUrl=
@@ -315,6 +339,8 @@ server.service.external.inventory.database.name=
 server.service.external.inventory.database.username=
 server.service.external.inventory.database.password=
 
+client.compoundInventory.enforceUppercaseBarcodes=false
+
 ## options for auth. strategy are: properties, database, ldap
 server.security.authstrategy=database
 #server.security.properties.path=/opt/seurat/SeuratServer/users.txt
@@ -325,20 +351,6 @@ client.security.authstrategy=${server.security.authstrategy}
 server.security.syncLdapAuthRoles=false
 #to make authstrategy config accessible to the client
 client.security.syncLdapAuthRoles=${server.security.syncLdapAuthRoles}
-
-## ACAS Home Page Options
-# If module is customized and the ACAS header name needs to be replaced, you can set the following options
-client.moduleMenus.logoText=ACAS
-client.moduleMenus.logoImageFilePath=
-client.moduleMenus.homePageMessage=Welcome to ACAS
-client.moduleMenus.copyrightMessage=&copy; John McNeil & Company 2012-2017
-# If summary statistics is an included feature, set the following to true
-client.moduleMenus.summaryStats=false
-# For navigation to external ACAS modules from ACAS homepage
-client.moduleMenus.modules.external=[{"displayName": "Compound Registration", "href": "/cmpdreg/"},\
-                                     {"displayName": "Compound Registration Bulk Loader", "href":"/CmpdRegBulkLoader"}]
-
-client.leaveACASMessage=There are no unsaved changes.
 client.scientistCodeOrigin=ACAS authors
 client.molecularTargetCodeOrigin=ACAS DDICT
 
@@ -397,6 +409,19 @@ client.curvefit.modelfitparameter.classes=[{"code":"4 parameter D-R", "parameter
 # Example: client.experiment.lockwhenapproved.filter=[{"lsType": "Bio Activity"}]
 #
 client.experiment.lockwhenapproved.filter=[{"lsType": "Bio Activity"}]
+
+#Configs for whether notebook attributes for protocols and experiments should be visible and/or required
+#Note that notebook page can't be visible if notebook is not visible and page can't be required if notebook is not required
+client.entity.notebook.save=true
+client.entity.notebook.require=true
+client.entity.notebookPage.save=true
+client.entity.notebookPage.require=false
+
+#Config for whether scientist is editable for protocols and experiments
+client.entity.scientist.editable=true
+
+#Config for default protocol/experiment status
+client.entity.status.default=created
 
 # Protocols and experiments which should be hidden (to non-admin users) in the protocol/expt browser when the status is in the config below
 client.entity.hideStatuses=["deleted"]
@@ -506,6 +531,7 @@ flyway.database.password=${server.database.password}
 server.acas.license=/home/runner/build/conf/acas.lic
 
 server.systemTest.runOnStart=${env.RUN_SYSTEM_TEST}
+server.systemTest.runDestructive=false
 
 
 # Required configs for which base entity to use
@@ -522,3 +548,7 @@ client.projectEditor.restrictedCheckbox.show=true
 client.projectEditor.isRestricted.default=false
 
 client.roles.crossProjectLoaderRole=ROLE_ACAS-CROSS-PROJECT-LOADER
+
+# For whether protocols and experiments should have sequential user defined corpName labels
+client.entity.saveInitialsCorpName=false
+

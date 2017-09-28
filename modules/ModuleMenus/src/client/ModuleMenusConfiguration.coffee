@@ -2,7 +2,12 @@ window.ModuleMenusConfiguration =
 	[
 		isHeader: true
 		menuName: "Load Data"
+#		collapsible: true
 	,
+#		isHeader: false
+#		menuName: "Chem Struct"
+#		mainControllerClassName: "ACASFormChemicalStructureExampleController"
+#	,
 		isHeader: false
 		menuName: "Experiment Loader"
 		mainControllerClassName: "GenericDataParserController"
@@ -31,10 +36,11 @@ window.ModuleMenusConfiguration =
 	,
 		isHeader: false, menuName: "Example Thing"
 		mainControllerClassName: "ExampleThingController"
-		autoLaunchName:"cationic_block"
+		autoLaunchName:"example_thing"
 	,
 		isHeader: true
 		menuName: "Search and Edit"
+		collapsible: true
 	,
 		isHeader: false, menuName: "Protocol Browser"
 		mainControllerClassName: "ProtocolBrowserController"
@@ -50,6 +56,7 @@ window.ModuleMenusConfiguration =
 	,
 		isHeader: true
 		menuName: "Admin"
+		collapsible: true
 	,
 		isHeader: false
 		menuName: "Author Editor"
@@ -77,4 +84,26 @@ window.ModuleMenusConfiguration =
 		menuName: "Label Sequence"
 		mainControllerClassName: "ACASLabelSequenceController"
 		autoLaunchName: "acasLabelSequence"
+	,
+		isHeader: true
+		menuName: "CmpdReg Admin"
+		requireUserRoles: []
+	,
+		isHeader: false
+		menuName: "CmpdReg Vendors"
+		mainControllerClassName: "VendorBrowserController"
+		autoLaunchName: "vendor_browser"
+		requireUserRoles: []
+	,
+		isHeader: false
+		menuName: "CmpdReg Stereo Categories"
+		mainControllerClassName: "StereoCategoryBrowserController"
+		autoLaunchName: "stereo_category_browser"
+		requireUserRoles: []
+	,
+		isHeader: false
+		menuName: "CmpdReg Scientists"
+		mainControllerClassName: "ScientistBrowserController"
+		autoLaunchName: "scientist_browser"
+		requireUserRoles: []
 	]

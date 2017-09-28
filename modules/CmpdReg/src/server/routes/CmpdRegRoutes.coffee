@@ -43,6 +43,10 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/cmpdReg/api/v1/parentServices/update/parent/metadata/jsonArray', loginRoutes.ensureAuthenticated, exports.updateParentsMetadata
 	app.post '/cmpdReg/api/v1/lotServices/reparent/lot', loginRoutes.ensureAuthenticated, exports.reparentLot
 	app.post '/cmpdReg/api/v1/lotServices/reparent/lot/jsonArray', loginRoutes.ensureAuthenticated, exports.reparentLots
+	app.get '/api/cmpdReg/ketcher/knocknock', loginRoutes.ensureAuthenticated, exports.ketcherKnocknock
+	app.get '/api/cmpdReg/ketcher/layout', loginRoutes.ensureAuthenticated, exports.ketcherConvertSmiles
+	app.post '/api/cmpdReg/ketcher/layout', loginRoutes.ensureAuthenticated, exports.ketcherLayout
+	app.post '/api/cmpdReg/ketcher/calculate_cip', loginRoutes.ensureAuthenticated, exports.ketcherCalculateCip
 	app.get '/cmpdReg/labelPrefixes', loginRoutes.ensureAuthenticated, exports.getAuthorizedPrefixes
 
 _ = require 'underscore'
@@ -745,6 +749,96 @@ exports.reparentLots = (req, resp) ->
 			resp.end "Error trying to reparent lot array: " + error;
 	)
 
+exports.ketcherKnocknock = (req, resp) ->
+	resp.end "You are welcome!"
+
+exports.ketcherConvertSmiles = (req, resp) ->
+	if global.specRunnerTestmode
+		resp.end "Ok.\n\n  -INDIGO-06301717442D\n\n  4  3  0  0  0  0  0  0  0  0999 V2000\n   -1.3856   -0.8000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.3856   -0.8000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.7713    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0  0  0  0\n  2  3  1  0  0  0  0\n  3  4  1  0  0  0  0\nM  END\n"
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"/structureServices/molconvert"
+		request = require 'request'
+		data =
+			structure: req.query.smiles
+			inputFormat: 'smiles'
+		request(
+			method: 'POST'
+			url: baseurl
+			body: data
+			json: true
+		, (error, response, json) =>
+			if !error && response.statusCode == 200 and json.indexOf('<') != 0
+				statusMessage = "Ok.\n"
+				resp.end statusMessage+json.structure
+			else
+				console.log 'got ajax error trying to convert smiles to MOL'
+				console.log error
+				console.log json
+				console.log response
+				resp.statusCode = 500
+				resp.end JSON.stringify "Smiles to MOL conversion failed"
+		)
+
+exports.ketcherLayout = (req, resp) ->
+	if global.specRunnerTestmode
+		resp.end "Ok.\n\n  -INDIGO-06301717442D\n\n  4  3  0  0  0  0  0  0  0  0999 V2000\n   -1.3856   -0.8000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.3856   -0.8000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.7713    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0  0  0  0\n  2  3  1  0  0  0  0\n  3  4  1  0  0  0  0\nM  END\n"
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"/structureServices/clean"
+		request = require 'request'
+		data =
+			structure: req.body.moldata
+			parameters:
+				dim: 2
+				opts: ""
+		console.log data
+		request(
+			method: 'POST'
+			url: baseurl
+			body: data
+			json: true
+		, (error, response, json) =>
+			if !error && response.statusCode == 200 and json.indexOf('<') != 0
+				statusMessage = "Ok.\n"
+				resp.end statusMessage+json
+			else
+				console.log 'got ajax error trying to clean MOL'
+				console.log error
+				console.log json
+				console.log response
+				resp.statusCode = 500
+				resp.end JSON.stringify "Cleaning MOL conversion failed"
+		)
+
+exports.ketcherCalculateCip = (req, resp) ->
+	if global.specRunnerTestmode
+		resp.end "Ok.\n\n  -INDIGO-06301717442D\n\n  4  3  0  0  0  0  0  0  0  0999 V2000\n   -1.3856   -0.8000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.3856   -0.8000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.7713    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0  0  0  0\n  2  3  1  0  0  0  0\n  3  4  1  0  0  0  0\nM  END\n"
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"/structureServices/cipStereoInfo"
+		request = require 'request'
+		data =
+			structure: req.body.moldata
+		request(
+			method: 'POST'
+			url: baseurl
+			body: data
+			json: true
+		, (error, response, json) =>
+			console.log response
+			console.log json
+			if !error && response.statusCode == 200 and json.indexOf('<') != 0
+				statusMessage = "Ok.\n"
+				resp.end statusMessage+json
+			else
+				console.log 'got ajax error trying to calculate CIP stereo descriptors'
+				console.log error
+				console.log json
+				console.log response
+				resp.statusCode = 500
+				resp.end JSON.stringify "CIP stereo descriptor calculation failed"
+		)
 
 exports.getAuthorizedPrefixes = (req, resp) ->
 	labelSeqRoutes = require './ACASLabelSequencesRoutes.js'

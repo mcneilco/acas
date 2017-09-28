@@ -62,7 +62,6 @@ exports.loginPost = (req, res) ->
 		else
 			res.redirect '/'
 
-
 exports.changePost = (req, res) ->
 	console.log req.session
 	#	res.redirect '/'
@@ -114,6 +113,25 @@ exports.authenticationService = (req, resp) ->
 			console.log "in authentication service fail"
 			resp.json
 				status: "Fail"
+
+	if global.specRunnerTestmode
+		callback("Success")
+	else
+		csUtilities.authCheck req.body.user, req.body.password, callback
+
+exports.ensureAuthenticatedService = (req, resp, next) ->
+	callback = (results) ->
+		console.log results
+		if results.indexOf("Success")>=0
+			console.log "in authentication service success"
+			next()
+		else
+			console.log "in authentication service fail"
+			resp.json
+				status: "Fail"
+
+	console.log "ensureAuthenticatedService -- req.body"
+	console.log req.body
 
 	if global.specRunnerTestmode
 		callback("Success")

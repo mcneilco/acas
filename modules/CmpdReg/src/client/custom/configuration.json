@@ -10,12 +10,7 @@
         "applicationNameForTitleBar": "ACAS Compound Registration",
         "commonNameLabel": "Original ID:"
     },
-    "marvin": {
-        "marvinImplicitH": "heteroterm",
-        "sketchBondLength": 20,
-        "delayShowStep2Next": 750,
-		"exportFormat": "mol"
-    },
+	"ketcher": true,
 	"regSearchResults": {
 		"hideVirtualOption": false
 	},

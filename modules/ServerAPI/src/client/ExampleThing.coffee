@@ -1,57 +1,209 @@
-class window.ExampleThing extends Thing
-	urlRoot: "/api/things/parent/cationic block"
-	className: "CationicBlockParent"
+ExampleThingConf =
+	formFieldDefinitions:
+		labels: [
+			key: 'example thing name'
+			modelDefaults:
+				type: 'name'
+				kind: 'example thing'
+				preferred: true
+			fieldSettings:
+				fieldType: 'label'
+				required: true
+				inputClass: ""
+				formLabel: "*Name"
+				placeholder: "name"
+				fieldWrapper: "bv_thingName"
+		,
+			key: 'alias_'
+			multiple: true
+			modelDefaults:
+				type: 'name'
+				kind: 'alias'
+				preferred: false
+			fieldSettings:
+				fieldType: 'label'
+				required: false
+				inputClass: ""
+				formLabel: "Alias"
+				placeholder: "alias"
+				fieldWrapper: "bv_aliasWrapper"
+		]
+		values: [
+			key: 'scientist'
+			modelDefaults:
+				stateType: 'metadata'
+				stateKind: 'example thing parent'
+				type: 'codeValue'
+				kind: 'scientist'
+				codeOrigin: window.conf.scientistCodeOrigin
+				value: "unassigned"
+			fieldSettings:
+				fieldType: 'codeValue'
+				required: true
+				formLabel: "*Scientist"
+				fieldWrapper: "bv_scientist_date"
+				url: "/api/authors"
+		,
+			key: 'completion date'
+			modelDefaults:
+				stateType: 'metadata'
+				stateKind: 'example thing parent'
+				type: 'dateValue'
+				kind: 'completion date'
+				value: null
+			fieldSettings:
+				fieldType: 'dateValue'
+				formLabel: "*Date"
+				fieldWrapper: "bv_scientist_date"
+				placeholder: "yyyy-mm-dd"
+				required: true
+		,
+			key: 'color'
+			modelDefaults:
+				stateType: 'metadata'
+				stateKind: 'example thing parent'
+				type: 'codeValue'
+				kind: 'color'
+				codeType: 'metadata'
+				codeKind: "color"
+				codeOrigin: 'ACAS DDict'
+				value: null
+			fieldSettings:
+				fieldType: 'codeValue'
+				required: false
+				formLabel: "Color"
+				fieldWrapper: "bv_scientist_date"
+		,
+			key: 'notebook'
+			modelDefaults:
+				stateType: 'metadata'
+				stateKind: 'example thing parent'
+				type: 'stringValue'
+				kind: 'notebook'
+				value: ""
+			fieldSettings:
+				fieldType: 'stringValue'
+				formLabel: "Notebook"
+				fieldWrapper: "bv_notebook"
+				placeholder: "notebook and page"
+				required: false
+		,
+			key: 'exampleFile'
+			modelDefaults:
+				stateType: 'metadata'
+				stateKind: 'example thing parent'
+				type: 'fileValue'
+				kind: 'example file'
+				value: ""
+			fieldSettings:
+				fieldType: 'fileValue'
+				formLabel: "Example File"
+				fieldWrapper: "bv_notebook"
+				required: false
+		]
+
+
+		stateTables: [
+			key: 'exampleThingTable'
+			stateType: 'metadata'
+			stateKind: 'example thing data'
+			tableWrapper: "bv_dataTable"
+			tableLabel: "Example Thing Data Table"
+			values: [
+				modelDefaults:
+					type: 'stringValue'
+					kind: 'media component'
+					value: ""
+				fieldSettings:
+					fieldType: 'stringValue'
+					formLabel: "Media Component"
+					required: true
+					unique: true
+					width: 215
+			,
+				modelDefaults:
+					type: 'numericValue'
+					kind: 'volume'
+					value: null
+					unitType: 'volume'
+					unitKind: 'mL'
+				fieldSettings:
+					fieldType: 'numericValue'
+					formLabel: "Volume"
+					format: "0.00"
+					required: false
+			,
+				modelDefaults:
+					type: 'codeValue'
+					kind: 'category'
+					codeType: 'metadata'
+					codeKind: "category"
+					codeOrigin: 'ACAS DDict'
+					value: null
+				fieldSettings:
+					fieldType: 'codeValue'
+					required: false
+					formLabel: "Category"
+					required: true
+					width:150
+			,
+				modelDefaults:
+					type: 'codeValue'
+					kind: 'performed by'
+					value: ""
+				fieldSettings:
+					fieldType: 'stringValue'
+					formLabel: "Performed By"
+					required: true
+					width: 150
+			,
+				modelDefaults:
+					type: 'dateValue'
+					kind: 'performed time'
+					value: null
+					codeOrigin: window.conf.scientistCodeOrigin
+				fieldSettings:
+					fieldType: 'dateValue'
+					formLabel: "Added date"
+					required: true
+					width: 150
+			]
+		]
+		firstLsThingItxs: []
+		secondLsThingItxs: []
+
+class window.ExampleThingParent extends Thing
+	urlRoot: "/api/things/parent/example thing"
+	url: ->
+		if @isNew() and !@has('codeName')
+			return "/api/things/Material/example thing?nestedstub=true"
+		else
+			return "/api/things/parent/thing/#{@get 'codeName'}?nestedstub=true"
+	className: "ExampleThingParent"
 
 	initialize: ->
 		@.set
 			lsType: "parent"
-			lsKind: "cationic block"
+			lsKind: "Example Thing"
+		for label in ExampleThingConf.formFieldDefinitions.labels
+			label.modelDefaults.key = label.key
+			label.modelDefaults.multiple = label.multiple
+			@lsProperties.defaultLabels.push label.modelDefaults
+		for value in ExampleThingConf.formFieldDefinitions.values
+			value.modelDefaults.key = value.key
+			@lsProperties.defaultValues.push value.modelDefaults
+		for itx in ExampleThingConf.formFieldDefinitions.firstLsThingItxs
+			itx.modelDefaults.key = itx.key
+			@lsProperties.defaultFirstLsThingItx.push itx.modelDefaults
+		for itx in ExampleThingConf.formFieldDefinitions.secondLsThingItxs
+			itx.modelDefaults.key = itx.key
+			@lsProperties.defaultSecondLsThingItx.push itx.modelDefaults
 		super()
 
 	lsProperties:
 		defaultLabels: [
-			key: 'cationic block name'
-			type: 'name'
-			kind: 'cationic block'
-			preferred: true
-#			labelText: "" #gets created when createDefaultLabels is called
 		]
 		defaultValues: [
-			key: 'scientist'
-			stateType: 'metadata'
-			stateKind: 'cationic block parent'
-			type: 'codeValue'
-			kind: 'scientist'
-			codeOrigin: window.conf.scientistCodeOrigin
-			value: "unassigned"
-		,
-			key: 'completion date'
-			stateType: 'metadata'
-			stateKind: 'cationic block parent'
-			type: 'dateValue'
-			kind: 'completion date'
-			value: NaN
-		,
-			key: 'notebook'
-			stateType: 'metadata'
-			stateKind: 'cationic block parent'
-			type: 'stringValue'
-			kind: 'notebook'
-			value: ""
-		,
-			key: 'structural file'
-			stateType: 'metadata'
-			stateKind: 'cationic block parent'
-			type: 'fileValue'
-			kind: 'structural file'
-			value: ""
-		,
-			key: 'batch number'
-			stateType: 'metadata'
-			stateKind: 'cationic block parent'
-			type: 'numericValue'
-			kind: 'batch number'
-			value: 0
 		]
 
 		defaultFirstLsThingItx: [
@@ -62,233 +214,99 @@ class window.ExampleThing extends Thing
 
 		]
 
-
-
 	validate: (attrs) ->
 		errors = []
-		bestName = attrs.lsLabels.pickBestName()
-		nameError = true
-		if bestName?
-			nameError = true
-			if bestName.get('labelText') != ""
-				nameError = false
-		if nameError
-			errors.push
-				attribute: 'thingName'
-				message: "Name must be set"
-		if attrs.scientist?
-			scientist = attrs.scientist.get('value')
-			if scientist is "" or scientist is "unassigned" or scientist is undefined or scientist is null
-				errors.push
-					attribute: 'scientist'
-					message: "Scientist must be set"
-		if attrs["completion date"]?
-			cDate = attrs["completion date"].get('value')
-			if cDate is undefined or cDate is "" or cDate is null then cDate = "fred"
-			if isNaN(cDate)
-				errors.push
-					attribute: 'completionDate'
-					message: "Date must be set"
-		if attrs.notebook?
-			notebook = attrs.notebook.get('value')
-			if notebook is "" or notebook is undefined or notebook is null
-				errors.push
-					attribute: 'notebook'
-					message: "Notebook must be set"
+
 		if errors.length > 0
 			return errors
 		else
 			return null
 
-	prepareToSave: ->
-		rBy = @get('recordedBy')
-		rDate = new Date().getTime()
-		@set recordedDate: rDate
-		@get('lsLabels').each (lab) ->
-			unless lab.get('recordedBy') != ""
-				lab.set recordedBy: rBy
-			unless lab.get('recordedDate') != null
-				lab.set recordedDate: rDate
-		@get('lsStates').each (state) ->
-			unless state.get('recordedBy') != ""
-				state.set recordedBy: rBy
-			unless state.get('recordedDate') != null
-				state.set recordedDate: rDate
-			state.get('lsValues').each (val) ->
-				unless val.get('recordedBy') != ""
-					val.set recordedBy: rBy
-				unless val.get('recordedDate') != null
-					val.set recordedDate: rDate
-
 	duplicate: =>
 		copiedThing = super()
-		copiedThing.get("batch number").set value: 0
 		copiedThing
 
-class window.ExampleThingController extends AbstractFormController
+class window.ExampleThingController extends AbstractThingFormController
 	template: _.template($("#ExampleThingView").html())
-	moduleLaunchName: "cationic_block"
+	moduleLaunchName: "example_thing"
 
 	events: ->
-		"keyup .bv_thingName": "attributeChanged"
-		"change .bv_scientist": "attributeChanged"
-		"keyup .bv_completionDate": "attributeChanged"
-		"click .bv_completionDateIcon": "handleCompletionDateIconClicked"
-		"keyup .bv_notebook": "attributeChanged"
 		"click .bv_saveThing": "handleUpdateThing"
-		"click .bv_deleteSavedFile": "handleDeleteSavedStructuralFile"
 
 	initialize: =>
-		if @model?
-			@completeInitialization()
-		else
-			if window.AppLaunchParams.moduleLaunchParams?
-				if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
-					launchCode = window.AppLaunchParams.moduleLaunchParams.code
-					if launchCode.indexOf("-") == -1
-						@batchCodeName = "new batch"
-					else
-						@batchCodeName = launchCode
-						launchCode =launchCode.split("-")[0]
-					$.ajax
-						type: 'GET'
-						url: "/api/things/parent/cationic block/codename/"+launchCode
-						dataType: 'json'
-						error: (err) ->
-							alert 'Could not get parent for code in this URL, creating new one'
-							@completeInitialization()
-						success: (json) =>
-							if json.length == 0
-								alert 'Could not get parent for code in this URL, creating new one'
-							else
-								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
-#								cbp = new CationicBlockParent json
-								cbp = new ExampleThing json
-								cbp.set cbp.parse(cbp.attributes)
-								@model = cbp
-							@completeInitialization()
-				else
-					@completeInitialization()
-			else
-				@completeInitialization()
-
-	completeInitialization: =>
-		unless @model?
-			@model=new ExampleThing()
 		@errorOwnerName = 'ExampleThingController'
+		@lockEditingForSessionKey = 'codeName'
+		@openFormControllerSocket()
+
+		@hasRendered = false
+		if window.AppLaunchParams.moduleLaunchParams?
+			if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
+				launchCode = window.AppLaunchParams.moduleLaunchParams.code
+				@model = new ExampleThingParent {codeName: launchCode}
+				@model.fetch()
+
+		unless @model?
+			@model = new ExampleThingParent()
+			@modelSaveCallback()
+
 		@setBindings()
 		if @options.readOnly?
 			@readOnly = @options.readOnly
 		else
 			@readOnly = false
 		@listenTo @model, 'sync', @modelSaveCallback
-		@listenTo @model, 'change', @modelChangeCallback
-		$(@el).empty()
-		$(@el).html @template(@model.attributes)
-		@setupScientistSelect()
-		@render()
-
 
 	render: =>
-		unless @model?
-			@model = new ExampleThing()
-		@setupStructuralFileController()
+		unless @hasRendered
+			$(@el).empty()
+			$(@el).html @template(@model.attributes)
+			@setupFormFields(ExampleThingConf.formFieldDefinitions)
+			@hasRendered = true
+
+		@
+
+	renderModelContent: ->
+		if !@model.isNew()
+			@socket.emit 'editLockEntity', @errorOwnerName, @model.get(@lockEditingForSessionKey)
+
 		codeName = @model.get('codeName')
 		@$('.bv_thingCode').val(codeName)
 		@$('.bv_thingCode').html(codeName)
-		bestName = @model.get('lsLabels').pickBestName()
-		if bestName?
-			@$('.bv_thingName').val bestName.get('labelText')
-		@$('.bv_scientist').val @model.get('scientist').get('value')
-		@$('.bv_completionDate').datepicker();
-		@$('.bv_completionDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
-		compDate = @model.get('completion date').get('value')
-		if compDate?
-			unless isNaN(compDate)
-				@$('.bv_completionDate').val UtilityFunctions::convertMSToYMDDate(@model.get('completion date').get('value'))
-		@$('.bv_notebook').val @model.get('notebook').get('value')
 		if @readOnly is true
 			@displayInReadOnlyMode()
+		else
+			@enableAllInputs()
 		@$('.bv_saveThing').attr('disabled','disabled')
 		if @model.isNew()
 			@$('.bv_saveThing').html("Save")
 		else
 			@$('.bv_saveThing').html("Update")
-		@
 
 	modelSaveCallback: (method, model) =>
+		console.log "got model save callback"
+		if @model.isNew() # model not found
+			@model.set codeName: null
+			return
+
+		@fillFieldsFromModels()
 		@$('.bv_saveThing').show()
 		@$('.bv_saveThing').attr('disabled', 'disabled')
 		@$('.bv_saveThingComplete').show()
 		@$('.bv_updatingThing').hide()
 		@trigger 'amClean'
 		@trigger 'thingSaved'
-		@render()
+		@renderModelContent()
+
+		@auditTableController = new ExampleTableAuditController
+			el: @$('.bv_exampleTableAudit')
+			thingCode: @model.get 'codeName'
+		@auditTableController.render()
 
 	modelChangeCallback: (method, model) =>
 		@trigger 'amDirty'
 		@$('.bv_saveThingComplete').hide()
 
-	setupStructuralFileController: =>
-		structuralFileValue = @model.get('structural file').get('value')
-		if structuralFileValue is null or structuralFileValue is "" or structuralFileValue is undefined
-			@createNewFileChooser()
-			@$('.bv_deleteSavedFile').hide()
-		else
-			@$('.bv_structuralFile').html '<a href="'+window.conf.datafiles.downloadurl.prefix+structuralFileValue+'">'+@model.get('structural file').get('comments')+'</a>'
-			@$('.bv_deleteSavedFile').show()
-
-	setupScientistSelect: ->
-		defaultOption = "Select Scientist"
-		@scientistList = new PickListList()
-		@scientistList.url = "/api/authors"
-		@scientistListController = new PickListSelectController
-			el: @$('.bv_scientist')
-			collection: @scientistList
-			insertFirstOption: new PickList
-				code: "unassigned"
-				name: defaultOption
-			selectedCode: @model.get('scientist').get('value')
-
-	handleCompletionDateIconClicked: =>
-		@$( ".bv_completionDate" ).datepicker( "show" )
-
-	createNewFileChooser: =>
-		@structuralFileController = new LSFileChooserController
-			el: @$('.bv_structuralFile')
-			formId: 'fieldBlah',
-			maxNumberOfFiles: 1,
-			requiresValidation: false
-			url: UtilityFunctions::getFileServiceURL()
-			allowedFileTypes: ['png', 'jpeg']
-			hideDelete: false
-		@structuralFileController.on 'amDirty', =>
-			@trigger 'amDirty'
-		@structuralFileController.on 'amClean', =>
-			@trigger 'amClean'
-		@structuralFileController.render()
-		@structuralFileController.on('fileUploader:uploadComplete', @handleFileUpload) #update model with filename
-		@structuralFileController.on('fileDeleted', @handleFileRemoved) #update model with filename
-
-	handleFileUpload: (nameOnServer) =>
-		newFileValue = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "cationic block parent", "fileValue", "structural file"
-		@model.set "structural file", newFileValue
-		@model.get("structural file").set("value", nameOnServer)
-
-	handleFileRemoved: =>
-		@model.get("structural file").set("ignored", true)
-		@model.unset "structural file"
-
-	handleDeleteSavedStructuralFile: =>
-		@handleFileRemoved()
-		@$('.bv_deleteSavedFile').hide()
-		@createNewFileChooser()
-
 	updateModel: =>
-		@model.get("cationic block name").set("labelText", UtilityFunctions::getTrimmedInput @$('.bv_thingName'))
-		@model.get("scientist").set("value", @scientistListController.getSelectedCode())
-		@model.get("notebook").set("value", UtilityFunctions::getTrimmedInput @$('.bv_notebook'))
-		@model.get("completion date").set("value", UtilityFunctions::convertYMDDateToMs(UtilityFunctions::getTrimmedInput @$('.bv_completionDate')))
 
 	validationError: =>
 		super()
@@ -297,27 +315,6 @@ class window.ExampleThingController extends AbstractFormController
 	clearValidationErrorStyles: =>
 		super()
 		@$('.bv_saveThing').removeAttr('disabled')
-
-	validateThingName: ->
-		@$('.bv_saveThing').attr('disabled', 'disabled')
-		lsKind = @model.get('lsKind')
-		name= [@model.get(lsKind+' name').get('labelText')]
-		$.ajax
-			type: 'POST'
-			url: "/api/validateName/"+lsKind
-			data:
-				requestName: name
-			success: (response) =>
-				@handleValidateReturn(response)
-			error: (err) =>
-				@serviceReturn = null
-			dataType: 'json'
-
-	handleValidateReturn: (validNewLabel) =>
-		if validNewLabel is true
-			@handleUpdateThing()
-		else
-			alert 'The requested thing name has already been registered. Please choose a new thing name.'
 
 	handleUpdateThing: =>
 		@model.prepareToSave()
@@ -335,5 +332,135 @@ class window.ExampleThingController extends AbstractFormController
 			return false
 		@disableAllInputs()
 
-	updateBatchNumber: =>
+
+	handleEditLockAvailable: =>
+		super()
+		alert("Document is available to edit. Click OK to attempt to edit (you may be not the first requestor)")
 		@model.fetch()
+
+
+#TODO add thing interaction to project with field
+
+ExampleTableAuditConf =
+	formFieldDefinitions:
+		stateTables: []
+		stateDisplayTables: [
+			key: 'exampleThingTable'
+			stateType: 'metadata'
+			stateKind: 'example thing data'
+			tableWrapper: "bv_dataTable"
+			tableLabel: "Example Thing Data Table - Edit Mode"
+			allowEdit: true
+			moduleName: "ExampleThing"
+#			sortKind: 'media component'
+			values: [
+				modelDefaults:
+					type: 'stringValue'
+					kind: 'media component'
+					value: ""
+				fieldSettings:
+					fieldType: 'stringValue'
+					formLabel: "Media Component"
+					required: true
+					width: 215
+			,
+				modelDefaults:
+					type: 'numericValue'
+					kind: 'volume'
+					value: null
+					unitType: 'volume'
+					unitKind: 'mL'
+				fieldSettings:
+					fieldType: 'numericValue'
+					formLabel: "Volume"
+					required: false
+			,
+				modelDefaults:
+					type: 'codeValue'
+					kind: 'category'
+					codeType: 'metadata'
+					codeKind: "category"
+					codeOrigin: 'ACAS DDict'
+					value: null
+				fieldSettings:
+					fieldType: 'codeValue'
+					required: false
+					formLabel: "Category"
+					required: true
+					width:150
+			,
+				modelDefaults:
+					type: 'codeValue'
+					kind: 'performed by'
+					value: ""
+				fieldSettings:
+					fieldType: 'stringValue'
+					formLabel: "Performed By"
+					required: true
+					width: 150
+			,
+				modelDefaults:
+					type: 'dateValue'
+					kind: 'performed time'
+					value: null
+					codeOrigin: window.conf.scientistCodeOrigin
+				fieldSettings:
+					fieldType: 'dateValue'
+					formLabel: "Added date"
+					required: true
+					width: 150
+			]
+		]
+		firstLsThingItxs: []
+		secondLsThingItxs: []
+
+
+class window.ExampleTableAuditController extends AbstractThingFormController
+	template: _.template($("#ExampleTableAuditView").html())
+
+	events: ->
+
+	initialize: =>
+		@hasRendered = false
+		@model = new ExampleThingParent codeName: @options.thingCode
+		@model.fetch()
+
+		@errorOwnerName = 'ExampleTableAuditController'
+		@setBindings()
+		@listenTo @model, 'sync', @modelSaveCallback
+
+	render: =>
+		unless @hasRendered
+			$(@el).empty()
+			$(@el).html @template()
+			@setupFormFields(ExampleTableAuditConf.formFieldDefinitions)
+			@formDisplayTables['exampleThingTable'].on 'thingSaveRequested', @handleUpdateThing
+			@hasRendered = true
+
+		@
+
+	renderModelContent: ->
+		codeName = @model.get('codeName')
+		@$('.bv_thingCode').html(codeName)
+
+	modelSaveCallback: (method, model) =>
+		console.log "got model save callback"
+		if @model.isNew() # model not found
+			@model.set codeName: null
+			return
+
+		@fillFieldsFromModels()
+		@trigger 'amClean'
+		@trigger 'thingSaved'
+		@renderModelContent()
+
+	modelChangeCallback: (method, model) =>
+		@trigger 'amDirty'
+
+	updateModel: =>
+
+	handleUpdateThing: (transactionComment) =>
+		@model.set 'transactionOptions', comments: transactionComment
+		@model.prepareToSave()
+		@model.reformatBeforeSaving()
+		@model.save()

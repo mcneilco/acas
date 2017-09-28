@@ -243,7 +243,7 @@ class window.AttachFileController extends BasicFileController
 		if fileValue is null or fileValue is "" or fileValue is undefined
 			@createNewFileChooser()
 		else
-			@$('.bv_uploadFile').html '<div style="margin-top:5px;margin-left:4px;"> <a href="'+window.conf.datafiles.downloadurl.prefix+fileValue+'">'+@model.get('comments')+'</a></div>'
+			@$('.bv_uploadFile').html '<div style="margin-top:5px;margin-left:4px;"> <a href="'+window.conf.datafiles.downloadurl.prefix+fileValue+'" target="_blank">'+@model.get('comments')+'</a></div>'
 
 		uneditableFileTypes = window.conf.experiment.uneditableFileTypes
 		unless uneditableFileTypes?

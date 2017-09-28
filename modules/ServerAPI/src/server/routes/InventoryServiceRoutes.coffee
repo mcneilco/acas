@@ -3,8 +3,13 @@ csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFuncti
 _ = require 'underscore'
 preferredEntityCodeService = require '../routes/PreferredEntityCodeService.js'
 config = require '../conf/compiled/conf.js'
+RUN_CUSTOM_FLAG = "0"
+fs = require('fs')
+parse = require('csv-parse')
+
 
 exports.setupAPIRoutes = (app) ->
+	app.post '/api/getContainersInLocationWithTypeAndKind', exports.getContainersInLocationWithTypeAndKind
 	app.post '/api/getContainersInLocation', exports.getContainersInLocation
 	app.post '/api/getContainerCodesByLabels', exports.getContainerCodesByLabels
 	app.post '/api/getContainersByLabels', exports.getContainersByLabels
@@ -48,8 +53,19 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/createTube', exports.createTube
 	app.post '/api/createTubes', exports.createTubes
 	app.post '/api/throwInTrash', exports.throwInTrash
+	app.post '/api/updateContainerHistoryLogs', exports.updateContainerHistoryLogs
+	app.post '/api/getContainerInfoFromBatchCode', exports.getContainerInfoFromBatchCode
+	app.post '/api/getContainerStatesByContainerValue', exports.getContainerStatesByContainerValue
+	app.post '/api/getContainerLogsByContainerCodes', exports.getContainerLogsByContainerCodes
+	app.post '/api/getTubesFromBatchCode', exports.getTubesFromBatchCode
+	app.post '/api/loadParentVialsFromCSV', exports.loadParentVialsFromCSV
+	app.post '/api/loadDaughterVialsFromCSV', exports.loadDaughterVialsFromCSV
+	app.post '/api/saveWellToWellInteractions', exports.saveWellToWellInteractions
+	app.post '/api/createDaughterVials', exports.createDaughterVials
+
 
 exports.setupRoutes = (app, loginRoutes) ->
+	app.post '/api/getContainersInLocationWithTypeAndKind', loginRoutes.ensureAuthenticated, exports.getContainersInLocationWithTypeAndKind
 	app.post '/api/getContainersInLocation', loginRoutes.ensureAuthenticated, exports.getContainersInLocation
 	app.post '/api/getContainerCodesByLabels', loginRoutes.ensureAuthenticated, exports.getContainerCodesByLabels
 	app.post '/api/getContainersByLabels', loginRoutes.ensureAuthenticated, exports.getContainersByLabels
@@ -94,6 +110,13 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/createTube', loginRoutes.ensureAuthenticated, exports.createTube
 	app.post '/api/createTubes', loginRoutes.ensureAuthenticated, exports.createTubes
 	app.post '/api/throwInTrash', loginRoutes.ensureAuthenticated, exports.throwInTrash
+	app.post '/api/updateContainerHistoryLogs', loginRoutes.ensureAuthenticated, exports.updateContainerHistoryLogs
+	app.post '/api/getTubesFromBatchCode', loginRoutes.ensureAuthenticated, exports.getTubesFromBatchCode
+	app.post '/api/loadParentVialsFromCSV', loginRoutes.ensureAuthenticated, exports.loadParentVialsFromCSV
+	app.post '/api/loadDaughterVialsFromCSV', loginRoutes.ensureAuthenticated, exports.loadDaughterVialsFromCSV
+	app.post '/api/saveWellToWellInteractions', loginRoutes.ensureAuthenticated, exports.saveWellToWellInteractions
+	app.post '/api/createDaughterVials', loginRoutes.ensureAuthenticated, exports.createDaughterVials
+
 
 exports.getContainersInLocation = (req, resp) ->
 	req.setTimeout 86400000
@@ -101,8 +124,14 @@ exports.getContainersInLocation = (req, resp) ->
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getContainersInLocationResponse
 	else
+		queryParams = []
+		if req.query.containerType?
+			queryParams.push "containerType="+req.query.containerType
+		if req.query.containerKind?
+			queryParams.push "containerKind="+req.query.containerKind
+		queryString = queryParams.join "&"
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainersInLocation"
+		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainersInLocation?"+queryString
 		request = require 'request'
 		request(
 			method: 'POST'
@@ -121,8 +150,62 @@ exports.getContainersInLocation = (req, resp) ->
 				resp.end JSON.stringify "getContainersInLocation failed"
   		)
 
+exports.getContainersInLocationWithTypeAndKind = (req, resp) ->
+	req.setTimeout 86400000
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		resp.json inventoryServiceTestJSON.getContainersInLocationResponse
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainersInLocation?containerType=location&containerKind=default"
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: baseurl
+			body: req.body.values
+			json: true
+			timeout: 86400000
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				resp.json json
+			else
+				console.error 'got ajax error trying to get getContainersInLocation'
+				console.error error
+				console.error json
+				console.error response
+				resp.end JSON.stringify "getContainersInLocation failed"
+		)
+
+exports.getContainersInLocationWithTypeAndKindInternal = (values, callback) ->
+	#req.setTimeout 86400000
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		resp.json inventoryServiceTestJSON.getContainersInLocationResponse
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainersInLocation?containerType=location&containerKind=default"
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: baseurl
+			body: values
+			json: true
+			timeout: 86400000
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				callback json, response.statusCode
+			else
+				console.error 'got ajax error trying to get getContainersInLocation'
+				console.error error
+				console.error json
+				console.error response
+				#resp.end JSON.stringify "getContainersInLocation failed"
+				callback response, response.statusCode
+		)
+
 exports.getContainersByLabels = (req, resp) ->
 	req.setTimeout 86400000
+
 	exports.getContainersByLabelsInternal req.body, req.query.containerType, req.query.containerKind, req.query.labelType, req.query.labelKind, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
@@ -170,18 +253,50 @@ exports.getContainersByLabelsInternal = (containerLabels, containerType, contain
 
 exports.getContainerCodesByLabels = (req, resp) ->
 	req.setTimeout 86400000
-	exports.getContainerCodesByLabelsInternal req.body, req.query.containerType, req.query.containerKind, req.query.labelType, req.query.labelKind, (json, statusCode) ->
+
+	containerLabels = req.body
+	containerType = req.query.containerType
+	containerKind = req.query.containerKind
+	labelType = req.query.labelType
+	labelKind = req.query.labelKind
+	likeParameter = req.query.like
+	maxResults = req.query.maxResults
+
+	queryPayload =
+		containerLabels: req.body
+		containerType: containerType
+		containerKind: containerKind
+		labelType: labelType
+		labelKind: labelKind
+		likeParameter: likeParameter
+		maxResults: maxResults
+
+	console.log 'queryPayload', queryPayload
+
+	exports.getContainerCodesByLabelsLikeMaxResultsInternal(queryPayload, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
+	)
 
-exports.getContainerCodesByLabelsInternal = (containerCodesJSON, containerType, containerKind, labelType, labelKind, callback) ->
+exports.getContainerCodesByLabelsLikeMaxResultsInternal = (requestObject, callback) ->
 	if global.specRunnerTestmode
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getContainerCodesByLabelsResponse
 	else
-		console.debug 'incoming getContainerCodesByLabelsInternal request: ', JSON.stringify(containerCodesJSON), containerType, containerKind, labelType, labelKind
 		config = require '../conf/compiled/conf.js'
+
+		containerLabels = requestObject.containerLabels
+		containerType = requestObject.containerType
+		containerKind = requestObject.containerKind
+		labelType = requestObject.labelType
+		labelKind = requestObject.labelKind
+		likeParameter = requestObject.likeParameter
+		maxResults = requestObject.maxResults
+
+		console.debug 'incoming getContainerCodesByLabelsLikeMaxResultsInternal: ', JSON.stringify(containerLabels), containerType, containerKind, labelType, labelKind, likeParameter, maxResults
+
 		queryParams = []
+
 		if containerType?
 			queryParams.push "containerType="+containerType
 		if containerKind?
@@ -190,6 +305,10 @@ exports.getContainerCodesByLabelsInternal = (containerCodesJSON, containerType, 
 			queryParams.push "labelType="+labelType
 		if labelKind?
 			queryParams.push "labelKind="+labelKind
+		if likeParameter?
+			queryParams.push "like="+likeParameter
+		if maxResults?
+			queryParams.push "maxResults="+maxResults
 		queryString = queryParams.join "&"
 		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainerCodesByLabels?"+queryString
 		console.debug 'base url: ', baseurl
@@ -197,7 +316,7 @@ exports.getContainerCodesByLabelsInternal = (containerCodesJSON, containerType, 
 		request(
 			method: 'POST'
 			url: baseurl
-			body: JSON.stringify containerCodesJSON
+			body: JSON.stringify containerLabels
 			json: true
 			timeout: 86400000
 			headers: 'content-type': 'application/json'
@@ -212,6 +331,31 @@ exports.getContainerCodesByLabelsInternal = (containerCodesJSON, containerType, 
 				callback JSON.stringify("getContainerCodesByLabels failed"), 500
 		)
 
+exports.getContainerCodesByLabelsInternal = (containerCodesJSON, containerType, containerKind, labelType, labelKind, callback) ->
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		resp.json inventoryServiceTestJSON.getContainerCodesByLabelsResponse
+	else
+		console.warn "getContainerCodesByLabelsInternal is deprecated please use getContainerCodesByLabelsLikeMaxResultsInternal"
+		console.debug 'incoming getContainerCodesByLabelsInternal request: ', JSON.stringify(containerCodesJSON), containerType, containerKind, labelType, labelKind
+		config = require '../conf/compiled/conf.js'
+
+		likeParameter = null
+		maxResults = null
+
+		queryPayload =
+			containerLabels: containerCodesJSON
+			containerType: containerType
+			containerKind: containerKind
+			labelType: labelType
+			labelKind: labelKind
+			likeParameter: likeParameter
+			maxResults: maxResults
+
+		exports.getContainerCodesByLabelsLikeMaxResultsInternal(queryPayload, (json, statusCode) ->
+			callback json, statusCode
+		)
+
 exports.getWellCodesByPlateBarcodes = (req, resp) ->
 	req.setTimeout 86400000
 	exports.getWellCodesByPlateBarcodesInternal req.body, (json) ->
@@ -219,6 +363,32 @@ exports.getWellCodesByPlateBarcodes = (req, resp) ->
 			resp.statusCode = 500
 		else
 			resp.json json
+
+exports.getContainersInBoxPositionInternal = (values, callback) ->
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		resp.json inventoryServiceTestJSON.getContainersInLocationResponse
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainersInLocation?containerType=container&containerKind=tube"
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: baseurl
+			body: values
+			json: true
+			timeout: 86400000
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				callback json, response.statusCode
+			else
+				console.error 'got ajax error trying to get getContainersInLocation'
+				console.error error
+				console.error json
+				console.error response
+				#resp.end JSON.stringify "getContainersInLocation failed"
+				callback response, response.statusCode
+		)
 
 exports.getWellCodesByPlateBarcodes = (req, resp) ->
 	req.setTimeout 86400000
@@ -245,6 +415,31 @@ exports.getWellCodesByPlateBarcodes = (req, resp) ->
 				console.error response
 				resp.end JSON.stringify "getWellCodesByPlateBarcodes failed"
   		)
+
+exports.getWellCodesByPlateBarcodesInternal = (plateBarcodes, callback) ->
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		callback inventoryServiceTestJSON.getWellCodesByPlateBarcodesResponse
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"containers/getWellCodesByPlateBarcodes"
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: baseurl
+			body: plateBarcodes
+			json: true
+			timeout: 86400000
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				callback json
+			else
+				console.error 'got ajax error trying to get getWellCodesByPlateBarcodes'
+				console.error error
+				console.error json
+				console.error response
+				callback "getWellCodesByPlateBarcodes failed"
+		)
 
 exports.getWellContent = (req, resp) ->
 	req.setTimeout 86400000
@@ -415,7 +610,6 @@ exports.updateContainersByContainerCodesInternal = (updateInformation, callCusto
 		codeNames = _.pluck updateInformation, "codeName"
 		console.debug "calling getContainersByCodeNamesInternal"
 		exports.getContainersByCodeNamesInternal codeNames, (containers, statusCode) =>
-			console.debug "containers from service"
 			if statusCode == 400
 				console.error "got errors requesting code names: #{JSON.stringify containers}"
 				callback "error when requesting code names", 400
@@ -426,7 +620,7 @@ exports.updateContainersByContainerCodesInternal = (updateInformation, callCusto
 			else
 				barcodes = _.pluck updateInformation, "barcode"
 				console.debug "calling getContainerCodesByLabelsInternal"
-				exports.getContainerCodesByLabelsInternal barcodes, null, null, "barcode", "barcode", (containerCodes, statusCode) =>
+				exports.getContainerCodesByLabelsInternal barcodes, "container", null, "barcode", "barcode", (containerCodes, statusCode) =>
 					if statusCode == 500
 						console.error "updateContainerMetadataByContainerCodeInternal failed: #{JSON.stringify containerCodes}"
 						callback "updateContainersByContainerCodesInternal failed", 500
@@ -585,6 +779,8 @@ exports.getBreadCrumbByContainerCodeInternal = (codeNamesJSON, delimeter, callba
 			headers: 'content-type': 'application/json'
 		, (error, response, json) =>
 			if !error && response.statusCode == 200
+				console.log 'json in getBreadCrumbByContainerCodeInternal'
+				console.log json
 				callback json
 			else
 				console.error 'got ajax error trying to get getBreadCrumbByContainerCode'
@@ -723,11 +919,12 @@ exports.containersByTypeKindInternal = (lsType, lsKind, format, stub, testMode, 
 		callback JSON.stringify(thingServiceTestJSON.batchList), 200
 	else
 		baseurl = config.all.client.service.persistence.fullpath+"containers?lsType="+lsType+"&lsKind="+lsKind
-		stubFlag = "with=stub"
-		if stub
-			baseurl += "?#{stubFlag}"
-		if format? and format=="codetable"
-			baseurl += "&format=codetable"
+		if format?
+			if format=="codetable"
+				baseurl += "&format=codetable"
+			else if format == "stub"
+				baseurl += "&format=stub"
+
 		request = require 'request'
 		request(
 			method: 'GET'
@@ -755,6 +952,23 @@ exports.containerByCodeName = (req, resp) ->
 		baseurl = config.all.client.service.persistence.fullpath+"containers/"+req.params.code
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
+exports.containerByCodeNameInteral = (containerCodeName, callback) ->
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.persistence.fullpath+"containers/" + containerCodeName
+	request = require 'request'
+	request(
+		method: 'GET'
+		url: baseurl
+		json: true
+	, (error, response, json) =>
+		if !error && response.statusCode == 200
+			callback response.statusCode, json
+		else
+			console.log 'got ajax error'
+			console.log error
+			console.log json
+			callback 500, {error: true, message:error}
+	)
 
 updateContainer = (container, testMode, callback) ->
 	if testMode or global.specRunnerTestmode
@@ -1049,6 +1263,38 @@ getContainerCodesFromLabels = (req, callback) ->
 				callback json
 		)
 
+getContainerCodesFromLabelsInternal = (barcodes, containerType, containerKind, callback) ->
+	if global.specRunnerTestmode
+		response =
+			codeName: 'CONT-0000001'
+			label: 'test label'
+		callback response
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainerCodesByLabels?"
+		url = baseurl+"containerType=#{containerType}&containerKind=#{containerKind}"
+		postBody = barcodes
+		console.debug postBody
+		console.debug url
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: url
+			body: postBody
+			json: true
+			timeout: 86400000
+		, (error, response, json) =>
+			console.debug response.statusCode
+			console.debug json
+			if !error and !json.error
+				callback json
+			else
+				console.error 'got ajax error trying to lookup lsContainer name'
+				console.error error
+				console.error response
+				callback json
+		)
+
 exports.getContainerCodesFromLabels = (req, resp) ->
 	req.setTimeout 86400000
 	getContainerCodesFromLabels req, (json) ->
@@ -1156,46 +1402,64 @@ exports.updateAmountInWellInternal = (updateAmountInfo, callback) ->
 
 exports.moveToLocation = (req, resp) ->
 	req.setTimeout 86400000
-	exports.moveToLocationInternal req.body, req.query.callCustom, (json, statusCode) ->
+	exports.moveToLocationInternal req.body, req.query.callCustom, req.query.updateLocationHistory, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
 
-exports.moveToLocationInternal = (input, callCustom, callback) ->
-	callCustom  = callCustom != "0"
-	if global.specRunnerTestmode
-		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
-		resp.json inventoryServiceTestJSON.moveToLocationResponse
-	else
-		console.debug 'incoming moveToLocationJSON request: ', JSON.stringify(input)
-		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"containers/moveToLocation"
-		console.debug 'base url: ', baseurl
-		request = require 'request'
-		request(
-			method: 'POST'
-			url: baseurl
-			body: input
-			json: true
-			timeout: 86400000
-			headers: 'content-type': 'application/json'
-		, (error, response, json) =>
-			console.debug "response statusCode: #{response.statusCode}"
-			if !error
-				if callCustom && csUtilities.moveToLocation?
-					console.log "running customer specific server function moveToLocation"
-					csUtilities.moveToLocation input, (customerResponse, statusCode) ->
-						json = _.extend json, customerResponse
-						callback json, statusCode
+exports.moveToLocationInternal = (input, callCustom, updateLocationHistory, callback) ->
+	#exports.updateContainerHistoryLogsInternal(input, (json, statusCode) ->
+	# 	console.log 'updated history logs before moving to temp'
+	# )
+		# default for callCustom is true
+		callCustom  = callCustom != "0"
+		# default for updateLocationHistory is false
+		updateLocationHistory = updateLocationHistory == "1"
+		if global.specRunnerTestmode
+			inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+			resp.json inventoryServiceTestJSON.moveToLocationResponse
+		else
+			console.debug 'incoming moveToLocationJSON request: ', JSON.stringify(input)
+			config = require '../conf/compiled/conf.js'
+			baseurl = config.all.client.service.persistence.fullpath+"containers/moveToLocation"
+			console.debug 'base url: ', baseurl
+			request = require 'request'
+			console.log 'request into moveToLocation'
+			console.log input
+			request(
+				method: 'POST'
+				url: baseurl
+				body: input
+				json: true
+				timeout: 86400000
+				headers: 'content-type': 'application/json'
+			, (error, response, json) =>
+				#add the call to updateContainerHistoryLogs here...
+				console.debug "response statusCode: #{response.statusCode}"
+				if !error
+					console.log input[0].containerCodeName
+					if updateLocationHistory
+						exports.updateContainerHistoryLogsInternal(input, (json, statusCode) ->
+							callback json, statusCode
+							# if callCustom && csUtilities.moveToLocation?
+							# 	console.log "running customer specific server function moveToLocation"
+							# 	csUtilities.moveToLocation input, (customerResponse, statusCode) ->
+							# 		json = _.extend json, customerResponse
+							# 		callback json, statusCode
+							# else
+							# 	console.warn "could not find customer specific server function moveToLocation so not running it"
+							# 	callback json, response.statusCode
+							# )
+						)
+					else
+						callback json, response.statusCode
 				else
-					console.warn "could not find customer specific server function moveToLocation so not running it"
-					callback json, response.statusCode
-			else
-				console.error 'got ajax error trying to get moveToLocation'
-				console.error error
-				console.error json
-				console.error response
-				callback JSON.stringify("updateWellContent failed"), 500
-		)
+					console.error 'got ajax error trying to get moveToLocation'
+					console.error error
+					console.error json
+					console.error response
+					callback JSON.stringify("moveToLocation failed"), 500
+			)
+		#)
 
 exports.getWellContentByContainerLabel = (req, resp) ->
 	req.setTimeout 86400000
@@ -1484,8 +1748,11 @@ exports.mergeContainersInternal = (input, callback) ->
 						isOdd = (num) ->
 							return (num % 2) == 1
 						alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-						_.map originWellContent, (originWells) ->
-							quadrant = _.findWhere input.quadrants, {"codeName": originWells.containerCodeName}
+						# for each quadrant
+						_.map input.quadrants, (quadrant) ->
+							# find plate whose name matches the quadrant name
+							originWells = _.findWhere originWellContent, {"containerCodeName": quadrant.codeName}
+							# map plate wells to merged plate wells
 							_.map originWells.wellContent, (wellContent) ->
 								wellContent = _.omit(wellContent, ['containerCodeName', 'wellName', 'recordedDate'])
 								wellContent.recordedDate = 1455323242544
@@ -1623,6 +1890,7 @@ exports.containerLogsInternal = (inputs, callCustom, callback) ->
 				callback json, statusCode
 
 exports.containerLocationHistory = (req, resp) ->
+	req.setTimeout 86400000
 	exports.containerLocationHistoryInternal req.body, req.query.callCustom, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
@@ -1636,7 +1904,9 @@ exports.containerLocationHistoryInternal = (inputs, callCustom, callback) ->
 			exports.addContainerLocationHistory inputs, callCustom, (json, statusCode) ->
 				callback json, statusCode
 
+
 exports.getContainerLogs = (req, resp) ->
+	req.setTimeout 86400000
 	exports.getContainerLogsInternal [req.params.label], req.query.containerType, req.query.containerKind, req.query.labelType, req.query.labelKind, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
@@ -1659,6 +1929,39 @@ exports.getContainerLogsInternal = (labels, containerType, containerKind, labelT
 					responseObject.logs = container[0].getLogs()
 				response.push responseObject
 			callback response, 200
+
+exports.getContainerLogsByContainerCodes = (req, resp) ->
+	req.setTimeout 86400000
+
+	exports.getContainerLogsByContainerCodesInternal req.body, (json, statusCode) ->
+		resp.statusCode = statusCode
+		resp.json json
+
+exports.getContainerLogsByContainerCodesInternal = (containerCodes, callback) =>
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		resp.json inventoryServiceTestJSON.getContainerAndDefinitionContainerByContainerLabelInternalResponse
+	else
+		console.debug "incoming getContainerLogsByContainerCodesInternal request: '#{JSON.stringify(containerCodes)}'"
+		exports.getContainersByCodeNamesInternal(containerCodes, (containersByCodeNamesResponse, statusCode) =>
+			response = []
+			for getContainer in containersByCodeNamesResponse
+				lsLabels = getContainer.container.lsLabels
+				preferredLabelObject = _.filter(lsLabels, (label) ->
+  				label.preferred == true
+				)
+				codeName = getContainer.container.codeName
+				responseObject =
+					label: preferredLabelObject[0].labelText
+					codeName: codeName
+					logs: []
+				if getContainer.container?
+					container = getContainerModels([getContainer])
+					responseObject.logs = container[0].getLogs()
+				response.push responseObject
+			callback response, 200
+		)
+
 
 exports.getContainerLocationHistory = (req, resp) ->
 	exports.getContainerLocationHistoryInternal [req.params.label], req.query.containerType, req.query.containerKind, req.query.labelType, req.query.labelKind, (json, statusCode) ->
@@ -1754,7 +2057,6 @@ exports.addContainerLocationHistory = (inputs, callCustom, callback) ->
 				if csUtilities.addContainerLocationHistory?
 					console.log "running customer specific server function addContainerLocationHistory"
 					csUtilities.addContainerLocationHistory inputs, (response) ->
-						console.log response
 				else
 					console.warn "could not find customer specific server function addContainerLocationHistory so not running it"
 			callback json, statusCode
@@ -1841,8 +2143,17 @@ exports.getContainerCodeNamesByContainerValueInternal = (requestObject, callback
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		callback inventoryServiceTestJSON.getContainerCodeNamesByContainerValueResponse
 	else
+		queryParams = []
+		if requestObject.like?
+			queryParams.push "like="+requestObject.like
+		if requestObject.rightLike?
+			queryParams.push "rightLike="+requestObject.rightLike
+		if requestObject.maxResults?
+			queryParams.push "maxResults="+requestObject.maxResults
+		queryString = queryParams.join "&"
+		console.log 'request object in getContainerCodeNamesByContainerValue', requestObject
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainerCodeNamesByContainerValue"
+		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainerCodeNamesByContainerValue?"+queryString
 		request = require 'request'
 		console.debug 'calling service', baseurl
 		request(
@@ -1980,33 +2291,1056 @@ exports.throwInTrash = (req, resp) ->
 		resp.json json
 
 exports.throwInTrashInternal = (input, callCustom, callback) ->
+	#exports.updateContainerHistoryLogsInternal(input, (json, statusCode) ->
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath + "containers/throwInTrash"
+		console.log baseurl
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: baseurl
+			body: JSON.stringify input
+			json: true
+			timeout: 6000000
+		, (error, response, json) =>
+			if !error  && response.statusCode == 204
+				exports.updateContainerHistoryLogsInternal(input, (json, statusCode) ->
+	# If call custom doesn't equal 0 then call custom
+					callCustom  = callCustom != "0"
+					if callCustom && csUtilities.throwInTrash?
+						console.log "running customer specific server function throwInTrash"
+						csUtilities.throwInTrash input, (customerResponse, statusCode) ->
+		#					json = _.extend json, customerResponse
+							callback json, response.statusCode
+					else
+						console.warn "could not find customer specific server function throwInTrash so not running it"
+						callback json, response.statusCode
+				)
+			else if response.statusCode == 400
+				callback response.body, response.statusCode
+			else
+				console.log 'got ajax error trying to create tube'
+				console.log error
+				console.log response
+				callback response.body, 500
+		)
+	#)
+
+exports.updateContainerHistoryLogsInternal = (containers, callback) ->
+	formattedContainers = []
+	index = 0
+	#_.each(containers, (container) ->
+	formatContainersForLocationHistoryUpdate(containers, (statusCode, formattedContainers) ->
+		exports.containerLocationHistoryInternal(formattedContainers, RUN_CUSTOM_FLAG, (json, statusCode) ->
+			return callback json,statusCode
+		)
+		# else
+		# 	return callback null, 500
+	)
+
+formatContainersForLocationHistoryUpdate = (containers, callback) ->
+	createContainersWithBreadcrumb(containers, (containersWithBreadcrumb, modifiedBy, modifiedDate) ->
+		formatLocationStrings(containersWithBreadcrumb, (formattedContainersWithBreadcrumb) ->
+			formatContainers(formattedContainersWithBreadcrumb, modifiedBy, modifiedDate, (formattedContainers) ->
+				return callback 200, formattedContainers
+				)
+			)
+		)
+
+createContainersWithBreadcrumb = (containers, callback) ->
+	containerCodeNames = []
+	modifiedBy = containers[0].modifiedBy
+	modifiedDate = containers[0].modifiedDate
+	_.each(containers, (container) ->
+		containerCodeNames.push(container.containerCodeName)
+	)
+	exports.getBreadCrumbByContainerCodeInternal(containerCodeNames, "<", (containersWithBreadcrumb) ->
+		return callback containersWithBreadcrumb, modifiedBy, modifiedDate
+	)
+
+formatLocationStrings = (containersWithBreadcrumb, callback) ->
+	formattedContainersWithBreadcrumb = []
+	_.each(containersWithBreadcrumb, (container) ->
+		locationArray = container.labelBreadCrumb.split("<")
+		locationArrayString = JSON.stringify(locationArray)
+		container.locationArrayString = locationArrayString
+		formattedContainersWithBreadcrumb.push(container)
+	)
+	return callback formattedContainersWithBreadcrumb
+
+formatContainers = (containers, modifiedBy, modifiedDate, callback) ->
+	formattedContainers = []
+	_.each(containers, (container) ->
+		formattedContainer = {
+			"codeName": container.containerCode
+			"recordedBy": modifiedBy
+			"recordedDate": modifiedDate
+			"location": container.locationArrayString
+			"movedBy": modifiedBy
+			"movedDate": modifiedDate
+			"additionalValues": []
+		}
+		formattedContainers.push(formattedContainer)
+	)
+	statusCode = 200
+	return callback formattedContainers
+	#callback(formattedContainers, statusCode)
+
+exports.getContainerInfoFromBatchCode = (req, resp) =>
+
+	requestObject =
+		batchCode: req.body.batchCode
+
+	exports.getContainerInfoFromBatchCodeInternal(requestObject, (json, statusCode) =>
+		resp.statusCode = statusCode
+		resp.json json
+	)
+
+
+# getLocationBreadcrumb = (container, callback) ->
+# 	exports.getBreadCrumbByContainerCodeInternal([container.containerCodeName], "<", (breadcrumb) ->
+# 		labelBreadCrumb = breadcrumb[0].labelBreadCrumb
+# 		callback labelBreadCrumb
+# 		# console.log 'breadcrumb for move to locations'
+# 		# console.log breadcrumb[0].labelBreadCrumb
+# 		# #test breadCrumb = 'CAGE00002<SHELF1<E0059101<A01'
+# 		# locationArray = breadcrumb[0].labelBreadCrumb.split("<")
+# 		#callback locationArray
+# 	)
+#
+# formatContainerForLocationHistoryUpdate = (container, callback) ->
+# 	getLocationBreadcrumb(container, (labelBreadCrumb) ->
+# 		createLocationArray(labelBreadCrumb, (locationArrayString) ->
+# 			#buildLocationArrayString(locationArray, (locationArrayString) ->
+# 			formatContainer(container, locationArrayString, (formattedContainer, statusCode) ->
+# 				callback statusCode, formattedContainer
+# 				)
+# 			)
+# 		)
+#
+# createLocationArray = (labelBreadCrumb, callback) ->
+# 	locationArray = labelBreadCrumb.split("<")
+# 	locationArrayString = JSON.stringify(locationArray)
+# 	callback locationArrayString.toUpperCase()
+#
+# formatContainer = (container, locationArrayString, callback) ->
+#
+# 	formattedContainer = {
+# 		"codeName": container.containerCodeName
+# 		"recordedBy": container.modifiedBy
+# 		"recordedDate": container.modifiedDate
+# 		"location": locationArrayString
+# 		"movedBy": container.modifiedBy
+# 		"movedDate": container.modifiedDate
+# 		"additionalValues": []
+# 	}
+#
+# 	statusCode = 200
+# 	callback(formattedContainer, statusCode)
+
+# buildLocationArrayString = (locationArray, callback) ->
+# 	locationSeparator = '\",\"'
+# 	locationArrayString = '[\"' +
+# 		locationArray[0] +
+# 		locationSeparator +
+# 		locationArray[1] +
+# 		locationSeparator +
+# 		locationArray[2] +
+# 		locationSeparator +
+# 		locationArray[3] +
+# 		'\"]'
+#
+# 	console.log 'locationArrayString '
+# 	console.log locationArrayString
+# 	callback locationArrayString
+
+exports.getContainerInfoFromBatchCodeInternal = (requestObject, callback) =>
+
+	queryPayload =
+		{
+			"containerType": "well",
+			"containerKind": "default",
+			"stateType": "status",
+			"stateKind": "content",
+			"valueType": "codeValue",
+			"valueKind": "batch code",
+			"value": requestObject.batchCode
+		}
+
+	exports.getContainerCodeNamesByContainerValueInternal(queryPayload, (json) =>
+		statusCode = 200
+		if json.maxResults?
+			warningMessage = "Max results of #{maxResults} reached."
+			return callback {warningMessage: warningMessage}, statusCode
+		else
+			if json.length > 0
+				exports.getWellContentInternal(json, (response) =>
+					return callback response, statusCode
+				)
+			else
+				return callback {warningMessage: "No results found for #{queryPayload.value}"}, statusCode
+	)
+
+exports.getContainerStatesByContainerValue = (req, resp) =>
+
+	exports.getContainerStatesByContainerValueInternal(req.body, (json, statusCode) =>
+		resp.statusCode = statusCode
+		resp.json json
+	)
+
+exports.getContainerStatesByContainerValueInternal = (requestObject, callback) =>
+
+	queryParams = []
+	if requestObject.like?
+		queryParams.push "like="+requestObject.like
+	if requestObject.rightLike?
+		queryParams.push "rightLike="+requestObject.rightLike
+	if requestObject.maxResults?
+		queryParams.push "maxResults="+requestObject.maxResults
+	if requestObject.with?
+		queryParams.push "with="+requestObject.with
+	queryString = queryParams.join "&"
+
+
+	queryPayload =
+		{
+			containerType: requestObject.containerType
+			containerKind: requestObject.containerKind
+			stateType: requestObject.stateType
+			stateKind: requestObject.stateKind
+			valueType: requestObject.valueType
+			valueKind: requestObject.valueKind
+			value: requestObject.value
+		}
+
 	config = require '../conf/compiled/conf.js'
-	baseurl = config.all.client.service.persistence.fullpath + "containers/throwInTrash"
-	console.log baseurl
+	baseurl = config.all.client.service.persistence.fullpath+"containerstates/getContainerStatesByContainerValue?"+queryString
 	request = require 'request'
 	request(
 		method: 'POST'
 		url: baseurl
-		body: JSON.stringify input
+		body: queryPayload
 		json: true
-		timeout: 6000000
+		timeout: 86400000
 	, (error, response, json) =>
-		if !error  && response.statusCode == 204
-# If call custom doesn't equal 0 then call custom
-			callCustom  = callCustom != "0"
-			if callCustom && csUtilities.throwInTrash?
-				console.log "running customer specific server function throwInTrash"
-				csUtilities.throwInTrash input, (customerResponse, statusCode) ->
-#					json = _.extend json, customerResponse
-					callback json, response.statusCode
-			else
-				console.warn "could not find customer specific server function throwInTrash so not running it"
-				callback json, response.statusCode
-		else if response.statusCode == 400
-			callback response.body, response.statusCode
+		if !error && response.statusCode == 200
+			callback json, response.statusCode
 		else
-			console.log 'got ajax error trying to create tube'
-			console.log error
-			console.log response
-			callback response.body, 500
+			console.error 'got ajax error trying to get getContainerStatesByContainerValue'
+			console.error error
+			console.error json
+			console.error response
+			callback null, 500
+			#resp.end JSON.stringify "getContainerStatesByContainerValue failed"
+		)
+
+exports.getTubesFromBatchCode = (req, resp) =>
+
+	exports.getTubesFromBatchCodeInternal(req.body, (json, statusCode) =>
+		resp.statusCode = statusCode
+		resp.json json
 	)
+
+exports.getTubesFromBatchCodeInternal = (input, callback) =>
+	batchCode = input.batchCode
+
+	queryPayload =
+		{
+    "lsType": "container" ,
+    "lsKind": "tube",
+    "values":[
+        {
+            "stateType":"metadata",
+            "stateKind":"information",
+            "valueType": "codeValue",
+            "valueKind": "status",
+            "operator": "!=",
+            "value":"expired"
+        }
+        ],
+    "secondInteractions":[
+        {
+            "interactionType": "has member",
+            "interactionKind": "container_well",
+            "thingType": "well",
+            "thingKind": "default",
+            "thingValues":[
+                {
+                    "stateType":"status",
+                    "stateKind":"content",
+                    "valueType": "codeValue",
+                    "valueKind": "batch code",
+                    "operator": "=",
+                    "value":batchCode
+                }
+                ]
+        }
+        ]
+			}
+
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.persistence.fullpath+"containers/advancedSearchContainers?with=codeTable&labelType=barcode"
+	console.log 'baseurl', baseurl
+	request = require 'request'
+	request(
+		method: 'POST'
+		url: baseurl
+		body: queryPayload
+		json: true
+		timeout: 86400000
+	, (error, response, json) =>
+		if !error && response.statusCode == 200
+			tubes = _.pluck(json.results, 'name')
+			callback tubes, response.statusCode
+		else
+			console.error 'got ajax error trying to getTubesFromBatchCode'
+			console.error error
+			console.error json
+			console.error response
+			callback null, 500
+			#resp.end JSON.stringify "getContainerStatesByContainerValue failed"
+		)
+
+PARENT_COMPOUND_LOT_INDEX = 0
+PARENT_DESTINATION_VIAL_INDEX = 1
+PARENT_AMOUNT_INDEX = 2
+PARENT_AMOUNT_UNITS_INDEX = 3
+PARENT_PREPARED_BY_INDEX = 4
+PARENT_PREPARED_DATE_INDEX = 5
+PARENT_PHYSICAL_STATE_INDEX = 6
+PARENT_CONCENTRATION_INDEX = 7
+PARENT_CONC_UNITS_INDEX = 8
+PARENT_SOLVENT_INDEX = 9
+
+DAUGHTER_SOURCE_VIAL_INDEX = 0
+DAUGHTER_DESTINATION_VIAL_INDEX = 1
+DAUGHTER_AMOUNT_INDEX = 2
+DAUGHTER_AMOUNT_UNITS_INDEX = 3
+DAUGHTER_PREPARED_BY_INDEX = 4
+DAUGHTER_PREPARED_DATE_INDEX = 5
+DAUGHTER_PHYSICAL_STATE_INDEX = 6
+DAUGHTER_CONCENTRATION_INDEX = 7
+DAUGHTER_CONC_UNITS_INDEX = 8
+DAUGHTER_SOLVENT_INDEX = 9
+
+exports.loadParentVialsFromCSV = (req, resp) ->
+	exports.loadParentVialsFromCSVInternal req.body.fileToParse, req.body.dryRunMode, req.body.user, (response) ->
+		resp.json response
+
+exports.loadParentVialsFromCSVInternal = (csvFileName, dryRun, user, callback) ->
+	if dryRun
+		exports.validateParentVialsFromCSVInternal csvFileName, dryRun, (validationResponse) ->
+			callback validationResponse
+	else
+		exports.validateParentVialsFromCSVInternal csvFileName, dryRun, (validationResponse) ->
+			if validationResponse.hasError
+				callback validationResponse
+			else
+				exports.createParentVialsFromCSVInternal csvFileName, dryRun, user, (createVialsResponse) ->
+					callback createVialsResponse
+
+exports.validateParentVialsFromCSV = (req, resp) ->
+	exports.validateParentVialsFromCSVInternal req.body.csvFileName, (validationResponse) ->
+		resp.json validationResponse
+
+exports.validateParentVialsFromCSVInternal = (csvFileName, dryRun, callback) ->
+	getFileExists csvFileName, (exists, path) ->
+		validationResponse =
+			results:
+				dryRun: dryRun
+				fileToParse: csvFileName
+				htmlSummary: ''
+			hasError: true
+			hasWarning: false
+			errorMessages: []
+			transactionId: null
+		if exists
+			validationResponse.results.path = path
+			createParentVialFileEntryArray csvFileName, (err, fileEntryArray) ->
+				if err?
+					callback err
+				summaryInfo = prepareSummaryInfo fileEntryArray
+				checkRequiredAttributes fileEntryArray, (requiredAttributeErrors) ->
+					if requiredAttributeErrors?
+						validationResponse.errorMessages.push requiredAttributeErrors...
+					checkDataTypeErrors fileEntryArray, (dataTypeErrors) ->
+						if dataTypeErrors?
+							validationResponse.errorMessages.push dataTypeErrors...
+						checkBatchCodesExist fileEntryArray, (missingBatchCodeErrors) ->
+							if missingBatchCodeErrors? and missingBatchCodeErrors.length > 0
+								error =
+									level: 'error'
+									message: "The following batches do not exist: "+ missingBatchCodeErrors.join ', '
+								validationResponse.errorMessages.push error
+							barcodes = _.pluck fileEntryArray, 'destinationVialBarcode'
+							checkBarcodesExist barcodes, (existingBarcodes, newBarcodes) ->
+								if existingBarcodes? and existingBarcodes.length > 0
+									error =
+										level: 'error'
+										message: "The following barcodes already exist: " + existingBarcodes.join ', '
+									validationResponse.errorMessages.push error
+								if validationResponse.errorMessages.length < 1
+									validationResponse.hasError = false
+								validationResponse.results.htmlSummary = prepareValidationHTMLSummary validationResponse.hasError, validationResponse.hasWarning, validationResponse.errorMessages, summaryInfo
+								callback validationResponse
+		else
+			error =
+				level: 'error'
+				message: "File cannot be found"
+			validationResponse.errorMessages.push error
+			callback validationResponse
+
+exports.createParentVialsFromCSVInternal = (csvFileName, dryRun, user, callback) ->
+	getFileExists csvFileName, (exists, path) ->
+		createResponse =
+			results:
+				dryRun: dryRun
+				fileToParse: csvFileName
+				htmlSummary: ''
+			hasError: true
+			hasWarning: false
+			errorMessages: []
+			transactionId: null
+			commit: false
+		if exists
+			createResponse.results.path = path
+			createParentVialFileEntryArray csvFileName, (err, fileEntryArray) ->
+				if err?
+					callback err
+				summaryInfo = prepareSummaryInfo fileEntryArray
+				getContainerTubeDefinitionCode (definitionCode) ->
+					if !definitionCode?
+						error =
+							level: 'error'
+							message: 'Could not find definition container for tube'
+						createResponse.errorMessages.push error
+					tubesToCreate = []
+					_.each fileEntryArray, (entry) ->
+						tube =
+							barcode: entry.destinationVialBarcode
+							definition: definitionCode
+							recordedBy: user
+							createdUser: entry.preparedBy
+							createdDate: entry.createdDate
+							physicalState: entry.physicalState
+							wells: [
+								wellName: "A001"
+								batchCode: entry.batchCode
+								amount: parseFloat(entry.amount)
+								amountUnits: entry.amountUnits
+								physicalState: entry.physicalState
+								recordedBy: user
+								recordedDate: (new Date()).getTime()
+							]
+						if entry.physicalState == 'solution'
+							tube.wells[0].batchConcentration = parseFloat(entry.concentration)
+							tube.wells[0].batchConcUnits = entry.concUnits
+							tube.wells[0].solventCode = entry.solvent
+						tubesToCreate.push tube
+					console.log JSON.stringify tubesToCreate
+					exports.createTubesInternal tubesToCreate, 0, (json, statusCode) ->
+						console.log statusCode
+						console.log json
+						if statusCode != 200
+							createResponse.hasError = true
+							console.error json
+							error =
+								level: 'error'
+								message: json
+							createResponse.errorMessages.push error
+						else
+							createResponse.hasError = false
+							createResponse.commit = true
+						createResponse.results.htmlSummary = prepareCreateParentVialsHTMLSummary createResponse.hasError, createResponse.hasWarning, createResponse.errorMessages, summaryInfo
+						callback createResponse
+		else
+			error =
+				level: 'error'
+				message: "File cannot be found"
+			createResponse.errorMessages.push error
+			callback createResponse
+
+exports.loadDaughterVialsFromCSV = (req, resp) ->
+	exports.loadDaughterVialsFromCSVInternal req.body.fileToParse, req.body.dryRunMode, req.body.user, (err, response) ->
+		if err?
+			resp.statusCode = 500
+			resp.json err
+		else
+			resp.json response
+
+exports.loadDaughterVialsFromCSVInternal = (csvFileName, dryRun, user, callback) ->
+	if dryRun
+		exports.validateDaughterVialsFromCSVInternal csvFileName, dryRun, (err, validationResponse) ->
+			if err?
+				callback err
+			else
+				callback null, validationResponse
+	else
+		exports.validateDaughterVialsFromCSVInternal csvFileName, dryRun, (err, validationResponse) ->
+			if err?
+				callback err
+			else if validationResponse.hasError
+				callback null, validationResponse
+			else
+				exports.createDaughterVialsFromCSVInternal csvFileName, dryRun, user, (err, createVialsResponse) ->
+					if err?
+						callback err
+					else
+						callback null, createVialsResponse
+
+exports.validateDaughterVialsFromCSV = (req, resp) ->
+	exports.validateDaughterVialsFromCSVInternal req.body.csvFileName, (err, validationResponse) ->
+		if err?
+			resp.statusCode = 500
+			resp.json err
+		else
+			resp.json validationResponse
+
+exports.validateDaughterVialsFromCSVInternal = (csvFileName, dryRun, callback) ->
+	getFileExists csvFileName, (exists, path) ->
+		validationResponse =
+			results:
+				dryRun: dryRun
+				fileToParse: csvFileName
+				htmlSummary: ''
+			hasError: true
+			hasWarning: false
+			errorMessages: []
+			transactionId: null
+		if exists
+			validationResponse.results.path = path
+			createDaughterVialFileEntryArray csvFileName, (err, fileEntryArray) ->
+				if err?
+					callback err
+				summaryInfo = prepareSummaryInfo fileEntryArray
+				exports.validateDaughterVialsInternal fileEntryArray, (err, errorsAndWarnings) ->
+					if err?
+						callback err
+					else
+						validationResponse.errorMessages.push errorsAndWarnings...
+						if validationResponse.errorMessages.length < 1
+							validationResponse.hasError = false
+						validationResponse.results.htmlSummary = prepareValidationHTMLSummary validationResponse.hasError, validationResponse.hasWarning, validationResponse.errorMessages, summaryInfo
+						callback null, validationResponse
+		else
+			error =
+				level: 'error'
+				message: "File cannot be found"
+			validationResponse.errorMessages.push error
+			callback validationResponse
+
+exports.createDaughterVialsFromCSVInternal = (csvFileName, dryRun, user, callback) ->
+	getFileExists csvFileName, (exists, path) ->
+		createResponse =
+			results:
+				dryRun: dryRun
+				fileToParse: csvFileName
+				htmlSummary: ''
+			hasError: true
+			hasWarning: false
+			errorMessages: []
+			transactionId: null
+			commit: false
+		if !exists
+			error =
+				level: 'error'
+				message: "File cannot be found"
+			createResponse.errorMessages.push error
+			callback createResponse
+		else
+			createResponse.results.path = path
+			createDaughterVialFileEntryArray csvFileName, (err, fileEntryArray) ->
+				if err?
+					callback err
+				summaryInfo = prepareSummaryInfo fileEntryArray
+				exports.createDaughterVialsInternal fileEntryArray, user, (err, response) ->
+					if err?
+						error =
+							level: 'error'
+							message: err
+						createResponse.errorMessages.push error
+					else
+						createResponse.hasError = false
+						createResponse.commit = true
+					createResponse.results.htmlSummary = prepareCreateDaughterVialsHTMLSummary createResponse.hasError, createResponse.hasWarning, createResponse.errorMessages,  summaryInfo
+					callback null, createResponse
+
+
+
+getFileExists = (csvFileName, callback) =>
+	exists = false
+	path = config.all.server.file.server.path + '/'
+	fileName = csvFileName
+	fs.stat path+fileName, (err, stats) ->
+		console.log 'path+fileName', path+fileName
+		console.log stats
+		console.log err
+		if stats?.isFile()
+			exists = true
+			callback exists, path+fileName
+		else
+			callback exists, path+fileName
+
+createParentVialFileEntryArray = (csvFileName, callback) =>
+	csvFileEntries = []
+	path = config.all.server.file.server.path + '/'
+	fileName = csvFileName
+	rowCount = 0
+	fs.createReadStream(path + fileName)
+	.pipe(parse({delimiter: ','}))
+	.on('data', (csvrow) ->
+		fileEntry =
+			batchCode: csvrow[PARENT_COMPOUND_LOT_INDEX].trim()
+			destinationVialBarcode: csvrow[PARENT_DESTINATION_VIAL_INDEX].trim()
+			amount: csvrow[PARENT_AMOUNT_INDEX].trim()
+			amountUnits: csvrow[PARENT_AMOUNT_UNITS_INDEX].trim()
+			preparedBy: csvrow[PARENT_PREPARED_BY_INDEX].trim()
+			preparedDate: csvrow[PARENT_PREPARED_DATE_INDEX].trim()
+			physicalState: csvrow[PARENT_PHYSICAL_STATE_INDEX].trim()
+			concentration: csvrow[PARENT_CONCENTRATION_INDEX].trim()
+			concUnits:csvrow[PARENT_CONC_UNITS_INDEX].trim()
+			solvent: csvrow[PARENT_SOLVENT_INDEX].trim()
+			rowNumber: rowCount
+		if rowCount? and rowCount > 0
+			csvFileEntries.push(fileEntry)
+		rowCount++
+	)
+	.on('end', () ->
+		return callback null, csvFileEntries
+	)
+
+createDaughterVialFileEntryArray = (csvFileName, callback) =>
+	csvFileEntries = []
+	path = config.all.server.file.server.path + '/'
+	fileName = csvFileName
+	rowCount = 0
+	fs.createReadStream(path + fileName)
+	.pipe(parse({delimiter: ','}))
+	.on('data', (csvrow) ->
+		fileEntry =
+			sourceVialBarcode: csvrow[DAUGHTER_SOURCE_VIAL_INDEX].trim()
+			destinationVialBarcode: csvrow[DAUGHTER_DESTINATION_VIAL_INDEX].trim()
+			amount: csvrow[DAUGHTER_AMOUNT_INDEX].trim()
+			amountUnits: csvrow[DAUGHTER_AMOUNT_UNITS_INDEX].trim()
+			preparedBy: csvrow[DAUGHTER_PREPARED_BY_INDEX].trim()
+			preparedDate: csvrow[DAUGHTER_PREPARED_DATE_INDEX].trim()
+			physicalState: csvrow[DAUGHTER_PHYSICAL_STATE_INDEX].trim()
+			concentration: csvrow[DAUGHTER_CONCENTRATION_INDEX].trim()
+			concUnits: csvrow[DAUGHTER_CONC_UNITS_INDEX].trim()
+			solvent: csvrow[DAUGHTER_SOLVENT_INDEX].trim()
+			rowNumber: rowCount
+		if rowCount? and rowCount > 0
+			csvFileEntries.push(fileEntry)
+		rowCount++
+	)
+	.on('end', () ->
+		return callback null, csvFileEntries
+	)
+
+checkRequiredAttributes = (fileEntryArray, callback) ->
+	requiredAttributeErrors = []
+	_.each fileEntryArray, (entry) ->
+		missingAttributes = []
+		for attr in ['batchCode', 'destinationVialBarcode', 'sourceVialBarcode', 'amount', 'amountUnits', 'preparedBy', 'preparedDate', 'physicalState', 'concentration', 'concUnits', 'solvent']
+			if entry[attr]?
+				if attr in ['concentration', 'concUnits', 'solvent']
+					if entry.physicalState == 'solution'
+						if entry[attr] == ""
+							missingAttributes.push attr
+				else
+					if entry[attr] == ""
+						missingAttributes.push attr
+		if missingAttributes.length > 0
+			error =
+				level: 'error'
+				message: "Row #{entry.rowNumber} is missing the required attributes: " + missingAttributes.join ', '
+			requiredAttributeErrors.push error
+	callback requiredAttributeErrors
+
+checkDataTypeErrors = (fileEntryArray, callback) ->
+	dataTypeErrors = []
+	_.each fileEntryArray, (entry) ->
+		if entry.amount? and entry.amount.length > 0 and isNaN(parseFloat(entry.amount))
+			error =
+				level: 'error'
+				message: "Row #{entry.rowNumber} contains the invalid amount: #{entry.amount}"
+			dataTypeErrors.push error
+		if entry.concentration? and entry.concentration.length > 0 and isNaN(parseFloat(entry.concentration))
+			error =
+				level: 'error'
+				message: "Row #{entry.rowNumber} contains the invalid concentration: #{entry.concentration}"
+			dataTypeErrors.push error
+	callback dataTypeErrors
+
+checkBatchCodesExist = (fileEntryArray, callback) ->
+	requests = []
+	_.each fileEntryArray, (entry) ->
+		request =
+			requestName: entry.batchCode
+		requests.push request
+	csUtilities.getPreferredBatchIds requests, (batchIdResponse) ->
+		missingBatchCodes = []
+		_.each batchIdResponse, (batchCodeRequest) ->
+			if batchCodeRequest.preferredName.length < 1
+				missingBatchCodes.push batchCodeRequest.requestName
+		callback missingBatchCodes
+
+checkBarcodesExist = (barcodes, callback) ->
+	getContainerCodesFromLabelsInternal barcodes, 'container', 'tube', (containerCodes) ->
+		existingBarcodes = []
+		newBarcodes = []
+		_.each containerCodes, (containerCodeEntry) ->
+			if containerCodeEntry.foundCodeNames? and containerCodeEntry.foundCodeNames.length > 0
+				existingBarcodes.push containerCodeEntry.requestLabel
+			else
+				newBarcodes.push containerCodeEntry.requestLabel
+		callback existingBarcodes, newBarcodes
+
+checkParentWellContent = (fileEntryArray, callback) ->
+	#The purpose of this function is to check that the source vial content is compatible with the daughter content being loaded in, including
+	#physical state must match
+	#amount in parent vial would be negative if the daughter amount is removed
+	#amount units match
+	#concentration and concentration units match if solution
+	errorMessages = []
+	vialBarcodes = _.pluck fileEntryArray, 'sourceVialBarcode'
+	exports.getWellContentByContainerLabelsInternal vialBarcodes, 'container', 'tube', 'barcode', 'barcode', (wellContentList, statusCode) ->
+		_.each fileEntryArray, (fileEntry) ->
+			parentVialAndWellContent = _.findWhere wellContentList, {label: fileEntry.sourceVialBarcode}
+			if parentVialAndWellContent.wellContent?
+				parentWellContent = parentVialAndWellContent.wellContent[0]
+				if parentWellContent.physicalState != fileEntry.physicalState
+					error =
+						level: 'error'
+						message: "Daughter vial #{fileEntry.destinationVialBarcode} must be of the same physical state as parent vial #{fileEntry.sourceVialBarcode}, which is #{parentWellContent.physicalState}."
+					errorMessages.push error
+				if fileEntry.physicalState == 'solution' and (Math.abs(parseFloat(fileEntry.concentration) - parentWellContent.batchConcentration) > 0.0001 or fileEntry.concUnits != parentWellContent.batchConcUnits)
+					error =
+						level: 'error'
+						message: "Daughter vial #{fileEntry.destinationVialBarcode} must have the same concentration as parent vial #{fileEntry.sourceVialBarcode}, which is #{parentWellContent.batchConcentration} #{parentWellContent.batchConcUnits}."
+					errorMessages.push error
+				if parentWellContent.amountUnits != fileEntry.amountUnits
+					error =
+						level: 'error'
+						message: "Daughter vial #{fileEntry.destinationVialBarcode} must use the same amount units as parent vial #{fileEntry.sourceVialBarcode}, which is in #{parentWellContent.amountUnits}."
+					errorMessages.push error
+				else if parentWellContent.amount < parseFloat(fileEntry.amount)
+					error =
+						level: 'warning'
+						message: "Creating daughter vial #{fileEntry.destinationVialBarcode} will remove more than the total amount currently in parent vial #{fileEntry.sourceVialBarcode}, leaving a negative amount in the parent vial."
+					errorMessages.push error
+			else
+				error =
+					level: 'error'
+					message: "Could not find a well for barcode #{fileEntry.sourceVialBarcode}"
+				errorMessages.push error
+		console.log errorMessages
+		callback errorMessages
+
+
+
+
+prepareValidationHTMLSummary = (hasError, hasWarning, errorMessages, summaryInfo) ->
+	errors = _.where errorMessages, {level: 'error'}
+	warnings = _.where errorMessages, {level: 'warning'}
+	errorHeader = "<p>Please fix the following errors and use the 'Back' button at the bottom of this screen to upload a new version of the file.</p>"
+	if hasWarning
+		successHeader = "<p>Please review the warnings and summary before uploading.</p>"
+	else
+		successHeader = "<p>Please review the summary before uploading.</p>"
+	errorsBlock = "\n  <h4 style=\"color:red\">Errors: #{errors.length} </h4>\n                         <ul>"
+	_.each errors, (error) ->
+		errorsBlock += "<li>#{error.message}</li>"
+	errorsBlock += "</ul>"
+	warningsBlock = "\n  <h4>Warnings: #{warnings.length}</h4>\n                            <p>Warnings provide information on issues found in the upload file. You can proceed with warnings; however, it is recommended that, if possible, you make the changes suggested by the warnings and upload a new version of the file by using the 'Back' button at the bottom of this screen.</p>\n                            <ul>"
+	_.each warnings, (warning) ->
+		warningsBlock += "<li>#{warning.message}</li>"
+	warningsBlock += "</ul>"
+	htmlSummaryInfo = "<h4>Summary</h4><p>Information:</p>\n                               <ul>\n                               "
+	htmlSummaryInfo += "<li>Total Vials: #{summaryInfo.totalNumberOfVials}</li>"
+	htmlSummaryInfo += "<li>Solid Vials: #{summaryInfo.numSolidVials}</li>"
+	htmlSummaryInfo += "<li>Liquid Vials: #{summaryInfo.numLiquidVials}</li>"
+	if summaryInfo.totalBatchCodes?
+		htmlSummaryInfo += "<li>Unique Corporate Batch ID's: #{summaryInfo.totalBatchCodes}</li>"
+	htmlSummaryInfo += "\n                               </ul>"
+	htmlSummary = ""
+	if hasError
+		htmlSummary += errorHeader + errorsBlock
+	else
+		htmlSummary += successHeader
+	if hasWarning
+		htmlSummary += warningsBlock
+	if !hasError
+		htmlSummary += htmlSummaryInfo
+	htmlSummary
+
+prepareCreateParentVialsHTMLSummary = (hasError, hasWarning, errorMessages, summaryInfo) ->
+	errors = _.where errorMessages, {level: 'error'}
+	warnings = _.where errorMessages, {level: 'warning'}
+	errorHeader = "<p>An error occurred during uploading. If the messages below are unhelpful, you will need to contact your system administrator.</p>"
+	#TODO implement HTML summary for successful upload
+	successHeader = "<p>Upload completed.</p>"
+	errorsBlock = "\n  <h4 style=\"color:red\">Errors: #{errors.length} </h4>\n                         <ul>"
+	_.each errors, (error) ->
+		errorsBlock += "<li>#{error.message}</li>"
+	errorsBlock += "</ul>"
+	warningsBlock = "\n  <h4>Warnings: #{warnings.length}</h4>\n                            <p>Warnings provide information on issues found in the upload file. You can proceed with warnings; however, it is recommended that, if possible, you make the changes suggested by the warnings and upload a new version of the file by using the 'Back' button at the bottom of this screen.</p>\n                            <ul>"
+	_.each warnings, (warning) ->
+		warningsBlock += "<li>#{warning.message}</li>"
+	warningsBlock += "</ul>"
+	htmlSummary = ""
+	if hasError
+		htmlSummary += errorHeader + errorsBlock
+	else
+		htmlSummary += successHeader
+	if hasWarning
+		htmlSummary += warningsBlock
+	htmlSummary
+
+getContainerTubeDefinitionCode = (callback) ->
+	exports.containersByTypeKindInternal 'definition container', 'tube', 'codetable', false, false, (definitionContainers) ->
+		callback definitionContainers[0].code
+
+decrementAmountsFromVials = (parentVialsToDecrement, user, callback) ->
+	vialBarcodes = _.pluck parentVialsToDecrement, 'barcode'
+	exports.getWellContentByContainerLabelsInternal vialBarcodes, 'container', 'tube', 'barcode', 'barcode', (wellContentList, statusCode) ->
+		wellsToUpdate = []
+		_.each parentVialsToDecrement, (toDecrement) ->
+			oldContainerWellContent = _.findWhere wellContentList, {label: toDecrement.barcode}
+			oldWellContent = oldContainerWellContent.wellContent[0]
+			wellCode = oldWellContent.containerCodeName
+			newWellContent =
+				containerCodeName: wellCode
+				amount: oldWellContent.amount - toDecrement.amountToDecrement
+				recordedBy: user
+			wellsToUpdate.push newWellContent
+		console.log wellsToUpdate
+		exports.updateWellContentInternal wellsToUpdate, true, false, (updateWellsResponse, updateWellsStatusCode) ->
+			console.log updateWellsStatusCode
+			if updateWellsStatusCode != 204
+				callback "Error: #{updateWellsResponse}"
+			else
+				callback null, updateWellsResponse
+
+prepareCreateDaughterVialsHTMLSummary = (hasError, hasWarning, errorMessages, summaryInfo) ->
+	errors = _.where errorMessages, {level: 'error'}
+	warnings = _.where errorMessages, {level: 'warning'}
+	errorHeader = "<p>An error occurred during uploading. If the messages below are unhelpful, you will need to contact your system administrator.</p>"
+	successHeader = "<p>Upload completed.</p>"
+	errorsBlock = "\n  <h4 style=\"color:red\">Errors: #{errors.length} </h4>\n                         <ul>"
+	_.each errors, (error) ->
+		errorsBlock += "<li>#{error.message}</li>"
+	errorsBlock += "</ul>"
+	warningsBlock = "\n  <h4>Warnings: #{warnings.length}</h4>\n                            <p>Warnings provide information on issues found in the upload file. You can proceed with warnings; however, it is recommended that, if possible, you make the changes suggested by the warnings and upload a new version of the file by using the 'Back' button at the bottom of this screen.</p>\n                            <ul>"
+	_.each warnings, (warning) ->
+		warningsBlock += "<li>#{warning.message}</li>"
+	warningsBlock += "</ul>"
+	htmlSummary = ""
+	if hasError
+		htmlSummary += errorHeader + errorsBlock
+	else
+		htmlSummary += successHeader
+	if hasWarning
+		htmlSummary += warningsBlock
+	htmlSummary
+
+prepareSummaryInfo = (fileEntryArray) ->
+	summaryInfo =
+		totalNumberOfVials: fileEntryArray.length
+		numSolidVials: (_.where fileEntryArray, {physicalState: 'solid'}).length
+		numLiquidVials: (_.where fileEntryArray, {physicalState: 'solution'}).length
+	batchCodes = _.pluck fileEntryArray, 'batchCode'
+	if batchCodes?
+		summaryInfo.totalBatchCodes = (_.uniq batchCodes).length
+	summaryInfo
+
+
+exports.saveWellToWellInteractions = (req, resp) ->
+	if req.session?.passport?.user?.username?
+		user = req.session.passport.user.username
+	else
+		user = 'anonymous'
+	exports.saveWellToWellInteractionsInternal req.body, user, (err, data) ->
+		if err?
+			resp.statusCode = 500
+			resp.json err
+		else
+			resp.json data
+
+exports.saveWellToWellInteractionsInternal = (interactionsToSave, user, callback) ->
+	barcodes = []
+	barcodes.push (_.pluck interactionsToSave, 'firstContainerBarcode')...
+	barcodes.push (_.pluck interactionsToSave, 'secondContainerBarcode')...
+	console.log barcodes
+	exports.getWellCodesByPlateBarcodesInternal barcodes, (plateWellCodes) ->
+		wellCodes = _.pluck plateWellCodes, 'wellCodeName'
+		exports.getContainersByCodeNamesInternal wellCodes, (wells, statusCode) ->
+			if statusCode? && statusCode != 200
+				callback wells
+			else
+				formattedItxList = []
+				_.each interactionsToSave, (itx) ->
+					requiredParams = ['firstContainerBarcode', 'firstWellLabel', 'secondContainerBarcode', 'secondWellLabel', 'interactionType', 'interactionKind']
+					for param in requiredParams
+						if !itx[param]?
+							callback "Error: all entries must include #{param}"
+					firstWellCode = (_.findWhere plateWellCodes, {plateBarcode: itx.firstContainerBarcode, wellLabel: itx.firstWellLabel}).wellCodeName
+					firstWell = (_.findWhere wells, {containerCodeName: firstWellCode}).container
+					secondWellCode = (_.findWhere plateWellCodes, {plateBarcode: itx.secondContainerBarcode, wellLabel: itx.secondWellLabel}).wellCodeName
+					secondWell = (_.findWhere wells, {containerCodeName: secondWellCode}).container
+					formattedItx =
+						lsType: itx.interactionType
+						lsKind: itx.interactionKind
+						recordedBy: user
+						recordedDate: new Date().getTime()
+						firstContainer: firstWell
+						secondContainer: secondWell
+					if itx.interactionStates?
+						_.each itx.interactionStates, (state) ->
+							state.recordedBy = user
+							state.recordedDate = new Date().getTime()
+							_.each state.lsValues, (value) ->
+								value.recordedBy = user
+								value.recordedDate = new Date().getTime()
+						formattedItx.lsStates = itx.interactionStates
+					formattedItxList.push formattedItx
+				baseurl = config.all.client.service.persistence.fullpath+"itxcontainercontainers/jsonArray"
+				request = require 'request'
+				request(
+					method: 'POST'
+					url: baseurl
+					body: formattedItxList
+					json: true
+					timeout: 86400000
+				, (error, response, json) =>
+					if !error && response.statusCode == 201
+						callback null, json
+					else
+						console.error 'error trying to save container container interactions'
+						console.error error
+						console.log response.statusCode
+						console.error json
+						callback "Error trying to save container container interactions: #{error}"
+				)
+
+exports.validateDaughterVialsInternal = (vialsToValidate, callback) ->
+	errorMessages = []
+	checkRequiredAttributes vialsToValidate, (requiredAttributeErrors) ->
+		if requiredAttributeErrors?
+			errorMessages.push requiredAttributeErrors...
+		checkDataTypeErrors vialsToValidate, (dataTypeErrors) ->
+			if dataTypeErrors?
+				errorMessages.push dataTypeErrors...
+			sourceBarcodes = _.pluck vialsToValidate, 'sourceVialBarcode'
+			checkBarcodesExist sourceBarcodes, (existingBarcodes, newBarcodes) ->
+				if newBarcodes? and newBarcodes.length > 0
+					error =
+						level: 'error'
+						message: "The following source barcodes do not exist: " + newBarcodes.join ', '
+					errorMessages.push error
+				destinationBarcodes = _.pluck vialsToValidate, 'destinationVialBarcode'
+				checkBarcodesExist destinationBarcodes, (existingBarcodes, newBarcodes) ->
+					if existingBarcodes? and existingBarcodes.length > 0
+						error =
+							level: 'error'
+							message: "The following destination barcodes already exist: " + existingBarcodes.join ', '
+						errorMessages.push error
+					checkParentWellContent vialsToValidate, (parentWellContentErrors) ->
+						if parentWellContentErrors?
+							errorMessages.push parentWellContentErrors...
+						callback null, errorMessages
+
+exports.createDaughterVials = (req, resp) ->
+	if req.session?.passport?.user?.username?
+		user = req.session.passport.user.username
+	else
+		user = 'anonymous'
+	exports.validateDaughterVialsInternal req.body, (err, errorsAndWarnings) ->
+		if err?
+			resp.statusCode = 500
+			resp.json err
+		else
+			errors = _.where errorsAndWarnings, {level: 'error'}
+			warnings = _.where errorsAndWarnings, {level: 'warning'}
+			if errors? and errors.length > 0
+				resp.statusCode = 400
+				resp.json errorsAndWarnings
+			else
+				exports.createDaughterVialsInternal req.body, user, (err, response) ->
+					if err?
+						resp.statusCode = 500
+						resp.json err
+					else
+						resp.json response
+
+exports.createDaughterVialsInternal = (vialsToCreate, user, callback) ->
+	getContainerTubeDefinitionCode (definitionCode) ->
+		if !definitionCode?
+			callback 'Could not find definition container for tube'
+		tubesToCreate = []
+		_.each vialsToCreate, (entry) ->
+			tube =
+				barcode: entry.destinationVialBarcode
+				definition: definitionCode
+				recordedBy: user
+				createdUser: entry.preparedBy
+				createdDate: entry.createdDate
+				physicalState: entry.physicalState
+				wells: [
+					wellName: "A001"
+					batchCode: entry.batchCode
+					amount: parseFloat(entry.amount)
+					amountUnits: entry.amountUnits
+					physicalState: entry.physicalState
+					recordedBy: user
+					recordedDate: (new Date()).getTime()
+				]
+			if entry.physicalState == 'solution'
+				tube.wells[0].batchConcentration = parseFloat(entry.concentration)
+				tube.wells[0].batchConcUnits = entry.concUnits
+				tube.wells[0].solventCode = entry.solvent
+			tubesToCreate.push tube
+		console.log JSON.stringify tubesToCreate
+		exports.createTubesInternal tubesToCreate, 0, (json, statusCode) ->
+			console.log statusCode
+			console.log json
+			if statusCode != 200
+				callback json
+			else
+				interactionsToCreate = []
+				_.each vialsToCreate, (entry) ->
+					interaction =
+						interactionType: 'added to'
+						interactionKind: 'well_well'
+						firstContainerBarcode: entry.sourceVialBarcode
+						secondContainerBarcode: entry.destinationVialBarcode
+						firstWellLabel: 'A001'
+						secondWellLabel: 'A001'
+						interactionStates: [
+								lsType: 'metadata'
+								lsKind: 'information'
+								lsValues: [
+									lsType: 'numericValue'
+									lsKind: 'amount added'
+									numericValue: parseFloat(entry.amount)
+									unitKind: entry.amountUnits
+								]
+							]
+					interactionsToCreate.push interaction
+				exports.saveWellToWellInteractionsInternal interactionsToCreate, user, (err, itxResponse) ->
+					if err?
+						callback err
+					else
+						parentVialsToDecrement = []
+						_.each vialsToCreate, (entry) ->
+							toDecrement =
+								barcode: entry.sourceVialBarcode
+								amountToDecrement: parseFloat(entry.amount)
+								amountToDecrementUnits: entry.amountUnits
+							parentVialsToDecrement.push toDecrement
+						decrementAmountsFromVials parentVialsToDecrement, user, (err, decrementVialsResponse) ->
+							if err?
+								callback err
+							else
+								#TODO see what this service should respond with
+								callback null, 'successfully created daughter vials'

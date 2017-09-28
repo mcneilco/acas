@@ -49,18 +49,23 @@ $(function() {
 		initialize: function(){
 			_.bindAll(this, 'search', 'cancel', 'validationError', 'updatePercentSimilarityDisabled','chemistsLoaded');
             this.valid = false;
-			this.marvinLoaded = false;
+			this.sketcherLoaded = false;
 			this.exportFormat = "mol";
 			if(window.configuration.marvin) {
+				this.useMarvin = true;
 				if (window.configuration.marvin.exportFormat) {
 					this.exportFormat = window.configuration.marvin.exportFormat;
 				}
+			//To use ketcher you must replace the marvin hash with 	"ketcher": true,
+			// in modules/CmpdReg/src/client/custom/configuration.json
+			} else if(window.configuration.ketcher) {
+				this.useKetcher = true;
 			}
 
 		},
 
 		render: function () {
-			if (!this.marvinLoaded) { // only load template once so we don't wipe out marvin
+			if (!this.sketcherLoaded) { // only load template once so we don't wipe out marvin
                 $(this.el).html(this.template());
             }
 			this.hide();
@@ -85,20 +90,29 @@ $(function() {
             this.chemistCodeController.collection.bind('reset', this.chemistsLoaded);
 
 			var self = this;
-			MarvinJSUtil.getEditor("#searchMarvinSketch").then(function (sketcherInstance) {
-				self.marvinSketcherInstance = sketcherInstance;
-				if (typeof window.marvinStructureTemplates !== 'undefined') {
-					for (i=0 ; i<window.marvinStructureTemplates.length; i++ ) {
-						sketcherInstance.addTemplate(window.marvinStructureTemplates[i]);
+			if (this.useMarvin) {
+				this.$('#searchMarvinSketch').attr('src',"/CmpdReg/marvinjs/editorws.html");
+				MarvinJSUtil.getEditor("#searchMarvinSketch").then(function (sketcherInstance) {
+					self.marvinSketcherInstance = sketcherInstance;
+					if (typeof window.marvinStructureTemplates !== 'undefined') {
+						for (i = 0; i < window.marvinStructureTemplates.length; i++) {
+							sketcherInstance.addTemplate(window.marvinStructureTemplates[i]);
+						}
 					}
-				}
-				self.show();
-				self.marvinLoaded = true;
-			},function (error) {
-				alert("Cannot retrieve searchMarvinSketch sketcher instance from iframe:"+error);
-			});
+					self.show();
+					self.sketcherLoaded = true;
+				}, function (error) {
+					alert("Cannot retrieve searchMarvinSketch sketcher instance from iframe:" + error);
+				});
 
-
+			} else if (this.useKetcher) {
+				this.$('#searchMarvinSketch').attr('src',"/lib/ketcher-2.0.0-alpha.3/ketcher.html?api_path=/api/cmpdReg/ketcher/");
+				this.$('#searchMarvinSketch').on('load', function () {
+					self.ketcher = self.$('#searchMarvinSketch')[0].contentWindow.ketcher;
+				});
+			} else {
+				alert("No search sketcher configured");
+			}
 
 			return this;
 		},
@@ -127,21 +141,33 @@ $(function() {
 
 		search: function() {
 			var self = this;
-			this.marvinSketcherInstance.exportStructure(this.exportFormat).then(function(molecule) {
-				if ( molecule.indexOf("0  0  0  0  0  0  0  0  0  0999")>-1)
-					mol = '';
-				else if ( molecule.indexOf("M  V30 COUNTS 0 0 0 0 0")>-1)
-					mol = '';
-				else
-					mol = molecule;
-				var sf = self.makeSearchFormModel(mol);
-				if ( self.isValid() ) {
-					self.trigger('searchNext', sf);
-					self.hide();
+			if (this.useMarvin) {
+				this.marvinSketcherInstance.exportStructure(this.exportFormat).then(function (molecule) {
+					if (molecule.indexOf("0  0  0  0  0  0  0  0  0  0999") > -1)
+						mol = '';
+					else if (molecule.indexOf("M  V30 COUNTS 0 0 0 0 0") > -1)
+						mol = '';
+					else
+						mol = molecule;
+					var sf = self.makeSearchFormModel(mol);
+					if (self.isValid()) {
+						self.trigger('searchNext', sf);
+						self.hide();
+					}
+				}, function (error) {
+					alert("Molecule export failed from search sketcher:" + error);
+				});
+			} else if (this.useKetcher) {
+				mol = this.ketcher.getMolfile();
+				if (mol.indexOf("  0  0  0     0  0            999") > -1) mol = '';
+				var sf = this.makeSearchFormModel(mol);
+				if (this.isValid()) {
+					this.trigger('searchNext', sf);
+					this.hide();
 				}
-			}, function(error) {
-				alert("Molecule export failed from search sketcher:"+error);
-			});
+			} else {
+				alert("No search sketcher configured in search action");
+			}
 		},
         makeSearchFormModel: function(molecule) {
             this.clearValidationErrors();

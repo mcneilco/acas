@@ -40,6 +40,9 @@
 			,
 				typeName: "metadata"
 				kindName: "data column order"
+			,
+				typeName: "metadata"
+				kindName: "data column object"
 			]
 
 		valuetypes:
@@ -106,6 +109,9 @@
 				kindName: "analysis result html"
 			,
 				typeName: "clobValue"
+				kindName: "preprocessor result html"
+			,
+				typeName: "clobValue"
 				kindName: "model fit result html"
 			,
 				typeName: "clobValue"
@@ -158,6 +164,21 @@
 			,
 				typeName: "stringValue"
 				kindName: "hide column"	
+			,
+				typeName: "numericValue"
+				kindName: "column concentration"	
+			,
+				typeName: "stringValue"
+				kindName: "column conc units"	
+			,
+				typeName: "numericValue"
+				kindName: "column time"	
+			,
+				typeName: "stringValue"
+				kindName: "column time units"	
+			,
+				typeName: "stringValue"
+				kindName: "condition column"	
 			,
 				typeName: "codeValue"
 				kindName: "agonist batch code"
@@ -265,6 +286,7 @@
 				codeOrigin: "ACAS DDICT"
 				code: "created"
 				name: "Created"
+				displayOrder: 10
 				ignored: false
 			,
 				codeType: "experiment"
@@ -272,6 +294,7 @@
 				codeOrigin: "ACAS DDICT"
 				code: "in process"
 				name: "In Process"
+				displayOrder: 20
 				ignored: false
 			,
 				codeType: "experiment"
@@ -279,6 +302,7 @@
 				codeOrigin: "ACAS DDICT"
 				code: "complete"
 				name: "Complete"
+				displayOrder: 30
 				ignored: false
 			,
 				codeType: "experiment"
@@ -286,6 +310,7 @@
 				codeOrigin: "ACAS DDICT"
 				code: "approved"
 				name: "Approved"
+				displayOrder: 40
 				ignored: false
 			,
 				codeType: "experiment"
@@ -293,6 +318,7 @@
 				codeOrigin: "ACAS DDICT"
 				code: "rejected"
 				name: "Rejected"
+				displayOrder: 50
 				ignored: false
 			,
 				codeType: "experiment"
@@ -300,6 +326,7 @@
 				codeOrigin: "ACAS DDICT"
 				code: "deleted"
 				name: "Deleted"
+				displayOrder: 60
 				ignored: false
 			,
 				codeType: "experiment"
@@ -307,6 +334,7 @@
 				codeOrigin: "ACAS DDICT"
 				code: "in progress"
 				name: "In Progress"
+				displayOrder: 10
 				ignored: false
 			,
 				codeType: "experiment"
@@ -314,13 +342,23 @@
 				codeOrigin: "ACAS DDICT"
 				code: "ready for review"
 				name: "Ready for Review"
+				displayOrder: 20
 				ignored: false
 			,
 				codeType: "experiment"
 				codeKind: "review status"
 				codeOrigin: "ACAS DDICT"
-				code: "reviewed"
-				name: "Reviewed"
+				code: "read and understood"
+				name: "Read and Understood"
+				displayOrder: 30
+				ignored: false
+			,
+				codeType: "experiment"
+				codeKind: "review status"
+				codeOrigin: "ACAS DDICT"
+				code: "needs attention"
+				name: "Needs Attention"
+				displayOrder: 40
 				ignored: false
 			,
 				codeType: "analysis"

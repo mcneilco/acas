@@ -25,7 +25,7 @@ prefix = "http"
 if config.all.client.use.ssl? && config.all.client.use.ssl
 	prefix = "https"
 
-describe "A. Connecting to ACAS", ->
+describe "A. Connecting to ACAS -nondestructive", ->
 	describe "by requesting #{prefix}://client.host:client.port", ->
 		before (done) ->
 			request "#{prefix}://"+config.all.client.host+":"+config.all.client.port, (error, response, body) =>
@@ -43,7 +43,7 @@ describe "A. Connecting to ACAS", ->
 # B. Database Communication #
 #############################
 
-describe "B. Connecting to the database", ->
+describe "B. Connecting to the database -nondestructive", ->
 	describe "through tomcat", ->
 		before (done) ->
 			@timeout 600000
@@ -195,7 +195,7 @@ describe "C. Writing a file to", ->
 # D. Communication with rApache #
 #################################
 
-describe "D. Access to rApache", ->
+describe "D. Access to rApache -nondestructive", ->
 	@timeout 10000
 	before (done) ->
 		request config.all.client.service.rapache.fullpath + "hello", (error, response, body) =>
@@ -251,7 +251,7 @@ describe "D. Access to rApache", ->
 					@responseJSON = body
 					done()
 			it "should not return an error", ->
-				assert.equal(@responseJSON,undefined,@responseJSON)
+				assert.equal(@responseJSON,"",@responseJSON)
 
 #############################
 # E. System Tests           #
@@ -366,8 +366,8 @@ describe "E. System Tests", =>
 			if @output.results.htmlSummary.indexOf("Upload completed.") != -1
 				global.cleanup.sel = true
 
-	describe "check result viewers", ->
-		describe "check live design", ->
+	describe "check result viewers", =>
+		describe "check live design", =>
 			if "LiveDesign" not in config.all.client.service.result.viewer.configuredViewers.split(',')
 				@.pending = true
 			describe "install live design python client", ->
@@ -381,7 +381,7 @@ describe "E. System Tests", =>
 					assert(!@output.hasError)
 				it "Successfully installed ldclient", ->
 					assert(@output.messages.indexOf("Successfully installed") != -1)
-			describe "check live design sel report", ->
+			describe "check live design sel report", =>
 				before (done) ->
 					waitToStart = 60000
 					repeat = 10

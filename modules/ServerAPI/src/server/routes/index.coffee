@@ -1,18 +1,18 @@
 scriptPaths = require './RequiredClientScripts.js'
 
 exports.setupAPIRoutes = (app) ->
-	app.get '/toPrint', exports.toPrint
+	app.get '/toPrint/:code', exports.toPrint
 
 exports.setupRoutes = (app, loginRoutes) ->
 	config = require '../conf/compiled/conf.js'
 	if config.all.client.require.login
-		app.get '/toPrint', loginRoutes.ensureAuthenticated, exports.toPrint
+		app.get '/toPrint/:code', loginRoutes.ensureAuthenticated, exports.toPrint
 		app.get '/', loginRoutes.ensureAuthenticated, exports.index
 		app.get '/:moduleName/codeName/:code', loginRoutes.ensureAuthenticated, exports.autoLaunchWithCode
 		app.get '/entity/copy/:moduleName/:code', loginRoutes.ensureAuthenticated, exports.copyAndLaunchWithCode
 		app.get '/:moduleName/createFrom/:code', loginRoutes.ensureAuthenticated, exports.autoLaunchCreateFromOtherEntity
 	else
-	app.get '/toPrint', loginRoutes.ensureAuthenticated, exports.toPrint
+	app.get '/toPrint/:code', loginRoutes.ensureAuthenticated, exports.toPrint
 	app.get '/:moduleName/codeName/:code', exports.autoLaunchWithCode
 	app.get '/', exports.index
 
@@ -50,13 +50,19 @@ exports.autoLaunchCreateFromOtherEntity = (req, res) ->
 exports.toPrint = (req, res, moduleLaunchParams) ->
 #"use strict"
 
+	console.log "toPrint"
+	console.log req.query.moduleName
+	console.log req.query.controller
 	#TODO: on redirect, pass in moduleName and code. Hardcoded right now.
 	moduleLaunchParams =
-		moduleName: "primary_screen_protocol"
-		code: "PROT-00000001"
+		moduleName: req.query.moduleName
+		code: req.params.code
 		copy: false
 		createFromOtherEntity: false
 		print: true
+
+	console.log "moduleLaunchParams"
+	console.log moduleLaunchParams
 
 	config = require '../conf/compiled/conf.js'
 	global.specRunnerTestmode = if global.stubsMode then true else false
@@ -84,7 +90,7 @@ exports.toPrint = (req, res, moduleLaunchParams) ->
 			moduleLaunchParams: if moduleLaunchParams? then moduleLaunchParams else null
 			deployMode: global.deployMode
 			loggingToMongo: config.all.logging.usemongo
-		controller: "PrimaryScreenProtocolModuleController"
+		controller: req.query.controller
 
 exports.index = (req, res, moduleLaunchParams) ->
 	#"use strict"
