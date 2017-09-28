@@ -43,10 +43,10 @@ getRPath = (path) ->
   return path
 
 getLegacyRPath = (path) ->
-  console.warn  "Warning: All R code in modules path 'modules/**/src/server/**/*.{R,r}' should be moved to 'modules/**/src/server/r/*.{R,r}'"
+  # console.warn  "Warning: All R code in modules path 'modules/**/src/server/**/*.{R,r}' should be moved to 'modules/**/src/server/r/*.{R,r}'"
   module = path.dirname.split('/')[0]
   additionalPath =  path.dirname.replace(module + '/src/server/', '')
-  console.log "Warning: Please move '#{path.dirname}/#{path.basename}#{path.extname}' to '#{module}/src/server/r/#{additionalPath}/#{path.basename}#{path.extname}'"
+  # console.log "Warning: Please move '#{path.dirname}/#{path.basename}#{path.extname}' to '#{module}/src/server/r/#{additionalPath}/#{path.basename}#{path.extname}'"
   if path.basename == 'r' and path.extname == ''
     path.basename = ''
     path.dirname = ''
@@ -410,19 +410,19 @@ createExecuteTask = (options) =>
 
 
 onError = (err) ->
+  @emit 'end'
   process.stdout.write '\x07'
   if os.platform() == 'darwin'
-    return notify.onError(
+    notify.onError(
       title: '<%= error.message %>'
       # subtitle: 'Failure!'
       message: 'Error: <%= error.stack %>'
       sound: false) err
   else
-    return notify.onError((options, callback) ->
+    notify.onError((options, callback) ->
       console.log "\x1b[34m[#{options.message}]\x1b[0m \x1b[31mError: #{options.stack}\x1b[0m"
       return
     ) err
-  @emit 'end'
 
 
 createTask = (options, type) ->
