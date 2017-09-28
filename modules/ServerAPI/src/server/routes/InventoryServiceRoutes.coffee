@@ -59,6 +59,8 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/getContainerLogsByContainerCodes', exports.getContainerLogsByContainerCodes
 	app.post '/api/loadParentVialsFromCSV', exports.loadParentVialsFromCSV
 	app.post '/api/loadDaughterVialsFromCSV', exports.loadDaughterVialsFromCSV
+	app.post '/api/saveWellToWellInteractions', exports.saveWellToWellInteractions
+	app.post '/api/createDaughterVials', exports.createDaughterVials
 
 
 exports.setupRoutes = (app, loginRoutes) ->
@@ -110,6 +112,8 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/updateContainerHistoryLogs', loginRoutes.ensureAuthenticated, exports.updateContainerHistoryLogs
 	app.post '/api/loadParentVialsFromCSV', loginRoutes.ensureAuthenticated, exports.loadParentVialsFromCSV
 	app.post '/api/loadDaughterVialsFromCSV', loginRoutes.ensureAuthenticated, exports.loadDaughterVialsFromCSV
+	app.post '/api/saveWellToWellInteractions', loginRoutes.ensureAuthenticated, exports.saveWellToWellInteractions
+	app.post '/api/createDaughterVials', loginRoutes.ensureAuthenticated, exports.createDaughterVials
 
 
 exports.getContainersInLocation = (req, resp) ->
@@ -2583,7 +2587,9 @@ exports.validateParentVialsFromCSVInternal = (csvFileName, dryRun, callback) ->
 			transactionId: null
 		if exists
 			validationResponse.results.path = path
-			createParentVialFileEntryArray csvFileName, (fileEntryArray) ->
+			createParentVialFileEntryArray csvFileName, (err, fileEntryArray) ->
+				if err?
+					callback err
 				summaryInfo = prepareSummaryInfo fileEntryArray
 				checkRequiredAttributes fileEntryArray, (requiredAttributeErrors) ->
 					if requiredAttributeErrors?
@@ -2629,7 +2635,9 @@ exports.createParentVialsFromCSVInternal = (csvFileName, dryRun, user, callback)
 			commit: false
 		if exists
 			createResponse.results.path = path
-			createParentVialFileEntryArray csvFileName, (fileEntryArray) ->
+			createParentVialFileEntryArray csvFileName, (err, fileEntryArray) ->
+				if err?
+					callback err
 				summaryInfo = prepareSummaryInfo fileEntryArray
 				getContainerTubeDefinitionCode (definitionCode) ->
 					if !definitionCode?
@@ -2684,24 +2692,40 @@ exports.createParentVialsFromCSVInternal = (csvFileName, dryRun, user, callback)
 			callback createResponse
 
 exports.loadDaughterVialsFromCSV = (req, resp) ->
-	exports.loadDaughterVialsFromCSVInternal req.body.fileToParse, req.body.dryRunMode, req.body.user, (response) ->
-		resp.json response
+	exports.loadDaughterVialsFromCSVInternal req.body.fileToParse, req.body.dryRunMode, req.body.user, (err, response) ->
+		if err?
+			resp.statusCode = 500
+			resp.json err
+		else
+			resp.json response
 
 exports.loadDaughterVialsFromCSVInternal = (csvFileName, dryRun, user, callback) ->
 	if dryRun
-		exports.validateDaughterVialsFromCSVInternal csvFileName, dryRun, (validationResponse) ->
-			callback validationResponse
-	else
-		exports.validateDaughterVialsFromCSVInternal csvFileName, dryRun, (validationResponse) ->
-			if validationResponse.hasError
-				callback validationResponse
+		exports.validateDaughterVialsFromCSVInternal csvFileName, dryRun, (err, validationResponse) ->
+			if err?
+				callback err
 			else
-				exports.createDaughterVialsFromCSVInternal csvFileName, dryRun, user, (createVialsResponse) ->
-					callback createVialsResponse
+				callback null, validationResponse
+	else
+		exports.validateDaughterVialsFromCSVInternal csvFileName, dryRun, (err, validationResponse) ->
+			if err?
+				callback err
+			else if validationResponse.hasError
+				callback null, validationResponse
+			else
+				exports.createDaughterVialsFromCSVInternal csvFileName, dryRun, user, (err, createVialsResponse) ->
+					if err?
+						callback err
+					else
+						callback null, createVialsResponse
 
 exports.validateDaughterVialsFromCSV = (req, resp) ->
-	exports.validateDaughterVialsFromCSVInternal req.body.csvFileName, (validationResponse) ->
-		resp.json validationResponse
+	exports.validateDaughterVialsFromCSVInternal req.body.csvFileName, (err, validationResponse) ->
+		if err?
+			resp.statusCode = 500
+			resp.json err
+		else
+			resp.json validationResponse
 
 exports.validateDaughterVialsFromCSVInternal = (csvFileName, dryRun, callback) ->
 	getFileExists csvFileName, (exists, path) ->
@@ -2716,38 +2740,19 @@ exports.validateDaughterVialsFromCSVInternal = (csvFileName, dryRun, callback) -
 			transactionId: null
 		if exists
 			validationResponse.results.path = path
-			createDaughterVialFileEntryArray csvFileName, (fileEntryArray) ->
+			createDaughterVialFileEntryArray csvFileName, (err, fileEntryArray) ->
+				if err?
+					callback err
 				summaryInfo = prepareSummaryInfo fileEntryArray
-				checkRequiredAttributes fileEntryArray, (requiredAttributeErrors) ->
-					if requiredAttributeErrors?
-						validationResponse.errorMessages.push requiredAttributeErrors...
-					checkDataTypeErrors fileEntryArray, (dataTypeErrors) ->
-						if dataTypeErrors?
-							validationResponse.errorMessages.push dataTypeErrors...
-						sourceBarcodes = _.pluck fileEntryArray, 'sourceVialBarcode'
-						checkBarcodesExist sourceBarcodes, (existingBarcodes, newBarcodes) ->
-							console.log 'checking source vial barcodes which should exist'
-							console.log existingBarcodes
-							console.log newBarcodes
-							if newBarcodes? and newBarcodes.length > 0
-								error =
-									level: 'error'
-									message: "The following source barcodes do not exist: " + newBarcodes.join ', '
-								validationResponse.errorMessages.push error
-							destinationBarcodes = _.pluck fileEntryArray, 'destinationVialBarcode'
-							checkBarcodesExist destinationBarcodes, (existingBarcodes, newBarcodes) ->
-								if existingBarcodes? and existingBarcodes.length > 0
-									error =
-										level: 'error'
-										message: "The following destination barcodes already exist: " + existingBarcodes.join ', '
-									validationResponse.errorMessages.push error
-								checkParentWellContent fileEntryArray, (parentWellContentErrors) ->
-									if parentWellContentErrors?
-										validationResponse.errorMessages.push parentWellContentErrors...
-									if validationResponse.errorMessages.length < 1
-										validationResponse.hasError = false
-									validationResponse.results.htmlSummary = prepareValidationHTMLSummary validationResponse.hasError, validationResponse.hasWarning, validationResponse.errorMessages, summaryInfo
-									callback validationResponse
+				exports.validateDaughterVialsInternal fileEntryArray, (err, errorsAndWarnings) ->
+					if err?
+						callback err
+					else
+						validationResponse.errorMessages.push errorsAndWarnings...
+						if validationResponse.errorMessages.length < 1
+							validationResponse.hasError = false
+						validationResponse.results.htmlSummary = prepareValidationHTMLSummary validationResponse.hasError, validationResponse.hasWarning, validationResponse.errorMessages, summaryInfo
+						callback null, validationResponse
 		else
 			error =
 				level: 'error'
@@ -2767,80 +2772,30 @@ exports.createDaughterVialsFromCSVInternal = (csvFileName, dryRun, user, callbac
 			errorMessages: []
 			transactionId: null
 			commit: false
-		if exists
-			createResponse.results.path = path
-			createDaughterVialFileEntryArray csvFileName, (fileEntryArray) ->
-				summaryInfo = prepareSummaryInfo fileEntryArray
-				getContainerTubeDefinitionCode (definitionCode) ->
-					if !definitionCode?
-						error =
-							level: 'error'
-							message: 'Could not find definition container for tube'
-						createResponse.errorMessages.push error
-					tubesToCreate = []
-					_.each fileEntryArray, (entry) ->
-						tube =
-							barcode: entry.destinationVialBarcode
-							definition: definitionCode
-							recordedBy: user
-							createdUser: entry.preparedBy
-							createdDate: entry.createdDate
-							physicalState: entry.physicalState
-							wells: [
-								wellName: "A001"
-								batchCode: entry.batchCode
-								amount: parseFloat(entry.amount)
-								amountUnits: entry.amountUnits
-								physicalState: entry.physicalState
-								recordedBy: user
-								recordedDate: (new Date()).getTime()
-							]
-						if entry.physicalState == 'solution'
-							tube.wells[0].batchConcentration = parseFloat(entry.concentration)
-							tube.wells[0].batchConcUnits = entry.concUnits
-							tube.wells[0].solventCode = entry.solvent
-						tubesToCreate.push tube
-					console.log JSON.stringify tubesToCreate
-					exports.createTubesInternal tubesToCreate, 0, (json, statusCode) ->
-						console.log statusCode
-						console.log json
-						if statusCode != 200
-							createResponse.hasError = true
-							console.error json
-							error =
-								level: 'error'
-								message: json
-							createResponse.errorMessages.push error
-						else
-							createResponse.hasError = false
-							createResponse.commit = true
-						if !createResponse.hasError
-							#TODO: create interactions or values of daughter to parent relation
-							parentVialsToDecrement = []
-							_.each fileEntryArray, (entry) ->
-								toDecrement =
-									barcode: entry.sourceVialBarcode
-									amountToDecrement: parseFloat(entry.amount)
-									amountToDecrementUnits: entry.amountUnits
-								parentVialsToDecrement.push toDecrement
-							decrementAmountsFromVials parentVialsToDecrement, user, (decrementVialsResponse, decrementVialsStatusCode) ->
-								if decrementVialsStatusCode != 200
-									error =
-										level: 'error'
-										message: decrementVialsResponse
-									createResponse.errorMessages.push error
-									createResponse.hasError = true
-								createResponse.results.htmlSummary = prepareCreateDaughterVialsHTMLSummary createResponse.hasError, createResponse.hasWarning, createResponse.errorMessages,  summaryInfo
-								callback createResponse
-						else
-							createResponse.results.htmlSummary = prepareCreateDaughterVialsHTMLSummary createResponse.hasError, createResponse.hasWarning, createResponse.errorMessages, summaryInfo
-							callback createResponse
-		else
+		if !exists
 			error =
 				level: 'error'
 				message: "File cannot be found"
 			createResponse.errorMessages.push error
 			callback createResponse
+		else
+			createResponse.results.path = path
+			createDaughterVialFileEntryArray csvFileName, (err, fileEntryArray) ->
+				if err?
+					callback err
+				summaryInfo = prepareSummaryInfo fileEntryArray
+				exports.createDaughterVialsInternal fileEntryArray, user, (err, response) ->
+					if err?
+						error =
+							level: 'error'
+							message: err
+						createResponse.errorMessages.push error
+					else
+						createResponse.hasError = false
+						createResponse.commit = true
+					createResponse.results.htmlSummary = prepareCreateDaughterVialsHTMLSummary createResponse.hasError, createResponse.hasWarning, createResponse.errorMessages,  summaryInfo
+					callback null, createResponse
+
 
 
 getFileExists = (csvFileName, callback) =>
@@ -2882,7 +2837,7 @@ createParentVialFileEntryArray = (csvFileName, callback) =>
 		rowCount++
 	)
 	.on('end', () ->
-		return callback csvFileEntries, 200
+		return callback null, csvFileEntries
 	)
 
 createDaughterVialFileEntryArray = (csvFileName, callback) =>
@@ -2910,7 +2865,7 @@ createDaughterVialFileEntryArray = (csvFileName, callback) =>
 		rowCount++
 	)
 	.on('end', () ->
-		return callback csvFileEntries, 200
+		return callback null, csvFileEntries
 	)
 
 checkRequiredAttributes = (fileEntryArray, callback) ->
@@ -3082,9 +3037,9 @@ decrementAmountsFromVials = (parentVialsToDecrement, user, callback) ->
 	exports.getWellContentByContainerLabelsInternal vialBarcodes, 'container', 'tube', 'barcode', 'barcode', (wellContentList, statusCode) ->
 		wellsToUpdate = []
 		_.each parentVialsToDecrement, (toDecrement) ->
-			wellCode = (_.findWhere plateWellCodes, {plateBarcode: toDecrement.barcode}).wellCodeName
-			oldContainerWellContent = _.findWhere wellContentList, {containerCodeName: wellCode}
+			oldContainerWellContent = _.findWhere wellContentList, {label: toDecrement.barcode}
 			oldWellContent = oldContainerWellContent.wellContent[0]
+			wellCode = oldWellContent.containerCodeName
 			newWellContent =
 				containerCodeName: wellCode
 				amount: oldWellContent.amount - toDecrement.amountToDecrement
@@ -3096,7 +3051,7 @@ decrementAmountsFromVials = (parentVialsToDecrement, user, callback) ->
 			if updateWellsStatusCode != 204
 				callback "Error: #{updateWellsResponse}"
 			else
-				callback updateWellsResponse, 200
+				callback null, updateWellsResponse
 
 prepareCreateDaughterVialsHTMLSummary = (hasError, hasWarning, errorMessages, summaryInfo) ->
 	errors = _.where errorMessages, {level: 'error'}
@@ -3129,3 +3084,194 @@ prepareSummaryInfo = (fileEntryArray) ->
 	if batchCodes?
 		summaryInfo.totalBatchCodes = (_.uniq batchCodes).length
 	summaryInfo
+
+
+exports.saveWellToWellInteractions = (req, resp) ->
+	if req.session?.passport?.user?.username?
+		user = req.session.passport.user.username
+	else
+		user = 'anonymous'
+	exports.saveWellToWellInteractionsInternal req.body, user, (err, data) ->
+		if err?
+			resp.statusCode = 500
+			resp.json err
+		else
+			resp.json data
+
+exports.saveWellToWellInteractionsInternal = (interactionsToSave, user, callback) ->
+	barcodes = []
+	barcodes.push (_.pluck interactionsToSave, 'firstContainerBarcode')...
+	barcodes.push (_.pluck interactionsToSave, 'secondContainerBarcode')...
+	console.log barcodes
+	exports.getWellCodesByPlateBarcodesInternal barcodes, (plateWellCodes) ->
+		wellCodes = _.pluck plateWellCodes, 'wellCodeName'
+		exports.getContainersByCodeNamesInternal wellCodes, (wells, statusCode) ->
+			if statusCode? && statusCode != 200
+				callback wells
+			else
+				formattedItxList = []
+				_.each interactionsToSave, (itx) ->
+					requiredParams = ['firstContainerBarcode', 'firstWellLabel', 'secondContainerBarcode', 'secondWellLabel', 'interactionType', 'interactionKind']
+					for param in requiredParams
+						if !itx[param]?
+							callback "Error: all entries must include #{param}"
+					firstWellCode = (_.findWhere plateWellCodes, {plateBarcode: itx.firstContainerBarcode, wellLabel: itx.firstWellLabel}).wellCodeName
+					firstWell = (_.findWhere wells, {containerCodeName: firstWellCode}).container
+					secondWellCode = (_.findWhere plateWellCodes, {plateBarcode: itx.secondContainerBarcode, wellLabel: itx.secondWellLabel}).wellCodeName
+					secondWell = (_.findWhere wells, {containerCodeName: secondWellCode}).container
+					formattedItx =
+						lsType: itx.interactionType
+						lsKind: itx.interactionKind
+						recordedBy: user
+						recordedDate: new Date().getTime()
+						firstContainer: firstWell
+						secondContainer: secondWell
+					if itx.interactionStates?
+						_.each itx.interactionStates, (state) ->
+							state.recordedBy = user
+							state.recordedDate = new Date().getTime()
+							_.each state.lsValues, (value) ->
+								value.recordedBy = user
+								value.recordedDate = new Date().getTime()
+						formattedItx.lsStates = itx.interactionStates
+					formattedItxList.push formattedItx
+				baseurl = config.all.client.service.persistence.fullpath+"itxcontainercontainers/jsonArray"
+				request = require 'request'
+				request(
+					method: 'POST'
+					url: baseurl
+					body: formattedItxList
+					json: true
+					timeout: 86400000
+				, (error, response, json) =>
+					if !error && response.statusCode == 201
+						callback null, json
+					else
+						console.error 'error trying to save container container interactions'
+						console.error error
+						console.log response.statusCode
+						console.error json
+						callback "Error trying to save container container interactions: #{error}"
+				)
+
+exports.validateDaughterVialsInternal = (vialsToValidate, callback) ->
+	errorMessages = []
+	checkRequiredAttributes vialsToValidate, (requiredAttributeErrors) ->
+		if requiredAttributeErrors?
+			errorMessages.push requiredAttributeErrors...
+		checkDataTypeErrors vialsToValidate, (dataTypeErrors) ->
+			if dataTypeErrors?
+				errorMessages.push dataTypeErrors...
+			sourceBarcodes = _.pluck vialsToValidate, 'sourceVialBarcode'
+			checkBarcodesExist sourceBarcodes, (existingBarcodes, newBarcodes) ->
+				if newBarcodes? and newBarcodes.length > 0
+					error =
+						level: 'error'
+						message: "The following source barcodes do not exist: " + newBarcodes.join ', '
+					errorMessages.push error
+				destinationBarcodes = _.pluck vialsToValidate, 'destinationVialBarcode'
+				checkBarcodesExist destinationBarcodes, (existingBarcodes, newBarcodes) ->
+					if existingBarcodes? and existingBarcodes.length > 0
+						error =
+							level: 'error'
+							message: "The following destination barcodes already exist: " + existingBarcodes.join ', '
+						errorMessages.push error
+					checkParentWellContent vialsToValidate, (parentWellContentErrors) ->
+						if parentWellContentErrors?
+							errorMessages.push parentWellContentErrors...
+						callback null, errorMessages
+
+exports.createDaughterVials = (req, resp) ->
+	if req.session?.passport?.user?.username?
+		user = req.session.passport.user.username
+	else
+		user = 'anonymous'
+	exports.validateDaughterVialsInternal req.body, (err, errorsAndWarnings) ->
+		if err?
+			resp.statusCode = 500
+			resp.json err
+		else
+			errors = _.where errorsAndWarnings, {level: 'error'}
+			warnings = _.where errorsAndWarnings, {level: 'warning'}
+			if errors? and errors.length > 0
+				resp.statusCode = 400
+				resp.json errorsAndWarnings
+			else
+				exports.createDaughterVialsInternal req.body, user, (err, response) ->
+					if err?
+						resp.statusCode = 500
+						resp.json err
+					else
+						resp.json response
+
+exports.createDaughterVialsInternal = (vialsToCreate, user, callback) ->
+	getContainerTubeDefinitionCode (definitionCode) ->
+		if !definitionCode?
+			callback 'Could not find definition container for tube'
+		tubesToCreate = []
+		_.each vialsToCreate, (entry) ->
+			tube =
+				barcode: entry.destinationVialBarcode
+				definition: definitionCode
+				recordedBy: user
+				createdUser: entry.preparedBy
+				createdDate: entry.createdDate
+				physicalState: entry.physicalState
+				wells: [
+					wellName: "A001"
+					batchCode: entry.batchCode
+					amount: parseFloat(entry.amount)
+					amountUnits: entry.amountUnits
+					physicalState: entry.physicalState
+					recordedBy: user
+					recordedDate: (new Date()).getTime()
+				]
+			if entry.physicalState == 'solution'
+				tube.wells[0].batchConcentration = parseFloat(entry.concentration)
+				tube.wells[0].batchConcUnits = entry.concUnits
+				tube.wells[0].solventCode = entry.solvent
+			tubesToCreate.push tube
+		console.log JSON.stringify tubesToCreate
+		exports.createTubesInternal tubesToCreate, 0, (json, statusCode) ->
+			console.log statusCode
+			console.log json
+			if statusCode != 200
+				callback json
+			else
+				interactionsToCreate = []
+				_.each vialsToCreate, (entry) ->
+					interaction =
+						interactionType: 'added to'
+						interactionKind: 'well_well'
+						firstContainerBarcode: entry.sourceVialBarcode
+						secondContainerBarcode: entry.destinationVialBarcode
+						firstWellLabel: 'A001'
+						secondWellLabel: 'A001'
+						interactionStates: [
+								lsType: 'metadata'
+								lsKind: 'information'
+								lsValues: [
+									lsType: 'numericValue'
+									lsKind: 'amount added'
+									numericValue: parseFloat(entry.amount)
+									unitKind: entry.amountUnits
+								]
+							]
+					interactionsToCreate.push interaction
+				exports.saveWellToWellInteractionsInternal interactionsToCreate, user, (err, itxResponse) ->
+					if err?
+						callback err
+					else
+						parentVialsToDecrement = []
+						_.each vialsToCreate, (entry) ->
+							toDecrement =
+								barcode: entry.sourceVialBarcode
+								amountToDecrement: parseFloat(entry.amount)
+								amountToDecrementUnits: entry.amountUnits
+							parentVialsToDecrement.push toDecrement
+						decrementAmountsFromVials parentVialsToDecrement, user, (err, decrementVialsResponse) ->
+							if err?
+								callback err
+							else
+								#TODO see what this service should respond with
+								callback null, 'successfully created daughter vials'
