@@ -309,7 +309,6 @@ class window.AuthorEditorController extends AbstractFormController
 							alert 'Could not get author object with this code. Creating a new author'
 							@completeInitialization()
 						success: (authorObj) =>
-							#TODO: need to restrict users who have role to view module
 							@model = new Author authorObj[0]
 							@completeInitialization()
 				else
@@ -327,7 +326,16 @@ class window.AuthorEditorController extends AbstractFormController
 		if @options.readOnly?
 			@readOnly = @options.readOnly
 		else
-			@readOnly = false
+			if window.conf.security?.authstrategy? and window.conf.security.authstrategy is 'database'
+				#if authstrategy is database, then only admins can create/edit
+				acasAdminRole = window.conf.roles.acas.adminRole
+				if acasAdminRole != "" and !UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, [acasAdminRole])
+					@readOnly = true
+				else
+					@readOnly = false
+			else
+				#else anyone can create/edit
+				@readOnly = false
 		$(@el).empty()
 		$(@el).html @template()
 		@$('.bv_save').attr('disabled', 'disabled')
@@ -363,7 +371,7 @@ class window.AuthorEditorController extends AbstractFormController
 				@$('.bv_enabled').attr 'checked', 'checked'
 			else
 				@$('.bv_enabled').removeAttr 'checked'
-		else if window.conf.security?.authstrategy? and window.conf.security.authstrategy is 'ldap'
+		else
 			@$('.bv_group_activationDate').hide()
 			@$('.bv_group_enabled').hide()
 		if @model.isNew()
@@ -402,6 +410,11 @@ class window.AuthorEditorController extends AbstractFormController
 		@$('.bv_cancelComplete').hide()
 
 	setupSystemRoleListController: ->
+		acasAdminRole = window.conf.roles.acas.adminRole
+		readOnly = false
+		if acasAdminRole != "" and !UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, [acasAdminRole])
+				readOnly = true
+
 		if @systemRoleListController?
 			@systemRoleListController.undelegateEvents()
 
@@ -410,6 +423,7 @@ class window.AuthorEditorController extends AbstractFormController
 			el: @$('.bv_systemRoleList')
 			collection: systemRoles
 			roleType: "System"
+			readOnly: readOnly
 
 		@finishAuthorRoleListControllerSetup @systemRoleListController
 
