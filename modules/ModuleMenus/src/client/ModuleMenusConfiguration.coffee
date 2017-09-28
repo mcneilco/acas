@@ -45,6 +45,9 @@ window.ModuleMenusConfiguration =
 		isHeader: false, menuName: "Project Browser"
 		mainControllerClassName: "ProjectBrowserController"
 	,
+		isHeader: false, menuName: "Author Browser"
+		mainControllerClassName: "AuthorBrowserController"
+	,
 		isHeader: true
 		menuName: "Admin"
 	,

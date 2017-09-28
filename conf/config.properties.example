@@ -415,6 +415,10 @@ client.protocol.showAssayTreeRule=false
 client.protocol.showCurveDisplayParams=true
 client.experiment.uneditableFileTypes=["source file", "annotation file"]
 
+#Controls privileges for who can create/edit and delete authors
+client.author.editingRoles=
+client.author.deletingRoles=
+
 # Default status for experiments loaded thorugh experiment loader
 server.sel.experimentStatus=approved
 server.sel.protocolStatus=created

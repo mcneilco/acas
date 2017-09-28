@@ -91,6 +91,9 @@ class window.Author extends Backbone.Model
 
 		return new AuthorRoleList trimmedProjectRoles
 
+class window.AuthorList extends Backbone.Collection
+	model: Author
+	
 class window.AuthorRoleController extends AbstractFormController
 	template: _.template($("#AuthorRoleView").html())
 
@@ -303,13 +306,13 @@ class window.AuthorEditorController extends AbstractFormController
 				if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
 					$.ajax
 						type: 'GET'
-						url: "/api/authorByCodename/"+window.AppLaunchParams.moduleLaunchParams.code
+						url: "/api/authorByUsername/"+window.AppLaunchParams.moduleLaunchParams.code
 						dataType: 'json'
 						error: (err) =>
 							alert 'Could not get author object with this code. Creating a new author'
 							@completeInitialization()
 						success: (authorObj) =>
-							@model = new Author authorObj[0]
+							@model = new Author authorObj
 							@completeInitialization()
 				else
 					@completeInitialization()
@@ -326,16 +329,13 @@ class window.AuthorEditorController extends AbstractFormController
 		if @options.readOnly?
 			@readOnly = @options.readOnly
 		else
-			if window.conf.security?.authstrategy? and window.conf.security.authstrategy is 'database'
-				#if authstrategy is database, then only admins can create/edit
-				acasAdminRole = window.conf.roles.acas.adminRole
-				if acasAdminRole != "" and !UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, [acasAdminRole])
+			#create/edit based on whether user has create/edit role
+			@readOnly = false
+			if window.conf.author?.editingRoles?
+				editingRoles = window.conf.author.editingRoles.split(",")
+				if !UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, editingRoles)
 					@readOnly = true
-				else
-					@readOnly = false
-			else
-				#else anyone can create/edit
-				@readOnly = false
+
 		$(@el).empty()
 		$(@el).html @template()
 		@$('.bv_save').attr('disabled', 'disabled')
@@ -375,9 +375,11 @@ class window.AuthorEditorController extends AbstractFormController
 			@$('.bv_group_activationDate').hide()
 			@$('.bv_group_enabled').hide()
 		if @model.isNew()
+			@$('.bv_userName').removeAttr 'disabled'
 			@$('.bv_save').html("Save")
 			@$('.bv_newEntity').hide()
 		else
+			@$('.bv_userName').attr 'disabled', 'disabled'
 			@$('.bv_save').html("Update")
 			@$('.bv_newEntity').show()
 		@$('.bv_save').attr('disabled', 'disabled')
