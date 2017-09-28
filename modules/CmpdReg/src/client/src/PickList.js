@@ -120,7 +120,8 @@ $(function() {
         	$(this.el).hide();
         	$(this.el).show();
             this.rendered = true;
-            
+			var selectedText = this.getSelectedModel().get('name');
+			$(this.el).prop('title', selectedText);
             return this;
 		},
 		
