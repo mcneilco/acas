@@ -109,6 +109,9 @@
 				kindName: "analysis result html"
 			,
 				typeName: "clobValue"
+				kindName: "preprocessor result html"
+			,
+				typeName: "clobValue"
 				kindName: "model fit result html"
 			,
 				typeName: "clobValue"
