@@ -722,6 +722,14 @@
 				labelTypeAndKind: "id_codeName"
 				thingTypeAndKind: "document_experiment"
 				latestNumber:0
+			,
+				digits: 8
+				groupDigits: false
+				labelPrefix: "DDICT"
+				labelSeparator: "-"
+				labelTypeAndKind: "id_codeName"
+				thingTypeAndKind: "document_datadictionary"
+				startingNumber: 1
 			]
 
 ) (if (typeof process is "undefined" or not process.versions) then window.experimentConfJSON = window.experimentConfJSON or {} else exports)

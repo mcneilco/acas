@@ -4,6 +4,10 @@ window.ModuleMenusConfiguration =
 		menuName: "Load Data"
 #		collapsible: true
 	,
+#		isHeader: false
+#		menuName: "Chem Struct"
+#		mainControllerClassName: "ACASFormChemicalStructureExampleController"
+#	,
 		isHeader: false
 		menuName: "Experiment Loader"
 		mainControllerClassName: "GenericDataParserController"
@@ -66,4 +70,9 @@ window.ModuleMenusConfiguration =
 		mainControllerClassName: "SystemTestController"
 		autoLaunchName:"system_test"
 		requireUserRoles: []
+	,
+		isHeader: false
+		menuName: "Label Sequence"
+		mainControllerClassName: "ACASLabelSequenceController"
+		autoLaunchName: "acasLabelSequence"
 	]

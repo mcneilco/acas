@@ -22,18 +22,21 @@ $(function () {
         initialize: function(){
             _.bindAll(this, 'next', 'cancel', 'render', 'validationError');
             this.valid = false;
-            this.marvinLoaded = false;
+            this.sketcherLoaded = false;
             this.exportFormat = "mol";
-            if(window.configuration.marvin) {
-                if (window.configuration.marvin.exportFormat) {
-                    this.exportFormat = window.configuration.marvin.exportFormat;
-                }
-            }
+	        if(window.configuration.marvin) {
+		        this.useMarvin = true;
+		        if (window.configuration.marvin.exportFormat) {
+			        this.exportFormat = window.configuration.marvin.exportFormat;
+		        }
+	        } else if(window.configuration.ketcher) {
+		        this.useKetcher = true;
+	        }
             this.hide();
         },
 
         render: function() {
-            if (!this.marvinLoaded) { // only load template once so we don't wipe out marvin
+            if (!this.sketcherLoaded) { // only load template once so we don't wipe out marvin
                 $(this.el).html(this.template());
                 if(this.options.corpName){
                     this.$('.corpName').val(this.options.corpName);
@@ -42,22 +45,34 @@ $(function () {
 
             this.hide();
             var self = this;
-            MarvinJSUtil.getEditor("#editParentMarvinSketch").then(function (sketcherInstance) {
-                self.marvinSketcherInstance = sketcherInstance;
-                if (typeof window.marvinStructureTemplates !== 'undefined') {
-                    for (i=0 ; i<window.marvinStructureTemplates.length; i++ ) {
-                        sketcherInstance.addTemplate(window.marvinStructureTemplates[i]);
-                    }
-                    var pastePromise = sketcherInstance.importStructure(null, self.options.parentModel.get('molStructure'));
-                    pastePromise.then(function() {}, function(error) {
-                        alert(error);
-                    });
-                }
-                self.show();
-                self.marvinLoaded = true;
-            },function (error) {
-                alert("Cannot retrieve editParentSearchMarvinSketch sketcher instance from iframe:"+error);
-            });
+	        if (this.useMarvin) {
+		        this.$('#editParentMarvinSketch').attr('src',"/CmpdReg/marvinjs/editorws.html");
+		        MarvinJSUtil.getEditor("#editParentMarvinSketch").then(function (sketcherInstance) {
+			        self.marvinSketcherInstance = sketcherInstance;
+			        if (typeof window.marvinStructureTemplates !== 'undefined') {
+				        for (i = 0; i < window.marvinStructureTemplates.length; i++) {
+					        sketcherInstance.addTemplate(window.marvinStructureTemplates[i]);
+				        }
+						var pastePromise = sketcherInstance.importStructure(null, self.options.parentModel.get('molStructure'));
+						pastePromise.then(function() {}, function(error) {
+							alert(error);
+						});
+			        }
+			        self.show();
+			        self.sketcherLoaded = true;
+		        }, function (error) {
+			        alert("Cannot retrieve searchMarvinSketch sketcher instance from iframe:" + error);
+		        });
+
+	        } else if (this.useKetcher) {
+		        this.$('#editParentMarvinSketch').attr('src',"/lib/ketcher-2.0.0-alpha.3/ketcher.html?api_path=/api/cmpdReg/ketcher/");
+		        this.$('#editParentMarvinSketch').on('load', function () {
+			        self.ketcher = self.$('#editParentMarvinSketch')[0].contentWindow.ketcher;
+					self.ketcher.setMolecule(self.options.parentModel.get('molStructure'));
+		        });
+	        } else {
+		        alert("No edit parent sketcher configured");
+	        }
 
             return this;
 
@@ -82,24 +97,40 @@ $(function () {
             var mol;
 
             var self = this;
-            this.marvinSketcherInstance.exportStructure(this.exportFormat).then(function(molecule) {
-                if ( molecule.indexOf("0  0  0  0  0  0  0  0  0  0999")>-1)
-                    mol = null;
-                else
-                    mol = molecule;
-                editParentSearch.set({
-                    molStructure: mol,
-                    corpName: jQuery.trim(self.$('.corpName').val())
-                });
+            if (this.useMarvin) {
+		        this.marvinSketcherInstance.exportStructure(this.exportFormat).then(function (molecule) {
+			        if (molecule.indexOf("0  0  0  0  0  0  0  0  0  0999") > -1)
+				        mol = null;
+			        else
+				        mol = molecule;
+			        editParentSearch.set({
+				        molStructure: mol,
+				        corpName: jQuery.trim(self.$('.corpName').val())
+			        });
 
-                if ( self.isValid() ) {
-                    self.trigger('editParentSearchNext', editParentSearch);
-                    self.hide();
-                }
-            }, function(error) {
-                alert("Molecule export failed from search sketcher:"+error);
-            });
+			        if ( self.isValid() ) {
+				        self.trigger('editParentSearchNext', editParentSearch);
+				        self.hide();
+			        }
+		        }, function(error) {
+			        alert("Molecule export failed from search sketcher:"+error);
+		        });
 
+	        } else if (this.useKetcher) {
+		        mol = this.ketcher.getMolfile();
+				if (mol.indexOf("  0  0  0     0  0            999") > -1) mol = null;
+		        editParentSearch.set({
+			        molStructure: mol,
+			        corpName: jQuery.trim(self.$('.corpName').val())
+		        });
+
+		        if ( self.isValid() ) {
+			        self.trigger('editParentSearchNext', editParentSearch);
+			        self.hide();
+		        }
+            } else {
+		        alert("No edit parent sketcher configured in search action");
+	        }
 
         },
         isValid: function() {
@@ -141,13 +172,13 @@ $(function () {
 
         initialize: function(){
             _.bindAll(this, 'toggleParentsVisible', 'next');
-            this.marvinLoaded = false;
+            this.sketcherLoaded = false;
             this.hide();
             this.parentModel = this.options.parentModel;
         },
 
         render: function () {
-            if (!this.marvinLoaded) { // only load template once so we don't wipe out marvin
+            if (!this.sketcherLoaded) { // only load template once so we don't wipe out marvin
                 $(this.el).html(this.template());
             }
 
