@@ -2160,6 +2160,12 @@ class ContainerTube extends ContainerPlate
 			stateKind: 'information'
 			type: 'stringValue'
 			kind: 'comments'
+		,
+			key: 'locationName'
+			stateType: 'metadata'
+			stateKind: 'information'
+			type: 'stringValue'
+			kind: 'locationName'
 		]
 
 class AnalysisGroup extends Backbone.Model
