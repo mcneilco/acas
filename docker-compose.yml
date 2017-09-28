@@ -60,7 +60,7 @@ services:
     ports:
      - "5432:5432"
   tomcat:
-    image: mcneilco/tomcat-maven:openjdk7
+    image: mcneilco/tomcat-maven:openjdk8
     restart: always
     depends_on:
      - db
@@ -86,7 +86,7 @@ services:
      - /usr/local/tomcat/webapps/acas
     command: /bin/true
   cmpdreg:
-    image: mcneilco/acas-cmpdreg-roo-server-oss:indigo
+    image: mcneilco/acas-cmpdreg-roo-server-oss:${ACAS_TAG}
     volumes:
      - /usr/local/tomcat/webapps/cmpdreg
     # Add chemaxon license files here
