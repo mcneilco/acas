@@ -219,6 +219,12 @@ div {
 .MetaLotView div.floatingPanel.newIsotopeView div {
     height: 20px;
 }
+
+.MetaLotView .bv_lotInventory iframe {
+    width: 700px;
+    height: 1000px;
+}
+
 .NewLotSuccessView .labelCorpName {
     margin-left: 10px;
     margin-bottom: 40px;
@@ -1030,7 +1036,6 @@ input.FormInput.supplier, .FormInput.supplierID, .FormInput.percentEE, .FormInpu
   width: 160px;
 }
 
-
 /*** SYNTH DATE COLUMN ***/
 
 .MetaLotView .LotForm_LotViewSynth {
@@ -1113,7 +1118,7 @@ div.MetaLotViewButtons.buttons {
 
 .LotForm_LotView a.editAnalyticalFiles {
     background: no-repeat url('../images/view_edit_files.png');
-    position: absolute;
+    /*position: absolute;*/
     left: 556px;
     bottom: 40px;
     margin-left: 150px;
