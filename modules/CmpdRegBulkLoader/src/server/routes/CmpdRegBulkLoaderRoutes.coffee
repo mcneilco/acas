@@ -21,6 +21,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 exports.cmpdRegBulkLoaderIndex = (req, res) ->
 	scriptPaths = require './RequiredClientScripts.js'
 	config = require '../conf/compiled/conf.js'
+	cmpdRegConfig = require '../public/CmpdReg/client/custom/configuration.json'
 
 	global.specRunnerTestmode = if global.stubsMode then true else false
 	scriptsToLoad = scriptPaths.requiredScripts.concat(scriptPaths.applicationScripts)
@@ -45,6 +46,7 @@ exports.cmpdRegBulkLoaderIndex = (req, res) ->
 			testMode: false
 			moduleLaunchParams: if moduleLaunchParams? then moduleLaunchParams else null
 			deployMode: global.deployMode
+			cmpdRegConfig: cmpdRegConfig
 
 exports.getCmpdRegBulkLoaderTemplates = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode

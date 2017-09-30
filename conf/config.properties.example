@@ -339,6 +339,8 @@ server.service.external.inventory.database.name=
 server.service.external.inventory.database.username=
 server.service.external.inventory.database.password=
 
+client.compoundInventory.enforceUppercaseBarcodes=false
+
 ## options for auth. strategy are: properties, database, ldap
 server.security.authstrategy=database
 #server.security.properties.path=/opt/seurat/SeuratServer/users.txt
@@ -431,9 +433,6 @@ client.entity.viewDeletedRoles=
 client.protocol.showAssayTreeRule=false
 client.protocol.showCurveDisplayParams=true
 client.experiment.uneditableFileTypes=["source file", "annotation file"]
-
-# If project select is shown separately in the Configuration part of the GUI
-client.cmpdReg.showProjectSelect=true
 
 # Default status for experiments loaded thorugh experiment loader
 server.sel.experimentStatus=approved

@@ -64,6 +64,16 @@ $(function() {
             } else {
                 this.insertFirstOption = null;
             }
+            if (this.options.insertSecondOption !=null) {
+                this.insertSecondOption = this.options.insertSecondOption;
+            } else {
+                this.insertSecondOption = null;
+            }
+            if (this.options.insertThirdOption !=null) {
+                this.insertThirdOption = this.options.insertThirdOption;
+            } else {
+                this.insertThirdOption = null;
+            }
             if (this.options.showIgnored !=null) {
                 this.showIgnored = this.options.showIgnored;
             } else {
@@ -72,10 +82,16 @@ $(function() {
 		},
 		
 		handleListReset: function() {
+			if (this.insertThirdOption) {
+	            this.collection.add(this.insertThirdOption, {at: 0, silent: true});
+            }
+			if (this.insertSecondOption) {
+	            this.collection.add(this.insertSecondOption, {at: 0, silent: true});
+            }
 			if (this.insertFirstOption) {
 	            this.collection.add(this.insertFirstOption, {at: 0, silent: true});
             }
-            this.render();
+      this.render();
 		},
 		
 		render: function() {
@@ -104,7 +120,8 @@ $(function() {
         	$(this.el).hide();
         	$(this.el).show();
             this.rendered = true;
-            
+			var selectedText = this.getSelectedModel().get('name');
+			$(this.el).prop('title', selectedText);
             return this;
 		},
 		

@@ -411,9 +411,11 @@ $(function() {
 
 		    if (this.user == null || chemist == null || this.model.get('lot').isNew()) return true; // test mode or new
 
-		    if (this.user.get('isAdmin') || this.user.get('code') == chemist.get('code')) {
+		    if (this.user.get('isAdmin')) {
 			    return true;
-		    } else {
+		    }else if (!window.configuration.metaLot.disableEditMyLots && this.user.get('code') == chemist.get('code')){
+				return true;
+			} else {
 			    return false;
 		    }
 	    },

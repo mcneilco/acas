@@ -75,6 +75,9 @@ class window.AbstractFormController extends Backbone.View
 		@$("textarea").not('.dontdisable').attr 'disabled', 'disabled'
 		@$(".bv_experimentCode").not('.dontdisable').css "background-color", "#eeeeee"
 		@$(".bv_experimentCode").not('.dontdisable').css "color", "#333333"
+		@$(".bv_creationDateIcon").not('.dontdisable').addClass "uneditable-input"
+		@$(".bv_creationDateIcon").not('.dontdisable').on "click", ->
+			return false
 		@$(".bv_completionDateIcon").not('.dontdisable').addClass "uneditable-input"
 		@$(".bv_completionDateIcon").not('.dontdisable').on "click", ->
 			return false

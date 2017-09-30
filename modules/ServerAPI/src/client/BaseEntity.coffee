@@ -318,22 +318,23 @@ class window.BaseEntityController extends AbstractThingFormController #TODO: che
 			if requireNotebook
 				console.log "require notebook"
 				@$('.bv_notebookLabel').html "*Notebook"
-				saveNotebookPage = true #default
-				if window.conf.entity?.notebookPage?.save?
-					saveNotebookPage = window.conf.entity.notebookPage.save
-				requireNotebookPage = false #default
-				if window.conf.entity?.notebookPage?.require?
-					requireNotebookPage= window.conf.entity.notebookPage.require
-				if saveNotebookPage
-					@$('.bv_notebookPage').val @model.getNotebookPage().get('stringValue')
-					if requireNotebookPage
-						@$('.bv_notebookPageLabel').html "*Notebook Page"
-					else
-						@$('.bv_notebookPageLabel').html "Notebook Page"
-				else
-					@$('.bv_group_notebookPage').hide()
 			else
 				@$('.bv_notebookLabel').html "Notebook"
+			saveNotebookPage = true #default
+			if window.conf.entity?.notebookPage?.save?
+				saveNotebookPage = window.conf.entity.notebookPage.save
+			requireNotebookPage = false #default
+			if window.conf.entity?.notebookPage?.require?
+				requireNotebookPage= window.conf.entity.notebookPage.require
+			if saveNotebookPage
+				@$('.bv_notebookPage').val @model.getNotebookPage().get('stringValue')
+				if requireNotebookPage
+					@$('.bv_notebookPageLabel').html "*Notebook Page"
+				else
+					@$('.bv_notebookPageLabel').html "Notebook Page"
+			else
+				@$('.bv_group_notebookPage').hide()
+
 
 		else
 			@$('.bv_group_notebook').hide()
@@ -372,7 +373,7 @@ class window.BaseEntityController extends AbstractThingFormController #TODO: che
 		if @model.isNew() or @model.getScientist().get('codeValue') is "unassigned"
 			return true
 		else
-			if window.conf.entity?.editingRoles?
+			if window.conf.entity?.editingRoles? and $.trim(window.conf.entity.editingRoles).length > 0
 				rolesToTest = []
 				for role in window.conf.entity.editingRoles.split(",")
 					role = $.trim(role)
@@ -390,9 +391,12 @@ class window.BaseEntityController extends AbstractThingFormController #TODO: che
 						rolesToTest.push role
 				if rolesToTest.length is 0
 					return false
-				unless UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, rolesToTest
+				if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, rolesToTest
+					return true
+				else
 					return false
-			return true
+			else
+				return true
 
 	canDelete: ->
 		if window.conf.entity?.deletingRoles?
@@ -552,25 +556,28 @@ class window.BaseEntityController extends AbstractThingFormController #TODO: che
 		@model.trigger 'change'
 
 	updateEditable: =>
-		if @model.isEditable()
-			@enableAllInputs()
-			@$('.bv_lock').hide()
+		if @readOnly
+			@displayInReadOnlyMode()
 		else
-			@disableAllInputs()
-			@$('.bv_status').removeAttr('disabled')
-			@$('.bv_lock').show()
-			@$('.bv_newEntity').removeAttr('disabled')
-			if @model.getStatus().get('codeValue') is "deleted"
-				@$('.bv_status').attr 'disabled', 'disabled'
-		if @model.isNew()
-			@$('.bv_status').attr("disabled", "disabled")
-		else
-			unless @model.getStatus().get('codeValue') is "deleted"
-				@$('.bv_status').removeAttr("disabled")
-		if window.conf.entity?.scientist?.editable? and window.conf.entity.scientist.editable is false
-			@$('.bv_scientist').attr 'disabled', 'disabled'
-		else
-			@$('.bv_scientist').removeAttr 'disabled'
+			if @model.isEditable()
+				@enableAllInputs()
+				@$('.bv_lock').hide()
+			else
+				@disableAllInputs()
+				@$('.bv_status').removeAttr('disabled')
+				@$('.bv_lock').show()
+				@$('.bv_newEntity').removeAttr('disabled')
+				if @model.getStatus().get('codeValue') is "deleted"
+					@$('.bv_status').attr 'disabled', 'disabled'
+			if @model.isNew()
+				@$('.bv_status').attr("disabled", "disabled")
+			else
+				unless @model.getStatus().get('codeValue') is "deleted"
+					@$('.bv_status').removeAttr("disabled")
+			if window.conf.entity?.scientist?.editable? and window.conf.entity.scientist.editable is false
+				@$('.bv_scientist').attr 'disabled', 'disabled'
+			else
+				@$('.bv_scientist').removeAttr 'disabled'
 
 
 		@model.trigger 'statusChanged'
@@ -658,7 +665,7 @@ class window.BaseEntityController extends AbstractThingFormController #TODO: che
 			@displayInReadOnlyMode()
 		else if status is "deleted" or status is "approved" or status is "rejected"
 			@disableAllInputs()
-			unless @model.getStatus().get('codeValue') is "deleted"
+			if @model.getStatus().get('codeValue') != "deleted" and @canEdit()
 				@$('.bv_status').removeAttr 'disabled'
 			@$('.bv_newEntity').removeAttr('disabled')
 			@$('.bv_newEntity').removeAttr('disabled')

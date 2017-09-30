@@ -12,12 +12,12 @@ $(function() {
 
 		initialize: function(){
 			_.bindAll(this, 'toggleParentsVisible', 'next');
-			this.marvinLoaded = false;
+			this.sketcherLoaded = false;
             this.hide();
 		},
 
 		render: function () {
-			if (!this.marvinLoaded) { // only load template once so we don't wipe out marvin
+			if (!this.sketcherLoaded) { // only load template once so we don't wipe out marvin
                 $(this.el).html(this.template());
             }
 

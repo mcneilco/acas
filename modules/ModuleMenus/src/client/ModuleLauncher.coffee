@@ -163,8 +163,10 @@ class window.ModuleLauncherMenuListController extends Backbone.View
 		$(@el).empty()
 		$(@el).html @template()
 		@collection.each @addOne
+		if @collapsibleHeaders.length < 2
+			@$('.bv_expandAll').hide()
 		@$('.bv_notTopHeader:eq(0)').removeClass "bv_notTopHeader"
-
+		
 		@
 
 	addOne: (menuItem) =>

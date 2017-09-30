@@ -11,7 +11,8 @@ $(function() {
             comment: '',
             corpName: '',
             chemist: null,
-			isMixture: false
+			isMixture: false,
+			labelPrefix: null
 		},
 
 		initialize: function() {
@@ -87,6 +88,11 @@ $(function() {
                     errors.push({attribute: 'compoundTypeCode', message: "Compound type must be supplied"});
                 }
             }
+			if (this.isNew() && window.configuration.serverSettings.corpParentFormat != null && window.configuration.serverSettings.corpParentFormat == 'ACASLabelSequence' && attr.labelPrefix != null) {
+				if (attr.labelPrefix.get('code')=='not_set') {
+					errors.push({attribute: 'labelPrefix', message: "Prefix must be supplied"});
+				}
+			}
 			if (errors.length > 0) {return errors;}
 		},
 
@@ -188,6 +194,20 @@ $(function() {
 				this.$('.bv_parentAnnotationContainer').hide();
 			}
 
+			if (this.model.isNew() && window.configuration.serverSettings.corpParentFormat != null && window.configuration.serverSettings.corpParentFormat == 'ACASLabelSequence') {
+				var optionToInsert = new PickList({
+					"code": "not_set",
+					"id": 0,
+					"name": "Select Prefix",
+					"version": 0
+				});
+				this.labelPrefixCodeController =
+					this.setupCodeController('labelPrefix', 'labelPrefixes', 'labelPrefix', optionToInsert);
+
+			} else {
+				this.$('.bv_labelPrefix').hide();
+			}
+
             this.$('.stereoComment').val(this.model.get('stereoComment'));
             this.$('.comment').val(this.model.get('comment'));
             //this.$('.commonName').val(this.model.get('commonName'));
@@ -278,6 +298,9 @@ $(function() {
 			};
 			if(this.parentAnnotationCodeController != null){
 				this.model.set({parentAnnotation: this.parentAnnotationCodeController.getSelectedModel()})
+			};
+			if (this.labelPrefixCodeController != null){
+				this.model.set({labelPrefix: this.labelPrefixCodeController.getSelectedModel()})
 			};
 		},
 		editParent: function() {
