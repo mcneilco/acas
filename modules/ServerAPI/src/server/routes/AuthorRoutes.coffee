@@ -15,6 +15,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.delete '/api/authors/:id', loginRoutes.ensureAuthenticated, exports.deleteAuthor
 	app.post '/api/author', loginRoutes.ensureAuthenticated, exports.saveAuthor
 	app.put '/api/author/:id', loginRoutes.ensureAuthenticated, exports.updateAuthor
+	app.get '/activateUser', exports.activateUserAndRedirectToChangePassword
 
 serverUtilityFunctions = require './ServerUtilityFunctions.js'
 _ = require 'underscore'
@@ -845,6 +846,17 @@ fetchSystemRoles = (incompleteSystemRoles, callback) ->
 			callback 'failed to fetch system roles'
 	)
 
+exports.activateUserAndRedirectToChangePassword = (req, resp) ->
+	request(
+		method: 'GET'
+		url: config.all.client.service.persistence.fullpath + "authorization/activateUser?emailAddress=#{req.query.emailAddress}&activate=#{req.query.activate}"
+		json: true
+	, (error, response, json) =>
+		if !error && response.statusCode == 200
+			resp.redirect '/passwordChange'
+		else
+			#redirect to error page
+	)
 
 createOrSignupAuthorInternal = (author, cb) ->
 	authStrategy = config.all.server.security.authstrategy

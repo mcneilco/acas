@@ -75,22 +75,28 @@ exports.resetAuth = (email, retFun) ->
 exports.changeAuth = (user, passOld, passNew, passNewAgain, retFun) ->
 	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 	request = require 'request'
+	body =
+		username: user
+		oldPassword: passOld
+		newPassword: passNew
+		newPasswordAgain: passNewAgain
 	request(
 		headers:
 			accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
 		method: 'POST'
-		url: config.all.server.roologin.changeLink
-		form:
-			username: user
-			oldPassword: passOld
-			newPassword: passNew
-			newPasswordAgain: passNewAgain
-		json: false
+		url: config.all.client.service.persistence.fullpath+"authorization/changePassword"
+		body: body
+		json: true
 	, (error, response, json) =>
+		console.log error
+		console.log response.statusCode
+		console.log json
 		if !error && response.statusCode == 200
-			retFun JSON.stringify json
+			retFun "Your password has successfully been changed"
+		else if response.statusCode == 400
+			retFun "Invalid password or new password does not match"
 		else
-			console.log 'got ajax error trying authenticate a user'
+			console.log 'got ajax error trying change password'
 			console.log error
 			console.log json
 			console.log response
