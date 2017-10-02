@@ -51,9 +51,6 @@ window.ModuleMenusConfiguration =
 		isHeader: false, menuName: "Project Browser"
 		mainControllerClassName: "ProjectBrowserController"
 	,
-		isHeader: false, menuName: "Author Browser"
-		mainControllerClassName: "AuthorBrowserController"
-	,
 		isHeader: true
 		menuName: "Admin"
 		collapsible: true
@@ -62,6 +59,11 @@ window.ModuleMenusConfiguration =
 		menuName: "Author Editor"
 		mainControllerClassName: "AuthorEditorController"
 		autoLaunchName: "author"
+		requireUserRoles: []
+	,
+		isHeader: false
+		menuName: "Author Browser"
+		mainControllerClassName: "AuthorBrowserController"
 		requireUserRoles: []
 	,
 		isHeader: false
@@ -88,6 +90,7 @@ window.ModuleMenusConfiguration =
 		isHeader: true
 		menuName: "CmpdReg Admin"
 		requireUserRoles: []
+		collapsible: true
 	,
 		isHeader: false
 		menuName: "CmpdReg Vendors"

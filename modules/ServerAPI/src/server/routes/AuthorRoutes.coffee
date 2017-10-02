@@ -4,6 +4,8 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.put '/api/authorModulePreferences/:userName/:moduleName', exports.updateAuthorModulePreferences
 	app.post '/api/genericSearch/authors', exports.genericAuthorSearch
 	app.delete '/api/authors/:id', exports.deleteAuthor
+	app.post '/api/author', exports.saveAuthor
+	app.put '/api/author/:id', exports.updateAuthor
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/authorByUsername/:username', loginRoutes.ensureAuthenticated, exports.getAuthorByUsername
@@ -11,11 +13,15 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.put '/api/authorModulePreferences/:userName/:moduleName', loginRoutes.ensureAuthenticated, exports.updateAuthorModulePreferences
 	app.post '/api/genericSearch/authors', loginRoutes.ensureAuthenticated, exports.genericAuthorSearch
 	app.delete '/api/authors/:id', loginRoutes.ensureAuthenticated, exports.deleteAuthor
+	app.post '/api/author', loginRoutes.ensureAuthenticated, exports.saveAuthor
+	app.put '/api/author/:id', loginRoutes.ensureAuthenticated, exports.updateAuthor
 
 serverUtilityFunctions = require './ServerUtilityFunctions.js'
 _ = require 'underscore'
 Backbone = require 'backbone'
 $ = require 'jquery'
+request = require 'request'
+config = require '../conf/compiled/conf.js'
 Label = serverUtilityFunctions.Label
 LabelList = serverUtilityFunctions.LabelList
 Value = serverUtilityFunctions.Value
@@ -160,9 +166,11 @@ exports.createNewAuthorInternal = (author, cb) ->
 		body: author
 		json: true
 		timeout: 6000000
-	, (error, response, json) =>
+	, (err, response, json) =>
 		if err?
 			cb err, null
+		else if response.statusCode != 201
+			cb json, null
 		else
 			cb null, json
 	)
@@ -505,3 +513,362 @@ class Author extends Backbone.Model
 
 exports.Author = Author
 AppLaunchParams = loginUser:username:"acas"
+
+exports.saveAuthor = (req, resp) ->
+	if req.session?.passport?.user?
+		user = req.session.passport.user
+	else
+		user =
+			username: 'anonymous'
+			roles: []
+	exports.saveAuthorInternal req.body, user, (err, response) ->
+		if err?
+			resp.statusCode = 500
+			resp.json err
+		else
+			resp.json response
+
+exports.updateAuthor = (req, resp) ->
+	if req.session?.passport?.user?
+		user = req.session.passport.user
+	else
+		user =
+			username: 'anonymous'
+			roles: []
+	exports.updateAuthorAndRolesInternal req.body, user, (err, response) ->
+		if err?
+			resp.statusCode = 500
+			resp.json err
+		else
+			resp.json response
+
+exports.saveAuthorInternal = (author, user, callback) ->
+	validateAuthorAttributes author, (authorValidationErrors) ->
+		if authorValidationErrors?
+			callback authorValidationErrors
+		else
+			checkUserCanCreateOrEditAuthor user, (err, userCanCreate) ->
+				if err?
+					callback err
+				else if !userCanCreate
+					console.error "ALERT: User #{user.username} attempted to create an author without having the proper roles."
+					callback 'You do not have permissions to create authors! This incident will be reported to your system administrator.'
+				else
+					checkUserNameAndEmailAreUnique author, (userNameEmailUniqueError) ->
+						if userNameEmailUniqueError?
+							callback userNameEmailUniqueError
+						else
+							parseSystemRoles author, (err, author, systemRoles) ->
+								if err?
+									callback err
+								else
+									author.recordedBy = user.username
+									createOrSignupAuthorInternal author, (err, savedAuthor) ->
+										if err?
+											callback err
+										else
+											fetchSystemRoles systemRoles, (err, systemRoles) ->
+												flatAuthorRoles = []
+												_.each systemRoles, (role) ->
+													flatAuthorRole =
+														roleType: role.lsType
+														roleKind: role.lsKind
+														roleName: role.roleName
+														userName: author.userName
+													flatAuthorRoles.push flatAuthorRole
+												saveAuthorRoles flatAuthorRoles, (err, savedRoles) ->
+													if err?
+														callback err
+													else
+														exports.getAuthorByUsernameInternal author.userName, (response, statusCode) ->
+															if statusCode != 200
+																callback err
+															else
+																callback null, response
+
+exports.updateAuthorAndRolesInternal = (author, user, callback) ->
+	validateAuthorAttributes author, (authorValidationErrors) ->
+		if authorValidationErrors?
+			callback authorValidationErrors
+		else
+			checkUserCanCreateOrEditAuthor user, (err, userCanEdit) ->
+				if err?
+					callback err
+				else if !userCanEdit
+					console.error "ALERT: User #{user.username} attempted to edit an author without having the proper roles."
+					callback 'You do not have permissions to edit authors! This incident will be reported to your system administrator.'
+				else
+					parseSystemRoles author, (err, author, systemRoles) ->
+						if err?
+							callback err
+						else
+							exports.getAuthorByUsernameInternal author.userName, (savedAuthor, statusCode) ->
+								if statusCode != 200
+									callback savedAuthor
+								else
+									checkIfEmailHasChangedAndIsUnique author, savedAuthor, (err) ->
+										if err?
+											callback err
+										else
+											parseSystemRoles savedAuthor, (err, savedAuthor, savedSystemRoles) ->
+												diffSystemRolesWithSaved author.userName, systemRoles, savedSystemRoles, (err, rolesToAdd, rolesToDelete) ->
+													if rolesToAdd.length > 0 or rolesToDelete.length > 0
+														checkUserCanEditSystemRoles user, (err, userCanEditRoles) ->
+															if err?
+																callback err
+															else if !userCanEditRoles
+																console.error "ALERT: User #{user.username} attempted to edit system roles without having the proper authorities."
+																callback 'You do not have permissions to edit system roles! This incident will be reported to your system administrator.'
+															else
+																exports.updateAuthorInternal author, (updatedAuthor, statusCode) ->
+																	if statusCode != 200
+																		callback updatedAuthor
+																	else
+																		saveAuthorRoles rolesToAdd, (err, savedRoles) ->
+																			if err?
+																				callback err
+																			else
+																				deleteAuthorRoles rolesToDelete, (err, deletedRoles) ->
+																					if err?
+																						callback err
+																					else
+																						#save successful. Fetch the new author and return.
+																						exports.getAuthorByUsernameInternal author.userName, (response, statusCode) ->
+																							if statusCode != 200
+																								callback err
+																							else
+																								callback null, response
+
+validateAuthorAttributes = (author, callback) ->
+	requiredAttrs = ['firstName', 'lastName', 'userName', 'emailAddress']
+	missingAttrs = []
+	for attr in requiredAttrs
+		if !author[attr]? or author[attr].length < 1
+			missingAttrs.push attr
+	if missingAttrs.length > 0
+		callback missingAttrs
+	else
+		callback null
+
+parseUserRoles = (user) ->
+	userRoles = []
+	if user.roles?
+		_.each user.roles, (authorRole) ->
+			userRoles.push authorRole.roleEntry.roleName
+	return userRoles
+
+checkUserCanCreateOrEditAuthor = (user, callback) ->
+	userRoles = parseUserRoles user
+	authStrategy = config.all.server.security.authstrategy
+	adminRole = config.all.client.roles.acas.adminRole
+	if !config.all.client.author.editingRoles?
+		editingRoles = []
+	else
+		editingRoles = config.all.client.author.editingRoles.split(",")
+	if !adminRole? or adminRole.length < 1
+		callback null, true
+	else
+		if authStrategy == 'database' and (userRoles.indexOf(adminRole) > -1)
+			callback null, true
+		else if authStrategy == 'database'
+			callback null, false
+		else if editingRoles? and editingRoles.length > 1
+			hasEditingRole = ((_.intersection userRoles, editingRoles).length > 0)
+			callback null, hasEditingRole
+		else
+			callback null, true
+
+checkUserCanEditSystemRoles = (user, callback) ->
+	userRoles = parseUserRoles user
+	authStrategy = config.all.server.security.authstrategy
+	adminRole = config.all.client.roles.acas.adminRole
+	if !adminRole? or adminRole.length < 1
+		callback null, true
+	else
+		if (userRoles.indexOf(adminRole) > -1)
+			callback null, true
+		else
+			callback null, false
+
+checkUserNameAndEmailAreUnique = (author, callback) ->
+	checkUserNameIsUnique author, (err, userNameUnique) ->
+		if err?
+			callback err
+		else
+			checkEmailIsUnique author, (err, emailIsUnique) ->
+				if err?
+					callback err
+				else
+					if !userNameUnique and !emailIsUnique
+						callback 'That username and email address are both already in use.'
+					else if !userNameUnique
+						callback 'That username is already in use.'
+					else if !emailIsUnique
+						callback 'That email address is already in use.'
+					else
+						callback null
+
+checkUserNameIsUnique = (author, callback) ->
+	baseurl = config.all.client.service.persistence.fullpath+"authors?find=ByUserName&userName="+author.userName
+	request(
+		method: 'GET'
+		url: baseurl
+		json: true
+	, (error, response, json) =>
+		if !error && response.statusCode == 200
+			if json.length < 1
+				callback null, true
+			else
+				console.debug json
+				callback null, false
+		else
+			console.error 'got error checking if author username exists'
+			console.error error
+			console.error json
+			console.error response
+			callback JSON.stringify("failed checking author username")
+	)
+
+checkEmailIsUnique = (author, callback) ->
+	baseurl = config.all.client.service.persistence.fullpath+"authors?find=ByEmailAddress&emailAddress="+author.emailAddress
+	request(
+		method: 'GET'
+		url: baseurl
+		json: true
+	, (error, response, json) =>
+		if !error && response.statusCode == 200
+			if json.length < 1
+				callback null, true
+			else
+				console.debug json
+				callback null, false
+		else
+			console.error 'got error checking if author emailAddress exists'
+			console.error error
+			console.error json
+			console.error response
+			callback JSON.stringify("failed checking author emailAddress")
+	)
+
+checkIfEmailHasChangedAndIsUnique = (author, savedAuthor, callback) ->
+	if author.emailAddress == savedAuthor.emailAddress
+		callback null
+	else
+		checkEmailIsUnique author (err, isUnique) ->
+			if err?
+				callback err
+			else if isUnique
+				callback null
+			else
+				callback 'That email address is already in use.'
+
+parseSystemRoles = (author, callback) ->
+	roleEntries = _.pluck author.authorRoles, 'roleEntry'
+	systemRoles = _.where roleEntries, {lsType: 'System'}
+	delete author['authorRoles']
+	callback null, author, systemRoles
+
+
+diffSystemRolesWithSaved = (userName, systemRoles, savedSystemRoles, callback) ->
+	rolesToAdd = _.filter systemRoles, (sysRole) ->
+		!(_.findWhere savedSystemRoles, (id: sysRole.id))?
+	rolesToDelete = _.filter savedSystemRoles, (savedSysRole) ->
+		!(_.findWhere systemRoles, (id: savedSysRole.id))?
+	fetchSystemRoles rolesToAdd, (err, rolesToAdd) ->
+		if err?
+			callback err
+		else
+			flatAuthRolesToAdd = []
+			_.each rolesToAdd, (role) ->
+				flatAuthorRole =
+					roleType: role.lsType
+					roleKind: role.lsKind
+					roleName: role.roleName
+					userName: userName
+				flatAuthRolesToAdd.push flatAuthorRole
+			flatAuthRolesToDelete = []
+			_.each rolesToDelete, (role) ->
+				flatAuthorRole =
+					roleType: role.lsType
+					roleKind: role.lsKind
+					roleName: role.roleName
+					userName: userName
+				flatAuthRolesToDelete.push flatAuthorRole
+			callback null, flatAuthRolesToAdd, flatAuthRolesToDelete
+
+saveAuthorRoles = (rolesToCreate, cb) ->
+	request(
+		method: 'POST'
+		url: config.all.client.service.persistence.fullpath + "authorroles/saveRoles"
+		body: rolesToCreate
+		json: true
+		timeout: 6000000
+	, (err, response, json) =>
+		if err?
+			cb err, null
+		else
+			cb null, json
+	)
+
+deleteAuthorRoles = (rolesToDelete, cb) ->
+	request(
+		method: 'POST'
+		url: config.all.client.service.persistence.fullpath + "authorroles/deleteRoles"
+		body: rolesToDelete
+		json: true
+		timeout: 6000000
+	, (err, response, json) =>
+		if err?
+			cb err, null
+		else
+			cb null, json
+	)
+
+fetchSystemRoles = (incompleteSystemRoles, callback) ->
+	request(
+		method: 'GET'
+		url: config.all.client.service.persistence.fullpath + 'lsRoles?lsType=System'
+		json: true
+	, (error, response, json) =>
+		if !error && response.statusCode == 200
+			allSystemRoles = json
+			ids = {}
+			_.each incompleteSystemRoles, (partialRole) ->
+				ids[partialRole.id] = true
+			filteredSystemRoles = _.filter allSystemRoles, (val) ->
+				return ids[val.id]
+			callback null, filteredSystemRoles
+		else
+			console.error 'got error trying to get fetch system roles'
+			console.error error
+			console.error json
+			callback 'failed to fetch system roles'
+	)
+
+
+createOrSignupAuthorInternal = (author, cb) ->
+	authStrategy = config.all.server.security.authstrategy
+	if authStrategy == 'database'
+		exports.signupNewAuthorInternal author, (err, savedAuthor) ->
+			cb err, savedAuthor
+	else
+		exports.createNewAuthorInternal author, (err, savedAuthor) ->
+			cb err, savedAuthor
+
+exports.signupNewAuthorInternal = (author, cb) ->
+	config = require '../conf/compiled/conf.js'
+	request = require 'request'
+	request(
+		method: 'POST'
+		url: config.all.client.service.persistence.fullpath + "authors/signupAuthor"
+		body: author
+		json: true
+		timeout: 6000000
+	, (err, response, json) =>
+		if err?
+			cb err, null
+		else if response.statusCode != 201
+			cb json, null
+		else
+			cb null, json
+	)

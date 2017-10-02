@@ -22,7 +22,7 @@ class window.AuthorRoleList extends Backbone.Collection
 		modelErrors
 
 class window.Author extends Backbone.Model
-#	urlRoot: TODO: fill in once have service
+	urlRoot: '/api/author'
 
 	defaults: ->
 		lsType: "author"
@@ -70,25 +70,24 @@ class window.Author extends Backbone.Model
 		systemRoles = _.filter @get('authorRoles'), (role) =>
 			if role.roleEntry?.lsType?
 				role.roleEntry.lsType is "System"
-
-		trimmedSystemRoles = _.pluck systemRoles, 'roleEntry'
+		sortedSystemRoles = _.sortBy systemRoles, 'id'
+		trimmedSystemRoles = _.pluck sortedSystemRoles, 'roleEntry'
 		return new AuthorRoleList trimmedSystemRoles
 
 	getLdapRoles: =>
 		ldapRoles = _.filter @get('authorRoles'), (role) =>
 			if role.roleEntry?.lsType?
 				role.roleEntry.lsType is "LDAP"
-
-		trimmedLdapRoles = _.pluck ldapRoles, 'roleEntry'
+		sortedLdapRoles = _.sortBy ldapRoles, 'id'
+		trimmedLdapRoles = _.pluck sortedLdapRoles, 'roleEntry'
 		return new AuthorRoleList trimmedLdapRoles
 
 	getProjectRoles: =>
 		projectRoles = _.filter @get('authorRoles'), (role) =>
 			if role.roleEntry?.lsType?
 				role.roleEntry.lsType is "Project"
-
-		trimmedProjectRoles = _.pluck projectRoles, 'roleEntry'
-
+		sortedProjectRoles = _.sortBy projectRoles, 'id'
+		trimmedProjectRoles = _.pluck sortedProjectRoles, 'roleEntry'
 		return new AuthorRoleList trimmedProjectRoles
 
 class window.AuthorList extends Backbone.Collection
@@ -154,7 +153,7 @@ class window.AuthorRoleController extends AbstractFormController
 				@authorRoleList = new PickListList response
 				@finishSetupAuthorRoleSelect()
 			error: (err) =>
-				alert 'could not get the nhp test subjects'
+				alert 'could not get the list of author roles'
 				@serviceReturn = null
 
 
@@ -503,7 +502,7 @@ class window.AuthorEditorController extends AbstractFormController
 		@$('.bv_saving').show()
 		console.log "handleSaveClicked"
 		console.log JSON.stringify @model
-#		@model.save() TODO: uncomment when service works
+		@model.save()
 
 	prepareToSaveSystemRoles: =>
 		authorRoles = []
