@@ -57,15 +57,17 @@ exports.resetAuth = (email, retFun) ->
 		headers:
 			accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
 		method: 'POST'
-		url: config.all.server.roologin.resetLink
-		form:
-			emailAddress: email
-		json: false
+		url: config.all.client.service.persistence.fullpath+"authorization/resetPassword"
+		body: email
+		json: true
 	, (error, response, json) =>
+		console.log error
+		console.log response.statusCode
+		console.log json
 		if !error && response.statusCode == 200
-			retFun JSON.stringify json
+			retFun "Your new password has been sent to your email address."
 		else
-			console.log 'got ajax error trying authenticate a user'
+			console.log 'got ajax error trying reset password'
 			console.log error
 			console.log json
 			console.log response
