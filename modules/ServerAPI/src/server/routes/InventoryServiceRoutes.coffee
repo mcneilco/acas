@@ -3118,6 +3118,7 @@ decrementAmountsFromVials = (parentVialsToDecrement, user, callback) ->
 	vialBarcodes = _.pluck parentVialsToDecrement, 'barcode'
 	exports.getWellContentByContainerLabelsInternal vialBarcodes, 'container', 'tube', 'barcode', 'barcode', (wellContentList, statusCode) ->
 		wellsToUpdate = []
+		changes = []
 		_.each parentVialsToDecrement, (toDecrement) ->
 			oldContainerWellContent = _.findWhere wellContentList, {label: toDecrement.barcode}
 			oldWellContent = oldContainerWellContent.wellContent[0]
@@ -3127,13 +3128,24 @@ decrementAmountsFromVials = (parentVialsToDecrement, user, callback) ->
 				amount: oldWellContent.amount - toDecrement.amountToDecrement
 				recordedBy: user
 			wellsToUpdate.push newWellContent
+			change =
+				codeName: oldContainerWellContent.containerCodeName
+				recordedBy: user
+				recordedDate: (new Date()).getMilliseconds()
+				entryType: 'UPDATE'
+				entry: "Amount #{toDecrement.amountToDecrement} #{toDecrement.amountToDecrementUnits} taken out to create daughter vial #{toDecrement.daughterVialBarcode}"
+			changes.push change
 		console.log wellsToUpdate
 		exports.updateWellContentInternal wellsToUpdate, true, false, (updateWellsResponse, updateWellsStatusCode) ->
 			console.log updateWellsStatusCode
 			if updateWellsStatusCode != 204
 				callback "Error: #{updateWellsResponse}"
 			else
-				callback null, updateWellsResponse
+				exports.containerLogsInternal changes, 0, (logs, statusCode) ->
+					if statusCode != 200
+						callback logs
+					else
+						callback null, updateWellsResponse
 
 prepareSummaryInfo = (fileEntryArray) ->
 	summaryInfo =
@@ -3331,6 +3343,7 @@ exports.createDaughterVialsInternal = (vialsToCreate, user, callback) ->
 								barcode: entry.sourceVialBarcode
 								amountToDecrement: entry.amount
 								amountToDecrementUnits: entry.amountUnits
+								daughterVialBarcode: entry.destinationVialBarcode
 							parentVialsToDecrement.push toDecrement
 						decrementAmountsFromVials parentVialsToDecrement, user, (err, decrementVialsResponse) ->
 							if err?
