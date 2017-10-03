@@ -2548,16 +2548,16 @@ exports.getTubesFromBatchCodeInternal = (input, callback) =>
 		{
     "lsType": "container" ,
     "lsKind": "tube",
-    "values":[
-        {
-            "stateType":"metadata",
-            "stateKind":"information",
-            "valueType": "codeValue",
-            "valueKind": "status",
-            "operator": "!=",
-            "value":"expired"
-        }
-        ],
+#    "values":[
+#        {
+#            "stateType":"metadata",
+#            "stateKind":"information",
+#            "valueType": "codeValue",
+#            "valueKind": "status",
+#            "operator": "!=",
+#            "value":"expired"
+#        }
+#        ],
     "secondInteractions":[
         {
             "interactionType": "has member",
@@ -2708,7 +2708,7 @@ exports.createParentVialsFromCSVInternal = (csvFileName, dryRun, user, callback)
 				if err?
 					callback err
 				summaryInfo = prepareSummaryInfo fileEntryArray
-				getContainerTubeDefinitionCode (definitionCode) ->
+				exports.getContainerTubeDefinitionCode (definitionCode) ->
 					if !definitionCode?
 						error =
 							level: 'error'
@@ -2996,7 +2996,7 @@ checkBarcodesExist = (barcodes, callback) ->
 				newBarcodes.push containerCodeEntry.requestLabel
 		callback existingBarcodes, newBarcodes
 
-checkParentWellContent = (fileEntryArray, callback) ->
+exports.checkParentWellContent = (fileEntryArray, callback) ->
 	#The purpose of this function is to check that the source vial content is compatible with the daughter content being loaded in, including
 	#physical state must match
 	#amount in parent vial would be negative if the daughter amount is removed
@@ -3097,7 +3097,7 @@ prepareCreateParentVialsHTMLSummary = (hasError, hasWarning, errorMessages, summ
 		htmlSummary += warningsBlock
 	htmlSummary
 
-getContainerTubeDefinitionCode = (callback) ->
+exports.getContainerTubeDefinitionCode = (callback) ->
 	exports.containersByTypeKindInternal 'definition container', 'tube', 'codetable', false, false, (definitionContainers) ->
 		callback definitionContainers[0].code
 
@@ -3232,11 +3232,11 @@ exports.validateDaughterVialsInternal = (vialsToValidate, callback) ->
 			if dataTypeErrors?
 				errorMessages.push dataTypeErrors...
 			sourceBarcodes = _.pluck vialsToValidate, 'sourceVialBarcode'
-			checkBarcodesExist sourceBarcodes, (existingBarcodes, newBarcodes) ->
-				if newBarcodes? and newBarcodes.length > 0
+			checkBarcodesExist sourceBarcodes, (existingSourceBarcodes, missingSourceBarcodes) ->
+				if missingSourceBarcodes? and missingSourceBarcodes.length > 0
 					error =
 						level: 'error'
-						message: "The following source barcodes do not exist: " + newBarcodes.join ', '
+						message: "The following source barcodes do not exist: " + missingSourceBarcodes.join ', '
 					errorMessages.push error
 				destinationBarcodes = _.pluck vialsToValidate, 'destinationVialBarcode'
 				checkBarcodesExist destinationBarcodes, (existingBarcodes, newBarcodes) ->
@@ -3245,10 +3245,13 @@ exports.validateDaughterVialsInternal = (vialsToValidate, callback) ->
 							level: 'error'
 							message: "The following destination barcodes already exist: " + existingBarcodes.join ', '
 						errorMessages.push error
-					checkParentWellContent vialsToValidate, (parentWellContentErrors) ->
-						if parentWellContentErrors?
-							errorMessages.push parentWellContentErrors...
+					if missingSourceBarcodes.length > 0
 						callback null, errorMessages
+					else
+						checkParentWellContent vialsToValidate, (parentWellContentErrors) ->
+							if parentWellContentErrors?
+								errorMessages.push parentWellContentErrors...
+							callback null, errorMessages
 
 exports.createDaughterVials = (req, resp) ->
 	if req.session?.passport?.user?.username?
@@ -3274,7 +3277,7 @@ exports.createDaughterVials = (req, resp) ->
 						resp.json response
 
 exports.createDaughterVialsInternal = (vialsToCreate, user, callback) ->
-	getContainerTubeDefinitionCode (definitionCode) ->
+	exports.getContainerTubeDefinitionCode (definitionCode) ->
 		if !definitionCode?
 			callback 'Could not find definition container for tube'
 		tubesToCreate = []
