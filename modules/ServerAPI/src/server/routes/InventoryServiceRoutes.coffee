@@ -6,6 +6,7 @@ config = require '../conf/compiled/conf.js'
 RUN_CUSTOM_FLAG = "0"
 fs = require('fs')
 parse = require('csv-parse')
+request = require 'request'
 
 
 exports.setupAPIRoutes = (app) ->
@@ -62,6 +63,8 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/loadDaughterVialsFromCSV', exports.loadDaughterVialsFromCSV
 	app.post '/api/saveWellToWellInteractions', exports.saveWellToWellInteractions
 	app.post '/api/createDaughterVials', exports.createDaughterVials
+	app.post '/api/advancedSearchContainers', exports.advancedSearchContainers
+	app.get '/api/getParentVialByDaughterVialBarcode', exports.getParentVialByDaughterVialBarcode
 
 
 exports.setupRoutes = (app, loginRoutes) ->
@@ -116,6 +119,8 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/loadDaughterVialsFromCSV', loginRoutes.ensureAuthenticated, exports.loadDaughterVialsFromCSV
 	app.post '/api/saveWellToWellInteractions', loginRoutes.ensureAuthenticated, exports.saveWellToWellInteractions
 	app.post '/api/createDaughterVials', loginRoutes.ensureAuthenticated, exports.createDaughterVials
+	app.post '/api/advancedSearchContainers', loginRoutes.ensureAuthenticated, exports.advancedSearchContainers
+	app.get '/api/getParentVialByDaughterVialBarcode', loginRoutes.ensureAuthenticated, exports.getParentVialByDaughterVialBarcode
 
 
 exports.getContainersInLocation = (req, resp) ->
@@ -3347,3 +3352,76 @@ exports.createDaughterVialsInternal = (vialsToCreate, user, callback) ->
 							else
 								#TODO see what this service should respond with
 								callback null, 'successfully created daughter vials'
+
+exports.advancedSearchContainers = (req, resp) ->
+	exports.advancedSearchContainersInternal req.body, req.query.format, (err, response) ->
+		if err?
+			resp.statusCode = 500
+			resp.json err
+		else
+			resp.json response
+
+exports.advancedSearchContainersInternal = (itxSearchBody, format, callback) ->
+	baseurl = config.all.client.service.persistence.fullpath+"containers/advancedSearchContainers"
+	if format?
+		baseurl += "?with=#{format}"
+	request(
+		method: 'POST'
+		url: baseurl
+		body: itxSearchBody
+		json: true
+		timeout: 86400000
+		headers: 'content-type': 'application/json'
+	, (error, response, json) =>
+		if !error && response.statusCode == 200
+			console.debug "returned successfully from #{baseurl}"
+			callback null, json
+		else
+			console.error 'got ajax error trying to get getWellCodesByContainerCodes'
+			console.error error
+			console.error json
+			console.error response
+			callback JSON.stringify "getWellCodesByContainerCodes failed"
+	)
+
+exports.getParentVialByDaughterVialBarcode = (req, resp) ->
+	exports.getParentVialByDaughterVialBarcodeInternal req.query.daughterVialBarcode, (err, response) ->
+		if err?
+			resp.statusCode = 500
+			resp.json err
+		else
+			resp.json response
+
+exports.getParentVialByDaughterVialBarcodeInternal = (daughterVialBarcode, callback) ->
+	exports.getWellCodesByPlateBarcodesInternal [daughterVialBarcode], (plateWellCodes) ->
+		plateWellCode = plateWellCodes[0]
+		responseStub =
+			daughterVialBarcode: plateWellCode.plateBarcode
+			daughterVialCodeName: plateWellCode.plateCodeName
+			daughterWellCodeName: plateWellCode.wellCodeName
+			daughterWellLabel: plateWellCode.wellLabel
+		itxSearch =
+			lsType: 'well'
+			lsKind: 'default'
+			secondInteractions: [
+				interactionType: 'added to'
+				interactionKind: 'well_well'
+				thingType: 'well'
+				thingKind: 'default'
+				thingCodeName: responseStub.daughterWellCodeName
+			]
+		format = 'nestedstub'
+		exports.advancedSearchContainersInternal itxSearch, format, (err, advSearchReturn) ->
+			parentWell = advSearchReturn.results[0]
+			responseStub.parentWellCodeName = parentWell.codeName
+			parentWellLabel = _.findWhere parentWell.lsLabels, {lsType: 'name', lsKind: 'well name', ignored: false}
+			responseStub.parentWellLabel = parentWellLabel.labelText
+			parentVialItx = _.findWhere parentWell.firstContainers, {lsType: 'has member', lsKind: 'container_well', ignored: false}
+			if !parentVialItx?
+				callback 'Parent vial not found'
+			else
+				parentVial = parentVialItx.firstContainer
+				responseStub.parentVialCodeName = parentVial.codeName
+				parentVialBarcode = _.findWhere parentVial.lsLabels, {lsType: 'barcode', lsKind: 'barcode', ignored: false}
+				responseStub.parentVialBarcode = parentVialBarcode.labelText
+				callback null, responseStub
