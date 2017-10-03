@@ -502,13 +502,19 @@ class window.AuthorEditorController extends AbstractFormController
 		@$('.bv_saving').show()
 		console.log "handleSaveClicked"
 		console.log JSON.stringify @model
-		@model.save()
+		@model.save null,
+			success: (model, response) ->
+				console.log 'save successful'
+			,
+			error: (model, response) ->
+				alert JSON.parse response.responseText
 
 	prepareToSaveSystemRoles: =>
 		authorRoles = []
-		@systemRoleListController.collection.each (role) =>
-			authorRoles.push
-				roleEntry: role
+		if @systemRoleListController?
+			@systemRoleListController.collection.each (role) =>
+				authorRoles.push
+					roleEntry: role
 		ar = @model.get 'authorRoles'
 		ar.push authorRoles...
 		@model.set 'authorRoles', ar
