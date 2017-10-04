@@ -344,7 +344,13 @@ client.compoundInventory.enforceUppercaseBarcodes=false
 ## options for auth. strategy are: properties, database, ldap
 server.security.authstrategy=database
 #server.security.properties.path=/opt/seurat/SeuratServer/users.txt
+#to make authstrategy config accessible to the client
+client.security.authstrategy=${server.security.authstrategy}
 
+#Controls whether Roo syncs the AuthorRole table with authorities granted in LDAP
+server.security.syncLdapAuthRoles=false
+#to make authstrategy config accessible to the client
+client.security.syncLdapAuthRoles=${server.security.syncLdapAuthRoles}
 client.scientistCodeOrigin=ACAS authors
 client.molecularTargetCodeOrigin=ACAS DDICT
 
@@ -433,6 +439,10 @@ client.entity.viewDeletedRoles=
 client.protocol.showAssayTreeRule=false
 client.protocol.showCurveDisplayParams=true
 client.experiment.uneditableFileTypes=["source file", "annotation file"]
+
+#Controls privileges for who can create/edit and delete authors
+client.author.editingRoles=
+client.author.deletingRoles=
 
 # Default status for experiments loaded thorugh experiment loader
 server.sel.experimentStatus=approved

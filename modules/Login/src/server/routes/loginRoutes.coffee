@@ -159,7 +159,7 @@ exports.resetAuthenticationService = (req, resp) ->
 exports.changeAuthenticationService = (req, resp) ->
 	callback = (results) ->
 		console.log results
-		if results.indexOf("You password has been successfully been changed")>=0
+		if results.indexOf("Your password has successfully been changed")>=0
 			req.flash 'error','Your new password is set.'
 			resp.redirect '/login'
 		else if results.indexOf("connection_error")>=0
@@ -172,7 +172,8 @@ exports.changeAuthenticationService = (req, resp) ->
 	if global.specRunnerTestmode
 		callback("Success")
 	else
-		csUtilities.changeAuth req.body.user, req.body.oldPassword, req.body.newPassword, req.body.newPasswordAgain, callback
+		user = req.session.passport.user.username
+		csUtilities.changeAuth user, req.body.oldPassword, req.body.newPassword, req.body.newPasswordAgain, callback
 
 exports.resetpage = (req, res) ->
 	user = null
