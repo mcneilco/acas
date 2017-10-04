@@ -3251,7 +3251,7 @@ exports.validateDaughterVialsInternal = (vialsToValidate, callback) ->
 					if missingSourceBarcodes.length > 0
 						callback null, errorMessages
 					else
-						checkParentWellContent vialsToValidate, (parentWellContentErrors) ->
+						exports.checkParentWellContent vialsToValidate, (parentWellContentErrors) ->
 							if parentWellContentErrors?
 								errorMessages.push parentWellContentErrors...
 							callback null, errorMessages
@@ -3411,6 +3411,11 @@ exports.getParentVialByDaughterVialBarcodeInternal = (daughterVialBarcode, callb
 			]
 		format = 'nestedstub'
 		exports.advancedSearchContainersInternal itxSearch, format, (err, advSearchReturn) ->
+			if err?
+				callback err
+				return
+			if advSearchReturn.results.length < 1
+				callback null, responseStub
 			parentWell = advSearchReturn.results[0]
 			responseStub.parentWellCodeName = parentWell.codeName
 			parentWellLabel = _.findWhere parentWell.lsLabels, {lsType: 'name', lsKind: 'well name', ignored: false}
