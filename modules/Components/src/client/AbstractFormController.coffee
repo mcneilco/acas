@@ -117,7 +117,7 @@ class window.AbstractFormController extends Backbone.View
 
 class window.AbstractThingFormController extends AbstractFormController
 
-	setupFormFields: (fieldDefs) ->
+	setupFormFields: (fieldDefs, useDirectRef) ->
 		unless @formFields?
 			@formFields = {}
 
@@ -128,6 +128,10 @@ class window.AbstractThingFormController extends AbstractFormController
 		if fieldDefs.secondLsThingItxs? then fDefs = fDefs.concat fieldDefs.secondLsThingItxs
 
 		for field in fDefs
+			if useDirectRef? and useDirectRef
+				mdl = @model.get field.key
+			else
+				mdl = @model
 			opts =
 				modelKey: field.key
 				inputClass: field.fieldSettings.inputClass
@@ -135,7 +139,7 @@ class window.AbstractThingFormController extends AbstractFormController
 				placeholder: field.fieldSettings.placeholder
 				required: field.fieldSettings.required
 				url: field.fieldSettings.url
-				thingRef: @model
+				thingRef: mdl
 				insertUnassigned: field.fieldSettings.insertUnassigned
 				modelDefaults: field.modelDefaults
 				allowedFileTypes: field.fieldSettings.allowedFileTypes

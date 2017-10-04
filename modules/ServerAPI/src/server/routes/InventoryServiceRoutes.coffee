@@ -2553,16 +2553,16 @@ exports.getTubesFromBatchCodeInternal = (input, callback) =>
 		{
     "lsType": "container" ,
     "lsKind": "tube",
-    "values":[
-        {
-            "stateType":"metadata",
-            "stateKind":"information",
-            "valueType": "codeValue",
-            "valueKind": "status",
-            "operator": "!=",
-            "value":"expired"
-        }
-        ],
+#    "values":[
+#        {
+#            "stateType":"metadata",
+#            "stateKind":"information",
+#            "valueType": "codeValue",
+#            "valueKind": "status",
+#            "operator": "!=",
+#            "value":"expired"
+#        }
+#        ],
     "secondInteractions":[
         {
             "interactionType": "has member",
@@ -2713,7 +2713,7 @@ exports.createParentVialsFromCSVInternal = (csvFileName, dryRun, user, callback)
 				if err?
 					callback err
 				summaryInfo = prepareSummaryInfo fileEntryArray
-				getContainerTubeDefinitionCode (definitionCode) ->
+				exports.getContainerTubeDefinitionCode (definitionCode) ->
 					if !definitionCode?
 						error =
 							errorLevel: 'error'
@@ -3001,7 +3001,7 @@ checkBarcodesExist = (barcodes, callback) ->
 				newBarcodes.push containerCodeEntry.requestLabel
 		callback existingBarcodes, newBarcodes
 
-checkParentWellContent = (fileEntryArray, callback) ->
+exports.checkParentWellContent = (fileEntryArray, callback) ->
 	#The purpose of this function is to check that the source vial content is compatible with the daughter content being loaded in, including
 	#physical state must match
 	#amount in parent vial would be negative if the daughter amount is removed
@@ -3110,7 +3110,7 @@ prepareCreateVialsHTMLSummary = (hasError, hasWarning, errorMessages, summaryInf
 		htmlSummary += htmlSummaryInfo
 	htmlSummary
 
-getContainerTubeDefinitionCode = (callback) ->
+exports.getContainerTubeDefinitionCode = (callback) ->
 	exports.containersByTypeKindInternal 'definition container', 'tube', 'codetable', false, false, (definitionContainers) ->
 		callback definitionContainers[0].code
 
@@ -3251,7 +3251,7 @@ exports.validateDaughterVialsInternal = (vialsToValidate, callback) ->
 					if missingSourceBarcodes.length > 0
 						callback null, errorMessages
 					else
-						checkParentWellContent vialsToValidate, (parentWellContentErrors) ->
+						exports.checkParentWellContent vialsToValidate, (parentWellContentErrors) ->
 							if parentWellContentErrors?
 								errorMessages.push parentWellContentErrors...
 							callback null, errorMessages
@@ -3280,7 +3280,7 @@ exports.createDaughterVials = (req, resp) ->
 						resp.json response
 
 exports.createDaughterVialsInternal = (vialsToCreate, user, callback) ->
-	getContainerTubeDefinitionCode (definitionCode) ->
+	exports.getContainerTubeDefinitionCode (definitionCode) ->
 		if !definitionCode?
 			callback 'Could not find definition container for tube'
 		tubesToCreate = []
@@ -3411,6 +3411,11 @@ exports.getParentVialByDaughterVialBarcodeInternal = (daughterVialBarcode, callb
 			]
 		format = 'nestedstub'
 		exports.advancedSearchContainersInternal itxSearch, format, (err, advSearchReturn) ->
+			if err?
+				callback err
+				return
+			if advSearchReturn.results.length < 1
+				callback null, responseStub
 			parentWell = advSearchReturn.results[0]
 			responseStub.parentWellCodeName = parentWell.codeName
 			parentWellLabel = _.findWhere parentWell.lsLabels, {lsType: 'name', lsKind: 'well name', ignored: false}

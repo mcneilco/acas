@@ -37,6 +37,7 @@
 		"showTareWeight": false,
 		"showTotalAmountStored": false,
 		"disableAliasEdit": false,
+		"showLotInventory": true,
 		"disableEditMyLots": false
     },
     "serverSettings": {
@@ -62,7 +63,7 @@
     	"unitTestDB": true,
     	"initalDBLoad": true,
     	"projectRestrictions": false,
-    	"jchemVersion": "16.4.11.0"
+    	"jchemVersion": "16.4.25.0"
     },
     "bulkLoadSettings": {
 	    "useProjectRoles":false,
@@ -105,3 +106,5 @@
 			]
 	}
 }
+
+
