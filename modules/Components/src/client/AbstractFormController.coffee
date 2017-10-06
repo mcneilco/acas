@@ -144,6 +144,7 @@ class window.AbstractThingFormController extends AbstractFormController
 				modelDefaults: field.modelDefaults
 				allowedFileTypes: field.fieldSettings.allowedFileTypes
 				extendedLabel: field.fieldSettings.extendedLabel
+				tabIndex: field.fieldSettings.tabIndex
 
 			switch field.fieldSettings.fieldType
 				when 'label'

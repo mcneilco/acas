@@ -102,6 +102,8 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 			@setPlaceholder @options.placeholder
 		if @options.firstSelectText?
 			@firstSelectText = @options.firstSelectText
+		if @options.tabIndex?
+			@setTabIndex @options.tabIndex
 		@required = if @options.required? then @options.required else false
 
 	setFormLabel: (value) ->
@@ -133,6 +135,9 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 
 	enableInput: ->
 		@$('input').removeAttr 'disabled'
+
+	setTabIndex: (index) ->
+		@$('input, select').attr  'tabindex', index
 
 class window.ACASFormLSLabelFieldController extends ACASFormAbstractFieldController
 	###
