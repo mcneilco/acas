@@ -3131,7 +3131,7 @@ decrementAmountsFromVials = (parentVialsToDecrement, user, callback) ->
 			change =
 				codeName: oldContainerWellContent.containerCodeName
 				recordedBy: user
-				recordedDate: (new Date()).getMilliseconds()
+				recordedDate: new Date().getTime()
 				entryType: 'UPDATE'
 				entry: "Amount #{toDecrement.amountToDecrement} #{toDecrement.amountToDecrementUnits} taken out to create daughter vial #{toDecrement.daughterVialBarcode}"
 			changes.push change

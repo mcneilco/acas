@@ -249,6 +249,11 @@ $(function() {
                 this.$('.synthesisDate').datepicker( "option", "dateFormat", "mm/dd/yy" );
                 this.$('.editAnalyticalFiles').hide();
                 this.$('.analyticalFiles').html('Add analytical files by editing lot after it is saved');
+            } else {
+	            if (window.configuration.metaLot.showLotInventory) {
+		            this.$('.amountWrapper').hide();
+		            this.$('.barcodeWrapper').hide();
+	            }
             }
 			return this;
 		},
@@ -272,6 +277,7 @@ $(function() {
                     comments: '',
                     color: '',
                     amount: null,
+                    barcode: null,
                     purity: null,
                     physicalState: null,
                     purityOperator: null,
@@ -329,6 +335,7 @@ $(function() {
                     amount: 
                         (jQuery.trim(this.$('.amount').val())=='') ? null :
                         parseFloat(jQuery.trim(this.$('.amount').val())),
+                    barcode: (jQuery.trim(this.$('.barcode').val())=='') ? null : jQuery.trim(this.$('.barcode').val()),
                     retain:
                         (jQuery.trim(this.$('.retain').val())=='') ? null :
                         parseFloat(jQuery.trim(this.$('.retain').val())),
