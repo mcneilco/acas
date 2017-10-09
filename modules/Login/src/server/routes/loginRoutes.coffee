@@ -161,6 +161,7 @@ exports.changeAuthenticationService = (req, resp) ->
 		console.log results
 		if results.indexOf("Your password has successfully been changed")>=0
 			req.flash 'error','Your new password is set.'
+			req.session.returnTo = '/'
 			resp.redirect '/login'
 		else if results.indexOf("connection_error")>=0
 			req.flash 'error','Cannot connect to authentication service. Please contact an administrator.'
