@@ -307,12 +307,14 @@ class window.ACASLabelSequenceController extends AbstractFormController
 		@$('.bv_saving').hide()
 
 	modelSaveCallback: (method, model) =>
-		@$('.bv_save').show()
+		@$('.bv_save').hide()
+		@$('.bv_cancel').hide()
 		@$('.bv_save').attr('disabled', 'disabled')
 		unless @$('.bv_saveFailed').is(":visible")
 			@$('.bv_saveComplete').show()
 			@$('.bv_saving').hide()
-		@setupACASLabelSequenceRoleListController()
+		@$('input').prop 'disabled', true
+		@$('select').prop 'disabled', true
 		@render()
 		@trigger 'amClean'
 
