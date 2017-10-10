@@ -3164,7 +3164,9 @@ prepareSummaryInfo = (fileEntryArray) ->
 		numSolidVials: (_.where fileEntryArray, {physicalState: 'solid'}).length
 		numLiquidVials: (_.where fileEntryArray, {physicalState: 'solution'}).length
 	batchCodes = _.pluck fileEntryArray, 'batchCode'
-	if batchCodes?
+	batchCodes = _.filter batchCodes, (entry) ->
+		entry?
+	if batchCodes? and batchCodes.length > 0
 		summaryInfo.totalBatchCodes = (_.uniq batchCodes).length
 	summaryInfo
 
