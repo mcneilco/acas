@@ -122,7 +122,7 @@ exports.updateAuthorModulePreferencesInternal = (userName, moduleName, settings,
 exports.updateAuthorInternal = (author, callback) ->
 	if global.specRunnerTestmode
 		authorServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/AuthorServiceTestJSON.js'
-		resp.json authorServiceTestJSON.updateAuthor
+		callback authorServiceTestJSON.updateAuthor
 	else
 		config = require '../conf/compiled/conf.js'
 		# if author.has('transactionOptions')
@@ -639,6 +639,18 @@ exports.updateAuthorAndRolesInternal = (author, user, callback) ->
 																								callback err
 																							else
 																								callback null, response
+													else
+														#roles have not changed, just update the author
+														exports.updateAuthorInternal author, (updatedAuthor, statusCode) ->
+															if statusCode != 200
+																callback updatedAuthor
+															else
+																#save successful. Fetch the new author and return.
+																exports.getAuthorByUsernameInternal author.userName, (response, statusCode) ->
+																	if statusCode != 200
+																		callback err
+																	else
+																		callback null, response
 
 validateAuthorAttributes = (author, callback) ->
 	requiredAttrs = ['firstName', 'lastName', 'userName', 'emailAddress']
