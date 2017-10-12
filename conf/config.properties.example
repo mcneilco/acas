@@ -553,3 +553,4 @@ client.roles.crossProjectLoaderRole=ROLE_ACAS-CROSS-PROJECT-LOADER
 client.entity.saveInitialsCorpName=false
 
 client.compoundInventory.enforceUppercaseBarcodes=false
+client.compoundInventory.daughterVials.strictMatchPhysicalState=false
