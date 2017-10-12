@@ -3017,6 +3017,10 @@ exports.checkParentWellContent = (fileEntryArray, callback) ->
 	#concentration and concentration units match if solution
 	errorMessages = []
 	vialBarcodes = _.pluck fileEntryArray, 'sourceVialBarcode'
+	strictMatch = config.all.client.compoundInventory.daughterVials.strictMatchPhysicalState
+	flexibleErrorLevel = 'warning'
+	if strictMatch? and strictMatch
+		flexibleErrorLevel = 'error'
 	exports.getWellContentByContainerLabelsInternal vialBarcodes, 'container', 'tube', 'barcode', 'barcode', (wellContentList, statusCode) ->
 		_.each fileEntryArray, (fileEntry) ->
 			parentVialAndWellContent = _.findWhere wellContentList, {label: fileEntry.sourceVialBarcode}
@@ -3024,17 +3028,17 @@ exports.checkParentWellContent = (fileEntryArray, callback) ->
 				parentWellContent = parentVialAndWellContent.wellContent[0]
 				if parentWellContent.physicalState != fileEntry.physicalState
 					error =
-						errorLevel: 'error'
+						errorLevel: flexibleErrorLevel
 						message: "Daughter vial #{fileEntry.destinationVialBarcode} must be of the same physical state as parent vial #{fileEntry.sourceVialBarcode}, which is #{parentWellContent.physicalState}."
 					errorMessages.push error
 				if fileEntry.physicalState == 'solution' and (Math.abs(fileEntry.concentration - parentWellContent.batchConcentration) > 0.0001 or fileEntry.concUnits != parentWellContent.batchConcUnits)
 					error =
-						errorLevel: 'error'
+						errorLevel: flexibleErrorLevel
 						message: "Daughter vial #{fileEntry.destinationVialBarcode} must have the same concentration as parent vial #{fileEntry.sourceVialBarcode}, which is #{parentWellContent.batchConcentration} #{parentWellContent.batchConcUnits}."
 					errorMessages.push error
 				if parentWellContent.amountUnits != fileEntry.amountUnits
 					error =
-						errorLevel: 'error'
+						errorLevel: flexibleErrorLevel
 						message: "Daughter vial #{fileEntry.destinationVialBarcode} must use the same amount units as parent vial #{fileEntry.sourceVialBarcode}, which is in #{parentWellContent.amountUnits}."
 					errorMessages.push error
 				else if parentWellContent.amount < fileEntry.amount
@@ -3131,32 +3135,40 @@ decrementAmountsFromVials = (toDecrementList, parentWellContentList, user, callb
 	wellsToUpdate = []
 	changes = []
 	_.each toDecrementList, (toDecrement) ->
-		oldContainerWellContent = _.findWhere parentWellContentList, {label: toDecrement.barcode}
+		oldContainerWellContent = _.findWhere parentWellContentList, {label: toDecrement.sourceVialBarcode}
 		oldWellContent = oldContainerWellContent.wellContent[0]
-		wellCode = oldWellContent.containerCodeName
-		newWellContent =
-			containerCodeName: wellCode
-			amount: oldWellContent.amount - toDecrement.amountToDecrement
-			recordedBy: user
-		wellsToUpdate.push newWellContent
-		change =
-			codeName: oldContainerWellContent.containerCodeName
-			recordedBy: user
-			recordedDate: new Date().getTime()
-			entryType: 'UPDATE'
-			entry: "Amount #{toDecrement.amountToDecrement} #{toDecrement.amountToDecrementUnits} taken out to create daughter vial #{toDecrement.daughterVialBarcode}"
-		changes.push change
+		#Check that the amount is valid to decrement.
+		differentState = (oldWellContent.physicalState != toDecrement.physicalState)
+		concentrationMismatch = (toDecrement.physicalState == 'solution' and (Math.abs(toDecrement.concentration - oldWellContent.batchConcentration) > 0.0001 or toDecrement.concUnits != oldWellContent.batchConcUnits))
+		unitMismatch = (oldWellContent.amountUnits != toDecrement.amountUnits)
+		if !differentState and !concentrationMismatch and !unitMismatch
+			wellCode = oldWellContent.containerCodeName
+			newWellContent =
+				containerCodeName: wellCode
+				amount: oldWellContent.amount - toDecrement.amount
+				recordedBy: user
+			wellsToUpdate.push newWellContent
+			change =
+				codeName: oldContainerWellContent.containerCodeName
+				recordedBy: user
+				recordedDate: new Date().getTime()
+				entryType: 'UPDATE'
+				entry: "Amount #{toDecrement.amount} #{toDecrement.amountUnits} taken out to create daughter vial #{toDecrement.destinationVialBarcode}"
+			changes.push change
 	console.log wellsToUpdate
-	exports.updateWellContentInternal wellsToUpdate, true, false, (updateWellsResponse, updateWellsStatusCode) ->
-		console.log updateWellsStatusCode
-		if updateWellsStatusCode != 204
-			callback "Error: #{updateWellsResponse}"
-		else
-			exports.containerLogsInternal changes, 0, (logs, statusCode) ->
-				if statusCode != 200
-					callback logs
-				else
-					callback null, updateWellsResponse
+	if wellsToUpdate.length > 0
+		exports.updateWellContentInternal wellsToUpdate, true, false, (updateWellsResponse, updateWellsStatusCode) ->
+			console.log updateWellsStatusCode
+			if updateWellsStatusCode != 204
+				callback "Error: #{updateWellsResponse}"
+			else
+				exports.containerLogsInternal changes, 0, (logs, statusCode) ->
+					if statusCode != 200
+						callback logs
+					else
+						callback null, updateWellsResponse
+	else
+		callback null
 
 prepareSummaryInfo = (fileEntryArray) ->
 	summaryInfo =
@@ -3358,15 +3370,7 @@ exports.createDaughterVialsInternal = (vialsToCreate, user, callback) ->
 						if err?
 							callback err
 						else
-							toDecrementList = []
-							_.each vialsToCreate, (entry) ->
-								toDecrement =
-									barcode: entry.sourceVialBarcode
-									amountToDecrement: entry.amount
-									amountToDecrementUnits: entry.amountUnits
-									daughterVialBarcode: entry.destinationVialBarcode
-								toDecrementList.push toDecrement
-							decrementAmountsFromVials toDecrementList, parentWellContentList, user, (err, decrementVialsResponse) ->
+							decrementAmountsFromVials vialsToCreate, parentWellContentList, user, (err, decrementVialsResponse) ->
 								if err?
 									callback err
 								else
