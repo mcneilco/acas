@@ -313,7 +313,10 @@
         newAlias = new AliasModel(formValues);
         return this.trigger("isDirty", newAlias);
       } else {
-        return this.model.set(formValues);
+        this.model.set(formValues);
+        var typeKind = this.model.get('lsType') + ':' + this.model.get('lsKind');
+        this.model.set({'typeKind': typeKind});
+        return this;
       }
     };
 
