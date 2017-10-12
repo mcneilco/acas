@@ -65,7 +65,7 @@ $(function () {
 		        });
 
 	        } else if (this.useKetcher) {
-		        this.$('#editParentMarvinSketch').attr('src',"/lib/ketcher-2.0.0-alpha.3/ketcher.html?api_path=/api/cmpdReg/ketcher/");
+		        this.$('#editParentMarvinSketch').attr('src',"/lib/ketcher-2.0.0-alpha.3_custom/ketcher.html?api_path=/api/cmpdReg/ketcher/");
 		        this.$('#editParentMarvinSketch').on('load', function () {
 			        self.ketcher = self.$('#editParentMarvinSketch')[0].contentWindow.ketcher;
 					self.ketcher.setMolecule(self.options.parentModel.get('molStructure'));

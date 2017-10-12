@@ -183,7 +183,7 @@ $(function() {
 				});
 
 			} else if (this.useKetcher) {
-				this.$('#newSaltMarvinSketch').attr('src',"/lib/ketcher-2.0.0-alpha.3/ketcher.html?api_path=/api/cmpdReg/ketcher/");
+				this.$('#newSaltMarvinSketch').attr('src',"/lib/ketcher-2.0.0-alpha.3_custom/ketcher.html?api_path=/api/cmpdReg/ketcher/");
 				this.$('#newSaltMarvinSketch').on('load', function () {
 					self.ketcher = self.$('#newSaltMarvinSketch')[0].contentWindow.ketcher;
 					self.sketcherLoaded = true;
