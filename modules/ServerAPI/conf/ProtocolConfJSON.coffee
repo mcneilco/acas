@@ -180,6 +180,9 @@
 				typeName: "protocol"
 				kindName: "review status"
 			,
+				typeName: "protocol"
+				kindName: "sel required attribute"
+			,
 				typeName: "assay"
 				kindName: "scientist"
 			,
