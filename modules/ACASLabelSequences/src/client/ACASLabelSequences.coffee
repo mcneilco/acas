@@ -315,6 +315,7 @@ class window.ACASLabelSequenceController extends AbstractFormController
 			@$('.bv_saving').hide()
 		@$('input').prop 'disabled', true
 		@$('select').prop 'disabled', true
+		@$('.bv_addLabelSequenceRoleButton').hide()
 		@render()
 		@trigger 'amClean'
 
