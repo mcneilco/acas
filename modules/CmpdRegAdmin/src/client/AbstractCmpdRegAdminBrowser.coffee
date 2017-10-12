@@ -43,25 +43,9 @@ class window.CmpdRegAdminSimpleSearchController extends AbstractFormController
 			@$(".bv_doSearch").attr("disabled", false)
 			if e.keyCode is ENTER_KEY
 				$(':focus').blur()
-				@handleDoSearchClicked()
+				@trigger 'searchRequested'
 		else
 			@$(".bv_doSearch").attr("disabled", true)
-
-	handleDoSearchClicked: =>
-		$(".bv_cmpdRegAdminTableController").addClass "hide"
-		$(".bv_errorOccurredPerformingSearch").addClass "hide"
-		cmpdRegAdminSearchTerm = $.trim(@$(".bv_cmpdRegAdminSearchTerm").val())
-		if cmpdRegAdminSearchTerm isnt ""
-			$(".bv_noMatchingCmpdRegAdminsFoundMessage").addClass "hide"
-			$(".bv_cmpdRegAdminBrowserSearchInstructions").addClass "hide"
-			$(".bv_searchCmpdRegAdminsStatusIndicator").removeClass "hide"
-			if !window.conf.browser.enableSearchAll and cmpdRegAdminSearchTerm is "*"
-				$(".bv_moreSpecificCmpdRegAdminSearchNeeded").removeClass "hide"
-			else
-				$(".bv_searchingCmpdRegAdminsMessage").removeClass "hide"
-				$(".bv_cmpdRegAdminSearchTerm").html cmpdRegAdminSearchTerm
-				$(".bv_moreSpecificCmpdRegAdminSearchNeeded").addClass "hide"
-				@doSearch cmpdRegAdminSearchTerm
 
 	doSearch: (cmpdRegAdminSearchTerm) =>
 # disable the search text field while performing a search
@@ -122,19 +106,15 @@ class window.CmpdRegAdminSummaryTableController extends Backbone.View
 	render: =>
 		@template = _.template($('#CmpdRegAdminSummaryTableView').html())
 		$(@el).html @template(@options.toDisplay)
-		if @collection.models.length is 0
-			$(".bv_noMatchingCmpdRegAdminsFoundMessage").removeClass "hide"
-			# display message indicating no results were found
-		else
-			$(".bv_noMatchingCmpdRegAdminsFoundMessage").addClass "hide"
-			@collection.each (admin) =>
-				prsc = new CmpdRegAdminRowSummaryController
-					model: admin
-				prsc.on "gotClick", @selectedRowChanged
-				@$("tbody").append prsc.render().el
+		#will always be instantiated with at least one model in collection
+		@collection.each (admin) =>
+			prsc = new CmpdRegAdminRowSummaryController
+				model: admin
+			prsc.on "gotClick", @selectedRowChanged
+			@$("tbody").append prsc.render().el
 
-			@$("table").dataTable oLanguage:
-				sSearch: "Filter results: " #rename summary table's search bar
+		@$("table").dataTable oLanguage:
+			sSearch: "Filter results: " #rename summary table's search bar
 
 		@
 
@@ -170,6 +150,7 @@ class window.AbstractCmpdRegAdminBrowserController extends Backbone.View
 			urlRoot: "/api/CmpdRegAdmin/#{@entityTypePlural}"
 			toDisplay: @toDisplay
 		@searchController.render()
+		@searchController.on "searchRequested", @handleSearchRequested
 		@searchController.on "searchReturned", @setupCmpdRegAdminSummaryTable
 		@searchController.on "createNewCmpdRegAdmin", @handleCreateNewCmpdRegAdminClicked
 	#@searchController.on "resetSearch", @destroyCmpdRegAdminSummaryTable
@@ -177,7 +158,7 @@ class window.AbstractCmpdRegAdminBrowserController extends Backbone.View
 	setupCmpdRegAdminSummaryTable: (cmpdRegAdmins) =>
 		@destroyCmpdRegAdminSummaryTable()
 
-		$(".bv_searchingCmpdRegAdminsMessage").addClass "hide"
+		@$(".bv_searchingCmpdRegAdminsMessage").addClass "hide"
 		if cmpdRegAdmins is null
 			@$(".bv_errorOccurredPerformingSearch").removeClass "hide"
 
@@ -185,14 +166,14 @@ class window.AbstractCmpdRegAdminBrowserController extends Backbone.View
 			@$(".bv_noMatchingCmpdRegAdminsFoundMessage").removeClass "hide"
 			@$(".bv_cmpdRegAdminTableController").html ""
 		else
-			$(".bv_searchCmpdRegAdminsStatusIndicator").addClass "hide"
+			@$(".bv_searchCmpdRegAdminsStatusIndicator").addClass "hide"
 			@$(".bv_cmpdRegAdminTableController").removeClass "hide"
 			@cmpdRegAdminSummaryTable = new CmpdRegAdminSummaryTableController
 				collection: new CmpdRegAdminList cmpdRegAdmins
 				toDisplay: @toDisplay
 
 			@cmpdRegAdminSummaryTable.on "selectedRowUpdated", @selectedCmpdRegAdminUpdated
-			$(".bv_cmpdRegAdminTableController").html @cmpdRegAdminSummaryTable.render().el
+			@$(".bv_cmpdRegAdminTableController").html @cmpdRegAdminSummaryTable.render().el
 
 	selectedCmpdRegAdminUpdated: (cmpdRegAdmin) =>
 		@trigger "selectedCmpdRegAdminUpdated"
@@ -202,12 +183,28 @@ class window.AbstractCmpdRegAdminBrowserController extends Backbone.View
 			model: new window[@entityClass] cmpdRegAdmin.attributes
 			readOnly: true
 
-		$('.bv_cmpdRegAdminController').html @cmpdRegAdminController.render().el
-		$(".bv_cmpdRegAdminController").removeClass("hide")
-		$(".bv_cmpdRegAdminControllerContainer").removeClass("hide")
+		@$('.bv_cmpdRegAdminController').html @cmpdRegAdminController.render().el
+		@$(".bv_cmpdRegAdminController").removeClass("hide")
+		@$(".bv_cmpdRegAdminControllerContainer").removeClass("hide")
 		@$('.bv_editCmpdRegAdmin').show()
 		@$('.bv_deleteCmpdRegAdmin').show()
 
+	handleSearchRequested: =>
+		@$(".bv_cmpdRegAdminTableController").addClass "hide"
+		@$(".bv_errorOccurredPerformingSearch").addClass "hide"
+		cmpdRegAdminSearchTerm = $.trim(@$(".bv_cmpdRegAdminSearchTerm").val())
+		if cmpdRegAdminSearchTerm isnt ""
+			@$(".bv_noMatchingCmpdRegAdminsFoundMessage").addClass "hide"
+			@$(".bv_cmpdRegAdminBrowserSearchInstructions").addClass "hide"
+			@$(".bv_searchCmpdRegAdminsStatusIndicator").removeClass "hide"
+			if !window.conf.browser.enableSearchAll and cmpdRegAdminSearchTerm is "*"
+				@$(".bv_moreSpecificCmpdRegAdminSearchNeeded").removeClass "hide"
+			else
+				@$(".bv_searchingCmpdRegAdminsMessage").removeClass "hide"
+				@$(".bv_cmpdRegAdminSearchTerm").html cmpdRegAdminSearchTerm
+				@$(".bv_moreSpecificCmpdRegAdminSearchNeeded").addClass "hide"
+				@searchController.doSearch cmpdRegAdminSearchTerm
+		
 	handleDeleteCmpdRegAdminClicked: =>
 		@$(".bv_cmpdRegAdminCodeName").html @cmpdRegAdminController.model.get("code")
 		@$(".bv_deleteButtons").removeClass "hide"
@@ -216,8 +213,8 @@ class window.AbstractCmpdRegAdminBrowserController extends Backbone.View
 		@$(".bv_deleteWarningMessage").removeClass "hide"
 		@$(".bv_deletingStatusIndicator").addClass "hide"
 		@$(".bv_cmpdRegAdminDeletedSuccessfullyMessage").addClass "hide"
-		$(".bv_confirmDeleteCmpdRegAdmin").removeClass "hide"
-		$('.bv_confirmDeleteCmpdRegAdmin').modal({
+		@$(".bv_confirmDeleteCmpdRegAdmin").removeClass "hide"
+		@$('.bv_confirmDeleteCmpdRegAdmin').modal({
 			keyboard: false,
 			backdrop: true
 		})
@@ -233,7 +230,7 @@ class window.AbstractCmpdRegAdminBrowserController extends Backbone.View
 				@$(".bv_okayButton").removeClass "hide"
 				@$(".bv_deletingStatusIndicator").addClass "hide"
 				@$(".bv_cmpdRegAdminDeletedSuccessfullyMessage").removeClass "hide"
-				@searchController.handleDoSearchClicked()
+				@handleSearchRequested()
 			error: (result) =>
 				@$(".bv_okayButton").removeClass "hide"
 				@$(".bv_deletingStatusIndicator").addClass "hide"
@@ -251,9 +248,10 @@ class window.AbstractCmpdRegAdminBrowserController extends Backbone.View
 			@cmpdRegAdminSummaryTable.remove()
 		if @cmpdRegAdminController?
 			@cmpdRegAdminController.remove()
-		$(".bv_cmpdRegAdminController").addClass("hide")
-		$(".bv_cmpdRegAdminControllerContainer").addClass("hide")
-		$(".bv_noMatchingCmpdRegAdminsFoundMessage").addClass("hide")
+			
+		@$(".bv_cmpdRegAdminController").addClass("hide")
+		@$(".bv_cmpdRegAdminControllerContainer").addClass("hide")
+		@$(".bv_noMatchingCmpdRegAdminsFoundMessage").addClass("hide")
 
 	render: =>
 		@
@@ -280,5 +278,5 @@ class window.AbstractCmpdRegAdminBrowserController extends Backbone.View
 	handleBackToCmpdRegAdminBrowserClicked: =>
 		@$('.bv_cmpdRegAdminBrowserWrapper').show()
 		@$('.bv_cmpdRegAdminControllerWrapper').hide()
-		@searchController.handleDoSearchClicked()
+		@handleSearchRequested()
 		@trigger 'amClean'
