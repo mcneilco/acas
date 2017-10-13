@@ -80,9 +80,9 @@ exports.saveLabelSequence = (req, resp) ->
 			if !error && response.statusCode == 201
 				resp.json json
 			else
-				console.error 'got ajax error trying to save label sequence'
+				console.error 'got error trying to save label sequence'
 				resp.statusCode =  500
-				resp.end "saveFailed"
+				resp.end json
 		)
 
 exports.saveLabelSequenceArray = (req, resp) ->
@@ -100,8 +100,8 @@ exports.saveLabelSequenceArray = (req, resp) ->
 			if !error && response.statusCode == 201
 				resp.json json
 			else
-				console.error 'got ajax error trying to save label sequence array'
-				resp.end "saveFailed"
+				console.error 'got error trying to save label sequence array'
+				resp.end json
 		)
 
 exports.updateLabelSequence = (req, resp) ->
@@ -119,8 +119,8 @@ exports.updateLabelSequence = (req, resp) ->
 			if !error && response.statusCode == 200
 				resp.json json
 			else
-				console.error 'got ajax error trying to update label sequence'
-				resp.end "updateFailed"
+				console.error 'got error trying to update label sequence'
+				resp.end json
 		)
 
 exports.updateLabelSequenceArray = (req, resp) ->
