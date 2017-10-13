@@ -67,7 +67,7 @@ $(function() {
 				});
 
 			} else if (this.useKetcher) {
-				this.$('#registrationSearchMarvinSketch').attr('src',"/lib/ketcher-2.0.0-alpha.3/ketcher.html?api_path=/api/cmpdReg/ketcher/");
+				this.$('#registrationSearchMarvinSketch').attr('src',"/lib/ketcher-2.0.0-alpha.3_custom/ketcher.html?api_path=/api/cmpdReg/ketcher/");
 				this.$('#registrationSearchMarvinSketch').on('load', function () {
 					self.ketcher = self.$('#registrationSearchMarvinSketch')[0].contentWindow.ketcher;
 				});
