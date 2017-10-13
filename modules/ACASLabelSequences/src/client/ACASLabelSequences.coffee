@@ -427,6 +427,9 @@ class window.ACASLabelSequenceController extends AbstractFormController
 						@model.trigger 'saveFailed'
 					else
 						@modelSaveCallback
+				error: (err, response) =>
+					alert response.responseText
+					@model.trigger 'saveFailed'
 
 		else
 			@model.save null,
@@ -435,7 +438,8 @@ class window.ACASLabelSequenceController extends AbstractFormController
 						@model.trigger 'saveFailed'
 					else
 						@modelSaveCallback
-				error: (err) =>
+				error: (err, response) =>
+					alert response.responseText
 					@model.trigger 'saveFailed'
 
 	validationError: =>
