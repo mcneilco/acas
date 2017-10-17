@@ -1371,15 +1371,15 @@ exports.moveToLocationInternal = (input, callCustom, updateLocationHistory, call
 					if updateLocationHistory
 						exports.updateContainerHistoryLogsInternal(input, (json, statusCode) ->
 							callback json, statusCode
-							# if callCustom && csUtilities.moveToLocation?
-							# 	console.log "running customer specific server function moveToLocation"
-							# 	csUtilities.moveToLocation input, (customerResponse, statusCode) ->
-							# 		json = _.extend json, customerResponse
-							# 		callback json, statusCode
-							# else
-							# 	console.warn "could not find customer specific server function moveToLocation so not running it"
-							# 	callback json, response.statusCode
-							# )
+							if callCustom && csUtilities.moveToLocation?
+								console.log "running customer specific server function moveToLocation"
+								csUtilities.moveToLocation input, (customerResponse, statusCode) ->
+									json = _.extend json, customerResponse
+									callback json, statusCode
+							else
+								if callCustom
+									console.warn "could not find customer specific server function moveToLocation so not running it"
+								callback json, statusCode
 						)
 					else
 						callback json, response.statusCode
@@ -1391,6 +1391,7 @@ exports.moveToLocationInternal = (input, callCustom, updateLocationHistory, call
 					callback JSON.stringify("moveToLocation failed"), 500
 			)
 		#)
+
 
 exports.getWellContentByContainerLabel = (req, resp) ->
 	req.setTimeout 86400000
