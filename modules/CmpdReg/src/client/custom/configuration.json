@@ -62,8 +62,11 @@
     	"maxSearchResults": 5000,
     	"unitTestDB": true,
     	"initalDBLoad": true,
+		"compoundInventory": true,
+		"checkACASDependenciesByBarcode": false,
     	"projectRestrictions": false,
-    	"jchemVersion": "16.4.25.0"
+    	"jchemVersion": "16.4.25.0",
+		"orderSelectLists": true
     },
     "bulkLoadSettings": {
 	    "useProjectRoles":false,
@@ -100,7 +103,6 @@
     			{"name": "Project", "dataType": "string", "required": false},
     			{"name": "CAS Number", "dataType": "string", "required": false},
     			{"name": "Parent Corp Name", "dataType": "string", "required": false},
-    			{"name": "Parent LiveDesign Corp Name", "dataType": "string", "required": false},
     			{"name": "Parent Common Name", "dataType": "string", "required": false},
     			{"name": "Parent Stereo Comment", "dataType": "string", "required": false}
 			]
