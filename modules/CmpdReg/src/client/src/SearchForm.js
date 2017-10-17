@@ -86,7 +86,7 @@ $(function() {
 
             this.updatePercentSimilarityDisabled();
             this.chemistCodeController =
-                this.setupCodeController('chemist', 'scientists', 'chemist', true);
+                this.setupCodeController('chemist', 'scientists?withLots=true', 'chemist', true);
             this.chemistCodeController.collection.bind('reset', this.chemistsLoaded);
 
 			var self = this;
