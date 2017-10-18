@@ -3531,9 +3531,12 @@ exports.getContainerLocationTreeInternal = (callback) ->
 			console.debug "returned successfully from #{baseurl}"
 			formattedTree = []
 			_.each json, (rawLocation) ->
+				parent = rawLocation.parentCodeName
+				if !parent?
+					parent = '#'
 				location =
 					id: rawLocation.codeName
-					parent: rawLocation.parentCodeName
+					parent: parent
 					text: rawLocation.labelText
 				formattedTree.push location
 			callback null, formattedTree
