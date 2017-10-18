@@ -2655,7 +2655,7 @@ exports.validateParentVialsFromCSVInternal = (csvFileName, dryRun, callback) ->
 				dryRun: dryRun
 				fileToParse: csvFileName
 				htmlSummary: ''
-			hasError: true
+			hasError: false
 			hasWarning: false
 			errorMessages: []
 			transactionId: null
@@ -2684,8 +2684,12 @@ exports.validateParentVialsFromCSVInternal = (csvFileName, dryRun, callback) ->
 										errorLevel: 'error'
 										message: "The following barcodes already exist: " + existingBarcodes.join ', '
 									validationResponse.errorMessages.push error
-								if validationResponse.errorMessages.length < 1
-									validationResponse.hasError = false
+								errors = _.where validationResponse.errorMessages, {errorLevel: 'error'}
+								warnings = _.where validationResponse.errorMessages, {errorLevel: 'warning'}
+								if errors.length > 0
+									validationResponse.hasError = true
+								if warnings.length > 0
+									validationResponse.hasWarning = true
 								validationResponse.results.htmlSummary = prepareValidationHTMLSummary validationResponse.hasError, validationResponse.hasWarning, validationResponse.errorMessages, summaryInfo
 								callback validationResponse
 		else
@@ -2808,7 +2812,7 @@ exports.validateDaughterVialsFromCSVInternal = (csvFileName, dryRun, callback) -
 				dryRun: dryRun
 				fileToParse: csvFileName
 				htmlSummary: ''
-			hasError: true
+			hasError: false
 			hasWarning: false
 			errorMessages: []
 			transactionId: null
@@ -2823,8 +2827,12 @@ exports.validateDaughterVialsFromCSVInternal = (csvFileName, dryRun, callback) -
 						callback err
 					else
 						validationResponse.errorMessages.push errorsAndWarnings...
-						if validationResponse.errorMessages.length < 1
-							validationResponse.hasError = false
+						errors = _.where validationResponse.errorMessages, {errorLevel: 'error'}
+						warnings = _.where validationResponse.errorMessages, {errorLevel: 'warning'}
+						if errors.length > 0
+							validationResponse.hasError = true
+						if warnings.length > 0
+							validationResponse.hasWarning = true
 						validationResponse.results.htmlSummary = prepareValidationHTMLSummary validationResponse.hasError, validationResponse.hasWarning, validationResponse.errorMessages, summaryInfo
 						callback null, validationResponse
 		else
@@ -3009,6 +3017,10 @@ exports.checkParentWellContent = (fileEntryArray, callback) ->
 	#concentration and concentration units match if solution
 	errorMessages = []
 	vialBarcodes = _.pluck fileEntryArray, 'sourceVialBarcode'
+	strictMatch = config.all.client.compoundInventory.daughterVials.strictMatchPhysicalState
+	flexibleErrorLevel = 'warning'
+	if strictMatch? and strictMatch
+		flexibleErrorLevel = 'error'
 	exports.getWellContentByContainerLabelsInternal vialBarcodes, 'container', 'tube', 'barcode', 'barcode', (wellContentList, statusCode) ->
 		_.each fileEntryArray, (fileEntry) ->
 			parentVialAndWellContent = _.findWhere wellContentList, {label: fileEntry.sourceVialBarcode}
@@ -3016,23 +3028,28 @@ exports.checkParentWellContent = (fileEntryArray, callback) ->
 				parentWellContent = parentVialAndWellContent.wellContent[0]
 				if parentWellContent.physicalState != fileEntry.physicalState
 					error =
-						errorLevel: 'error'
+						errorLevel: flexibleErrorLevel
 						message: "Daughter vial #{fileEntry.destinationVialBarcode} must be of the same physical state as parent vial #{fileEntry.sourceVialBarcode}, which is #{parentWellContent.physicalState}."
 					errorMessages.push error
 				if fileEntry.physicalState == 'solution' and (Math.abs(fileEntry.concentration - parentWellContent.batchConcentration) > 0.0001 or fileEntry.concUnits != parentWellContent.batchConcUnits)
 					error =
-						errorLevel: 'error'
+						errorLevel: flexibleErrorLevel
 						message: "Daughter vial #{fileEntry.destinationVialBarcode} must have the same concentration as parent vial #{fileEntry.sourceVialBarcode}, which is #{parentWellContent.batchConcentration} #{parentWellContent.batchConcUnits}."
 					errorMessages.push error
 				if parentWellContent.amountUnits != fileEntry.amountUnits
 					error =
-						errorLevel: 'error'
+						errorLevel: flexibleErrorLevel
 						message: "Daughter vial #{fileEntry.destinationVialBarcode} must use the same amount units as parent vial #{fileEntry.sourceVialBarcode}, which is in #{parentWellContent.amountUnits}."
 					errorMessages.push error
 				else if parentWellContent.amount < fileEntry.amount
 					error =
 						errorLevel: 'warning'
 						message: "Creating daughter vial #{fileEntry.destinationVialBarcode} will remove more than the total amount currently in parent vial #{fileEntry.sourceVialBarcode}, leaving a negative amount in the parent vial."
+					errorMessages.push error
+				if fileEntry.batchCode? and fileEntry.batchCode != parentWellContent.batchCode
+					error =
+						errorLevel: 'error'
+						message: "Daughter vial #{fileEntry.destinationVialBarcode} must reference the same lot #{parentWellContent.batchCode} as the parent vial #{fileEntry.destinationVialBarcode}."
 					errorMessages.push error
 			else
 				error =
@@ -3114,28 +3131,32 @@ exports.getContainerTubeDefinitionCode = (callback) ->
 	exports.containersByTypeKindInternal 'definition container', 'tube', 'codetable', false, false, (definitionContainers) ->
 		callback definitionContainers[0].code
 
-decrementAmountsFromVials = (parentVialsToDecrement, user, callback) ->
-	vialBarcodes = _.pluck parentVialsToDecrement, 'barcode'
-	exports.getWellContentByContainerLabelsInternal vialBarcodes, 'container', 'tube', 'barcode', 'barcode', (wellContentList, statusCode) ->
-		wellsToUpdate = []
-		changes = []
-		_.each parentVialsToDecrement, (toDecrement) ->
-			oldContainerWellContent = _.findWhere wellContentList, {label: toDecrement.barcode}
-			oldWellContent = oldContainerWellContent.wellContent[0]
+decrementAmountsFromVials = (toDecrementList, parentWellContentList, user, callback) ->
+	wellsToUpdate = []
+	changes = []
+	_.each toDecrementList, (toDecrement) ->
+		oldContainerWellContent = _.findWhere parentWellContentList, {label: toDecrement.sourceVialBarcode}
+		oldWellContent = oldContainerWellContent.wellContent[0]
+		#Check that the amount is valid to decrement.
+		differentState = (oldWellContent.physicalState != toDecrement.physicalState)
+		concentrationMismatch = (toDecrement.physicalState == 'solution' and (Math.abs(toDecrement.concentration - oldWellContent.batchConcentration) > 0.0001 or toDecrement.concUnits != oldWellContent.batchConcUnits))
+		unitMismatch = (oldWellContent.amountUnits != toDecrement.amountUnits)
+		if !differentState and !concentrationMismatch and !unitMismatch
 			wellCode = oldWellContent.containerCodeName
 			newWellContent =
 				containerCodeName: wellCode
-				amount: oldWellContent.amount - toDecrement.amountToDecrement
+				amount: oldWellContent.amount - toDecrement.amount
 				recordedBy: user
 			wellsToUpdate.push newWellContent
 			change =
 				codeName: oldContainerWellContent.containerCodeName
 				recordedBy: user
-				recordedDate: (new Date()).getMilliseconds()
+				recordedDate: new Date().getTime()
 				entryType: 'UPDATE'
-				entry: "Amount #{toDecrement.amountToDecrement} #{toDecrement.amountToDecrementUnits} taken out to create daughter vial #{toDecrement.daughterVialBarcode}"
+				entry: "Amount #{toDecrement.amount} #{toDecrement.amountUnits} taken out to create daughter vial #{toDecrement.destinationVialBarcode}"
 			changes.push change
-		console.log wellsToUpdate
+	console.log wellsToUpdate
+	if wellsToUpdate.length > 0
 		exports.updateWellContentInternal wellsToUpdate, true, false, (updateWellsResponse, updateWellsStatusCode) ->
 			console.log updateWellsStatusCode
 			if updateWellsStatusCode != 204
@@ -3146,6 +3167,8 @@ decrementAmountsFromVials = (parentVialsToDecrement, user, callback) ->
 						callback logs
 					else
 						callback null, updateWellsResponse
+	else
+		callback null
 
 prepareSummaryInfo = (fileEntryArray) ->
 	summaryInfo =
@@ -3153,7 +3176,9 @@ prepareSummaryInfo = (fileEntryArray) ->
 		numSolidVials: (_.where fileEntryArray, {physicalState: 'solid'}).length
 		numLiquidVials: (_.where fileEntryArray, {physicalState: 'solution'}).length
 	batchCodes = _.pluck fileEntryArray, 'batchCode'
-	if batchCodes?
+	batchCodes = _.filter batchCodes, (entry) ->
+		entry?
+	if batchCodes? and batchCodes.length > 0
 		summaryInfo.totalBatchCodes = (_.uniq batchCodes).length
 	summaryInfo
 
@@ -3283,74 +3308,74 @@ exports.createDaughterVialsInternal = (vialsToCreate, user, callback) ->
 	exports.getContainerTubeDefinitionCode (definitionCode) ->
 		if !definitionCode?
 			callback 'Could not find definition container for tube'
-		tubesToCreate = []
-		_.each vialsToCreate, (entry) ->
-			tube =
-				barcode: entry.destinationVialBarcode
-				definition: definitionCode
-				recordedBy: user
-				createdUser: entry.preparedBy
-				createdDate: entry.createdDate
-				physicalState: entry.physicalState
-				wells: [
-					wellName: "A001"
-					batchCode: entry.batchCode
-					amount: entry.amount
-					amountUnits: entry.amountUnits
-					physicalState: entry.physicalState
+			return
+		parentVialBarcodes = _.pluck vialsToCreate, 'sourceVialBarcode'
+		exports.getWellContentByContainerLabelsInternal parentVialBarcodes, 'container', 'tube', 'barcode', 'barcode', (parentWellContentList, statusCode) ->
+			tubesToCreate = []
+			_.each vialsToCreate, (entry) ->
+				parentVialAndWellContent = _.findWhere parentWellContentList, {label: entry.sourceVialBarcode}
+				parentWellContent = parentVialAndWellContent.wellContent[0]
+				batchCode = parentWellContent.batchCode
+				if entry.batchCode? and entry.batchCode.length > 0
+					batchCode = entry.batchCode
+				tube =
+					barcode: entry.destinationVialBarcode
+					definition: definitionCode
 					recordedBy: user
-					recordedDate: (new Date()).getTime()
-				]
-			if entry.physicalState == 'solution'
-				tube.wells[0].batchConcentration = entry.concentration
-				tube.wells[0].batchConcUnits = entry.concUnits
-				tube.wells[0].solventCode = entry.solvent
-			tubesToCreate.push tube
-		console.log JSON.stringify tubesToCreate
-		exports.createTubesInternal tubesToCreate, 0, (json, statusCode) ->
-			console.log statusCode
-			console.log json
-			if statusCode != 200
-				callback json
-			else
-				interactionsToCreate = []
-				_.each vialsToCreate, (entry) ->
-					interaction =
-						interactionType: 'added to'
-						interactionKind: 'well_well'
-						firstContainerBarcode: entry.sourceVialBarcode
-						secondContainerBarcode: entry.destinationVialBarcode
-						firstWellLabel: 'A001'
-						secondWellLabel: 'A001'
-						interactionStates: [
-								lsType: 'metadata'
-								lsKind: 'information'
-								lsValues: [
-									lsType: 'numericValue'
-									lsKind: 'amount added'
-									numericValue: entry.amount
-									unitKind: entry.amountUnits
+					createdUser: entry.preparedBy
+					createdDate: entry.createdDate
+					physicalState: entry.physicalState
+					wells: [
+						wellName: "A001"
+						batchCode: batchCode
+						amount: entry.amount
+						amountUnits: entry.amountUnits
+						physicalState: entry.physicalState
+						recordedBy: user
+						recordedDate: (new Date()).getTime()
+					]
+				if entry.physicalState == 'solution'
+					tube.wells[0].batchConcentration = entry.concentration
+					tube.wells[0].batchConcUnits = entry.concUnits
+					tube.wells[0].solventCode = entry.solvent
+				tubesToCreate.push tube
+			console.log JSON.stringify tubesToCreate
+			exports.createTubesInternal tubesToCreate, 0, (json, statusCode) ->
+				console.log statusCode
+				console.log json
+				if statusCode != 200
+					callback json
+				else
+					interactionsToCreate = []
+					_.each vialsToCreate, (entry) ->
+						interaction =
+							interactionType: 'added to'
+							interactionKind: 'well_well'
+							firstContainerBarcode: entry.sourceVialBarcode
+							secondContainerBarcode: entry.destinationVialBarcode
+							firstWellLabel: 'A001'
+							secondWellLabel: 'A001'
+							interactionStates: [
+									lsType: 'metadata'
+									lsKind: 'information'
+									lsValues: [
+										lsType: 'numericValue'
+										lsKind: 'amount added'
+										numericValue: entry.amount
+										unitKind: entry.amountUnits
+									]
 								]
-							]
-					interactionsToCreate.push interaction
-				exports.saveWellToWellInteractionsInternal interactionsToCreate, user, (err, itxResponse) ->
-					if err?
-						callback err
-					else
-						parentVialsToDecrement = []
-						_.each vialsToCreate, (entry) ->
-							toDecrement =
-								barcode: entry.sourceVialBarcode
-								amountToDecrement: entry.amount
-								amountToDecrementUnits: entry.amountUnits
-								daughterVialBarcode: entry.destinationVialBarcode
-							parentVialsToDecrement.push toDecrement
-						decrementAmountsFromVials parentVialsToDecrement, user, (err, decrementVialsResponse) ->
-							if err?
-								callback err
-							else
-								#TODO see what this service should respond with
-								callback null, 'successfully created daughter vials'
+						interactionsToCreate.push interaction
+					exports.saveWellToWellInteractionsInternal interactionsToCreate, user, (err, itxResponse) ->
+						if err?
+							callback err
+						else
+							decrementAmountsFromVials vialsToCreate, parentWellContentList, user, (err, decrementVialsResponse) ->
+								if err?
+									callback err
+								else
+									#TODO see what this service should respond with
+									callback null, 'successfully created daughter vials'
 
 exports.advancedSearchContainers = (req, resp) ->
 	exports.advancedSearchContainersInternal req.body, req.query.format, (err, response) ->

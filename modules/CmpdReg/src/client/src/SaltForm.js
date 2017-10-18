@@ -309,7 +309,7 @@ $(function() {
 			  });
 
 		  } else if (this.useKetcher) {
-			  this.$('#saltFormMarvinSketch').attr('src',"/lib/ketcher-2.0.0-alpha.3/ketcher.html?api_path=/api/cmpdReg/ketcher/");
+			  this.$('#saltFormMarvinSketch').attr('src',"/lib/ketcher-2.0.0-alpha.3_custom/ketcher.html?api_path=/api/cmpdReg/ketcher/");
 			  this.$('#saltFormMarvinSketch').on('load', function () {
 				  self.ketcher = self.$('#saltFormMarvinSketch')[0].contentWindow.ketcher;
 				  if (!self.sketcherLoaded) {

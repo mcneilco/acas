@@ -77,11 +77,15 @@
                 <label class="FormLabel">Color:</label>
                 <input type="textfield" class="FormInput color" value="<%= color %>" />
             </div>
-            <div>
+            <div class="amountWrapper">
                 <label class="FormLabel">Amount:</label>
                 <input type="textfield" class="FormInput amount" value="<%= amount %>" />
                 <select class="FormInput amountUnitsCode"></select>
             </div>
+			<div class="barcodeWrapper">
+				<label class="FormLabel">Barcode:</label>
+				<input type="textfield" class="FormInput barcode" value="<%= supplierLot %>" /><br />
+			</div>
 			<div>
 				<label class="FormLabel">Supplier lot:</label>
 				<input type="textfield" class="FormInput supplierLot" value="<%= supplierLot %>" /><br />

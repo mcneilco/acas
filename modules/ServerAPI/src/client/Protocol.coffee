@@ -66,6 +66,16 @@ class window.Protocol extends BaseEntity
 
 		projectCodeValue
 
+	getSelRequiredAttr: (attr) =>
+		selRequiredAttrCodeValue = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "protocol metadata", "codeValue", attr
+		if selRequiredAttrCodeValue.get('codeValue') is undefined or selRequiredAttrCodeValue.get('codeValue') is ""
+			selRequiredAttrCodeValue.set codeValue: "false"
+			selRequiredAttrCodeValue.set codeType: "protocol"
+			selRequiredAttrCodeValue.set codeKind: "sel required attribute"
+			selRequiredAttrCodeValue.set codeOrigin: "ACAS DDICT"
+
+		selRequiredAttrCodeValue
+
 	getCurveDisplayMin: ->
 		minY = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "screening assay", "numericValue", "curve display min"
 		if (minY.get('numericValue') is undefined or minY.get('numericValue') is "") and @isNew()
@@ -235,6 +245,7 @@ class window.ProtocolBaseController extends BaseEntityController
 			@$('.bv_group_projectCode').hide()
 		else
 			@setupProjectSelect()
+		@setupSelRequiredAttrs()
 		@render()
 		@listenTo @model, 'sync', @modelSyncCallback
 		@listenTo @model, 'change', @modelChangeCallback
@@ -323,6 +334,39 @@ class window.ProtocolBaseController extends BaseEntityController
 		@attachFileListController.on 'amDirty', =>
 			@trigger 'amDirty' #need to put this after the first time @attachFileListController is rendered or else the module will always start off dirty
 			@model.trigger 'change'
+
+	setupSelRequiredAttrs: =>
+		#get codetable values for required sel attrs
+		$.ajax
+			type: 'GET'
+			url: "/api/codetables/protocol/sel required attribute"
+			dataType: 'json'
+			error: (err) ->
+				alert 'Could not get list of sel required attributes'
+			success: (json) =>
+				unless json.length == 0
+					for attr in json
+						@setupSelRequiredAttrCheckboxes attr
+
+	setupSelRequiredAttrCheckboxes: (attr) =>
+		camelCaseAttrCode = attr.code.replace /\s(.)/g, (match, group1) -> group1.toUpperCase()
+		@$('.bv_selRequiredAttributesSection').append '<div class="control-group bv_group_'+camelCaseAttrCode+'">
+		<label class="control-label" style="padding-top:2px;">'+attr.name+' Required</label><div class="controls"><input type="checkbox" name="bv_'+camelCaseAttrCode+'" class="bv_'+camelCaseAttrCode+'"/></div></div>'
+
+		currentVal = @model.getSelRequiredAttr attr.code
+		if currentVal.get('codeValue') is "true"
+			@$(".bv_#{camelCaseAttrCode}").attr 'checked', 'checked'
+		else
+			@$(".bv_#{camelCaseAttrCode}").removeAttr 'checked'
+		@$(".bv_#{camelCaseAttrCode}").on "click", =>
+			@handleSelRequiredAttrChkbxChanged attr.code, camelCaseAttrCode
+
+	handleSelRequiredAttrChkbxChanged: (attrCode, camelCaseAttrCode) =>
+		currentVal = @model.getSelRequiredAttr attrCode
+		unless currentVal.isNew()
+			currentVal.set 'ignored', true
+			currentVal = @model.getSelRequiredAttr attrCode
+		currentVal.set 'codeValue', JSON.stringify(@$(".bv_#{camelCaseAttrCode}").is(":checked"))
 
 	handleDeleteStatusChosen: =>
 		@$(".bv_deleteButtons").removeClass "hide"

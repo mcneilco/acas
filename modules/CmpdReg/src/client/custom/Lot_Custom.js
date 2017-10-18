@@ -146,6 +146,9 @@ $(function() {
 					errors.push({'attribute': 'boilingPoint', 'message':  "BP must be a number if provided"});
 				}
 			}
+			if (attr.project != null && typeof(attr.project) == 'undefined'){
+				errors.push({'attribute': 'project', 'message':  "Project must be provided"});
+			}
 			if (errors.length > 0) {return errors;}
 		}
 	});
@@ -249,11 +252,19 @@ $(function() {
                 this.$('.synthesisDate').datepicker( "option", "dateFormat", "mm/dd/yy" );
                 this.$('.editAnalyticalFiles').hide();
                 this.$('.analyticalFiles').html('Add analytical files by editing lot after it is saved');
+            } else {
+	            if (window.configuration.metaLot.showLotInventory) {
+		            this.$('.amountWrapper').hide();
+		            this.$('.barcodeWrapper').hide();
+	            }
             }
 			return this;
 		},
         
 		updateModel: function() {
+			if (this.projectCodeController.collection.length == 0){
+				alert('System Configuration Error: There must be at least one project to proceed')
+			}
 			this.clearValidationErrors();
             
             if (this.model.isNew() ) {
@@ -272,6 +283,7 @@ $(function() {
                     comments: '',
                     color: '',
                     amount: null,
+                    barcode: null,
                     purity: null,
                     physicalState: null,
                     purityOperator: null,
@@ -329,6 +341,7 @@ $(function() {
                     amount: 
                         (jQuery.trim(this.$('.amount').val())=='') ? null :
                         parseFloat(jQuery.trim(this.$('.amount').val())),
+                    barcode: (jQuery.trim(this.$('.barcode').val())=='') ? null : jQuery.trim(this.$('.barcode').val()),
                     retain:
                         (jQuery.trim(this.$('.retain').val())=='') ? null :
                         parseFloat(jQuery.trim(this.$('.retain').val())),

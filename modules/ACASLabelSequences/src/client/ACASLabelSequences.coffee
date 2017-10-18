@@ -307,12 +307,15 @@ class window.ACASLabelSequenceController extends AbstractFormController
 		@$('.bv_saving').hide()
 
 	modelSaveCallback: (method, model) =>
-		@$('.bv_save').show()
+		@$('.bv_save').hide()
+		@$('.bv_cancel').hide()
 		@$('.bv_save').attr('disabled', 'disabled')
 		unless @$('.bv_saveFailed').is(":visible")
 			@$('.bv_saveComplete').show()
 			@$('.bv_saving').hide()
-		@setupACASLabelSequenceRoleListController()
+		@$('input').prop 'disabled', true
+		@$('select').prop 'disabled', true
+		@$('.bv_addLabelSequenceRoleButton').hide()
 		@render()
 		@trigger 'amClean'
 
@@ -424,6 +427,9 @@ class window.ACASLabelSequenceController extends AbstractFormController
 						@model.trigger 'saveFailed'
 					else
 						@modelSaveCallback
+				error: (err, response) =>
+					alert response.responseText
+					@model.trigger 'saveFailed'
 
 		else
 			@model.save null,
@@ -432,7 +438,8 @@ class window.ACASLabelSequenceController extends AbstractFormController
 						@model.trigger 'saveFailed'
 					else
 						@modelSaveCallback
-				error: (err) =>
+				error: (err, response) =>
+					alert response.responseText
 					@model.trigger 'saveFailed'
 
 	validationError: =>
