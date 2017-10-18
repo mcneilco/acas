@@ -267,7 +267,7 @@ client.include.project=FALSE
 # config for whether project attribute is saved as part of an experiment
 client.save.project=TRUE
 client.protocol.save.project=true
-client.path=
+client.path=http://localhost:3000
 client.fullpath=http://${client.host}:${client.port}
 
 # Query tool settings
@@ -340,6 +340,7 @@ server.service.external.inventory.database.username=
 server.service.external.inventory.database.password=
 
 client.compoundInventory.enforceUppercaseBarcodes=false
+client.compoundInventory.rootLocationLabel=COMPANY
 
 ## options for auth. strategy are: properties, database, ldap
 server.security.authstrategy=database
