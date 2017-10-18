@@ -3538,6 +3538,7 @@ exports.getContainerLocationTreeInternal = (callback) ->
 					id: rawLocation.codeName
 					parent: parent
 					text: rawLocation.labelText
+					breadcrumb: rawLocation.labelTextBreadcrumb
 				formattedTree.push location
 			callback null, formattedTree
 		else
