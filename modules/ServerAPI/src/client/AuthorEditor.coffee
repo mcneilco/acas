@@ -1,5 +1,5 @@
 class window.AuthorRole extends Backbone.Model
-		
+
 class window.AuthorRoleList extends Backbone.Collection
 	model: AuthorRole
 
@@ -65,7 +65,7 @@ class window.Author extends Backbone.Model
 			return errors
 		else
 			return null
-			
+
 	getSystemRoles: =>
 		systemRoles = _.filter @get('authorRoles'), (role) =>
 			if role.roleEntry?.lsType?
@@ -92,7 +92,7 @@ class window.Author extends Backbone.Model
 
 class window.AuthorList extends Backbone.Collection
 	model: Author
-	
+
 class window.AuthorRoleController extends AbstractFormController
 	template: _.template($("#AuthorRoleView").html())
 
@@ -112,7 +112,7 @@ class window.AuthorRoleController extends AbstractFormController
 			@roleKind = @options.roleKind
 		else
 			@roleKind = null
-			
+
 	render: =>
 		$(@el).empty()
 		$(@el).html @template()
@@ -280,7 +280,7 @@ class window.AuthorRoleListController extends Backbone.View
 class window.AuthorEditorController extends AbstractFormController
 	template: _.template($("#AuthorEditorView").html())
 	moduleLaunchName: "author"
-	
+
 	events: ->
 		"keyup .bv_firstName": "attributeChanged"
 		"keyup .bv_lastName": "attributeChanged"
@@ -381,6 +381,7 @@ class window.AuthorEditorController extends AbstractFormController
 			@$('.bv_userName').attr 'disabled', 'disabled'
 			@$('.bv_save').html("Update")
 			@$('.bv_newEntity').show()
+			@$('.bv_cancel').hide()
 		@$('.bv_save').attr('disabled', 'disabled')
 		@$('.bv_cancel').attr('disabled','disabled')
 
@@ -467,7 +468,7 @@ class window.AuthorEditorController extends AbstractFormController
 			@$('.bv_saveComplete').hide()
 			@$('.bv_saveFailed').hide()
 			@checkFormValid()
-		
+
 
 	updateModel: =>
 		@model.set 'firstName', UtilityFunctions::getTrimmedInput @$('.bv_firstName')
@@ -500,6 +501,7 @@ class window.AuthorEditorController extends AbstractFormController
 			@$('.bv_saveComplete').html "Update Complete"
 		@$('.bv_save').attr('disabled', 'disabled')
 		@$('.bv_saving').show()
+		@$('.bv_cancel').hide()
 		console.log "handleSaveClicked"
 		console.log JSON.stringify @model
 		@model.save null,
