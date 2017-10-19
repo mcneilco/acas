@@ -3510,16 +3510,18 @@ exports.getParentVialByDaughterVialBarcodeInternal = (daughterVialBarcode, callb
 				callback null, responseStub
 
 exports.getContainerLocationTree = (req, resp) ->
-	exports.getContainerLocationTreeInternal (err, response) ->
+	exports.getContainerLocationTreeInternal req.query.withContainers, (err, response) ->
 		if err?
 			resp.statusCode = 500
 			resp.json err
 		else
 			resp.json response
 
-exports.getContainerLocationTreeInternal = (callback) ->
+exports.getContainerLocationTreeInternal = (withContainers, callback) ->
 	rootLabel = config.all.client.compoundInventory.rootLocationLabel
 	baseurl = config.all.client.service.persistence.fullpath+"containers/getLocationTreeByRootLabel?rootLabel=#{rootLabel}"
+	if withContainers?
+		baseurl+= "&withContainers=#{withContainers}"
 	request(
 		method: 'GET'
 		url: baseurl
