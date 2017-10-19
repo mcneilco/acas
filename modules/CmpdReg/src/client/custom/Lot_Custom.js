@@ -156,6 +156,9 @@ $(function() {
 					errors.push({'attribute': 'boilingPoint', 'message':  "BP must be a number if provided"});
 				}
 			}
+			if (attr.project != null && typeof(attr.project) == 'undefined'){
+				errors.push({'attribute': 'project', 'message':  "Project must be provided"});
+			}
 			if (errors.length > 0) {return errors;}
 		}
 	});
@@ -269,6 +272,9 @@ $(function() {
 		},
         
 		updateModel: function() {
+			if (this.projectCodeController.collection.length == 0){
+				alert('System Configuration Error: There must be at least one project to proceed')
+			}
 			this.clearValidationErrors();
             
             if (this.model.isNew() ) {

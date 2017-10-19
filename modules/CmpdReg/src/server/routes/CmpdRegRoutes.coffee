@@ -6,7 +6,7 @@ exports.setupAPIRoutes = (app) ->
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/cmpdReg', loginRoutes.ensureAuthenticated, exports.cmpdRegIndex
 	app.get '/marvin4js-license.cxl', loginRoutes.ensureAuthenticated, exports.getMarvinJSLicense
-	app.get '/cmpdReg/scientists', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
+	app.get '/cmpdReg/scientists', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
 	app.get '/cmpdReg/parentAliasKinds', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
 	app.get '/cmpdReg/units', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
 	app.get '/cmpdReg/solutionUnits', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
@@ -126,6 +126,14 @@ exports.getBasicCmpdReg = (req, resp) ->
 	console.log req.originalUrl
 	endOfUrl = (req.originalUrl).replace /\/cmpdreg\//, ""
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/" +endOfUrl
+	console.log cmpdRegCall
+	req.pipe(request(cmpdRegCall)).pipe(resp)
+
+exports.getAPICmpdReg = (req, resp) ->
+	console.log 'in getAPICmpdReg'
+	console.log req.originalUrl
+	endOfUrl = (req.originalUrl).replace /\/cmpdreg\//, ""
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/api/v1/" +endOfUrl
 	console.log cmpdRegCall
 	req.pipe(request(cmpdRegCall)).pipe(resp)
 

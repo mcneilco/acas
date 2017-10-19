@@ -168,9 +168,9 @@ div {
 /****** FLOATING PANELS ******/
 /****** div#upload-app LOCATED IN MULTIPICKER CSS ******/
 .MetaLotView .floatingPanel, .SearchResultsView .floatingPanel {
-    position: absolute;
-    left: 20px;
-    bottom: 140px;
+    position: fixed;
+    left: 220px;
+    bottom: 60px;
     padding: 5px;
     border: 12px solid #D5D8DD;
     background-color: #EEE;
@@ -182,8 +182,9 @@ div {
         box-shadow: 3px 3px 4px #a7a9ad;*/
 }
 .MetaLotView div.floatingPanel.NewLotSuccessView {
-    position: absolute;
-    left: 20px;
+    position: fixed;
+    bottom: 85px;
+    left: 220px;
     padding: 5px;
     cursor: hand;
 }
@@ -445,9 +446,9 @@ div {
 /****** ERROR NOTIFICATION ******/
 
 .ErrrorNotificationListView {
-    position: absolute;
-    bottom: -120px;
-    left: 15px;
+    position: fixed;
+    bottom: 60px;
+    left: 140px;
     z-index: 100;
     width: 400px;
     margin-left: 150px;

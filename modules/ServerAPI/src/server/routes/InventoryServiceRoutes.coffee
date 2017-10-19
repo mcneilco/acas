@@ -2,6 +2,7 @@ serverUtilityFunctions = require './ServerUtilityFunctions.js'
 csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
 _ = require 'underscore'
 preferredEntityCodeService = require '../routes/PreferredEntityCodeService.js'
+codeTableRoutes = require './CodeTableServiceRoutes.js'
 config = require '../conf/compiled/conf.js'
 RUN_CUSTOM_FLAG = "0"
 fs = require('fs')
@@ -65,6 +66,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/createDaughterVials', exports.createDaughterVials
 	app.post '/api/advancedSearchContainers', exports.advancedSearchContainers
 	app.get '/api/getParentVialByDaughterVialBarcode', exports.getParentVialByDaughterVialBarcode
+	app.get '/api/getContainerLocationTree', exports.getContainerLocationTree
 
 
 exports.setupRoutes = (app, loginRoutes) ->
@@ -121,6 +123,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/createDaughterVials', loginRoutes.ensureAuthenticated, exports.createDaughterVials
 	app.post '/api/advancedSearchContainers', loginRoutes.ensureAuthenticated, exports.advancedSearchContainers
 	app.get '/api/getParentVialByDaughterVialBarcode', loginRoutes.ensureAuthenticated, exports.getParentVialByDaughterVialBarcode
+	app.get '/api/getContainerLocationTree', loginRoutes.ensureAuthenticated, exports.getContainerLocationTree
 
 
 exports.getContainersInLocation = (req, resp) ->
@@ -2664,34 +2667,34 @@ exports.validateParentVialsFromCSVInternal = (csvFileName, dryRun, callback) ->
 			createParentVialFileEntryArray csvFileName, (err, fileEntryArray) ->
 				if err?
 					callback err
-				summaryInfo = prepareSummaryInfo fileEntryArray
-				checkRequiredAttributes fileEntryArray, (requiredAttributeErrors) ->
-					if requiredAttributeErrors?
-						validationResponse.errorMessages.push requiredAttributeErrors...
-					checkDataTypeErrors fileEntryArray, (dataTypeErrors) ->
-						if dataTypeErrors?
-							validationResponse.errorMessages.push dataTypeErrors...
-						checkBatchCodesExist fileEntryArray, (missingBatchCodeErrors) ->
-							if missingBatchCodeErrors? and missingBatchCodeErrors.length > 0
-								error =
-									errorLevel: 'error'
-									message: "The following batches do not exist: "+ missingBatchCodeErrors.join ', '
-								validationResponse.errorMessages.push error
-							barcodes = _.pluck fileEntryArray, 'destinationVialBarcode'
-							checkBarcodesExist barcodes, (existingBarcodes, newBarcodes) ->
-								if existingBarcodes? and existingBarcodes.length > 0
+				prepareSummaryInfo fileEntryArray, (summaryInfo) ->
+					checkRequiredAttributes fileEntryArray, (requiredAttributeErrors) ->
+						if requiredAttributeErrors?
+							validationResponse.errorMessages.push requiredAttributeErrors...
+						checkDataTypeErrors fileEntryArray, (dataTypeErrors) ->
+							if dataTypeErrors?
+								validationResponse.errorMessages.push dataTypeErrors...
+							checkBatchCodesExist fileEntryArray, (missingBatchCodeErrors) ->
+								if missingBatchCodeErrors? and missingBatchCodeErrors.length > 0
 									error =
 										errorLevel: 'error'
-										message: "The following barcodes already exist: " + existingBarcodes.join ', '
+										message: "The following batches do not exist: "+ missingBatchCodeErrors.join ', '
 									validationResponse.errorMessages.push error
-								errors = _.where validationResponse.errorMessages, {errorLevel: 'error'}
-								warnings = _.where validationResponse.errorMessages, {errorLevel: 'warning'}
-								if errors.length > 0
-									validationResponse.hasError = true
-								if warnings.length > 0
-									validationResponse.hasWarning = true
-								validationResponse.results.htmlSummary = prepareValidationHTMLSummary validationResponse.hasError, validationResponse.hasWarning, validationResponse.errorMessages, summaryInfo
-								callback validationResponse
+								barcodes = _.pluck fileEntryArray, 'destinationVialBarcode'
+								checkBarcodesExist barcodes, (existingBarcodes, newBarcodes) ->
+									if existingBarcodes? and existingBarcodes.length > 0
+										error =
+											errorLevel: 'error'
+											message: "The following barcodes already exist: " + existingBarcodes.join ', '
+										validationResponse.errorMessages.push error
+									errors = _.where validationResponse.errorMessages, {errorLevel: 'error'}
+									warnings = _.where validationResponse.errorMessages, {errorLevel: 'warning'}
+									if errors.length > 0
+										validationResponse.hasError = true
+									if warnings.length > 0
+										validationResponse.hasWarning = true
+									validationResponse.results.htmlSummary = prepareValidationHTMLSummary validationResponse.hasError, validationResponse.hasWarning, validationResponse.errorMessages, summaryInfo
+									callback validationResponse
 		else
 			error =
 				errorLevel: 'error'
@@ -2716,52 +2719,53 @@ exports.createParentVialsFromCSVInternal = (csvFileName, dryRun, user, callback)
 			createParentVialFileEntryArray csvFileName, (err, fileEntryArray) ->
 				if err?
 					callback err
-				summaryInfo = prepareSummaryInfo fileEntryArray
-				exports.getContainerTubeDefinitionCode (definitionCode) ->
-					if !definitionCode?
-						error =
-							errorLevel: 'error'
-							message: 'Could not find definition container for tube'
-						createResponse.errorMessages.push error
-					tubesToCreate = []
-					_.each fileEntryArray, (entry) ->
-						tube =
-							barcode: entry.destinationVialBarcode
-							definition: definitionCode
-							recordedBy: user
-							createdUser: entry.preparedBy
-							createdDate: entry.createdDate
-							physicalState: entry.physicalState
-							wells: [
-								wellName: "A001"
-								batchCode: entry.batchCode
-								amount: entry.amount
-								amountUnits: entry.amountUnits
-								physicalState: entry.physicalState
-								recordedBy: user
-								recordedDate: (new Date()).getTime()
-							]
-						if entry.physicalState == 'solution'
-							tube.wells[0].batchConcentration = entry.concentration
-							tube.wells[0].batchConcUnits = entry.concUnits
-							tube.wells[0].solventCode = entry.solvent
-						tubesToCreate.push tube
-					console.log JSON.stringify tubesToCreate
-					exports.createTubesInternal tubesToCreate, 0, (json, statusCode) ->
-						console.log statusCode
-						console.log json
-						if statusCode != 200
-							createResponse.hasError = true
-							console.error json
-							error =
-								errorLevel: 'error'
-								message: json
-							createResponse.errorMessages.push error
-						else
-							createResponse.hasError = false
-							createResponse.commit = true
-						createResponse.results.htmlSummary = prepareCreateVialsHTMLSummary createResponse.hasError, createResponse.hasWarning, createResponse.errorMessages, summaryInfo
-						callback createResponse
+				dealiasPhysicalStates fileEntryArray, (fileEntryArray) ->
+					prepareSummaryInfo fileEntryArray, (summaryInfo) ->
+						exports.getContainerTubeDefinitionCode (definitionCode) ->
+							if !definitionCode?
+								error =
+									errorLevel: 'error'
+									message: 'Could not find definition container for tube'
+								createResponse.errorMessages.push error
+							tubesToCreate = []
+							_.each fileEntryArray, (entry) ->
+								tube =
+									barcode: entry.destinationVialBarcode
+									definition: definitionCode
+									recordedBy: user
+									createdUser: entry.preparedBy
+									createdDate: entry.createdDate
+									physicalState: entry.physicalState
+									wells: [
+										wellName: "A001"
+										batchCode: entry.batchCode
+										amount: entry.amount
+										amountUnits: entry.amountUnits
+										physicalState: entry.physicalState
+										recordedBy: user
+										recordedDate: (new Date()).getTime()
+									]
+								if entry.physicalState == 'solution'
+									tube.wells[0].batchConcentration = entry.concentration
+									tube.wells[0].batchConcUnits = entry.concUnits
+									tube.wells[0].solventCode = entry.solvent
+								tubesToCreate.push tube
+							console.log JSON.stringify tubesToCreate
+							exports.createTubesInternal tubesToCreate, 0, (json, statusCode) ->
+								console.log statusCode
+								console.log json
+								if statusCode != 200
+									createResponse.hasError = true
+									console.error json
+									error =
+										errorLevel: 'error'
+										message: json
+									createResponse.errorMessages.push error
+								else
+									createResponse.hasError = false
+									createResponse.commit = true
+								createResponse.results.htmlSummary = prepareCreateVialsHTMLSummary createResponse.hasError, createResponse.hasWarning, createResponse.errorMessages, summaryInfo
+								callback createResponse
 		else
 			error =
 				errorLevel: 'error'
@@ -2821,20 +2825,20 @@ exports.validateDaughterVialsFromCSVInternal = (csvFileName, dryRun, callback) -
 			createDaughterVialFileEntryArray csvFileName, (err, fileEntryArray) ->
 				if err?
 					callback err
-				summaryInfo = prepareSummaryInfo fileEntryArray
-				exports.validateDaughterVialsInternal fileEntryArray, (err, errorsAndWarnings) ->
-					if err?
-						callback err
-					else
-						validationResponse.errorMessages.push errorsAndWarnings...
-						errors = _.where validationResponse.errorMessages, {errorLevel: 'error'}
-						warnings = _.where validationResponse.errorMessages, {errorLevel: 'warning'}
-						if errors.length > 0
-							validationResponse.hasError = true
-						if warnings.length > 0
-							validationResponse.hasWarning = true
-						validationResponse.results.htmlSummary = prepareValidationHTMLSummary validationResponse.hasError, validationResponse.hasWarning, validationResponse.errorMessages, summaryInfo
-						callback null, validationResponse
+				prepareSummaryInfo fileEntryArray, (summaryInfo) ->
+					exports.validateDaughterVialsInternal fileEntryArray, (err, errorsAndWarnings) ->
+						if err?
+							callback err
+						else
+							validationResponse.errorMessages.push errorsAndWarnings...
+							errors = _.where validationResponse.errorMessages, {errorLevel: 'error'}
+							warnings = _.where validationResponse.errorMessages, {errorLevel: 'warning'}
+							if errors.length > 0
+								validationResponse.hasError = true
+							if warnings.length > 0
+								validationResponse.hasWarning = true
+							validationResponse.results.htmlSummary = prepareValidationHTMLSummary validationResponse.hasError, validationResponse.hasWarning, validationResponse.errorMessages, summaryInfo
+							callback null, validationResponse
 		else
 			error =
 				errorLevel: 'error'
@@ -2865,18 +2869,19 @@ exports.createDaughterVialsFromCSVInternal = (csvFileName, dryRun, user, callbac
 			createDaughterVialFileEntryArray csvFileName, (err, fileEntryArray) ->
 				if err?
 					callback err
-				summaryInfo = prepareSummaryInfo fileEntryArray
-				exports.createDaughterVialsInternal fileEntryArray, user, (err, response) ->
-					if err?
-						error =
-							errorLevel: 'error'
-							message: err
-						createResponse.errorMessages.push error
-					else
-						createResponse.hasError = false
-						createResponse.commit = true
-					createResponse.results.htmlSummary = prepareCreateVialsHTMLSummary createResponse.hasError, createResponse.hasWarning, createResponse.errorMessages,  summaryInfo
-					callback null, createResponse
+				dealiasPhysicalStates fileEntryArray, (fileEntryArray) ->
+					prepareSummaryInfo fileEntryArray, (summaryInfo) ->
+						exports.createDaughterVialsInternal fileEntryArray, user, (err, response) ->
+							if err?
+								error =
+									errorLevel: 'error'
+									message: err
+								createResponse.errorMessages.push error
+							else
+								createResponse.hasError = false
+								createResponse.commit = true
+							createResponse.results.htmlSummary = prepareCreateVialsHTMLSummary createResponse.hasError, createResponse.hasWarning, createResponse.errorMessages,  summaryInfo
+							callback null, createResponse
 
 
 
@@ -2902,6 +2907,7 @@ createParentVialFileEntryArray = (csvFileName, callback) =>
 	fs.createReadStream(path + fileName)
 	.pipe(parse({delimiter: ','}))
 	.on('data', (csvrow) ->
+		rowCount++
 		fileEntry =
 			batchCode: csvrow[PARENT_COMPOUND_LOT_INDEX].trim()
 			destinationVialBarcode: csvrow[PARENT_DESTINATION_VIAL_INDEX].trim()
@@ -2914,9 +2920,8 @@ createParentVialFileEntryArray = (csvFileName, callback) =>
 			concUnits:csvrow[PARENT_CONC_UNITS_INDEX].trim()
 			solvent: csvrow[PARENT_SOLVENT_INDEX].trim()
 			rowNumber: rowCount
-		if rowCount? and rowCount > 0
+		if rowCount? and rowCount > 1
 			csvFileEntries.push(fileEntry)
-		rowCount++
 	)
 	.on('end', () ->
 		return callback null, csvFileEntries
@@ -2930,6 +2935,7 @@ createDaughterVialFileEntryArray = (csvFileName, callback) =>
 	fs.createReadStream(path + fileName)
 	.pipe(parse({delimiter: ','}))
 	.on('data', (csvrow) ->
+		rowCount++
 		fileEntry =
 			sourceVialBarcode: csvrow[DAUGHTER_SOURCE_VIAL_INDEX].trim()
 			destinationVialBarcode: csvrow[DAUGHTER_DESTINATION_VIAL_INDEX].trim()
@@ -2942,27 +2948,33 @@ createDaughterVialFileEntryArray = (csvFileName, callback) =>
 			concUnits: csvrow[DAUGHTER_CONC_UNITS_INDEX].trim()
 			solvent: csvrow[DAUGHTER_SOLVENT_INDEX].trim()
 			rowNumber: rowCount
-		if rowCount? and rowCount > 0
+		if rowCount? and rowCount > 1
 			csvFileEntries.push(fileEntry)
-		rowCount++
 	)
 	.on('end', () ->
 		return callback null, csvFileEntries
 	)
 
+dealiasPhysicalStates = (fileEntryArray, callback) ->
+	codeTableRoutes.getCodeTableValuesInternal 'container status', 'physical state', (configuredPhysicalStates) ->
+		cleanedFileEntryArray = _.map fileEntryArray, (entry) ->
+			foundPhysicalState = _.findWhere configuredPhysicalStates, {code: entry.physicalState}
+			if !foundPhysicalState?
+				foundPhysicalState = _.findWhere configuredPhysicalStates, {name: entry.physicalState}
+			if foundPhysicalState?
+				entry.physicalState = foundPhysicalState.code
+			entry
+		callback cleanedFileEntryArray
+
 checkRequiredAttributes = (fileEntryArray, callback) ->
 	requiredAttributeErrors = []
 	_.each fileEntryArray, (entry) ->
 		missingAttributes = []
-		for attr in ['batchCode', 'destinationVialBarcode', 'sourceVialBarcode', 'amount', 'amountUnits', 'preparedBy', 'preparedDate', 'physicalState', 'concentration', 'concUnits', 'solvent']
+		for attr in ['batchCode', 'destinationVialBarcode', 'sourceVialBarcode','preparedBy', 'preparedDate', 'physicalState']
+			#not strictly required:  'amount', 'amountUnits', 'concentration', 'concUnits', 'solvent',
 			if entry[attr]?
-				if attr in ['concentration', 'concUnits', 'solvent']
-					if entry.physicalState == 'solution'
-						if entry[attr] == ""
-							missingAttributes.push attr
-				else
-					if entry[attr] == ""
-						missingAttributes.push attr
+				if entry[attr] == ""
+					missingAttributes.push attr
 		if missingAttributes.length > 0
 			error =
 				errorLevel: 'error'
@@ -2971,19 +2983,50 @@ checkRequiredAttributes = (fileEntryArray, callback) ->
 	callback requiredAttributeErrors
 
 checkDataTypeErrors = (fileEntryArray, callback) ->
-	dataTypeErrors = []
-	_.each fileEntryArray, (entry) ->
-		if entry.amount? and entry.amount.length > 0 and isNaN(entry.amount)
-			error =
-				errorLevel: 'error'
-				message: "Row #{entry.rowNumber} contains the invalid amount: #{entry.amount}"
-			dataTypeErrors.push error
-		if entry.concentration? and entry.concentration.length > 0 and isNaN(entry.concentration)
-			error =
-				errorLevel: 'error'
-				message: "Row #{entry.rowNumber} contains the invalid concentration: #{entry.concentration}"
-			dataTypeErrors.push error
-	callback dataTypeErrors
+	codeTableRoutes.getCodeTableValuesInternal 'container status', 'physical state', (configuredPhysicalStates) ->
+		dataTypeErrors = []
+		_.each fileEntryArray, (entry) ->
+			foundPhysicalState = _.findWhere configuredPhysicalStates, {code: entry.physicalState}
+			if !foundPhysicalState?
+				foundPhysicalState = _.findWhere configuredPhysicalStates, {name: entry.physicalState}
+			if !foundPhysicalState?
+				configuredPhysicalStateCodes = _.pluck configuredPhysicalStates, 'code'
+				configuredPhysicalStateCodeString = configuredPhysicalStateCodes.join(', ')
+				error =
+					errorLevel: 'error'
+					message: "Row #{entry.rowNumber} has a physical state that was not recognized: #{entry.physicalState}. The available options are: #{configuredPhysicalStateCodeString}"
+				dataTypeErrors.push error
+			else
+				entry.physicalState = foundPhysicalState.code
+			if entry.amount? and !isNaN(entry.amount)
+				if !entry.amountUnits? or entry.amountUnits.length < 1
+					error =
+						errorLevel: 'error'
+						message: "Row #{entry.rowNumber} has an amount but no units"
+					dataTypeErrors.push error
+			if entry.concentration? and !isNaN(entry.concentration)
+				if entry.concUnits.length < 1
+					error =
+						errorLevel: 'error'
+						message: "Row #{entry.rowNumber} has a concentration but no units. Concentration units must be mM"
+					dataTypeErrors.push error
+				else if entry.concUnits != 'mM'
+					error =
+						errorLevel: 'error'
+						message: "Row #{entry.rowNumber} must use concentration units of mM"
+					dataTypeErrors.push error
+			if entry.physicalState == 'liquid' or entry.physicalState == 'solution'
+				if entry.amountUnits != 'uL'
+					error =
+						errorLevel: 'error'
+						message: "Row #{entry.rowNumber} uses physical state \"#{entry.physicalState}\" and so must use units uL"
+					dataTypeErrors.push error
+			else if entry.amountUnits.length > 0 and entry.amountUnits != 'mg' and foundPhysicalState?
+				error =
+					errorLevel: 'error'
+					message: "Row #{entry.rowNumber} uses physical state \"#{entry.physicalState}\" and so must use amount units mg"
+				dataTypeErrors.push error
+		callback dataTypeErrors
 
 checkBatchCodesExist = (fileEntryArray, callback) ->
 	requests = []
@@ -2994,7 +3037,7 @@ checkBatchCodesExist = (fileEntryArray, callback) ->
 	csUtilities.getPreferredBatchIds requests, (batchIdResponse) ->
 		missingBatchCodes = []
 		_.each batchIdResponse, (batchCodeRequest) ->
-			if batchCodeRequest.preferredName.length < 1
+			if batchCodeRequest.preferredName? and batchCodeRequest.preferredName.length < 1
 				missingBatchCodes.push batchCodeRequest.requestName
 		callback missingBatchCodes
 
@@ -3017,6 +3060,10 @@ exports.checkParentWellContent = (fileEntryArray, callback) ->
 	#concentration and concentration units match if solution
 	errorMessages = []
 	vialBarcodes = _.pluck fileEntryArray, 'sourceVialBarcode'
+	strictMatch = config.all.client.compoundInventory.daughterVials.strictMatchPhysicalState
+	flexibleErrorLevel = 'warning'
+	if strictMatch? and strictMatch
+		flexibleErrorLevel = 'error'
 	exports.getWellContentByContainerLabelsInternal vialBarcodes, 'container', 'tube', 'barcode', 'barcode', (wellContentList, statusCode) ->
 		_.each fileEntryArray, (fileEntry) ->
 			parentVialAndWellContent = _.findWhere wellContentList, {label: fileEntry.sourceVialBarcode}
@@ -3024,17 +3071,17 @@ exports.checkParentWellContent = (fileEntryArray, callback) ->
 				parentWellContent = parentVialAndWellContent.wellContent[0]
 				if parentWellContent.physicalState != fileEntry.physicalState
 					error =
-						errorLevel: 'error'
+						errorLevel: flexibleErrorLevel
 						message: "Daughter vial #{fileEntry.destinationVialBarcode} must be of the same physical state as parent vial #{fileEntry.sourceVialBarcode}, which is #{parentWellContent.physicalState}."
 					errorMessages.push error
 				if fileEntry.physicalState == 'solution' and (Math.abs(fileEntry.concentration - parentWellContent.batchConcentration) > 0.0001 or fileEntry.concUnits != parentWellContent.batchConcUnits)
 					error =
-						errorLevel: 'error'
+						errorLevel: flexibleErrorLevel
 						message: "Daughter vial #{fileEntry.destinationVialBarcode} must have the same concentration as parent vial #{fileEntry.sourceVialBarcode}, which is #{parentWellContent.batchConcentration} #{parentWellContent.batchConcUnits}."
 					errorMessages.push error
 				if parentWellContent.amountUnits != fileEntry.amountUnits
 					error =
-						errorLevel: 'error'
+						errorLevel: flexibleErrorLevel
 						message: "Daughter vial #{fileEntry.destinationVialBarcode} must use the same amount units as parent vial #{fileEntry.sourceVialBarcode}, which is in #{parentWellContent.amountUnits}."
 					errorMessages.push error
 				else if parentWellContent.amount < fileEntry.amount
@@ -3076,8 +3123,12 @@ prepareValidationHTMLSummary = (hasError, hasWarning, errorMessages, summaryInfo
 	warningsBlock += "</ul>"
 	htmlSummaryInfo = "<h4>Summary</h4><p>Information:</p>\n                               <ul>\n                               "
 	htmlSummaryInfo += "<li>Total Vials: #{summaryInfo.totalNumberOfVials}</li>"
-	htmlSummaryInfo += "<li>Solid Vials: #{summaryInfo.numSolidVials}</li>"
-	htmlSummaryInfo += "<li>Liquid Vials: #{summaryInfo.numLiquidVials}</li>"
+	console.log summaryInfo
+	stateNames = Object.keys(summaryInfo.totalsByStates)
+	stateNames.sort()
+	console.log stateNames
+	for stateName in stateNames
+		htmlSummaryInfo += "<li>#{stateName} Vials: #{summaryInfo.totalsByStates[stateName]}</li>"
 	if summaryInfo.totalBatchCodes?
 		htmlSummaryInfo += "<li>Unique Corporate Batch ID's: #{summaryInfo.totalBatchCodes}</li>"
 	htmlSummaryInfo += "\n                               </ul>"
@@ -3098,8 +3149,11 @@ prepareCreateVialsHTMLSummary = (hasError, hasWarning, errorMessages, summaryInf
 	errorHeader = "<p>An error occurred during uploading. If the messages below are unhelpful, you will need to contact your system administrator.</p>"
 	htmlSummaryInfo = "<h4>Summary</h4><p>Information:</p>\n                               <ul>\n                               "
 	htmlSummaryInfo += "<li>Total Vials: #{summaryInfo.totalNumberOfVials}</li>"
-	htmlSummaryInfo += "<li>Solid Vials: #{summaryInfo.numSolidVials}</li>"
-	htmlSummaryInfo += "<li>Liquid Vials: #{summaryInfo.numLiquidVials}</li>"
+	stateNames = Object.keys(summaryInfo.totalsByStates)
+	stateNames.sort()
+	console.log stateNames
+	for stateName in stateNames
+		htmlSummaryInfo += "<li>#{stateName} Vials: #{summaryInfo.totalsByStates[stateName]}</li>"
 	if summaryInfo.totalBatchCodes?
 		htmlSummaryInfo += "<li>Unique Corporate Batch ID's: #{summaryInfo.totalBatchCodes}</li>"
 	htmlSummaryInfo += "\n                               </ul>"
@@ -3131,44 +3185,56 @@ decrementAmountsFromVials = (toDecrementList, parentWellContentList, user, callb
 	wellsToUpdate = []
 	changes = []
 	_.each toDecrementList, (toDecrement) ->
-		oldContainerWellContent = _.findWhere parentWellContentList, {label: toDecrement.barcode}
+		oldContainerWellContent = _.findWhere parentWellContentList, {label: toDecrement.sourceVialBarcode}
 		oldWellContent = oldContainerWellContent.wellContent[0]
-		wellCode = oldWellContent.containerCodeName
-		newWellContent =
-			containerCodeName: wellCode
-			amount: oldWellContent.amount - toDecrement.amountToDecrement
-			recordedBy: user
-		wellsToUpdate.push newWellContent
-		change =
-			codeName: oldContainerWellContent.containerCodeName
-			recordedBy: user
-			recordedDate: new Date().getTime()
-			entryType: 'UPDATE'
-			entry: "Amount #{toDecrement.amountToDecrement} #{toDecrement.amountToDecrementUnits} taken out to create daughter vial #{toDecrement.daughterVialBarcode}"
-		changes.push change
+		#Check that the amount is valid to decrement.
+		differentState = (oldWellContent.physicalState != toDecrement.physicalState)
+		concentrationMismatch = (toDecrement.physicalState == 'solution' and (Math.abs(toDecrement.concentration - oldWellContent.batchConcentration) > 0.0001 or toDecrement.concUnits != oldWellContent.batchConcUnits))
+		unitMismatch = (oldWellContent.amountUnits != toDecrement.amountUnits)
+		if !differentState and !concentrationMismatch and !unitMismatch
+			wellCode = oldWellContent.containerCodeName
+			newWellContent =
+				containerCodeName: wellCode
+				amount: oldWellContent.amount - toDecrement.amount
+				recordedBy: user
+			wellsToUpdate.push newWellContent
+			change =
+				codeName: oldContainerWellContent.containerCodeName
+				recordedBy: user
+				recordedDate: new Date().getTime()
+				entryType: 'UPDATE'
+				entry: "Amount #{toDecrement.amount} #{toDecrement.amountUnits} taken out to create daughter vial #{toDecrement.destinationVialBarcode}"
+			changes.push change
 	console.log wellsToUpdate
-	exports.updateWellContentInternal wellsToUpdate, true, false, (updateWellsResponse, updateWellsStatusCode) ->
-		console.log updateWellsStatusCode
-		if updateWellsStatusCode != 204
-			callback "Error: #{updateWellsResponse}"
-		else
-			exports.containerLogsInternal changes, 0, (logs, statusCode) ->
-				if statusCode != 200
-					callback logs
-				else
-					callback null, updateWellsResponse
+	if wellsToUpdate.length > 0
+		exports.updateWellContentInternal wellsToUpdate, true, false, (updateWellsResponse, updateWellsStatusCode) ->
+			console.log updateWellsStatusCode
+			if updateWellsStatusCode != 204
+				callback "Error: #{updateWellsResponse}"
+			else
+				exports.containerLogsInternal changes, 0, (logs, statusCode) ->
+					if statusCode != 200
+						callback logs
+					else
+						callback null, updateWellsResponse
+	else
+		callback null
 
-prepareSummaryInfo = (fileEntryArray) ->
-	summaryInfo =
-		totalNumberOfVials: fileEntryArray.length
-		numSolidVials: (_.where fileEntryArray, {physicalState: 'solid'}).length
-		numLiquidVials: (_.where fileEntryArray, {physicalState: 'solution'}).length
-	batchCodes = _.pluck fileEntryArray, 'batchCode'
-	batchCodes = _.filter batchCodes, (entry) ->
-		entry?
-	if batchCodes? and batchCodes.length > 0
-		summaryInfo.totalBatchCodes = (_.uniq batchCodes).length
-	summaryInfo
+prepareSummaryInfo = (fileEntryArray, cb) ->
+	codeTableRoutes.getCodeTableValuesInternal 'container status', 'physical state', (configuredPhysicalStates) ->
+		summaryInfo =
+			totalNumberOfVials: fileEntryArray.length
+			totalsByStates: {}
+		_.each configuredPhysicalStates, (configuredPhysicalState) ->
+			count = (_.where fileEntryArray, {physicalState: configuredPhysicalState.code}).length + (_.where fileEntryArray, {physicalState: configuredPhysicalState.name}).length
+			if count > 0
+				summaryInfo.totalsByStates[configuredPhysicalState.name] = count
+		batchCodes = _.pluck fileEntryArray, 'batchCode'
+		batchCodes = _.filter batchCodes, (entry) ->
+			entry?
+		if batchCodes? and batchCodes.length > 0
+			summaryInfo.totalBatchCodes = (_.uniq batchCodes).length
+		cb summaryInfo
 
 
 exports.saveWellToWellInteractions = (req, resp) ->
@@ -3358,15 +3424,7 @@ exports.createDaughterVialsInternal = (vialsToCreate, user, callback) ->
 						if err?
 							callback err
 						else
-							toDecrementList = []
-							_.each vialsToCreate, (entry) ->
-								toDecrement =
-									barcode: entry.sourceVialBarcode
-									amountToDecrement: entry.amount
-									amountToDecrementUnits: entry.amountUnits
-									daughterVialBarcode: entry.destinationVialBarcode
-								toDecrementList.push toDecrement
-							decrementAmountsFromVials toDecrementList, parentWellContentList, user, (err, decrementVialsResponse) ->
+							decrementAmountsFromVials vialsToCreate, parentWellContentList, user, (err, decrementVialsResponse) ->
 								if err?
 									callback err
 								else
@@ -3450,3 +3508,43 @@ exports.getParentVialByDaughterVialBarcodeInternal = (daughterVialBarcode, callb
 				parentVialBarcode = _.findWhere parentVial.lsLabels, {lsType: 'barcode', lsKind: 'barcode', ignored: false}
 				responseStub.parentVialBarcode = parentVialBarcode.labelText
 				callback null, responseStub
+
+exports.getContainerLocationTree = (req, resp) ->
+	exports.getContainerLocationTreeInternal (err, response) ->
+		if err?
+			resp.statusCode = 500
+			resp.json err
+		else
+			resp.json response
+
+exports.getContainerLocationTreeInternal = (callback) ->
+	rootLabel = config.all.client.compoundInventory.rootLocationLabel
+	baseurl = config.all.client.service.persistence.fullpath+"containers/getLocationTreeByRootLabel?rootLabel=#{rootLabel}"
+	request(
+		method: 'GET'
+		url: baseurl
+		json: true
+		timeout: 86400000
+		headers: 'content-type': 'application/json'
+	, (error, response, json) =>
+		if !error && response.statusCode == 200
+			console.debug "returned successfully from #{baseurl}"
+			formattedTree = []
+			_.each json, (rawLocation) ->
+				parent = rawLocation.parentCodeName
+				if !parent?
+					parent = '#'
+				location =
+					id: rawLocation.codeName
+					parent: parent
+					text: rawLocation.labelText
+					breadcrumb: rawLocation.labelTextBreadcrumb
+				formattedTree.push location
+			callback null, formattedTree
+		else
+			console.error 'got ajax error trying to get getWellCodesByContainerCodes'
+			console.error error
+			console.error json
+			console.error response
+			callback JSON.stringify "getWellCodesByContainerCodes failed"
+	)
