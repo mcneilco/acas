@@ -166,6 +166,9 @@ class window.AbstractThingFormController extends AbstractFormController
 				when 'stringValue' then newField = new ACASFormLSStringValueFieldController opts
 				when 'dateValue' then newField = new ACASFormLSDateValueFieldController opts
 				when 'fileValue' then newField = new ACASFormLSFileValueFieldController opts
+				when 'locationTree' 
+					opts.tubeCode = @model.get('tubeCode')
+					newField = new ACASFormLocationTreeController opts
 
 			@$("."+field.fieldSettings.fieldWrapper).append newField.render().el
 			newField.afterRender()

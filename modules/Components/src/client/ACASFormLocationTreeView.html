@@ -1,0 +1,32 @@
+<script type="text/template" id="ACASFormLocationTreeView" xmlns="http://www.w3.org/1999/html">
+    <label class="control-label">launching controller must provide or set label</label>
+    <div class="controls">
+        <div class="input-append">
+            <input class="" type="text" disabled="disabled" placeholder="" />
+            <span class="add-on bv_editIcon"><i class="icon-edit"></i></span>
+        </div>
+        <span class="help-inline hide"></span>
+    </div>
+
+    <div class="modal fade bv_locationTreeModal" tabindex="-1" role="dialog" aria-labelledby="" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only"></span></button>
+                    <h4 class="modal-title">Select Location</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-inline gidFilterExperimentsInput">
+                        <input class="bv_searchVal" type="text" placeholder="Filter experiments by keywords">
+                        <button class="btn bv_searchClear">Clear</button>
+                    </div>
+                    <div class="span12 bv_locationTree">tree goes here</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn bv_updateLocation" disabled="disabled">Update</button>
+            </div>
+        </div>
+    </div>
+
+</script>
