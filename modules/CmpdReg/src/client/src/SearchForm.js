@@ -159,7 +159,7 @@ $(function() {
 				});
 			} else if (this.useKetcher) {
 				mol = this.ketcher.getMolfile();
-				if (mol.indexOf("  0  0  0     0  0            999") > -1) mol = '';
+				if (mol.indexOf("  0  0  0     1  0            999") > -1) mol = '';
 				var sf = this.makeSearchFormModel(mol);
 				if (this.isValid()) {
 					this.trigger('searchNext', sf);
