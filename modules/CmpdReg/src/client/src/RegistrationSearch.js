@@ -12,8 +12,8 @@ $(function() {
             if (errors.length > 0) {return errors;}
         }
     });
-    
-    
+
+
     
     window.RegistrationSearchController = Backbone.View.extend({
 		template: _.template($('#RegistrationSearch_template').html()),
@@ -127,12 +127,14 @@ $(function() {
 				});
 			} else if (this.useKetcher) {
 				mol = this.ketcher.getMolfile();
-				if (mol.indexOf("  0  0  0     0  0            999") > -1) mol = null;
+				if (mol.indexOf("  0  0  0     1  0            999") > -1) mol = null;
 				regSearch.set({
 					molStructure: mol,
 					corpName: jQuery.trim(self.$('.corpName').val())
 				});
-
+				console.log(self.$('.corpName').val());
+				console.log(mol);
+				console.log(regSearch);
 				if ( this.isValid() ) {
 					this.trigger('registrationSearchNext', regSearch);
 					this.hide();

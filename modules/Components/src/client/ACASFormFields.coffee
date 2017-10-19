@@ -187,6 +187,8 @@ class window.ACASFormLSNumericValueFieldController extends ACASFormAbstractField
 		- Initialize the model with an LSValue
     Do whatever else is required or optional in ACASFormAbstractFieldController
 	###
+	events: ->
+		"keyup .bv_number": "handleInputChanged"
 
 	template: _.template($("#ACASFormLSNumericValueFieldView").html())
 
@@ -213,11 +215,11 @@ class window.ACASFormLSNumericValueFieldController extends ACASFormAbstractField
 			ignored: true
 
 	setInputValue: (inputValue) ->
-		@$('input').val inputValue
+		@$('.bv_number').val inputValue
 
 
 	renderModelContent: =>
-		@$('input').val @getModel().get('value')
+		@$('.bv_number').val @getModel().get('value')
 		if @getModel().has 'unitKind'
 			@$('.bv_units').html @getModel().get('unitKind')
 		super()

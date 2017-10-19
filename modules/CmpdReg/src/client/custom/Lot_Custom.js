@@ -111,6 +111,11 @@ $(function() {
 					errors.push({'attribute': 'amount', 'message':  "Amount must be a number if provided"});
 				}
 			}
+			if (attr.amount!=null && attr.amount!='') {
+				if(attr.amountUnits==null || attr.amountUnits=='unassigned') {
+					errors.push({'attribute': 'amountUnits', 'message':  "Amount units must be set if amount set"});
+				}
+			}
 			if (attr.retain!=null) {
 				if(isNaN(attr.retain) && attr.retain!='') {
 					errors.push({'attribute': 'retain', 'message':  "Retain must be a number if provided"});
@@ -119,6 +124,11 @@ $(function() {
 			if (attr.solutionAmount!=null) {
 				if(isNaN(attr.solutionAmount) && attr.solutionAmount!='') {
 					errors.push({'attribute': 'solutionAmount', 'message':  "Solution Amount must be a number if provided"});
+				}
+			}
+			if (attr.solutionAmount!=null && attr.solutionAmount!='') {
+				if(attr.solutionAmountUnits==null || attr.solutionAmountUnits=='unassigned') {
+					errors.push({'attribute': 'solutionAmountUnits', 'message':  "Solution amount units must be set if amount set"});
 				}
 			}
 			if (attr.tareWeight!=null) {
