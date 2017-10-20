@@ -193,6 +193,11 @@ class window.ACASFormLSNumericValueFieldController extends ACASFormAbstractField
 
 	template: _.template($("#ACASFormLSNumericValueFieldView").html())
 
+	applyOptions: ->
+		super()
+		if @options.toFixed?
+			@toFixed = @options.toFixed
+
 	handleInputChanged: =>
 		@clearError()
 		@userInputEvent = true
@@ -219,7 +224,14 @@ class window.ACASFormLSNumericValueFieldController extends ACASFormAbstractField
 		@$('.bv_number').val inputValue
 
 	renderModelContent: =>
-		@$('.bv_number').val @getModel().get('value')
+		if @toFixed? and @getModel().get('value')?
+			if !isNaN @getModel().get('value')
+				@$('.bv_number').val @getModel().get('value').toFixed(@toFixed)
+			else
+				@$('.bv_number').val ""
+		else
+			@$('.bv_number').val @getModel().get('value')
+
 		if @getModel().has 'unitKind'
 			@$('.bv_units').html @getModel().get('unitKind')
 		super()
