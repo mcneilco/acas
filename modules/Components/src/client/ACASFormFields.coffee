@@ -64,6 +64,7 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 		$(@el).html @template()
 		@applyOptions()
 		@checkEmptyAndRequired()
+		$(@el).addClass "bv_group_"+@modelKey
 
 		@
 
