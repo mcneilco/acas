@@ -71,3 +71,9 @@ class window.UtilityFunctions
 			return 0
 		else
 			return Math.round((num+0.00001)*100)/100
+
+	roundThreeDecimalPlaces: (num) ->
+		if isNaN(num)
+			return 0
+		else
+			return Math.round((num+0.000001)*1000)/1000

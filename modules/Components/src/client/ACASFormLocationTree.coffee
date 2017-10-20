@@ -13,29 +13,29 @@ class window.ACASFormLocationTreeController extends ACASFormAbstractFieldControl
 
 	initialize: ->
 		super()
-		@tubeCode = @options.tubeCode
-		if @tubeCode?
-			$.ajax
-				type: 'POST'
-				url: "/api/getBreadCrumbByContainerCode"
-				data: JSON.stringify [@tubeCode]
-				contentType: 'application/json'
-				success: (response) =>
-					if response.length is 1
-						@getModel().set
-							value: response[0].currentLocationCode
-							ignored: false
-							breadcrumb: response[0].labelBreadCrumb
-					else
-						@getModel().set
-							value: null
-							ignored: false
-							breadcrumb: ""
-					@renderModelContent()
+		if !@getModel().get('value')?
+			@tubeCode = @options.tubeCode
+			if @tubeCode?
+				$.ajax
+					type: 'POST'
+					url: "/api/getBreadCrumbByContainerCode"
+					data: JSON.stringify [@tubeCode]
+					contentType: 'application/json'
+					success: (response) =>
+						if response.length is 1
+							@getModel().set
+								value: response[0].currentLocationCode
+								ignored: false
+								breadcrumb: response[0].labelBreadCrumb
+						else
+							@getModel().set
+								value: null
+								ignored: false
+								breadcrumb: ""
+						@renderModelContent()
 
-				error: (err) =>
-					alert 'error getting breadcrumb for container'
-
+					error: (err) =>
+						alert 'error getting breadcrumb for container'
 
 	setEmptyValue: ->
 		@getModel().set

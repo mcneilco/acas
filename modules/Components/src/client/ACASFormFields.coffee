@@ -217,7 +217,6 @@ class window.ACASFormLSNumericValueFieldController extends ACASFormAbstractField
 	setInputValue: (inputValue) ->
 		@$('.bv_number').val inputValue
 
-
 	renderModelContent: =>
 		@$('.bv_number').val @getModel().get('value')
 		if @getModel().has 'unitKind'
