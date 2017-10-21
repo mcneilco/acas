@@ -110,7 +110,7 @@ exports.setupChannels = (io, sessionStore, loginRoutes) ->
 				for quid in nfEntity.savingNotificationRequestSocketIDs
 					socket.broadcast.to(quid).emit('newEntitySaveActive')
 		)
-		socket.on('savingNewConplete', (entityType) =>
+		socket.on('savingNewComplete', (entityType) =>
 			lockKey = entityType+"_savingNewLock"
 			nfEntity = global.newFormEntities[lockKey]
 			if nfEntity? and nfEntity.savingLockSocketID==socket.id
