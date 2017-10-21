@@ -249,6 +249,11 @@ class window.ExampleThingController extends AbstractThingFormController
 			@model = new ExampleThingParent()
 			@modelSaveCallback()
 
+		if @model.isNew()
+			@socket.emit 'registerForSavingNewLockNotification', @errorOwnerName
+			@socket.on 'newEntitySaveActive', @handleNewEntitySaveActive
+			@socket.on 'newEntitySavingComplete', @handleNewEntitySavingComplete
+
 		@setBindings()
 		if @options.readOnly?
 			@readOnly = @options.readOnly
@@ -266,9 +271,6 @@ class window.ExampleThingController extends AbstractThingFormController
 		@
 
 	renderModelContent: ->
-		if !@model.isNew()
-			@socket.emit 'editLockEntity', @errorOwnerName, @model.get(@lockEditingForSessionKey)
-
 		codeName = @model.get('codeName')
 		@$('.bv_thingCode').val(codeName)
 		@$('.bv_thingCode').html(codeName)
@@ -283,6 +285,7 @@ class window.ExampleThingController extends AbstractThingFormController
 			@$('.bv_saveThing').html("Update")
 
 	modelSaveCallback: (method, model) =>
+		@socket.emit 'savingNewComplete', @errorOwnerName
 		console.log "got model save callback"
 		if @model.isNew() # model not found
 			@model.set codeName: null
@@ -295,6 +298,7 @@ class window.ExampleThingController extends AbstractThingFormController
 		@$('.bv_updatingThing').hide()
 		@trigger 'amClean'
 		@trigger 'thingSaved'
+		@socket.emit 'editLockEntity', @errorOwnerName, @model.get(@lockEditingForSessionKey)
 		@renderModelContent()
 
 		@auditTableController = new ExampleTableAuditController
@@ -322,6 +326,7 @@ class window.ExampleThingController extends AbstractThingFormController
 		@$('.bv_updatingThing').show()
 		@$('.bv_saveThingComplete').html('Update Complete.')
 		@$('.bv_saveThing').attr('disabled', 'disabled')
+		if @model.isNew() then @socket.emit 'savingNewLock', @errorOwnerName
 		@model.save()
 
 	displayInReadOnlyMode: =>
@@ -338,6 +343,14 @@ class window.ExampleThingController extends AbstractThingFormController
 		alert("Document is available to edit. Click OK to attempt to edit (you may be not the first requestor)")
 		@model.fetch()
 
+	handleNewEntitySaveActive: =>
+		@$('.bv_saveThing').attr 'disabled', 'disabled'
+		@$('.bv_saveLocked').show()
+
+	handleNewEntitySavingComplete: =>
+		console.log "handleNewEntitySavingComplete"
+		@$('.bv_saveThing').removeAttr 'disabled'
+		@$('.bv_saveLocked').hide()
 
 #TODO add thing interaction to project with field
 
