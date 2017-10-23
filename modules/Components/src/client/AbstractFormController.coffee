@@ -146,6 +146,7 @@ class window.AbstractThingFormController extends AbstractFormController
 				extendedLabel: field.fieldSettings.extendedLabel
 				tabIndex: field.fieldSettings.tabIndex
 				toFixed: field.fieldSettings.toFixed
+				pickList: field.fieldSettings.pickList
 
 			switch field.fieldSettings.fieldType
 				when 'label'
@@ -167,7 +168,7 @@ class window.AbstractThingFormController extends AbstractFormController
 				when 'stringValue' then newField = new ACASFormLSStringValueFieldController opts
 				when 'dateValue' then newField = new ACASFormLSDateValueFieldController opts
 				when 'fileValue' then newField = new ACASFormLSFileValueFieldController opts
-				when 'locationTree' 
+				when 'locationTree'
 					opts.tubeCode = @model.get('tubeCode')
 					newField = new ACASFormLocationTreeController opts
 
