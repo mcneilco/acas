@@ -26,6 +26,7 @@ startApp = ->
 		app.set 'port', config.all.server.nodeapi.port
 		app.set 'views', __dirname + '/views'
 		app.set 'view engine', 'jade'
+		app.set 'trust proxy', true
 		app.use express.favicon()
 		app.use express.logger('dev')
 		app.use express.json()
