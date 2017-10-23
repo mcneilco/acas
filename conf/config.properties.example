@@ -368,7 +368,7 @@ client.roles.acas.adminRole=ROLE_ACAS-ADMINS
 #client.roles.acas.userRole=
 #client.roles.acas.adminRole=
 
-#client.browser.enableSearchAll=true
+client.browser.enableSearchAll=true
 
 ## Cmpd Reg Bulk Loader Options
 client.service.cmpdReg.persistence.host=tomcat
