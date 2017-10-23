@@ -67,6 +67,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/advancedSearchContainers', exports.advancedSearchContainers
 	app.get '/api/getParentVialByDaughterVialBarcode', exports.getParentVialByDaughterVialBarcode
 	app.get '/api/getContainerLocationTree', exports.getContainerLocationTree
+	app.post '/api/checkBatchDependencies', exports.checkBatchDependencies
 
 
 exports.setupRoutes = (app, loginRoutes) ->
@@ -124,7 +125,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/advancedSearchContainers', loginRoutes.ensureAuthenticated, exports.advancedSearchContainers
 	app.get '/api/getParentVialByDaughterVialBarcode', loginRoutes.ensureAuthenticated, exports.getParentVialByDaughterVialBarcode
 	app.get '/api/getContainerLocationTree', loginRoutes.ensureAuthenticated, exports.getContainerLocationTree
-
+	app.post '/api/checkBatchDependencies', loginRoutes.ensureAuthenticated, exports.checkBatchDependencies
 
 exports.getContainersInLocation = (req, resp) ->
 	req.setTimeout 86400000
@@ -3550,3 +3551,35 @@ exports.getContainerLocationTreeInternal = (withContainers, callback) ->
 			console.error response
 			callback JSON.stringify "getWellCodesByContainerCodes failed"
 	)
+
+exports.checkBatchDependencies = (req, resp) =>
+
+	exports.checkBatchDependenciesInternal(req.body, (json, statusCode) =>
+		resp.statusCode = statusCode
+		resp.json json
+	)
+
+exports.checkBatchDependenciesInternal = (input, callback) =>
+	batchCodes = input
+
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.persistence.fullpath+"compounds/checkBatchDependencies"
+	console.log 'baseurl', baseurl
+	request = require 'request'
+	request(
+		method: 'POST'
+		url: baseurl
+		body: batchCodes
+		json: true
+		timeout: 86400000
+	, (error, response, json) =>
+		if !error && response.statusCode == 200
+			callback json, response.statusCode
+		else
+			console.error 'got ajax error trying to checkBatchDependencies'
+			console.error error
+			console.error json
+			console.error response
+			callback null, 500
+			#resp.end JSON.stringify "getContainerStatesByContainerValue failed"
+		)
