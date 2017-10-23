@@ -2633,6 +2633,7 @@ DAUGHTER_CONC_UNITS_INDEX = 8
 DAUGHTER_SOLVENT_INDEX = 9
 
 exports.loadParentVialsFromCSV = (req, resp) ->
+	resp.connection.setTimeout(6000000)
 	exports.loadParentVialsFromCSVInternal req.body.fileToParse, req.body.dryRunMode, req.body.user, (response) ->
 		resp.json response
 
@@ -2649,6 +2650,7 @@ exports.loadParentVialsFromCSVInternal = (csvFileName, dryRun, user, callback) -
 					callback createVialsResponse
 
 exports.validateParentVialsFromCSV = (req, resp) ->
+	resp.connection.setTimeout(6000000)
 	exports.validateParentVialsFromCSVInternal req.body.csvFileName, (validationResponse) ->
 		resp.json validationResponse
 
@@ -2775,6 +2777,7 @@ exports.createParentVialsFromCSVInternal = (csvFileName, dryRun, user, callback)
 			callback createResponse
 
 exports.loadDaughterVialsFromCSV = (req, resp) ->
+	resp.connection.setTimeout(6000000)
 	exports.loadDaughterVialsFromCSVInternal req.body.fileToParse, req.body.dryRunMode, req.body.user, (err, response) ->
 		if err?
 			resp.statusCode = 500
@@ -2803,6 +2806,7 @@ exports.loadDaughterVialsFromCSVInternal = (csvFileName, dryRun, user, callback)
 						callback null, createVialsResponse
 
 exports.validateDaughterVialsFromCSV = (req, resp) ->
+	resp.connection.setTimeout(6000000)
 	exports.validateDaughterVialsFromCSVInternal req.body.csvFileName, (err, validationResponse) ->
 		if err?
 			resp.statusCode = 500
