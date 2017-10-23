@@ -367,7 +367,25 @@ exports.giveBobRolesInternal = (callback) ->
 				{
 					roleType: 'System'
 					roleKind: 'ACAS'
+					roleName: 'ROLE_ACAS-ADMINS'
+					userName: 'bob'
+				}
+				{
+					roleType: 'System'
+					roleKind: 'ACAS'
 					roleName: 'ROLE_ACAS-USERS'
+					userName: 'bob'
+				}
+				{
+					roleType: 'System'
+					roleKind: 'ACAS'
+					roleName: 'ROLE_ACAS-CROSS-PROJECT-LOADER'
+					userName: 'bob'
+				}
+				{
+					roleType: 'System'
+					roleKind: 'CmpdReg'
+					roleName: 'ROLE_CMPDREG-ADMINS'
 					userName: 'bob'
 				}
 				{
