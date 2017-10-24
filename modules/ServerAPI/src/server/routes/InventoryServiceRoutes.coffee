@@ -3500,6 +3500,7 @@ exports.getParentVialByDaughterVialBarcodeInternal = (daughterVialBarcode, callb
 				return
 			if advSearchReturn.results.length < 1
 				callback null, responseStub
+				return
 			parentWell = advSearchReturn.results[0]
 			responseStub.parentWellCodeName = parentWell.codeName
 			parentWellLabel = _.findWhere parentWell.lsLabels, {lsType: 'name', lsKind: 'well name', ignored: false}
