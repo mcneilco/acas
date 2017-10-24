@@ -1,7 +1,7 @@
 ((exports) ->
 
 	exports.runRFunctionRequest =
-		rScript:"src/r/spec/ServerAPI/serviceTests/runRApacheFunction.R"
+		rScript:"src/r/spec/ServerAPI/runRApacheFunction.R"
 		rFunction:"testFunction"
 		request: "{\"smartMode\":true,\"inactiveThresholdMode\":true,\"inactiveThreshold\":20,\"inverseAgonistMode\":false,\"max\":{\"limitType\":\"none\"},\"min\":{\"limitType\":\"none\"},\"slope\":{\"limitType\":\"none\"}}"
 

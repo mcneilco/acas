@@ -167,9 +167,10 @@ class window.Thing extends Backbone.Model
 			else
 				thing = itx.get 'secondLsThing'
 #			delete thing['version']
-			delete thing['lsLabels']
-			delete thing['lsStates']
-			delete thing['lsTransaction']
+			if thing?
+				delete thing['lsLabels']
+				delete thing['lsStates']
+				delete thing['lsTransaction']
 
 
 	setRByAndRDate: (data) ->
@@ -191,22 +192,42 @@ class window.Thing extends Backbone.Model
 		# add key as attribute of model
 		if @lsProperties.defaultLabels?
 			for dLabel in @lsProperties.defaultLabels
-				newLabel = @get('lsLabels').getOrCreateLabelByTypeAndKind dLabel.type, dLabel.kind
-				@listenTo newLabel, 'createNewLabel', @createNewLabel
-				@set dLabel.key, newLabel
-				#			if newLabel.get('preferred') is undefined
-				newLabel.set key: dLabel.key
-				newLabel.set preferred: dLabel.preferred
+				if dLabel.multiple? and dLabel.multiple
+					labels = @get('lsLabels').getLabelByTypeAndKind dLabel.type, dLabel.kind
+					if labels.length > 0
+						counter = 0
+						_.each labels, (label) =>
+							if !label.has('key')
+								labelKey = dLabel.key + counter
+								counter++
+								@set labelKey, label
+								label.set key: labelKey
+								@listenTo label, 'createNewLabel', @createNewLabel
+					else
+						newLabel = @get('lsLabels').getOrCreateLabelByTypeAndKind dLabel.type, dLabel.kind
+						newKey = dLabel.key + 0
+						@set newKey, newLabel
+						newLabel.set key: newKey
+				else
+					newLabel = @get('lsLabels').getOrCreateLabelByTypeAndKind dLabel.type, dLabel.kind
+					@listenTo newLabel, 'createNewLabel', @createNewLabel
+					@set dLabel.key, newLabel
+					#			if newLabel.get('preferred') is undefined
+					newLabel.set key: dLabel.key
+					newLabel.set preferred: dLabel.preferred
 
 	createNewLabel: (lKind, newText, key) =>
-		dLabel = _.where(@lsProperties.defaultLabels, {key: key})[0]
 		oldLabel = @get(key)
 		@unset(key)
-		newLabel = @get('lsLabels').getOrCreateLabelByTypeAndKind dLabel.type, dLabel.kind
-		newLabel.set
+		newLabel = new Label
+			lsType: oldLabel.get 'lsType'
+			lsKind: oldLabel.get 'lsKind'
 			key: key
 			labelText: newText
 			preferred: oldLabel.get 'preferred'
+		newLabel.on 'change', =>
+			@trigger('change')
+		@get('lsLabels').add newLabel
 		@set key, newLabel
 
 	createDefaultStates: =>

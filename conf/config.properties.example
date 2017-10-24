@@ -326,6 +326,7 @@ client.moduleMenus.logoText=ACAS
 client.moduleMenus.logoImageFilePath=
 client.moduleMenus.homePageMessage=Welcome to ACAS
 client.moduleMenus.copyrightMessage=&copy; John McNeil & Company 2012-2017
+# client.moduleMenus.menuConfigurationSettings=ModuleMenusConfiguration
 # If summary statistics is an included feature, set the following to true
 client.moduleMenus.summaryStats=false
 # For navigation to external ACAS modules from ACAS homepage
@@ -515,6 +516,7 @@ flyway.database.password=${server.database.password}
 server.acas.license=/home/runner/build/conf/acas.lic
 
 server.systemTest.runOnStart=${env.RUN_SYSTEM_TEST}
+server.systemTest.runDestructive=false
 
 
 # Required configs for which base entity to use

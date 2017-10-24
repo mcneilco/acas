@@ -80,6 +80,15 @@ getPythonPath = (path) ->
   path.dirname = outputDirname
   return
 
+getAssetsPath = (path) ->
+  module = path.dirname.split('/')[0]
+  if path.basename == 'assets' and path.extname == ''
+    path.basename = ''
+    path.dirname = ''
+  outputDirname = module + '/' + path.dirname.replace(module + '/src/server/assets', '')
+  path.dirname = outputDirname
+  return
+
 addREnvironmentCleanUp = (file,contents) ->
   # file contents are handed 
   # over as buffers 
@@ -327,6 +336,24 @@ taskConfigs =
       src: getGlob('modules/CmpdReg/src/**')
       dest: build + '/public/CmpdReg'
       options: _.extend _.clone(globalCopyOptions), {}
+    ,
+      taskName: "spec"
+      src: getGlob("modules/**/spec/**", "!modules/**/spec/**/*.coffee", "!modules/**/spec/testFixtures/*.coffee")
+      dest: build + '/src/spec'
+      options: _.extend _.clone(globalCopyOptions), {}
+      renameFunction: getTestFixuresPath
+    ,
+      taskName: "serverAssets"
+      src: getGlob('modules/**/src/server/assets/**')
+      dest: build + '/src/assets'
+      options: _.extend _.clone(globalCopyOptions), {}
+      renameFunction: getAssetsPath
+    ,
+      taskName: "clientAssets"
+      src: getGlob('modules/**/src/client/assets/**')
+      dest: build + '/public/assets'
+      options: _.extend _.clone(globalCopyOptions), {}
+      renameFunction: getFirstFolderName
   ],
   others:
     packageJSON:

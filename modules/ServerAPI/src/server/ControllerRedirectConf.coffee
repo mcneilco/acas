@@ -29,6 +29,11 @@
 				"project":
 					deepLink: "project"
 				relatedFilesRelativePath: "entities/projects"
+			THING:
+				entityName: "example thing"
+				"Example Thing":
+					deepLink: "example_thing"
+				relatedFilesRelativePath: "entities/exampleThings"
 			PT:
 				entityName: "parent thing"
 				default:

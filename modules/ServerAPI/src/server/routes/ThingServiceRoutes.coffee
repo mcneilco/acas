@@ -43,6 +43,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/getThingCodeTablesByLabelText/:lsType/:lsKind/:labelText', loginRoutes.ensureAuthenticated, exports.getThingsByTypeAndKindAndLabelTypeAndLabelText
 	app.post '/api/things/:lsType/:lsKind/codeNames/jsonArray', loginRoutes.ensureAuthenticated, exports.getThingsByCodeNames
 	app.get '/api/thingKinds', loginRoutes.ensureAuthenticated, exports.getThingKinds
+	app.get '/api/transaction/:id', loginRoutes.ensureAuthenticated, exports.getTransaction
 
 
 exports.thingsByTypeKind = (req, resp) ->
@@ -259,7 +260,7 @@ postThing = (isBatch, req, resp) ->
 		transactionOptions = {
 			comments: "new experiment"
 		}
-	transactionOptions.recordedBy = req.session.passport.user.username
+	transactionOptions.recordedBy = if req.session?.passport?.user?.username? then req.session.passport.user.username else "acas"
 	transactionOptions.status = "PENDING"
 	transactionOptions.type = "NEW"
 	serverUtilityFunctions.createLSTransaction2 thingToSave.recordedDate, transactionOptions, (transaction) ->
@@ -637,3 +638,10 @@ exports.getThingKinds = (req, resp) ->
 				name: kind.kindName
 			codeTables.push codeTable
 		resp.json codeTables
+
+exports.getTransaction = (req, resp) ->
+	config = require '../conf/compiled/conf.js'
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+	baseurl = config.all.client.service.persistence.fullpath+"lstransactions/"+req.params.id
+	serverUtilityFunctions.getFromACASServer baseurl, resp
+

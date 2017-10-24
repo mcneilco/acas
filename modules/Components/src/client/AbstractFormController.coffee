@@ -106,9 +106,15 @@ class window.AbstractThingFormController extends AbstractFormController
 				url: field.fieldSettings.url
 				thingRef: @model
 				insertUnassigned: field.fieldSettings.insertUnassigned
+				modelDefaults: field.modelDefaults
+				allowedFileTypes: field.fieldSettings.allowedFileTypes
 
 			switch field.fieldSettings.fieldType
-				when 'label' then newField = new ACASFormLSLabelFieldController opts
+				when 'label'
+					if field.multiple? and field.multiple
+						newField = new ACASFormMultiLabelListController opts
+					else
+						newField = new ACASFormLSLabelFieldController opts
 				when 'numericValue' then newField = new ACASFormLSNumericValueFieldController opts
 				when 'codeValue' then newField = new ACASFormLSCodeValueFieldController opts
 				when 'htmlClobValue'
@@ -122,17 +128,23 @@ class window.AbstractThingFormController extends AbstractFormController
 					newField = new ACASFormLSThingInteractionFieldController opts
 				when 'stringValue' then newField = new ACASFormLSStringValueFieldController opts
 				when 'dateValue' then newField = new ACASFormLSDateValueFieldController opts
+				when 'fileValue' then newField = new ACASFormLSFileValueFieldController opts
 
 			@$("."+field.fieldSettings.fieldWrapper).append newField.render().el
 			newField.afterRender()
 			@formFields[field.key] = newField
-		@setupFormTables fieldDefs.stateTables
+		if fieldDefs.stateTables?
+			@setupFormTables fieldDefs.stateTables
+		if fieldDefs.stateDisplayTables?
+			@setupFormStateDisplayTables fieldDefs.stateDisplayTables
 
 	fillFieldsFromModels: =>
 		for modelKey, formField of @formFields
 			formField.renderModelContent()
 		for stateKey, formTable of @formTables
 			formTable.renderModelContent()
+		for stateKey, formDisplayTable of @formDisplayTables
+			formDisplayTable.renderModelContent()
 
 	setupFormTables: (tableDefs) ->
 		unless @formTables?
@@ -146,6 +158,19 @@ class window.AbstractThingFormController extends AbstractFormController
 				thingRef: @model
 			fTable.render()
 			@formTables[tDef.key] = fTable
+
+	setupFormStateDisplayTables: (tableDefs) ->
+		unless @formDisplayTables?
+			@formDisplayTables = {}
+		for tDef in tableDefs
+			tdiv = $("<div>")
+			@$("."+tDef.tableWrapper).append tdiv
+			fTable = new ACASFormStateDisplayUpdateController
+				el: tdiv
+				tableDef: tDef
+				thingRef: @model
+			fTable.render()
+			@formDisplayTables[tDef.key] = fTable
 
 	disableAllInputs: ->
 		super()

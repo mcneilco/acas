@@ -33,10 +33,14 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 		@userInputEvent = true
 
 	getModel: ->
-		@thingRef.get @modelKey
+		if @thingRef instanceof Thing
+			return @thingRef.get @modelKey
+		else
+			return @thingRef
 
 	handleInputChanged: =>
 		@checkEmptyAndRequired()
+		@trigger 'formFieldChanged'
 
 	checkEmptyAndRequired: ->
 		if @required and @isEmpty() and !@errorSet
@@ -47,6 +51,8 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 		mdl = @getModel()
 		if mdl.has 'labelText'
 			if mdl.get('labelText')=="" then empty = true
+		else if mdl.has 'itxThing'
+			if !mdl.get('itxThing').get('id') then empty = true
 		else
 			if mdl.get('value')=="" or !mdl.get('value')? or mdl.get('value')=="unassigned" then empty = true
 
@@ -310,6 +316,8 @@ class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractF
 			@labelType = @options.labelType
 		if @options.queryUrl?
 			@queryUrl = @options.queryUrl
+		if @options.placeholder?
+			@placeholder = @options.placeholder
 
 
 	handleInputChanged: =>
@@ -318,13 +326,13 @@ class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractF
 			thingID = @thingSelectController.getSelectedID()
 			if thingID?
 				@getModel().setItxThing id: thingID
+				@getModel().set ignored: false
 			else
 				@setEmptyValue()
 		super()
 
 	setEmptyValue: ->
 		@getModel().set ignored: true
-		@setItxThing null
 
 	isEmpty: ->
 		empty = true
@@ -338,7 +346,7 @@ class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractF
 
 	renderModelContent: =>
 		@userInputEvent = false
-		if  @getModel().getItxThing().id?
+		if  @getModel()? and @getModel().getItxThing().id?
 			labels = new LabelList @getModel().getItxThing().lsLabels
 			labelText = labels.pickBestNonEmptyLabel().get('labelText')
 			@thingSelectController.setSelectedCode
@@ -510,3 +518,94 @@ class window.ACASFormLSDateValueFieldController extends ACASFormAbstractFieldCon
 
 	handleDateIconClicked: =>
 		@$('input').datepicker( "show" )
+
+
+class window.ACASFormLSFileValueFieldController extends ACASFormAbstractFieldController
+	###
+		Launching controller must:
+		- Initialize the model with an LSValue
+    - Provide allowedFileTypes
+    Do whatever else is required or optional in ACASFormAbstractFieldController
+	###
+
+	template: _.template($("#ACASFormLSFileValueFieldView").html())
+	events: ->
+		"click .bv_deleteSavedFile": "handleDeleteSavedFile"
+
+	applyOptions: ->
+		super()
+		if @options.allowedFileTypes?
+			@allowedFileTypes = @options.allowedFileTypes
+		else
+			@allowedFileTypes = ['csv','xlsx','xls','png','jpeg']
+
+	render: ->
+		super()
+		@setupFileController()
+
+		@
+
+	handleInputChanged: =>
+		@clearError()
+		@userInputEvent = true
+		value = UtilityFunctions::convertYMDDateToMs(UtilityFunctions::getTrimmedInput(@$('input')))
+		if value == "" || isNaN(value)
+			@setEmptyValue()
+		else
+			@getModel().set
+				value: value
+				ignored: false
+		super()
+
+	setEmptyValue: ->
+		@getModel().set
+			value: null
+			ignored: true
+
+	renderModelContent: =>
+		@setupFileController()
+		super()
+
+	setupFileController: ->
+		fileValue = @getModel().get('value')
+		if @isEmpty()
+			@createNewFileChooser()
+			@$('.bv_deleteSavedFile').hide()
+		else
+			displayText = @getModel().get('comments')
+			if !displayText?
+				displayText = fileValue
+			@$('.bv_file').html '<a href="'+window.conf.datafiles.downloadurl.prefix+fileValue+'">'+displayText+'</a>'
+			@$('.bv_deleteSavedFile').show()
+
+	createNewFileChooser: ->
+		if @fileController?
+			@fileController.render()
+		else
+			@fileController = new LSFileChooserController
+				el: @$('.bv_file')
+				maxNumberOfFiles: 1
+				requiresValidation: false
+				url: UtilityFunctions::getFileServiceURL()
+				allowedFileTypes: @allowedFileTypes
+				hideDelete: false
+			@fileController.on 'amDirty', =>
+				@trigger 'amDirty'
+			@fileController.on 'amClean', =>
+				@trigger 'amClean'
+			@fileController.render()
+			@fileController.on('fileUploader:uploadComplete', @handleFileUpload) #update model with filename
+			@fileController.on('fileDeleted', @handleFileRemoved) #update model with filename
+
+	handleFileUpload: (nameOnServer) =>
+		@getModel().set
+			value: nameOnServer
+			ignored: false
+
+	handleFileRemoved: =>
+		@setEmptyValue()
+
+	handleDeleteSavedFile: =>
+		@handleFileRemoved()
+		@$('.bv_deleteSavedFile').hide()
+		@createNewFileChooser()

@@ -261,7 +261,7 @@ class window.PickListSelect2Controller extends PickListSelectController
 	# 'options.propertyMap' is not specified, it defaults to using the
 	# 'acasPropertyMap'
 	initialize: (options) ->
-		if @options.width?
+		if @options?.width?
 			@width = @options.width
 		else
 			@width = "100%"
@@ -285,7 +285,7 @@ class window.PickListSelect2Controller extends PickListSelectController
 					obj.text = obj[@propertyMap.text]
 				mappedData.push(obj)
 		@placeholder = ""
-		if @options.placeholder?
+		if @options?.placeholder?
 			@placeholder = @options.placeholder
 		$(@el).select2
 			placeholder: @placeholder
