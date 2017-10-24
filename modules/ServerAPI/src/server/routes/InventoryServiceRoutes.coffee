@@ -67,6 +67,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/advancedSearchContainers', exports.advancedSearchContainers
 	app.get '/api/getParentVialByDaughterVialBarcode', exports.getParentVialByDaughterVialBarcode
 	app.get '/api/getContainerLocationTree', exports.getContainerLocationTree
+	app.post '/api/checkBatchDependencies', exports.checkBatchDependencies
 
 
 exports.setupRoutes = (app, loginRoutes) ->
@@ -124,7 +125,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/advancedSearchContainers', loginRoutes.ensureAuthenticated, exports.advancedSearchContainers
 	app.get '/api/getParentVialByDaughterVialBarcode', loginRoutes.ensureAuthenticated, exports.getParentVialByDaughterVialBarcode
 	app.get '/api/getContainerLocationTree', loginRoutes.ensureAuthenticated, exports.getContainerLocationTree
-
+	app.post '/api/checkBatchDependencies', loginRoutes.ensureAuthenticated, exports.checkBatchDependencies
 
 exports.getContainersInLocation = (req, resp) ->
 	req.setTimeout 86400000
@@ -2632,6 +2633,7 @@ DAUGHTER_CONC_UNITS_INDEX = 8
 DAUGHTER_SOLVENT_INDEX = 9
 
 exports.loadParentVialsFromCSV = (req, resp) ->
+	resp.connection.setTimeout(6000000)
 	exports.loadParentVialsFromCSVInternal req.body.fileToParse, req.body.dryRunMode, req.body.user, (response) ->
 		resp.json response
 
@@ -2648,6 +2650,7 @@ exports.loadParentVialsFromCSVInternal = (csvFileName, dryRun, user, callback) -
 					callback createVialsResponse
 
 exports.validateParentVialsFromCSV = (req, resp) ->
+	resp.connection.setTimeout(6000000)
 	exports.validateParentVialsFromCSVInternal req.body.csvFileName, (validationResponse) ->
 		resp.json validationResponse
 
@@ -2774,6 +2777,7 @@ exports.createParentVialsFromCSVInternal = (csvFileName, dryRun, user, callback)
 			callback createResponse
 
 exports.loadDaughterVialsFromCSV = (req, resp) ->
+	resp.connection.setTimeout(6000000)
 	exports.loadDaughterVialsFromCSVInternal req.body.fileToParse, req.body.dryRunMode, req.body.user, (err, response) ->
 		if err?
 			resp.statusCode = 500
@@ -2802,6 +2806,7 @@ exports.loadDaughterVialsFromCSVInternal = (csvFileName, dryRun, user, callback)
 						callback null, createVialsResponse
 
 exports.validateDaughterVialsFromCSV = (req, resp) ->
+	resp.connection.setTimeout(6000000)
 	exports.validateDaughterVialsFromCSVInternal req.body.csvFileName, (err, validationResponse) ->
 		if err?
 			resp.statusCode = 500
@@ -3550,3 +3555,35 @@ exports.getContainerLocationTreeInternal = (withContainers, callback) ->
 			console.error response
 			callback JSON.stringify "getWellCodesByContainerCodes failed"
 	)
+
+exports.checkBatchDependencies = (req, resp) =>
+
+	exports.checkBatchDependenciesInternal(req.body, (json, statusCode) =>
+		resp.statusCode = statusCode
+		resp.json json
+	)
+
+exports.checkBatchDependenciesInternal = (input, callback) =>
+	batchCodes = input
+
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.persistence.fullpath+"compounds/checkBatchDependencies"
+	console.log 'baseurl', baseurl
+	request = require 'request'
+	request(
+		method: 'POST'
+		url: baseurl
+		body: batchCodes
+		json: true
+		timeout: 86400000
+	, (error, response, json) =>
+		if !error && response.statusCode == 200
+			callback json, response.statusCode
+		else
+			console.error 'got ajax error trying to checkBatchDependencies'
+			console.error error
+			console.error json
+			console.error response
+			callback null, 500
+			#resp.end JSON.stringify "getContainerStatesByContainerValue failed"
+		)

@@ -251,6 +251,8 @@ class window.ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldCon
 		super()
 		if @options.url?
 			@url = @options.url
+		if @options.pickList?
+			@pickList = @options.pickList
 
 	handleInputChanged: =>
 		@clearError()
@@ -273,19 +275,27 @@ class window.ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldCon
 		super()
 
 	setupSelect: ->
-		@pickList = new PickListList()
 		mdl = @getModel()
-		if @url?
-			@pickList.url = @url
+		if @pickList?
+			plOptions =
+				el: @$('select')
+				collection: @pickList
+				selectedCode: mdl.get('value')
+				parameter: @options.modelKey
+				autoFetch: false
 		else
-			@pickList.url = "/api/codetables/#{mdl.get 'codeType'}/#{mdl.get 'codeKind'}"
-		plOptions =
-			el: @$('select')
-			collection: @pickList
-			selectedCode: mdl.get('value')
-			parameter: @options.modelKey
-			codeType: mdl.get 'codeType'
-			codeKind: mdl.get 'codeKind'
+			@pickList = new PickListList()
+			if @url?
+				@pickList.url = @url
+			else
+				@pickList.url = "/api/codetables/#{mdl.get 'codeType'}/#{mdl.get 'codeKind'}"
+			plOptions =
+				el: @$('select')
+				collection: @pickList
+				selectedCode: mdl.get('value')
+				parameter: @options.modelKey
+				codeType: mdl.get 'codeType'
+				codeKind: mdl.get 'codeKind'
 
 		if @options.insertUnassigned?
 			if @options.insertUnassigned
