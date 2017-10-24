@@ -536,3 +536,8 @@ client.roles.crossProjectLoaderRole=ROLE_ACAS-CROSS-PROJECT-LOADER
 
 # For whether protocols and experiments should have sequential user defined corpName labels
 client.entity.saveInitialsCorpName=false
+
+#Add user roles that represent groups allowed to fast user switch
+client.moduleMenus.fastUserSwitchingRoles=[]
+#client.moduleMenus.fastUserSwitchingRoles=[{"lsKind":"PROJ-00000001","lsType":"Project","roleName":"User"},{"lsKind":"PROJ-00000002","lsType":"Project","roleName":"User"}]
+client.moduleMenus.fastUserSwitchingChangeUserRoles=false

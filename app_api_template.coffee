@@ -45,12 +45,12 @@ startApp = ->
 		console.error 'Caught api exception: ' + err.stack
 		return
 
-	###TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES###
 
-
-	http.createServer(app).listen(app.get('port'), ->
+	httpServer = http.createServer(app).listen(app.get('port'), ->
 		console.log("ACAS API server listening on port " + app.get('port'))
 	)
+
+	###TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES###
 
 	csUtilities.logUsage("ACAS API server started", "started", "")
 
