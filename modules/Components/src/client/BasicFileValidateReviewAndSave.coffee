@@ -1,6 +1,7 @@
 class window.BasicFileValidateReviewAndSaveController extends BasicFileValidateAndSaveController
 	template: _.template($("#BasicFileValidateReviewAndSaveView").html())
 
+
 	initialize: ->
 		console.log "BasicFileValidateReviewAndSaveController"
 		super()

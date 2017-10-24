@@ -8,6 +8,10 @@ exports.setupAPIRoutes = (app) ->
 	app.get '/api/protocolKindCodes', exports.protocolKindCodeList
 	app.get '/api/protocols/genericSearch/:searchTerm', exports.genericProtocolSearch
 	app.delete '/api/protocols/browser/:id', exports.deleteProtocol
+	app.get '/api/getProtocolByLabel/:protLabel', exports.getProtocolByLabel
+	app.post '/api/protocols/getByCodeNamesArray', exports.protocolsByCodeNamesArray
+	app.put '/api/bulkPutProtocols', exports.bulkPutProtocols
+
 
 
 exports.setupRoutes = (app, loginRoutes) ->
@@ -20,6 +24,9 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/protocolKindCodes', loginRoutes.ensureAuthenticated, exports.protocolKindCodeList
 	app.get '/api/protocols/genericSearch/:searchTerm', loginRoutes.ensureAuthenticated, exports.genericProtocolSearch
 	app.delete '/api/protocols/browser/:id', loginRoutes.ensureAuthenticated, exports.deleteProtocol
+	app.get '/api/getProtocolByLabel/:protLabel', loginRoutes.ensureAuthenticated, exports.getProtocolByLabel
+	app.post '/api/protocols/getByCodeNamesArray', loginRoutes.ensureAuthenticated, exports.protocolsByCodeNamesArray
+	app.put '/api/bulkPutProtocols', loginRoutes.ensureAuthenticated, exports.bulkPutProtocols
 
 serverUtilityFunctions = require './ServerUtilityFunctions.js'
 csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
@@ -43,7 +50,8 @@ exports.protocolByCodenameInternal = (codeName, callback) ->
 	)
 
 exports.protocolByCodename = (req, resp) ->
-
+	_ = require '../public/lib/underscore.js'
+	
 	if global.specRunnerTestmode
 		protocolServiceTestJSON = require '../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'
 		stubSavedProtocol = JSON.parse(JSON.stringify(protocolServiceTestJSON.stubSavedProtocol))
@@ -59,23 +67,23 @@ exports.protocolByCodename = (req, resp) ->
 		if req.user? && config.all.server.project.roles.enable
 			serverUtilityFunctions.getRestrictedEntityFromACASServerInternal baseurl, req.user.username, "metadata", "protocol metadata", (statusCode, json) =>
 			#if prot is deleted, need to check if user has privs to view deleted protocols
-				if json.codeName? and json.ignored and !json.deleted
-					if config.all.client.entity?.viewDeletedRoles?
-						viewDeletedRoles = config.all.client.entity.viewDeletedRoles.split(",")
-					else
-						viewDeletedRoles = []
-					grantedRoles = _.map req.user.roles, (role) ->
-						role.roleEntry.roleName
-					canViewDeleted = (config.all.client.entity?.viewDeletedRoles? && config.all.client.entity.viewDeletedRoles in grantedRoles)
-					if canViewDeleted
-						resp.statusCode = statusCode
-						resp.end JSON.stringify json
-					else
-						resp.statusCode = 500
-						resp.end JSON.stringify "Protocol does not exist"
+			if json.codeName? and json.ignored and !json.deleted
+				if config.all.client.entity?.viewDeletedRoles?
+					viewDeletedRoles = config.all.client.entity.viewDeletedRoles.split(",")
 				else
+					viewDeletedRoles = []
+				grantedRoles = _.map req.user.roles, (role) ->
+					role.roleEntry.roleName
+				canViewDeleted = (config.all.client.entity?.viewDeletedRoles? && config.all.client.entity.viewDeletedRoles in grantedRoles)
+				if canViewDeleted
 					resp.statusCode = statusCode
 					resp.end JSON.stringify json
+				else
+					resp.statusCode = 500
+					resp.end JSON.stringify "Protocol does not exist"
+			else
+				resp.statusCode = statusCode
+				resp.end JSON.stringify json
 		else
 			serverUtilityFunctions.getFromACASServer baseurl, resp
 
@@ -485,3 +493,91 @@ exports.deleteProtocol = (req, res) ->
 				console.log error
 				console.log response
 		)
+
+exports.getProtocolByLabel = (req, resp) ->
+	exports.getProtocolByLabelInternal req.params.protLabel, (statusCode, json) ->
+		resp.statusCode = statusCode
+		resp.json json
+		
+exports.getProtocolByLabelInternal = (label, callback) ->
+	config = require '../conf/compiled/conf.js'
+	url = config.all.client.service.persistence.fullpath+"protocols?FindByProtocolName&protocolName=#{label}"
+	request = require 'request'
+	request(
+		method: 'GET'
+		url: url
+		json: true
+	, (error, response, json) =>
+		console.log response.statusCode
+		console.log json
+		if !error and !json.error
+			callback response.statusCode, json
+		else
+			console.log 'got ajax error trying to get protocol by label'
+			callback 500, json.errorMessages
+	)
+
+exports.protocolsByCodeNamesArray = (req, resp) ->
+	exports.protocolsByCodeNamesArrayInternal req.body.data, req.query.option, req.query.testMode, (returnedProts) ->
+		if returnedProts.indexOf("Failed") > -1
+			resp.statusCode = 500
+		resp.json returnedProts
+
+
+exports.protocolsByCodeNamesArrayInternal = (codeNamesArray, returnOption, testMode, callback) ->
+	if testMode or global.specRunnerTestmode
+		callback JSON.stringify "stubsMode not implemented"
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"protocols/codename/jsonArray"
+		#returnOption are stub, fullobject
+		if returnOption?
+			baseurl += "?with=#{returnOption}"
+		console.log "protocolsByCodeNamesArray"
+		console.log baseurl
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: baseurl
+			body: codeNamesArray
+			json: true
+		, (error, response, json) =>
+			console.log "protocolsByCodeNamesArray json"
+			console.log json
+			console.log "response.statusCode"
+			console.log response.statusCode
+			console.log response
+			if !error && response.statusCode == 200
+				callback json
+			else
+				console.log "Failed: got error in bulk get of protocols"
+				callback "Bulk get protocols saveFailed: " + JSON.stringify error
+		)
+
+exports.bulkPutProtocols= (req, resp) ->
+	exports.bulkPutProtocolsInternal req.body, (response) =>
+		resp.json response
+
+exports.bulkPutProtocolsInternal = (protsArray, callback) ->
+	console.log "bulkPutProtocols"
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.persistence.fullpath+"/protocols/jsonArray"
+	console.log "bulkPutProtocolsInternal"
+	console.log baseurl
+	console.log protsArray
+	request = require 'request'
+	request(
+		method: 'PUT'
+		url: baseurl
+		body: protsArray
+		json: true
+	, (error, response, json) =>
+		console.log "bulkPutProtocolsInternal"
+		console.log response.statusCode
+		if !error && response.statusCode == 200
+			callback json
+		else
+			console.log "got error bulk updating protocols"
+			console.log error
+			callback JSON.stringify "bulk update protocols saveFailed: " + JSON.stringify error
+	)

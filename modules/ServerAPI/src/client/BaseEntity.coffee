@@ -74,7 +74,11 @@ class window.BaseEntity extends Backbone.Model
 		valueKind = subclass + " status"
 		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "codeValue", valueKind
 		if status.get('codeValue') is undefined or status.get('codeValue') is ""
-			status.set codeValue: "created"
+			if window.conf.entity?.status?.default?
+				defaultStatus = window.conf.entity.status.default
+			else 
+				defaultStatus = "created"
+			status.set codeValue: defaultStatus
 			status.set codeType: subclass
 			status.set codeKind: "status"
 			status.set codeOrigin: "ACAS DDICT"
@@ -144,11 +148,32 @@ class window.BaseEntity extends Backbone.Model
 				attribute: 'recordedDate'
 				message: attrs.subclass+" date must be set"
 		if attrs.subclass?
-			notebook = @getNotebook().get('stringValue')
-			if notebook is "" or notebook is undefined or notebook is null
-				errors.push
-					attribute: 'notebook'
-					message: "Notebook must be set"
+			saveNotebook = true #default
+			if window.conf.entity?.notebook?.save?
+				saveNotebook= window.conf.entity.notebook.save
+			requireNotebook = true #default
+			if window.conf.entity?.notebook?.require?
+				requireNotebook= window.conf.entity.notebook.require
+			if saveNotebook and requireNotebook
+				notebook = @getNotebook().get('stringValue')
+				if notebook is "" or notebook is undefined or notebook is null
+					errors.push
+						attribute: 'notebook'
+						message: "Notebook must be set"
+
+				saveNotebookPage = true #default
+				if window.conf.entity?.notebookPage?.save?
+					saveNotebookPage = window.conf.entity.notebookPage.save
+				requireNotebookPage = false #default
+				if window.conf.entity?.notebookPage?.require?
+					requireNotebookPage= window.conf.entity.notebookPage.require
+				if saveNotebookPage and requireNotebookPage
+					notebookPage = @getNotebookPage().get('stringValue')
+					if notebookPage is "" or notebookPage is undefined or notebookPage is null
+						errors.push
+							attribute: 'notebookPage'
+							message: "Notebook Page must be set"
+						
 			scientist = @getScientist().get('codeValue')
 			if scientist is "unassigned" or scientist is undefined or scientist is "" or scientist is null
 				errors.push
@@ -217,7 +242,11 @@ class window.BaseEntity extends Backbone.Model
 			recordedBy: window.AppLaunchParams.loginUser.username
 			recordedDate: new Date().getTime()
 			version: 0
-		copiedEntity.getStatus().set codeValue: "created"
+		if window.conf.entity?.status?.default?
+			defaultStatus = window.conf.entity.status.default
+		else
+			defaultStatus = "created"
+		copiedEntity.getStatus().set codeValue: defaultStatus
 		copiedEntity.getNotebook().set stringValue: ""
 		copiedEntity.getNotebookPage().set stringValue: ""
 		copiedEntity.getScientist().set codeValue: "unassigned"
@@ -278,8 +307,39 @@ class window.BaseEntityController extends AbstractThingFormController #TODO: che
 		@$('.bv_'+subclass+'Kind').html(@model.get('lsKind')) #should get value from protocol create form
 		@$('.bv_details').val(@model.getDetails().get('clobValue'))
 		@$('.bv_comments').val(@model.getComments().get('clobValue'))
-		@$('.bv_notebook').val @model.getNotebook().get('stringValue')
-		@$('.bv_notebookPage').val @model.getNotebookPage().get('stringValue')
+		saveNotebook = true #default
+		if window.conf.entity?.notebook?.save?
+			saveNotebook= window.conf.entity.notebook.save
+		requireNotebook = true #default
+		if window.conf.entity?.notebook?.require?
+			requireNotebook= window.conf.entity.notebook.require
+		if saveNotebook
+			@$('.bv_notebook').val @model.getNotebook().get('stringValue')
+			if requireNotebook
+				console.log "require notebook"
+				@$('.bv_notebookLabel').html "*Notebook"
+			else
+				@$('.bv_notebookLabel').html "Notebook"
+			saveNotebookPage = true #default
+			if window.conf.entity?.notebookPage?.save?
+				saveNotebookPage = window.conf.entity.notebookPage.save
+			requireNotebookPage = false #default
+			if window.conf.entity?.notebookPage?.require?
+				requireNotebookPage= window.conf.entity.notebookPage.require
+			if saveNotebookPage
+				@$('.bv_notebookPage').val @model.getNotebookPage().get('stringValue')
+				if requireNotebookPage
+					@$('.bv_notebookPageLabel').html "*Notebook Page"
+				else
+					@$('.bv_notebookPageLabel').html "Notebook Page"
+			else
+				@$('.bv_group_notebookPage').hide()
+
+
+		else
+			@$('.bv_group_notebook').hide()
+			@$('.bv_group_notebookPage').hide()
+
 		@$('.bv_status').val(@model.getStatus().get('codeValue'))
 		if @model.isNew()
 			@$('.bv_save').html("Save")
@@ -313,7 +373,7 @@ class window.BaseEntityController extends AbstractThingFormController #TODO: che
 		if @model.isNew() or @model.getScientist().get('codeValue') is "unassigned"
 			return true
 		else
-			if window.conf.entity?.editingRoles?
+			if window.conf.entity?.editingRoles? and $.trim(window.conf.entity.editingRoles).length > 0
 				rolesToTest = []
 				for role in window.conf.entity.editingRoles.split(",")
 					role = $.trim(role)
@@ -331,9 +391,12 @@ class window.BaseEntityController extends AbstractThingFormController #TODO: che
 						rolesToTest.push role
 				if rolesToTest.length is 0
 					return false
-				unless UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, rolesToTest
+				if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, rolesToTest
+					return true
+				else
 					return false
-			return true
+			else
+				return true
 
 	canDelete: ->
 		if window.conf.entity?.deletingRoles?
@@ -493,21 +556,30 @@ class window.BaseEntityController extends AbstractThingFormController #TODO: che
 		@model.trigger 'change'
 
 	updateEditable: =>
-		if @model.isEditable()
-			@enableAllInputs()
-			@$('.bv_lock').hide()
+		if @readOnly
+			@displayInReadOnlyMode()
 		else
-			@disableAllInputs()
-			@$('.bv_status').removeAttr('disabled')
-			@$('.bv_lock').show()
-			@$('.bv_newEntity').removeAttr('disabled')
-			if @model.getStatus().get('codeValue') is "deleted"
-				@$('.bv_status').attr 'disabled', 'disabled'
-		if @model.isNew()
-			@$('.bv_status').attr("disabled", "disabled")
-		else
-			unless @model.getStatus().get('codeValue') is "deleted"
-				@$('.bv_status').removeAttr("disabled")
+			if @model.isEditable()
+				@enableAllInputs()
+				@$('.bv_lock').hide()
+			else
+				@disableAllInputs()
+				@$('.bv_status').removeAttr('disabled')
+				@$('.bv_lock').show()
+				@$('.bv_newEntity').removeAttr('disabled')
+				if @model.getStatus().get('codeValue') is "deleted"
+					@$('.bv_status').attr 'disabled', 'disabled'
+			if @model.isNew()
+				@$('.bv_status').attr("disabled", "disabled")
+			else
+				unless @model.getStatus().get('codeValue') is "deleted"
+					@$('.bv_status').removeAttr("disabled")
+			if window.conf.entity?.scientist?.editable? and window.conf.entity.scientist.editable is false
+				@$('.bv_scientist').attr 'disabled', 'disabled'
+			else
+				@$('.bv_scientist').removeAttr 'disabled'
+
+
 		@model.trigger 'statusChanged'
 
 	beginSave: =>
@@ -593,7 +665,7 @@ class window.BaseEntityController extends AbstractThingFormController #TODO: che
 			@displayInReadOnlyMode()
 		else if status is "deleted" or status is "approved" or status is "rejected"
 			@disableAllInputs()
-			unless @model.getStatus().get('codeValue') is "deleted"
+			if @model.getStatus().get('codeValue') != "deleted" and @canEdit()
 				@$('.bv_status').removeAttr 'disabled'
 			@$('.bv_newEntity').removeAttr('disabled')
 			@$('.bv_newEntity').removeAttr('disabled')

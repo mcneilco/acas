@@ -1,6 +1,8 @@
 class window.Thing extends Backbone.Model
 	lsProperties: {}
 	className: "Thing"
+	deleteEmptyLabelsValsItxsBeforeSave: true
+	noUpdateThingsInInteractions: false
 #	urlRoot: "/api/things"
 
 	defaults: () ->
@@ -68,51 +70,53 @@ class window.Thing extends Backbone.Model
 
 	toJSON: (options) ->
 		attsToSave = super(options)
+		if @deleteEmptyLabelsValsItxsBeforeSave
+			toDel = attsToSave.lsLabels.filter (lab) ->
+				(lab.get('ignored') || lab.get('labelText')=="") && lab.isNew()
+			for lab in toDel
+				attsToSave.lsLabels.remove lab
 
-		toDel = attsToSave.lsLabels.filter (lab) ->
-			(lab.get('ignored') || lab.get('labelText')=="") && lab.isNew()
-		for lab in toDel
-			attsToSave.lsLabels.remove lab
+			if attsToSave.firstLsThings?
+				toDel = attsToSave.firstLsThings.filter (itx) ->
+					!itx.getItxThing().id?
+				for itx in toDel
+					attsToSave.firstLsThings.remove itx
+				if attsToSave.firstLsThings.length == 0
+					delete attsToSave.firstLsThings
 
-		if attsToSave.firstLsThings?
-			toDel = attsToSave.firstLsThings.filter (itx) ->
-				!itx.getItxThing().id?
-			for itx in toDel
-				attsToSave.firstLsThings.remove itx
-			if attsToSave.firstLsThings.length == 0
-				delete attsToSave.firstLsThings
+			if attsToSave.secondLsThings?
+				toDel = attsToSave.secondLsThings.filter (itx) ->
+					!itx.getItxThing().id?
+				for itx in toDel
+					attsToSave.secondLsThings.remove itx
+				if attsToSave.secondLsThings.length == 0
+					delete attsToSave.secondLsThings
 
-		if attsToSave.secondLsThings?
-			toDel = attsToSave.secondLsThings.filter (itx) ->
-				!itx.getItxThing().id?
-			for itx in toDel
-				attsToSave.secondLsThings.remove itx
-			if attsToSave.secondLsThings.length == 0
-				delete attsToSave.secondLsThings
+			if @lsProperties.defaultLabels?
+				for dLabel in @lsProperties.defaultLabels
+					delete attsToSave[dLabel.key]
 
-		if @lsProperties.defaultLabels?
-			for dLabel in @lsProperties.defaultLabels
-				delete attsToSave[dLabel.key]
+			if @lsProperties.defaultFirstLsThingItx?
+				for itx in @lsProperties.defaultFirstLsThingItx
+					delete attsToSave[itx.key]
 
-		if @lsProperties.defaultFirstLsThingItx?
-			for itx in @lsProperties.defaultFirstLsThingItx
-				delete attsToSave[itx.key]
+			if @lsProperties.defaultSecondLsThingItx?
+				console.log "deleting empty 2nd ls thing itxs"
 
-		if @lsProperties.defaultSecondLsThingItx?
-			for itx in @lsProperties.defaultSecondLsThingItx
-				delete attsToSave[itx.key]
+				for itx in @lsProperties.defaultSecondLsThingItx
+					delete attsToSave[itx.key]
 
-		if @lsProperties.defaultValues?
-			for dValue in @lsProperties.defaultValues
-				if attsToSave[dValue.key]?
-					val = attsToSave[dValue.key].get('value')
-					if val is undefined or val is "" or val is null
-						lsStates = attsToSave.lsStates.getStatesByTypeAndKind dValue.stateType, dValue.stateKind
-						values = lsStates[0].getValuesByTypeAndKind dValue.type, dValue.kind
-						if values[0]?
-							if values[0].isNew()
-								lsStates[0].get('lsValues').remove values[0]
-					delete attsToSave[dValue.key]
+			if @lsProperties.defaultValues?
+				for dValue in @lsProperties.defaultValues
+					if attsToSave[dValue.key]?
+						val = attsToSave[dValue.key].get('value')
+						if val is undefined or val is "" or val is null
+							lsStates = attsToSave.lsStates.getStatesByTypeAndKind dValue.stateType, dValue.stateKind
+							values = lsStates[0].getValuesByTypeAndKind dValue.type, dValue.kind
+							if values[0]?
+								if values[0].isNew()
+									lsStates[0].get('lsValues').remove values[0]
+						delete attsToSave[dValue.key]
 
 		if attsToSave.attributes?
 			delete attsToSave.attributes
@@ -284,10 +288,11 @@ class window.Thing extends Backbone.Model
 		attachFileList
 
 	reformatBeforeSaving: =>
-		if @get('firstLsThings')? and @get('firstLsThings') instanceof FirstLsThingItxList
-			@get('firstLsThings').reformatBeforeSaving()
-		if @get('secondLsThings')? and @get('secondLsThings') instanceof SecondLsThingItxList
-			@get('secondLsThings').reformatBeforeSaving()
+		if @noUpdateThingsInInteractions? && @noUpdateThingsInInteractions
+			if @get('firstLsThings')? and @get('firstLsThings') instanceof FirstLsThingItxList
+				@get('firstLsThings').reformatBeforeSaving()
+			if @get('secondLsThings')? and @get('secondLsThings') instanceof SecondLsThingItxList
+				@get('secondLsThings').reformatBeforeSaving()
 
 
 	deleteInteractions : =>
@@ -305,9 +310,9 @@ class window.Thing extends Backbone.Model
 		copiedThing.set
 			version: 0
 		@resetClonedAttrs(copiedThing)
-		copiedThing.get('notebook').set value: ""
-		copiedThing.get('scientist').set value: "unassigned"
-		copiedThing.get('completion date').set value: null
+		copiedThing.get('notebook')?.set value: ""
+		copiedThing.get('scientist')?.set value: "unassigned"
+		copiedThing.get('completion date')?.set value: null
 
 		delete copiedThing.attributes.firstLsThings
 

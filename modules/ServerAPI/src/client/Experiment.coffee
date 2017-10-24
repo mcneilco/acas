@@ -143,11 +143,31 @@ class window.Experiment extends BaseEntity
 				attribute: 'recordedDate'
 				message: attrs.subclass+" date must be set"
 		if attrs.subclass?
-			notebook = @getNotebook().get('stringValue')
-			if notebook is "" or notebook is undefined or notebook is null
-				errors.push
-					attribute: 'notebook'
-					message: "Notebook must be set"
+			saveNotebook = true #default
+			if window.conf.entity?.notebook?.save?
+				saveNotebook= window.conf.entity.notebook.save
+			requireNotebook = true #default
+			if window.conf.entity?.notebook?.require?
+				requireNotebook= window.conf.entity.notebook.require
+			if saveNotebook and requireNotebook
+				notebook = @getNotebook().get('stringValue')
+				if notebook is "" or notebook is undefined or notebook is null
+					errors.push
+						attribute: 'notebook'
+						message: "Notebook must be set"
+				saveNotebookPage = true #default
+				if window.conf.entity?.notebookPage?.save?
+					saveNotebookPage = window.conf.entity.notebookPage.save
+				requireNotebookPage = false #default
+				if window.conf.entity?.notebookPage?.require?
+					requireNotebookPage= window.conf.entity.notebookPage.require
+				if saveNotebookPage and requireNotebookPage
+					notebookPage = @getNotebookPage().get('stringValue')
+					if notebookPage is "" or notebookPage is undefined or notebookPage is null
+						errors.push
+							attribute: 'notebookPage'
+							message: "Notebook Page must be set"
+
 			scientist = @getScientist().get('codeValue')
 			if scientist is "unassigned" or scientist is undefined or scientist is "" or scientist is null
 				errors.push
@@ -689,10 +709,6 @@ class window.ExperimentBaseController extends BaseEntityController
 
 	handleCompletionDateIconClicked: =>
 		@$( ".bv_completionDate" ).datepicker( "show" )
-
-
-	updateEditable: =>
-		super()
 
 	handleSaveClicked: =>
 		@$('.bv_saveFailed').hide()

@@ -19,6 +19,8 @@ class window.ACASFormStateTableController extends Backbone.View
 	initialize: ->
 		@thingRef = @options.thingRef
 		@tableDef = @options.tableDef
+		@tableSetupComplete = false
+		@callWhenSetupComplete = null
 
 	getCollection: ->
 		#TODO get states by type and kind
@@ -33,6 +35,12 @@ class window.ACASFormStateTableController extends Backbone.View
 
 #Subclass to extend
 	renderModelContent: =>
+		if @tableSetupComplete
+			@completeRenderModelContent()
+		else
+			@callWhenSetupComplete = @completeRenderModelContent
+
+	completeRenderModelContent: ->
 		for state in @getCurrentStates()
 			@renderState state
 
@@ -59,6 +67,10 @@ class window.ACASFormStateTableController extends Backbone.View
 			@fetchPickLists =>
 				@defineColumns()
 				@setupHot()
+				@tableSetupComplete = true
+				if @callWhenSetupComplete?
+					@callWhenSetupComplete.call @
+					@callWhenSetupComplete = null
 
 	fetchPickLists: (callback) =>
 		@pickLists = {}
@@ -90,11 +102,9 @@ class window.ACASFormStateTableController extends Backbone.View
 					json: true
 					self: @
 					kind: kind
-#					success: makeRetFunct()
 					success: (response) ->
 						this.self.pickLists[this.kind] = new PickListList response
 						doneYet()
-
 
 	defineColumns: ->
 		unless @colHeaders?
@@ -116,8 +126,14 @@ class window.ACASFormStateTableController extends Backbone.View
 				width: if val.fieldSettings.width? then val.fieldSettings.width else 75
 
 			colOpts = data: val.modelDefaults.kind
+			colOpts.readOnly = if val.fieldSettings.readOnly? then val.fieldSettings.readOnly else false
+			colOpts.wordWrap = true
 			if val.modelDefaults.type == 'numericValue'
 				colOpts.type = 'numeric'
+				if val.fieldSettings.fieldFormat?
+					colOpts.format = val.fieldSettings.fieldFormat
+				else
+					colOpts.format = '0.[00]'
 			else if val.modelDefaults.type == 'dateValue'
 				colOpts.type = 'date'
 				colOpts.dateFormat = 'YYYY-MM-DD'
@@ -146,13 +162,22 @@ class window.ACASFormStateTableController extends Backbone.View
 
 				@unitKeyValueMap[val.fieldSettings.unitColumnKey] = val.modelDefaults.kind
 
+		if @tableDef.handleAfterValidate?
+			@handleAfterValidate = @tableDef.handleAfterValidate
+
 	setupHot: ->
+		if @tableDef.contextMenu?
+			contextMenu = @tableDef.contextMenu
+		else
+			contextMenu = true
 		@hot = new Handsontable @$('.bv_tableWrapper')[0],
+			beforeChange: @handleBeforeChange
+			beforeValidate: @handleBeforeValidate
 			afterChange: @handleCellChanged
+			afterValidate: @handleAfterValidate
 			afterCreateRow: @handleRowCreated
 			minSpareRows: 1,
-			allowInsertRow: true
-			contextMenu: true
+			contextMenu: contextMenu
 			startRows: 1,
 			className: "htCenter",
 			colHeaders: _.pluck @colHeaders, 'displayName'
@@ -236,6 +261,27 @@ class window.ACASFormStateTableController extends Backbone.View
 		else
 			return null
 
+	handleBeforeChange: (changes, source) =>
+		prop = changes[0][1]
+		newVal = changes[0][3]
+		dateDef = _.filter @tableDef.values, (def) ->
+			def.modelDefaults.type == 'dateValue' and def.modelDefaults.kind == prop
+		if dateDef.length == 1
+			parsedDate = newVal.split(/([ ,./-])\w/g)
+			if parsedDate.length < 5
+				currentYear = new Date().getFullYear()
+				newVal = currentYear+"-"+newVal
+				changes[0][3] = newVal
+
+	handleBeforeValidate: (value, row, prop, sources) =>
+		dateDef = _.filter @tableDef.values, (def) ->
+			def.modelDefaults.type == 'dateValue' and def.modelDefaults.kind == prop
+		if dateDef.length == 1
+			parsedDate = value.split(/([ ,./-])\w/g)
+			if parsedDate.length < 5
+				currentYear = new Date().getFullYear()
+				value = currentYear+"-"+value
+
 	handleCellChanged: (changes, source) =>
 		if changes?
 			for change in changes
@@ -301,7 +347,6 @@ class window.ACASFormStateTableController extends Backbone.View
 				if rowValues.length == 1
 					rowValues[0].set numericValue: rowNum + amount
 
-
 	handleRowRemoved: (index, amount) =>
 		for rowNum in [index..(index+amount-1)]
 			state = @getStateForRow rowNum, false
@@ -366,9 +411,13 @@ class window.ACASFormStateTableController extends Backbone.View
 #			comments: false
 
 	enableInput: ->
+		if @tableDef.contextMenu?
+			contextMenu = @tableDef.contextMenu
+		else
+			contextMenu = true
 		@hot.updateSettings
 			readOnly: false
-			contextMenu: true
+			contextMenu: contextMenu
 #Other options I decided not to use
 #			disableVisualSelection: false
 #			manualColumnResize: true

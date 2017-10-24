@@ -62,6 +62,9 @@ class window.AbstractFormController extends Backbone.View
 		@$("textarea").not('.dontdisable').attr 'disabled', 'disabled'
 		@$(".bv_experimentCode").not('.dontdisable').css "background-color", "#eeeeee"
 		@$(".bv_experimentCode").not('.dontdisable').css "color", "#333333"
+		@$(".bv_creationDateIcon").not('.dontdisable').addClass "uneditable-input"
+		@$(".bv_creationDateIcon").not('.dontdisable').on "click", ->
+			return false
 		@$(".bv_completionDateIcon").not('.dontdisable').addClass "uneditable-input"
 		@$(".bv_completionDateIcon").not('.dontdisable').on "click", ->
 			return false
@@ -100,6 +103,7 @@ class window.AbstractThingFormController extends AbstractFormController
 				formLabel: field.fieldSettings.formLabel
 				placeholder: field.fieldSettings.placeholder
 				required: field.fieldSettings.required
+				url: field.fieldSettings.url
 				thingRef: @model
 				insertUnassigned: field.fieldSettings.insertUnassigned
 
@@ -117,6 +121,7 @@ class window.AbstractThingFormController extends AbstractFormController
 					opts.labelType = field.fieldSettings.labelType
 					newField = new ACASFormLSThingInteractionFieldController opts
 				when 'stringValue' then newField = new ACASFormLSStringValueFieldController opts
+				when 'dateValue' then newField = new ACASFormLSDateValueFieldController opts
 
 			@$("."+field.fieldSettings.fieldWrapper).append newField.render().el
 			newField.afterRender()

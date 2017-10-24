@@ -90,10 +90,20 @@ class window.ProtocolRowSummaryController extends Backbone.View
 			date = "not recorded"
 		else
 			date = UtilityFunctions::convertMSToYMDDate(date.get('dateValue'))
+		if @model.get('lsLabels') not instanceof LabelList
+			@model.set 'lsLabels',  new LabelList @model.get('lsLabels')
+		subclass = @model.get('subclass')
+		if window.conf.entity?.saveInitialsCorpName? and window.conf.entity.saveInitialsCorpName is true
+			if @model.get('lsLabels').getLabelByTypeAndKind("corpName", subclass + ' corpName').length > 0
+				code = @model.get('lsLabels').getLabelByTypeAndKind('corpName', subclass + ' corpName')[0].get('labelText')
+			else
+				code = @model.get("codeName")
+		else
+			code = @model.get('codeName')
 
 		toDisplay =
 			protocolName: @model.get('lsLabels').pickBestName().get('labelText')
-			protocolCode: @model.get('codeName')
+			protocolCode: code
 			protocolKind: @model.get('lsKind')
 			scientist: @model.getScientist().get('codeValue')
 			assayStage: @model.getAssayStage().get("codeValue")
@@ -320,7 +330,17 @@ class window.ProtocolBrowserController extends Backbone.View
 		return true
 
 	handleDeleteProtocolClicked: =>
-		@$(".bv_protocolCodeName").html @protocolController.model.get("codeName")
+		if @protocolController.model.get('lsLabels') not instanceof LabelList
+			@protocolController.model.set 'lsLabels',  new LabelList @protocolController.model.get('lsLabels')
+		subclass = @protocolController.model.get('subclass')
+		if window.conf.entity?.saveInitialsCorpName? and window.conf.entity.saveInitialsCorpName is true
+			if @protocolController.model.get('lsLabels').getLabelByTypeAndKind("corpName", subclass + ' corpName').length > 0
+				code = @protocolController.model.get('lsLabels').getLabelByTypeAndKind('corpName', subclass + ' corpName')[0].get('labelText')
+			else
+				code = @protocolController.model.get("codeName")
+		else
+			code = @protocolController.model.get('codeName')
+		@$(".bv_protocolCodeName").html code
 		@$(".bv_deleteButtons").removeClass "hide"
 		@$(".bv_okayButton").addClass "hide"
 		@$(".bv_errorDeletingProtocolMessage").addClass "hide"
@@ -356,29 +376,62 @@ class window.ProtocolBrowserController extends Backbone.View
 		@$(".bv_confirmDeleteProtocol").modal('hide')
 
 	handleEditProtocolClicked: =>
-		window.open("/entity/edit/codeName/#{@protocolController.model.get("codeName")}",'_blank');
+		if @protocolController.model.get('lsLabels') not instanceof LabelList
+			@protocolController.model.set 'lsLabels',  new LabelList @protocolController.model.get('lsLabels')
+		subclass = @protocolController.model.get('subclass')
+		if window.conf.entity?.saveInitialsCorpName? and window.conf.entity.saveInitialsCorpName is true
+			if @protocolController.model.get('lsLabels').getLabelByTypeAndKind("corpName", subclass + ' corpName').length > 0
+				code = @protocolController.model.get('lsLabels').getLabelByTypeAndKind('corpName', subclass + ' corpName')[0].get('labelText')
+			else
+				code = @protocolController.model.get("codeName")
+		else
+			code = @protocolController.model.get('codeName')
+
+		window.open("/entity/edit/codeName/#{code}",'_blank');
 
 	handleDuplicateProtocolClicked: =>
 		protocolKind = @protocolController.model.get('lsKind')
-		if protocolKind is "Bio Activity"
-			window.open("/entity/copy/primary_screen_protocol/#{@protocolController.model.get("codeName")}",'_blank');
-		else if protocolKind is "Parent Bio Activity"
-			window.open("/entity/copy/parent_protocol/#{@protocolController.model.get("codeName")}",'_blank');
-		else if protocolKind is "study"
-			window.open("/entity/copy/study_tracker_protocol/#{@protocolController.model.get("codeName")}",'_blank');
+		if @protocolController.model.get('lsLabels') not instanceof LabelList
+			@protocolController.model.set 'lsLabels',  new LabelList @protocolController.model.get('lsLabels')
+		subclass = @protocolController.model.get('subclass')
+		if window.conf.entity?.saveInitialsCorpName? and window.conf.entity.saveInitialsCorpName is true
+			if @protocolController.model.get('lsLabels').getLabelByTypeAndKind("corpName", subclass + ' corpName').length > 0
+				code = @protocolController.model.get('lsLabels').getLabelByTypeAndKind('corpName', subclass + ' corpName')[0].get('labelText')
+			else
+				code = @protocolController.model.get("codeName")
 		else
-			window.open("/entity/copy/protocol_base/#{@protocolController.model.get("codeName")}",'_blank');
+			code = @protocolController.model.get('codeName')
+
+		if protocolKind is "Bio Activity"
+			window.open("/entity/copy/primary_screen_protocol/#{code}",'_blank');
+		else if protocolKind is "Parent Bio Activity"
+			window.open("/entity/copy/parent_protocol/#{code}",'_blank');
+		else if protocolKind is "study"
+			window.open("/entity/copy/study_tracker_protocol/#{code}",'_blank');
+		else
+			window.open("/entity/copy/protocol_base/#{code}",'_blank');
 
 	handleCreateExperimentClicked: =>
 		protocolKind = @protocolController.model.get('lsKind')
-		if protocolKind is "Bio Activity"
-			window.open("/primary_screen_experiment/createFrom/#{@protocolController.model.get("codeName")}",'_blank')
-		else if protocolKind is "Parent Bio Activity"
-			window.open("/parent_experiment/createFrom/#{@protocolController.model.get("codeName")}",'_blank')
-		else if protocolKind is "study"
-			window.open("/study_tracker_experiment/createFrom/#{@protocolController.model.get("codeName")}",'_blank')
+		if @protocolController.model.get('lsLabels') not instanceof LabelList
+			@protocolController.model.set 'lsLabels',  new LabelList @protocolController.model.get('lsLabels')
+		subclass = @protocolController.model.get('subclass')
+		if window.conf.entity?.saveInitialsCorpName? and window.conf.entity.saveInitialsCorpName is true
+			if @protocolController.model.get('lsLabels').getLabelByTypeAndKind("corpName", subclass + ' corpName').length > 0
+				code = @protocolController.model.get('lsLabels').getLabelByTypeAndKind('corpName', subclass + ' corpName')[0].get('labelText')
+			else
+				code = @protocolController.model.get("codeName")
 		else
-			window.open("/experiment_base/createFrom/#{@protocolController.model.get("codeName")}",'_blank')
+			code = @protocolController.model.get('codeName')
+
+		if protocolKind is "Bio Activity"
+			window.open("/primary_screen_experiment/createFrom/#{code}",'_blank')
+		else if protocolKind is "Parent Bio Activity"
+			window.open("/parent_experiment/createFrom/#{code}",'_blank')
+		else if protocolKind is "study"
+			window.open("/study_tracker_experiment/createFrom/#{code}",'_blank')
+		else
+			window.open("/experiment_base/createFrom/#{code}",'_blank')
 
 	destroyProtocolSummaryTable: =>
 		if @protocolSummaryTable?
