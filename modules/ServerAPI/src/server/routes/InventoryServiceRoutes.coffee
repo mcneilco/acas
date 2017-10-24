@@ -1445,22 +1445,14 @@ exports.moveToLocationInternal = (input, callCustom, updateLocationHistory, call
 				#add the call to updateContainerHistoryLogs here...
 				console.debug "response statusCode: #{response.statusCode}"
 				if !error
-					console.log input[0].containerCodeName
-					if updateLocationHistory
-						exports.updateContainerHistoryLogsInternal(input, (json, statusCode) ->
-							callback json, statusCode
-							# if callCustom && csUtilities.moveToLocation?
-							# 	console.log "running customer specific server function moveToLocation"
-							# 	csUtilities.moveToLocation input, (customerResponse, statusCode) ->
-							# 		json = _.extend json, customerResponse
-							# 		callback json, statusCode
-							# else
-							# 	console.warn "could not find customer specific server function moveToLocation so not running it"
-							# 	callback json, response.statusCode
-							# )
-						)
-					else
-						callback json, response.statusCode
+					shouldCallCustom = (callCustom && csUtilities.moveToLocation?)
+					callFunctionOrReturnNull shouldCallCustom, csUtilities.moveToLocation, input, (customerResponse, statusCode) ->
+						if updateLocationHistory
+							exports.updateContainerHistoryLogsInternal(input, (json, statusCode) ->
+								callback json, statusCode
+							)
+						else
+							callback json, response.statusCode
 				else
 					console.error 'got ajax error trying to get moveToLocation'
 					console.error error
@@ -1469,6 +1461,15 @@ exports.moveToLocationInternal = (input, callCustom, updateLocationHistory, call
 					callback JSON.stringify("moveToLocation failed"), 500
 			)
 		#)
+
+callFunctionOrReturnNull = (callFunctionBoolean, funct, input, callback) ->
+	if callFunctionBoolean
+		console.log "running customer specific server function"
+		funct input, (customerResponse, statusCode) ->
+			callback customerResponse, statusCode
+	else
+		console.log "not running customer specific server function"
+		callback null
 
 exports.getWellContentByContainerLabel = (req, resp) ->
 	req.setTimeout 86400000
