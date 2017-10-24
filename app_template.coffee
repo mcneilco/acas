@@ -43,7 +43,11 @@ startApp = ->
 	passport.deserializeUser (user, done) ->
 		done null, user
 
-	passport.use new LocalStrategy csUtilities.loginStrategy
+	if csUtilities.loginStrategy.length > 3
+		passport.use new LocalStrategy {passReqToCallback: true}, csUtilities.loginStrategy
+	else
+		passport.use new LocalStrategy csUtilities.loginStrategy
+
 #	passport.isAdmin = (req, resp, next) ->
 #		if req.isAuthenticated() and csUtilities.isUserAdmin(req.user)
 #			next()
@@ -64,6 +68,7 @@ startApp = ->
 		app.set 'port', config.all.client.port
 		app.set 'views', __dirname + '/views'
 		app.set 'view engine', 'jade'
+		app.set 'trust proxy', true
 		app.use express.favicon()
 		app.use express.logger('dev')
 		# added for login support

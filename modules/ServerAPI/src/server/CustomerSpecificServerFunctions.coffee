@@ -148,11 +148,12 @@ exports.isUserAdmin = (user) ->
 exports.findByUsername = (username, fn) ->
 	return exports.getUser username, fn
 
-exports.loginStrategy = (username, password, done) ->
+exports.loginStrategy = (req, username, password, done) ->
+	exports.logUsage "login attempt", JSON.stringify(ip: req.ip, referer: req.headers['referer'], agent: req.headers['user-agent']), username
 	exports.authCheck username, password, (results) ->
 		if results.indexOf("login_error")>=0
 			try
-				exports.logUsage "User failed login: ", "", username
+				exports.logUsage "User failed login: ", JSON.stringify(ip: req.ip, referer: req.headers['referer'], agent: req.headers['user-agent']), username
 			catch error
 				console.log "Exception trying to log:"+error
 			return done(null, false,
@@ -160,7 +161,7 @@ exports.loginStrategy = (username, password, done) ->
 			)
 		else if results.indexOf("connection_error")>=0
 			try
-				exports.logUsage "Connection to authentication service failed: ", "", username
+				exports.logUsage "Connection to authentication service failed: ", JSON.stringify(ip: req.ip, referer: req.headers['referer'], agent: req.headers['user-agent']), username
 			catch error
 				console.log "Exception trying to log:"+error
 			return done(null, false,
@@ -168,7 +169,7 @@ exports.loginStrategy = (username, password, done) ->
 			)
 		else
 			try
-				exports.logUsage "User logged in succesfully: ", "", username
+				exports.logUsage "User logged in succesfully: ", JSON.stringify(ip: req.ip, referer: req.headers['referer'], agent: req.headers['user-agent']), username
 			catch error
 				console.log "Exception trying to log:"+error
 			exports.getUser username,done
