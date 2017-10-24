@@ -1551,9 +1551,33 @@ exports.cloneContainersInternal = (input, callback) ->
 						container.definition = container.definitionCodeName
 						wellContent = _.findWhere(wellContent, {'containerCodeName': updateInfo.codeName})
 						if wellContent?.wellContent?
-							wellContent = _.map wellContent.wellContent, (wellCont) ->
+							_.map wellContent.wellContent, (wellCont) ->
 								_.omit wellCont, "containerCodeName"
-							container.wells = wellContent
+								#if amount and concentration are required and provided, overwrite them here
+								if updateInfo.requireAmount? and updateInfo.requireAmount
+									if updateInfo.amount? and updateInfo.amountUnits?
+										wellCont.amount = updateInfo.amount
+										wellCont.amountUnits = updateInfo.amountUnits
+									else
+										message = "invalid input. Amount is required but amount value/units are not provided"
+										callback message, 400
+
+								if updateInfo.requireConcentration? and updateInfo.requireConcentration and (wellCont.batchCode != config.all.client.createDmsoMinitube.dmsoBatchCode)
+									#only update concentration if require concentration and well is not DMSO
+									if updateInfo.batchConcentration? and updateInfo.batchConcUnits?
+										wellCont.batchConcentration = updateInfo.batchConcentration
+										wellCont.batchConcUnits = updateInfo.batchConcUnits
+									else
+										message = "invalid input. Concentration is required but concentration value/units are not provided"
+										#TODO: can't have callback here
+										callback message, 400
+							container = _.omit container, "requireAmount"
+							container = _.omit container, "amount"
+							container = _.omit container, "amountUnits"
+							container = _.omit container, "requireConcentration"
+							container = _.omit container, "batchConcentration"
+							container = _.omit container, "batchConcUnits"
+							container.wells = wellContent.wellContent
 						compoundInventoryRoutes = require '../routes/CompoundInventoryRoutes.js'
 						compoundInventoryRoutes.createPlateInternal container, "1", (newContainer, statusCode) ->
 							container = _.extend container, newContainer
@@ -1704,7 +1728,13 @@ exports.mergeContainersInternal = (input, callback) ->
 	else
 		console.debug "incoming mergeContainers request: #{JSON.stringify(input)}"
 		console.debug "calling getContainersByCodeNamesInternal"
+		if !input.quadrants? or input.quadrants.length is 0
+			msg = "no quadrants"
+			callback msg, 400
 		contanerCodes = _.pluck input.quadrants, "codeName"
+		if contanerCodes.length is 0
+			msg = "no quadrants with codeNames"
+			callback msg, 400
 		_.map input.quadrants, (quadrant) ->
 			if typeof(quadrant.quadrant) != "number"
 				console.warn "provided quadrant #{quadrant.quadrant} is typeOf #{typeof(quadrant.quadrant)} but should be typeof of number"
@@ -1765,7 +1795,7 @@ exports.mergeContainersInternal = (input, callback) ->
 							# map plate wells to merged plate wells
 							_.map originWells.wellContent, (wellContent) ->
 								wellContent = _.omit(wellContent, ['containerCodeName', 'wellName', 'recordedDate'])
-								wellContent.recordedDate = 1455323242544
+								wellContent.recordedDate = new Date().getTime()
 								if quadrant.quadrant == 1
 									wellContent.rowIndex = 2*(wellContent.rowIndex)-1
 									wellContent.columnIndex = 2*(wellContent.columnIndex)-1
@@ -1789,7 +1819,28 @@ exports.mergeContainersInternal = (input, callback) ->
 								else
 									text = text+"0"
 								wellContent.wellName = text+wellContent.columnIndex
+								#if amount and concentration are required and provided, overwrite them here
+								if input.requireAmount? and input.requireAmount
+									if input.amount? and input.amountUnits?
+										wellContent.amount = input.amount
+										wellContent.amountUnits = input.amountUnits
+									else
+										message = "invalid input. Amount is required but amount value/units are not provided"
+										callback message, 400
+								if input.requireConcentration? and input.requireConcentration and (wellContent.batchCode != config.all.client.createDmsoMinitube.dmsoBatchCode)
+									if input.batchConcentration? and input.batchConcUnits?
+										wellContent.batchConcentration = input.batchConcentration
+										wellContent.batchConcUnits = input.batchConcUnits
+									else
+										message = "invalid input. Concentration is required but concentration value/units are not provided"
+										callback message, 400
 								input.wells.push wellContent
+						delete input.requireAmount
+						delete input.amount
+						delete input.amountUnits
+						delete input.requireConcentration
+						delete input.batchConcentration
+						delete input.batchConcUnits
 						compoundInventoryRoutes = require '../routes/CompoundInventoryRoutes.js'
 						compoundInventoryRoutes.createPlateInternal input, "1", (newContainer, statusCode) ->
 							if statusCode == 200
