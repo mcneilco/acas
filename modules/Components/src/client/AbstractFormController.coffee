@@ -6,6 +6,17 @@ class window.AbstractFormController extends Backbone.View
 
 	formFieldDefinitions: []
 
+
+#	Setup edit lock check for the user session, form and entity identifier
+#	disable feature if set to null
+#	Override this in initilize() give model key for entity ID like 'codeName'
+# Form must open socket, probably during initialize
+# @openFormControllerSocket()
+#	Form subclass must send request to lock when it has the id in hand
+#	@socket.emit 'editLockEntity', @errorOwnerName, @model.get(@lockEditingForSessionKey)
+#	This is safe to call repeatedly
+	lockEditingForSessionKey: null
+
 	show: ->
 		$(@el).show()
 
@@ -54,6 +65,8 @@ class window.AbstractFormController extends Backbone.View
 			@trigger 'valid'
 		else
 			@trigger 'invalid'
+		if @lockEditingForSessionKey?
+			@socket.emit 'updateEditLock', @errorOwnerName, @model.get(@lockEditingForSessionKey)
 
 	disableAllInputs: ->
 		@$('input').not('.dontdisable').attr 'disabled', 'disabled'
@@ -83,6 +96,24 @@ class window.AbstractFormController extends Backbone.View
 		@$(".bv_group_tags div.bootstrap-tagsinput").css "background-color", "#ffffff"
 		@$(".bv_group_tags input").css "background-color", "transparent"
 
+	openFormControllerSocket: ->
+		if @lockEditingForSessionKey?
+			@socket = io '/formController:connected'
+			@socket.on 'editLockRequestResult', @handleEditLockRequestResult
+			@socket.on 'editLockAvailable', @handleEditLockAvailable
+
+	handleEditLockRequestResult: (result) =>
+		if !result.okToEdit
+			updateDate = new Date	result.lastActivityDate
+			alert "This is being edited by #{result.currentEditor}. It was last edited at #{updateDate}. If you leave this tab open, you will be notified when it becomes available. For now, the form will be displayed as read-only."
+			@disableAllInputs()
+			@trigger 'editLocked'
+		else
+			@trigger 'editUnLocked'
+
+	handleEditLockAvailable: =>
+		@trigger 'editUnLocked'
+		#you should extend this
 
 class window.AbstractThingFormController extends AbstractFormController
 
@@ -108,6 +139,7 @@ class window.AbstractThingFormController extends AbstractFormController
 				insertUnassigned: field.fieldSettings.insertUnassigned
 				modelDefaults: field.modelDefaults
 				allowedFileTypes: field.fieldSettings.allowedFileTypes
+				extendedLabel: field.fieldSettings.extendedLabel
 
 			switch field.fieldSettings.fieldType
 				when 'label'

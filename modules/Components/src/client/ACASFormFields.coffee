@@ -318,6 +318,8 @@ class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractF
 			@queryUrl = @options.queryUrl
 		if @options.placeholder?
 			@placeholder = @options.placeholder
+		if @options.extendedLabel?
+			@extendedLabel = @options.extendedLabel
 
 
 	handleInputChanged: =>
@@ -348,7 +350,10 @@ class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractF
 		@userInputEvent = false
 		if  @getModel()? and @getModel().getItxThing().id?
 			labels = new LabelList @getModel().getItxThing().lsLabels
-			labelText = labels.pickBestNonEmptyLabel().get('labelText')
+			if @extendedLabel? and @extendedLabel
+				labelText = labels.getExtendedNameText()
+			else
+				labelText = labels.pickBestNonEmptyLabel().get('labelText')
 			@thingSelectController.setSelectedCode
 				code: @getModel().getItxThing().codeName
 				label: labelText
@@ -415,7 +420,10 @@ class window.ACASFormLSHTMLClobValueFieldController extends ACASFormAbstractFiel
 			ignored: true
 
 	renderModelContent: =>
-		@editor.setContent @getModel().get('value')
+		if @editor?
+			@editor.setContent @getModel().get('value')
+		else
+			@contentToLoad = @getModel().get('value')
 		super()
 
 	setupTinyMCE: ->
@@ -429,14 +437,24 @@ class window.ACASFormLSHTMLClobValueFieldController extends ACASFormAbstractFiel
 			setup: (editor) =>
 				editor.on 'init', (e) =>
 					@editor = editor
+					if @contentToLoad?
+						@editor.setContent @contentToLoad
+					if @disableEditor?
+						@editor.getBody().setAttribute('contenteditable', @disableEditor)
 				editor.on 'change', (e) =>
 					@textChanged editor.getContent()
 
 	disableInput: ->
-		@editor.getBody().setAttribute('contenteditable', false)
+		if @editor?
+			@editor.getBody().setAttribute('contenteditable', false)
+		else
+			@disableEditor = true
 
 	enableInput: ->
-		@editor.getBody().setAttribute('contenteditable', true)
+		if @editor?
+			@editor.getBody().setAttribute('contenteditable', true)
+		else
+			@disableEditor = false
 
 class window.ACASFormLSStringValueFieldController extends ACASFormAbstractFieldController
 	###
@@ -545,18 +563,6 @@ class window.ACASFormLSFileValueFieldController extends ACASFormAbstractFieldCon
 
 		@
 
-	handleInputChanged: =>
-		@clearError()
-		@userInputEvent = true
-		value = UtilityFunctions::convertYMDDateToMs(UtilityFunctions::getTrimmedInput(@$('input')))
-		if value == "" || isNaN(value)
-			@setEmptyValue()
-		else
-			@getModel().set
-				value: value
-				ignored: false
-		super()
-
 	setEmptyValue: ->
 		@getModel().set
 			value: null
@@ -598,12 +604,14 @@ class window.ACASFormLSFileValueFieldController extends ACASFormAbstractFieldCon
 			@fileController.on('fileDeleted', @handleFileRemoved) #update model with filename
 
 	handleFileUpload: (nameOnServer) =>
+		@clearError()
 		@getModel().set
 			value: nameOnServer
 			ignored: false
 
 	handleFileRemoved: =>
 		@setEmptyValue()
+		@checkEmptyAndRequired()
 
 	handleDeleteSavedFile: =>
 		@handleFileRemoved()

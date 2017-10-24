@@ -2,6 +2,7 @@ window.ModuleMenusConfiguration =
 	[
 		isHeader: true
 		menuName: "Load Data"
+#		collapsible: true
 	,
 		isHeader: false
 		menuName: "Experiment Loader"
@@ -35,6 +36,7 @@ window.ModuleMenusConfiguration =
 	,
 		isHeader: true
 		menuName: "Search and Edit"
+		collapsible: true
 	,
 		isHeader: false, menuName: "Protocol Browser"
 		mainControllerClassName: "ProtocolBrowserController"
@@ -47,6 +49,7 @@ window.ModuleMenusConfiguration =
 	,
 		isHeader: true
 		menuName: "Admin"
+		collapsible: true
 	,
 		isHeader: false
 		menuName: "Admin Panel"

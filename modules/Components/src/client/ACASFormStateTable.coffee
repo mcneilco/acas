@@ -269,7 +269,7 @@ class window.ACASFormStateTableController extends Backbone.View
 		newVal = changes[0][3]
 		dateDef = _.filter @tableDef.values, (def) ->
 			def.modelDefaults.type == 'dateValue' and def.modelDefaults.kind == prop
-		if dateDef.length == 1
+		if dateDef.length == 1 and value?
 			parsedDate = newVal.split(/([ ,./-])\w/g)
 			if parsedDate.length < 5
 				currentYear = new Date().getFullYear()
@@ -279,7 +279,7 @@ class window.ACASFormStateTableController extends Backbone.View
 	handleBeforeValidate: (value, row, prop, sources) =>
 		dateDef = _.filter @tableDef.values, (def) ->
 			def.modelDefaults.type == 'dateValue' and def.modelDefaults.kind == prop
-		if dateDef.length == 1
+		if dateDef.length == 1 and value?
 			parsedDate = value.split(/([ ,./-])\w/g)
 			if parsedDate.length < 5
 				currentYear = new Date().getFullYear()

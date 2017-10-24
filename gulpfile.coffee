@@ -449,7 +449,7 @@ createTask = (options, type) ->
     .pipe(plumber({errorHandler: onError}))
     .pipe(gulpif(shouldFlatten,flatten()))
     .pipe(gulpif(modifyFunction?, modify(fileModifier: modifyFunction)))
-    .pipe(gulpif(shouldCoffeify, coffeeify({options:{paths:[build]}})))
+    .pipe(gulpif(shouldCoffeify, coffeeify({options:{paths:[build+ '/node_modules']}})))
     .pipe(gulpif(shouldCoffee,coffee(bare: true)))
     .pipe(gulpif(renameFunction?,rename(renameFunction)))
     .pipe gulp.dest(dest)

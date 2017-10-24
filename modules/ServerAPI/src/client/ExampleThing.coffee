@@ -234,6 +234,10 @@ class window.ExampleThingController extends AbstractThingFormController
 		"click .bv_saveThing": "handleUpdateThing"
 
 	initialize: =>
+		@errorOwnerName = 'ExampleThingController'
+		@lockEditingForSessionKey = 'codeName'
+		@openFormControllerSocket()
+
 		@hasRendered = false
 		if window.AppLaunchParams.moduleLaunchParams?
 			if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
@@ -245,7 +249,6 @@ class window.ExampleThingController extends AbstractThingFormController
 			@model = new ExampleThingParent()
 			@modelSaveCallback()
 
-		@errorOwnerName = 'ExampleThingController'
 		@setBindings()
 		if @options.readOnly?
 			@readOnly = @options.readOnly
@@ -263,11 +266,16 @@ class window.ExampleThingController extends AbstractThingFormController
 		@
 
 	renderModelContent: ->
+		if !@model.isNew()
+			@socket.emit 'editLockEntity', @errorOwnerName, @model.get(@lockEditingForSessionKey)
+
 		codeName = @model.get('codeName')
 		@$('.bv_thingCode').val(codeName)
 		@$('.bv_thingCode').html(codeName)
 		if @readOnly is true
 			@displayInReadOnlyMode()
+		else
+			@enableAllInputs()
 		@$('.bv_saveThing').attr('disabled','disabled')
 		if @model.isNew()
 			@$('.bv_saveThing').html("Save")
@@ -325,8 +333,13 @@ class window.ExampleThingController extends AbstractThingFormController
 		@disableAllInputs()
 
 
-#TODO add thing interaction to project with field
+	handleEditLockAvailable: =>
+		super()
+		alert("Document is available to edit. Click OK to attempt to edit (you may be not the first requestor)")
+		@model.fetch()
 
+
+#TODO add thing interaction to project with field
 
 ExampleTableAuditConf =
 	formFieldDefinitions:
