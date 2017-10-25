@@ -48,10 +48,11 @@ exports.getSpecificEntityTypeRoute = (req, resp) ->
 		resp.json json
 
 exports.getSpecificEntityType = (displayName, callback) ->
-	if configuredEntityTypes.entityTypes[displayName]?
-		callback configuredEntityTypes.entityTypes[displayName]
+	entityType = _.findWhere configuredEntityTypes.entityTypes, {displayName:displayName}
+	if callback?
+		callback entityType
 	else
-		callback {}
+		return entityType
 
 exports.getSpecificEntityTypeByTypeKindAndCodeOrigin = (type, kind, codeOrigin) ->
 	entityType = _.findWhere configuredEntityTypes.entityTypes, {type: type, kind: kind, codeOrigin: codeOrigin}
@@ -108,7 +109,7 @@ exports.referenceCodes = (requestData, csv, callback) ->
 		return
 
 	else  # internal source
-		entityType = configuredEntityTypes.entityTypes[requestData.displayName]
+		entityType = exports.getSpecificEntityType requestData.displayName
 		if entityType.codeOrigin is "ACAS LsThing"
 			preferredThingService = require "./ThingServiceRoutes.js"
 			reqHashes =
@@ -130,19 +131,56 @@ exports.referenceCodes = (requestData, csv, callback) ->
 		else if entityType.codeOrigin is "ACAS LsContainer"
 			console.log "entityType.codeOrigin is ACAS LsContainer"
 			console.log reqList
-			console.log reqList
+			
 #			reqList = [reqList[0].requestName]
 			preferredContainerService = require "./InventoryServiceRoutes.js"
-			reqHashes =
-				containerType: entityType.type
-				containerKind: entityType.kind
-				requests: reqList
-			preferredContainerService.getContainerCodesFromNamesOrCodes reqHashes, (codeResponse) ->
-				console.log "codeResponse"
-				console.log codeResponse
-				callback
-					displayName: requestData.displayName
-					results: formatJSONReferenceCode(codeResponse.results, "referenceName")
+			if requestData.displayName == "Aliquot"
+				reqHashes =
+					containerType: entityType.type
+					containerKind: entityType.kind
+					requests: reqList
+				labels =  _.pluck reqList, 'requestName'
+				preferredContainerService.getWellContentByContainerLabelsInternal labels, null, null, null, null, (response, statusCode) ->
+					out = []
+					for res in response
+						if res.containerCodeName? && res.wellContent? && res.wellContent.length == 1 && res.wellContent[0].physicalState == "solution"
+							codeName = res.containerCodeName
+						else
+							codeName = ""
+						out.push
+							requestName: res.label
+							referenceName: codeName
+					if csv
+						out = for res in out
+							res.requestName + "," + res.referenceName
+						outStr =  "Requested Name,Reference Code\n"+out.join('\n')
+						callback
+							displayName: requestData.displayName
+							resultCSV: outStr
+					else
+						callback
+							displayName: requestData.displayName
+							results: out
+			else 
+				reqHashes =
+					containerType: entityType.type
+					containerKind: entityType.kind
+					requests: reqList
+				preferredContainerService.getContainerCodesFromNamesOrCodes reqHashes, (codeResponse) ->
+					console.log "codeResponse"
+					console.log codeResponse
+					console.log "sould be :#{csv}"
+					if csv
+						out = for res in codeResponse.results
+							res.requestName + "," + res.referenceName
+						outStr =  "Requested Name,Reference Code\n"+out.join('\n')
+						callback
+							displayName: requestData.displayName
+							resultCSV: outStr
+					else
+						callback
+							displayName: requestData.displayName
+							results: formatJSONReferenceCode(codeResponse.results, "referenceName")
 			return
 		#this is the fall-through for internal. External fall-through is in csUtilities.getExternalReferenceCodes
 			message = "problem with internal preferred Code request: code type and kind are unknown to system"

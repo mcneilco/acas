@@ -74,3 +74,12 @@ exports.entityTypes =
     sourceExternal: false
     parent: false
     model: require("../routes/ServerUtilityFunctions.js").DefinitionContainerTube
+		
+  'Aliquot':
+    type: 'container'
+    kind: 'tube'
+    codeOrigin: 'ACAS LsContainer'
+    displayName: 'Aliquot'
+    sourceExternal: false
+    parent: false
+
