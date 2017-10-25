@@ -1,45 +1,45 @@
-exports.entityTypes =
-	'Corporate Parent ID':
+exports.entityTypes = [
+    code: 'Corporate Parent ID'
     type: 'compound'
     kind: 'parent name'
     codeOrigin: 'ACAS CmpdReg'
     displayName: 'Corporate Parent ID'
     sourceExternal: true
     parent: true
-
-  'Corporate Batch ID':
+  ,
+    code: 'Corporate Batch ID'
     type: 'compound'
     kind: 'batch name'
     codeOrigin: 'ACAS CmpdReg'
     displayName: 'Corporate Batch ID'
     sourceExternal: true
     parent: false
-
-  'Protein Parent':
+  ,
+    code: 'Protein Parent'
     type: 'parent'
     kind: 'protein'
     codeOrigin: 'ACAS LsThing'
     displayName: 'Protein Parent'
     sourceExternal: false
     parent: true
-
-  'Protein Batch':
+  ,
+    code: 'Protein Batch'
     type: 'batch'
     kind: 'protein'
     codeOrigin: 'ACAS LsThing'
     displayName: 'Protein Batch'
     sourceExternal: false
     parent: false
-
-  'Gene ID':
+  ,
+    code: 'Gene ID'
     type: 'gene'
     kind: 'entrez gene'
     codeOrigin: 'ACAS LsThing'
     displayName: 'Gene ID'
     sourceExternal: false
     parent: false
-
-  'Container Plate':
+  ,
+    code: 'Container Plate'
     type: 'container'
     kind: 'plate'
     codeOrigin: 'ACAS LsContainer'
@@ -47,8 +47,8 @@ exports.entityTypes =
     sourceExternal: false
     parent: false
     model: require("../routes/ServerUtilityFunctions.js").ContainerPlate
-
-  'Container Tube':
+  ,
+    code: 'Container Tube'
     type: 'container'
     kind: 'tube'
     codeOrigin: 'ACAS LsContainer'
@@ -56,8 +56,8 @@ exports.entityTypes =
     sourceExternal: false
     parent: false
     model: require("../routes/ServerUtilityFunctions.js").ContainerTube
-
-  'Definition Container Plate':
+  ,
+    code: 'Definition Container Plate'
     type: 'definition container'
     kind: 'plate'
     codeOrigin: 'ACAS LsContainer'
@@ -65,8 +65,8 @@ exports.entityTypes =
     sourceExternal: false
     parent: false
     model: require("../routes/ServerUtilityFunctions.js").DefinitionContainerPlate
-
-  'Definition Container Tube':
+  ,
+    code: 'Definition Container Tube'
     type: 'definition container'
     kind: 'tube'
     codeOrigin: 'ACAS LsContainer'
@@ -74,12 +74,12 @@ exports.entityTypes =
     sourceExternal: false
     parent: false
     model: require("../routes/ServerUtilityFunctions.js").DefinitionContainerTube
-		
-  'Aliquot':
+  ,
+    code: 'Aliquot'
     type: 'container'
     kind: 'tube'
     codeOrigin: 'ACAS LsContainer'
-    displayName: 'Aliquot'
+    displayName: 'Solution Aliquot'
     sourceExternal: false
     parent: false
-
+]

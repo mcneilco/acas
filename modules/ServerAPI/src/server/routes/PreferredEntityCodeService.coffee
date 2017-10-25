@@ -31,11 +31,11 @@ exports.getConfiguredEntityTypesRoute = (req, resp) ->
 		resp.json json
 
 exports.getConfiguredEntityTypes = (asCodes, callback) ->
-	console.log "asCodes: "+asCodes
+	console.debug "asCodes: "+asCodes
 	if asCodes
-		codes = for own name, et of configuredEntityTypes.entityTypes
-			code: name
-			name: name
+		codes = for type in configuredEntityTypes.entityTypes
+			code: type.code
+			name: type.displayName
 			ignored: false
 		callback codes
 	else
@@ -49,6 +49,7 @@ exports.getSpecificEntityTypeRoute = (req, resp) ->
 
 exports.getSpecificEntityType = (displayName, callback) ->
 	entityType = _.findWhere configuredEntityTypes.entityTypes, {displayName:displayName}
+	entityType ?= {}
 	if callback?
 		callback entityType
 	else
@@ -80,14 +81,22 @@ exports.referenceCodesRoute = (req, resp) ->
 		resp.json json
 
 exports.referenceCodes = (requestData, csv, callback) ->
-	console.log "stubs mode is: "+global.specRunnerTestmode 	#Note specRunnerTestMode is handled within functions called from here
-	console.log("csv is " + csv)
+	console.debug "stubs mode is: "+global.specRunnerTestmode 	#Note specRunnerTestMode is handled within functions called from here
+	console.debug("csv is " + csv)
 
 	# convert displayName to type and kind
-	exports.getSpecificEntityType requestData.displayName, (json) ->
-		requestData.type = json.type
-		requestData.kind = json.kind
-		requestData.sourceExternal = json.sourceExternal
+	entityType = exports.getSpecificEntityType requestData.displayName
+	if _.isEmpty entityType
+		#this is the fall-through for internal. External fall-through is in csUtilities.getExternalReferenceCodes
+			message = "problem with internal preferred Code request: code type and kind are unknown to system"
+			callback message
+			console.error message
+			return
+	else
+		console.debug 'not empty'
+	requestData.type = entityType.type
+	requestData.kind = entityType.kind
+	requestData.sourceExternal = entityType.sourceExternal
 
 	if csv
 		reqList = formatCSVRequestAsReqArray(requestData.entityIdStringLines)
@@ -95,7 +104,7 @@ exports.referenceCodes = (requestData, csv, callback) ->
 		reqList = requestData.requests
 
 	if requestData.sourceExternal
-		console.log("looking up external entity")
+		console.debug("looking up external entity")
 		csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
 		csUtilities.getExternalReferenceCodes requestData.displayName, reqList, (prefResp) ->
 			if csv
@@ -109,7 +118,6 @@ exports.referenceCodes = (requestData, csv, callback) ->
 		return
 
 	else  # internal source
-		entityType = exports.getSpecificEntityType requestData.displayName
 		if entityType.codeOrigin is "ACAS LsThing"
 			preferredThingService = require "./ThingServiceRoutes.js"
 			reqHashes =
@@ -129,12 +137,11 @@ exports.referenceCodes = (requestData, csv, callback) ->
 						displayName: requestData.displayName
 						results: formatJSONReferenceCode(codeResponse.results, "referenceName")
 		else if entityType.codeOrigin is "ACAS LsContainer"
-			console.log "entityType.codeOrigin is ACAS LsContainer"
-			console.log reqList
-			
-#			reqList = [reqList[0].requestName]
+			console.debug "entityType.codeOrigin is ACAS LsContainer"
+			console.debug reqList
 			preferredContainerService = require "./InventoryServiceRoutes.js"
-			if requestData.displayName == "Aliquot"
+#			reqList = [reqList[0].requestName]
+			if entityType.code == "Aliquot"
 				reqHashes =
 					containerType: entityType.type
 					containerKind: entityType.kind
@@ -167,9 +174,6 @@ exports.referenceCodes = (requestData, csv, callback) ->
 					containerKind: entityType.kind
 					requests: reqList
 				preferredContainerService.getContainerCodesFromNamesOrCodes reqHashes, (codeResponse) ->
-					console.log "codeResponse"
-					console.log codeResponse
-					console.log "sould be :#{csv}"
 					if csv
 						out = for res in codeResponse.results
 							res.requestName + "," + res.referenceName
@@ -182,10 +186,7 @@ exports.referenceCodes = (requestData, csv, callback) ->
 							displayName: requestData.displayName
 							results: formatJSONReferenceCode(codeResponse.results, "referenceName")
 			return
-		#this is the fall-through for internal. External fall-through is in csUtilities.getExternalReferenceCodes
-			message = "problem with internal preferred Code request: code type and kind are unknown to system"
-			callback message
-			console.error message
+
 
 ####################################################################
 # BEST LABELS
