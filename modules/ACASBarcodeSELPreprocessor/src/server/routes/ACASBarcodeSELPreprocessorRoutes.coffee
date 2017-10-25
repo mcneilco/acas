@@ -33,6 +33,9 @@ exports.parseSEL = (req, resp)  ->
 		replyData.hasError = true
 		replyData.errorMessages.push
 			errorLevel: "error", message: msg
+		if replyData.results.htmlSummary == ""
+			replyData.results.htmlSummary = "<strong>Proproccesor Errors:</strong><br />"
+		replyData.results.htmlSummary += "#{msg} <br />"
 
 	infilePath = path.join ACAS_HOME, config.all.server.datafiles.relative_path, selData.fileToParse
 	fs.readFile infilePath, 'utf8', (err, selFile) ->
@@ -41,6 +44,7 @@ exports.parseSEL = (req, resp)  ->
 			resp.json replyData
 			return
 
+		selFile = selFile.replace '\n', ''
 		inLines = selFile.split '\r'
 		outLines = []
 		barcodesToSub = []
@@ -51,24 +55,23 @@ exports.parseSEL = (req, resp)  ->
 		for line in inLines
 			console.log line
 			cells = line.split ','
-			if foundBarcodeHeader && !foundRawResultsHeader
-				if cells[0].trim() != ""
-					barcodesToSub.push cells[0].trim()
-					linesToSub.push = cells
-				else
-					outLines.push cells.join ','
-			else if foundRawResultsHeader
-				rawLines.push = line
-			else if !foundBarcodeHeader
-				outLines.push line
-			else
+			if !foundBarcodeHeader && !foundRawResultsHeader
 				if cells[0].trim() == "Barcode"
 					foundBarcodeHeader = true
-					cells[0] == "Corporate Batch ID"
+					cells[0] = "Corporate Batch ID"
 					outLines.push cells.join ','
-				else if cells[0].trim() == "Raw Results"
+				else
+					outLines.push line
+			else if !foundRawResultsHeader
+				if cells[0].trim() == "Raw Results"
 					foundRawResultsHeader = true
 					rawLines.push line
+				else
+					if cells[0].trim() != ""
+						barcodesToSub.push cells[0].trim()
+						linesToSub.push cells
+			else
+				rawLines.push line
 
 		if !foundBarcodeHeader
 			addError "Expected to find left-hand cell containing the word \"Barcode\""
@@ -84,11 +87,13 @@ exports.parseSEL = (req, resp)  ->
 
 			batches = {}
 			for well in wells
-				wellInfo = wells[0]?.wellContent[0]
+				wellInfo = well.wellContent[0]
+				console.log wellInfo
 				if wellInfo?.batchCode? and wellInfo.batchCode != ""
-					batches[wellInfo.barcode] = wellInfo.batchCode
+					console.log "batchCode "+wellInfo.batchCode
+					batches[well.label] = wellInfo.batchCode
 				else
-					addError "Could not find lot/bath name for barcode #{wellInfo.barcode}"
+					addError "Could not find lot/batch name for barcode #{well.label}"
 			if replyData.hasError
 				resp.json replyData
 				return
@@ -96,12 +101,10 @@ exports.parseSEL = (req, resp)  ->
 			console.log batches
 			for line in linesToSub
 				line[0] = batches[line[0]]
+				console.log line
 				outLines.push line.join ','
 
-			outLines.push rawLines
-			console.log "number of lines: "+outLines.length
-
-			outFile = outLines.join '\r\n'
+			outFile = outLines.join '\n'
 			outFileName = selData.fileToParse.slice(0, -4) + "_converted.csv"
 			outFilePath = path.join ACAS_HOME, config.all.server.datafiles.relative_path, outFileName
 			fs.writeFile outFilePath, outFile, 'utf8', (err) ->
