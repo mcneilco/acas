@@ -53,7 +53,6 @@ exports.parseSEL = (req, resp)  ->
 		foundBarcodeHeader = false
 		foundRawResultsHeader = false
 		for line in inLines
-			console.log line
 			cells = line.split ','
 			if !foundBarcodeHeader && !foundRawResultsHeader
 				if cells[0].trim() == "Barcode"
@@ -78,7 +77,6 @@ exports.parseSEL = (req, resp)  ->
 			resp.json replyData
 			return
 
-		console.log barcodesToSub
 		inventoryServices.getWellContentByContainerLabelsInternal barcodesToSub, 'container', 'tube', 'barcode', 'barcode', (wells, wellStatusCode) ->
 			if wellStatusCode != 200
 				addError "There was a problem looking up the barcodes"
@@ -88,9 +86,7 @@ exports.parseSEL = (req, resp)  ->
 			batches = {}
 			for well in wells
 				wellInfo = well.wellContent[0]
-				console.log wellInfo
 				if wellInfo?.batchCode? and wellInfo.batchCode != ""
-					console.log "batchCode "+wellInfo.batchCode
 					batches[well.label] = wellInfo.batchCode
 				else
 					addError "Could not find lot/batch name for barcode #{well.label}"
@@ -98,10 +94,8 @@ exports.parseSEL = (req, resp)  ->
 				resp.json replyData
 				return
 
-			console.log batches
 			for line in linesToSub
 				line[0] = batches[line[0]]
-				console.log line
 				outLines.push line.join ','
 
 			outFile = outLines.join '\n'
@@ -114,6 +108,5 @@ exports.parseSEL = (req, resp)  ->
 					return
 
 				selData.fileToParse = outFileName
-				console.log selData
 				serverUtilityFunctions.runRFunctionOutsideRequest selData.user, selData, "src/r/GenericDataParser/generic_data_parser.R", "parseGenericData", (rReturn) ->
 					resp.end rReturn
