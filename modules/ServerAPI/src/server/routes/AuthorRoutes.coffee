@@ -767,7 +767,7 @@ checkIfEmailHasChangedAndIsUnique = (author, savedAuthor, callback) ->
 	if author.emailAddress == savedAuthor.emailAddress
 		callback null
 	else
-		checkEmailIsUnique author (err, isUnique) ->
+		checkEmailIsUnique author, (err, isUnique) ->
 			if err?
 				callback err
 			else if isUnique
