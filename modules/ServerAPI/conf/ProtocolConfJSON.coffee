@@ -139,6 +139,9 @@
 			,
 				typeName: "codeValue"
 				kindName: "model fit transformation units"
+			,
+				typeName: "codeValue"
+				kindName: "required entity type"
 			]
 
 		labeltypes:
