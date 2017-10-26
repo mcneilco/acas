@@ -2833,7 +2833,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   
   if(!newProtocol) {
     requiredMainCode <- getProtocolRequiredEntityCode(protocol)
-    if(length(requiredMainCode) > 0) {
+    if(length(requiredMainCode) > 0 && !is.na(requiredMainCode) && requiredMainCode != "" && requiredMainCode != "unassigned") {
       requiredMainCode <- requiredMainCode[[1]]
       if(mainCode != requiredMainCode) {
         warnUser(paste0("'",metaData$'Protocol Name'[1],"' requires an entity type of '",requiredMainCode,"'. Please update your file with this entity type instead of the entity type '",mainCode,"'"))
