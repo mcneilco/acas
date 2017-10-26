@@ -141,7 +141,7 @@ exports.referenceCodes = (requestData, csv, callback) ->
 			console.debug reqList
 			preferredContainerService = require "./InventoryServiceRoutes.js"
 #			reqList = [reqList[0].requestName]
-			if entityType.code == "Aliquot"
+			if entityType.code == "Solution Container Tube"
 				reqHashes =
 					containerType: entityType.type
 					containerKind: entityType.kind

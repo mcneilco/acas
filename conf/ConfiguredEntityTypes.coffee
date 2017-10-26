@@ -75,7 +75,7 @@ exports.entityTypes = [
     parent: false
     model: require("../routes/ServerUtilityFunctions.js").DefinitionContainerTube
   ,
-    code: 'Aliquot'
+    code: 'Solution Container Tube'
     type: 'container'
     kind: 'tube'
     codeOrigin: 'ACAS LsContainer'
