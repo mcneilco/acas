@@ -470,7 +470,6 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   #   a "data.frame" of the validated calculated results
   
   require(data.table)
-  
   entityTypeAndKindList <- fromJSON(getURLcheckStatus(paste0(racas::applicationSettings$server.nodeapi.path, 
                                                              "/api/entitymeta/configuredEntityTypes/"), 
                                                              requireJSON = TRUE))
@@ -1178,7 +1177,7 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
     if (lockCorpBatchId) {
       if(calculatedResultsValueKindRow[1] != mainCode && !precise) {
         stopUser(paste0("Could not find '", mainCode, "' column. The ", mainCode, 
-                    " column should be the first column of the Calculated Results"))
+                        " column should be the first column of the Calculated Results"))
       }
     } else {
       if (!(mainCode %in% unlist(calculatedResultsValueKindRow)) && !precise) {
@@ -2815,18 +2814,40 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   # Grab the Calculated Results Section
   calculatedResults <- getSection(genericDataFileDataFrame, lookFor = formatParameters$lookFor, transpose = FALSE)
   
+  # Get the protocol and experiment
+  newProtocol <- FALSE
+  if (!useExisting) {
+    protocol <- getProtocolByNameAndFormat(protocolName = validatedMetaData$'Protocol Name'[1], configList, inputFormat)
+    newProtocol <- is.na(protocol[[1]])
+    if (!newProtocol) {
+      metaData$'Protocol Name'[1] <- getPreferredProtocolName(protocol, validatedMetaData$'Protocol Name'[1])
+    }
+  }
+
   # Organize the Calculated Results
   if (inputFormat %in% c("Gene ID Data", "Generic", "Dose Response")) {
     mainCode <- calculatedResults[2, 1] #Getting this from its standard position
   } else {
     mainCode <- "Corporate Batch ID"
   }
+  
+  if(!newProtocol) {
+    requiredMainCode <- getProtocolRequiredEntityCode(protocol)
+    if(length(requiredMainCode) > 0) {
+      requiredMainCode <- requiredMainCode[[1]]
+      if(mainCode != requiredMainCode) {
+        warnUser(paste0("'",metaData$'Protocol Name'[1],"' requires an entity type of '",requiredMainCode,"'. Please update your file with this entity type instead of the entity type '",mainCode,"'"))
+      }
+      mainCode <- requiredMainCode
+      calculatedResults[2, 1] <- mainCode
+    }
+  }
+
   calculateGroupingID <- if (rawOnlyFormat) {calculateTreatmemtGroupID} else {NA}
   organizedResultsList <- organizeCalculatedResults(
     calculatedResults, inputFormat, formatParameters, mainCode, 
     lockCorpBatchId = formatParameters$lockCorpBatchId, rawOnlyFormat = rawOnlyFormat, 
     errorEnv = errorEnv, precise = precise, calculateGroupingID = calculateGroupingID)
-    
   calculatedResults <- organizedResultsList[[1]]
   selColumnOrderInfo <- organizedResultsList[[2]]
 
@@ -2878,21 +2899,11 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     customExperimentMetaDataValues <- NULL
   }
   
-  
-  # Get the protocol and experiment and, when not on a dry run, create them if they do not exist
-  newProtocol <- FALSE
-  if (!useExisting) {
-    protocol <- getProtocolByNameAndFormat(protocolName = validatedMetaData$'Protocol Name'[1], configList, inputFormat)
-    newProtocol <- is.na(protocol[[1]])
-    if (!newProtocol) {
-      metaData$'Protocol Name'[1] <- getPreferredProtocolName(protocol, validatedMetaData$'Protocol Name'[1])
-    }
-  }
-  
+  # when not on a dry run, create protocol and experiment if they do not exist
   if (!dryRun && newProtocol && errorFree) {
     protocol <- createNewProtocol(metaData = validatedMetaData, lsTransaction, recordedBy)
   }
-  
+
   useExistingExperiment <- inputFormat %in% c("Use Existing Experiment", "Precise For Existing Experiment")
   if (useExistingExperiment) {
     experiment <- getExperimentByCodeName(validatedMetaData$'Experiment Code Name'[1])
@@ -3046,7 +3057,12 @@ getPreviousExperimentCodes <- function(experiment) {
   previousExperimentCodes <- lapply(previousCodeValues, getElement, "codeValue")
   return(previousExperimentCodes)
 }
-
+getProtocolRequiredEntityCode <- function(protocol) {
+  metadataState <- getStatesByTypeAndKind(protocol, "metadata_protocol metadata")[[1]]
+  requiredEntities <- getValuesByTypeAndKind(metadataState, "codeValue_required entity type")
+  requiredEntityCodes <- lapply(requiredEntities, getElement, "codeValue")
+  return(requiredEntityCodes)
+}
 translateClassToValueType <- function(x, reverse = F) {
   # translates Excel style Number formats to ACAS valueTypes (or reverse)
   valueTypeVector <- c("numericValue", "stringValue", "fileValue", "inlineFileValue", "urlValue", "dateValue", "clobValue", "blobValue", "codeValue")
