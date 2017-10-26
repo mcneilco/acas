@@ -556,5 +556,10 @@ client.roles.crossProjectLoaderRole=ROLE_ACAS-CROSS-PROJECT-LOADER
 # For whether protocols and experiments should have sequential user defined corpName labels
 client.entity.saveInitialsCorpName=false
 
+# Whether to show the Required Entity Type GUI picklist
+client.protocol.requiredEntityType.save=false
+# Whether the required entity type is a required field
+client.protocol.requiredEntityType.allowEmpty=true
+
 client.compoundInventory.enforceUppercaseBarcodes=false
 client.compoundInventory.daughterVials.strictMatchPhysicalState=false
