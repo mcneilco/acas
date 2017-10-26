@@ -2265,7 +2265,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
     fileStartLocation, experiment, "metadata", "experiment metadata", "source file", 
     recordedBy, lsTransaction, customSourceFileMove = customSourceFileMove)
   if(!is.null(reportFilePath) && reportFilePath != "") {
-    batchNameList <- unique(analysisGroupData[analysisGroupData$valueKind == "batch code", "codeValue"])
+    batchNameList <- unique(subjectData$batchCode)
     if (configList$server.service.external.report.registration.url != "") {
       registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction, annotationType)
     } else {

@@ -19,15 +19,15 @@ jQuery.extend( jQuery.fn.dataTableExt.oSort, {
             return operator + parseFloat(a.slice(1) );
         }
         //console.log(parseFloat( a ) || a.toLowerCase());
-        console.log(a);
+        //console.log(a);
         //console.log(parseFloat( a ));
         //console.log(a.toLowerCase());
         if(isNaN(parseFloat(a))) {
-            console.log("return lowercase - nan")
+            //console.log("return lowercase - nan")
             return a.toLowerCase();
         }
         else {
-            console.log("return parseFloat");
+            //console.log("return parseFloat");
             return (parseFloat( a ));
         }
         //return (parseFloat( a ) || a.toLowerCase());

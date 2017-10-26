@@ -54,7 +54,10 @@ exports.getPreferredCompoundBatchIDs = (requests, callback) ->
 			false
 		)
 	else if serviceType == "AcasCmpdReg" && !global.specRunnerTestmode
-		req.body.user = "" # to bypass validation function
+		req =
+			testMode: false
+			requests: requests
+			user: ""
 		serverUtilityFunctions.runRFunction(
 			req,
 			"src/r/ServerAPI/AcasCmpdRegBatchCheck.R",
@@ -63,8 +66,13 @@ exports.getPreferredCompoundBatchIDs = (requests, callback) ->
 			callback rReturn
 		)
 	else if serviceType == "GeneCodeCheckByR" && !global.specRunnerTestmode
-		req.body.user = "" # to bypass validation function
-		serverUtilityFunctions.runRFunction(
+		console.log "running GeneCodeCheckByR batch check"
+		req =
+			testMode: false
+			requests: requests
+			user: ""
+		serverUtilityFunctions.runRFunctionOutsideRequest(
+			"",
 			req,
 			"src/r/ServerAPI/AcasGeneBatchCheck.R",
 			"acasGeneCodeCheck",

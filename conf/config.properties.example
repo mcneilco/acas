@@ -164,19 +164,32 @@ client.service.rapache.fullpath=http://${client.service.rapache.host}:${client.s
 server.sar.geomMean=[Ki,Kd,pH]
 
 # Title of leftmost column when no search string is entered
-# e.g. for Chanda should be "Gene ID"
 server.sar.defaultTitle ="Tested Entity Information"
+# e.g. for Gene Data should be "Gene ID"
+server.sar.default.displayName=Corporate Batch ID
 
 #options are bestLabel and ReferenceCode
-server.sar.csvLabel=bestLabel
+server.sar.csvLabel=ReferenceCode
+
+# Include values with operators in aggregation
+server.sar.aggregation.includeValuesWithOperators=FALSE
+
+# Number of sigfigs to display in GUI
+server.sar.sigfigs=4
+
+server.sar.default.maxResults=100000
+
+server.sar.assayTree.showExperiments=true
+
+server.sar.assayTree.showProtocolTags=true
 
 # options are ignoreOperators or includeOperators
-client.sar.sorting = includeOperators
+client.sar.sorting=includeOperators
 
 # url to fetch structure images from
 client.service.external.structure.url=http://tomcat:8080/cmpdreg/structureimage/lot/
 
-# url to lot details
+# url to fetch lot details
 client.service.external.lotDetails.url=/cmpdreg/#lot/
 
 ################################
@@ -288,6 +301,10 @@ client.service.result.viewer.seurat.protocolPrefix=http://${client.service.persi
 client.service.result.viewer.seurat.experimentPrefix=&AssayProtocol=
 client.service.result.viewer.protocolPrefix=http://${client.service.persistence.host}:9080/seurat/runseurat?cmd=newjob&AssayName=
 client.service.result.viewer.experimentPrefix=&AssayProtocol=
+client.service.result.viewer.showIncludeTGResultsCheckbox=false
+client.service.result.viewer.showFilterDataByExptCheckbox=false
+client.service.result.viewer.showFilterDataByExptCheckbox=false
+client.service.result.viewer.filterDataByEntity=protocol
 
 client.service.result.viewer.experimentNameColumn=EXPERIMENT_NAME
 client.service.result.viewer.experimentName.invalidCharacters="',

@@ -437,5 +437,5 @@ exports.projectCodes = (requestData, csv, callback) ->
 						results: formatJSONProjectCode(codeResponse.results, "projectCode")
 			return
 		#this is the fall-through for internal. External fall-through is in csUtilities.getExternalReferenceCodes
-		callback.statusCode = 500
+		#callback.statusCode = 500
 		callback "problem with internal preferred Code request: code type and kind are unknown to system"
