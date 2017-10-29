@@ -52,6 +52,7 @@ class window.ACASFormLocationTreeController extends ACASFormAbstractFieldControl
 		super()
 
 	handleEditIconClicked: =>
+		@$('.bv_locationTreeModal').show()
 		@$('.bv_locationTreeModal').modal
 			backdrop: 'static'
 		@getContainerLocationTree()
@@ -64,6 +65,7 @@ class window.ACASFormLocationTreeController extends ACASFormAbstractFieldControl
 			error: (err) =>
 				alert 'Could not get container location tree. Please contact administrator'
 				@$('.bv_locationTreeModal').modal 'hide'
+				@$('.bv_locationTreeModal').hide()
 			success: (json) =>
 				@setupTree (json)
 
@@ -109,6 +111,7 @@ class window.ACASFormLocationTreeController extends ACASFormAbstractFieldControl
 	handleUpdateLocationClicked: =>
 		selectedLocation = @$('.bv_locationTree').jstree('get_selected', true)
 		@$('.bv_locationTreeModal').modal 'hide'
+		@$('.bv_locationTreeModal').hide()
 		value = selectedLocation[0].original.id
 		breadcrumb = selectedLocation[0].original.breadcrumb
 
