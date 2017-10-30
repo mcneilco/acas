@@ -107,7 +107,7 @@ export LANG
 running() {
     runningCommand="export FOREVER_ROOT=$ACAS_HOME/bin && forever list 2>/dev/null | grep $ACAS_HOME/app.js 2>&1 >/dev/null"
     if [ $(whoami) != "$ACAS_USER" ]; then
-        runningCommand="su - $ACAS_USER $suAdd -c \"($runningCommand)\""
+        runningCommand="su -p - $ACAS_USER $suAdd -c \"($runningCommand)\""
     fi
     eval $runningCommand
     return $?
@@ -116,7 +116,7 @@ running() {
 start_server() {
     startCommand="export FOREVER_ROOT=$ACAS_HOME/bin && forever start --killSignal=SIGTERM --workingDir --append -l $logname -o $logout -e $logerr $ACAS_HOME/app.js 2>&1 >/dev/null"
     if [ $(whoami) != "$ACAS_USER" ]; then
-        startCommand="su - $ACAS_USER $suAdd -c \"(cd `dirname $ACAS_HOME/app.js` && $startCommand)\""
+        startCommand="su -p - $ACAS_USER $suAdd -c \"(cd `dirname $ACAS_HOME/app.js` && $startCommand)\""
     fi
     eval $startCommand
     return $?
@@ -130,7 +130,7 @@ run_server() {
     fi
     echo "runCommand: $runCommand"
     if [ $(whoami) != "$ACAS_USER" ]; then
-        startCommand="su - $ACAS_USER $suAdd -c \"(cd `dirname $ACAS_HOME/app.js` && $startCommand)\""
+        startCommand="su -p - $ACAS_USER $suAdd -c \"(cd `dirname $ACAS_HOME/app.js` && $startCommand)\""
     fi
     eval "($runCommand)" &
     return $?
@@ -139,7 +139,7 @@ run_server() {
 stop_server() {
     stopCommand="export FOREVER_ROOT=$ACAS_HOME/bin && forever stop $ACAS_HOME/app.js 2>&1 >/dev/null"
     if [ $(whoami) != "$ACAS_USER" ]; then
-        stopCommand="su - $ACAS_USER $suAdd -c \"($stopCommand)\""
+        stopCommand="su -p - $ACAS_USER $suAdd -c \"($stopCommand)\""
     fi
     eval $stopCommand
 
@@ -156,7 +156,7 @@ start_apache() {
     remove_apache_pid
     startCommand=" $apacheCMD -f $ACAS_HOME/conf/compiled/apache.conf -k start 2>&1 >/dev/null"
     if [ $(whoami) != "$RAPACHE_START_ACAS_USER" ]; then
-        startCommand="su - $RAPACHE_START_ACAS_USER $suAdd -c \"($startCommand)\""
+        startCommand="su -p - $RAPACHE_START_ACAS_USER $suAdd -c \"($startCommand)\""
     fi
     eval $startCommand
     return $?
@@ -167,7 +167,7 @@ run_apache() {
     sed -i 's/^ErrorLog.*/ErrorLog "|cat"/' /tmp/apache.conf
     startCommand=" $apacheCMD -f /tmp/apache.conf -k start -DFOREGROUND"
     if [ $(whoami) != "$RAPACHE_START_ACAS_USER" ]; then
-        startCommand="su - $RAPACHE_START_ACAS_USER $suAdd -c \"($startCommand)\""
+        startCommand="su -p - $RAPACHE_START_ACAS_USER $suAdd -c \"($startCommand)\""
     fi
     eval "($startCommand) $1"
     return $?
@@ -176,7 +176,7 @@ run_apache() {
 stop_apache() {
     stopCommand="$apacheCMD -f $ACAS_HOME/conf/compiled/apache.conf -k stop 2>&1 >/dev/null"
     if [ $(whoami) != "$RAPACHE_START_ACAS_USER" ]; then
-        stopCommand="su - $RAPACHE_START_ACAS_USER $suAdd -c \"($stopCommand)\""
+        stopCommand="su -p - $RAPACHE_START_ACAS_USER $suAdd -c \"($stopCommand)\""
     fi
     eval $stopCommand
     return $?
@@ -185,7 +185,7 @@ stop_apache() {
 apache_reload() {
     reloadCommand="$apacheCMD -f $ACAS_HOME/conf/compiled/apache.conf -k graceful 2>&1 >/dev/null"
     if [ $(whoami) != "$RAPACHE_START_ACAS_USER" ]; then
-        reloadCommand="su - $RAPACHE_START_ACAS_USER $suAdd -c \"($reloadCommand)\""
+        reloadCommand="su -p - $RAPACHE_START_ACAS_USER $suAdd -c \"($reloadCommand)\""
     fi
     eval $reloadCommand
     return $?
