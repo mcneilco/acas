@@ -69,7 +69,7 @@ ENV     ACAS_HOME=$BUILD_PATH
 
 #Install python dependencies
 USER	root
-RUN		curl -SLO dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm && rpm -ivh epel-release-6-8.noarch.rpm && rm epel-release-6-8.noarch.rpm
+RUN		curl -SLO dl.fedoraproject.org/pub/epel/6/x86_64/Packages/e/epel-release-6-8.noarch.rpm && rpm -ivh epel-release-6-8.noarch.rpm && rm epel-release-6-8.noarch.rpm
 RUN		yum install -y python-pip python-psycopg2
 RUN		pip install argparse requests psycopg2
 USER	runner
