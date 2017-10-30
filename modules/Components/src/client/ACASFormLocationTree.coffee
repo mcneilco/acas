@@ -9,6 +9,8 @@ class window.ACASFormLocationTreeController extends ACASFormAbstractFieldControl
 		"click .bv_searchClear": "handleSearchClear"
 		"click .bv_updateLocation": "handleUpdateLocationClicked"
 
+	className: ""
+
 	template: _.template($("#ACASFormLocationTreeView").html())
 
 	initialize: ->
@@ -37,6 +39,12 @@ class window.ACASFormLocationTreeController extends ACASFormAbstractFieldControl
 					error: (err) =>
 						alert 'error getting breadcrumb for container'
 
+	render: =>
+		super()
+
+		@$('.bv_controlGroup').addClass "bv_group_"+@modelKey
+		@
+		
 	setEmptyValue: ->
 		@getModel().set
 			value: null
