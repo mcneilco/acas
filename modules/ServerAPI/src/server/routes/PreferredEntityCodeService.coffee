@@ -92,8 +92,6 @@ exports.referenceCodes = (requestData, csv, callback) ->
 			callback message
 			console.error message
 			return
-	else
-		console.debug 'not empty'
 	requestData.type = entityType.type
 	requestData.kind = entityType.kind
 	requestData.sourceExternal = entityType.sourceExternal
@@ -156,10 +154,10 @@ exports.referenceCodes = (requestData, csv, callback) ->
 							codeName = ""
 						out.push
 							requestName: res.label
-							referenceName: codeName
+							referenceCode: codeName
 					if csv
 						out = for res in out
-							res.requestName + "," + res.referenceName
+							res.requestName + "," + res.referenceCode
 						outStr =  "Requested Name,Reference Code\n"+out.join('\n')
 						callback
 							displayName: requestData.displayName
@@ -207,10 +205,10 @@ exports.pickBestLabelsRoute = (req, resp) ->
 		resp.json json
 
 exports.pickBestLabels = (requestData, csv, callback) ->
-	exports.getSpecificEntityType requestData.displayName, (json) ->
-		requestData.type = json.type
-		requestData.kind = json.kind
-		requestData.sourceExternal = json.sourceExternal
+	entityType = exports.getSpecificEntityType requestData.displayName
+	requestData.type = entityType.type
+	requestData.kind = entityType.kind
+	requestData.sourceExternal = entityType.sourceExternal
 
 	if csv
 		reqList = formatCSVRequestAsReqArray(requestData.referenceCodes)
@@ -232,7 +230,6 @@ exports.pickBestLabels = (requestData, csv, callback) ->
 		return
 
 	else  # sourceExternal = false
-		entityType = configuredEntityTypes.entityTypes[requestData.displayName]
 		if entityType.codeOrigin is "ACAS LsThing"
 			preferredThingService = require "./ThingServiceRoutes.js"
 			reqHashes =
@@ -251,10 +248,10 @@ exports.pickBestLabels = (requestData, csv, callback) ->
 					callback
 						displayName: requestData.displayName
 						results: formatJSONBestLabel(codeResponse.results, "preferredName")
-		else if entityType.codeOrigin is "ACAS LSContainer"
+		else if entityType.codeOrigin is "ACAS LsContainer"
 			console.log "entityType.codeOrigin is ACAS LSContainer"
 			console.log reqList
-			preferredContainerService = require "./ContainerServiceRoutes.js"
+			preferredContainerService = require "./InventoryServiceRoutes.js"
 			reqHashes =
 				containerType: entityType.type
 				containerKind: entityType.kind
