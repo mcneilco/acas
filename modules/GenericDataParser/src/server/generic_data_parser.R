@@ -562,7 +562,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   
   
   ### ================== Check batch projects ========================================================
-  if (!is.null(projectCode)) {
+  if (racas::applicationSettings$server.project.roles.enable && !is.null(projectCode)) {
     # projectList is a list of objects with keys "code" (string), "isRestricted" (boolean), and others not required here
     projectList <- jsonlite::fromJSON(getURL(paste0(racas::applicationSettings$server.nodeapi.path, "/api/projects/getAllProjects/stubs")), simplifyDataFrame=FALSE)
     currentProjList <- Filter(function(x) {x$code == projectCode}, projectList)
@@ -2050,44 +2050,47 @@ validateProject <- function(projectName, configList, username, protocolName = NU
   if(forceProtocolCreation) {
     protocolName <- trim(gsub("CREATETHISPROTOCOL", "", protocolName))
   }
-  tryCatch({
-    protocolList <- getProtocolsByName(protocolName)
-  }, error = function(e) {
-    stopUser("There was an error in accessing the protocol. Please contact your system administrator.")
-  })
-  if (length(protocolList) !=0) {
-    protocol <- getProtocolById(protocolList[[1]]$id)
-    metadataState <- getStatesByTypeAndKind(protocol, "metadata_protocol metadata")
-    if(length(metadataState) > 0) {
-      metadataState <- metadataState[[1]]
-      #protocolProject <- getValuesByTypeAndKind(metadataState, "codeValue_project")
-      protocolProject <- metadataState$lsValues[unlist(lapply(metadataState$lsValues, function(x) {x$"lsTypeAndKind"=="codeValue_project" & x$ignored ==FALSE}))]
-      if(!is.null(protocolProject) && length(protocolProject) != 0) {
-        protocolProject <- lapply(protocolProject, getElement, "codeValue")[[1]]
-        if(protocolProject != "unassigned") {
-          systemProjectsList <- fromJSON(getURL(paste0(racas::applicationSettings$server.nodeapi.path, "/api/projects/getAllProjects/stubs")))
-          systemProjectsDT <- rbindlist(systemProjectsList, fill = TRUE)
-          protocolProjectMatches <- systemProjectsDT[code == protocolProject]
-          projectCode <- systemProjectsDT[name == projectName]$code
-          if(nrow(protocolProjectMatches) == 0) {
-            protocolProjectExists <- FALSE
-            addError("The project that this protocol belongs to is no longer available please contact your administrator or if you have the appropriate privileges re-assign the protocol to a new project", errorEnv = errorEnv)
-          } else {
-            protocolProjectExists <- TRUE
-          }
-          if(protocolProjectExists && protocolProjectMatches[1]$isRestricted && (length(projectCode) == 0 || protocolProject != projectCode)) {
-            addError("The protocol you entered belongs to a restricted project, therefore, the experiment project must match protocol's project.", errorEnv = errorEnv)
-          }
-          
-          rmNullObs <- function(x) {
-            is.NullOb <- function(x) is.null(x) | all(sapply(x, is.null))
-            x <- Filter(Negate(is.NullOb), x)
-            lapply(x, function(x) if (is.list(x)) rmNullObs(x) else x)
-          }
-          userProjectDT <- rbindlist(lapply(projectList, rmNullObs), fill = TRUE)
-          userHasAccess <- nrow(userProjectDT[code == protocolProject & ignored == FALSE]) > 0
-          if(!userHasAccess) {
-            addError("The protocol you entered is being used in a project that you do not have access to.", errorEnv = errorEnv)
+  # Only Check protocol projects if project roles is enable
+  if (racas::applicationSettings$server.project.roles.enable) {
+    tryCatch({
+      protocolList <- getProtocolsByName(protocolName)
+    }, error = function(e) {
+      stopUser("There was an error in accessing the protocol. Please contact your system administrator.")
+    })
+    if (length(protocolList) !=0) {
+      protocol <- getProtocolById(protocolList[[1]]$id)
+      metadataState <- getStatesByTypeAndKind(protocol, "metadata_protocol metadata")
+      if(length(metadataState) > 0) {
+        metadataState <- metadataState[[1]]
+        #protocolProject <- getValuesByTypeAndKind(metadataState, "codeValue_project")
+        protocolProject <- metadataState$lsValues[unlist(lapply(metadataState$lsValues, function(x) {x$"lsTypeAndKind"=="codeValue_project" & x$ignored ==FALSE}))]
+        if(!is.null(protocolProject) && length(protocolProject) != 0) {
+          protocolProject <- lapply(protocolProject, getElement, "codeValue")[[1]]
+          if(protocolProject != "unassigned") {
+            systemProjectsList <- fromJSON(getURL(paste0(racas::applicationSettings$server.nodeapi.path, "/api/projects/getAllProjects/stubs")))
+            systemProjectsDT <- rbindlist(systemProjectsList, fill = TRUE)
+            protocolProjectMatches <- systemProjectsDT[code == protocolProject]
+            projectCode <- systemProjectsDT[name == projectName]$code
+            if(nrow(protocolProjectMatches) == 0) {
+              protocolProjectExists <- FALSE
+              addError("The project that this protocol belongs to is no longer available please contact your administrator or if you have the appropriate privileges re-assign the protocol to a new project", errorEnv = errorEnv)
+            } else {
+              protocolProjectExists <- TRUE
+            }
+            if(protocolProjectExists && protocolProjectMatches[1]$isRestricted && (length(projectCode) == 0 || protocolProject != projectCode)) {
+              addError("The protocol you entered belongs to a restricted project, therefore, the experiment project must match protocol's project.", errorEnv = errorEnv)
+            }
+            
+            rmNullObs <- function(x) {
+              is.NullOb <- function(x) is.null(x) | all(sapply(x, is.null))
+              x <- Filter(Negate(is.NullOb), x)
+              lapply(x, function(x) if (is.list(x)) rmNullObs(x) else x)
+            }
+            userProjectDT <- rbindlist(lapply(projectList, rmNullObs), fill = TRUE)
+            userHasAccess <- nrow(userProjectDT[code == protocolProject & ignored == FALSE]) > 0
+            if(!userHasAccess) {
+              addError("The protocol you entered is being used in a project that you do not have access to.", errorEnv = errorEnv)
+            }
           }
         }
       }
