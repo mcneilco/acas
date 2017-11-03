@@ -20,6 +20,9 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.get '/api/getThingCodeTablesByLabelText/:lsType/:lsKind/:labelText', exports.getThingsByTypeAndKindAndLabelTypeAndLabelText
 	app.post '/api/things/:lsType/:lsKind/codeNames/jsonArray', exports.getThingsByCodeNames
 	app.get '/api/thingKinds', exports.getThingKinds
+	app.post '/api/bulkPostThings', exports.bulkPostThings
+	app.put '/api/bulkPutThings', exports.bulkPutThings
+
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/things/:lsType/:lsKind', loginRoutes.ensureAuthenticated, exports.thingsByTypeKind
@@ -43,7 +46,10 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/getThingCodeTablesByLabelText/:lsType/:lsKind/:labelText', loginRoutes.ensureAuthenticated, exports.getThingsByTypeAndKindAndLabelTypeAndLabelText
 	app.post '/api/things/:lsType/:lsKind/codeNames/jsonArray', loginRoutes.ensureAuthenticated, exports.getThingsByCodeNames
 	app.get '/api/thingKinds', loginRoutes.ensureAuthenticated, exports.getThingKinds
+	app.post '/api/bulkPostThings', loginRoutes.ensureAuthenticated, exports.bulkPostThings
+	app.put '/api/bulkPutThings', loginRoutes.ensureAuthenticated, exports.bulkPutThings
 
+request = require 'request'
 
 exports.thingsByTypeKind = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
@@ -637,3 +643,52 @@ exports.getThingKinds = (req, resp) ->
 				name: kind.kindName
 			codeTables.push codeTable
 		resp.json codeTables
+
+exports.bulkPostThings = (req, resp) ->
+	exports.bulkPostThingsInternal req.body, (response) =>
+		resp.json response
+
+exports.bulkPostThingsInternal = (thingArray, callback) ->
+	console.log "bulkPostThings"
+	console.log JSON.stringify thingArray
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.persistence.fullpath+"lsthings/jsonArray"
+	request(
+		method: 'POST'
+		url: baseurl
+		body: thingArray
+		json: true
+	, (error, response, json) =>
+		if !error && response.statusCode == 201
+			callback json
+		else
+			console.log "got error bulk posting things"
+			callback JSON.stringify "bulk post things saveFailed: " + JSON.stringify error
+	)
+
+exports.bulkPutThings = (req, resp) ->
+	exports.bulkPutThingsInternal req.body, (response) =>
+		resp.json response
+
+exports.bulkPutThingsInternal = (thingArray, callback) ->
+	console.log "bulkPutThings"
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.persistence.fullpath+"lsthings/jsonArray"
+	console.log "bulkPutThingsInternal"
+	console.log baseurl
+	console.log thingArray
+	request(
+		method: 'PUT'
+		url: baseurl
+		body: thingArray
+		json: true
+	, (error, response, json) =>
+		console.log "bulkPutThingsInternal"
+		console.log response.statusCode
+		if !error && response.statusCode == 200
+			callback json
+		else
+			console.log "got error bulk updating things"
+			console.log error
+			callback JSON.stringify "bulk update things saveFailed: " + JSON.stringify error
+	)		

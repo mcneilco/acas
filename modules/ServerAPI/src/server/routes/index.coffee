@@ -60,6 +60,7 @@ exports.toPrint = (req, res, moduleLaunchParams) ->
 		copy: false
 		createFromOtherEntity: false
 		print: true
+		unregistered: req.query.unregistered
 
 	console.log "moduleLaunchParams"
 	console.log moduleLaunchParams

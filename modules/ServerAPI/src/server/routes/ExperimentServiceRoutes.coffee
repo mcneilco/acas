@@ -23,7 +23,7 @@ exports.setupAPIRoutes = (app) ->
 	app.get '/api/getExperimentByLabel/:exptLabel', exports.getExperimentByLabel
 	app.post '/api/experiments/getExperimentCodeByLabel/:exptType/:exptKind', exports.getExperimentCodeByLabel
 	app.post '/api/bulkPostExperiments', exports.bulkPostExperiments
-	app.put '/api/bulkPostExperiments', exports.bulkPutExperiments
+	app.put '/api/bulkPutExperiments', exports.bulkPutExperiments
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/experiments/codename/:code', loginRoutes.ensureAuthenticated, exports.experimentByCodename
