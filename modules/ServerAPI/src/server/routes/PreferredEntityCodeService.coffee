@@ -49,6 +49,8 @@ exports.getSpecificEntityTypeRoute = (req, resp) ->
 
 exports.getSpecificEntityType = (displayName, callback) ->
 	entityType = _.findWhere configuredEntityTypes.entityTypes, {displayName:displayName}
+	if !entityType?
+		entityType = _.findWhere configuredEntityTypes.entityTypes, {code:displayName}
 	entityType ?= {}
 	if callback?
 		callback entityType
