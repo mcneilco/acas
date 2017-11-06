@@ -1757,7 +1757,6 @@ exports.getDefinitionContainerByNumberOfWellsInternal = (lsType, lsKind, numberO
 			definition = _.find definitions, (definition) ->
 				return definition.get('plateSize').get('value').toString() == numberOfWells.toString()
 			if definition?
-				definition.prepareToSave()
 				definition.reformatBeforeSaving()
 				callback definition, 200
 			else
@@ -2465,3 +2464,78 @@ exports.getContainerStatesByContainerValueInternal = (requestObject, callback) =
 			callback null, 500
 			#resp.end JSON.stringify "getContainerStatesByContainerValue failed"
 		)
+	
+exports.validateWellPositionsInternal = (wellInfoArray, callback) =>
+	#checks to see if wellInfoArray has wellPosition > number of wells
+	#checks to see if wellInfoArray has duplicate well position info
+	readWellPositions = []
+	validateWellPositionsError = null
+	_.each wellInfoArray, (wellInfo) =>
+		if wellInfo.wellPosition > wellInfo.plateSize
+			validateWellPositionsError = "Invalid well position. Well position can not be greater than destination plate size."
+		else if readWellPositions.indexOf(wellInfo.wellPosition) > -1
+			validateWellPositionsError = "Data for well position #{wellInfo.wellPosition} is found in two separate rows."
+		readWellPositions.push wellInfo.wellPosition
+	callback validateWellPositionsError
+
+exports.getWellNamesFromWellPositionsInternal = (wellPositionArray, definitionContainer, numberingConvention, callback) =>
+	wellPositionNameMap = {}
+	_.each wellPositionArray, (wellPosition) =>
+		exports.getWellNameFromWellPositionInternal wellPosition, definitionContainer, numberingConvention, (wellName) =>
+			wellPositionNameMap[wellPosition] = wellName
+	callback wellPositionNameMap
+	
+exports.getWellNameFromWellPositionInternal = (wellPosition, definitionContainerInfo, numberingConvention, callback) =>
+	#numberingConvention = how wells are numbered
+	#numberingConvention options: 'topToBottom', 'leftToRight'
+
+	#get numRows and numCols from definition container
+	plateSize = definitionContainerInfo.plateSize
+	nRows = definitionContainerInfo.numberOfRows
+	nCols = definitionContainerInfo.numberOfColumns
+
+	namingConvention = definitionContainerInfo['subcontainer naming convention']
+	nDigits = namingConvention.replace(/[^0-9]/g,"").length
+
+	alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+	wellName = ''
+
+	paddedNumber = (num, digits) =>
+		#num should be stringified number
+		numPads = digits - num.length
+		if numPads > 0
+			return new Array(numPads + 1).join('0') + num
+		else
+			return num
+
+	if numberingConvention is 'topToBottom'
+		if plateSize is 1536
+			wellName = 'A'
+			wellPosition = wellPosition - 26
+		rowIndex = wellPosition % nRows
+		col = wellPosition / nRows
+		if rowIndex is 0
+			wellName += alphabet[nRows-1]
+			wellName += paddedNumber(col.toString(), nDigits)
+		else
+			wellName += alphabet[rowIndex - 1]
+			wellName += paddedNumber(parseInt(col+1).toString(), nDigits)
+
+		callback wellName
+
+	else if numberingConvention is 'leftToRight'
+		if plateSize is 1536
+			wellName = 'A'
+			wellPosition = wellPosition - 26
+		rowIndex = wellPosition / nCols
+		col = wellPosition % nCols
+		if col is 0
+			wellName += alphabet[rowIndex - 1]
+			wellName += paddedNumber(nCols.toString(), nDigits)
+		else
+			wellName += alphabet[parseInt(rowIndex)]
+			wellName += paddedNumber(col.toString(), nDigits)
+
+		callback wellName
+
+	

@@ -2082,11 +2082,11 @@ class DefinitionContainerPlate extends Container
 			type: 'numericValue'
 			kind: 'columns'
 		,
-			key: 'subContainerNamingConvention'
+			key: 'subcontainer naming convention'
 			stateType: 'constants'
 			stateKind: 'format'
 			type: 'codeValue'
-			kind: 'A1'
+			kind: 'subcontainer naming convention'
 		,
 			key: 'maxWellVolume'
 			stateType: 'constants'
