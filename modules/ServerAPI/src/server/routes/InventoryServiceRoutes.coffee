@@ -282,7 +282,6 @@ exports.getContainerCodesByLabels = (req, resp) ->
 		likeParameter: likeParameter
 		maxResults: maxResults
 
-	console.log 'queryPayload', queryPayload
 
 	exports.getContainerCodesByLabelsLikeMaxResultsInternal(queryPayload, (json, statusCode) ->
 		resp.statusCode = statusCode
@@ -766,40 +765,56 @@ exports.getDefinitionContainersByContainerCodeNamesInternal = (codeNamesJSON, ca
 exports.getBreadCrumbByContainerCode = (req, resp) ->
 	req.setTimeout 86400000
 	exports.getBreadCrumbByContainerCodeInternal req.body, req.query.delimeter, (json) ->
-		if json.indexOf('failed') > -1
-			resp.statusCode = 500
-		else
-			resp.json json
+		if json?
+			if json.indexOf('failed') > -1
+				resp.statusCode = 500
+			else
+				resp.json json
 
 exports.getBreadCrumbByContainerCodeInternal = (codeNamesJSON, delimeter, callback) ->
-	if !delimeter?
-		delimeter = ">"
-	if global.specRunnerTestmode
-		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
-		resp.json inventoryServiceTestJSON.getBreadCrumbByContainerCodeResponse
+	containersToReturn = []
+	if (config.all.client.compoundInventory.saveLocationAsCodeValue)?
+		saveLocationAsCodeValue = config.all.client.compoundInventory.saveLocationAsCodeValue
 	else
-		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.rapache.fullpath+"/getBreadCrumbByContainerCode?delimeter="+encodeURIComponent(delimeter)
-		request = require 'request'
-		request(
-			method: 'POST'
-			url: baseurl
-			body: codeNamesJSON
-			json: true
-			timeout: 86400000
-			headers: 'content-type': 'application/json'
-		, (error, response, json) =>
-			if !error && response.statusCode == 200
-				console.log 'json in getBreadCrumbByContainerCodeInternal'
-				console.log json
-				callback json
+		saveLocationAsCodeValue = false
+	if saveLocationAsCodeValue
+		exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal codeNamesJSON, (containers, statusCode) =>
+			if statusCode is 200
+				_.each containers, (container) =>
+					containersToReturn.push({containerCode: container.codeName, labelBreadCrumb: container.locationName})
+				callback containersToReturn
 			else
-				console.error 'got ajax error trying to get getBreadCrumbByContainerCode'
-				console.error error
-				console.error json
-				console.error response
 				callback JSON.stringify "getBreadCrumbByContainerCode failed"
-		)
+		# callback saveLocationAsCodeValue
+	else
+		if !delimeter?
+			delimeter = ">"
+		if global.specRunnerTestmode
+			inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+			resp.json inventoryServiceTestJSON.getBreadCrumbByContainerCodeResponse
+		else
+			config = require '../conf/compiled/conf.js'
+			baseurl = config.all.client.service.rapache.fullpath+"/getBreadCrumbByContainerCode?delimeter="+encodeURIComponent(delimeter)
+			request = require 'request'
+			request(
+				method: 'POST'
+				url: baseurl
+				body: codeNamesJSON
+				json: true
+				timeout: 86400000
+				headers: 'content-type': 'application/json'
+			, (error, response, json) =>
+				if !error && response.statusCode == 200
+					console.log 'json in getBreadCrumbByContainerCodeInternal'
+					console.log json
+					callback json
+				else
+					console.error 'got ajax error trying to get getBreadCrumbByContainerCode'
+					console.error error
+					console.error json
+					console.error response
+					callback JSON.stringify "getBreadCrumbByContainerCode failed"
+			)
 
 exports.getWellCodesByContainerCodes = (req, resp) ->
 	req.setTimeout 86400000
@@ -3602,15 +3617,11 @@ exports.setLocationByBreadCrumb = (req, resp) =>
 exports.setLocationByBreadCrumbInternal = (objectsToMove, callback) =>
 	saveLocationAsCodeValue = config.all.client.compoundInventory.saveLocationAsCodeValue
 	locationContainerCodes = []
-	#objectsToMove >> {barcode: "BARCODE", modifiedBy: "user", modifiedDate: DATE, breadcrumb: "akjsd>asdj>alsd>asd"}
 	locationBreadCrumbs = _.pluck(objectsToMove, "locationBreadCrumb")
-	console.log 'locationBreadCrumbs from objectsToMove', locationBreadCrumbs
 	rootLabel = _.pluck(objectsToMove, "rootLabel")
 	if saveLocationAsCodeValue
 		setLocationNameForObjects objectsToMove, (setLocationNameResponse, statusCode) =>
-			console.log 'setLocationNameResponse', setLocationNameResponse
 			callback setLocationNameResponse, statusCode
-			#TODO: add the set to locationName
 	else
 		exports.getLocationCodesByBreadcrumbArrayInternal({locationBreadCrumbs: locationBreadCrumbs, rootLabel: rootLabel[0]}, (locationCodesByBreadcrumbArrayResponses, statusCode) =>
 			_.each locationBreadCrumbs, (locationBreadCrumb) =>
@@ -3639,7 +3650,6 @@ setLocationNameForObjects = (objectsToMove, callback) =>
 
 	exports.getContainerAndDefinitionContainerByContainerLabelInternal barcodes, "container", null, "barcode", "barcode", (containers, containerStatusCode) =>
 		if containerStatusCode is 200
-			console.log 'containersReturned by getContainerAndDefinitionContainerByContainerLabelInternal', containers
 			_.each containers, (container, index) =>
 				container.locationName = objectsToMove[index].locationBreadCrumb
 
@@ -3650,19 +3660,6 @@ setLocationNameForObjects = (objectsToMove, callback) =>
 					callback null, statusCode
 		else
 			callback null, statusCode
-
-	# exports.getContainerCodesByLabelsLikeMaxResultsInternal(queryPayload, (containerCodeQueryResponse, statusCode) =>
-	# 	if statusCode is 200
-	# 		barcodeContainerCodes = _.pluck(containerCodeQueryResponse, "foundCodeNames")
-	# 		_.each barcodeContainerCodes, (containerCode, index) =>
-	# 			if containerCode.length > 0
-	# 				containersToUpdate.push({})
-	# 				#TODO: now set the locatoin
-	#
-	# 		callback "successfully set location name as code value", statusCode
-	# 	else
-	# 		callback null, statusCode
-	# )
 
 exports.getLocationCodesByBreadcrumbArray = (req, resp) =>
 	inputPayload =
