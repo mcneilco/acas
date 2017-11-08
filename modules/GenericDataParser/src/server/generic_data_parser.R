@@ -477,12 +477,13 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   entityTypeAndKindTable <- as.data.table(do.call(rbind, entityTypeAndKindList))
   entityTypeAndKindTable[, displayName := unlist(displayName)]
   
-  if (!(mainCode %in% entityTypeAndKindTable$displayName)) {
-    stopUser(paste0(mainCode, " is not valid in the first column. It should be something like 'Corporate Batch ID'."))
+  if (!(mainCode %in% entityTypeAndKindTable$code)) {
+    stopUser(paste0(mainCode, " is not valid in the first column. It should be one of the following: ", paste(paste0("'", entityTypeAndKindTable$displayName, "'", collapse = ", "), ".")))
   }
   
-  entityType <- entityTypeAndKindTable[displayName == mainCode, type][[1]]
-  entityKind <- entityTypeAndKindTable[displayName == mainCode, kind][[1]]
+  entityType <- entityTypeAndKindTable[code == mainCode, type][[1]]
+  entityKind <- entityTypeAndKindTable[code == mainCode, kind][[1]]
+  mainDisplayName <- entityTypeAndKindTable[code == mainCode, displayName][[1]]
   
   # Get the current batch Ids
   batchesToCheck <- calculatedResults$originalMainID != replaceFakeCorpBatchId
@@ -501,7 +502,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
     setnames(preferredIdDT, c("requestName", "preferredName"), c("Requested.Name", "Preferred.Code"))
     newBatchIds <- as.data.frame(preferredIdDT)
   } else {
-    newBatchIds <- getPreferredId2(batchIds, displayName = mainCode)
+    newBatchIds <- getPreferredId2(batchIds, displayName = mainDisplayName)
   }
   
   # If the preferred Id service does not return anything, errors will already be thrown, just move on
@@ -633,6 +634,40 @@ getProjectForBatch <- function (entityIds, displayName) {
     # Return the useful part
     return(read.csv(text=response$resultCSV, stringsAsFactors=FALSE))
   }
+}
+getEntityCodeFromEntityDisplayNameOrCode <- function(mainCodeOrDisplayName) {
+  require(data.table)
+  entityTypeAndKindList <- fromJSON(getURLcheckStatus(paste0(racas::applicationSettings$server.nodeapi.path, 
+                                                             "/api/entitymeta/configuredEntityTypes/"), 
+                                                             requireJSON = TRUE))
+  # Expected column names: 'type', 'kind', 'codeOrigin', 'displayName', 'sourceExternal'
+  entityTypeAndKindTable <- as.data.table(do.call(rbind, entityTypeAndKindList))
+  entityTypeAndKindTable[, displayName := unlist(displayName)]
+  if (length(entityTypeAndKindTable[displayName == mainCodeOrDisplayName, code])) {
+    mainCode <- entityTypeAndKindTable[displayName == mainCodeOrDisplayName, code][[1]]
+  } else if (length(entityTypeAndKindTable[code == mainCodeOrDisplayName, code])) {
+    mainCode <- entityTypeAndKindTable[code == mainCodeOrDisplayName, code][[1]]
+  } else{
+    mainCode <- mainCodeOrDisplayName
+  }
+  return(mainCode)
+  
+}
+getDisplayNameFromEntityCode <- function(mainCode) {
+  require(data.table)
+  entityTypeAndKindList <- fromJSON(getURLcheckStatus(paste0(racas::applicationSettings$server.nodeapi.path, 
+                                                             "/api/entitymeta/configuredEntityTypes/"), 
+                                                             requireJSON = TRUE))
+  # Expected column names: 'type', 'kind', 'codeOrigin', 'displayName', 'sourceExternal'
+  entityTypeAndKindTable <- as.data.table(do.call(rbind, entityTypeAndKindList))
+  entityTypeAndKindTable[, displayName := unlist(displayName)]
+  if (length(entityTypeAndKindTable[code == mainCode, displayName])) {
+    displayName <- entityTypeAndKindTable[code == mainCode, displayName][[1]]
+  } else{
+    displayName <- mainCode
+  }
+  return(displayName)
+  
 }
 getHiddenColumns <- function(classRow, errorEnv) {
   # Get information about which columns to hide (publicData = FALSE)
@@ -2834,17 +2869,22 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     mainCode <- "Corporate Batch ID"
   }
   
+  #De-alias mainCode in case it is a displayName
+  mainCode <- getEntityCodeFromEntityDisplayNameOrCode(mainCode)
+  displayName <- getDisplayNameFromEntityCode(mainCode)
+  
   if(!newProtocol) {
     requiredMainCode <- getProtocolRequiredEntityCode(protocol)
     if(length(requiredMainCode) > 0 && !is.na(requiredMainCode) && requiredMainCode != "" && requiredMainCode != "unassigned") {
       requiredMainCode <- requiredMainCode[[1]]
       if(mainCode != requiredMainCode) {
-        warnUser(paste0("'",metaData$'Protocol Name'[1],"' requires an entity type of '",requiredMainCode,"'. Please update your file with this entity type instead of the entity type '",mainCode,"'"))
+        requiredMainDisplayName <- getDisplayNameFromEntityCode(requiredMainCode)
+        addError(paste0("'",metaData$'Protocol Name'[1],"' requires an entity type of '",requiredMainDisplayName,"'. Please update your file with this entity type instead of the entity type '",displayName,"'"))
       }
       mainCode <- requiredMainCode
-      calculatedResults[2, 1] <- mainCode
     }
   }
+  calculatedResults[2, 1] <- mainCode
 
   calculateGroupingID <- if (rawOnlyFormat) {calculateTreatmemtGroupID} else {NA}
   organizedResultsList <- organizeCalculatedResults(
