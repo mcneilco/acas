@@ -68,6 +68,7 @@ exports.setupAPIRoutes = (app) ->
 	app.get '/api/getParentVialByDaughterVialBarcode', exports.getParentVialByDaughterVialBarcode
 	app.get '/api/getContainerLocationTree', exports.getContainerLocationTree
 	app.post '/api/checkBatchDependencies', exports.checkBatchDependencies
+	app.post '/api/setLocationByBreadCrumb', exports.setLocationByBreadCrumb
 
 
 exports.setupRoutes = (app, loginRoutes) ->
@@ -126,6 +127,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/getParentVialByDaughterVialBarcode', loginRoutes.ensureAuthenticated, exports.getParentVialByDaughterVialBarcode
 	app.get '/api/getContainerLocationTree', loginRoutes.ensureAuthenticated, exports.getContainerLocationTree
 	app.post '/api/checkBatchDependencies', loginRoutes.ensureAuthenticated, exports.checkBatchDependencies
+	app.post '/api/setLocationByBreadCrumb', loginRoutes.ensureAuthenticated, exports.setLocationByBreadCrumb
 
 exports.getContainersInLocation = (req, resp) ->
 	req.setTimeout 86400000
@@ -280,7 +282,6 @@ exports.getContainerCodesByLabels = (req, resp) ->
 		likeParameter: likeParameter
 		maxResults: maxResults
 
-	console.log 'queryPayload', queryPayload
 
 	exports.getContainerCodesByLabelsLikeMaxResultsInternal(queryPayload, (json, statusCode) ->
 		resp.statusCode = statusCode
@@ -764,40 +765,56 @@ exports.getDefinitionContainersByContainerCodeNamesInternal = (codeNamesJSON, ca
 exports.getBreadCrumbByContainerCode = (req, resp) ->
 	req.setTimeout 86400000
 	exports.getBreadCrumbByContainerCodeInternal req.body, req.query.delimeter, (json) ->
-		if json.indexOf('failed') > -1
-			resp.statusCode = 500
-		else
-			resp.json json
+		if json?
+			if json.indexOf('failed') > -1
+				resp.statusCode = 500
+			else
+				resp.json json
 
 exports.getBreadCrumbByContainerCodeInternal = (codeNamesJSON, delimeter, callback) ->
-	if !delimeter?
-		delimeter = ">"
-	if global.specRunnerTestmode
-		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
-		resp.json inventoryServiceTestJSON.getBreadCrumbByContainerCodeResponse
+	containersToReturn = []
+	if (config.all.client.compoundInventory.saveLocationAsCodeValue)?
+		saveLocationAsCodeValue = config.all.client.compoundInventory.saveLocationAsCodeValue
 	else
-		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.rapache.fullpath+"/getBreadCrumbByContainerCode?delimeter="+encodeURIComponent(delimeter)
-		request = require 'request'
-		request(
-			method: 'POST'
-			url: baseurl
-			body: codeNamesJSON
-			json: true
-			timeout: 86400000
-			headers: 'content-type': 'application/json'
-		, (error, response, json) =>
-			if !error && response.statusCode == 200
-				console.log 'json in getBreadCrumbByContainerCodeInternal'
-				console.log json
-				callback json
+		saveLocationAsCodeValue = false
+	if saveLocationAsCodeValue
+		exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal codeNamesJSON, (containers, statusCode) =>
+			if statusCode is 200
+				_.each containers, (container) =>
+					containersToReturn.push({containerCode: container.codeName, labelBreadCrumb: container.locationName})
+				callback containersToReturn
 			else
-				console.error 'got ajax error trying to get getBreadCrumbByContainerCode'
-				console.error error
-				console.error json
-				console.error response
 				callback JSON.stringify "getBreadCrumbByContainerCode failed"
-		)
+		# callback saveLocationAsCodeValue
+	else
+		if !delimeter?
+			delimeter = ">"
+		if global.specRunnerTestmode
+			inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+			resp.json inventoryServiceTestJSON.getBreadCrumbByContainerCodeResponse
+		else
+			config = require '../conf/compiled/conf.js'
+			baseurl = config.all.client.service.rapache.fullpath+"/getBreadCrumbByContainerCode?delimeter="+encodeURIComponent(delimeter)
+			request = require 'request'
+			request(
+				method: 'POST'
+				url: baseurl
+				body: codeNamesJSON
+				json: true
+				timeout: 86400000
+				headers: 'content-type': 'application/json'
+			, (error, response, json) =>
+				if !error && response.statusCode == 200
+					console.log 'json in getBreadCrumbByContainerCodeInternal'
+					console.log json
+					callback json
+				else
+					console.error 'got ajax error trying to get getBreadCrumbByContainerCode'
+					console.error error
+					console.error json
+					console.error response
+					callback JSON.stringify "getBreadCrumbByContainerCode failed"
+			)
 
 exports.getWellCodesByContainerCodes = (req, resp) ->
 	req.setTimeout 86400000
@@ -3589,3 +3606,122 @@ exports.checkBatchDependenciesInternal = (input, callback) =>
 			callback null, 500
 			#resp.end JSON.stringify "getContainerStatesByContainerValue failed"
 		)
+
+exports.setLocationByBreadCrumb = (req, resp) =>
+
+	exports.setLocationByBreadCrumbInternal(req.body, (json, statusCode) =>
+		resp.statusCode = statusCode
+		resp.json json
+	)
+
+exports.setLocationByBreadCrumbInternal = (objectsToMove, callback) =>
+	saveLocationAsCodeValue = config.all.client.compoundInventory.saveLocationAsCodeValue
+	locationContainerCodes = []
+	locationBreadCrumbs = _.pluck(objectsToMove, "locationBreadCrumb")
+	rootLabels = _.pluck(objectsToMove, "rootLabel")
+	rootLabel = _.unique(rootLabels)
+	if rootLabel.length > 1
+		console.error "root labels are not all the same"
+		callback "Error: Root label must be the same in all objects.", 500
+	if saveLocationAsCodeValue
+		setLocationNameForObjects objectsToMove, (setLocationNameResponse, statusCode) =>
+			callback setLocationNameResponse, statusCode
+	else
+		exports.getLocationCodesByBreadcrumbArrayInternal({locationBreadCrumbs: locationBreadCrumbs, rootLabel: rootLabel[0]}, (locationCodesByBreadcrumbArrayResponses, statusCode) =>
+			_.each locationBreadCrumbs, (locationBreadCrumb) =>
+				_.each locationCodesByBreadcrumbArrayResponses, (response) =>
+					if locationBreadCrumb.indexOf(response.labelTextBreadcrumb) >-1
+						locationContainerCodes.push(response.codeName)
+
+			createMoveToLocationObjects(locationContainerCodes, objectsToMove, (moveToLocationObjects, statusCode) =>
+				if statusCode is 200
+					exports.moveToLocationInternal moveToLocationObjects, RUN_CUSTOM_FLAG, "1", (moveToLocationResponse, statusCode) =>
+						callback moveToLocationResponse, statusCode
+				else
+					callback null, statusCode
+			)
+		)
+
+setLocationNameForObjects = (objectsToMove, callback) =>
+	barcodes = _.pluck(objectsToMove, "barcode")
+
+	queryPayload =
+		containerLabels: barcodes
+		containerType: "container"
+		# containerKind: "tube"
+		labelType: "barcode"
+		labelKind: "barcode"
+
+	exports.getContainerAndDefinitionContainerByContainerLabelInternal barcodes, "container", null, "barcode", "barcode", (containers, containerStatusCode) =>
+		if containerStatusCode is 200
+			_.each containers, (container, index) =>
+				container.locationName = objectsToMove[index].locationBreadCrumb
+
+			exports.updateContainersByContainerCodesInternal containers, "", (json, statusCode) =>
+				if statusCode is 200
+					callback json, statusCode
+				else
+					callback null, statusCode
+		else
+			callback null, statusCode
+
+exports.getLocationCodesByBreadcrumbArray = (req, resp) =>
+	inputPayload =
+		locationBreadCrumbs: req.body
+
+	if req.query.rootLabel?
+		inputPayload.rootLabel = req.query.rootLabel
+
+	exports.getLocationCodesByBreadcrumbArrayInternal(inputPayload, (json, statusCode) =>
+		resp.statusCode = statusCode
+		resp.json json
+	)
+
+exports.getLocationCodesByBreadcrumbArrayInternal = (input, callback) =>
+
+	locationBreadCrumbs = input.locationBreadCrumbs
+	if !(input.rootLabel)?
+		callback null, 500
+
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.persistence.fullpath+"containers/getLocationCodesByBreadcrumbArray?rootLabel=#{input.rootLabel}"
+	request = require 'request'
+	request(
+		method: 'POST'
+		url: baseurl
+		body: locationBreadCrumbs
+		json: true
+		timeout: 86400000
+	, (error, response, json) =>
+		if !error && response.statusCode == 200
+			callback json, response.statusCode
+		else
+			console.error 'got ajax error trying to getLocationCodesByBreadcrumbArray'
+			console.error error
+			console.error json
+			console.error response
+			callback null, 500
+		)
+
+createMoveToLocationObjects = (locationCodeNames, objectsToMove, callback) =>
+
+	moveToLocationObjects = []
+	barcodes = _.pluck(objectsToMove, "barcode")
+
+	queryPayload =
+		containerLabels: barcodes
+		containerType: "container"
+		# containerKind: "tube"
+		labelType: "barcode"
+		labelKind: "barcode"
+
+	exports.getContainerCodesByLabelsLikeMaxResultsInternal(queryPayload, (containerCodeQueryResponse, statusCode) =>
+		if statusCode is 200
+			barcodeContainerCodes = _.pluck(containerCodeQueryResponse, "foundCodeNames")
+			_.each barcodeContainerCodes, (containerCode, index) =>
+				if containerCode.length > 0
+					moveToLocationObjects.push({containerCodeName: containerCode[0], modifiedBy: objectsToMove[index].user, modifiedDate: objectsToMove[index].date, locationCodeName: locationCodeNames[index]})
+			callback moveToLocationObjects, statusCode
+		else
+			callback null, statusCode
+	)

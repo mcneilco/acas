@@ -563,3 +563,6 @@ client.protocol.requiredEntityType.allowEmpty=true
 
 client.compoundInventory.enforceUppercaseBarcodes=false
 client.compoundInventory.daughterVials.strictMatchPhysicalState=false
+
+# Whether to save location as a codeValue or as a full location interaction
+client.compoundInventory.saveLocationAsCodeValue=false
