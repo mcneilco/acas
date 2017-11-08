@@ -3637,17 +3637,32 @@ setLocationNameForObjects = (objectsToMove, callback) =>
 		labelType: "barcode"
 		labelKind: "barcode"
 
-	exports.getContainerCodesByLabelsLikeMaxResultsInternal(queryPayload, (containerCodeQueryResponse, statusCode) =>
-		if statusCode is 200
-			barcodeContainerCodes = _.pluck(containerCodeQueryResponse, "foundCodeNames")
-			_.each barcodeContainerCodes, (containerCode, index) =>
-				if containerCode.length > 0
-					#TODO: now set the locatoin
+	exports.getContainerAndDefinitionContainerByContainerLabelInternal barcodes, "container", null, "barcode", "barcode", (containers, containerStatusCode) =>
+		if containerStatusCode is 200
+			console.log 'containersReturned by getContainerAndDefinitionContainerByContainerLabelInternal', containers
+			_.each containers, (container, index) =>
+				container.locationName = objectsToMove[index].locationBreadCrumb
 
-			callback "successfully set location name as code value", statusCode
+			exports.updateContainersByContainerCodesInternal containers, "", (json, statusCode) =>
+				if statusCode is 200
+					callback json, statusCode
+				else
+					callback null, statusCode
 		else
 			callback null, statusCode
-	)
+
+	# exports.getContainerCodesByLabelsLikeMaxResultsInternal(queryPayload, (containerCodeQueryResponse, statusCode) =>
+	# 	if statusCode is 200
+	# 		barcodeContainerCodes = _.pluck(containerCodeQueryResponse, "foundCodeNames")
+	# 		_.each barcodeContainerCodes, (containerCode, index) =>
+	# 			if containerCode.length > 0
+	# 				containersToUpdate.push({})
+	# 				#TODO: now set the locatoin
+	#
+	# 		callback "successfully set location name as code value", statusCode
+	# 	else
+	# 		callback null, statusCode
+	# )
 
 exports.getLocationCodesByBreadcrumbArray = (req, resp) =>
 	inputPayload =
