@@ -3618,7 +3618,11 @@ exports.setLocationByBreadCrumbInternal = (objectsToMove, callback) =>
 	saveLocationAsCodeValue = config.all.client.compoundInventory.saveLocationAsCodeValue
 	locationContainerCodes = []
 	locationBreadCrumbs = _.pluck(objectsToMove, "locationBreadCrumb")
-	rootLabel = _.pluck(objectsToMove, "rootLabel")
+	rootLabels = _.pluck(objectsToMove, "rootLabel")
+	rootLabel = _.unique(rootLabels)
+	if rootLabel.length > 1
+		console.error "root labels are not all the same"
+		callback "Error: Root label must be the same in all objects.", 500
 	if saveLocationAsCodeValue
 		setLocationNameForObjects objectsToMove, (setLocationNameResponse, statusCode) =>
 			callback setLocationNameResponse, statusCode
