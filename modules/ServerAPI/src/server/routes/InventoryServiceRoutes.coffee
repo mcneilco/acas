@@ -68,6 +68,7 @@ exports.setupAPIRoutes = (app) ->
 	app.get '/api/getParentVialByDaughterVialBarcode', exports.getParentVialByDaughterVialBarcode
 	app.get '/api/getContainerLocationTree', exports.getContainerLocationTree
 	app.post '/api/checkBatchDependencies', exports.checkBatchDependencies
+	app.post '/api/setLocationByBreadCrumb', exports.setLocationByBreadCrumb
 
 
 exports.setupRoutes = (app, loginRoutes) ->
@@ -126,6 +127,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/getParentVialByDaughterVialBarcode', loginRoutes.ensureAuthenticated, exports.getParentVialByDaughterVialBarcode
 	app.get '/api/getContainerLocationTree', loginRoutes.ensureAuthenticated, exports.getContainerLocationTree
 	app.post '/api/checkBatchDependencies', loginRoutes.ensureAuthenticated, exports.checkBatchDependencies
+	app.post '/api/setLocationByBreadCrumb', loginRoutes.ensureAuthenticated, exports.setLocationByBreadCrumb
 
 exports.getContainersInLocation = (req, resp) ->
 	req.setTimeout 86400000
@@ -3589,3 +3591,121 @@ exports.checkBatchDependenciesInternal = (input, callback) =>
 			callback null, 500
 			#resp.end JSON.stringify "getContainerStatesByContainerValue failed"
 		)
+
+exports.setLocationByBreadCrumb = (req, resp) =>
+
+	exports.setLocationByBreadCrumbInternal(req.body, (json, statusCode) =>
+		resp.statusCode = statusCode
+		resp.json json
+	)
+
+exports.setLocationByBreadCrumbInternal = (objectsToMove, callback) =>
+	saveLocationAsCodeValue = config.all.client.compoundInventory.saveLocationAsCodeValue
+	locationContainerCodes = []
+	#objectsToMove >> {barcode: "BARCODE", modifiedBy: "user", modifiedDate: DATE, breadcrumb: "akjsd>asdj>alsd>asd"}
+	locationBreadCrumbs = _.pluck(objectsToMove, "locationBreadCrumb")
+	console.log 'locationBreadCrumbs from objectsToMove', locationBreadCrumbs
+	rootLabel = _.pluck(objectsToMove, "rootLabel")
+	if saveLocationAsCodeValue
+		setLocationNameForObjects objectsToMove, (setLocationNameResponse, statusCode) =>
+			console.log 'setLocationNameResponse', setLocationNameResponse
+			callback setLocationNameResponse, statusCode
+			#TODO: add the set to locationName
+	else
+		exports.getLocationCodesByBreadcrumbArrayInternal({locationBreadCrumbs: locationBreadCrumbs, rootLabel: rootLabel[0]}, (locationCodesByBreadcrumbArrayResponses, statusCode) =>
+			_.each locationBreadCrumbs, (locationBreadCrumb) =>
+				_.each locationCodesByBreadcrumbArrayResponses, (response) =>
+					if locationBreadCrumb.indexOf(response.labelTextBreadcrumb) >-1
+						locationContainerCodes.push(response.codeName)
+
+			createMoveToLocationObjects(locationContainerCodes, objectsToMove, (moveToLocationObjects, statusCode) =>
+				if statusCode is 200
+					exports.moveToLocationInternal moveToLocationObjects, RUN_CUSTOM_FLAG, "1", (moveToLocationResponse, statusCode) =>
+						callback moveToLocationResponse, statusCode
+				else
+					callback null, statusCode
+			)
+		)
+
+setLocationNameForObjects = (objectsToMove, callback) =>
+	barcodes = _.pluck(objectsToMove, "barcode")
+
+	queryPayload =
+		containerLabels: barcodes
+		containerType: "container"
+		# containerKind: "tube"
+		labelType: "barcode"
+		labelKind: "barcode"
+
+	exports.getContainerCodesByLabelsLikeMaxResultsInternal(queryPayload, (containerCodeQueryResponse, statusCode) =>
+		if statusCode is 200
+			barcodeContainerCodes = _.pluck(containerCodeQueryResponse, "foundCodeNames")
+			_.each barcodeContainerCodes, (containerCode, index) =>
+				if containerCode.length > 0
+					#TODO: now set the locatoin
+
+			callback "successfully set location name as code value", statusCode
+		else
+			callback null, statusCode
+	)
+
+exports.getLocationCodesByBreadcrumbArray = (req, resp) =>
+	inputPayload =
+		locationBreadCrumbs: req.body
+
+	if req.query.rootLabel?
+		inputPayload.rootLabel = req.query.rootLabel
+
+	exports.getLocationCodesByBreadcrumbArrayInternal(inputPayload, (json, statusCode) =>
+		resp.statusCode = statusCode
+		resp.json json
+	)
+
+exports.getLocationCodesByBreadcrumbArrayInternal = (input, callback) =>
+
+	locationBreadCrumbs = input.locationBreadCrumbs
+	if !(input.rootLabel)?
+		callback null, 500
+
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.persistence.fullpath+"containers/getLocationCodesByBreadcrumbArray?rootLabel=#{input.rootLabel}"
+	request = require 'request'
+	request(
+		method: 'POST'
+		url: baseurl
+		body: locationBreadCrumbs
+		json: true
+		timeout: 86400000
+	, (error, response, json) =>
+		if !error && response.statusCode == 200
+			callback json, response.statusCode
+		else
+			console.error 'got ajax error trying to getLocationCodesByBreadcrumbArray'
+			console.error error
+			console.error json
+			console.error response
+			callback null, 500
+		)
+
+createMoveToLocationObjects = (locationCodeNames, objectsToMove, callback) =>
+
+	moveToLocationObjects = []
+	barcodes = _.pluck(objectsToMove, "barcode")
+
+	queryPayload =
+		containerLabels: barcodes
+		containerType: "container"
+		# containerKind: "tube"
+		labelType: "barcode"
+		labelKind: "barcode"
+
+	exports.getContainerCodesByLabelsLikeMaxResultsInternal(queryPayload, (containerCodeQueryResponse, statusCode) =>
+		if statusCode is 200
+			barcodeContainerCodes = _.pluck(containerCodeQueryResponse, "foundCodeNames")
+			_.each barcodeContainerCodes, (containerCode, index) =>
+				if containerCode.length > 0
+					moveToLocationObjects.push({containerCodeName: containerCode[0], modifiedBy: objectsToMove[index].user, modifiedDate: objectsToMove[index].date, locationCodeName: locationCodeNames[index]})
+			callback moveToLocationObjects, statusCode
+		else
+			callback null, statusCode
+	)
