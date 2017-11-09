@@ -55,6 +55,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/getContainerInfoFromBatchCode', exports.getContainerInfoFromBatchCode
 	app.post '/api/getContainerStatesByContainerValue', exports.getContainerStatesByContainerValue
 	app.post '/api/getContainerLogsByContainerCodes', exports.getContainerLogsByContainerCodes
+	app.post '/api/getTubesFromBatchCode', exports.getTubesFromBatchCode
 
 
 exports.setupRoutes = (app, loginRoutes) ->
@@ -104,6 +105,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/createTubes', loginRoutes.ensureAuthenticated, exports.createTubes
 	app.post '/api/throwInTrash', loginRoutes.ensureAuthenticated, exports.throwInTrash
 	app.post '/api/updateContainerHistoryLogs', loginRoutes.ensureAuthenticated, exports.updateContainerHistoryLogs
+	app.post '/api/getTubesFromBatchCode', loginRoutes.ensureAuthenticated, exports.getTubesFromBatchCode
 
 
 exports.getContainersInLocation = (req, resp) ->
@@ -2464,7 +2466,7 @@ exports.getContainerStatesByContainerValueInternal = (requestObject, callback) =
 			callback null, 500
 			#resp.end JSON.stringify "getContainerStatesByContainerValue failed"
 		)
-	
+
 exports.validateWellPositionsInternal = (wellInfoArray, callback) =>
 	#checks to see if wellInfoArray has wellPosition > number of wells
 	#checks to see if wellInfoArray has duplicate well position info
@@ -2484,7 +2486,7 @@ exports.getWellNamesFromWellPositionsInternal = (wellPositionArray, definitionCo
 		exports.getWellNameFromWellPositionInternal wellPosition, definitionContainer, numberingConvention, (wellName) =>
 			wellPositionNameMap[wellPosition] = wellName
 	callback wellPositionNameMap
-	
+
 exports.getWellNameFromWellPositionInternal = (wellPosition, definitionContainerInfo, numberingConvention, callback) =>
 	#numberingConvention = how wells are numbered
 	#numberingConvention options: 'topToBottom', 'leftToRight'
@@ -2538,4 +2540,69 @@ exports.getWellNameFromWellPositionInternal = (wellPosition, definitionContainer
 
 		callback wellName
 
-	
+exports.getTubesFromBatchCode = (req, resp) =>
+
+	exports.getTubesFromBatchCodeInternal(req.body, (json, statusCode) =>
+		resp.statusCode = statusCode
+		resp.json json
+	)
+
+exports.getTubesFromBatchCodeInternal = (input, callback) =>
+	batchCode = input.batchCode
+
+	queryPayload =
+		{
+    "lsType": "container" ,
+    "lsKind": "tube",
+#    "values":[
+#        {
+#            "stateType":"metadata",
+#            "stateKind":"information",
+#            "valueType": "codeValue",
+#            "valueKind": "status",
+#            "operator": "!=",
+#            "value":"expired"
+#        }
+#        ],
+    "secondInteractions":[
+        {
+            "interactionType": "has member",
+            "interactionKind": "container_well",
+            "thingType": "well",
+            "thingKind": "default",
+            "thingValues":[
+                {
+                    "stateType":"status",
+                    "stateKind":"content",
+                    "valueType": "codeValue",
+                    "valueKind": "batch code",
+                    "operator": "=",
+                    "value":batchCode
+                }
+                ]
+        }
+        ]
+			}
+
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.persistence.fullpath+"containers/advancedSearchContainers?with=codeTable&labelType=barcode"
+	console.log 'baseurl', baseurl
+	request = require 'request'
+	request(
+		method: 'POST'
+		url: baseurl
+		body: queryPayload
+		json: true
+		timeout: 86400000
+	, (error, response, json) =>
+		if !error && response.statusCode == 200
+			tubes = _.pluck(json.results, 'name')
+			callback tubes, response.statusCode
+		else
+			console.error 'got ajax error trying to getTubesFromBatchCode'
+			console.error error
+			console.error json
+			console.error response
+			callback null, 500
+			#resp.end JSON.stringify "getContainerStatesByContainerValue failed"
+		)
