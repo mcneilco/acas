@@ -2803,15 +2803,10 @@ exports.createParentVialsFromCSVInternal = (csvFileName, dryRun, user, callback)
 									createResponse.errorMessages.push error
 									callback createResponse
 								else
-									console.log 'objectsToMove into setLocationByBreadCrumbInternal', objectsToMove
 									objectsToMoveWithLocation = _.filter(objectsToMove, (object) -> object.locationBreadCrumb isnt "")
-									console.log 'objectsToMoveWithLocation', objectsToMoveWithLocation
 									if objectsToMoveWithLocation.length > 0
 										exports.setLocationByBreadCrumbInternal objectsToMoveWithLocation, (setLocationResponse, statusCode) =>
-											console.log 'setting location down in setLocationByBreadCrumbInternal', setLocationResponse
-											console.log 'statusCode down in setLocationByBreadCrumbInternal', statusCode
 											if statusCode is 200
-										#exports.setLocationByBreadCrumbInternal()
 												createResponse.hasError = false
 												createResponse.commit = true
 												createResponse.results.htmlSummary = prepareCreateVialsHTMLSummary createResponse.hasError, createResponse.hasWarning, createResponse.errorMessages, summaryInfo
