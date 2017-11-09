@@ -3103,19 +3103,23 @@ checkBatchCodesExist = (fileEntryArray, callback) ->
 		callback missingBatchCodes
 
 checkLocationsExist = (fileEntryArray, callback) ->
+	saveLocationAsCodeValue = config.all.client.compoundInventory.saveLocationAsCodeValue
 	numberMissingLocations = 0
-	unfilteredlocationBreadCrumbs = _.pluck(fileEntryArray, "locationBreadCrumb")
-	console.log 'unfilteredlocationBreadCrumbs', unfilteredlocationBreadCrumbs
-	locationBreadCrumbs = _.without(unfilteredlocationBreadCrumbs, "")
-	console.log 'locationBreadCrumbs', locationBreadCrumbs
-	rootLabel = config.all.client.compoundInventory.rootLocationLabel
-	if locationBreadCrumbs.length > 0
-		exports.getLocationCodesByBreadcrumbArrayInternal {locationBreadCrumbs: locationBreadCrumbs, rootLabel: rootLabel}, (locationCodesByBreadcrumbArrayResponses, statusCode) =>
-			if locationCodesByBreadcrumbArrayResponses.length isnt locationBreadCrumbs.length
-				numberMissingLocations = locationBreadCrumbs.length - locationCodesByBreadcrumbArrayResponses.length
-			callback numberMissingLocations
-	else
+	if saveLocationAsCodeValue
 		callback numberMissingLocations
+	else
+		unfilteredlocationBreadCrumbs = _.pluck(fileEntryArray, "locationBreadCrumb")
+		console.log 'unfilteredlocationBreadCrumbs', unfilteredlocationBreadCrumbs
+		locationBreadCrumbs = _.without(unfilteredlocationBreadCrumbs, "")
+		console.log 'locationBreadCrumbs', locationBreadCrumbs
+		rootLabel = config.all.client.compoundInventory.rootLocationLabel
+		if locationBreadCrumbs.length > 0
+			exports.getLocationCodesByBreadcrumbArrayInternal {locationBreadCrumbs: locationBreadCrumbs, rootLabel: rootLabel}, (locationCodesByBreadcrumbArrayResponses, statusCode) =>
+				if locationCodesByBreadcrumbArrayResponses.length isnt locationBreadCrumbs.length
+					numberMissingLocations = locationBreadCrumbs.length - locationCodesByBreadcrumbArrayResponses.length
+				callback numberMissingLocations
+		else
+			callback numberMissingLocations
 
 checkBarcodesExist = (barcodes, callback) ->
 	getContainerCodesFromLabelsInternal barcodes, 'container', 'tube', (containerCodes) ->
