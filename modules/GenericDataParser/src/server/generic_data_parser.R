@@ -572,7 +572,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
       currentProj <- currentProjList[[1]]
       if (currentProj$isRestricted) {
         # columns of batchProjects must include "Project.Code" and "Requested.Name", both strings
-        batchProjects <- getProjectForBatch(unique(calculatedResults$batchCode[batchesToCheck]), "Corporate Batch ID")
+        batchProjects <- getProjectForBatch(c(unique(calculatedResults$batchCode[batchesToCheck])), mainCode)
         batchProjectRestriced <- merge(batchProjects, projectDF, by.x="Project.Code", by.y="code")
         # Compounds in a restricted project may not be entered into another project
         rCompoundsDF <- batchProjectRestriced[batchProjectRestriced$isRestricted & batchProjectRestriced$Project.Code!=projectCode,]

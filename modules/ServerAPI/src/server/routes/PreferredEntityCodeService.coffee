@@ -426,10 +426,10 @@ exports.projectCodes = (requestData, csv, callback) ->
 	console.log "requestData.displayName is " + requestData.displayName
 
 	# convert displayName to type and kind
-	exports.getSpecificEntityType requestData.displayName, (json) ->
-		requestData.type = json.type
-		requestData.kind = json.kind
-		requestData.sourceExternal = json.sourceExternal
+	entityType = exports.getSpecificEntityType requestData.displayName
+	requestData.type = entityType.type
+	requestData.kind = entityType.kind
+	requestData.sourceExternal = entityType.sourceExternal
 
 	if csv
 		reqList = formatCSVRequestAsReqArray(requestData.entityIdStringLines)
@@ -453,8 +453,6 @@ exports.projectCodes = (requestData, csv, callback) ->
 		return
 
 	else  # internal source
-		entityType = configuredEntityTypes.entityTypes[requestData.displayName]
-		console.log "entityType: " + entityType
 		if entityType.codeOrigin is "ACAS LsThing"
 			preferredThingService = require "./ThingServiceRoutes.js"
 			reqHashes =
@@ -474,6 +472,58 @@ exports.projectCodes = (requestData, csv, callback) ->
 						displayName: requestData.displayName
 						results: formatJSONProjectCode(codeResponse.results, "projectCode")
 			return
+		else if entityType.codeOrigin is "ACAS LsContainer"
+			console.debug "entityType.codeOrigin is ACAS LsContainer"
+			preferredContainerService = require "./InventoryServiceRoutes.js"
+#			reqList = [reqList[0].requestName]
+			reqHashes =
+				containerType: entityType.type
+				containerKind: entityType.kind
+				requests: reqList
+			requestContainerCodes =  _.pluck reqList, 'requestName'
+			preferredContainerService.getWellContentByContainerCodesInternal requestContainerCodes, (response, statusCode) ->
+				batchCodeRequestList = []
+				for res in response
+					req = _.findWhere reqList, {requestName:res.containerCodeName}
+					req.projectCode = null
+					if res.containerCodeName? && res.wellContent? && res.wellContent.length == 1 && res.wellContent[0].batchCode?
+						req.foundCodeName = res.containerCodeName
+						req.batchCode = res.wellContent[0].batchCode
+						batchCodeRequest = requestName: res.wellContent[0].batchCode
+						batchCodeRequestList.push batchCodeRequest
+					else
+						req.foundCodeName = null
+						req.batchCode = null
+				callProjectCodesOrReturnNull = (callFunctionBoolean, funct, request, isCsv, callback) ->
+					if callFunctionBoolean
+						funct request, isCsv, (response, statusCode) ->
+							callback response
+					else
+						callback null
+				shouldCall  = batchCodeRequestList.length > 0
+				batchCodeRequest = 
+					displayName: exports.getSpecificEntityType("Corporate Batch ID").displayName
+					requests: batchCodeRequestList
+				isCsvRequest = false
+				callProjectCodesOrReturnNull shouldCall, exports.projectCodes, batchCodeRequest, isCsvRequest, (batchCodeProjectResponse) =>
+					if shouldCall
+						for res in batchCodeProjectResponse.results
+							req = _.findWhere reqList, {batchCode:res.requestName}
+							req.projectCode = res.projectCode
+					if csv
+						out = for res in reqList
+							res.requestName + "," + res.projectCode
+						outStr =  "Requested Name,Project Code\n"+out.join('\n')
+						callback
+							displayName: requestData.displayName
+							resultCSV: outStr
+					else
+						callback
+							displayName: requestData.displayName
+							results: formatJSONProjectCode(reqList, "projectCode")
+			return
 		#this is the fall-through for internal. External fall-through is in csUtilities.getExternalReferenceCodes
 		callback.statusCode = 500
 		callback "problem with internal preferred Code request: code type and kind are unknown to system"
+
+
