@@ -2703,6 +2703,7 @@ exports.validateParentVialsFromCSVInternal = (csvFileName, dryRun, callback) ->
 							if dataTypeErrors?
 								validationResponse.errorMessages.push dataTypeErrors...
 							checkBatchCodesExist fileEntryArray, (missingBatchCodeErrors) ->
+								missingBatchCodeErrors = _.uniq missingBatchCodeErrors
 								if missingBatchCodeErrors? and missingBatchCodeErrors.length > 0
 									error =
 										errorLevel: 'error'
@@ -2715,20 +2716,26 @@ exports.validateParentVialsFromCSVInternal = (csvFileName, dryRun, callback) ->
 											errorLevel: 'error'
 											message: "The following barcodes already exist: " + existingBarcodes.join ', '
 										validationResponse.errorMessages.push error
-									checkLocationsExist fileEntryArray, (numberMissingLocations) ->
-										if numberMissingLocations > 0
+									checkForDuplicateBarcodes barcodes, (duplicateBarcodes) ->
+										if duplicateBarcodes? and duplicateBarcodes.length > 0
 											error =
 												errorLevel: 'error'
-												message: numberMissingLocations+ " vial location(s) do not exist."
+												message: "The following barcodes are duplicated in the input file: " + duplicateBarcodes.join ', '
 											validationResponse.errorMessages.push error
-										errors = _.where validationResponse.errorMessages, {errorLevel: 'error'}
-										warnings = _.where validationResponse.errorMessages, {errorLevel: 'warning'}
-										if errors.length > 0
-											validationResponse.hasError = true
-										if warnings.length > 0
-											validationResponse.hasWarning = true
-										validationResponse.results.htmlSummary = prepareValidationHTMLSummary validationResponse.hasError, validationResponse.hasWarning, validationResponse.errorMessages, summaryInfo
-										callback validationResponse
+										checkLocationsExist fileEntryArray, (missingLocations) ->
+											if missingLocations? and missingLocations.length > 0
+												error =
+													errorLevel: 'error'
+													message: "The following vial location(s) do not exist: "+ missingLocations.join(', ') + ". Please contact your system administrator to add them."
+												validationResponse.errorMessages.push error
+											errors = _.where validationResponse.errorMessages, {errorLevel: 'error'}
+											warnings = _.where validationResponse.errorMessages, {errorLevel: 'warning'}
+											if errors.length > 0
+												validationResponse.hasError = true
+											if warnings.length > 0
+												validationResponse.hasWarning = true
+											validationResponse.results.htmlSummary = prepareValidationHTMLSummary validationResponse.hasError, validationResponse.hasWarning, validationResponse.errorMessages, summaryInfo
+											callback validationResponse
 		else
 			error =
 				errorLevel: 'error'
@@ -3107,22 +3114,23 @@ checkBatchCodesExist = (fileEntryArray, callback) ->
 
 checkLocationsExist = (fileEntryArray, callback) ->
 	saveLocationAsCodeValue = config.all.client.compoundInventory.saveLocationAsCodeValue
-	numberMissingLocations = 0
+	missingLocations = []
 	if saveLocationAsCodeValue
-		callback numberMissingLocations
+		callback missingLocations
 	else
 		unfilteredlocationBreadCrumbs = _.pluck(fileEntryArray, "locationBreadCrumb")
-		console.log 'unfilteredlocationBreadCrumbs', unfilteredlocationBreadCrumbs
-		locationBreadCrumbs = _.without(unfilteredlocationBreadCrumbs, "")
-		console.log 'locationBreadCrumbs', locationBreadCrumbs
+		locationBreadCrumbs = _.without(unfilteredlocationBreadCrumbs, "", undefined)
 		rootLabel = config.all.client.compoundInventory.rootLocationLabel
 		if locationBreadCrumbs.length > 0
 			exports.getLocationCodesByBreadcrumbArrayInternal {locationBreadCrumbs: locationBreadCrumbs, rootLabel: rootLabel}, (locationCodesByBreadcrumbArrayResponses, statusCode) =>
-				if locationCodesByBreadcrumbArrayResponses.length isnt locationBreadCrumbs.length
-					numberMissingLocations = locationBreadCrumbs.length - locationCodesByBreadcrumbArrayResponses.length
-				callback numberMissingLocations
+				missingLocations = []
+				_.each locationBreadCrumbs, (breadcrumb) ->
+					if !(_.findWhere locationCodesByBreadcrumbArrayResponses, {labelTextBreadcrumb: breadcrumb})?
+						missingLocations.push breadcrumb
+				missingLocations = _.uniq missingLocations
+				callback missingLocations
 		else
-			callback numberMissingLocations
+			callback missingLocations
 
 checkBarcodesExist = (barcodes, callback) ->
 	getContainerCodesFromLabelsInternal barcodes, 'container', 'tube', (containerCodes) ->
@@ -3134,6 +3142,15 @@ checkBarcodesExist = (barcodes, callback) ->
 			else
 				newBarcodes.push containerCodeEntry.requestLabel
 		callback existingBarcodes, newBarcodes
+
+checkForDuplicateBarcodes = (barcodes, callback) ->
+	duplicateBarcodes = []
+	groupedByCount = _.countBy barcodes, (barcode) ->
+		barcode
+	_.each groupedByCount, (count, barcode) ->
+		if count > 1
+			duplicateBarcodes.push barcode
+	callback duplicateBarcodes
 
 exports.checkParentWellContent = (fileEntryArray, callback) ->
 	#The purpose of this function is to check that the source vial content is compatible with the daughter content being loaded in, including
@@ -3398,6 +3415,7 @@ exports.validateDaughterVialsInternal = (vialsToValidate, callback) ->
 				errorMessages.push dataTypeErrors...
 			sourceBarcodes = _.pluck vialsToValidate, 'sourceVialBarcode'
 			checkBarcodesExist sourceBarcodes, (existingSourceBarcodes, missingSourceBarcodes) ->
+				missingSourceBarcodes = _.uniq missingSourceBarcodes
 				if missingSourceBarcodes? and missingSourceBarcodes.length > 0
 					error =
 						errorLevel: 'error'
@@ -3405,24 +3423,31 @@ exports.validateDaughterVialsInternal = (vialsToValidate, callback) ->
 					errorMessages.push error
 				destinationBarcodes = _.pluck vialsToValidate, 'destinationVialBarcode'
 				checkBarcodesExist destinationBarcodes, (existingBarcodes, newBarcodes) ->
+					existingBarcodes = _.uniq existingBarcodes
 					if existingBarcodes? and existingBarcodes.length > 0
 						error =
 							errorLevel: 'error'
 							message: "The following destination barcodes already exist: " + existingBarcodes.join ', '
 						errorMessages.push error
-					checkLocationsExist vialsToValidate, (numberMissingLocations) ->
-						if numberMissingLocations > 0
+					checkForDuplicateBarcodes destinationBarcodes, (duplicateBarcodes) ->
+						if duplicateBarcodes? and duplicateBarcodes.length > 0
 							error =
 								errorLevel: 'error'
-								message: numberMissingLocations+ " vial location(s) do not exist."
+								message: "The following barcodes are duplicated in the input file: " + duplicateBarcodes.join ', '
 							errorMessages.push error
-						if missingSourceBarcodes.length > 0
-							callback null, errorMessages
-						else
-							exports.checkParentWellContent vialsToValidate, (parentWellContentErrors) ->
-								if parentWellContentErrors?
-									errorMessages.push parentWellContentErrors...
+						checkLocationsExist vialsToValidate, (missingLocations) ->
+							if missingLocations? and missingLocations.length > 0
+								error =
+									errorLevel: 'error'
+									message: "The following vial location(s) do not exist: "+ missingLocations.join(', ') + ". Please contact your system administrator to add them."
+								errorMessages.push error
+							if missingSourceBarcodes.length > 0
 								callback null, errorMessages
+							else
+								exports.checkParentWellContent vialsToValidate, (parentWellContentErrors) ->
+									if parentWellContentErrors?
+										errorMessages.push parentWellContentErrors...
+									callback null, errorMessages
 
 exports.createDaughterVials = (req, resp) ->
 	if req.session?.passport?.user?.username?
@@ -3526,7 +3551,7 @@ exports.createDaughterVialsInternal = (vialsToCreate, user, callback) ->
 								if err?
 									callback err
 								else
-									objectsToMoveWithLocation = _.filter(objectsToMove, (object) -> object.locationBreadCrumb isnt "")
+									objectsToMoveWithLocation = _.filter(objectsToMove, (object) -> (object.locationBreadCrumb isnt "" and object.locationBreadCrumb?))
 									if objectsToMoveWithLocation.length > 0
 										exports.setLocationByBreadCrumbInternal objectsToMoveWithLocation, (setLocationResponse, statusCode) =>
 											if statusCode is 200
