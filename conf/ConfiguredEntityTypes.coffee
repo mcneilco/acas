@@ -82,4 +82,13 @@ exports.entityTypes = [
     displayName: 'Solution Aliquot'
     sourceExternal: false
     parent: false
+  ,
+    code: 'Location Container'
+    type: 'location'
+    kind: 'default'
+    codeOrigin: 'ACAS LsContainer'
+    displayName: 'Location'
+    sourceExternal: false
+    parent: false
+    model: require("../routes/ServerUtilityFunctions.js").LocationContainer
 ]

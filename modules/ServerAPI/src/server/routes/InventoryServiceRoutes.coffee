@@ -70,6 +70,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/checkBatchDependencies', exports.checkBatchDependencies
 	app.post '/api/getLocationCodesByBreadcrumbArray', exports.getLocationCodesByBreadcrumbArray
 	app.post '/api/setLocationByBreadCrumb', exports.setLocationByBreadCrumb
+	app.post '/api/validateAndCreateNewLocationInTree', exports.validateAndCreateNewLocationInTree
 
 
 exports.setupRoutes = (app, loginRoutes) ->
@@ -130,6 +131,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/checkBatchDependencies', loginRoutes.ensureAuthenticated, exports.checkBatchDependencies
 	app.post '/api/getLocationCodesByBreadcrumbArray', loginRoutes.ensureAuthenticated, exports.getLocationCodesByBreadcrumbArray
 	app.post '/api/setLocationByBreadCrumb', loginRoutes.ensureAuthenticated, exports.setLocationByBreadCrumb
+	app.post '/api/validateAndCreateNewLocationInTree', loginRoutes.ensureAuthenticated, exports.validateAndCreateNewLocationInTree
 
 exports.getContainersInLocation = (req, resp) ->
 	req.setTimeout 86400000
@@ -2687,6 +2689,7 @@ exports.validateParentVialsFromCSVInternal = (csvFileName, dryRun, callback) ->
 			hasWarning: false
 			errorMessages: []
 			transactionId: null
+			#TODOSAM2
 		if exists
 			validationResponse.results.path = path
 			createParentVialFileEntryArray csvFileName, (err, fileEntryArray) ->
@@ -3807,3 +3810,181 @@ createMoveToLocationObjects = (locationCodeNames, objectsToMove, callback) =>
 		else
 			callback null, statusCode
 	)
+
+exports.validateAndCreateNewLocationInTree = (req, resp) =>
+
+	exports.validateAndCreateNewLocationInTreeInternal(req.body, (json, statusCode) =>
+		resp.statusCode = statusCode
+		resp.json json
+	)
+
+exports.validateAndCreateNewLocationInTreeInternal = (newLocationObject, callback) =>
+
+	validateParentLocation newLocationObject.parentBreadcrumb, (parentValidationResponse, statusCode) =>
+		if parentValidationResponse.hasError or parentValidationResponse.hasWarning
+			callback parentValidationResponse.errorMessages, statusCode
+		else
+			validateNewLocationInTree newLocationObject, (validationResponse, statusCode) =>
+				if validationResponse.hasError or validationResponse.hasWarning
+					callback validationResponse.errorMessages, statusCode
+				else
+					createNewLocationInTree newLocationObject, parentValidationResponse.parentLocationCode, (creationResponse, statusCode) =>
+						if creationResponse.hasError or creationResponse.hasWarning
+							callback creationResponse.errorMessages, statusCode
+						else
+							callback creationResponse, statusCode
+
+validateParentLocation = (parentLocationBreadcrumb, callback) =>
+	rootLabel = config.all.client.compoundInventory.rootLocationLabel
+	parentValidationResponse =
+		validNewLocation: true
+		hasError: false
+		hasWarning: false
+		errorMessages: []
+
+	exports.getLocationCodesByBreadcrumbArrayInternal {locationBreadCrumbs: [parentLocationBreadcrumb], rootLabel: rootLabel}, (locationCodesByBreadcrumbArrayResponses, statusCode) =>
+		if statusCode is 200
+			if locationCodesByBreadcrumbArrayResponses.length is 0
+				parentValidationResponse.validNewLocation = false
+				parentValidationResponse.hasWarning = true
+				error =
+					errorLevel: 'warning'
+					message: "Parent location does not exist."
+				parentValidationResponse.errorMessages.push error
+			else
+				parentValidationResponse.parentLocationCode = locationCodesByBreadcrumbArrayResponses[0].codeName
+		else
+			console.error 'getLocationCodesByBreadcrumbArrayInternal has failed'
+			parentValidationResponse.validNewLocation = false
+			parentValidationResponse.hasError = true
+			error =
+				errorLevel: 'error'
+				message: "An error has occurred searching for location container codes by breadcrumb"
+			parentValidationResponse.errorMessages.push error
+		callback parentValidationResponse, statusCode
+
+
+validateNewLocationInTree = (newLocationObject, callback) =>
+	isUnique = newLocationObject.isUnique
+
+	validationResponse =
+		validNewLocation: true
+		hasError: false
+		hasWarning: false
+		errorMessages: []
+
+	if isUnique
+		queryPayload =
+			containerLabels: [newLocationObject.labelText]
+			containerType: "location"
+			containerKind: "default"
+			labelType: "barcode"
+			labelKind: "barcode"
+
+
+		exports.getContainerCodesByLabelsLikeMaxResultsInternal queryPayload, (containerCodeQueryResponse, statusCode) =>
+			if statusCode is 200
+				if containerCodeQueryResponse[0].foundCodeNames.length > 0
+					validationResponse.validNewLocation = false
+					validationResponse.hasError = true
+					error =
+						errorLevel: 'error'
+						message: "Location already exists."
+					validationResponse.errorMessages.push error
+			else
+				console.error 'getContainerCodesByLabelsLikeMaxResultsInternal has failed'
+				validationResponse.validNewLocation = false
+				validationResponse.hasError = true
+				error =
+					errorLevel: 'error'
+					message: "An error has occurred searching for container codes by labels"
+				validationResponse.errorMessages.push error
+
+			callback validationResponse, statusCode
+
+	else
+		rootLabel = config.all.client.compoundInventory.rootLocationLabel
+		newLocationBreadcrumb = newLocationObject.parentBreadcrumb + newLocationObject.delimiter + newLocationObject.labelText
+		exports.getLocationCodesByBreadcrumbArrayInternal {locationBreadCrumbs: [newLocationBreadcrumb], rootLabel: rootLabel}, (locationCodesByBreadcrumbArrayResponses, statusCode) =>
+			if statusCode is 200
+				if locationCodesByBreadcrumbArrayResponses.length > 0
+					validationResponse.validNewLocation = false
+					validationResponse.hasWarning = true
+					error =
+						errorLevel: 'warning'
+						message: "Location already exists."
+					validationResponse.errorMessages.push error
+			else
+				console.error 'getLocationCodesByBreadcrumbArrayInternal has failed'
+				validationResponse.validNewLocation = false
+				validationResponse.hasError = true
+				error =
+					errorLevel: 'error'
+					message: "An error has occurred searching for location container codes by breadcrumb"
+				validationResponse.errorMessages.push error
+			callback validationResponse, statusCode
+
+createNewLocationInTree = (newLocationObject, parentLocationCode, callback) =>
+	creationResponse =
+		createdNewLocation: true
+		hasError: false
+		hasWarning: false
+		errorMessages: []
+
+
+	isUnique = newLocationObject.isUnique
+	labelText = newLocationObject.labelText
+	recordedBy = newLocationObject.user
+	date = new Date().getTime()
+
+	if isUnique
+		lsType = "barcode"
+		lsKind = "barcode"
+	else
+		lsType = "name"
+		lsKind = "common"
+
+	containerPreferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin("location", "default", "ACAS LsContainer")
+	model = new containerPreferredEntity.model()
+
+	#depending on isUnique >> lsType / lsKind == barcode or common name
+	label = new serverUtilityFunctions.Label
+		lsType: lsType
+		lsKind: lsKind
+		preferred: true
+		labelText: labelText
+		recordedBy: recordedBy
+		recordedDate: date
+		ignored: false
+
+
+	lsLabels = new serverUtilityFunctions.LabelList([label])
+	model.set('lsLabels', lsLabels)
+	model.prepareToSave newLocationObject.user
+	model.reformatBeforeSaving()
+
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.persistence.fullpath+"containers"
+	request = require 'request'
+	request(
+		method: 'POST'
+		url: baseurl
+		body: model
+		json: true
+		timeout: 86400000
+	, (error, response, json) =>
+		if !error && response.statusCode == 201
+			moveToLocationObject ={containerCodeName: json.codeName, modifiedBy: newLocationObject.user, modifiedDate: date, locationCodeName: parentLocationCode}
+			exports.moveToLocationInternal [moveToLocationObject], "0", "0", (moveToLocationResponse, statusCode) =>
+				callback creationResponse, statusCode
+		else
+			console.error 'got ajax error trying to save lsContainer'
+			console.error error
+			console.error json
+			console.error response
+			error =
+				errorLevel: 'error'
+				message: "An error has occurred saving new location container"
+			creationResponse.errorMessages.push error
+			callback creationResponse, 500
+		)
