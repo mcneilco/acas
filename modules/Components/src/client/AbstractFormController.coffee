@@ -141,6 +141,7 @@ class window.AbstractThingFormController extends AbstractFormController
 				url: field.fieldSettings.url
 				thingRef: mdl
 				insertUnassigned: field.fieldSettings.insertUnassigned
+				firstSelectText: field.fieldSettings.firstSelectText
 				modelDefaults: field.modelDefaults
 				allowedFileTypes: field.fieldSettings.allowedFileTypes
 				extendedLabel: field.fieldSettings.extendedLabel
