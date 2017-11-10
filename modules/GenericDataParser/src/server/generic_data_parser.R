@@ -3044,7 +3044,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     summaryInfo$info$"Rows of Data" = max(calculatedResults$analysisGroupID)
   }
   summaryInfo$info$"Columns of Data" = length(unique(calculatedResults$valueKindAndUnit))
-  summaryInfo$info[[paste0("Unique ", mainCode, "'s")]] = length(unique(calculatedResults$batchCode))
+  summaryInfo$info[[paste0("Unique ", displayName, "'s")]] = length(unique(calculatedResults$batchCode))
   if (!is.null(subjectData)) {
     summaryInfo$info$"Raw Results Data Points" <- max(subjectData$rowID)
     summaryInfo$info$"Flagged Data Points" <- sum(subjectData$valueKind == "flag")
