@@ -582,15 +582,23 @@ exports.createTubes = (request, callback) ->
 	console.debug "inside base customer specific server function createTubes"
 
 exports.updateWellContent = (request) ->
+	answer = null
+	callback answer, 200
 	console.debug "inside base customer specific server function updateWellContent"
 
 exports.updateContainersByContainerCodes = (request) ->
+	answer = null
+	callback answer, 200
 	console.debug "inside base customer specific server function updateContainersByContainerCodes"
 
 exports.addContainerLogs = (request) ->
+	answer = null
+	callback answer, 200
 	console.debug "inside base customer specific server function addContainerLogs"
 
 exports.moveToLocation = (request) ->
+	answer = null
+	callback answer, 200
 	console.debug "inside base customer specific server function moveToLocation"
 
 exports.throwInTrash = (request, callback) ->
