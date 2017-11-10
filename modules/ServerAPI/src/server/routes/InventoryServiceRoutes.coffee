@@ -3119,7 +3119,7 @@ checkLocationsExist = (fileEntryArray, callback) ->
 		callback missingLocations
 	else
 		unfilteredlocationBreadCrumbs = _.pluck(fileEntryArray, "locationBreadCrumb")
-		locationBreadCrumbs = _.without(unfilteredlocationBreadCrumbs, "")
+		locationBreadCrumbs = _.without(unfilteredlocationBreadCrumbs, "", undefined)
 		rootLabel = config.all.client.compoundInventory.rootLocationLabel
 		if locationBreadCrumbs.length > 0
 			exports.getLocationCodesByBreadcrumbArrayInternal {locationBreadCrumbs: locationBreadCrumbs, rootLabel: rootLabel}, (locationCodesByBreadcrumbArrayResponses, statusCode) =>
@@ -3551,7 +3551,7 @@ exports.createDaughterVialsInternal = (vialsToCreate, user, callback) ->
 								if err?
 									callback err
 								else
-									objectsToMoveWithLocation = _.filter(objectsToMove, (object) -> object.locationBreadCrumb isnt "")
+									objectsToMoveWithLocation = _.filter(objectsToMove, (object) -> (object.locationBreadCrumb isnt "" and object.locationBreadCrumb?))
 									if objectsToMoveWithLocation.length > 0
 										exports.setLocationByBreadCrumbInternal objectsToMoveWithLocation, (setLocationResponse, statusCode) =>
 											if statusCode is 200
