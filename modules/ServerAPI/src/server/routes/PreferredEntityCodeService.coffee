@@ -47,10 +47,10 @@ exports.getSpecificEntityTypeRoute = (req, resp) ->
 	exports.getSpecificEntityType displayName, (json) ->
 		resp.json json
 
-exports.getSpecificEntityType = (displayName, callback) ->
-	entityType = _.findWhere configuredEntityTypes.entityTypes, {displayName:displayName}
+exports.getSpecificEntityType = (codeNameOrDisplayName, callback) ->
+	entityType = _.findWhere configuredEntityTypes.entityTypes, {displayName:codeNameOrDisplayName}
 	if !entityType?
-		entityType = _.findWhere configuredEntityTypes.entityTypes, {code:displayName}
+		entityType = _.findWhere configuredEntityTypes.entityTypes, {code:codeNameOrDisplayName}
 	entityType ?= {}
 	if callback?
 		callback entityType
@@ -168,7 +168,7 @@ exports.referenceCodes = (requestData, csv, callback) ->
 						callback
 							displayName: requestData.displayName
 							results: out
-			else 
+			else
 				reqHashes =
 					containerType: entityType.type
 					containerKind: entityType.kind

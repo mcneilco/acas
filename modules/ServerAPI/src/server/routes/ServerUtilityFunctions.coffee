@@ -1452,7 +1452,7 @@ class Container extends Backbone.Model
 					additionalValues: additionalValues
 				response.push responseObject
 		return response
-		
+
 	getLocationHistory: ->
 		lsStates = @get('lsStates').getStatesByTypeAndKind 'metadata', 'location history'
 		response = []
@@ -1463,7 +1463,7 @@ class Container extends Backbone.Model
 					 !((value.get('lsType')=='stringValue') and (value.get('lsKind')=='location')) and
 					 !((value.get('lsType')=='codeValue') and (value.get('lsKind')=='moved by')) and
 					 !((value.get('lsType')=='dateValue') and (value.get('lsKind')=='moved date'))
-				responseObject = 
+				responseObject =
 					codeName: @get('codeName')
 					recordedBy: lsState.get('recordedBy')
 					recordedDate: lsState.get('recordedDate')
@@ -2321,6 +2321,23 @@ class Vial extends Container
 			kind: 'amount'
 		]
 
+class LocationContainer extends Container
+	urlRoot: "/api/containers"
+
+	initialize: ->
+		@.set
+			lsType: "location"
+			lsKind: "default"
+		super()
+
+	lsProperties:
+		defaultLabels: []
+		defaultValues: []
+
+	defaultFirstLsThingItx: []
+
+	defaultSecondLsThingItx: []
+
 exports.Label = Label
 exports.LabelList = LabelList
 exports.Value = Value
@@ -2344,5 +2361,6 @@ exports.ContainerPlate = ContainerPlate
 exports.ContainerTube = ContainerTube
 exports.AnalysisGroup = AnalysisGroup
 exports.AnalysisGroupList = AnalysisGroupList
+exports.LocationContainer = LocationContainer
 
 AppLaunchParams = loginUser:username:"acas"
