@@ -3101,7 +3101,12 @@ getPreviousExperimentCodes <- function(experiment) {
   return(previousExperimentCodes)
 }
 getProtocolRequiredEntityCode <- function(protocol) {
-  metadataState <- getStatesByTypeAndKind(protocol, "metadata_protocol metadata")[[1]]
+  metadataState <- getStatesByTypeAndKind(protocol, "metadata_protocol metadata")
+  if(length(metadataState) > 0) {
+    metadataState <- metadataState[[1]]
+  } else {
+    return(NA)
+  }
   requiredEntities <- getValuesByTypeAndKind(metadataState, "codeValue_required entity type")
   requiredEntityCodes <- lapply(requiredEntities, getElement, "codeValue")
   return(requiredEntityCodes)
