@@ -2970,12 +2970,15 @@ getFileExists = (csvFileName, callback) =>
 
 createParentVialFileEntryArray = (csvFileName, callback) =>
 	csvFileEntries = []
+	csvLocationBreadCrumb = ""
 	path = config.all.server.file.server.path + '/'
 	fileName = csvFileName
 	rowCount = 0
 	fs.createReadStream(path + fileName)
 	.pipe(parse({delimiter: ','}))
 	.on('data', (csvrow) ->
+		if csvrow[PARENT_LOCATION_NAME_INDEX]?
+			csvLocationBreadCrumb = csvrow[PARENT_LOCATION_NAME_INDEX].trim()
 		rowCount++
 		fileEntry =
 			batchCode: csvrow[PARENT_COMPOUND_LOT_INDEX].trim()
@@ -2988,7 +2991,7 @@ createParentVialFileEntryArray = (csvFileName, callback) =>
 			concentration: parseFloat(csvrow[PARENT_CONCENTRATION_INDEX].trim())
 			concUnits:csvrow[PARENT_CONC_UNITS_INDEX].trim()
 			solvent: csvrow[PARENT_SOLVENT_INDEX].trim()
-			locationBreadCrumb: csvrow[PARENT_LOCATION_NAME_INDEX].trim()
+			locationBreadCrumb: csvLocationBreadCrumb
 			rowNumber: rowCount
 		if rowCount? and rowCount > 1
 			csvFileEntries.push(fileEntry)
@@ -3002,9 +3005,12 @@ createDaughterVialFileEntryArray = (csvFileName, callback) =>
 	path = config.all.server.file.server.path + '/'
 	fileName = csvFileName
 	rowCount = 0
+	csvLocationBreadCrumb = ""
 	fs.createReadStream(path + fileName)
 	.pipe(parse({delimiter: ','}))
 	.on('data', (csvrow) ->
+		if csvrow[PARENT_LOCATION_NAME_INDEX]?
+			csvLocationBreadCrumb = csvrow[PARENT_LOCATION_NAME_INDEX].trim()
 		rowCount++
 		fileEntry =
 			sourceVialBarcode: csvrow[DAUGHTER_SOURCE_VIAL_INDEX].trim()
@@ -3017,7 +3023,7 @@ createDaughterVialFileEntryArray = (csvFileName, callback) =>
 			concentration: parseFloat(csvrow[DAUGHTER_CONCENTRATION_INDEX].trim())
 			concUnits: csvrow[DAUGHTER_CONC_UNITS_INDEX].trim()
 			solvent: csvrow[DAUGHTER_SOLVENT_INDEX].trim()
-			locationBreadCrumb: csvrow[PARENT_LOCATION_NAME_INDEX].trim()
+			locationBreadCrumb: csvLocationBreadCrumb
 			rowNumber: rowCount
 		if rowCount? and rowCount > 1
 			csvFileEntries.push(fileEntry)
