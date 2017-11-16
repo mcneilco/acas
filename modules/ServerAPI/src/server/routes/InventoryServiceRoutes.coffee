@@ -2723,10 +2723,13 @@ exports.validateParentVialsFromCSVInternal = (csvFileName, dryRun, callback) ->
 												message: "The following barcodes are duplicated in the input file: " + duplicateBarcodes.join ', '
 											validationResponse.errorMessages.push error
 										checkLocationsExist fileEntryArray, (missingLocations) ->
+											locationNumberString = "location does"
 											if missingLocations? and missingLocations.length > 0
+												if missingLocations.length > 1
+													locationNumberString = "locations do"
 												error =
 													errorLevel: 'error'
-													message: "The following vial location(s) do not exist: "+ missingLocations.join(', ') + ". Please contact your system administrator to add them."
+													message: "The following " + locationNumberString + " not exist: "+ missingLocations.join(', ') + ". Please contact your system administrator to add them."
 												validationResponse.errorMessages.push error
 											errors = _.where validationResponse.errorMessages, {errorLevel: 'error'}
 											warnings = _.where validationResponse.errorMessages, {errorLevel: 'warning'}
@@ -3442,10 +3445,13 @@ exports.validateDaughterVialsInternal = (vialsToValidate, callback) ->
 								message: "The following barcodes are duplicated in the input file: " + duplicateBarcodes.join ', '
 							errorMessages.push error
 						checkLocationsExist vialsToValidate, (missingLocations) ->
+							locationNumberString = "location does"
 							if missingLocations? and missingLocations.length > 0
+								if missingLocations.length > 1
+									locationNumberString = "locations do"
 								error =
 									errorLevel: 'error'
-									message: "The following vial location(s) do not exist: "+ missingLocations.join(', ') + ". Please contact your system administrator to add them."
+									message: "The following " + locationNumberString + " not exist: "+ missingLocations.join(', ') + ". Please contact your system administrator to add them."
 								errorMessages.push error
 							if missingSourceBarcodes.length > 0
 								callback null, errorMessages
