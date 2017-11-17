@@ -6,6 +6,7 @@ exports.entityTypes = [
     displayName: 'Corporate Parent ID'
     sourceExternal: true
     parent: true
+    isTestedEntity: false
   ,
     code: 'Corporate Batch ID'
     type: 'compound'
@@ -14,6 +15,7 @@ exports.entityTypes = [
     displayName: 'Corporate Batch ID'
     sourceExternal: true
     parent: false
+    isTestedEntity: true
   ,
     code: 'Protein Parent'
     type: 'parent'
@@ -22,6 +24,7 @@ exports.entityTypes = [
     displayName: 'Protein Parent'
     sourceExternal: false
     parent: true
+    isTestedEntity: false
   ,
     code: 'Protein Batch'
     type: 'batch'
@@ -30,6 +33,7 @@ exports.entityTypes = [
     displayName: 'Protein Batch'
     sourceExternal: false
     parent: false
+    isTestedEntity: false
   ,
     code: 'Gene ID'
     type: 'gene'
@@ -38,6 +42,7 @@ exports.entityTypes = [
     displayName: 'Gene ID'
     sourceExternal: false
     parent: false
+    isTestedEntity: false
   ,
     code: 'Container Plate'
     type: 'container'
@@ -47,6 +52,7 @@ exports.entityTypes = [
     sourceExternal: false
     parent: false
     model: require("../routes/ServerUtilityFunctions.js").ContainerPlate
+    isTestedEntity: false
   ,
     code: 'Container Tube'
     type: 'container'
@@ -56,6 +62,7 @@ exports.entityTypes = [
     sourceExternal: false
     parent: false
     model: require("../routes/ServerUtilityFunctions.js").ContainerTube
+    isTestedEntity: false
   ,
     code: 'Definition Container Plate'
     type: 'definition container'
@@ -65,6 +72,7 @@ exports.entityTypes = [
     sourceExternal: false
     parent: false
     model: require("../routes/ServerUtilityFunctions.js").DefinitionContainerPlate
+    isTestedEntity: false
   ,
     code: 'Definition Container Tube'
     type: 'definition container'
@@ -74,6 +82,7 @@ exports.entityTypes = [
     sourceExternal: false
     parent: false
     model: require("../routes/ServerUtilityFunctions.js").DefinitionContainerTube
+    isTestedEntity: false
   ,
     code: 'Solution Container Tube'
     type: 'container'
@@ -82,6 +91,7 @@ exports.entityTypes = [
     displayName: 'Solution Aliquot'
     sourceExternal: false
     parent: false
+    isTestedEntity: false
   ,
     code: 'Location Container'
     type: 'location'
@@ -91,4 +101,5 @@ exports.entityTypes = [
     sourceExternal: false
     parent: false
     model: require("../routes/ServerUtilityFunctions.js").LocationContainer
+    isTestedEntity: false
 ]

@@ -471,7 +471,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   
   require(data.table)
   entityTypeAndKindList <- fromJSON(getURLcheckStatus(paste0(racas::applicationSettings$server.nodeapi.path, 
-                                                             "/api/entitymeta/configuredEntityTypes/"), 
+                                                             "/api/entitymeta/configuredTestedEntityTypes/"), 
                                                              requireJSON = TRUE))
   # Expected column names: 'type', 'kind', 'codeOrigin', 'displayName', 'sourceExternal'
   entityTypeAndKindTable <- as.data.table(do.call(rbind, entityTypeAndKindList))
