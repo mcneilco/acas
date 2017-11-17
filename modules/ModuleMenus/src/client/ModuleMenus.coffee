@@ -8,13 +8,8 @@ class window.ModuleMenusController extends Backbone.View
 		'change .bv_fastUserSelect': 'handleLoginUserChange'
 #		'click .bv_showModuleMenuControl': "handleShowMenus"
 
-	window.onbeforeunload = () ->
-		if window.conf.leaveACASMessage == "WARNING: There are unsaved changes."
-			return window.conf.leaveACASMessage
-		else
-			return
-
 	initialize: ->
+		window.onbeforeunload = @handleBeforeUnload
 		$(@el).html @template()
 
 		if window.conf.moduleMenus.menuConfigurationSettings?
@@ -187,6 +182,14 @@ class window.ModuleMenusController extends Backbone.View
 					matches.push role
 		matches
 
+	handleBeforeUnload: =>
+		console.log "handleBeforeUnload"
+		anyDirty = @moduleLauncherList.some (mod) ->
+			mod.get('isDirty')
+		if anyDirty
+			return "please show a warning"
+		else
+			return
 
 
 #TODO config docs in readme.md file

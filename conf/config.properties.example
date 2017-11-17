@@ -197,7 +197,6 @@ client.moduleMenus.dataViewerDeepLink=/dataViewer
 # For auto-starting a module when opening up ACAS
 client.moduleMenus.moduleAutoLaunchName=
 
-client.leaveACASMessage=There are no unsaved changes.
 #Add user roles that represent groups allowed to fast user switch
 #client.moduleMenus.fastUserSwitchingRoles=[{"lsKind":"PROJ-00000001","lsType":"Project","roleName":"User"},{"lsKind":"PROJ-00000002","lsType":"Project","roleName":"User"}]
 client.moduleMenus.fastUserSwitchingRoles=[]
