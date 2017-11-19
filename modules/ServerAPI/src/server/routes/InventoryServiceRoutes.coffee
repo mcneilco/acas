@@ -3174,10 +3174,15 @@ exports.checkParentWellContent = (fileEntryArray, callback) ->
 	if strictMatch? and strictMatch
 		flexibleErrorLevel = 'error'
 	exports.getWellContentByContainerLabelsInternal vialBarcodes, 'container', 'tube', 'barcode', 'barcode', (wellContentList, statusCode) ->
+		totalRequestedAmounts = {}
 		_.each fileEntryArray, (fileEntry) ->
 			parentVialAndWellContent = _.findWhere wellContentList, {label: fileEntry.sourceVialBarcode}
 			if parentVialAndWellContent.wellContent?
 				parentWellContent = parentVialAndWellContent.wellContent[0]
+				if totalRequestedAmounts[fileEntry.sourceVialBarcode]?
+					totalRequestedAmounts[fileEntry.sourceVialBarcode] += fileEntry.amount
+				else
+					totalRequestedAmounts[fileEntry.sourceVialBarcode] = fileEntry.amount
 				if parentWellContent.physicalState != fileEntry.physicalState
 					error =
 						errorLevel: flexibleErrorLevel
@@ -3193,10 +3198,10 @@ exports.checkParentWellContent = (fileEntryArray, callback) ->
 						errorLevel: flexibleErrorLevel
 						message: "Daughter vial #{fileEntry.destinationVialBarcode} must use the same amount units as parent vial #{fileEntry.sourceVialBarcode}, which is in #{parentWellContent.amountUnits}."
 					errorMessages.push error
-				else if parentWellContent.amount < fileEntry.amount
+				else if parentWellContent.amount < totalRequestedAmounts[fileEntry.sourceVialBarcode]
 					error =
 						errorLevel: 'warning'
-						message: "Creating daughter vial #{fileEntry.destinationVialBarcode} will remove more than the total amount currently in parent vial #{fileEntry.sourceVialBarcode}, leaving a negative amount in the parent vial."
+						message: "Creating daughter vial #{fileEntry.destinationVialBarcode} with #{fileEntry.amount.toFixed(3)} #{fileEntry.amountUnits} gives a total request of #{totalRequestedAmounts[fileEntry.sourceVialBarcode].toFixed(3)} #{fileEntry.amountUnits}, which will remove more than the #{parentWellContent.amount.toFixed(3)} #{parentWellContent.amountUnits} currently in parent vial #{fileEntry.sourceVialBarcode}, leaving a negative amount in the parent vial."
 					errorMessages.push error
 				if fileEntry.batchCode? and fileEntry.batchCode != parentWellContent.batchCode
 					error =
@@ -3293,6 +3298,7 @@ exports.getContainerTubeDefinitionCode = (callback) ->
 decrementAmountsFromVials = (toDecrementList, parentWellContentList, user, callback) ->
 	wellsToUpdate = []
 	changes = []
+	runningTotals = {}
 	_.each toDecrementList, (toDecrement) ->
 		oldContainerWellContent = _.findWhere parentWellContentList, {label: toDecrement.sourceVialBarcode}
 		oldWellContent = oldContainerWellContent.wellContent[0]
@@ -3302,9 +3308,13 @@ decrementAmountsFromVials = (toDecrementList, parentWellContentList, user, callb
 		unitMismatch = (oldWellContent.amountUnits != toDecrement.amountUnits)
 		if !differentState and !concentrationMismatch and !unitMismatch
 			wellCode = oldWellContent.containerCodeName
+			if runningTotals[wellCode]?
+				runningTotals[wellCode] -= toDecrement.amount
+			else
+				runningTotals[wellCode] = oldWellContent.amount - toDecrement.amount
 			newWellContent =
 				containerCodeName: wellCode
-				amount: oldWellContent.amount - toDecrement.amount
+				amount: runningTotals[wellCode]
 				recordedBy: user
 			wellsToUpdate.push newWellContent
 			change =
@@ -3316,8 +3326,7 @@ decrementAmountsFromVials = (toDecrementList, parentWellContentList, user, callb
 			changes.push change
 	console.log wellsToUpdate
 	if wellsToUpdate.length > 0
-		exports.updateWellContentInternal wellsToUpdate, true, false, (updateWellsResponse, updateWellsStatusCode) ->
-			console.log updateWellsStatusCode
+		updateWellContentSerial wellsToUpdate, 0, (updateWellsResponse, updateWellsStatusCode) ->
 			if updateWellsStatusCode != 204
 				callback "Error: #{updateWellsResponse}"
 			else
@@ -3328,6 +3337,19 @@ decrementAmountsFromVials = (toDecrementList, parentWellContentList, user, callb
 						callback null, updateWellsResponse
 	else
 		callback null
+
+updateWellContentSerial = (wellsToUpdate, currentIndex, outerCallback) ->
+	if currentIndex >= wellsToUpdate.length
+		outerCallback "all good", 204
+		return
+
+	exports.updateWellContentInternal [wellsToUpdate[currentIndex]], true, false, (updateWellsResponse, updateWellsStatusCode) ->
+		if updateWellsStatusCode != 204
+			outerCallback updateWellsResponse, updateWellsStatusCode
+		else
+			currentIndex++
+			updateWellContentSerial wellsToUpdate, currentIndex, outerCallback
+			return
 
 prepareSummaryInfo = (fileEntryArray, cb) ->
 	codeTableRoutes.getCodeTableValuesInternal 'container status', 'physical state', (configuredPhysicalStates) ->
