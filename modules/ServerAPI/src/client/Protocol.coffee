@@ -335,7 +335,7 @@ class window.ProtocolBaseController extends BaseEntityController
 		else
 			@$('.bv_requiredEntityTypeLabel').html 'Required Entity Type'
 		@requiredEntityTypeList = new PickListList()
-		@requiredEntityTypeList.url = "/api/entitymeta/configuredEntityTypes/displayName?asCodes=true"
+		@requiredEntityTypeList.url = "/api/entitymeta/configuredTestedEntityTypes/displayName?asCodes=true"
 		@requiredEntityTypeListController = new PickListSelectController
 			el: @$('.bv_requiredEntityType')
 			collection: @requiredEntityTypeList
