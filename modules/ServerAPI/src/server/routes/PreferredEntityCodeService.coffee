@@ -80,7 +80,7 @@ exports.getConfiguredTestedEntityTypes = (asCodes) ->
 	else
 		return testedEntityTypes
 
-exports.getSpecificLoableEntityTypeRoute = (req, resp) ->
+exports.getSpecificTestedEntityTypeRoute = (req, resp) ->
 	displayName = req.params.displayName
 	specificTestedEntityType = exports.getSpecificTestedEntityType displayName
 	resp.json specificTestedEntityType
