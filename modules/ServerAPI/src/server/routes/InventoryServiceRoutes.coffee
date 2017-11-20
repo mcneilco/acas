@@ -2980,28 +2980,37 @@ createParentVialFileEntryArray = (csvFileName, callback) =>
 	fs.createReadStream(path + fileName)
 	.pipe(parse({delimiter: ','}))
 	.on('data', (csvrow) ->
-		if csvrow[PARENT_LOCATION_NAME_INDEX]?
-			csvLocationBreadCrumb = csvrow[PARENT_LOCATION_NAME_INDEX].trim()
-		rowCount++
-		fileEntry =
-			batchCode: csvrow[PARENT_COMPOUND_LOT_INDEX].trim()
-			destinationVialBarcode: csvrow[PARENT_DESTINATION_VIAL_INDEX].trim()
-			amount: parseFloat(csvrow[PARENT_AMOUNT_INDEX].trim())
-			amountUnits: csvrow[PARENT_AMOUNT_UNITS_INDEX].trim()
-			preparedBy: csvrow[PARENT_PREPARED_BY_INDEX].trim()
-			preparedDate: csvrow[PARENT_PREPARED_DATE_INDEX].trim()
-			physicalState: csvrow[PARENT_PHYSICAL_STATE_INDEX].trim()
-			concentration: parseFloat(csvrow[PARENT_CONCENTRATION_INDEX].trim())
-			concUnits:csvrow[PARENT_CONC_UNITS_INDEX].trim()
-			solvent: csvrow[PARENT_SOLVENT_INDEX].trim()
-			locationBreadCrumb: csvLocationBreadCrumb
-			rowNumber: rowCount
-		if rowCount? and rowCount > 1
-			csvFileEntries.push(fileEntry)
+		emptyRow = checkEmptyRow(csvrow)
+		if !emptyRow
+			if csvrow[PARENT_LOCATION_NAME_INDEX]?
+				csvLocationBreadCrumb = csvrow[PARENT_LOCATION_NAME_INDEX].trim()
+			rowCount++
+			fileEntry =
+				batchCode: csvrow[PARENT_COMPOUND_LOT_INDEX].trim()
+				destinationVialBarcode: csvrow[PARENT_DESTINATION_VIAL_INDEX].trim()
+				amount: parseFloat(csvrow[PARENT_AMOUNT_INDEX].trim())
+				amountUnits: csvrow[PARENT_AMOUNT_UNITS_INDEX].trim()
+				preparedBy: csvrow[PARENT_PREPARED_BY_INDEX].trim()
+				preparedDate: csvrow[PARENT_PREPARED_DATE_INDEX].trim()
+				physicalState: csvrow[PARENT_PHYSICAL_STATE_INDEX].trim()
+				concentration: parseFloat(csvrow[PARENT_CONCENTRATION_INDEX].trim())
+				concUnits:csvrow[PARENT_CONC_UNITS_INDEX].trim()
+				solvent: csvrow[PARENT_SOLVENT_INDEX].trim()
+				locationBreadCrumb: csvLocationBreadCrumb
+				rowNumber: rowCount
+			if rowCount? and rowCount > 1
+				csvFileEntries.push(fileEntry)
 	)
 	.on('end', () ->
 		return callback null, csvFileEntries
 	)
+
+checkEmptyRow = (csvrow) =>
+	arrayToCheckForEmptyRow = _.filter(csvrow, (entry) -> (entry isnt ""))
+	if arrayToCheckForEmptyRow.length is 0
+		return true
+	else
+		return false
 
 createDaughterVialFileEntryArray = (csvFileName, callback) =>
 	csvFileEntries = []
@@ -3012,24 +3021,26 @@ createDaughterVialFileEntryArray = (csvFileName, callback) =>
 	fs.createReadStream(path + fileName)
 	.pipe(parse({delimiter: ','}))
 	.on('data', (csvrow) ->
-		if csvrow[PARENT_LOCATION_NAME_INDEX]?
-			csvLocationBreadCrumb = csvrow[PARENT_LOCATION_NAME_INDEX].trim()
-		rowCount++
-		fileEntry =
-			sourceVialBarcode: csvrow[DAUGHTER_SOURCE_VIAL_INDEX].trim()
-			destinationVialBarcode: csvrow[DAUGHTER_DESTINATION_VIAL_INDEX].trim()
-			amount: parseFloat(csvrow[DAUGHTER_AMOUNT_INDEX].trim())
-			amountUnits: csvrow[DAUGHTER_AMOUNT_UNITS_INDEX].trim()
-			preparedBy: csvrow[DAUGHTER_PREPARED_BY_INDEX].trim()
-			preparedDate: csvrow[DAUGHTER_PREPARED_DATE_INDEX].trim()
-			physicalState: csvrow[DAUGHTER_PHYSICAL_STATE_INDEX].trim()
-			concentration: parseFloat(csvrow[DAUGHTER_CONCENTRATION_INDEX].trim())
-			concUnits: csvrow[DAUGHTER_CONC_UNITS_INDEX].trim()
-			solvent: csvrow[DAUGHTER_SOLVENT_INDEX].trim()
-			locationBreadCrumb: csvLocationBreadCrumb
-			rowNumber: rowCount
-		if rowCount? and rowCount > 1
-			csvFileEntries.push(fileEntry)
+		emptyRow = checkEmptyRow(csvrow)
+		if !emptyRow
+			if csvrow[PARENT_LOCATION_NAME_INDEX]?
+				csvLocationBreadCrumb = csvrow[PARENT_LOCATION_NAME_INDEX].trim()
+			rowCount++
+			fileEntry =
+				sourceVialBarcode: csvrow[DAUGHTER_SOURCE_VIAL_INDEX].trim()
+				destinationVialBarcode: csvrow[DAUGHTER_DESTINATION_VIAL_INDEX].trim()
+				amount: parseFloat(csvrow[DAUGHTER_AMOUNT_INDEX].trim())
+				amountUnits: csvrow[DAUGHTER_AMOUNT_UNITS_INDEX].trim()
+				preparedBy: csvrow[DAUGHTER_PREPARED_BY_INDEX].trim()
+				preparedDate: csvrow[DAUGHTER_PREPARED_DATE_INDEX].trim()
+				physicalState: csvrow[DAUGHTER_PHYSICAL_STATE_INDEX].trim()
+				concentration: parseFloat(csvrow[DAUGHTER_CONCENTRATION_INDEX].trim())
+				concUnits: csvrow[DAUGHTER_CONC_UNITS_INDEX].trim()
+				solvent: csvrow[DAUGHTER_SOLVENT_INDEX].trim()
+				locationBreadCrumb: csvLocationBreadCrumb
+				rowNumber: rowCount
+			if rowCount? and rowCount > 1
+				csvFileEntries.push(fileEntry)
 	)
 	.on('end', () ->
 		return callback null, csvFileEntries
