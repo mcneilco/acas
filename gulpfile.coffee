@@ -92,9 +92,9 @@ getAssetsPath = (path) ->
 addREnvironmentCleanUp = (file,contents) ->
   # file contents are handed 
   # over as buffers 
-  if path.extname(file.path) in [".R",".r"] && contents.match('# ROUTE:.*')
-    cleanFunction = "racas::cleanEnvironment();gc()"
-    contents = "#{cleanFunction}\n\r#{contents}\r\n#{cleanFunction}\r\n"
+  if path.extname(file.path) in [".R",".r"] && contents.match('# ROUTE:.*') && !contents.match('# MEMORY_LIMIT_EXEMPT')
+    cleanFunction = "DONE;racas::checkMemoryLimitAndKillSelf();racas::cleanEnvironment();"
+    contents = "#{contents}\r\n#{cleanFunction}\r\n"
   return contents
 
 modify = (options = {}) ->
