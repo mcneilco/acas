@@ -1,4 +1,5 @@
 # ROUTE: /curve/detail
+# MEMORY_LIMIT_EXEMPT
 
 library(racas)
 
