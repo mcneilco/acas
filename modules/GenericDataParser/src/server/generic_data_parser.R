@@ -471,14 +471,14 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   
   require(data.table)
   entityTypeAndKindList <- fromJSON(getURLcheckStatus(paste0(racas::applicationSettings$server.nodeapi.path, 
-                                                             "/api/entitymeta/configuredEntityTypes/"), 
+                                                             "/api/entitymeta/configuredTestedEntityTypes/"), 
                                                              requireJSON = TRUE))
   # Expected column names: 'type', 'kind', 'codeOrigin', 'displayName', 'sourceExternal'
   entityTypeAndKindTable <- as.data.table(do.call(rbind, entityTypeAndKindList))
   entityTypeAndKindTable[, displayName := unlist(displayName)]
   
   if (!(mainCode %in% entityTypeAndKindTable$code)) {
-    stopUser(paste0(mainCode, " is not valid in the first column. It should be one of the following: ", paste(paste0("'", entityTypeAndKindTable$displayName, "'", collapse = ", "), ".")))
+    stopUser(paste0(mainCode, " is not valid in the first column. It should be one of the following: ", paste(paste0("'", entityTypeAndKindTable$displayName, "'", collapse = ", ")), "."))
   }
   
   entityType <- entityTypeAndKindTable[code == mainCode, type][[1]]

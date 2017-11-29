@@ -125,7 +125,7 @@ exports.runRFunctionOutsideRequest = (username, argumentsJSON, rScript, rFunctio
 		returnFunction.call @, JSON.stringify(runRFunctionServiceTestJSON.runRFunctionResponse)
 	else
 		request.post
-			timeout: 6000000
+			timeout: 86400000
 			url: serviceRapacheFullPath + "runfunction"
 			json: true
 			body: JSON.stringify(requestBody)

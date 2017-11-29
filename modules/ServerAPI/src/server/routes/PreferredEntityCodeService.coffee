@@ -1,6 +1,8 @@
 exports.setupAPIRoutes = (app) ->
 	app.get '/api/entitymeta/configuredEntityTypes/:asCodes?', exports.getConfiguredEntityTypesRoute
 	app.get '/api/entitymeta/configuredEntityTypes/displayName/:displayName', exports.getSpecificEntityTypeRoute
+	app.get '/api/entitymeta/configuredTestedEntityTypes/:asCodes?', exports.getConfiguredTestedEntityTypesRoute
+	app.get '/api/entitymeta/configuredTestedEntityTypes/displayName/:displayName', exports.getSpecificTestedEntityTypeRoute
 	app.post '/api/entitymeta/referenceCodes/:csv?', exports.referenceCodesRoute
 	app.post '/api/entitymeta/pickBestLabels/:csv?', exports.pickBestLabelsRoute
 	app.post '/api/entitymeta/searchForEntities', exports.searchForEntitiesRoute
@@ -9,6 +11,8 @@ exports.setupAPIRoutes = (app) ->
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/entitymeta/configuredEntityTypes/:asCodes?', loginRoutes.ensureAuthenticated, exports.getConfiguredEntityTypesRoute
 	app.get '/api/entitymeta/ConfiguredEntityTypes/displayName/:displayName', loginRoutes.ensureAuthenticated, exports.getSpecificEntityTypeRoute
+	app.get '/api/entitymeta/configuredTestedEntityTypes/:asCodes?', loginRoutes.ensureAuthenticated, exports.getConfiguredTestedEntityTypesRoute
+	app.get '/api/entitymeta/configuredTestedEntityTypes/displayName/:displayName', loginRoutes.ensureAuthenticated, exports.getSpecificTestedEntityTypeRoute
 	app.post '/api/entitymeta/referenceCodes/:csv?', loginRoutes.ensureAuthenticated, exports.referenceCodesRoute
 	app.post '/api/entitymeta/pickBestLabels/:csv?', loginRoutes.ensureAuthenticated, exports.pickBestLabelsRoute
 	app.post '/api/entitymeta/searchForEntities', loginRoutes.ensureAuthenticated ,exports.searchForEntitiesRoute
@@ -56,6 +60,38 @@ exports.getSpecificEntityType = (codeNameOrDisplayName, callback) ->
 		callback entityType
 	else
 		return entityType
+
+exports.getConfiguredTestedEntityTypesRoute = (req, resp) ->
+	if req.params.asCodes?
+		asCodes = true
+	else
+		asCodes = false
+	testedEntityTypes = exports.getConfiguredTestedEntityTypes asCodes
+	resp.json testedEntityTypes
+
+exports.getConfiguredTestedEntityTypes = (asCodes) ->
+	testedEntityTypes = _.where configuredEntityTypes.entityTypes, {isTestedEntity: true}
+	if asCodes
+		codes = for type in testedEntityTypes
+			code: type.code
+			name: type.displayName
+			ignored: false
+		return codes
+	else
+		return testedEntityTypes
+
+exports.getSpecificTestedEntityTypeRoute = (req, resp) ->
+	displayName = req.params.displayName
+	specificTestedEntityType = exports.getSpecificTestedEntityType displayName
+	resp.json specificTestedEntityType
+
+exports.getSpecificTestedEntityType = (codeNameOrDisplayName) ->
+	testedEntityTypes = exports.getConfiguredTestedEntityTypes asCodes = false
+	entityType = _.findWhere testedEntityTypes, {displayName:codeNameOrDisplayName}
+	if !entityType?
+		entityType = _.findWhere testedEntityTypes, {code:codeNameOrDisplayName}
+	entityType ?= {}
+	return entityType
 
 exports.getSpecificEntityTypeByTypeKindAndCodeOrigin = (type, kind, codeOrigin) ->
 	entityType = _.findWhere configuredEntityTypes.entityTypes, {type: type, kind: kind, codeOrigin: codeOrigin}
