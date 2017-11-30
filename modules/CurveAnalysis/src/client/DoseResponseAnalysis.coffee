@@ -9,19 +9,38 @@ class window.DoseResponseAnalysisParameters extends Backbone.Model
 		max: new Backbone.Model limitType: 'none'
 		min: new Backbone.Model limitType: 'none'
 		slope: new Backbone.Model limitType: 'none'
+		baseline: new Backbone.Model(value: 0)
 
-	initialize: (options) ->
-		if options?
-			if(typeof(options.inactiveThreshold) == "undefined")
+	initialize: (attributes, options) ->
+		
+		if attributes?
+			if(typeof(attributes.inactiveThreshold) == "undefined")
 				@set 'inactiveThreshold', null
 			else
-				@set 'inactiveThreshold', options.inactiveThreshold
+				@set 'inactiveThreshold', attributes.inactiveThreshold
 
-			if(typeof(options.theoreticalMax) == "undefined")
+			if(typeof(attributes.theoreticalMax) == "undefined")
 				@set 'theoreticalMax', null
 			else
-				@set 'theoreticalMax', options.theoreticalMax
+				@set 'theoreticalMax', attributes.theoreticalMax
 
+			if(typeof(attributes.baseline) == "undefined")
+				if options?.defaultBaseline?
+					baseline = options.defaultBaseline
+				else
+					baseline = 0
+				@get("baseline").set "value", baseline
+			else
+				@set 'baseline', attributes.baseline
+		else
+			if options?.defaultBaseline?
+				@get("baseline").set "value", options.defaultBaseline
+			else
+				@get("baseline").set "value", 0
+			if options?.defaultBaseline?
+				@get("baseline").set "value", options.defaultBaseline
+			else
+				@get("baseline").set "value", 0
 		@fixCompositeClasses()
 		@on 'change:inactiveThreshold', @handleInactiveThresholdChanged
 		@on 'change:theoreticalMax', @handleTheoreticalMaxChanged
@@ -33,6 +52,8 @@ class window.DoseResponseAnalysisParameters extends Backbone.Model
 			@set min: new Backbone.Model(@get('min'))
 		if @get('slope') not instanceof Backbone.Model
 			@set slope: new Backbone.Model(@get('slope'))
+		if @get('baseline') not instanceof Backbone.Model
+			@set baseline: new Backbone.Model(@get('baseline'))
 
 
 	handleInactiveThresholdChanged: =>
@@ -80,6 +101,10 @@ class window.DoseResponseAnalysisParameters extends Backbone.Model
 			errors.push
 				attribute: 'theoreticalMax'
 				message: "Theoretical max value must be set to a number"
+		if  (_.isNaN(attrs.baseline.get('value')) or attrs.baseline.get('value') == null)
+			errors.push
+				attribute: 'baseline'
+				message: "Baseline value must be set to a number"
 		if errors.length > 0
 			return errors
 		else
@@ -106,6 +131,7 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 		"change .bv_slope_value": "attributeChanged"
 		"change .bv_inactiveThreshold": "attributeChanged"
 		"change .bv_theoreticalMax": "attributeChanged"
+		"change .bv_baseline": "attributeChanged"
 
 	initialize: ->
 		$(@el).html @template()
@@ -132,6 +158,8 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 			value: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_min_value'))
 		@model.get('slope').set
 			value: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_slope_value'))
+		@model.get('baseline').set
+			value: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_baseline'))
 		@model.set
 			inverseAgonistMode: @$('.bv_inverseAgonistMode').is(":checked")
 			smartMode: @$('.bv_smartMode').is(":checked")
@@ -150,11 +178,14 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 		if @$('.bv_smartMode').is(":checked")
 			@$('.bv_inactiveThreshold').removeAttr 'disabled'
 			@$('.bv_theoreticalMax').removeAttr 'disabled'
+			@$('.bv_baseline').removeAttr 'disabled'
 		else
 			@$('.bv_inactiveThreshold').attr 'disabled', 'disabled'
 			@$('.bv_inactiveThreshold').val ""
 			@$('.bv_theoreticalMax').attr 'disabled', 'disabled'
 			@$('.bv_theoreticalMax').val ""
+			@$('.bv_baseline').attr 'disabled', 'disabled'
+			@$('.bv_baseline').val ""
 
 		@attributeChanged()
 
@@ -287,6 +318,7 @@ class window.ModelFitTypeController extends Backbone.View
 			drapType = window[parametersClass]
 			controllerClass =  curveFitClasses.get 'parametersController'
 			drapcType = window[controllerClass]
+			defaultBaseline = curveFitClasses.get 'defaultBaseline'
 		else
 			drapType = 'unassigned'
 
@@ -300,10 +332,10 @@ class window.ModelFitTypeController extends Backbone.View
 				mfp.set clobValue: ""
 
 		else
-			if @model.getModelFitParameters() is {}
-				drap = new drapType()
-			else
-				drap = new drapType @model.getModelFitParameters()
+			fitParameters = @model.getModelFitParameters()
+			if defaultBaseline?
+				fitParameters.set defaultBaseline: defaultBaseline
+			drap = new drapType fitParameters
 
 			@parameterController = new drapcType
 				el: @$('.bv_analysisParameterForm')

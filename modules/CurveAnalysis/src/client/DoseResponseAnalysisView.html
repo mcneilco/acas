@@ -6,8 +6,8 @@
 <script type="text/template" id="DoseResponseAnalysisParametersAutofillView" xmlns="http://www.w3.org/1999/html">
 
 	<div class="span5" style="margin-left:0;">
-    <div class="well well-small" style="margin-left:10px;margin-bottom:10px;width:350px;height:230px;background-color:#ffffff;">
-        <div class="form form-inline" style="margin-bottom:5px;">
+    <div class="well well-small" style="margin-left:10px;margin-bottom:4px;width:350px;height:230px;background-color:#ffffff;">
+        <div class="form form-inline" style="margin-bottom:0px;">
             <strong class="bv_formTitle" style="font-size:18px;">Global Fit Criteria</strong>
             <input type="checkbox" class="bv_group_smartMode bv_smartMode" style="margin-right:5px;margin-left:15px;margin-bottom:5px;" <%if (smartMode){%>checked="checked"<%}%> />
             <label class="control-label bv_group_smartMode" style="margin-left:0px;">Smart Mode</label>
@@ -66,6 +66,8 @@
         <div class="form form-inline" style="margin-bottom:5px;">
             <input type="checkbox" class="bv_inverseAgonistMode" style="margin-right:5px;margin-bottom:5px;" <%if (inverseAgonistMode){%>checked="checked"<%}%> />
             <span>Inverse Agonist Mode</span>
+            <label class="control-label" style="margin-right:5px;margin-left:68px;">Baseline</label>
+            <input type="text" class="bv_baseline" style="width:35px;margin-bottom:0;" value="<%= baseline.value%>" />
         </div>
         <div class="form form-inline">
             <div class="bv_group_inactiveThreshold span2" style="margin-left:0;width:175px;">
@@ -76,8 +78,9 @@
                 <label class="control-label" style="margin-right:5px;margin-left:7px;">Theoretical Max</label>
                 <input type="text" class="bv_theoreticalMax" style="width:35px;margin-bottom:0;" value="<%= theoreticalMax%>" />
             </div>
+            <div class="bv_group_baseline span2" style="margin-left:0;width:175px;">
+            </div>
         </div>
-
     </div>
     </div>
 </script>
