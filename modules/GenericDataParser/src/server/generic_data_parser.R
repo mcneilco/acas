@@ -1716,6 +1716,17 @@ createNewProtocol <- function(metaData, lsTransaction, recordedBy) {
   if (is.null(protocolStatus) || protocolStatus == "") {
     protocolStatus <- "created"
   }
+
+  protocolValues[[length(protocolValues)+1]] <- createStateValue(
+    recordedBy = recordedBy,
+    lsType = "codeValue",
+    lsKind = "scientist",
+    codeValue = metaData$Scientist,
+    codeType = "assay",
+    codeKind = "scientist",
+    codeOrigin = racas::applicationSettings$client.scientistCodeOrigin,
+    lsTransaction= lsTransaction)
+
   protocolValues[[length(protocolValues)+1]] <- createStateValue(
     recordedBy = recordedBy,
     lsType = "codeValue",
