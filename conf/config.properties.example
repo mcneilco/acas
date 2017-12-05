@@ -185,6 +185,7 @@ client.service.external.lotDetails.url=/cmpdreg/#lot/
 # If module is customized and the ACAS header name needs to be replaced, you can set the following options
 client.moduleMenus.logoText=ACAS
 client.moduleMenus.logoImageFilePath=
+client.moduleMenus.logoTextLink=/
 client.moduleMenus.homePageMessage=Welcome to ACAS
 client.moduleMenus.copyrightMessage=&copy; John McNeil & Company 2012-2017
 # client.moduleMenus.menuConfigurationSettings=ModuleMenusConfiguration
