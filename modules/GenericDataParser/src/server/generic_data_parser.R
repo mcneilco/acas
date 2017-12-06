@@ -470,20 +470,20 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   #   a "data.frame" of the validated calculated results
   
   require(data.table)
-  
   entityTypeAndKindList <- fromJSON(getURLcheckStatus(paste0(racas::applicationSettings$server.nodeapi.path, 
-                                                             "/api/entitymeta/configuredEntityTypes/"), 
+                                                             "/api/entitymeta/configuredTestedEntityTypes/"), 
                                                              requireJSON = TRUE))
   # Expected column names: 'type', 'kind', 'codeOrigin', 'displayName', 'sourceExternal'
   entityTypeAndKindTable <- as.data.table(do.call(rbind, entityTypeAndKindList))
   entityTypeAndKindTable[, displayName := unlist(displayName)]
   
-  if (!(mainCode %in% entityTypeAndKindTable$displayName)) {
-    stopUser(paste0(mainCode, " is not valid in the first column. It should be something like 'Corporate Batch ID'."))
+  if (!(mainCode %in% entityTypeAndKindTable$code)) {
+    stopUser(paste0(mainCode, " is not valid in the first column. It should be one of the following: ", paste(paste0("'", entityTypeAndKindTable$displayName, "'", collapse = ", ")), "."))
   }
   
-  entityType <- entityTypeAndKindTable[displayName == mainCode, type][[1]]
-  entityKind <- entityTypeAndKindTable[displayName == mainCode, kind][[1]]
+  entityType <- entityTypeAndKindTable[code == mainCode, type][[1]]
+  entityKind <- entityTypeAndKindTable[code == mainCode, kind][[1]]
+  mainDisplayName <- entityTypeAndKindTable[code == mainCode, displayName][[1]]
   
   # Get the current batch Ids
   batchesToCheck <- calculatedResults$originalMainID != replaceFakeCorpBatchId
@@ -502,7 +502,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
     setnames(preferredIdDT, c("requestName", "preferredName"), c("Requested.Name", "Preferred.Code"))
     newBatchIds <- as.data.frame(preferredIdDT)
   } else {
-    newBatchIds <- getPreferredId2(batchIds, displayName = mainCode)
+    newBatchIds <- getPreferredId2(batchIds, displayName = mainDisplayName)
   }
   
   # If the preferred Id service does not return anything, errors will already be thrown, just move on
@@ -563,7 +563,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   
   
   ### ================== Check batch projects ========================================================
-  if (!is.null(projectCode)) {
+  if (racas::applicationSettings$server.project.roles.enable && !is.null(projectCode)) {
     # projectList is a list of objects with keys "code" (string), "isRestricted" (boolean), and others not required here
     projectList <- jsonlite::fromJSON(getURL(paste0(racas::applicationSettings$server.nodeapi.path, "/api/projects/getAllProjects/stubs")), simplifyDataFrame=FALSE)
     currentProjList <- Filter(function(x) {x$code == projectCode}, projectList)
@@ -572,7 +572,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
       currentProj <- currentProjList[[1]]
       if (currentProj$isRestricted) {
         # columns of batchProjects must include "Project.Code" and "Requested.Name", both strings
-        batchProjects <- getProjectForBatch(unique(calculatedResults$batchCode[batchesToCheck]), "Corporate Batch ID")
+        batchProjects <- getProjectForBatch(c(unique(calculatedResults$batchCode[batchesToCheck])), mainCode)
         batchProjectRestriced <- merge(batchProjects, projectDF, by.x="Project.Code", by.y="code")
         # Compounds in a restricted project may not be entered into another project
         rCompoundsDF <- batchProjectRestriced[batchProjectRestriced$isRestricted & batchProjectRestriced$Project.Code!=projectCode,]
@@ -634,6 +634,40 @@ getProjectForBatch <- function (entityIds, displayName) {
     # Return the useful part
     return(read.csv(text=response$resultCSV, stringsAsFactors=FALSE))
   }
+}
+getEntityCodeFromEntityDisplayNameOrCode <- function(mainCodeOrDisplayName) {
+  require(data.table)
+  entityTypeAndKindList <- fromJSON(getURLcheckStatus(paste0(racas::applicationSettings$server.nodeapi.path, 
+                                                             "/api/entitymeta/configuredEntityTypes/"), 
+                                                             requireJSON = TRUE))
+  # Expected column names: 'type', 'kind', 'codeOrigin', 'displayName', 'sourceExternal'
+  entityTypeAndKindTable <- as.data.table(do.call(rbind, entityTypeAndKindList))
+  entityTypeAndKindTable[, displayName := unlist(displayName)]
+  if (length(entityTypeAndKindTable[displayName == mainCodeOrDisplayName, code])) {
+    mainCode <- entityTypeAndKindTable[displayName == mainCodeOrDisplayName, code][[1]]
+  } else if (length(entityTypeAndKindTable[code == mainCodeOrDisplayName, code])) {
+    mainCode <- entityTypeAndKindTable[code == mainCodeOrDisplayName, code][[1]]
+  } else{
+    mainCode <- mainCodeOrDisplayName
+  }
+  return(mainCode)
+  
+}
+getDisplayNameFromEntityCode <- function(mainCode) {
+  require(data.table)
+  entityTypeAndKindList <- fromJSON(getURLcheckStatus(paste0(racas::applicationSettings$server.nodeapi.path, 
+                                                             "/api/entitymeta/configuredEntityTypes/"), 
+                                                             requireJSON = TRUE))
+  # Expected column names: 'type', 'kind', 'codeOrigin', 'displayName', 'sourceExternal'
+  entityTypeAndKindTable <- as.data.table(do.call(rbind, entityTypeAndKindList))
+  entityTypeAndKindTable[, displayName := unlist(displayName)]
+  if (length(entityTypeAndKindTable[code == mainCode, displayName])) {
+    displayName <- entityTypeAndKindTable[code == mainCode, displayName][[1]]
+  } else{
+    displayName <- mainCode
+  }
+  return(displayName)
+  
 }
 getHiddenColumns <- function(classRow, errorEnv) {
   # Get information about which columns to hide (publicData = FALSE)
@@ -1178,7 +1212,7 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
     if (lockCorpBatchId) {
       if(calculatedResultsValueKindRow[1] != mainCode && !precise) {
         stopUser(paste0("Could not find '", mainCode, "' column. The ", mainCode, 
-                    " column should be the first column of the Calculated Results"))
+                        " column should be the first column of the Calculated Results"))
       }
     } else {
       if (!(mainCode %in% unlist(calculatedResultsValueKindRow)) && !precise) {
@@ -2051,44 +2085,47 @@ validateProject <- function(projectName, configList, username, protocolName = NU
   if(forceProtocolCreation) {
     protocolName <- trim(gsub("CREATETHISPROTOCOL", "", protocolName))
   }
-  tryCatch({
-    protocolList <- getProtocolsByName(protocolName)
-  }, error = function(e) {
-    stopUser("There was an error in accessing the protocol. Please contact your system administrator.")
-  })
-  if (length(protocolList) !=0) {
-    protocol <- getProtocolById(protocolList[[1]]$id)
-    metadataState <- getStatesByTypeAndKind(protocol, "metadata_protocol metadata")
-    if(length(metadataState) > 0) {
-      metadataState <- metadataState[[1]]
-      #protocolProject <- getValuesByTypeAndKind(metadataState, "codeValue_project")
-      protocolProject <- metadataState$lsValues[unlist(lapply(metadataState$lsValues, function(x) {x$"lsTypeAndKind"=="codeValue_project" & x$ignored ==FALSE}))]
-      if(!is.null(protocolProject) && length(protocolProject) != 0) {
-        protocolProject <- lapply(protocolProject, getElement, "codeValue")[[1]]
-        if(protocolProject != "unassigned") {
-          systemProjectsList <- fromJSON(getURL(paste0(racas::applicationSettings$server.nodeapi.path, "/api/projects/getAllProjects/stubs")))
-          systemProjectsDT <- rbindlist(systemProjectsList, fill = TRUE)
-          protocolProjectMatches <- systemProjectsDT[code == protocolProject]
-          projectCode <- systemProjectsDT[name == projectName]$code
-          if(nrow(protocolProjectMatches) == 0) {
-            protocolProjectExists <- FALSE
-            addError("The project that this protocol belongs to is no longer available please contact your administrator or if you have the appropriate privileges re-assign the protocol to a new project", errorEnv = errorEnv)
-          } else {
-            protocolProjectExists <- TRUE
-          }
-          if(protocolProjectExists && protocolProjectMatches[1]$isRestricted && (length(projectCode) == 0 || protocolProject != projectCode)) {
-            addError("The protocol you entered belongs to a restricted project, therefore, the experiment project must match protocol's project.", errorEnv = errorEnv)
-          }
-          
-          rmNullObs <- function(x) {
-            is.NullOb <- function(x) is.null(x) | all(sapply(x, is.null))
-            x <- Filter(Negate(is.NullOb), x)
-            lapply(x, function(x) if (is.list(x)) rmNullObs(x) else x)
-          }
-          userProjectDT <- rbindlist(lapply(projectList, rmNullObs), fill = TRUE)
-          userHasAccess <- nrow(userProjectDT[code == protocolProject & ignored == FALSE]) > 0
-          if(!userHasAccess) {
-            addError("The protocol you entered is being used in a project that you do not have access to.", errorEnv = errorEnv)
+  # Only Check protocol projects if project roles is enable
+  if (racas::applicationSettings$server.project.roles.enable) {
+    tryCatch({
+      protocolList <- getProtocolsByName(protocolName)
+    }, error = function(e) {
+      stopUser("There was an error in accessing the protocol. Please contact your system administrator.")
+    })
+    if (length(protocolList) !=0) {
+      protocol <- getProtocolById(protocolList[[1]]$id)
+      metadataState <- getStatesByTypeAndKind(protocol, "metadata_protocol metadata")
+      if(length(metadataState) > 0) {
+        metadataState <- metadataState[[1]]
+        #protocolProject <- getValuesByTypeAndKind(metadataState, "codeValue_project")
+        protocolProject <- metadataState$lsValues[unlist(lapply(metadataState$lsValues, function(x) {x$"lsTypeAndKind"=="codeValue_project" & x$ignored ==FALSE}))]
+        if(!is.null(protocolProject) && length(protocolProject) != 0) {
+          protocolProject <- lapply(protocolProject, getElement, "codeValue")[[1]]
+          if(protocolProject != "unassigned") {
+            systemProjectsList <- fromJSON(getURL(paste0(racas::applicationSettings$server.nodeapi.path, "/api/projects/getAllProjects/stubs")))
+            systemProjectsDT <- rbindlist(systemProjectsList, fill = TRUE)
+            protocolProjectMatches <- systemProjectsDT[code == protocolProject]
+            projectCode <- systemProjectsDT[name == projectName]$code
+            if(nrow(protocolProjectMatches) == 0) {
+              protocolProjectExists <- FALSE
+              addError("The project that this protocol belongs to is no longer available please contact your administrator or if you have the appropriate privileges re-assign the protocol to a new project", errorEnv = errorEnv)
+            } else {
+              protocolProjectExists <- TRUE
+            }
+            if(protocolProjectExists && protocolProjectMatches[1]$isRestricted && (length(projectCode) == 0 || protocolProject != projectCode)) {
+              addError("The protocol you entered belongs to a restricted project, therefore, the experiment project must match protocol's project.", errorEnv = errorEnv)
+            }
+            
+            rmNullObs <- function(x) {
+              is.NullOb <- function(x) is.null(x) | all(sapply(x, is.null))
+              x <- Filter(Negate(is.NullOb), x)
+              lapply(x, function(x) if (is.list(x)) rmNullObs(x) else x)
+            }
+            userProjectDT <- rbindlist(lapply(projectList, rmNullObs), fill = TRUE)
+            userHasAccess <- nrow(userProjectDT[code == protocolProject & ignored == FALSE]) > 0
+            if(!userHasAccess) {
+              addError("The protocol you entered is being used in a project that you do not have access to.", errorEnv = errorEnv)
+            }
           }
         }
       }
@@ -2815,18 +2852,45 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   # Grab the Calculated Results Section
   calculatedResults <- getSection(genericDataFileDataFrame, lookFor = formatParameters$lookFor, transpose = FALSE)
   
+  # Get the protocol and experiment
+  newProtocol <- FALSE
+  if (!useExisting) {
+    protocol <- getProtocolByNameAndFormat(protocolName = validatedMetaData$'Protocol Name'[1], configList, inputFormat)
+    newProtocol <- is.na(protocol[[1]])
+    if (!newProtocol) {
+      metaData$'Protocol Name'[1] <- getPreferredProtocolName(protocol, validatedMetaData$'Protocol Name'[1])
+    }
+  }
+
   # Organize the Calculated Results
   if (inputFormat %in% c("Gene ID Data", "Generic", "Dose Response")) {
     mainCode <- calculatedResults[2, 1] #Getting this from its standard position
   } else {
     mainCode <- "Corporate Batch ID"
   }
+  
+  #De-alias mainCode in case it is a displayName
+  mainCode <- getEntityCodeFromEntityDisplayNameOrCode(mainCode)
+  displayName <- getDisplayNameFromEntityCode(mainCode)
+  
+  if(!newProtocol) {
+    requiredMainCode <- getProtocolRequiredEntityCode(protocol)
+    if(length(requiredMainCode) > 0 && !is.na(requiredMainCode) && requiredMainCode != "" && requiredMainCode != "unassigned") {
+      requiredMainCode <- requiredMainCode[[1]]
+      if(mainCode != requiredMainCode) {
+        requiredMainDisplayName <- getDisplayNameFromEntityCode(requiredMainCode)
+        addError(paste0("'",metaData$'Protocol Name'[1],"' requires an entity type of '",requiredMainDisplayName,"'. Please update your file with this entity type instead of the entity type '",displayName,"'"))
+      }
+      mainCode <- requiredMainCode
+    }
+  }
+  calculatedResults[2, 1] <- mainCode
+
   calculateGroupingID <- if (rawOnlyFormat) {calculateTreatmemtGroupID} else {NA}
   organizedResultsList <- organizeCalculatedResults(
     calculatedResults, inputFormat, formatParameters, mainCode, 
     lockCorpBatchId = formatParameters$lockCorpBatchId, rawOnlyFormat = rawOnlyFormat, 
     errorEnv = errorEnv, precise = precise, calculateGroupingID = calculateGroupingID)
-    
   calculatedResults <- organizedResultsList[[1]]
   selColumnOrderInfo <- organizedResultsList[[2]]
 
@@ -2878,21 +2942,11 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     customExperimentMetaDataValues <- NULL
   }
   
-  
-  # Get the protocol and experiment and, when not on a dry run, create them if they do not exist
-  newProtocol <- FALSE
-  if (!useExisting) {
-    protocol <- getProtocolByNameAndFormat(protocolName = validatedMetaData$'Protocol Name'[1], configList, inputFormat)
-    newProtocol <- is.na(protocol[[1]])
-    if (!newProtocol) {
-      metaData$'Protocol Name'[1] <- getPreferredProtocolName(protocol, validatedMetaData$'Protocol Name'[1])
-    }
-  }
-  
+  # when not on a dry run, create protocol and experiment if they do not exist
   if (!dryRun && newProtocol && errorFree) {
     protocol <- createNewProtocol(metaData = validatedMetaData, lsTransaction, recordedBy)
   }
-  
+
   useExistingExperiment <- inputFormat %in% c("Use Existing Experiment", "Precise For Existing Experiment")
   if (useExistingExperiment) {
     experiment <- getExperimentByCodeName(validatedMetaData$'Experiment Code Name'[1])
@@ -2990,7 +3044,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     summaryInfo$info$"Rows of Data" = max(calculatedResults$analysisGroupID)
   }
   summaryInfo$info$"Columns of Data" = length(unique(calculatedResults$valueKindAndUnit))
-  summaryInfo$info[[paste0("Unique ", mainCode, "'s")]] = length(unique(calculatedResults$batchCode))
+  summaryInfo$info[[paste0("Unique ", displayName, "'s")]] = length(unique(calculatedResults$batchCode))
   if (!is.null(subjectData)) {
     summaryInfo$info$"Raw Results Data Points" <- max(subjectData$rowID)
     summaryInfo$info$"Flagged Data Points" <- sum(subjectData$valueKind == "flag")
@@ -3046,7 +3100,17 @@ getPreviousExperimentCodes <- function(experiment) {
   previousExperimentCodes <- lapply(previousCodeValues, getElement, "codeValue")
   return(previousExperimentCodes)
 }
-
+getProtocolRequiredEntityCode <- function(protocol) {
+  metadataState <- getStatesByTypeAndKind(protocol, "metadata_protocol metadata")
+  if(length(metadataState) > 0) {
+    metadataState <- metadataState[[1]]
+  } else {
+    return(NA)
+  }
+  requiredEntities <- getValuesByTypeAndKind(metadataState, "codeValue_required entity type")
+  requiredEntityCodes <- lapply(requiredEntities, getElement, "codeValue")
+  return(requiredEntityCodes)
+}
 translateClassToValueType <- function(x, reverse = F) {
   # translates Excel style Number formats to ACAS valueTypes (or reverse)
   valueTypeVector <- c("numericValue", "stringValue", "fileValue", "inlineFileValue", "urlValue", "dateValue", "clobValue", "blobValue", "codeValue")

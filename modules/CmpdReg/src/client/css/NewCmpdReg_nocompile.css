@@ -742,7 +742,7 @@ div {
 }
 .RegSearchResults_ParentView {
     margin-bottom: 10px;
-    height: 435px;
+    /*height: 435px;*/
 }
 
 .RegSearchResultsView .parentImageWrapper, .EditParentSearchResultsView .parentImageWrapper {

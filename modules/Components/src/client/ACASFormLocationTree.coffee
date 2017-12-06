@@ -9,6 +9,8 @@ class window.ACASFormLocationTreeController extends ACASFormAbstractFieldControl
 		"click .bv_searchClear": "handleSearchClear"
 		"click .bv_updateLocation": "handleUpdateLocationClicked"
 
+	className: ""
+
 	template: _.template($("#ACASFormLocationTreeView").html())
 
 	initialize: ->
@@ -37,6 +39,12 @@ class window.ACASFormLocationTreeController extends ACASFormAbstractFieldControl
 					error: (err) =>
 						alert 'error getting breadcrumb for container'
 
+	render: =>
+		super()
+
+		@$('.bv_controlGroup').addClass "bv_group_"+@modelKey
+		@
+		
 	setEmptyValue: ->
 		@getModel().set
 			value: null
@@ -52,6 +60,7 @@ class window.ACASFormLocationTreeController extends ACASFormAbstractFieldControl
 		super()
 
 	handleEditIconClicked: =>
+		@$('.bv_locationTreeModal').show()
 		@$('.bv_locationTreeModal').modal
 			backdrop: 'static'
 		@getContainerLocationTree()
@@ -64,6 +73,7 @@ class window.ACASFormLocationTreeController extends ACASFormAbstractFieldControl
 			error: (err) =>
 				alert 'Could not get container location tree. Please contact administrator'
 				@$('.bv_locationTreeModal').modal 'hide'
+				@$('.bv_locationTreeModal').hide()
 			success: (json) =>
 				@setupTree (json)
 
@@ -109,6 +119,7 @@ class window.ACASFormLocationTreeController extends ACASFormAbstractFieldControl
 	handleUpdateLocationClicked: =>
 		selectedLocation = @$('.bv_locationTree').jstree('get_selected', true)
 		@$('.bv_locationTreeModal').modal 'hide'
+		@$('.bv_locationTreeModal').hide()
 		value = selectedLocation[0].original.id
 		breadcrumb = selectedLocation[0].original.breadcrumb
 

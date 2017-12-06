@@ -81,12 +81,12 @@ services:
       - ./conf/docker/cmpdreg/environment/cmpdreg.env
     command: catalina.sh run
   roo:
-    image: mcneilco/acas-roo-server-oss:develop
+    image: mcneilco/acas-roo-server-oss:RC-1.13.0
     volumes:
      - /usr/local/tomcat/webapps/acas
     command: /bin/true
   cmpdreg:
-    image: mcneilco/acas-cmpdreg-roo-server-oss:develop
+    image: mcneilco/acas-cmpdreg-roo-server-oss:RC-1.13.0
     volumes:
      - /usr/local/tomcat/webapps/cmpdreg
     # Add chemaxon license files here

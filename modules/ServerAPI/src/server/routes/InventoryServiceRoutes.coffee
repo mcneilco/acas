@@ -68,6 +68,9 @@ exports.setupAPIRoutes = (app) ->
 	app.get '/api/getParentVialByDaughterVialBarcode', exports.getParentVialByDaughterVialBarcode
 	app.get '/api/getContainerLocationTree', exports.getContainerLocationTree
 	app.post '/api/checkBatchDependencies', exports.checkBatchDependencies
+	app.post '/api/getLocationCodesByBreadcrumbArray', exports.getLocationCodesByBreadcrumbArray
+	app.post '/api/setLocationByBreadCrumb', exports.setLocationByBreadCrumb
+	app.post '/api/validateAndCreateNewLocationInTree', exports.validateAndCreateNewLocationInTree
 
 
 exports.setupRoutes = (app, loginRoutes) ->
@@ -126,6 +129,9 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/getParentVialByDaughterVialBarcode', loginRoutes.ensureAuthenticated, exports.getParentVialByDaughterVialBarcode
 	app.get '/api/getContainerLocationTree', loginRoutes.ensureAuthenticated, exports.getContainerLocationTree
 	app.post '/api/checkBatchDependencies', loginRoutes.ensureAuthenticated, exports.checkBatchDependencies
+	app.post '/api/getLocationCodesByBreadcrumbArray', loginRoutes.ensureAuthenticated, exports.getLocationCodesByBreadcrumbArray
+	app.post '/api/setLocationByBreadCrumb', loginRoutes.ensureAuthenticated, exports.setLocationByBreadCrumb
+	app.post '/api/validateAndCreateNewLocationInTree', loginRoutes.ensureAuthenticated, exports.validateAndCreateNewLocationInTree
 
 exports.getContainersInLocation = (req, resp) ->
 	req.setTimeout 86400000
@@ -280,7 +286,6 @@ exports.getContainerCodesByLabels = (req, resp) ->
 		likeParameter: likeParameter
 		maxResults: maxResults
 
-	console.log 'queryPayload', queryPayload
 
 	exports.getContainerCodesByLabelsLikeMaxResultsInternal(queryPayload, (json, statusCode) ->
 		resp.statusCode = statusCode
@@ -764,40 +769,56 @@ exports.getDefinitionContainersByContainerCodeNamesInternal = (codeNamesJSON, ca
 exports.getBreadCrumbByContainerCode = (req, resp) ->
 	req.setTimeout 86400000
 	exports.getBreadCrumbByContainerCodeInternal req.body, req.query.delimeter, (json) ->
-		if json.indexOf('failed') > -1
-			resp.statusCode = 500
-		else
-			resp.json json
+		if json?
+			if json.indexOf('failed') > -1
+				resp.statusCode = 500
+			else
+				resp.json json
 
 exports.getBreadCrumbByContainerCodeInternal = (codeNamesJSON, delimeter, callback) ->
-	if !delimeter?
-		delimeter = ">"
-	if global.specRunnerTestmode
-		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
-		resp.json inventoryServiceTestJSON.getBreadCrumbByContainerCodeResponse
+	containersToReturn = []
+	if (config.all.client.compoundInventory.saveLocationAsCodeValue)?
+		saveLocationAsCodeValue = config.all.client.compoundInventory.saveLocationAsCodeValue
 	else
-		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.rapache.fullpath+"/getBreadCrumbByContainerCode?delimeter="+encodeURIComponent(delimeter)
-		request = require 'request'
-		request(
-			method: 'POST'
-			url: baseurl
-			body: codeNamesJSON
-			json: true
-			timeout: 86400000
-			headers: 'content-type': 'application/json'
-		, (error, response, json) =>
-			if !error && response.statusCode == 200
-				console.log 'json in getBreadCrumbByContainerCodeInternal'
-				console.log json
-				callback json
+		saveLocationAsCodeValue = false
+	if saveLocationAsCodeValue
+		exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal codeNamesJSON, (containers, statusCode) =>
+			if statusCode is 200
+				_.each containers, (container) =>
+					containersToReturn.push({containerCode: container.codeName, labelBreadCrumb: container.locationName})
+				callback containersToReturn
 			else
-				console.error 'got ajax error trying to get getBreadCrumbByContainerCode'
-				console.error error
-				console.error json
-				console.error response
 				callback JSON.stringify "getBreadCrumbByContainerCode failed"
-		)
+		# callback saveLocationAsCodeValue
+	else
+		if !delimeter?
+			delimeter = ">"
+		if global.specRunnerTestmode
+			inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+			resp.json inventoryServiceTestJSON.getBreadCrumbByContainerCodeResponse
+		else
+			config = require '../conf/compiled/conf.js'
+			baseurl = config.all.client.service.rapache.fullpath+"/getBreadCrumbByContainerCode?delimeter="+encodeURIComponent(delimeter)
+			request = require 'request'
+			request(
+				method: 'POST'
+				url: baseurl
+				body: codeNamesJSON
+				json: true
+				timeout: 86400000
+				headers: 'content-type': 'application/json'
+			, (error, response, json) =>
+				if !error && response.statusCode == 200
+					console.log 'json in getBreadCrumbByContainerCodeInternal'
+					console.log json
+					callback json
+				else
+					console.error 'got ajax error trying to get getBreadCrumbByContainerCode'
+					console.error error
+					console.error json
+					console.error response
+					callback JSON.stringify "getBreadCrumbByContainerCode failed"
+			)
 
 exports.getWellCodesByContainerCodes = (req, resp) ->
 	req.setTimeout 86400000
@@ -1835,7 +1856,6 @@ exports.getDefinitionContainerByNumberOfWellsInternal = (lsType, lsKind, numberO
 			definition = _.find definitions, (definition) ->
 				return definition.get('plateSize').get('value').toString() == numberOfWells.toString()
 			if definition?
-				definition.prepareToSave()
 				definition.reformatBeforeSaving()
 				callback definition, 200
 			else
@@ -2621,6 +2641,7 @@ PARENT_PHYSICAL_STATE_INDEX = 6
 PARENT_CONCENTRATION_INDEX = 7
 PARENT_CONC_UNITS_INDEX = 8
 PARENT_SOLVENT_INDEX = 9
+PARENT_LOCATION_NAME_INDEX = 10
 
 DAUGHTER_SOURCE_VIAL_INDEX = 0
 DAUGHTER_DESTINATION_VIAL_INDEX = 1
@@ -2632,6 +2653,7 @@ DAUGHTER_PHYSICAL_STATE_INDEX = 6
 DAUGHTER_CONCENTRATION_INDEX = 7
 DAUGHTER_CONC_UNITS_INDEX = 8
 DAUGHTER_SOLVENT_INDEX = 9
+DAUGHTER_LOCATION_NAME_INDEX = 10
 
 exports.loadParentVialsFromCSV = (req, resp) ->
 	resp.connection.setTimeout(6000000)
@@ -2666,6 +2688,7 @@ exports.validateParentVialsFromCSVInternal = (csvFileName, dryRun, callback) ->
 			hasWarning: false
 			errorMessages: []
 			transactionId: null
+			#TODOSAM2
 		if exists
 			validationResponse.results.path = path
 			createParentVialFileEntryArray csvFileName, (err, fileEntryArray) ->
@@ -2679,6 +2702,7 @@ exports.validateParentVialsFromCSVInternal = (csvFileName, dryRun, callback) ->
 							if dataTypeErrors?
 								validationResponse.errorMessages.push dataTypeErrors...
 							checkBatchCodesExist fileEntryArray, (missingBatchCodeErrors) ->
+								missingBatchCodeErrors = _.uniq missingBatchCodeErrors
 								if missingBatchCodeErrors? and missingBatchCodeErrors.length > 0
 									error =
 										errorLevel: 'error'
@@ -2691,14 +2715,29 @@ exports.validateParentVialsFromCSVInternal = (csvFileName, dryRun, callback) ->
 											errorLevel: 'error'
 											message: "The following barcodes already exist: " + existingBarcodes.join ', '
 										validationResponse.errorMessages.push error
-									errors = _.where validationResponse.errorMessages, {errorLevel: 'error'}
-									warnings = _.where validationResponse.errorMessages, {errorLevel: 'warning'}
-									if errors.length > 0
-										validationResponse.hasError = true
-									if warnings.length > 0
-										validationResponse.hasWarning = true
-									validationResponse.results.htmlSummary = prepareValidationHTMLSummary validationResponse.hasError, validationResponse.hasWarning, validationResponse.errorMessages, summaryInfo
-									callback validationResponse
+									checkForDuplicateBarcodes barcodes, (duplicateBarcodes) ->
+										if duplicateBarcodes? and duplicateBarcodes.length > 0
+											error =
+												errorLevel: 'error'
+												message: "The following barcodes are duplicated in the input file: " + duplicateBarcodes.join ', '
+											validationResponse.errorMessages.push error
+										checkLocationsExist fileEntryArray, (missingLocations) ->
+											locationNumberString = "location does"
+											if missingLocations? and missingLocations.length > 0
+												if missingLocations.length > 1
+													locationNumberString = "locations do"
+												error =
+													errorLevel: 'error'
+													message: "The following " + locationNumberString + " not exist: "+ missingLocations.join(', ') + ". Please contact your system administrator to add them."
+												validationResponse.errorMessages.push error
+											errors = _.where validationResponse.errorMessages, {errorLevel: 'error'}
+											warnings = _.where validationResponse.errorMessages, {errorLevel: 'warning'}
+											if errors.length > 0
+												validationResponse.hasError = true
+											if warnings.length > 0
+												validationResponse.hasWarning = true
+											validationResponse.results.htmlSummary = prepareValidationHTMLSummary validationResponse.hasError, validationResponse.hasWarning, validationResponse.errorMessages, summaryInfo
+											callback validationResponse
 		else
 			error =
 				errorLevel: 'error'
@@ -2708,6 +2747,7 @@ exports.validateParentVialsFromCSVInternal = (csvFileName, dryRun, callback) ->
 
 exports.createParentVialsFromCSVInternal = (csvFileName, dryRun, user, callback) ->
 	getFileExists csvFileName, (exists, path) ->
+		currentDate = new Date().getTime()
 		createResponse =
 			results:
 				dryRun: dryRun
@@ -2732,7 +2772,14 @@ exports.createParentVialsFromCSVInternal = (csvFileName, dryRun, user, callback)
 									message: 'Could not find definition container for tube'
 								createResponse.errorMessages.push error
 							tubesToCreate = []
+							objectsToMove = []
 							_.each fileEntryArray, (entry) ->
+								objectToMove =
+									barcode: entry.destinationVialBarcode
+									locationBreadCrumb: entry.locationBreadCrumb
+									user: user
+									date: currentDate
+									rootLabel: config.all.client.compoundInventory.rootLocationLabel
 								tube =
 									barcode: entry.destinationVialBarcode
 									definition: definitionCode
@@ -2754,6 +2801,7 @@ exports.createParentVialsFromCSVInternal = (csvFileName, dryRun, user, callback)
 									tube.wells[0].batchConcUnits = entry.concUnits
 									tube.wells[0].solventCode = entry.solvent
 								tubesToCreate.push tube
+								objectsToMove.push objectToMove
 							console.log JSON.stringify tubesToCreate
 							exports.createTubesInternal tubesToCreate, 0, (json, statusCode) ->
 								console.log statusCode
@@ -2765,11 +2813,28 @@ exports.createParentVialsFromCSVInternal = (csvFileName, dryRun, user, callback)
 										errorLevel: 'error'
 										message: json
 									createResponse.errorMessages.push error
+									callback createResponse
 								else
-									createResponse.hasError = false
-									createResponse.commit = true
-								createResponse.results.htmlSummary = prepareCreateVialsHTMLSummary createResponse.hasError, createResponse.hasWarning, createResponse.errorMessages, summaryInfo
-								callback createResponse
+									objectsToMoveWithLocation = _.filter(objectsToMove, (object) -> object.locationBreadCrumb isnt "")
+									if objectsToMoveWithLocation.length > 0
+										exports.setLocationByBreadCrumbInternal objectsToMoveWithLocation, (setLocationResponse, statusCode) =>
+											if statusCode is 200
+												createResponse.hasError = false
+												createResponse.commit = true
+												createResponse.results.htmlSummary = prepareCreateVialsHTMLSummary createResponse.hasError, createResponse.hasWarning, createResponse.errorMessages, summaryInfo
+												callback createResponse
+											else
+												createResponse.hasError = true
+												console.error 'setLocationByBreadCrumbInternal has failed', json
+												error =
+													errorLevel: 'error'
+													message: json
+												createResponse.errorMessages.push error
+									else
+										createResponse.hasError = false
+										createResponse.commit = true
+										createResponse.results.htmlSummary = prepareCreateVialsHTMLSummary createResponse.hasError, createResponse.hasWarning, createResponse.errorMessages, summaryInfo
+										callback createResponse
 		else
 			error =
 				errorLevel: 'error'
@@ -2907,55 +2972,74 @@ getFileExists = (csvFileName, callback) =>
 
 createParentVialFileEntryArray = (csvFileName, callback) =>
 	csvFileEntries = []
+	csvLocationBreadCrumb = ""
 	path = config.all.server.file.server.path + '/'
 	fileName = csvFileName
 	rowCount = 0
 	fs.createReadStream(path + fileName)
 	.pipe(parse({delimiter: ','}))
 	.on('data', (csvrow) ->
-		rowCount++
-		fileEntry =
-			batchCode: csvrow[PARENT_COMPOUND_LOT_INDEX].trim()
-			destinationVialBarcode: csvrow[PARENT_DESTINATION_VIAL_INDEX].trim()
-			amount: parseFloat(csvrow[PARENT_AMOUNT_INDEX].trim())
-			amountUnits: csvrow[PARENT_AMOUNT_UNITS_INDEX].trim()
-			preparedBy: csvrow[PARENT_PREPARED_BY_INDEX].trim()
-			preparedDate: csvrow[PARENT_PREPARED_DATE_INDEX].trim()
-			physicalState: csvrow[PARENT_PHYSICAL_STATE_INDEX].trim()
-			concentration: parseFloat(csvrow[PARENT_CONCENTRATION_INDEX].trim())
-			concUnits:csvrow[PARENT_CONC_UNITS_INDEX].trim()
-			solvent: csvrow[PARENT_SOLVENT_INDEX].trim()
-			rowNumber: rowCount
-		if rowCount? and rowCount > 1
-			csvFileEntries.push(fileEntry)
+		emptyRow = checkEmptyRow(csvrow)
+		if !emptyRow
+			if csvrow[PARENT_LOCATION_NAME_INDEX]?
+				csvLocationBreadCrumb = csvrow[PARENT_LOCATION_NAME_INDEX].trim()
+			rowCount++
+			fileEntry =
+				batchCode: csvrow[PARENT_COMPOUND_LOT_INDEX].trim()
+				destinationVialBarcode: csvrow[PARENT_DESTINATION_VIAL_INDEX].trim()
+				amount: parseFloat(csvrow[PARENT_AMOUNT_INDEX].trim())
+				amountUnits: csvrow[PARENT_AMOUNT_UNITS_INDEX].trim()
+				preparedBy: csvrow[PARENT_PREPARED_BY_INDEX].trim()
+				preparedDate: csvrow[PARENT_PREPARED_DATE_INDEX].trim()
+				physicalState: csvrow[PARENT_PHYSICAL_STATE_INDEX].trim()
+				concentration: parseFloat(csvrow[PARENT_CONCENTRATION_INDEX].trim())
+				concUnits:csvrow[PARENT_CONC_UNITS_INDEX].trim()
+				solvent: csvrow[PARENT_SOLVENT_INDEX].trim()
+				locationBreadCrumb: csvLocationBreadCrumb
+				rowNumber: rowCount
+			if rowCount? and rowCount > 1
+				csvFileEntries.push(fileEntry)
 	)
 	.on('end', () ->
 		return callback null, csvFileEntries
 	)
+
+checkEmptyRow = (csvrow) =>
+	arrayToCheckForEmptyRow = _.filter(csvrow, (entry) -> (entry isnt ""))
+	if arrayToCheckForEmptyRow.length is 0
+		return true
+	else
+		return false
 
 createDaughterVialFileEntryArray = (csvFileName, callback) =>
 	csvFileEntries = []
 	path = config.all.server.file.server.path + '/'
 	fileName = csvFileName
 	rowCount = 0
+	csvLocationBreadCrumb = ""
 	fs.createReadStream(path + fileName)
 	.pipe(parse({delimiter: ','}))
 	.on('data', (csvrow) ->
-		rowCount++
-		fileEntry =
-			sourceVialBarcode: csvrow[DAUGHTER_SOURCE_VIAL_INDEX].trim()
-			destinationVialBarcode: csvrow[DAUGHTER_DESTINATION_VIAL_INDEX].trim()
-			amount: parseFloat(csvrow[DAUGHTER_AMOUNT_INDEX].trim())
-			amountUnits: csvrow[DAUGHTER_AMOUNT_UNITS_INDEX].trim()
-			preparedBy: csvrow[DAUGHTER_PREPARED_BY_INDEX].trim()
-			preparedDate: csvrow[DAUGHTER_PREPARED_DATE_INDEX].trim()
-			physicalState: csvrow[DAUGHTER_PHYSICAL_STATE_INDEX].trim()
-			concentration: parseFloat(csvrow[DAUGHTER_CONCENTRATION_INDEX].trim())
-			concUnits: csvrow[DAUGHTER_CONC_UNITS_INDEX].trim()
-			solvent: csvrow[DAUGHTER_SOLVENT_INDEX].trim()
-			rowNumber: rowCount
-		if rowCount? and rowCount > 1
-			csvFileEntries.push(fileEntry)
+		emptyRow = checkEmptyRow(csvrow)
+		if !emptyRow
+			if csvrow[PARENT_LOCATION_NAME_INDEX]?
+				csvLocationBreadCrumb = csvrow[PARENT_LOCATION_NAME_INDEX].trim()
+			rowCount++
+			fileEntry =
+				sourceVialBarcode: csvrow[DAUGHTER_SOURCE_VIAL_INDEX].trim()
+				destinationVialBarcode: csvrow[DAUGHTER_DESTINATION_VIAL_INDEX].trim()
+				amount: parseFloat(csvrow[DAUGHTER_AMOUNT_INDEX].trim())
+				amountUnits: csvrow[DAUGHTER_AMOUNT_UNITS_INDEX].trim()
+				preparedBy: csvrow[DAUGHTER_PREPARED_BY_INDEX].trim()
+				preparedDate: csvrow[DAUGHTER_PREPARED_DATE_INDEX].trim()
+				physicalState: csvrow[DAUGHTER_PHYSICAL_STATE_INDEX].trim()
+				concentration: parseFloat(csvrow[DAUGHTER_CONCENTRATION_INDEX].trim())
+				concUnits: csvrow[DAUGHTER_CONC_UNITS_INDEX].trim()
+				solvent: csvrow[DAUGHTER_SOLVENT_INDEX].trim()
+				locationBreadCrumb: csvLocationBreadCrumb
+				rowNumber: rowCount
+			if rowCount? and rowCount > 1
+				csvFileEntries.push(fileEntry)
 	)
 	.on('end', () ->
 		return callback null, csvFileEntries
@@ -3047,6 +3131,26 @@ checkBatchCodesExist = (fileEntryArray, callback) ->
 				missingBatchCodes.push batchCodeRequest.requestName
 		callback missingBatchCodes
 
+checkLocationsExist = (fileEntryArray, callback) ->
+	saveLocationAsCodeValue = config.all.client.compoundInventory.saveLocationAsCodeValue
+	missingLocations = []
+	if saveLocationAsCodeValue
+		callback missingLocations
+	else
+		unfilteredlocationBreadCrumbs = _.pluck(fileEntryArray, "locationBreadCrumb")
+		locationBreadCrumbs = _.without(unfilteredlocationBreadCrumbs, "", undefined)
+		rootLabel = config.all.client.compoundInventory.rootLocationLabel
+		if locationBreadCrumbs.length > 0
+			exports.getLocationCodesByBreadcrumbArrayInternal {locationBreadCrumbs: locationBreadCrumbs, rootLabel: rootLabel}, (locationCodesByBreadcrumbArrayResponses, statusCode) =>
+				missingLocations = []
+				_.each locationBreadCrumbs, (breadcrumb) ->
+					if !(_.findWhere locationCodesByBreadcrumbArrayResponses, {labelTextBreadcrumb: breadcrumb})?
+						missingLocations.push breadcrumb
+				missingLocations = _.uniq missingLocations
+				callback missingLocations
+		else
+			callback missingLocations
+
 checkBarcodesExist = (barcodes, callback) ->
 	getContainerCodesFromLabelsInternal barcodes, 'container', 'tube', (containerCodes) ->
 		existingBarcodes = []
@@ -3057,6 +3161,15 @@ checkBarcodesExist = (barcodes, callback) ->
 			else
 				newBarcodes.push containerCodeEntry.requestLabel
 		callback existingBarcodes, newBarcodes
+
+checkForDuplicateBarcodes = (barcodes, callback) ->
+	duplicateBarcodes = []
+	groupedByCount = _.countBy barcodes, (barcode) ->
+		barcode
+	_.each groupedByCount, (count, barcode) ->
+		if count > 1
+			duplicateBarcodes.push barcode
+	callback duplicateBarcodes
 
 exports.checkParentWellContent = (fileEntryArray, callback) ->
 	#The purpose of this function is to check that the source vial content is compatible with the daughter content being loaded in, including
@@ -3071,10 +3184,15 @@ exports.checkParentWellContent = (fileEntryArray, callback) ->
 	if strictMatch? and strictMatch
 		flexibleErrorLevel = 'error'
 	exports.getWellContentByContainerLabelsInternal vialBarcodes, 'container', 'tube', 'barcode', 'barcode', (wellContentList, statusCode) ->
+		totalRequestedAmounts = {}
 		_.each fileEntryArray, (fileEntry) ->
 			parentVialAndWellContent = _.findWhere wellContentList, {label: fileEntry.sourceVialBarcode}
 			if parentVialAndWellContent.wellContent?
 				parentWellContent = parentVialAndWellContent.wellContent[0]
+				if totalRequestedAmounts[fileEntry.sourceVialBarcode]?
+					totalRequestedAmounts[fileEntry.sourceVialBarcode] += fileEntry.amount
+				else
+					totalRequestedAmounts[fileEntry.sourceVialBarcode] = fileEntry.amount
 				if parentWellContent.physicalState != fileEntry.physicalState
 					error =
 						errorLevel: flexibleErrorLevel
@@ -3090,10 +3208,10 @@ exports.checkParentWellContent = (fileEntryArray, callback) ->
 						errorLevel: flexibleErrorLevel
 						message: "Daughter vial #{fileEntry.destinationVialBarcode} must use the same amount units as parent vial #{fileEntry.sourceVialBarcode}, which is in #{parentWellContent.amountUnits}."
 					errorMessages.push error
-				else if parentWellContent.amount < fileEntry.amount
+				else if parentWellContent.amount < totalRequestedAmounts[fileEntry.sourceVialBarcode]
 					error =
 						errorLevel: 'warning'
-						message: "Creating daughter vial #{fileEntry.destinationVialBarcode} will remove more than the total amount currently in parent vial #{fileEntry.sourceVialBarcode}, leaving a negative amount in the parent vial."
+						message: "Creating daughter vial #{fileEntry.destinationVialBarcode} with #{fileEntry.amount.toFixed(3)} #{fileEntry.amountUnits} gives a total request of #{totalRequestedAmounts[fileEntry.sourceVialBarcode].toFixed(3)} #{fileEntry.amountUnits}, which will remove more than the #{parentWellContent.amount.toFixed(3)} #{parentWellContent.amountUnits} currently in parent vial #{fileEntry.sourceVialBarcode}, leaving a negative amount in the parent vial."
 					errorMessages.push error
 				if fileEntry.batchCode? and fileEntry.batchCode != parentWellContent.batchCode
 					error =
@@ -3190,6 +3308,7 @@ exports.getContainerTubeDefinitionCode = (callback) ->
 decrementAmountsFromVials = (toDecrementList, parentWellContentList, user, callback) ->
 	wellsToUpdate = []
 	changes = []
+	runningTotals = {}
 	_.each toDecrementList, (toDecrement) ->
 		oldContainerWellContent = _.findWhere parentWellContentList, {label: toDecrement.sourceVialBarcode}
 		oldWellContent = oldContainerWellContent.wellContent[0]
@@ -3199,9 +3318,13 @@ decrementAmountsFromVials = (toDecrementList, parentWellContentList, user, callb
 		unitMismatch = (oldWellContent.amountUnits != toDecrement.amountUnits)
 		if !differentState and !concentrationMismatch and !unitMismatch
 			wellCode = oldWellContent.containerCodeName
+			if runningTotals[wellCode]?
+				runningTotals[wellCode] -= toDecrement.amount
+			else
+				runningTotals[wellCode] = oldWellContent.amount - toDecrement.amount
 			newWellContent =
 				containerCodeName: wellCode
-				amount: oldWellContent.amount - toDecrement.amount
+				amount: runningTotals[wellCode]
 				recordedBy: user
 			wellsToUpdate.push newWellContent
 			change =
@@ -3213,8 +3336,7 @@ decrementAmountsFromVials = (toDecrementList, parentWellContentList, user, callb
 			changes.push change
 	console.log wellsToUpdate
 	if wellsToUpdate.length > 0
-		exports.updateWellContentInternal wellsToUpdate, true, false, (updateWellsResponse, updateWellsStatusCode) ->
-			console.log updateWellsStatusCode
+		updateWellContentSerial wellsToUpdate, 0, (updateWellsResponse, updateWellsStatusCode) ->
 			if updateWellsStatusCode != 204
 				callback "Error: #{updateWellsResponse}"
 			else
@@ -3225,6 +3347,19 @@ decrementAmountsFromVials = (toDecrementList, parentWellContentList, user, callb
 						callback null, updateWellsResponse
 	else
 		callback null
+
+updateWellContentSerial = (wellsToUpdate, currentIndex, outerCallback) ->
+	if currentIndex >= wellsToUpdate.length
+		outerCallback "all good", 204
+		return
+
+	exports.updateWellContentInternal [wellsToUpdate[currentIndex]], true, false, (updateWellsResponse, updateWellsStatusCode) ->
+		if updateWellsStatusCode != 204
+			outerCallback updateWellsResponse, updateWellsStatusCode
+		else
+			currentIndex++
+			updateWellContentSerial wellsToUpdate, currentIndex, outerCallback
+			return
 
 prepareSummaryInfo = (fileEntryArray, cb) ->
 	codeTableRoutes.getCodeTableValuesInternal 'container status', 'physical state', (configuredPhysicalStates) ->
@@ -3321,6 +3456,7 @@ exports.validateDaughterVialsInternal = (vialsToValidate, callback) ->
 				errorMessages.push dataTypeErrors...
 			sourceBarcodes = _.pluck vialsToValidate, 'sourceVialBarcode'
 			checkBarcodesExist sourceBarcodes, (existingSourceBarcodes, missingSourceBarcodes) ->
+				missingSourceBarcodes = _.uniq missingSourceBarcodes
 				if missingSourceBarcodes? and missingSourceBarcodes.length > 0
 					error =
 						errorLevel: 'error'
@@ -3328,18 +3464,34 @@ exports.validateDaughterVialsInternal = (vialsToValidate, callback) ->
 					errorMessages.push error
 				destinationBarcodes = _.pluck vialsToValidate, 'destinationVialBarcode'
 				checkBarcodesExist destinationBarcodes, (existingBarcodes, newBarcodes) ->
+					existingBarcodes = _.uniq existingBarcodes
 					if existingBarcodes? and existingBarcodes.length > 0
 						error =
 							errorLevel: 'error'
 							message: "The following destination barcodes already exist: " + existingBarcodes.join ', '
 						errorMessages.push error
-					if missingSourceBarcodes.length > 0
-						callback null, errorMessages
-					else
-						exports.checkParentWellContent vialsToValidate, (parentWellContentErrors) ->
-							if parentWellContentErrors?
-								errorMessages.push parentWellContentErrors...
-							callback null, errorMessages
+					checkForDuplicateBarcodes destinationBarcodes, (duplicateBarcodes) ->
+						if duplicateBarcodes? and duplicateBarcodes.length > 0
+							error =
+								errorLevel: 'error'
+								message: "The following barcodes are duplicated in the input file: " + duplicateBarcodes.join ', '
+							errorMessages.push error
+						checkLocationsExist vialsToValidate, (missingLocations) ->
+							locationNumberString = "location does"
+							if missingLocations? and missingLocations.length > 0
+								if missingLocations.length > 1
+									locationNumberString = "locations do"
+								error =
+									errorLevel: 'error'
+									message: "The following " + locationNumberString + " not exist: "+ missingLocations.join(', ') + ". Please contact your system administrator to add them."
+								errorMessages.push error
+							if missingSourceBarcodes.length > 0
+								callback null, errorMessages
+							else
+								exports.checkParentWellContent vialsToValidate, (parentWellContentErrors) ->
+									if parentWellContentErrors?
+										errorMessages.push parentWellContentErrors...
+									callback null, errorMessages
 
 exports.createDaughterVials = (req, resp) ->
 	if req.session?.passport?.user?.username?
@@ -3365,6 +3517,7 @@ exports.createDaughterVials = (req, resp) ->
 						resp.json response
 
 exports.createDaughterVialsInternal = (vialsToCreate, user, callback) ->
+	currentDate = new Date().getTime()
 	exports.getContainerTubeDefinitionCode (definitionCode) ->
 		if !definitionCode?
 			callback 'Could not find definition container for tube'
@@ -3372,12 +3525,19 @@ exports.createDaughterVialsInternal = (vialsToCreate, user, callback) ->
 		parentVialBarcodes = _.pluck vialsToCreate, 'sourceVialBarcode'
 		exports.getWellContentByContainerLabelsInternal parentVialBarcodes, 'container', 'tube', 'barcode', 'barcode', (parentWellContentList, statusCode) ->
 			tubesToCreate = []
+			objectsToMove = []
 			_.each vialsToCreate, (entry) ->
 				parentVialAndWellContent = _.findWhere parentWellContentList, {label: entry.sourceVialBarcode}
 				parentWellContent = parentVialAndWellContent.wellContent[0]
 				batchCode = parentWellContent.batchCode
 				if entry.batchCode? and entry.batchCode.length > 0
 					batchCode = entry.batchCode
+				objectToMove =
+					barcode: entry.destinationVialBarcode
+					locationBreadCrumb: entry.locationBreadCrumb
+					user: user
+					date: currentDate
+					rootLabel: config.all.client.compoundInventory.rootLocationLabel
 				tube =
 					barcode: entry.destinationVialBarcode
 					definition: definitionCode
@@ -3399,6 +3559,7 @@ exports.createDaughterVialsInternal = (vialsToCreate, user, callback) ->
 					tube.wells[0].batchConcUnits = entry.concUnits
 					tube.wells[0].solventCode = entry.solvent
 				tubesToCreate.push tube
+				objectsToMove.push objectToMove
 			console.log JSON.stringify tubesToCreate
 			exports.createTubesInternal tubesToCreate, 0, (json, statusCode) ->
 				console.log statusCode
@@ -3434,8 +3595,15 @@ exports.createDaughterVialsInternal = (vialsToCreate, user, callback) ->
 								if err?
 									callback err
 								else
-									#TODO see what this service should respond with
-									callback null, 'successfully created daughter vials'
+									objectsToMoveWithLocation = _.filter(objectsToMove, (object) -> (object.locationBreadCrumb isnt "" and object.locationBreadCrumb?))
+									if objectsToMoveWithLocation.length > 0
+										exports.setLocationByBreadCrumbInternal objectsToMoveWithLocation, (setLocationResponse, statusCode) =>
+											if statusCode is 200
+												callback null, 'successfully created daughter vials'
+											else
+												callback 'setLocationByBreadCrumbInternal has failed'
+									else
+										callback null, 'successfully created daughter vials'
 
 exports.advancedSearchContainers = (req, resp) ->
 	exports.advancedSearchContainersInternal req.body, req.query.format, (err, response) ->
@@ -3589,3 +3757,377 @@ exports.checkBatchDependenciesInternal = (input, callback) =>
 			callback null, 500
 			#resp.end JSON.stringify "getContainerStatesByContainerValue failed"
 		)
+
+exports.setLocationByBreadCrumb = (req, resp) =>
+
+	exports.setLocationByBreadCrumbInternal(req.body, (json, statusCode) =>
+		resp.statusCode = statusCode
+		resp.json json
+	)
+
+exports.setLocationByBreadCrumbInternal = (objectsToMove, callback) =>
+	saveLocationAsCodeValue = config.all.client.compoundInventory.saveLocationAsCodeValue
+	locationContainerCodes = []
+	locationBreadCrumbs = _.pluck(objectsToMove, "locationBreadCrumb")
+	rootLabels = _.pluck(objectsToMove, "rootLabel")
+	rootLabel = _.unique(rootLabels)
+	if rootLabel.length > 1
+		console.error "root labels are not all the same"
+		callback "Error: Root label must be the same in all objects.", 500
+	if saveLocationAsCodeValue
+		setLocationNameForObjects objectsToMove, (setLocationNameResponse, statusCode) =>
+			callback setLocationNameResponse, statusCode
+	else
+		if locationBreadCrumbs.length > 0
+			exports.getLocationCodesByBreadcrumbArrayInternal({locationBreadCrumbs: locationBreadCrumbs, rootLabel: rootLabel[0]}, (locationCodesByBreadcrumbArrayResponses, statusCode) =>
+				_.each locationBreadCrumbs, (locationBreadCrumb) =>
+					_.each locationCodesByBreadcrumbArrayResponses, (response) =>
+						if locationBreadCrumb.indexOf(response.labelTextBreadcrumb) >-1
+							locationContainerCodes.push(response.codeName)
+
+				createMoveToLocationObjects(locationContainerCodes, objectsToMove, (moveToLocationObjects, statusCode) =>
+					if statusCode is 200
+						exports.moveToLocationInternal moveToLocationObjects, RUN_CUSTOM_FLAG, "1", (moveToLocationResponse, statusCode) =>
+							callback moveToLocationResponse, statusCode
+					else
+						callback "createMoveToLocationObject has failed.", 500
+				)
+			)
+		else
+			callback null, 200
+
+setLocationNameForObjects = (objectsToMove, callback) =>
+	barcodes = _.pluck(objectsToMove, "barcode")
+
+	queryPayload =
+		containerLabels: barcodes
+		containerType: "container"
+		# containerKind: "tube"
+		labelType: "barcode"
+		labelKind: "barcode"
+
+	exports.getContainerAndDefinitionContainerByContainerLabelInternal barcodes, "container", null, "barcode", "barcode", (containers, containerStatusCode) =>
+		if containerStatusCode is 200
+			_.each containers, (container, index) =>
+				container.locationName = objectsToMove[index].locationBreadCrumb
+
+			exports.updateContainersByContainerCodesInternal containers, "", (json, statusCode) =>
+				if statusCode is 200
+					callback json, statusCode
+				else
+					callback null, statusCode
+		else
+			callback null, statusCode
+
+exports.getLocationCodesByBreadcrumbArray = (req, resp) =>
+	inputPayload =
+		locationBreadCrumbs: req.body
+
+	if req.query.rootLabel?
+		inputPayload.rootLabel = req.query.rootLabel
+
+	exports.getLocationCodesByBreadcrumbArrayInternal(inputPayload, (json, statusCode) =>
+		resp.statusCode = statusCode
+		resp.json json
+	)
+
+exports.getLocationCodesByBreadcrumbArrayInternal = (input, callback) =>
+
+	locationBreadCrumbs = input.locationBreadCrumbs
+	if !(input.rootLabel)?
+		callback null, 500
+
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.persistence.fullpath+"containers/getLocationCodesByBreadcrumbArray?rootLabel=#{input.rootLabel}"
+	request = require 'request'
+	request(
+		method: 'POST'
+		url: baseurl
+		body: locationBreadCrumbs
+		json: true
+		timeout: 86400000
+	, (error, response, json) =>
+		if !error && response.statusCode == 200
+			callback json, response.statusCode
+		else
+			console.error 'got ajax error trying to getLocationCodesByBreadcrumbArray'
+			console.error error
+			console.error json
+			console.error response
+			callback null, 500
+		)
+
+createMoveToLocationObjects = (locationCodeNames, objectsToMove, callback) =>
+
+	moveToLocationObjects = []
+	barcodes = _.pluck(objectsToMove, "barcode")
+
+	queryPayload =
+		containerLabels: barcodes
+		containerType: "container"
+		# containerKind: "tube"
+		labelType: "barcode"
+		labelKind: "barcode"
+
+	exports.getContainerCodesByLabelsLikeMaxResultsInternal(queryPayload, (containerCodeQueryResponse, statusCode) =>
+		if statusCode is 200
+			barcodeContainerCodes = _.pluck(containerCodeQueryResponse, "foundCodeNames")
+			_.each barcodeContainerCodes, (containerCode, index) =>
+				if containerCode.length > 0
+					moveToLocationObjects.push({containerCodeName: containerCode[0], modifiedBy: objectsToMove[index].user, modifiedDate: objectsToMove[index].date, locationCodeName: locationCodeNames[index]})
+			callback moveToLocationObjects, statusCode
+		else
+			callback null, statusCode
+	)
+
+exports.validateAndCreateNewLocationInTree = (req, resp) =>
+
+	exports.validateAndCreateNewLocationInTreeInternal(req.body, (json, statusCode) =>
+		resp.statusCode = statusCode
+		resp.json json
+	)
+
+exports.validateAndCreateNewLocationInTreeInternal = (newLocationObject, callback) =>
+
+	validateParentLocation newLocationObject.parentBreadcrumb, (parentValidationResponse, statusCode) =>
+		if parentValidationResponse.hasError or parentValidationResponse.hasWarning
+			callback parentValidationResponse.errorMessages, statusCode
+		else
+			validateNewLocationInTree newLocationObject, (validationResponse, statusCode) =>
+				if validationResponse.hasError or validationResponse.hasWarning
+					callback validationResponse.errorMessages, statusCode
+				else
+					createNewLocationInTree newLocationObject, parentValidationResponse.parentLocationCode, (creationResponse, statusCode) =>
+						if creationResponse.hasError or creationResponse.hasWarning
+							callback creationResponse.errorMessages, statusCode
+						else
+							callback creationResponse, statusCode
+
+validateParentLocation = (parentLocationBreadcrumb, callback) =>
+	rootLabel = config.all.client.compoundInventory.rootLocationLabel
+	parentValidationResponse =
+		validNewLocation: true
+		hasError: false
+		hasWarning: false
+		errorMessages: []
+
+	exports.getLocationCodesByBreadcrumbArrayInternal {locationBreadCrumbs: [parentLocationBreadcrumb], rootLabel: rootLabel}, (locationCodesByBreadcrumbArrayResponses, statusCode) =>
+		if statusCode is 200
+			if locationCodesByBreadcrumbArrayResponses.length is 0
+				parentValidationResponse.validNewLocation = false
+				parentValidationResponse.hasWarning = true
+				error =
+					errorLevel: 'warning'
+					message: "Parent location does not exist."
+				parentValidationResponse.errorMessages.push error
+			else
+				parentValidationResponse.parentLocationCode = locationCodesByBreadcrumbArrayResponses[0].codeName
+		else
+			console.error 'getLocationCodesByBreadcrumbArrayInternal has failed'
+			parentValidationResponse.validNewLocation = false
+			parentValidationResponse.hasError = true
+			error =
+				errorLevel: 'error'
+				message: "An error has occurred searching for location container codes by breadcrumb"
+			parentValidationResponse.errorMessages.push error
+		callback parentValidationResponse, statusCode
+
+
+validateNewLocationInTree = (newLocationObject, callback) =>
+	isUnique = newLocationObject.isUnique
+
+	validationResponse =
+		validNewLocation: true
+		hasError: false
+		hasWarning: false
+		errorMessages: []
+
+	if isUnique
+		queryPayload =
+			containerLabels: [newLocationObject.labelText]
+			containerType: "location"
+			containerKind: "default"
+			labelType: "barcode"
+			labelKind: "barcode"
+
+
+		exports.getContainerCodesByLabelsLikeMaxResultsInternal queryPayload, (containerCodeQueryResponse, statusCode) =>
+			if statusCode is 200
+				if containerCodeQueryResponse[0].foundCodeNames.length > 0
+					validationResponse.validNewLocation = false
+					validationResponse.hasError = true
+					error =
+						errorLevel: 'error'
+						message: "Location already exists."
+					validationResponse.errorMessages.push error
+			else
+				console.error 'getContainerCodesByLabelsLikeMaxResultsInternal has failed'
+				validationResponse.validNewLocation = false
+				validationResponse.hasError = true
+				error =
+					errorLevel: 'error'
+					message: "An error has occurred searching for container codes by labels"
+				validationResponse.errorMessages.push error
+
+			callback validationResponse, statusCode
+
+	else
+		rootLabel = config.all.client.compoundInventory.rootLocationLabel
+		newLocationBreadcrumb = newLocationObject.parentBreadcrumb + newLocationObject.delimiter + newLocationObject.labelText
+		exports.getLocationCodesByBreadcrumbArrayInternal {locationBreadCrumbs: [newLocationBreadcrumb], rootLabel: rootLabel}, (locationCodesByBreadcrumbArrayResponses, statusCode) =>
+			if statusCode is 200
+				if locationCodesByBreadcrumbArrayResponses.length > 0
+					validationResponse.validNewLocation = false
+					validationResponse.hasWarning = true
+					error =
+						errorLevel: 'warning'
+						message: "Location already exists."
+					validationResponse.errorMessages.push error
+			else
+				console.error 'getLocationCodesByBreadcrumbArrayInternal has failed'
+				validationResponse.validNewLocation = false
+				validationResponse.hasError = true
+				error =
+					errorLevel: 'error'
+					message: "An error has occurred searching for location container codes by breadcrumb"
+				validationResponse.errorMessages.push error
+			callback validationResponse, statusCode
+
+createNewLocationInTree = (newLocationObject, parentLocationCode, callback) =>
+	creationResponse =
+		createdNewLocation: true
+		hasError: false
+		hasWarning: false
+		errorMessages: []
+
+
+	isUnique = newLocationObject.isUnique
+	labelText = newLocationObject.labelText
+	recordedBy = newLocationObject.user
+	date = new Date().getTime()
+
+	if isUnique
+		lsType = "barcode"
+		lsKind = "barcode"
+	else
+		lsType = "name"
+		lsKind = "common"
+
+	containerPreferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin("location", "default", "ACAS LsContainer")
+	model = new containerPreferredEntity.model()
+
+	#depending on isUnique >> lsType / lsKind == barcode or common name
+	label = new serverUtilityFunctions.Label
+		lsType: lsType
+		lsKind: lsKind
+		preferred: true
+		labelText: labelText
+		recordedBy: recordedBy
+		recordedDate: date
+		ignored: false
+
+
+	lsLabels = new serverUtilityFunctions.LabelList([label])
+	model.set('lsLabels', lsLabels)
+	model.prepareToSave newLocationObject.user
+	model.reformatBeforeSaving()
+
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.persistence.fullpath+"containers"
+	request = require 'request'
+	request(
+		method: 'POST'
+		url: baseurl
+		body: model
+		json: true
+		timeout: 86400000
+	, (error, response, json) =>
+		if !error && response.statusCode == 201
+			moveToLocationObject ={containerCodeName: json.codeName, modifiedBy: newLocationObject.user, modifiedDate: date, locationCodeName: parentLocationCode}
+			exports.moveToLocationInternal [moveToLocationObject], "0", "0", (moveToLocationResponse, statusCode) =>
+				callback creationResponse, statusCode
+		else
+			console.error 'got ajax error trying to save lsContainer'
+			console.error error
+			console.error json
+			console.error response
+			error =
+				errorLevel: 'error'
+				message: "An error has occurred saving new location container"
+			creationResponse.errorMessages.push error
+			callback creationResponse, 500
+		)
+
+exports.validateWellPositionsInternal = (wellInfoArray, callback) =>
+	#checks to see if wellInfoArray has wellPosition > number of wells
+	#checks to see if wellInfoArray has duplicate well position info
+	readWellPositions = []
+	validateWellPositionsError = null
+	_.each wellInfoArray, (wellInfo) =>
+		if wellInfo.wellPosition > wellInfo.plateSize
+			validateWellPositionsError = "Invalid well position. Well position can not be greater than destination plate size."
+		else if readWellPositions.indexOf(wellInfo.wellPosition) > -1
+			validateWellPositionsError = "Data for well position #{wellInfo.wellPosition} is found in two separate rows."
+		readWellPositions.push wellInfo.wellPosition
+	callback validateWellPositionsError
+
+exports.getWellNamesFromWellPositionsInternal = (wellPositionArray, definitionContainer, numberingConvention, callback) =>
+	wellPositionNameMap = {}
+	_.each wellPositionArray, (wellPosition) =>
+		exports.getWellNameFromWellPositionInternal wellPosition, definitionContainer, numberingConvention, (wellName) =>
+			wellPositionNameMap[wellPosition] = wellName
+	callback wellPositionNameMap
+
+exports.getWellNameFromWellPositionInternal = (wellPosition, definitionContainerInfo, numberingConvention, callback) =>
+	#numberingConvention = how wells are numbered
+	#numberingConvention options: 'topToBottom', 'leftToRight'
+
+	#get numRows and numCols from definition container
+	plateSize = definitionContainerInfo.plateSize
+	nRows = definitionContainerInfo.numberOfRows
+	nCols = definitionContainerInfo.numberOfColumns
+
+	namingConvention = definitionContainerInfo['subcontainer naming convention']
+	nDigits = namingConvention.replace(/[^0-9]/g,"").length
+
+	alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+	wellName = ''
+
+	paddedNumber = (num, digits) =>
+		#num should be stringified number
+		numPads = digits - num.length
+		if numPads > 0
+			return new Array(numPads + 1).join('0') + num
+		else
+			return num
+
+	if numberingConvention is 'topToBottom'
+		if plateSize is 1536
+			wellName = 'A'
+			wellPosition = wellPosition - 26
+		rowIndex = wellPosition % nRows
+		col = wellPosition / nRows
+		if rowIndex is 0
+			wellName += alphabet[nRows-1]
+			wellName += paddedNumber(col.toString(), nDigits)
+		else
+			wellName += alphabet[rowIndex - 1]
+			wellName += paddedNumber(parseInt(col+1).toString(), nDigits)
+
+		callback wellName
+
+	else if numberingConvention is 'leftToRight'
+		if plateSize is 1536
+			wellName = 'A'
+			wellPosition = wellPosition - 26
+		rowIndex = wellPosition / nCols
+		col = wellPosition % nCols
+		if col is 0
+			wellName += alphabet[rowIndex - 1]
+			wellName += paddedNumber(nCols.toString(), nDigits)
+		else
+			wellName += alphabet[parseInt(rowIndex)]
+			wellName += paddedNumber(col.toString(), nDigits)
+
+		callback wellName
+

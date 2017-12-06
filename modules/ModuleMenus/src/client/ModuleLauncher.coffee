@@ -55,10 +55,8 @@ class window.ModuleLauncherMenuController extends Backbone.View
 			@$('.bv_isLoaded').hide()
 			if @model.get('isDirty')
 				@$('.bv_isDirty').show()
-				window.conf.leaveACASMessage = "WARNING: There are unsaved changes."
 			else
 				@$('.bv_isDirty').hide()
-				window.conf.leaveACASMessage = "There are no unsaved changes."
 			if @model.get('isLocked')
 				@$('.bv_isLocked').show()
 			else

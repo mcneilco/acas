@@ -1,5 +1,6 @@
 # The next line is used by PrepareConfigFiles to include this file as a route in rapache, do not modify unless you intend to modify rapache routes (it can be anywhere in the files though)
 # ROUTE: /curve/render/dr
+# MEMORY_LIMIT_EXEMPT
 
 renderCurve <- function(getParams) {
   # Redirect to Curator if applicable
