@@ -38,6 +38,11 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/updateWellContentWithObject', exports.updateWellContentWithObject
 	app.post '/api/updateAmountInWell', exports.updateAmountInWell
 	app.post '/api/moveToLocation', exports.moveToLocation
+	app.post '/api/moveLocationToLocation', exports.moveLocationToLocation
+	app.post '/api/getContainersWithLocationHistoryInLocation', exports.getContainersWithLocationHistoryInLocation
+	app.post '/api/getLocationTreeByCodeName', exports.getLocationTreeByCodeName
+	app.post '/api/updateLocationHistoryForContainersInLocation', exports.updateLocationHistoryForContainersInLocation
+	app.post '/api/bulkUpdateContainerStates', exports.bulkUpdateContainerStates
 	app.get '/api/getWellContentByContainerLabel/:label', exports.getWellContentByContainerLabel
 	app.post '/api/getWellContentByContainerLabels', exports.getWellContentByContainerLabels
 	app.post '/api/cloneContainers', exports.cloneContainers
@@ -101,6 +106,11 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/updateWellContentWithObject', loginRoutes.ensureAuthenticated, exports.updateWellContentWithObject
 	app.post '/api/updateAmountInWell', loginRoutes.ensureAuthenticated, exports.updateAmountInWell
 	app.post '/api/moveToLocation', loginRoutes.ensureAuthenticated, exports.moveToLocation
+	app.post '/api/moveLocationToLocation', loginRoutes.ensureAuthenticated, exports.moveLocationToLocation
+	app.post '/api/getContainersWithLocationHistoryInLocation', loginRoutes.ensureAuthenticated, exports.getContainersWithLocationHistoryInLocation
+	app.post '/api/getLocationTreeByCodeName', loginRoutes.ensureAuthenticated, exports.getLocationTreeByCodeName
+	app.post '/api/updateLocationHistoryForContainersInLocation', loginRoutes.ensureAuthenticated, exports.updateLocationHistoryForContainersInLocation
+	app.post '/api/bulkUpdateContainerStates', loginRoutes.ensureAuthenticated, exports.bulkUpdateContainerStates
 	app.get '/api/getWellContentByContainerLabel/:label', loginRoutes.ensureAuthenticated, exports.getWellContentByContainerLabel
 	app.post '/api/getWellContentByContainerLabels', loginRoutes.ensureAuthenticated, exports.getWellContentByContainerLabels
 	app.post '/api/getWellContentByContainerLabelsObject', loginRoutes.ensureAuthenticated, exports.getWellContentByContainerLabelsObject
@@ -1491,6 +1501,222 @@ callFunctionOrReturnNull = (callFunctionBoolean, funct, input, callback) ->
 	else
 		console.log "not running customer specific server function"
 		callback null
+
+exports.moveLocationToLocation = (req, resp) ->
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		resp.json inventoryServiceTestJSON.moveLocationToLocationSuccessResp
+	else
+
+		req.setTimeout 86400000
+		exports.moveLocationToLocationInternal req.body, req.query.updateLocationHistory, (json, statusCode) ->
+			resp.statusCode = statusCode
+			resp.json json
+
+exports.moveLocationToLocationInternal = (input, updateLocationHistory, callback) ->
+	# default for updateLocationHistory is false
+	updateLocationHistory = updateLocationHistory == "1"
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		resp.json inventoryServiceTestJSON.moveLocationToLocationResponse
+	else
+		console.debug 'incoming moveLocationToLocationJSON request: ', JSON.stringify(input)
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"containers/moveToLocation"
+		console.debug 'base url: ', baseurl
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: baseurl
+			body: input
+			json: true
+			timeout: 86400000
+			headers: 'content-type': 'application/json'
+		, (error, response, json) =>
+			console.debug "response statusCode: #{response.statusCode}"
+			if !error
+				if updateLocationHistory
+
+					#for each location, get location tree to get containers in that location
+					index = 0
+					allUpdatedContainerStates = [] #stores all of the containers and new location history states
+					updateLocationHistoryForContainersInLocationAtIndex = (index, callback) =>
+						if index >= input.length
+							callback allUpdatedContainerStates, 204
+						else
+							movedLocationCodeName = input[index].containerCodeName
+							destinationLabel = input[index].locationLabel
+							exports.updateLocationHistoryForContainersInLocationInternal movedLocationCodeName, destinationLabel, input[index].modifiedBy, input[index].modifiedDate, (updateLocationHistoryResp, updateLocationHistoryStatusCode) =>
+								if updateLocationHistoryStatusCode is 500
+									callback updateLocationHistoryResp, 500
+								else
+									index++
+									allUpdatedContainerStates.push updateLocationHistoryResp...
+									updateLocationHistoryForContainersInLocationAtIndex index, callback
+
+					updateLocationHistoryForContainersInLocationAtIndex index, callback
+
+				else
+					callback json, response.statusCode
+			else
+				console.error 'got ajax error trying to get moveLocationToLocation'
+				console.error error
+				console.error json
+				console.error response
+				callback JSON.stringify("moveLocationToLocation failed"), 500
+		)
+
+exports.updateLocationHistoryForContainersInLocation = (req, resp) =>
+	req.setTimeout 86400000
+	exports.updateLocationHistoryForContainersInLocationInternal req.body.locationCodeName, req.body.destinationLabel, req.body.modifiedBy, req.body.modifiedDate, (json, statusCode) ->
+		resp.statusCode = statusCode
+		resp.json json
+
+exports.updateLocationHistoryForContainersInLocationInternal = (locationCodeName, destinationLabel, modifiedBy, modifiedDate, callback) =>
+	#locationCodeName = codeName of location that's being moved
+	#destinationLabel = label of location for where the location will be moved to
+
+	exports.getContainersWithLocationHistoryInLocationInternal locationCodeName, (containersInLocation, getContainersInLocationStatusCode) =>
+		if getContainersInLocationStatusCode is 500
+			callback containersInLocation, 500
+		else
+			containerStatesToAdd = []
+			manifestInfo = ""
+			_.each containersInLocation, (containerToUpdate) =>
+				newLocationHistoryState = new serverUtilityFunctions.State
+					lsType: "metadata"
+					lsKind: "location history"
+					recordedBy: modifiedBy
+					recordedDate: modifiedDate
+					ignored: false
+
+				labelTextBreadCrumb = containerToUpdate.labelTextBreadcrumb.split(">")
+				labelTextBreadCrumb.unshift destinationLabel
+				newLocationHistoryState.createValueByTypeAndKind('stringValue', 'location').set
+					stringValue: JSON.stringify(labelTextBreadCrumb)
+					recordedBy: modifiedBy
+					recordedDate: modifiedDate
+				newLocationHistoryState.createValueByTypeAndKind('codeValue', 'moved by').set
+					codeValue: modifiedBy
+					recordedBy: modifiedBy
+					recordedDate: modifiedDate
+				newLocationHistoryState.createValueByTypeAndKind('dateValue', 'moved date').set
+					dateValue: modifiedDate
+					recordedBy: modifiedBy
+					recordedDate: modifiedDate
+
+				containerStatesToAdd.push
+					containerCodeName: containerToUpdate.codeName
+					lsState: newLocationHistoryState
+
+			exports.bulkUpdateContainerStatesInternal containerStatesToAdd, (bulkUpdatedContainerStates, bulkUpdatedContainerStatesStatusCode) =>
+				if bulkUpdatedContainerStatesStatusCode is 500
+					callback bulkUpdatedContainerStates, 500
+				else
+					callback containerStatesToAdd, bulkUpdatedContainerStatesStatusCode
+
+exports.bulkUpdateContainerStates = (req, resp) =>
+	req.setTimeout 86400000
+	exports.bulkUpdateContainerStatesInternal req.body.containerStates, (json, statusCode) ->
+		resp.statusCode = statusCodex
+		resp.json json
+
+
+exports.bulkUpdateContainerStatesInternal = (containerStates, callback) =>
+
+	insertTransactionIntoContainerStates = (transactionid, containerStates) ->
+		for cs in containerStates
+			state = cs.lsState
+			state.set 'lsTransaction', transactionid
+			state.get('lsValues').each (val) ->
+				val.set 'lsTransaction', transactionid
+		containerStates
+
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		callback inventoryServiceTestJSON.bulkUpdateContainerStatesResp, 200
+
+	else
+		#create lsTransaction first
+		if containerStates.length > 0
+			recordedDate = containerStates[0].lsState.get 'recordedDate'
+			recordedBy = containerStates[0].lsState.get 'recordedBy'
+			transactionOptions =
+				comments: "bulk update container states"
+				recordedBy: recordedBy
+				status: "PENDING"
+				type: "NEW"
+			serverUtilityFunctions.createLSTransaction2 recordedDate, transactionOptions, (transaction) =>
+				containerStates = insertTransactionIntoContainerStates transaction.id, containerStates
+				transaction.status = 'COMPLETED'
+				serverUtilityFunctions.updateLSTransaction transaction, (updatedTransaction) =>
+					#update the containers' states
+					config = require '../conf/compiled/conf.js'
+					baseurl = config.all.client.service.persistence.fullpath+"containers/saveContainerStatesArray"
+					request = require 'request'
+					request(
+						method: 'POST'
+						url: baseurl
+						body: containerStates
+						json: true
+						timeout: 86400000
+					, (error, response, json) =>
+						if !error && response.statusCode == 200
+							callback json, 200
+						else
+							console.error 'got ajax error trying to save lsContainer'
+							console.error error
+							console.error json
+							console.error response
+							callback 'bulk update container states failed', 500
+					)
+
+exports.getContainersWithLocationHistoryInLocation = (req, resp) ->
+	req.setTimeout 86400000
+	exports.getContainersWithLocationHistoryInLocationInternal req.body.codeName, (json, statusCode) ->
+		resp.statusCode = statusCode
+		resp.json json
+
+exports.getContainersWithLocationHistoryInLocationInternal = (codeName, callback) ->
+	exports.getLocationTreeByCodeNameInternal codeName, true, (locationTree, getLocationTreeStatusCode) =>
+		if getLocationTreeStatusCode is 500
+			callback locationTree, 500
+		else
+			containers = _.filter locationTree, (lt) ->
+				lt.lsType is "container"
+			callback containers, getLocationTreeStatusCode
+
+exports.getLocationTreeByCodeName = (req, resp) ->
+	req.setTimeout 86400000
+	exports.getLocationTreeByCodeNameInternal req.body.codeName, req.query.withContainers, (json, statusCode) ->
+		resp.statusCode = statusCode
+		resp.json json
+
+
+exports.getLocationTreeByCodeNameInternal = (codeName, withContainers, callback) ->
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		callback inventoryServiceTestJSON.getLocationTreeByCodeNameResp, 200
+	else
+		baseurl = config.all.client.service.persistence.fullpath+"containers/getLocationTreeByRootCodeName?rootCodeName=#{codeName}"
+		if withContainers?
+			baseurl+= "&withContainers=#{withContainers}"
+		request
+			method: 'GET'
+			url: baseurl
+			json: true
+			timeout: 86400000
+			headers: 'content-type': 'application/json'
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				callback json, response.statusCode
+			else
+				console.error 'got ajax error trying to get location tree by codeName'
+				console.error error
+				console.error json
+				console.error response
+				callback "getLocationTreeByCodeName failed", 500
+
 
 exports.getWellContentByContainerLabel = (req, resp) ->
 	req.setTimeout 86400000

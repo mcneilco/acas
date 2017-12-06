@@ -8584,5 +8584,408 @@
 		recordedDate: 1462585654689
 		version: 0
 
+	exports.moveLocationToLocationInput =
+		[{
+			"containerCodeName": "CONT-00000005",
+			"modifiedBy": "ewoo",
+			"modifiedDate": 1464401607998,
+			"locationCodeName": "CONT-00000001"
+			"locationLabel": "New location"
+		}]
+		
+	exports.moveLocationToLocationSuccessResp =
+		[
+			[
+				{
+					"containerCodeName": "CONT-00000012",
+					"lsState": {
+						"lsValues": [
+							{
+								"ignored": false,
+								"recordedDate": 1464401607998,
+								"recordedBy": "ewoo",
+								"lsType": "stringValue",
+								"lsKind": "location",
+								"stringValue": "[\"COMPANY\",\"FREEZER1\",\"SHELF2\",\"RACK001\",\"A001\",\"EW000001\"]"
+							},
+							{
+								"ignored": false,
+								"recordedDate": 1464401607998,
+								"recordedBy": "ewoo",
+								"lsType": "codeValue",
+								"lsKind": "moved by",
+								"codeValue": "ewoo"
+							},
+							{
+								"ignored": false,
+								"recordedDate": 1464401607998,
+								"recordedBy": "ewoo",
+								"lsType": "dateValue",
+								"lsKind": "moved date",
+								"dateValue": 1464401607998
+							}
+						],
+						"ignored": false,
+						"recordedDate": 1464401607998,
+						"recordedBy": "ewoo",
+						"lsType": "metadata",
+						"lsKind": "location history"
+					}
+				},
+				{
+					"containerCodeName": "CONT-00000014",
+					"lsState": {
+						"lsValues": [
+							{
+								"ignored": false,
+								"recordedDate": 1464401607998,
+								"recordedBy": "ewoo",
+								"lsType": "stringValue",
+								"lsKind": "location",
+								"stringValue": "[\"COMPANY\",\"FREEZER1\",\"SHELF2\",\"RACK001\",\"B001\",\"EW000002\"]"
+							},
+							{
+								"ignored": false,
+								"recordedDate": 1464401607998,
+								"recordedBy": "ewoo",
+								"lsType": "codeValue",
+								"lsKind": "moved by",
+								"codeValue": "ewoo"
+							},
+							{
+								"ignored": false,
+								"recordedDate": 1464401607998,
+								"recordedBy": "ewoo",
+								"lsType": "dateValue",
+								"lsKind": "moved date",
+								"dateValue": 1464401607998
+							}
+						],
+						"ignored": false,
+						"recordedDate": 1464401607998,
+						"recordedBy": "ewoo",
+						"lsType": "metadata",
+						"lsKind": "location history"
+					}
+				}
+			]
+		]
+	
+	exports.getLocationTreeByCodeNameResp2 =
+		[
+			{
+				"codeName": "CONT-56514728",
+				"codeNameBreadcrumb": "CONT-00000001>CONT-00000002>CONT-00000004>CONT-00000005>CONT-00000011>CONT-56514728",
+				"codeTree": "......CONT-56514728",
+				"labelText": "112817EW1",
+				"labelTextBreadcrumb": "COMPANY>FREEZER1>SHELF2>RACK002>A001>112817EW1",
+				"labelTree": "......112817EW1",
+				"level": 6,
+				"parentCodeName": "CONT-00000011",
+				"rootCodeName": "CONT-00000001",
+				"lsType": "container",
+				"lsKind": "tube"
+			},
+			{
+				"codeName": "CONT-56514730",
+				"codeNameBreadcrumb": "CONT-00000001>CONT-00000002>CONT-00000004>CONT-00000005>CONT-00000011>CONT-56514730",
+				"codeTree": "......CONT-56514730",
+				"labelText": "112817EW2",
+				"labelTextBreadcrumb": "COMPANY>FREEZER1>SHELF2>RACK002>A002>112817EW2",
+				"labelTree": "......112817EW2",
+				"level": 6,
+				"parentCodeName": "CONT-00000014",
+				"rootCodeName": "CONT-00000001",
+				"lsType": "container",
+				"lsKind": "tube"
+			}
+		]
+
+	exports.getLocationTreeByCodeNameResp =
+		[
+			{
+				"codeName": "CONT-00000001",
+				"codeNameBreadcrumb": "CONT-00000001",
+				"codeTree": "CONT-00000001",
+				"labelText": "COMPANY",
+				"labelTextBreadcrumb": "COMPANY",
+				"labelTree": "COMPANY",
+				"level": 1,
+				"parentCodeName": null,
+				"rootCodeName": "CONT-00000001",
+				"lsType": "location",
+				"lsKind": "default"
+			},
+			{
+				"codeName": "CONT-00000010",
+				"codeNameBreadcrumb": "CONT-00000001>CONT-00000010",
+				"codeTree": "..CONT-00000010",
+				"labelText": "Benches",
+				"labelTextBreadcrumb": "COMPANY>Benches",
+				"labelTree": "..Benches",
+				"level": 2,
+				"parentCodeName": "CONT-00000001",
+				"rootCodeName": "CONT-00000001",
+				"lsType": "location",
+				"lsKind": "default"
+			},
+			{
+				"codeName": "CONT-00000006",
+				"codeNameBreadcrumb": "CONT-00000001>CONT-00000006",
+				"codeTree": "..CONT-00000006",
+				"labelText": "FREEZER2",
+				"labelTextBreadcrumb": "COMPANY>FREEZER2",
+				"labelTree": "..FREEZER2",
+				"level": 2,
+				"parentCodeName": "CONT-00000001",
+				"rootCodeName": "CONT-00000001",
+				"lsType": "location",
+				"lsKind": "default"
+			},
+			{
+				"codeName": "CONT-00000002",
+				"codeNameBreadcrumb": "CONT-00000001>CONT-00000002",
+				"codeTree": "..CONT-00000002",
+				"labelText": "FREEZER1",
+				"labelTextBreadcrumb": "COMPANY>FREEZER1",
+				"labelTree": "..FREEZER1",
+				"level": 2,
+				"parentCodeName": "CONT-00000001",
+				"rootCodeName": "CONT-00000001",
+				"lsType": "location",
+				"lsKind": "default"
+			},
+			{
+				"codeName": "CONT-00000004",
+				"codeNameBreadcrumb": "CONT-00000001>CONT-00000002>CONT-00000004",
+				"codeTree": "....CONT-00000004",
+				"labelText": "SHELF2",
+				"labelTextBreadcrumb": "COMPANY>FREEZER1>SHELF2",
+				"labelTree": "....SHELF2",
+				"level": 3,
+				"parentCodeName": "CONT-00000002",
+				"rootCodeName": "CONT-00000001",
+				"lsType": "location",
+				"lsKind": "default"
+			},
+			{
+				"codeName": "CONT-00000003",
+				"codeNameBreadcrumb": "CONT-00000001>CONT-00000002>CONT-00000003",
+				"codeTree": "....CONT-00000003",
+				"labelText": "SHELF1",
+				"labelTextBreadcrumb": "COMPANY>FREEZER1>SHELF1",
+				"labelTree": "....SHELF1",
+				"level": 3,
+				"parentCodeName": "CONT-00000002",
+				"rootCodeName": "CONT-00000001",
+				"lsType": "location",
+				"lsKind": "default"
+			},
+			{
+				"codeName": "CONT-00000009",
+				"codeNameBreadcrumb": "CONT-00000001>CONT-00000010>CONT-00000009",
+				"codeTree": "....CONT-00000009",
+				"labelText": "bob",
+				"labelTextBreadcrumb": "COMPANY>Benches>bob",
+				"labelTree": "....bob",
+				"level": 3,
+				"parentCodeName": "CONT-00000010",
+				"rootCodeName": "CONT-00000001",
+				"lsType": "location",
+				"lsKind": "default"
+			},
+			{
+				"codeName": "CONT-00000005",
+				"codeNameBreadcrumb": "CONT-00000001>CONT-00000002>CONT-00000004>CONT-00000005",
+				"codeTree": "......CONT-00000005",
+				"labelText": "RACK001",
+				"labelTextBreadcrumb": "COMPANY>FREEZER1>SHELF2>RACK001",
+				"labelTree": "......RACK001",
+				"level": 4,
+				"parentCodeName": "CONT-00000004",
+				"rootCodeName": "CONT-00000001",
+				"lsType": "location",
+				"lsKind": "default"
+			},
+			{
+				"codeName": "CONT-00000011",
+				"codeNameBreadcrumb": "CONT-00000001>CONT-00000002>CONT-00000004>CONT-00000005>CONT-00000011",
+				"codeTree": "......CONT-00000011",
+				"labelText": "A001",
+				"labelTextBreadcrumb": "COMPANY>FREEZER1>SHELF2>RACK001>A001",
+				"labelTree": "......A001",
+				"level": 5,
+				"parentCodeName": "CONT-00000005",
+				"rootCodeName": "CONT-00000001",
+				"lsType": "location",
+				"lsKind": "default"
+			},
+			{
+				"codeName": "CONT-00000012",
+				"codeNameBreadcrumb": "CONT-00000001>CONT-00000002>CONT-00000004>CONT-00000005>CONT-00000011>CONT-00000012",
+				"codeTree": "......CONT-00000012",
+				"labelText": "EW000001",
+				"labelTextBreadcrumb": "COMPANY>FREEZER1>SHELF2>RACK001>A001>EW000001",
+				"labelTree": "......EW000001",
+				"level": 6,
+				"parentCodeName": "CONT-00000011",
+				"rootCodeName": "CONT-00000001",
+				"lsType": "container",
+				"lsKind": "tube"
+			},
+			{
+				"codeName": "CONT-00000013",
+				"codeNameBreadcrumb": "CONT-00000001>CONT-00000002>CONT-00000004>CONT-00000005>CONT-00000013",
+				"codeTree": "......CONT-00000013",
+				"labelText": "B001",
+				"labelTextBreadcrumb": "COMPANY>FREEZER1>SHELF2>RACK001>B001",
+				"labelTree": "......B001",
+				"level": 5,
+				"parentCodeName": "CONT-00000005",
+				"rootCodeName": "CONT-00000001",
+				"lsType": "location",
+				"lsKind": "default"
+			},
+			{
+				"codeName": "CONT-00000014",
+				"codeNameBreadcrumb": "CONT-00000001>CONT-00000002>CONT-00000004>CONT-00000005>CONT-00000011>CONT-00000014",
+				"codeTree": "......CONT-00000014",
+				"labelText": "EW000002",
+				"labelTextBreadcrumb": "COMPANY>FREEZER1>SHELF2>RACK001>B001>EW000002",
+				"labelTree": "......EW000002",
+				"level": 6,
+				"parentCodeName": "CONT-00000014",
+				"rootCodeName": "CONT-00000001",
+				"lsType": "container",
+				"lsKind": "tube"
+			}
+		]
+
+	exports.bulkUpdateContainerStatesResp =
+		[
+			containerCodeName: "CONT-00000012"
+			lsState:
+				deleted: false,
+				id: 1,
+				ignored: false,
+				lsKind: "location history",
+				lsType: "metadata",
+				lsTypeAndKind: "metadata_location history",
+				lsValues: [
+					{
+						codeTypeAndKind: "null_null",
+						codeValue: "ewoo",
+						deleted: false,
+						id: 2,
+						ignored: false,
+						lsKind: "moved by",
+						lsType: "codeValue",
+						lsTypeAndKind: "codeValue_moved by",
+						operatorTypeAndKind: "null_null",
+						publicData: true,
+						recordedBy: "ewoo",
+						recordedDate: 1492116904216,
+						unitTypeAndKind: "null_null",
+						version: 0
+					},
+					{
+						codeTypeAndKind: "null_null",
+						dateValue: 1428538649000,
+						deleted: false,
+						id: 3,
+						ignored: false,
+						lsKind: "moved date",
+						lsType: "dateValue",
+						lsTypeAndKind: "dateValue_moved date",
+						operatorTypeAndKind: "null_null",
+						publicData: true,
+						recordedBy: "ewoo",
+						recordedDate: 1492116904216,
+						unitTypeAndKind: "null_null",
+						version: 0
+					},
+					{
+						codeTypeAndKind: "null_null",
+						deleted: false,
+						id: 4,
+						ignored: false,
+						lsKind: "location",
+						lsType: "stringValue",
+						lsTypeAndKind: "stringValue_location",
+						operatorTypeAndKind: "null_null",
+						publicData: true,
+						recordedBy: "ewoo",
+						recordedDate: 1492116904216,
+						stringValue: '["COMPANY","FREEZER1","SHELF2","RACK001","A001"]',
+						unitTypeAndKind: "null_null",
+						version: 0
+					}
+				],
+				recordedBy: "ewoo",
+				recordedDate: 1492116904216,
+				version: 0
+		,
+			containerCodeName: "CONT-00000014"
+			lsState:
+				deleted: false,
+				id: 5,
+				ignored: false,
+				lsKind: "location history",
+				lsType: "metadata",
+				lsTypeAndKind: "metadata_location history",
+				lsValues: [
+					{
+						codeTypeAndKind: "null_null",
+						codeValue: "ewoo",
+						deleted: false,
+						id: 6,
+						ignored: false,
+						lsKind: "moved by",
+						lsType: "codeValue",
+						lsTypeAndKind: "codeValue_moved by",
+						operatorTypeAndKind: "null_null",
+						publicData: true,
+						recordedBy: "ewoo",
+						recordedDate: 1492116904216,
+						unitTypeAndKind: "null_null",
+						version: 0
+					},
+					{
+						codeTypeAndKind: "null_null",
+						dateValue: 1428538649000,
+						deleted: false,
+						id: 7,
+						ignored: false,
+						lsKind: "moved date",
+						lsType: "dateValue",
+						lsTypeAndKind: "dateValue_moved date",
+						operatorTypeAndKind: "null_null",
+						publicData: true,
+						recordedBy: "ewoo",
+						recordedDate: 1492116904216,
+						unitTypeAndKind: "null_null",
+						version: 0
+					},
+					{
+						codeTypeAndKind: "null_null",
+						deleted: false,
+						id: 8,
+						ignored: false,
+						lsKind: "location",
+						lsType: "stringValue",
+						lsTypeAndKind: "stringValue_location",
+						operatorTypeAndKind: "null_null",
+						publicData: true,
+						recordedBy: "ewoo",
+						recordedDate: 1492116904216,
+						stringValue: '["COMPANY","FREEZER1","SHELF2","RACK001", "B001"]',
+						unitTypeAndKind: "null_null",
+						version: 0
+					}
+				],
+				recordedBy: "ewoo",
+				recordedDate: 1492116904216,
+				version: 0
+		]
 
 ) (if (typeof process is "undefined" or not process.versions) then window.inventoryServiceTestJSON = window.inventoryServiceTestJSON or {} else exports)
