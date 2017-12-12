@@ -101,7 +101,7 @@ class window.DoseResponseAnalysisParameters extends Backbone.Model
 			errors.push
 				attribute: 'theoreticalMax'
 				message: "Theoretical max value must be set to a number"
-		if  (_.isNaN(attrs.baseline.get('value')) or attrs.baseline.get('value') == null)
+		if  (attrs.smartMode && (_.isNaN(attrs.baseline.get('value')) or attrs.baseline.get('value') == null))
 			errors.push
 				attribute: 'baseline'
 				message: "Baseline value must be set to a number"
@@ -185,7 +185,6 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 			@$('.bv_theoreticalMax').attr 'disabled', 'disabled'
 			@$('.bv_theoreticalMax').val ""
 			@$('.bv_baseline').attr 'disabled', 'disabled'
-			@$('.bv_baseline').val ""
 
 		@attributeChanged()
 
