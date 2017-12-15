@@ -339,11 +339,6 @@ server.service.external.inventory.database.name=
 server.service.external.inventory.database.username=
 server.service.external.inventory.database.password=
 
-client.compoundInventory.enforceUppercaseBarcodes=false
-client.compoundInventory.rootLocationLabel=COMPANY
-client.compoundInventory.trashLocationLabel=trash
-client.compoundInventory.benchesLocationLabel=Benches
-
 ## options for auth. strategy are: properties, database, ldap
 server.security.authstrategy=database
 #server.security.properties.path=/opt/seurat/SeuratServer/users.txt
@@ -352,7 +347,7 @@ client.security.authstrategy=${server.security.authstrategy}
 
 #Controls whether Roo syncs the AuthorRole table with authorities granted in LDAP
 server.security.syncLdapAuthRoles=false
-#to make authstrategy config accessible to the client
+#to make syncLdapAuthRoles config accessible to the client
 client.security.syncLdapAuthRoles=${server.security.syncLdapAuthRoles}
 client.scientistCodeOrigin=ACAS authors
 client.molecularTargetCodeOrigin=ACAS DDICT
@@ -448,8 +443,8 @@ client.protocol.showCurveDisplayParams=true
 client.experiment.uneditableFileTypes=["source file", "annotation file"]
 
 #Controls privileges for who can create/edit and delete authors
-client.author.editingRoles=
-client.author.deletingRoles=
+client.author.editingRoles=ROLE_ACAS-ADMINS
+client.author.deletingRoles=ROLE_ACAS-ADMINS
 
 # Default status for experiments loaded thorugh experiment loader
 server.sel.experimentStatus=approved
@@ -571,8 +566,14 @@ client.protocol.requiredEntityType.save=false
 # Whether the required entity type is a required field
 client.protocol.requiredEntityType.allowEmpty=true
 
+#Compound Inventory configs
 client.compoundInventory.enforceUppercaseBarcodes=false
+#Default location tree labels 
+client.compoundInventory.rootLocationLabel=COMPANY
+client.compoundInventory.trashLocationLabel=trash
+client.compoundInventory.benchesLocationLabel=Benches
+#Disallow loading daughter vials with different physical state than the parent vial
 client.compoundInventory.daughterVials.strictMatchPhysicalState=false
 
 # Whether to save location as a codeValue or as a full location interaction
-client.compoundInventory.saveLocationAsCodeValue=false
+client.compoundInventory.saveLocationAsCodeValue=true
