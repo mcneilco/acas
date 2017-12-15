@@ -534,3 +534,6 @@ client.roles.crossProjectLoaderRole=ROLE_ACAS-CROSS-PROJECT-LOADER
 
 # For whether protocols and experiments should have sequential user defined corpName labels
 client.entity.saveInitialsCorpName=false
+
+# For which protocol clobValues from protocol metadata state are copied over to experiments
+client.experiment.copiedProtocolMetadataAttrs=
