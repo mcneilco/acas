@@ -31,7 +31,7 @@
 
 	</div>
 
-	<div id="footer"><p>&#169; 2011-2015 John McNeil & Co., Inc.</p></div>
+	<div id="footer"><p>&#169; 2011-2017 John McNeil & Co., Inc.</p></div>
 
 
 </script>
