@@ -117,7 +117,7 @@ class window.AbstractFormController extends Backbone.View
 
 class window.AbstractThingFormController extends AbstractFormController
 
-	setupFormFields: (fieldDefs) ->
+	setupFormFields: (fieldDefs, useDirectRef) ->
 		unless @formFields?
 			@formFields = {}
 
@@ -128,6 +128,10 @@ class window.AbstractThingFormController extends AbstractFormController
 		if fieldDefs.secondLsThingItxs? then fDefs = fDefs.concat fieldDefs.secondLsThingItxs
 
 		for field in fDefs
+			if useDirectRef? and useDirectRef
+				mdl = @model.get field.key
+			else
+				mdl = @model
 			opts =
 				modelKey: field.key
 				inputClass: field.fieldSettings.inputClass
@@ -135,11 +139,15 @@ class window.AbstractThingFormController extends AbstractFormController
 				placeholder: field.fieldSettings.placeholder
 				required: field.fieldSettings.required
 				url: field.fieldSettings.url
-				thingRef: @model
+				thingRef: mdl
 				insertUnassigned: field.fieldSettings.insertUnassigned
+				firstSelectText: field.fieldSettings.firstSelectText
 				modelDefaults: field.modelDefaults
 				allowedFileTypes: field.fieldSettings.allowedFileTypes
 				extendedLabel: field.fieldSettings.extendedLabel
+				tabIndex: field.fieldSettings.tabIndex
+				toFixed: field.fieldSettings.toFixed
+				pickList: field.fieldSettings.pickList
 
 			switch field.fieldSettings.fieldType
 				when 'label'
@@ -161,6 +169,9 @@ class window.AbstractThingFormController extends AbstractFormController
 				when 'stringValue' then newField = new ACASFormLSStringValueFieldController opts
 				when 'dateValue' then newField = new ACASFormLSDateValueFieldController opts
 				when 'fileValue' then newField = new ACASFormLSFileValueFieldController opts
+				when 'locationTree'
+					opts.tubeCode = @model.get('tubeCode')
+					newField = new ACASFormLocationTreeController opts
 
 			@$("."+field.fieldSettings.fieldWrapper).append newField.render().el
 			newField.afterRender()

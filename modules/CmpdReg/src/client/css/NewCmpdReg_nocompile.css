@@ -168,9 +168,9 @@ div {
 /****** FLOATING PANELS ******/
 /****** div#upload-app LOCATED IN MULTIPICKER CSS ******/
 .MetaLotView .floatingPanel, .SearchResultsView .floatingPanel {
-    position: absolute;
-    left: 20px;
-    bottom: 140px;
+    position: fixed;
+    left: 220px;
+    bottom: 60px;
     padding: 5px;
     border: 12px solid #D5D8DD;
     background-color: #EEE;
@@ -182,8 +182,9 @@ div {
         box-shadow: 3px 3px 4px #a7a9ad;*/
 }
 .MetaLotView div.floatingPanel.NewLotSuccessView {
-    position: absolute;
-    left: 20px;
+    position: fixed;
+    bottom: 85px;
+    left: 220px;
     padding: 5px;
     cursor: hand;
 }
@@ -219,6 +220,12 @@ div {
 .MetaLotView div.floatingPanel.newIsotopeView div {
     height: 20px;
 }
+
+.MetaLotView .bv_lotInventory iframe {
+    width: 700px;
+    height: 700px;
+}
+
 .NewLotSuccessView .labelCorpName {
     margin-left: 10px;
     margin-bottom: 40px;
@@ -439,13 +446,12 @@ div {
 /****** ERROR NOTIFICATION ******/
 
 .ErrrorNotificationListView {
-    position: absolute;
-    bottom: -120px;
-    left: 15px;
+    position: fixed;
+    bottom: 60px;
+    left: 100px;
     z-index: 100;
     width: 400px;
     margin-left: 150px;
-    background-color: white;
 }
 .ErrrorNotificationListView .showHideButton {
     margin-left: 7px;
@@ -736,7 +742,7 @@ div {
 }
 .RegSearchResults_ParentView {
     margin-bottom: 10px;
-    height: 435px;
+    /*height: 435px;*/
 }
 
 .RegSearchResultsView .parentImageWrapper, .EditParentSearchResultsView .parentImageWrapper {
@@ -1030,7 +1036,6 @@ input.FormInput.supplier, .FormInput.supplierID, .FormInput.percentEE, .FormInpu
   width: 160px;
 }
 
-
 /*** SYNTH DATE COLUMN ***/
 
 .MetaLotView .LotForm_LotViewSynth {
@@ -1113,10 +1118,11 @@ div.MetaLotViewButtons.buttons {
 
 .LotForm_LotView a.editAnalyticalFiles {
     background: no-repeat url('../images/view_edit_files.png');
-    position: absolute;
+    /*position: absolute;*/
     left: 556px;
     bottom: 40px;
     margin-left: 150px;
+    padding-right: 39px;
     /*
         margin-top: 5px;
         margin-left: 15px;

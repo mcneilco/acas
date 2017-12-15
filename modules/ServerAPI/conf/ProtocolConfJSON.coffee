@@ -139,6 +139,9 @@
 			,
 				typeName: "codeValue"
 				kindName: "model fit transformation units"
+			,
+				typeName: "codeValue"
+				kindName: "required entity type"
 			]
 
 		labeltypes:
@@ -179,6 +182,9 @@
 			,
 				typeName: "protocol"
 				kindName: "review status"
+			,
+				typeName: "protocol"
+				kindName: "sel required attribute"
 			,
 				typeName: "assay"
 				kindName: "scientist"

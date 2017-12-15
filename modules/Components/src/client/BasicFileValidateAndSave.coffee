@@ -174,6 +174,8 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 		@notificationController.addNotifications(@errorOwnerName, json.errorMessages)
 		if json.results?.htmlSummary?
 			@$('.bv_htmlSummary').html(json.results.htmlSummary)
+		if json.results?.preProcessorHTMLSummary?
+			@showPreProcessorHTMLSUmmary json.results.preProcessorHTMLSummary
 		@$('.bv_validateStatusDropDown').modal("hide")
 		if json.results?.csvDataPreview?
 			@showCSVPreview json.results.csvDataPreview
@@ -188,6 +190,8 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 		@$('.bv_htmlSummary').html(json.results.htmlSummary)
 		@newExperimentCode = json.results.experimentCode
 		@showFileUploadCompletePhase()
+		if json.results?.preProcessorHTMLSummary?
+			@showPreProcessorHTMLSUmmary json.results.preProcessorHTMLSummary
 		@$('.bv_resultStatus').html(summaryStr)
 		@$('.bv_saveStatusDropDown').modal("hide")
 		@trigger 'amClean'
@@ -214,6 +218,8 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 		@$('.bv_completeControlContainer').hide()
 		@$('.bv_notifications').hide()
 		@$('.bv_csvPreviewContainer').hide()
+		@$('.bv_preProcessorHTMLSummary').hide()
+		@$('.bv_preProcessorHTMLSummary').hide('')
 
 	handleAttachReportFileChanged: ->
 		attachReportFile = @$('.bv_attachReportFile').is(":checked")
@@ -247,6 +253,7 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 		@$('.bv_resultStatus').show()
 		@$('.bv_htmlSummary').show()
 		@$('.bv_csvPreviewContainer').hide()
+		@$('.bv_preProcessorHTMLSummary').hide()
 		@$('.bv_fileUploadWrapper').hide()
 		@$('.bv_nextControlContainer').hide()
 		@$('.bv_saveControlContainer').hide()
@@ -261,6 +268,11 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 	handleFormValid: =>
 		@$(".bv_next").removeAttr 'disabled'
 		@$(".bv_save").removeAttr 'disabled'
+
+	showPreProcessorHTMLSUmmary: (preProcessorSummaryHTML) ->
+		console.log "showing here"
+		@$('.bv_preProcessorHTMLSummary').html(preProcessorSummaryHTML)
+		@$('.bv_preProcessorHTMLSummary').show()
 
 	showCSVPreview: (csv) ->
 		@$('.csvPreviewTHead').empty()

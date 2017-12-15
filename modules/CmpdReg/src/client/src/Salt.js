@@ -155,35 +155,54 @@ $(function() {
 			$(this.el).html(this.template());
 			this.exportFormat = "mol";
 			if(window.configuration.marvin) {
+				this.useMarvin = true;
 				if (window.configuration.marvin.exportFormat) {
 					this.exportFormat = window.configuration.marvin.exportFormat;
 				}
+			} else if(window.configuration.ketcher) {
+				this.useKetcher = true;
 			}
 
-			this.marvinLoaded = false;
+			this.sketcherLoaded = false;
 		},
 
 		render: function () {
 			var self = this;
-			MarvinJSUtil.getEditor("#newSaltMarvinSketch").then(function (sketcherInstance) {
-				self.marvinSketcherInstance = sketcherInstance;
-				if (typeof window.marvinStructureTemplates !== 'undefined') {
-					for (i=0 ; i<window.marvinStructureTemplates.length; i++ ) {
-						sketcherInstance.addTemplate(window.marvinStructureTemplates[i]);
+			if (this.useMarvin) {
+				this.$('#newSaltMarvinSketch').attr('src',"/CmpdReg/marvinjs/editorws.html");
+				MarvinJSUtil.getEditor("#newSaltMarvinSketch").then(function (sketcherInstance) {
+					self.marvinSketcherInstance = sketcherInstance;
+					if (typeof window.marvinStructureTemplates !== 'undefined') {
+						for (i = 0; i < window.marvinStructureTemplates.length; i++) {
+							sketcherInstance.addTemplate(window.marvinStructureTemplates[i]);
+						}
 					}
-				}
-				self.marvinLoaded = true;
-			},function (error) {
-				alert("Cannot retrieve newSaltMarvinSketch sketcher instance from iframe:"+error);
-			});
+					self.sketcherLoaded = true;
+				}, function (error) {
+					alert("Cannot retrieve newSaltMarvinSketch sketcher instance from iframe:" + error);
+				});
+
+			} else if (this.useKetcher) {
+				this.$('#newSaltMarvinSketch').attr('src',"/lib/ketcher-2.0.0-alpha.3_custom/ketcher.html?api_path=/api/cmpdReg/ketcher/");
+				this.$('#newSaltMarvinSketch').on('load', function () {
+					self.ketcher = self.$('#newSaltMarvinSketch')[0].contentWindow.ketcher;
+					self.sketcherLoaded = true;
+				});
+			} else {
+				alert("No search sketcher configured");
+			}
 
 			this.hide();
 			return this;
 		},
 
 		show: function() {
-			this.marvinSketcherInstance.clear();
-      $(this.el).show();
+			if (this.useMarvin) {
+				this.marvinSketcherInstance.clear()
+			} else if (this.useKetcher) {
+				mol = this.ketcher.setMolecule("");
+			}
+			$(this.el).show();
 		},
 
 		hide: function() {
@@ -202,11 +221,16 @@ $(function() {
             var salt = new Salt();
 			salt.bind('error',  this.validationError);
 			var mol = null;
-			if(this.marvinLoaded) {
-				self = this;
+			self = this;
+
+			if(this.sketcherLoaded) {
 				self.exportStructComplete = false;
-				this.marvinSketcherInstance.exportStructure(this.exportFormat).then(function(molecule) {
-					if ( molecule.indexOf("0  0  0  0  0  0  0  0  0  0999")>-1)
+
+				var gotMol = function (molecule) {
+
+					if (molecule.indexOf("0  0  0  0  0  0  0  0  0  0999") > -1)
+						mol = '';
+					else if (molecule.indexOf("M  V30 COUNTS 0 0 0 0 0") > -1)
 						mol = '';
 					else
 						mol = molecule;
@@ -226,28 +250,44 @@ $(function() {
 						self.delegateEvents({}); // stop listening to buttons
 						self.collection.create(salt,
 							{
-								success: function() {
+								success: function () {
 									self.clearValidationErrorStyles();
 									self.clearInputFields();
 									self.delegateEvents(); // start listening to events
 									self.hide();
 								},
-								error: function(model, error) {
+								error: function (model, error) {
 									self.clearValidationErrorStyles();
 									var resp = $.parseJSON(error.responseText);
-									_.each(resp, function(err) {
-										self.trigger('notifyError', {owner: "NewSaltController", errorLevel: err.level, message: err.message});
+									_.each(resp, function (err) {
+										self.trigger('notifyError', {
+											owner: "NewSaltController",
+											errorLevel: err.level,
+											message: err.message
+										});
 									});
 									self.delegateEvents(); // start listening to events
 								}
 							});
 					}
+				}
 
+				if (this.useMarvin) {
+					this.marvinSketcherInstance.exportStructure(this.exportFormat).then(
+						gotMol,
+						function (error) {
+							alert("Molecule export failed from search sketcher:"+error);
+						}
+					);
 
+				} else if (this.useKetcher) {
+					mol = this.ketcher.getMolfile();
+					if (mol.indexOf("  0  0  0     1  0            999") > -1) mol = '';
+					gotMol(mol);
+				} else {
+					alert("No new salt sketcher configured");
+				}
 
-				}, function(error) {
-					alert("Molecule export failed from search sketcher:"+error);
-				});
 			}
 
 		},

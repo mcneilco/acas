@@ -37,13 +37,17 @@ exports.getAllCodeTableValues = (req, resp) ->
 		)
 
 exports.getCodeTableValues = (req, resp) ->
+	exports.getCodeTableValuesInternal req.params.type, req.params.kind, (result) ->
+		resp.json result
+
+exports.getCodeTableValuesInternal = (type, kind, cb) ->
 	if global.specRunnerTestmode
 		fullCodeTableJSON = require '../public/javascripts/spec/CodeTableJSON.js'
-		correctCodeTable = _.findWhere(fullCodeTableJSON.codes, {type:req.params.type, kind:req.params.kind})
-		resp.end JSON.stringify correctCodeTable['codes']
+		correctCodeTable = _.findWhere(fullCodeTableJSON.codes, {type:type, kind:kind})
+		cb correctCodeTable['codes']
 	else
 		config = require '../conf/compiled/conf.js'
-		baseurl = "#{config.all.client.service.persistence.fullpath}ddictvalues/all/#{req.params.type}/#{req.params.kind}/codetable"
+		baseurl = "#{config.all.client.service.persistence.fullpath}ddictvalues/all/#{type}/#{kind}/codetable"
 		request = require 'request'
 		request(
 			method: 'GET'
@@ -58,7 +62,7 @@ exports.getCodeTableValues = (req, resp) ->
 						if a.name.toUpperCase() > b.name.toUpperCase()
 							return 1
 						return 0
-				resp.json json
+				cb json
 			else
 				console.log 'got ajax error trying to get code table entries'
 				console.log error

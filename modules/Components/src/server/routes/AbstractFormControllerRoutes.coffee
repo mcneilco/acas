@@ -4,6 +4,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/formController/clearAllLocks', loginRoutes.ensureAuthenticated, exports.clearAllLocks
 
 global.editLockedEntities = {}
+global.newFormEntities = {}
 
 exports.setupChannels = (io, sessionStore, loginRoutes) ->
 	nsp = io.of('/formController:connected')
@@ -20,6 +21,18 @@ exports.setupChannels = (io, sessionStore, loginRoutes) ->
 					for quid in lock.rejectedRequestSocketIDs
 						socket.broadcast.to(quid).emit('editLockAvailable')
 					delete global.editLockedEntities[lockKey]
+
+			for lockKey, lock of global.newFormEntities
+				if lock.savingLockSocketID==socket.id
+					console.log "clearing save lock on #{lock}"
+					lock.savingLockSocketID = null
+					for quid in lock.savingNotificationRequestSocketIDs
+						socket.broadcast.to(quid).emit('newEntitySavingComplete')
+
+				index = lock.savingNotificationRequestSocketIDs.indexOf socket.id
+				if index > -1
+					lock.savingNotificationRequestSocketIDs.splice(index, 1)
+
 		)
 
 		socket.on('editLockEntity', (entityType, codeName) =>
@@ -69,6 +82,42 @@ exports.setupChannels = (io, sessionStore, loginRoutes) ->
 				now = new Date().getTime()
 				lockedEntity.lastActivityDate = now
 		)
+		socket.on('clearEditLock', (entityType, codeName) =>
+			console.log "got clearEditLock #{entityType}, #{codeName}"
+			lockKey = entityType+"_"+codeName
+			lockedEntity = global.editLockedEntities[lockKey]
+			if lockedEntity? and lockedEntity.socketID==socket.id
+				for quid in lockedEntity.rejectedRequestSocketIDs
+					socket.broadcast.to(quid).emit('editLockAvailable')
+				delete global.editLockedEntities[lockKey]
+		)
+
+		socket.on('registerForSavingNewLockNotification', (entityType) =>
+			lockKey = entityType+"_savingNewLock"
+			nfEntity = global.newFormEntities[lockKey]
+			if nfEntity?
+				nfEntity.savingNotificationRequestSocketIDs.push socket.id
+			else
+				global.newFormEntities[lockKey] =
+					savingLockSocketID: null
+					savingNotificationRequestSocketIDs: [socket.id]
+		)
+		socket.on('savingNewLock', (entityType) =>
+			lockKey = entityType+"_savingNewLock"
+			nfEntity = global.newFormEntities[lockKey]
+			if nfEntity?
+				nfEntity.savingLockSocketID = socket.id
+				for quid in nfEntity.savingNotificationRequestSocketIDs
+					socket.broadcast.to(quid).emit('newEntitySaveActive')
+		)
+		socket.on('savingNewComplete', (entityType) =>
+			lockKey = entityType+"_savingNewLock"
+			nfEntity = global.newFormEntities[lockKey]
+			if nfEntity? and nfEntity.savingLockSocketID==socket.id
+				nfEntity.savingLockSocketID = null
+				for quid in nfEntity.savingNotificationRequestSocketIDs
+					socket.broadcast.to(quid).emit('newEntitySavingComplete')
+		)
 	)
 
 exports.clearAllLocks = (req, resp) ->
@@ -77,3 +126,4 @@ exports.clearAllLocks = (req, resp) ->
 	global.editLockedEntities = {}
 	console.dir global.editLockedEntities, depth: 3
 	resp.end()
+

@@ -52,8 +52,8 @@ $(function() {
             this.collection = new PickListList();
 			this.collection.setType(this.options.type);
 			this.collection.bind('add', this.addOne);
-			this.collection.bind('reset', this.handleListReset);
-			this.collection.fetch();
+			//this.collection.bind('reset', this.handleListReset);
+			this.collection.fetch({success: this.handleListReset});
             if (this.options.selectedCode !='') {
                 this.selectedCode = this.options.selectedCode;
             } else {
@@ -120,7 +120,8 @@ $(function() {
         	$(this.el).hide();
         	$(this.el).show();
             this.rendered = true;
-            
+			var selectedText = this.getSelectedModel().get('name');
+			$(this.el).prop('title', selectedText);
             return this;
 		},
 		

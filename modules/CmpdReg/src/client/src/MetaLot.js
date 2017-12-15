@@ -229,6 +229,11 @@ $(function() {
 			    if (!this.allowedToUpdate()) {
 				    this.$('.saveButton').hide();
 			    }
+			    console.log("about to load inventory");
+			    console.log(window.configuration.metaLot.showLotInventory);
+			    if (window.configuration.metaLot.showLotInventory) {
+				    this.$('.bv_lotInventory').append("<iframe src=\"/lotInventory/index/"+this.model.get('lot').get('corpName')+"\" frameBorder=\"0\"></iframe>")
+			    }
 
 		    }
 

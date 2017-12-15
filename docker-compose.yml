@@ -22,7 +22,7 @@ services:
      - /home/runner/build/src/r
      - /home/runner/build/conf/compiled
     # Add chemaxon marvinjs here
-     - ./chemaxon/marvinjs:/home/runner/build/public/CmpdReg/marvinjs
+    # - ./chemaxon/marvinjs:/home/runner/build/public/CmpdReg/marvinjs
      # Please add any dev volumes below this line
      - ./:/home/runner/acas
      # - ./modules/BuildUtilities/:/home/runner/acas/modules/BuildUtilities
@@ -47,7 +47,7 @@ services:
       - logs:/home/runner/logs
     command: ["bin/acas.sh", "run", "rservices"]
   db:
-    image: mcneilco/acas-postgres:${ACAS_TAG}
+    image: mcneilco/acas-postgres:bingo
     restart: always
     volumes:
      - dbstore:/var/lib/postgresql/data
@@ -60,7 +60,7 @@ services:
     ports:
      - "5432:5432"
   tomcat:
-    image: mcneilco/tomcat-maven
+    image: mcneilco/tomcat-maven:openjdk8
     restart: always
     depends_on:
      - db
@@ -81,17 +81,17 @@ services:
       - ./conf/docker/cmpdreg/environment/cmpdreg.env
     command: catalina.sh run
   roo:
-    image: mcneilco/acas-roo-server-oss:${ACAS_TAG}
+    image: mcneilco/acas-roo-server-oss:RC-1.13.0
     volumes:
      - /usr/local/tomcat/webapps/acas
     command: /bin/true
   cmpdreg:
-    image: mcneilco/acas-cmpdreg-roo-server-oss:${ACAS_TAG}
+    image: mcneilco/acas-cmpdreg-roo-server-oss:RC-1.13.0
     volumes:
      - /usr/local/tomcat/webapps/cmpdreg
     # Add chemaxon license files here
-     - ./chemaxon/licenses/marvin4js-license.cxl:/usr/local/tomcat/webapps/ROOT/marvin4js-license.cxl
-     - ./chemaxon/licenses/license.cxl:/root/.chemaxon/license.cxl
+    # - ./chemaxon/licenses/marvin4js-license.cxl:/usr/local/tomcat/webapps/ROOT/marvin4js-license.cxl
+    # - ./chemaxon/licenses/license.cxl:/root/.chemaxon/license.cxl
     command: /bin/true
 volumes:
   dbstore:

@@ -64,6 +64,7 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 		$(@el).html @template()
 		@applyOptions()
 		@checkEmptyAndRequired()
+		$(@el).addClass "bv_group_"+@modelKey
 
 		@
 
@@ -102,6 +103,8 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 			@setPlaceholder @options.placeholder
 		if @options.firstSelectText?
 			@firstSelectText = @options.firstSelectText
+		if @options.tabIndex?
+			@setTabIndex @options.tabIndex
 		@required = if @options.required? then @options.required else false
 
 	setFormLabel: (value) ->
@@ -133,6 +136,9 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 
 	enableInput: ->
 		@$('input').removeAttr 'disabled'
+
+	setTabIndex: (index) ->
+		@$('input, select').attr  'tabindex', index
 
 class window.ACASFormLSLabelFieldController extends ACASFormAbstractFieldController
 	###
@@ -182,8 +188,19 @@ class window.ACASFormLSNumericValueFieldController extends ACASFormAbstractField
 		- Initialize the model with an LSValue
     Do whatever else is required or optional in ACASFormAbstractFieldController
 	###
+	events: ->
+		"keyup .bv_number": "handleInputChanged"
 
 	template: _.template($("#ACASFormLSNumericValueFieldView").html())
+
+	initialize: ->
+		super()
+		@userInputEvent = false
+
+	applyOptions: ->
+		super()
+		if @options.toFixed?
+			@toFixed = @options.toFixed
 
 	handleInputChanged: =>
 		@clearError()
@@ -201,6 +218,7 @@ class window.ACASFormLSNumericValueFieldController extends ACASFormAbstractField
 					value: numVal
 					ignored: false
 		super()
+		@userInputEvent = false
 
 	setEmptyValue: ->
 		@getModel().set
@@ -208,11 +226,18 @@ class window.ACASFormLSNumericValueFieldController extends ACASFormAbstractField
 			ignored: true
 
 	setInputValue: (inputValue) ->
-		@$('input').val inputValue
-
+		@$('.bv_number').val inputValue
 
 	renderModelContent: =>
-		@$('input').val @getModel().get('value')
+		unless @userInputEvent
+			if @toFixed? and @getModel().get('value')?
+				if !isNaN @getModel().get('value')
+					@$('.bv_number').val @getModel().get('value').toFixed(@toFixed)
+				else
+					@$('.bv_number').val ""
+			else
+				@$('.bv_number').val @getModel().get('value')
+
 		if @getModel().has 'unitKind'
 			@$('.bv_units').html @getModel().get('unitKind')
 		super()
@@ -232,6 +257,8 @@ class window.ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldCon
 		super()
 		if @options.url?
 			@url = @options.url
+		if @options.pickList?
+			@pickList = @options.pickList
 
 	handleInputChanged: =>
 		@clearError()
@@ -254,19 +281,27 @@ class window.ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldCon
 		super()
 
 	setupSelect: ->
-		@pickList = new PickListList()
 		mdl = @getModel()
-		if @url?
-			@pickList.url = @url
+		if @pickList?
+			plOptions =
+				el: @$('select')
+				collection: @pickList
+				selectedCode: mdl.get('value')
+				parameter: @options.modelKey
+				autoFetch: false
 		else
-			@pickList.url = "/api/codetables/#{mdl.get 'codeType'}/#{mdl.get 'codeKind'}"
-		plOptions =
-			el: @$('select')
-			collection: @pickList
-			selectedCode: mdl.get('value')
-			parameter: @options.modelKey
-			codeType: mdl.get 'codeType'
-			codeKind: mdl.get 'codeKind'
+			@pickList = new PickListList()
+			if @url?
+				@pickList.url = @url
+			else
+				@pickList.url = "/api/codetables/#{mdl.get 'codeType'}/#{mdl.get 'codeKind'}"
+			plOptions =
+				el: @$('select')
+				collection: @pickList
+				selectedCode: mdl.get('value')
+				parameter: @options.modelKey
+				codeType: mdl.get 'codeType'
+				codeKind: mdl.get 'codeKind'
 
 		if @options.insertUnassigned?
 			if @options.insertUnassigned
