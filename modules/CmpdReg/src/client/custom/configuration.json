@@ -52,7 +52,7 @@
 		"fancyCorpNumberFormat": false,
 		"corpParentFormat": "standard",
 		"corpBatchFormat": "corp_batch_saltcode",
-		"appendSaltCodeToLotName": true,
+		"appendSaltCodeToLotName": false,
 		"noSaltCode": "",
 		"usePredefinedList": false,
 		"newUserIsChemist": false,
