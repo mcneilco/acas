@@ -3,12 +3,8 @@ window.ModuleMenusConfiguration =
 		isHeader: true
 		menuName: "Load Data"
 		requireUserRoles: [window.conf.roles.acas.userRole]
-#		collapsible: true
+		collapsible: false
 	,
-#		isHeader: false
-#		menuName: "Chem Struct"
-#		mainControllerClassName: "ACASFormChemicalStructureExampleController"
-#	,
 		isHeader: false
 		menuName: "Experiment Loader"
 		mainControllerClassName: "GenericDataParserController"
@@ -32,20 +28,9 @@ window.ModuleMenusConfiguration =
 		autoLaunchName:"experiment_base"
 		requireUserRoles: [window.conf.roles.acas.userRole]
 	,
-		isHeader: false
-		menuName: "Project Editor"
-		mainControllerClassName: "ProjectController"
-		autoLaunchName:"project"
-		requireUserRoles: [window.conf.roles.acas.adminRole]
-	,
-		isHeader: false, menuName: "Example Thing"
-		mainControllerClassName: "ExampleThingController"
-		autoLaunchName:"example_thing"
-		requireUserRoles: [window.conf.roles.acas.userRole]
-	,
 		isHeader: true
 		menuName: "Search and Edit"
-		collapsible: true
+		collapsible: false
 		requireUserRoles: [window.conf.roles.acas.userRole]
 	,
 		isHeader: false, menuName: "Protocol Browser"
@@ -56,14 +41,20 @@ window.ModuleMenusConfiguration =
 		mainControllerClassName: "ExperimentBrowserController"
 		requireUserRoles: [window.conf.roles.acas.userRole]
 	,
+		isHeader: true
+		menuName: "Admin"
+		collapsible: false
+		requireUserRoles: [window.conf.roles.acas.adminRole]
+	,
+		isHeader: false
+		menuName: "Project Editor"
+		mainControllerClassName: "ProjectController"
+		autoLaunchName:"project"
+		requireUserRoles: [window.conf.roles.acas.adminRole]
+	,
 		isHeader: false, menuName: "Project Browser"
 		mainControllerClassName: "ProjectBrowserController"
 		requireUserRoles: [window.conf.roles.acas.userRole]
-	,
-		isHeader: true
-		menuName: "Admin"
-		collapsible: true
-		requireUserRoles: [window.conf.roles.acas.adminRole]
 	,
 		isHeader: false
 		menuName: "Author Editor"
@@ -74,16 +65,6 @@ window.ModuleMenusConfiguration =
 		isHeader: false
 		menuName: "Author Browser"
 		mainControllerClassName: "AuthorBrowserController"
-		requireUserRoles: [window.conf.roles.acas.adminRole]
-	,
-		isHeader: false
-		menuName: "Admin Panel"
-		mainControllerClassName: "AdminPanelController"
-		autoLaunchName: "admin_panel"
-		requireUserRoles: [window.conf.roles.acas.adminRole]
-	,
-		isHeader: false, menuName: "Logging"
-		mainControllerClassName: "LoggingController"
 		requireUserRoles: [window.conf.roles.acas.adminRole]
 	,
 		isHeader: false
@@ -101,7 +82,7 @@ window.ModuleMenusConfiguration =
 		isHeader: true
 		menuName: "CmpdReg Admin"
 		requireUserRoles: [window.conf.roles.cmpdreg.adminRole]
-		collapsible: true
+		collapsible: false
 	,
 		isHeader: false
 		menuName: "CmpdReg Vendors"
