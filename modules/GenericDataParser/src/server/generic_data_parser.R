@@ -641,7 +641,7 @@ getEntityCodeFromEntityDisplayNameOrCode <- function(mainCodeOrDisplayName) {
                                                              "/api/entitymeta/configuredEntityTypes/"), 
                                                              requireJSON = TRUE))
   # Expected column names: 'type', 'kind', 'codeOrigin', 'displayName', 'sourceExternal'
-  entityTypeAndKindTable <- as.data.table(do.call(rbind, entityTypeAndKindList))
+  entityTypeAndKindTable <- rbindlist(entityTypeAndKindList, fill = TRUE)
   entityTypeAndKindTable[, displayName := unlist(displayName)]
   if (length(entityTypeAndKindTable[displayName == mainCodeOrDisplayName, code])) {
     mainCode <- entityTypeAndKindTable[displayName == mainCodeOrDisplayName, code][[1]]
@@ -659,7 +659,7 @@ getDisplayNameFromEntityCode <- function(mainCode) {
                                                              "/api/entitymeta/configuredEntityTypes/"), 
                                                              requireJSON = TRUE))
   # Expected column names: 'type', 'kind', 'codeOrigin', 'displayName', 'sourceExternal'
-  entityTypeAndKindTable <- as.data.table(do.call(rbind, entityTypeAndKindList))
+  entityTypeAndKindTable <- rbindlist(entityTypeAndKindList, fill = TRUE)
   entityTypeAndKindTable[, displayName := unlist(displayName)]
   if (length(entityTypeAndKindTable[code == mainCode, displayName])) {
     displayName <- entityTypeAndKindTable[code == mainCode, displayName][[1]]
