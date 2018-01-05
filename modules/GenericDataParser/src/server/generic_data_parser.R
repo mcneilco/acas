@@ -2988,7 +2988,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   # Upload the data if this is not a dry run
   if(!dryRun & errorFree) {
     
-    reportFileSummary <- paste0(validatedMetaData$'Protocol Name', " - ", validatedMetaData$'Experiment Name')
+    reportFileSummary <- basename(reportFilePath)
     if(rawOnlyFormat) { 
       uploadRawDataOnly(metaData = validatedMetaData, lsTransaction, subjectData = calculatedResults,
                         experiment, fileStartLocation = pathToGenericDataFormatExcelFile, configList, 
