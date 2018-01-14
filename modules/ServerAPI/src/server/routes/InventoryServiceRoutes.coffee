@@ -1293,7 +1293,7 @@ getContainerCodesFromLabels = (req, callback) ->
 				callback json
 		)
 
-getContainerCodesFromLabelsInternal = (barcodes, containerType, containerKind, callback) ->
+exports.getContainerCodesFromLabelsInternal = (barcodes, containerType, containerKind, callback) ->
 	if global.specRunnerTestmode
 		response =
 			codeName: 'CONT-0000001'
@@ -1362,7 +1362,7 @@ exports.updateWellContentInternal = (wellContent, copyPreviousValues, callCustom
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getContainerCodesByLabelsResponse
 	else
-		console.debug 'incoming updateWellContentInternal request: ', JSON.stringify(wellContent.wells)
+		console.debug 'incoming updateWellContentInternal request: ', JSON.stringify(wellContent)
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers/updateWellContent?copyPreviousValues="+copyPreviousValues
 		console.debug 'base url: ', baseurl
@@ -3152,7 +3152,7 @@ checkLocationsExist = (fileEntryArray, callback) ->
 			callback missingLocations
 
 checkBarcodesExist = (barcodes, callback) ->
-	getContainerCodesFromLabelsInternal barcodes, 'container', 'tube', (containerCodes) ->
+	exports.getContainerCodesFromLabelsInternal barcodes, 'container', 'tube', (containerCodes) ->
 		existingBarcodes = []
 		newBarcodes = []
 		_.each containerCodes, (containerCodeEntry) ->
