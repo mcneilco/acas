@@ -149,6 +149,8 @@ server.ssl.cert.passphrase=selfCertForACASServer
 
 client.service.rapache.port=1080
 server.rapache.listen=*
+server.rapache.forceAllToStdErrOnly=true
+
 #todo not in codebase 6/2015
 client.service.rapache.use.ssl=${client.use.ssl}
 client.service.rapache.host=rservices
