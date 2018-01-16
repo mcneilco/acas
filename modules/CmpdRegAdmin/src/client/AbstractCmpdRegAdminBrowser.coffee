@@ -92,6 +92,8 @@ class window.CmpdRegAdminRowSummaryController extends Backbone.View
 		toDisplay =
 			code: @model.get('code')
 			name: @model.get('name')
+			ignored: if @model.get('ignore')? then @model.get('ignore') else false
+
 		$(@el).html(@template(toDisplay))
 
 		@

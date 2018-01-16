@@ -7,6 +7,7 @@ class window.Scientist extends Backbone.Model
 		name: null
 		code: null
 		id: null
+		ignored: false
 
 	validate: (attrs) ->
 		errors = []
