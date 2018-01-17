@@ -494,7 +494,7 @@ server.rapache.conf.rewriteengine=On
 # Limit Rapache thread Limit
 # Units are in MB
 # If a thread finishes a request and has used more than this limit, it will kill itself
-# R routes that have the following string "# MEMORY_LIMIT_EXEMPT" are exempt from this checking as they 
+# R routes that have the following string "# MEMORY_LIMIT_EXEMPT" are exempt from this checking as they
 # are routes that are expected to return as fast as possible and checking memory takes about 1/4 of a second
 server.rapache.child.memory.limit=1000
 
@@ -561,6 +561,8 @@ client.roles.crossProjectLoaderRole=ROLE_ACAS-CROSS-PROJECT-LOADER
 # For whether protocols and experiments should have sequential user defined corpName labels
 client.entity.saveInitialsCorpName=false
 
+# For which protocol clobValues from protocol metadata state are copied over to experiments
+client.experiment.copiedProtocolMetadataAttrs=
 # Whether to show the Required Entity Type GUI picklist
 client.protocol.requiredEntityType.save=false
 # Whether the required entity type is a required field
@@ -568,7 +570,7 @@ client.protocol.requiredEntityType.allowEmpty=true
 
 #Compound Inventory configs
 client.compoundInventory.enforceUppercaseBarcodes=false
-#Default location tree labels 
+#Default location tree labels
 client.compoundInventory.rootLocationLabel=COMPANY
 client.compoundInventory.trashLocationLabel=trash
 client.compoundInventory.benchesLocationLabel=Benches

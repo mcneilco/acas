@@ -21,6 +21,9 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.post '/api/things/:lsType/:lsKind/codeNames/jsonArray', exports.getThingsByCodeNames
 	app.get '/api/thingKinds', exports.getThingKinds
 	app.post '/api/things/jsonArray', exports.postThings
+	app.post '/api/bulkPostThings', exports.bulkPostThings
+	app.put '/api/bulkPutThings', exports.bulkPutThings
+
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/things/:lsType/:lsKind', loginRoutes.ensureAuthenticated, exports.thingsByTypeKind
@@ -46,7 +49,10 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/thingKinds', loginRoutes.ensureAuthenticated, exports.getThingKinds
 	app.get '/api/transaction/:id', loginRoutes.ensureAuthenticated, exports.getTransaction
 	app.post '/api/things/jsonArray', loginRoutes.ensureAuthenticated, exports.postThings
+	app.post '/api/bulkPostThings', loginRoutes.ensureAuthenticated, exports.bulkPostThings
+	app.put '/api/bulkPutThings', loginRoutes.ensureAuthenticated, exports.bulkPutThings
 
+request = require 'request'
 
 exports.thingsByTypeKind = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
@@ -189,6 +195,32 @@ exports.thingByCodeName = (req, resp) ->
 #			stub = "with=stub"
 #			baseurl += "?#{stub}"
 #		serverUtilityFunctions.getFromACASServer(baseurl, resp)
+
+getThingInternal = (lsType, lsKind, format, testMode, codeName, callback) ->
+	if testMode or global.specRunnerTestmode
+		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
+		callback thingTestJSON.thingParent
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+lsType+"/"+lsKind+"/"+ encodeURIComponent codeName
+		if format?
+			baseurl += "?with=#{format}"
+		request = require 'request'
+		request(
+			method: 'GET'
+			url: baseurl
+			json: true
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				callback json
+			else
+				console.log 'got ajax error trying to get lsThing after get'
+				console.log error
+				console.log json
+				console.log response
+				callback "getting lsThing by codeName failed"
+		)
+
 
 getThing = (req, codeName, callback) ->
 	if req.query.testMode or global.specRunnerTestmode
@@ -334,6 +366,43 @@ exports.postThingParent = (req, resp) ->
 exports.postThingBatch = (req, resp) ->
 	postThing true, req, resp
 
+exports.putThingInternal = (thing, lsType, lsKind, testMode, callback) ->
+	thingToSave = thing
+	fileVals = serverUtilityFunctions.getFileValuesFromEntity thingToSave, true
+	filesToSave = fileVals.length
+
+	if thingToSave.transactionOptions?
+		thingToSave.transactionOptions.recordedBy = recordedBy
+	completeThingUpdate = ->
+		if thingToSave.transactionOptions?
+			transactionOptions = thingToSave.transactionOptions
+			delete thingToSave.transactionOptions
+		else
+			transactionOptions = {
+				comments: "updated thing"
+			}
+		transactionOptions.status = "COMPLETED"
+		transactionOptions.type = "CHANGE"
+		serverUtilityFunctions.createLSTransaction2 thingToSave.recordedDate, transactionOptions, (transaction) ->
+			thingToSave = serverUtilityFunctions.insertTransactionIntoEntity transaction.id, thingToSave
+			updateThing thingToSave, testMode, (updatedThing) ->
+				format = "nestedfull"
+				getThingInternal lsType, lsKind, format, testMode, updatedThing.codeName, (thing) ->
+					callback thing
+
+	fileSaveCompleted = (passed) ->
+		if !passed
+			callback "put thing internal saveFailed: file move failed"
+		if --filesToSave == 0 then completeThingUpdate()
+
+	if filesToSave > 0
+		prefix = serverUtilityFunctions.getPrefixFromEntityCode thingToSave.codeName
+		for fv in fileVals
+			if !fv.id?
+				csUtilities.relocateEntityFile fv, prefix, thingToSave.codeName, fileSaveCompleted
+	else
+		completeThingUpdate()
+
 exports.putThing = (req, resp) ->
 #	if req.query.testMode or global.specRunnerTestmode
 #		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
@@ -350,7 +419,7 @@ exports.putThing = (req, resp) ->
 			delete thingToSave.transactionOptions
 		else
 			transactionOptions = {
-				comments: "updated experiment"
+				comments: "updated thing"
 			}
 		transactionOptions.status = "COMPLETED"
 		transactionOptions.type = "CHANGE"
@@ -375,6 +444,14 @@ exports.putThing = (req, resp) ->
 	else
 		completeThingUpdate()
 
+#TODO replace putThing with call to putThingInternal
+#exports.putThing = (req, resp) ->
+#	exports.putThingInternal req.body, req.params.lsType, req.params.lsKind, req.req.query.testMode, (putThingResp) =>
+#		if putThingResp.indexOf("saveFailed") > -1
+#			resp.statusCode = 500
+#			resp.json putThingResp
+#		else
+#			resp.json putThingResp
 
 exports.batchesByParentCodeName = (req, resp) ->
 	console.log "get batches by parent codeName"
@@ -682,3 +759,52 @@ exports.postThingsInternal = (input, callback) ->
 
 	
 	
+
+exports.bulkPostThings = (req, resp) ->
+	exports.bulkPostThingsInternal req.body, (response) =>
+		resp.json response
+
+exports.bulkPostThingsInternal = (thingArray, callback) ->
+	console.log "bulkPostThings"
+	console.log JSON.stringify thingArray
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.persistence.fullpath+"lsthings/jsonArray"
+	request(
+		method: 'POST'
+		url: baseurl
+		body: thingArray
+		json: true
+	, (error, response, json) =>
+		if !error && response.statusCode == 201
+			callback json
+		else
+			console.log "got error bulk posting things"
+			callback JSON.stringify "bulk post things saveFailed: " + JSON.stringify error
+	)
+
+exports.bulkPutThings = (req, resp) ->
+	exports.bulkPutThingsInternal req.body, (response) =>
+		resp.json response
+
+exports.bulkPutThingsInternal = (thingArray, callback) ->
+	console.log "bulkPutThings"
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.persistence.fullpath+"lsthings/jsonArray"
+	console.log "bulkPutThingsInternal"
+	console.log baseurl
+	console.log thingArray
+	request(
+		method: 'PUT'
+		url: baseurl
+		body: thingArray
+		json: true
+	, (error, response, json) =>
+		console.log "bulkPutThingsInternal"
+		console.log response.statusCode
+		if !error && response.statusCode == 200
+			callback json
+		else
+			console.log "got error bulk updating things"
+			console.log error
+			callback JSON.stringify "bulk update things saveFailed: " + JSON.stringify error
+	)		
