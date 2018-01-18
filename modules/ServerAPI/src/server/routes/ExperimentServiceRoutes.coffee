@@ -23,7 +23,7 @@ exports.setupAPIRoutes = (app) ->
 	app.get '/api/getExperimentByLabel/:exptLabel', exports.getExperimentByLabel
 	app.post '/api/experiments/getExperimentCodeByLabel/:exptType/:exptKind', exports.getExperimentCodeByLabel
 	app.post '/api/bulkPostExperiments', exports.bulkPostExperiments
-	app.put '/api/bulkPostExperiments', exports.bulkPutExperiments
+	app.put '/api/bulkPutExperiments', exports.bulkPutExperiments
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/experiments/codename/:code', loginRoutes.ensureAuthenticated, exports.experimentByCodename
@@ -359,17 +359,46 @@ exports.postExperiment = (req, resp) ->
 
 exports.putExperimentInternal = (experiment, testMode, callback) ->
 	exptToSave = experiment
+
+	#remove the itxs attributes if needed
+	newExptExptItxs = []
+	exptExptItxsToIgnore = []
+	if exptToSave.exptExptItxsToIgnore?
+		exptExptItxsToIgnore = exptToSave.exptExptItxsToIgnore
+		exptExptItxsToIgnore = JSON.parse exptExptItxsToIgnore
+		delete exptToSave.exptExptItxsToIgnore
+	if exptToSave.newExptExptItxs?
+		newExptExptItxs = exptToSave.newExptExptItxs
+		newExptExptItxs = JSON.parse newExptExptItxs
+		delete exptToSave.newExptExptItxs
+
 	fileVals = serverUtilityFunctions.getFileValuesFromEntity exptToSave, true
 	filesToSave = fileVals.length
 
 	completeExptUpdate = ->
 		updateExpt exptToSave, testMode, (updatedExpt) ->
-			callback updatedExpt
+			if updatedExpt.codeName? and (newExptExptItxs.length > 0 or exptExptItxsToIgnore.length > 0)
+				#is default/expt base
+				_.each exptExptItxsToIgnore, (itx) =>
+					itx.secondExperiment = {id: updatedExpt.id}
+				_.each newExptExptItxs, (itx) =>
+					itx.secondExperiment = {id: updatedExpt.id}
+				exports.createAndUpdateExptExptItxsInternal JSON.stringify(exptExptItxsToIgnore), JSON.stringify(newExptExptItxs), testMode, (json) =>
+					console.log "finished createAndUpdateExptExptItxs"
+					console.log exptExptItxsToIgnore
+					console.log newExptExptItxs
+					console.log json
+					if json.indexOf("saveFailed") > -1
+						console.log "error creating and updating expt expt itxs"
+						callback "Error creating and updating expt expt itxs: " + json
+					else
+						callback updatedExpt
+			else
+				callback updatedExpt
 
 	fileSaveCompleted = (passed) ->
 		if !passed
-			resp.statusCode = 500
-			return resp.end "file move failed"
+			callback "put experiment internal saveFailed: file move failed"
 		if --filesToSave == 0 then completeExptUpdate()
 
 	if filesToSave > 0
@@ -436,6 +465,14 @@ exports.putExperiment = (req, resp) ->
 	else
 		completeExptUpdate()
 
+#TODO replace putExperiment with call to putExperimentInternal
+#exports.putExperiment = (req, resp) ->
+#	exports.putExperimentInternal req.body, req.query.testMode, (putExperimentResp) =>
+#		if typeof(putExperimentResp) is "string" and putExperimentResp.indexOf("saveFailed") > -1
+#			resp.statusCode = 500
+#			resp.json putExperimentResp
+#		else
+#			resp.json putExperimentResp
 
 exports.genericExperimentSearch = (req, res) ->
 	if global.specRunnerTestmode

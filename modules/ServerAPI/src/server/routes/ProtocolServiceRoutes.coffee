@@ -247,6 +247,28 @@ exports.createProtocolInternal = (protToSave, testMode, callback) ->
 exports.postProtocol = (req, resp) ->
 	postProtocol req, resp
 
+exports.putProtocolInternal = (protocol, testMode, callback) ->
+	protToSave = protocol
+	fileVals = serverUtilityFunctions.getFileValuesFromEntity protToSave, true
+	filesToSave = fileVals.length
+
+	completeProtUpdate = ->
+		updateProt protToSave, testMode, (updatedProt) ->
+			callback updatedProt
+
+	fileSaveCompleted = (passed) ->
+		if !passed
+			callback "put protocol internal saveFailed: file move failed"
+		if --filesToSave == 0 then completeProtUpdate()
+
+	if filesToSave > 0
+		prefix = serverUtilityFunctions.getPrefixFromEntityCode protToSave.codeName
+		for fv in fileVals
+			if !fv.id?
+				csUtilities.relocateEntityFile fv, prefix, protToSave.codeName, fileSaveCompleted
+	else
+		completeProtUpdate()
+
 exports.putProtocol = (req, resp) ->
 	protToSave = req.body
 	fileVals = serverUtilityFunctions.getFileValuesFromEntity protToSave, true
@@ -269,6 +291,15 @@ exports.putProtocol = (req, resp) ->
 				csUtilities.relocateEntityFile fv, prefix, req.body.codeName, fileSaveCompleted
 	else
 		completeProtUpdate()
+
+#TODO replace putProtocol with call to putProtocolInternal
+#exports.putProtocol = (req, resp) ->
+#	exports.putProtocolInternal req.body, req.query.testMode, (putProtocolResp) =>
+#		if putProtocolResp.indexOf("saveFailed") > -1
+#			resp.statusCode = 500
+#			resp.json putProtocolResp
+#		else
+#			resp.json putProtocolResp
 
 exports.getProtocolLabelsInternal = (callback) ->
 	if global.specRunnerTestmode
