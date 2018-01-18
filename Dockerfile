@@ -6,7 +6,7 @@ RUN \
 # tar for pulling down node
 # git required for some npm packages
   yum install -y tar git && \
-  yum install -y fontconfig && \
+  yum install -y fontconfig urw-fonts && \
   yum clean all
 
 # node
