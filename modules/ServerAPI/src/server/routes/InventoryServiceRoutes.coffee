@@ -3203,12 +3203,17 @@ exports.checkParentWellContent = (fileEntryArray, callback) ->
 						errorLevel: flexibleErrorLevel
 						message: "Daughter vial #{fileEntry.destinationVialBarcode} must have the same concentration as parent vial #{fileEntry.sourceVialBarcode}, which is #{parentWellContent.batchConcentration} #{parentWellContent.batchConcUnits}."
 					errorMessages.push error
-				if parentWellContent.amountUnits != fileEntry.amountUnits
+				if !parentWellContent.amount?
+					error =
+						errorLevel: flexibleErrorLevel
+						message: "Parent vial #{fileEntry.sourceVialBarcode} does not have an amount set."
+					errorMessages.push error
+				if parentWellContent.amount? and parentWellContent.amountUnits != fileEntry.amountUnits
 					error =
 						errorLevel: flexibleErrorLevel
 						message: "Daughter vial #{fileEntry.destinationVialBarcode} must use the same amount units as parent vial #{fileEntry.sourceVialBarcode}, which is in #{parentWellContent.amountUnits}."
 					errorMessages.push error
-				else if parentWellContent.amount < totalRequestedAmounts[fileEntry.sourceVialBarcode]
+				else if parentWellContent.amount? and parentWellContent.amount < totalRequestedAmounts[fileEntry.sourceVialBarcode]
 					error =
 						errorLevel: 'warning'
 						message: "Creating daughter vial #{fileEntry.destinationVialBarcode} with #{fileEntry.amount.toFixed(3)} #{fileEntry.amountUnits} gives a total request of #{totalRequestedAmounts[fileEntry.sourceVialBarcode].toFixed(3)} #{fileEntry.amountUnits}, which will remove more than the #{parentWellContent.amount.toFixed(3)} #{parentWellContent.amountUnits} currently in parent vial #{fileEntry.sourceVialBarcode}, leaving a negative amount in the parent vial."
@@ -3313,10 +3318,11 @@ decrementAmountsFromVials = (toDecrementList, parentWellContentList, user, callb
 		oldContainerWellContent = _.findWhere parentWellContentList, {label: toDecrement.sourceVialBarcode}
 		oldWellContent = oldContainerWellContent.wellContent[0]
 		#Check that the amount is valid to decrement.
+		noParentAmount = !oldWellContent.amount?
 		differentState = (oldWellContent.physicalState != toDecrement.physicalState)
-		concentrationMismatch = (toDecrement.physicalState == 'solution' and (Math.abs(toDecrement.concentration - oldWellContent.batchConcentration) > 0.0001 or toDecrement.concUnits != oldWellContent.batchConcUnits))
+		concentrationMismatch = (toDecrement.physicalState == 'solution' and (Math.abs(toDecrement.batchConcentration - oldWellContent.batchConcentration) > 0.0001 or toDecrement.batchConcUnits != oldWellContent.batchConcUnits))
 		unitMismatch = (oldWellContent.amountUnits != toDecrement.amountUnits)
-		if !differentState and !concentrationMismatch and !unitMismatch
+		if !differentState and !concentrationMismatch and !unitMismatch and !noParentAmount
 			wellCode = oldWellContent.containerCodeName
 			if runningTotals[wellCode]?
 				runningTotals[wellCode] -= toDecrement.amount
@@ -3334,7 +3340,7 @@ decrementAmountsFromVials = (toDecrementList, parentWellContentList, user, callb
 				entryType: 'UPDATE'
 				entry: "Amount #{toDecrement.amount} #{toDecrement.amountUnits} taken out to create daughter vial #{toDecrement.destinationVialBarcode}"
 			changes.push change
-	console.log wellsToUpdate
+
 	if wellsToUpdate.length > 0
 		updateWellContentSerial wellsToUpdate, 0, (updateWellsResponse, updateWellsStatusCode) ->
 			if updateWellsStatusCode != 204
