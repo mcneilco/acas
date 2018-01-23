@@ -67,7 +67,7 @@ class window.UtilityFunctions
 		controller.$('.nav.nav-tabs').hide()
 
 	roundTwoDecimalPlaces: (num) ->
-		if isNaN(num)
-			return 0
+		if isNaN(num) or num is null
+			return null
 		else
 			return Math.round((num+0.00001)*100)/100
