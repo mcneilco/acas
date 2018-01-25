@@ -10,6 +10,7 @@ class window.AbstractCmpdRegAdminController extends AbstractFormController
 	events: ->
 		"keyup .bv_cmpdRegAdminCode": "handleCmpdRegAdminCodeNameChanged"
 		"keyup .bv_cmpdRegAdminName": "handleCmpdRegAdminNameChanged"
+		"click .bv_cmpdRegAdminIgnore": "handleCmpdRegAdminIgnoreChanged"
 		"click .bv_save": "handleSaveClicked"
 		"click .bv_backToCmpdRegAdminBrowserBtn": "handleBackToCmpdRegAdminBrowserClicked"
 #		"click .bv_newEntity": "handleNewEntityClicked"
@@ -69,6 +70,11 @@ class window.AbstractCmpdRegAdminController extends AbstractFormController
 		code = @model.get('code')
 		@$('.bv_cmpdRegAdminCode').val(code)
 		@$('.bv_cmpdRegAdminCode').html(code)
+		if @model.get('ignore') is true
+			@$('.bv_cmpdRegAdminIgnore').attr 'checked', 'checked'
+		else
+			@$('.bv_cmpdRegAdminIgnore').removeAttr 'checked'
+
 		if @model.isNew()
 			@$('.bv_save').html("Save")
 #			@$('.bv_newEntity').hide()
@@ -152,6 +158,9 @@ class window.AbstractCmpdRegAdminController extends AbstractFormController
 
 	handleCmpdRegAdminNameChanged: =>
 		@model.set("name", UtilityFunctions::getTrimmedInput @$('.bv_cmpdRegAdminName'))
+
+	handleCmpdRegAdminIgnoreChanged: =>
+		@model.set("ignore", @$('.bv_cmpdRegAdminIgnore').is(":checked"))
 
 	handleSaveClicked: =>
 		@callNameValidationService()
