@@ -3400,7 +3400,11 @@ exports.saveWellToWellInteractionsInternal = (interactionsToSave, user, callback
 	barcodes = []
 	barcodes.push (_.pluck interactionsToSave, 'firstContainerBarcode')...
 	barcodes.push (_.pluck interactionsToSave, 'secondContainerBarcode')...
+	if config.all.client.compoundInventory.enforceUppercaseBarcodes
+		for i in [0..barcodes.length-1]
+			barcodes[i] = barcodes[i].toUpperCase()
 	console.log barcodes
+
 	exports.getWellCodesByPlateBarcodesInternal barcodes, (plateWellCodes) ->
 		wellCodes = _.pluck plateWellCodes, 'wellCodeName'
 		exports.getContainersByCodeNamesInternal wellCodes, (wells, statusCode) ->
@@ -3410,6 +3414,9 @@ exports.saveWellToWellInteractionsInternal = (interactionsToSave, user, callback
 				formattedItxList = []
 				_.each interactionsToSave, (itx) ->
 					requiredParams = ['firstContainerBarcode', 'firstWellLabel', 'secondContainerBarcode', 'secondWellLabel', 'interactionType', 'interactionKind']
+					if config.all.client.compoundInventory.enforceUppercaseBarcodes
+						itx.firstContainerBarcode = itx.firstContainerBarcode.toUpperCase()
+						itx.secondContainerBarcode = itx.secondContainerBarcode.toUpperCase()
 					for param in requiredParams
 						if !itx[param]?
 							callback "Error: all entries must include #{param}"
