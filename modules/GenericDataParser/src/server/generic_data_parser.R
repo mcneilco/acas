@@ -2865,14 +2865,24 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   
   # Get the protocol and experiment
   newProtocol <- FALSE
+  protocol <- NULL
   if (!useExisting) {
     protocol <- getProtocolByNameAndFormat(protocolName = validatedMetaData$'Protocol Name'[1], configList, inputFormat)
     newProtocol <- is.na(protocol[[1]])
     if (!newProtocol) {
       metaData$'Protocol Name'[1] <- getPreferredProtocolName(protocol, validatedMetaData$'Protocol Name'[1])
     }
+  } else {
+    if(!is.null(validatedMetaData$'Experiment Code Name'[1])) {
+      experiment <- try(getExperimentByCodeName(validatedMetaData$'Experiment Code Name'[1], errorEnv = errorEnv))
+      if(class(experiment) == "try-error") {
+        addError(paste0("Could not find Experiment Code Name: ", validatedMetaData$'Experiment Code Name'[1]))
+      } else {
+        protocol <- getProtocolById(experiment$protocol$id)
+      }
+    }
   }
-
+  
   # Organize the Calculated Results
   if (inputFormat %in% c("Gene ID Data", "Generic", "Dose Response")) {
     mainCode <- calculatedResults[2, 1] #Getting this from its standard position
@@ -2884,7 +2894,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   mainCode <- getEntityCodeFromEntityDisplayNameOrCode(mainCode)
   displayName <- getDisplayNameFromEntityCode(mainCode)
   
-  if(!newProtocol) {
+  if(!newProtocol && !is.null(protocol)) {
     requiredMainCode <- getProtocolRequiredEntityCode(protocol)
     if(length(requiredMainCode) > 0 && !is.na(requiredMainCode) && requiredMainCode != "" && requiredMainCode != "unassigned") {
       requiredMainCode <- requiredMainCode[[1]]
@@ -2960,10 +2970,16 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
 
   useExistingExperiment <- inputFormat %in% c("Use Existing Experiment", "Precise For Existing Experiment")
   if (useExistingExperiment) {
-    experiment <- getExperimentByCodeName(validatedMetaData$'Experiment Code Name'[1])
-    protocol <- getProtocolById(experiment$protocol$id)
-    validatedMetaData$'Protocol Name' <- getPreferredName(protocol)
-    validatedMetaData$'Experiment Name' <- getPreferredName(experiment)
+    if(errorFree) {
+      experiment <- getExperimentByCodeName(validatedMetaData$'Experiment Code Name'[1])
+      protocol <- getProtocolById(experiment$protocol$id)
+      validatedMetaData$'Protocol Name' <- getPreferredName(protocol)
+      validatedMetaData$'Experiment Name' <- getPreferredName(experiment)
+      warnUser(paste0("The Experiment Code Name '",validatedMetaData$'Experiment Code Name'[1],"' refers to Experiment Name '",validatedMetaData$'Experiment Name',"', the loader will delete this experiment's current data and replace it with your new upload.",
+                      " If you do not intend to delete and reload this data, enter a different experiment code."))
+    } else {
+      experiment <- NA
+    }
   } else {
     experiment <- getExperimentByNameCheck(experimentName = validatedMetaData$'Experiment Name'[1], protocol, configList, duplicateExperimentNamesAllowed)
   }
@@ -3076,6 +3092,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   }
   summaryInfo$experimentEntity <- experiment
   
+  summaryInfo$info <- summaryInfo$info[lapply(summaryInfo$info,length)>0]
   return(summaryInfo)
 }
 
@@ -3098,7 +3115,7 @@ deleteOldData <- function(experiment, useExistingExperiment) {
     deleteAnnotation(experiment, racas::applicationSettings)
   }
   if(useExistingExperiment) {
-    deleteAnalysisGroupByExperiment(experiment)
+    deleteAnalysisGroupsByExperiment(experiment)
   } else {
     deletedExperimentCodes <- c(experiment$codeName, getPreviousExperimentCodes(experiment))
     deleteExperiment(experiment)
