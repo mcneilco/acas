@@ -2884,7 +2884,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   }
   
   # Organize the Calculated Results
-  if (inputFormat %in% c("Gene ID Data", "Generic", "Dose Response")) {
+  if (inputFormat %in% c("Gene ID Data", "Generic", "Dose Response", "Use Existing Experiment")) {
     mainCode <- calculatedResults[2, 1] #Getting this from its standard position
   } else {
     mainCode <- "Corporate Batch ID"
