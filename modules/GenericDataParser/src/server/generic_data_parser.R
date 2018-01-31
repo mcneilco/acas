@@ -92,11 +92,19 @@ validateMetaData <- function(metaData, configList, username, formatSettings = li
   useExisting <- metaData$Format %in% c("Use Existing Experiment", "Precise For Existing Experiment")
   
   if (useExisting) {
-    expectedDataFormat <- data.frame(
-      headers = c("Format","Experiment Code Name"),
-      class = c("Text", "Text"),
-      isNullable = c(FALSE, FALSE)
-    )
+    if(metaData$Format == "Use Existing Experiment") {
+      expectedOneFieldOfThese <- c("Experiment Code Name", "Experiment Corp Name")
+      missingExpectedOne <- !toupper(expectedOneFieldOfThese) %in% toupper(names(metaData))
+      if(all(missingExpectedOne)) {
+        addError(paste0("The loader needs one of '", paste(expectedOneFieldOfThese, collapse = "' or '"),"'"), errorEnv)
+      }
+      expectedDataFormat <- data.frame(
+        headers = c("Format",expectedOneFieldOfThese),
+        class = c("Text", rep("Text", length(expectedOneFieldOfThese))),
+        isNullable = c(FALSE, missingExpectedOne)
+      )
+    }
+
   } else {
     expectedDataFormat <- data.frame(
       headers = c("Format","Protocol Name","Assay Tree Rule","Experiment Name","Experiment Details","Scientist","Notebook","In Life Notebook", 
@@ -1993,7 +2001,6 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
                                                                        lsKind = "model fit transformation",
                                                                        stringValue = modelFitTransformation,
                                                                        lsTransaction= lsTransaction)
-    modelFitTransformation
   }
   # Create an experiment state for metadata
   experimentStates[[length(experimentStates)+1]] <- createExperimentState(experimentValues=experimentValues,
@@ -2873,10 +2880,18 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
       metaData$'Protocol Name'[1] <- getPreferredProtocolName(protocol, validatedMetaData$'Protocol Name'[1])
     }
   } else {
-    if(!is.null(validatedMetaData$'Experiment Code Name'[1])) {
-      experiment <- try(getExperimentByCodeName(validatedMetaData$'Experiment Code Name'[1], errorEnv = errorEnv))
+    if(!is.null(validatedMetaData$'Experiment Code Name'[1]) || !is.null(validatedMetaData$'Experiment Corp Name'[1])) {
+        if(!is.null(validatedMetaData$'Experiment Code Name'[1])) {
+          searchBy <- 'Experiment Code Name'
+          searchFor <- validatedMetaData$'Experiment Code Name'[1]
+          experiment <- try(getExperimentByCodeName(searchFor))
+        } else {
+          searchBy <- 'Experiment Corp Name'
+          searchFor <- validatedMetaData$'Experiment Corp Name'[1]
+          experiment <- try(getExperimentsByName(searchFor)[[1]])
+        }
       if(class(experiment) == "try-error") {
-        addError(paste0("Could not find Experiment Code Name: ", validatedMetaData$'Experiment Code Name'[1]))
+        addError(paste0("Could not find ",searchBy,": ", searchFor))
       } else {
         protocol <- getProtocolById(experiment$protocol$id)
       }
@@ -2971,11 +2986,10 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   useExistingExperiment <- inputFormat %in% c("Use Existing Experiment", "Precise For Existing Experiment")
   if (useExistingExperiment) {
     if(errorFree) {
-      experiment <- getExperimentByCodeName(validatedMetaData$'Experiment Code Name'[1])
-      protocol <- getProtocolById(experiment$protocol$id)
+      # At this point, if there are no errors, experiment, protocol and search by should already be pre defined
       validatedMetaData$'Protocol Name' <- getPreferredName(protocol)
       validatedMetaData$'Experiment Name' <- getPreferredName(experiment)
-      warnUser(paste0("The Experiment Code Name '",validatedMetaData$'Experiment Code Name'[1],"' refers to Experiment Name '",validatedMetaData$'Experiment Name',"', the loader will delete this experiment's current data and replace it with your new upload.",
+      warnUser(paste0("The ",searchBy," '",searchFor,"' refers to Experiment Name '",validatedMetaData$'Experiment Name',"', the loader will delete this experiment's current data and replace it with your new upload.",
                       " If you do not intend to delete and reload this data, enter a different experiment code."))
     } else {
       experiment <- NA
@@ -2999,13 +3013,37 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   ## SEL column oder info
   columnOrderStates <- createColumnOrderStates(selColumnOrderInfo, errorEnv, recordedBy, lsTransaction)
  
-  if (!dryRun && errorFree && !useExistingExperiment) {
-    experiment <- createNewExperiment(metaData = validatedMetaData, protocol, lsTransaction, fullPathToFile, 
-                                      recordedBy, configList, deletedExperimentCodes, validatedCustomMetaDataStates,
-                                      modelFitTransformation, columnOrderStates)
-    
-    # If an error occurs, this allows the experiment to still be accessed
-    assign(x="experiment", value=experiment, envir=parent.frame())
+  if (!dryRun && errorFree) {
+    if(!useExistingExperiment) {
+      experiment <- createNewExperiment(metaData = validatedMetaData, protocol, lsTransaction, fullPathToFile, 
+                                        recordedBy, configList, deletedExperimentCodes, validatedCustomMetaDataStates,
+                                        modelFitTransformation, columnOrderStates)
+      
+      # If an error occurs, this allows the experiment to still be accessed
+      assign(x="experiment", value=experiment, envir=parent.frame())
+    } else {
+      if(!is.null(modelFitTransformation)) {
+        # Update model fit transformation if it exists
+        updatedExperimentValue <- update_or_replace_experiment_metadata_value(experimentCode = experiment$codeName, lsType = "stringValue", lsKind = "model fit transformation", value = modelFitTransformation)
+      }
+      # Ignore Current Column Order states and values
+      experiment$lsStates <- lapply(experiment$lsStates, function(state) {
+        if(state$lsType == "metadata" && state$lsKind == "data column order") {
+          state$ignored <- TRUE
+          state$lsValues <- lapply(state$lsValues, function(value) {
+            value$ignored <- TRUE
+            return(value)
+          })
+          
+        }
+        return(state)
+      })
+      # Add new Column Order
+      if(!is.null(columnOrderStates)) {
+        experiment$lsStates <- c(experiment$lsStates, columnOrderStates)
+      }
+      updatedExperiment <- updateAcasEntity(experiment,"experiments")
+    }
   }
 
   if(!is.null(imagesFile) && imagesFile != "") {
