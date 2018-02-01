@@ -4,7 +4,7 @@ class window.UtilityFunctions
 
 
 	testUserHasRole: (user, roleNames) ->
-		if not user.roles? then return true
+		if not user.roles? then return false
 		if not roleNames? || roleNames.length == 0 then return true
 		match = false
 		for roleName in roleNames
@@ -17,7 +17,7 @@ class window.UtilityFunctions
 
 	testUserHasRoleTypeKindName: (user, roleInfo) ->
 		#roleInfo = list of objects with role type, kind, and name
-		if not user.roles? then return true
+		if not user.roles? then return false
 		if not roleInfo? || roleInfo.length == 0 then return true
 		match = false
 		for role in roleInfo
@@ -71,3 +71,9 @@ class window.UtilityFunctions
 			return null
 		else
 			return Math.round((num+0.00001)*100)/100
+
+	roundThreeDecimalPlaces: (num) ->
+		if isNaN(num)
+			return 0
+		else
+			return Math.round((num+0.000001)*1000)/1000

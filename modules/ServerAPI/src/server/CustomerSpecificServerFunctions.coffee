@@ -57,15 +57,17 @@ exports.resetAuth = (email, retFun) ->
 		headers:
 			accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
 		method: 'POST'
-		url: config.all.server.roologin.resetLink
-		form:
-			emailAddress: email
-		json: false
+		url: config.all.client.service.persistence.fullpath+"authorization/resetPassword"
+		body: email
+		json: true
 	, (error, response, json) =>
+		console.log error
+		console.log response.statusCode
+		console.log json
 		if !error && response.statusCode == 200
-			retFun JSON.stringify json
+			retFun "Your new password has been sent to your email address."
 		else
-			console.log 'got ajax error trying authenticate a user'
+			console.log 'got ajax error trying reset password'
 			console.log error
 			console.log json
 			console.log response
@@ -75,22 +77,28 @@ exports.resetAuth = (email, retFun) ->
 exports.changeAuth = (user, passOld, passNew, passNewAgain, retFun) ->
 	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 	request = require 'request'
+	body =
+		username: user
+		oldPassword: passOld
+		newPassword: passNew
+		newPasswordAgain: passNewAgain
 	request(
 		headers:
 			accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
 		method: 'POST'
-		url: config.all.server.roologin.changeLink
-		form:
-			username: user
-			oldPassword: passOld
-			newPassword: passNew
-			newPasswordAgain: passNewAgain
-		json: false
+		url: config.all.client.service.persistence.fullpath+"authorization/changePassword"
+		body: body
+		json: true
 	, (error, response, json) =>
+		console.log error
+		console.log response.statusCode
+		console.log json
 		if !error && response.statusCode == 200
-			retFun JSON.stringify json
+			retFun "Your password has successfully been changed"
+		else if response.statusCode == 400
+			retFun "Invalid password or new password does not match"
 		else
-			console.log 'got ajax error trying authenticate a user'
+			console.log 'got ajax error trying change password'
 			console.log error
 			console.log json
 			console.log response
@@ -140,11 +148,12 @@ exports.isUserAdmin = (user) ->
 exports.findByUsername = (username, fn) ->
 	return exports.getUser username, fn
 
-exports.loginStrategy = (username, password, done) ->
+exports.loginStrategy = (req, username, password, done) ->
+	exports.logUsage "login attempt", JSON.stringify(ip: req.ip, referer: req.headers['referer'], agent: req.headers['user-agent']), username
 	exports.authCheck username, password, (results) ->
 		if results.indexOf("login_error")>=0
 			try
-				exports.logUsage "User failed login: ", "", username
+				exports.logUsage "User failed login: ", JSON.stringify(ip: req.ip, referer: req.headers['referer'], agent: req.headers['user-agent']), username
 			catch error
 				console.log "Exception trying to log:"+error
 			return done(null, false,
@@ -152,7 +161,7 @@ exports.loginStrategy = (username, password, done) ->
 			)
 		else if results.indexOf("connection_error")>=0
 			try
-				exports.logUsage "Connection to authentication service failed: ", "", username
+				exports.logUsage "Connection to authentication service failed: ", JSON.stringify(ip: req.ip, referer: req.headers['referer'], agent: req.headers['user-agent']), username
 			catch error
 				console.log "Exception trying to log:"+error
 			return done(null, false,
@@ -160,7 +169,7 @@ exports.loginStrategy = (username, password, done) ->
 			)
 		else
 			try
-				exports.logUsage "User logged in succesfully: ", "", username
+				exports.logUsage "User logged in succesfully: ", JSON.stringify(ip: req.ip, referer: req.headers['referer'], agent: req.headers['user-agent']), username
 			catch error
 				console.log "Exception trying to log:"+error
 			exports.getUser username,done
@@ -227,7 +236,11 @@ exports.getAuthors = (req, resp) -> #req passed in as input to be able to filter
 	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 	serverUtilityFunctions = require "#{ACAS_HOME}/routes/ServerUtilityFunctions.js"
 	baseurl = config.all.client.service.persistence.fullpath+"authors/codeTable"
-	#TODO: need to change if want to filter users by roles
+
+	if req.query.roleType? and req.query.roleKind? and req.query.roleName?
+		baseurl = config.all.client.service.persistence.fullpath+"authors/findByRoleTypeKindAndName"
+		baseurl += "?roleType=#{req.query.roleType}&roleKind=#{req.query.roleKind}&roleName=#{req.query.roleName}&format=codeTable"
+
 	serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 exports.getAllAuthorObjectsInternal = (callback) ->

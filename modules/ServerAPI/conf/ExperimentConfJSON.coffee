@@ -40,6 +40,9 @@
 			,
 				typeName: "metadata"
 				kindName: "data column order"
+			,
+				typeName: "metadata"
+				kindName: "data column object"
 			]
 
 		valuetypes:
@@ -106,6 +109,9 @@
 				kindName: "analysis result html"
 			,
 				typeName: "clobValue"
+				kindName: "preprocessor result html"
+			,
+				typeName: "clobValue"
 				kindName: "model fit result html"
 			,
 				typeName: "clobValue"
@@ -158,6 +164,21 @@
 			,
 				typeName: "stringValue"
 				kindName: "hide column"	
+			,
+				typeName: "numericValue"
+				kindName: "column concentration"	
+			,
+				typeName: "stringValue"
+				kindName: "column conc units"	
+			,
+				typeName: "numericValue"
+				kindName: "column time"	
+			,
+				typeName: "stringValue"
+				kindName: "column time units"	
+			,
+				typeName: "stringValue"
+				kindName: "condition column"	
 			,
 				typeName: "codeValue"
 				kindName: "agonist batch code"
@@ -714,6 +735,14 @@
 				labelTypeAndKind: "id_codeName"
 				thingTypeAndKind: "document_experiment"
 				latestNumber:0
+			,
+				digits: 8
+				groupDigits: false
+				labelPrefix: "DDICT"
+				labelSeparator: "-"
+				labelTypeAndKind: "id_codeName"
+				thingTypeAndKind: "document_datadictionary"
+				startingNumber: 1
 			]
 
 ) (if (typeof process is "undefined" or not process.versions) then window.experimentConfJSON = window.experimentConfJSON or {} else exports)

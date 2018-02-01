@@ -3,11 +3,14 @@ class window.ModuleLauncher extends Backbone.Model
 	defaults:
 		isHeader: false
 		menuName: "Menu Name Replace Me"
-		mainControllerClassName: "controllerClassNameReplaceMe"
+		mainControllerClassName: null
 		isLoaded: false
 		isActive: false
 		isDirty: false
+		isLocked: false
 		autoLaunchName: null
+		collapsible: false
+		externalLink: null
 
 	requestActivation: ->
 		if @get('externalLink')?
@@ -33,6 +36,7 @@ class window.ModuleLauncherList extends Backbone.Collection
 class window.ModuleLauncherMenuController extends Backbone.View
 	template: _.template($("#ModuleLauncherMenuView").html())
 	tagName: 'li'
+	className: 'bv_menuItem'
 
 	events:
 		'click .bv_menuName': "handleSelect"
@@ -43,17 +47,26 @@ class window.ModuleLauncherMenuController extends Backbone.View
 	render: =>
 		$(@el).empty()
 		$(@el).html(@template(@model.toJSON()))
-		@$('.bv_menuName').addClass 'bv_launch_'+@model.get('autoLaunchName')
-		if @model.get('isActive') then $(@el).addClass "active"
-		else $(@el).removeClass "active"
+		if @model.get('mainControllerClassName')? or @model.get('externalLink')?
+			@$('.bv_menuName').addClass 'bv_launch_'+@model.get('autoLaunchName')
+			if @model.get('isActive') then $(@el).addClass "active"
+			else $(@el).removeClass "active"
 
-		@$('.bv_isLoaded').hide()
-		if @model.get('isDirty')
-			@$('.bv_isDirty').show()
-			window.conf.leaveACASMessage = "WARNING: There are unsaved changes."
+			@$('.bv_isLoaded').hide()
+			if @model.get('isDirty')
+				@$('.bv_isDirty').show()
+			else
+				@$('.bv_isDirty').hide()
+			if @model.get('isLocked')
+				@$('.bv_isLocked').show()
+			else
+				@$('.bv_isLocked').hide()
 		else
+			@$('.bv_menuName').hide()
+			@$('.bv_menuName_disabled').show()
+			@$('.bv_isLoaded').hide()
 			@$('.bv_isDirty').hide()
-			window.conf.leaveACASMessage = "There are no unsaved changes."
+			@$('.bv_isLocked').hide()
 
 		if @model.has 'requireUserRoles'
 			userRoles = []
@@ -63,11 +76,12 @@ class window.ModuleLauncherMenuController extends Backbone.View
 					_.each roles, (r) =>
 						userRoles.push $.trim(r)
 				else
-					userRoles.push r			
+					userRoles.push r
 			if !UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, userRoles
 				$(@el).attr 'title', "User is not authorized to use this feature"
 				@$('.bv_menuName').hide()
-		#				@$('.bv_menuName_disabled').show()
+				@$('.bv_menuName_disabled').hide()
+
 
 		@
 
@@ -81,7 +95,7 @@ class window.ModuleLauncherMenuController extends Backbone.View
 
 class window.ModuleLauncherMenuHeaderController extends Backbone.View
 	tagName: 'li'
-	className: "nav-header"
+	className: "nav-header bv_notTopHeader"
 
 	initialize: ->
 		@model.bind "change", @render
@@ -94,11 +108,51 @@ class window.ModuleLauncherMenuHeaderController extends Backbone.View
 
 		@
 
+class window.ModuleLauncherMenuCollapsibleHeaderController extends Backbone.View
+	template: _.template($("#ModuleLauncherMenuCollapsibleHeaderView").html())
+	tagName: 'div'
+	className: 'bv_collapsibleHeaderController bv_notTopHeader'
+
+	events:
+		'click .bv_moduleCategory': "handleClick"
+
+	render: =>
+		if (@model.get('requireUserRoles')? and !UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, @model.get('requireUserRoles'))
+			$(@el).hide()
+		else
+			$(@el).empty()
+			$(@el).html @template()
+			@$('.bv_moduleCategory').prepend @model.get('menuName')
+
+		@
+
+	addSubMenu: (el) ->
+		@$('.bv_modules').append el
+
+	handleClick: =>
+		@$('.bv_modules').slideToggle 200
+		@$('.bv_caret').toggle()
+
+	collapse: ->
+		@$('.bv_modules').hide()
+		@$('.bv_caret_collapse').hide()
+		@$('.bv_caret_expand').show()
+
+	expand: ->
+		@$('.bv_modules').show()
+		@$('.bv_caret_expand').hide()
+		@$('.bv_caret_collapse').show()
+
 class window.ModuleLauncherMenuListController extends Backbone.View
+	events:
+		'click .bv_expandAll': "handleExpandAll"
+		'click .bv_collapseAll': "handleCollapseAll"
 
 	template: _.template($("#ModuleLauncherMenuListView").html())
 
 	initialize: ->
+		@lastCollapsibleHeader = null
+		@collapsibleHeaders = []
 		#@collection.bind 'reset', @render()
 
 	render: =>
@@ -107,17 +161,30 @@ class window.ModuleLauncherMenuListController extends Backbone.View
 		$(@el).empty()
 		$(@el).html @template()
 		@collection.each @addOne
-
+		if @collapsibleHeaders.length < 2
+			@$('.bv_expandAll').hide()
+		@$('.bv_notTopHeader:eq(0)').removeClass "bv_notTopHeader"
+		
 		@
 
 	addOne: (menuItem) =>
 		menuItemController = @makeMenuItemController(menuItem)
-		@$('.bv_navList').append menuItemController.render().el
+		if !menuItem.get('isHeader') and @lastCollapsibleHeader?
+			@lastCollapsibleHeader.addSubMenu menuItemController.render().el
+		else
+			@$('.bv_navList').append menuItemController.render().el
 
 	makeMenuItemController: (menuItem) ->
 		if menuItem.get('isHeader')
-			menuItemCont = new ModuleLauncherMenuHeaderController
-				model: menuItem
+			if menuItem.get('collapsible')
+				menuItemCont = new ModuleLauncherMenuCollapsibleHeaderController
+					model: menuItem
+				@lastCollapsibleHeader = menuItemCont
+				@collapsibleHeaders.push menuItemCont
+			else
+				menuItemCont = new ModuleLauncherMenuHeaderController
+					model: menuItem
+				@lastCollapsibleHeader = null
 		else
 			menuItemCont = new ModuleLauncherMenuController
 				model: menuItem
@@ -134,6 +201,18 @@ class window.ModuleLauncherMenuListController extends Backbone.View
 		#Note that if the names don't match, this fails silently
 		selector = '.bv_launch_'+moduleName
 		@$(selector).click()
+
+	handleExpandAll: =>
+		for header in @collapsibleHeaders
+			header.expand()
+		@$('.bv_expandAll').hide()
+		@$('.bv_collapseAll').show()
+
+	handleCollapseAll: =>
+		for header in @collapsibleHeaders
+			header.collapse()
+		@$('.bv_collapseAll').hide()
+		@$('.bv_expandAll').show()
 
 class window.ModuleLauncherController extends Backbone.View
 	tagName: 'div'
@@ -165,9 +244,12 @@ class window.ModuleLauncherController extends Backbone.View
 					@model.set isDirty: true
 				@moduleController.bind 'amClean', =>
 					@model.set isDirty: false
+				@moduleController.bind 'editLocked', =>
+					@model.set isLocked: true
+				@moduleController.bind 'editUnLocked', =>
+					@model.set isLocked: false
 				@moduleController.render()
 				@model.set isLoaded: true
-
 
 	handleDeactivation:  =>
 		$(@el).hide()

@@ -43,7 +43,11 @@ startApp = ->
 	passport.deserializeUser (user, done) ->
 		done null, user
 
-	passport.use new LocalStrategy csUtilities.loginStrategy
+	if csUtilities.loginStrategy.length > 3
+		passport.use new LocalStrategy {passReqToCallback: true}, csUtilities.loginStrategy
+	else
+		passport.use new LocalStrategy csUtilities.loginStrategy
+
 #	passport.isAdmin = (req, resp, next) ->
 #		if req.isAuthenticated() and csUtilities.isUserAdmin(req.user)
 #			next()
@@ -57,12 +61,14 @@ startApp = ->
 #			next()
 
 	loginRoutes = require './routes/loginRoutes'
-
+	MemoryStore = express.session.MemoryStore;
+	sessionStore = new MemoryStore();
 	global.app = express()
 	app.configure ->
 		app.set 'port', config.all.client.port
 		app.set 'views', __dirname + '/views'
 		app.set 'view engine', 'jade'
+		app.set 'trust proxy', true
 		app.use express.favicon()
 		app.use express.logger('dev')
 		# added for login support
@@ -70,6 +76,7 @@ startApp = ->
 		app.use express.session
 			secret: 'acas needs login'
 			cookie: maxAge: 365 * 24 * 60 * 60 * 1000
+			store: sessionStore # MemoryStore is used automatically if no "store" field is set, but we need a handle on the sessionStore object for Socket.IO, so we'll manually create the store so we have a handle on the object
 		app.use flash()
 		app.use passport.initialize()
 		app.use passport.session pauseStream:  true
@@ -86,11 +93,11 @@ startApp = ->
 	# index routes
 	indexRoutes = require './routes/index.js'
 	indexRoutes.setupRoutes(app, loginRoutes)
-	###TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES###
+
 
 	if not config.all.client.use.ssl
-		http.createServer(app).listen(app.get('port'), ->
-			console.log("Express server listening on port " + app.get('port'))
+		httpServer = http.createServer(app).listen(app.get('port'), ->
+			console.log("ACAS API server listening on port " + app.get('port'))
 		)
 	else
 		console.log "------ Starting in SSL Mode"
@@ -101,11 +108,23 @@ startApp = ->
 			cert: fs.readFileSync config.all.server.ssl.cert.file.path
 			ca: fs.readFileSync config.all.server.ssl.cert.authority.file.path
 			passphrase: config.all.server.ssl.cert.passphrase
-		https.createServer(sslOptions, app).listen(app.get('port'), ->
+		httpServer = https.createServer(sslOptions, app).listen(app.get('port'), ->
 			console.log("Express server listening on port " + app.get('port'))
 		)
 		#TODO hack to prevent bug: https://github.com/mikeal/request/issues/418
 		process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
+	io = require('socket.io')(httpServer)
+	passportSocketIo = require('passport.socketio')
+	cookieParser = require('cookie-parser')
+
+	io.use(passportSocketIo.authorize({
+		key: 'connect.sid',
+		secret: 'acas needs login',
+		store: sessionStore,
+		passport: passport,
+		cookieParser: cookieParser
+	}))
+	###TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES###
 
 	options = if stubsMode then ["stubsMode"] else []
 	options.push ['--color']
@@ -142,7 +161,7 @@ startApp = ->
 	csUtilities.logUsage("ACAS Node server started", "started", "")
 
 	if config.all.server.systemTest?.runOnStart? && config.all.server.systemTest.runOnStart
-		systemTest.runSystemTestInternal false, (status, output) ->
+		systemTest.runSystemTestInternal true, [], (status, output) ->
 			console.log "system test completed"
 
 startApp()

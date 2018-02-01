@@ -229,6 +229,11 @@ $(function() {
 			    if (!this.allowedToUpdate()) {
 				    this.$('.saveButton').hide();
 			    }
+			    console.log("about to load inventory");
+			    console.log(window.configuration.metaLot.showLotInventory);
+			    if (window.configuration.metaLot.showLotInventory) {
+				    this.$('.bv_lotInventory').append("<iframe src=\"/lotInventory/index/"+this.model.get('lot').get('corpName')+"\" frameBorder=\"0\"></iframe>")
+			    }
 
 		    }
 
@@ -402,13 +407,16 @@ $(function() {
 	    },
 
 	    allowedToUpdate: function () {
-		    var chemist = this.model.get('lot').get('chemist');
+				var chemist = this.model.get('lot').get('chemist');
+				var registeredBy = this.model.get('lot').get('registeredBy');
 
 		    if (this.user == null || chemist == null || this.model.get('lot').isNew()) return true; // test mode or new
 
-		    if (this.user.get('isAdmin') || this.user.get('code') == chemist.get('code')) {
+		    if (this.user.get('isAdmin')) {
 			    return true;
-		    } else {
+		    }else if (!window.configuration.metaLot.disableEditMyLots && (this.user.get('code') == chemist.get('code') || this.user.get('code') == registeredBy.code)) {
+				return true;
+			} else {
 			    return false;
 		    }
 	    },

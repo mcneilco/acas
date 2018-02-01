@@ -49,6 +49,16 @@ class window.Protocol extends BaseEntity
 
 		assayStage
 
+	getRequiredEntityType: ->
+		requiredEntityType = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "protocol metadata", "codeValue", "required entity type"
+		if requiredEntityType.get('codeValue') is undefined or requiredEntityType.get('codeValue') is "" or requiredEntityType.get('codeValue') is null
+			requiredEntityType.set codeValue: "unassigned"
+			requiredEntityType.set codeType: "entity type"
+			requiredEntityType.set codeKind: "required entity type"
+			requiredEntityType.set codeOrigin: "ACAS Configured Entity"
+
+		requiredEntityType
+
 	getAssayPrinciple: ->
 		assayPrinciple = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "protocol metadata", "clobValue", "assay principle"
 		if assayPrinciple.get('clobValue') is undefined
@@ -65,6 +75,16 @@ class window.Protocol extends BaseEntity
 			projectCodeValue.set codeOrigin: "ACAS DDICT"
 
 		projectCodeValue
+
+	getSelRequiredAttr: (attr) =>
+		selRequiredAttrCodeValue = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "protocol metadata", "codeValue", attr
+		if selRequiredAttrCodeValue.get('codeValue') is undefined or selRequiredAttrCodeValue.get('codeValue') is ""
+			selRequiredAttrCodeValue.set codeValue: "false"
+			selRequiredAttrCodeValue.set codeType: "protocol"
+			selRequiredAttrCodeValue.set codeKind: "sel required attribute"
+			selRequiredAttrCodeValue.set codeOrigin: "ACAS DDICT"
+
+		selRequiredAttrCodeValue
 
 	getCurveDisplayMin: ->
 		minY = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "screening assay", "numericValue", "curve display min"
@@ -103,6 +123,13 @@ class window.Protocol extends BaseEntity
 					errors.push
 						attribute: 'assayTreeRule'
 						message: "Assay tree rule should not end with '/'"
+		if window.conf.protocol?.requiredEntityType?.save? and window.conf.protocol.requiredEntityType.save
+			if window.conf.protocol?.requiredEntityType?.allowEmpty? and window.conf.protocol.requiredEntityType.allowEmpty is false
+				ret = @getRequiredEntityType().get('codeValue')
+				if ret is "unassigned" or ret is undefined or ret is "" or ret is null
+					errors.push
+						attribute: 'requiredEntityType'
+						message: "Required entity type must be set"
 		if window.conf.protocol?.showCurveDisplayParams?
 			showCurveDisplayParams = window.conf.protocol.showCurveDisplayParams
 		else
@@ -151,6 +178,7 @@ class window.ProtocolBaseController extends BaseEntityController
 			"keyup .bv_protocolName": "handleNameChanged"
 			"keyup .bv_assayTreeRule": "handleAssayTreeRuleChanged"
 			"change .bv_assayStage": "handleAssayStageChanged"
+			"change .bv_requiredEntityType": "handleRequiredEntityTypeChanged"
 			"change .bv_projectCode": "handleProjectCodeChanged"
 			"keyup .bv_assayPrinciple": "handleAssayPrincipleChanged"
 			"change .bv_creationDate": "handleCreationDateChanged"
@@ -235,6 +263,7 @@ class window.ProtocolBaseController extends BaseEntityController
 			@$('.bv_group_projectCode').hide()
 		else
 			@setupProjectSelect()
+		@setupSelRequiredAttrs()
 		@render()
 		@listenTo @model, 'sync', @modelSyncCallback
 		@listenTo @model, 'change', @modelChangeCallback
@@ -260,7 +289,14 @@ class window.ProtocolBaseController extends BaseEntityController
 			@$('.bv_maxY').val(@model.getCurveDisplayMax().get('numericValue'))
 			@$('.bv_minY').val(@model.getCurveDisplayMin().get('numericValue'))
 		else
-			@$('.bv_group_assayStageWrapper').hide()
+			@$('.bv_group_curveDisplayWrapper').hide()
+		showRequiredEntityType = false
+		if window.conf.protocol?.requiredEntityType?.save?
+			showRequiredEntityType = window.conf.protocol.requiredEntityType.save
+		if showRequiredEntityType
+			@setupRequiredEntityType()
+		else
+			@$('.bv_group_requiredEntityType').hide()
 		super()
 		@
 
@@ -293,6 +329,21 @@ class window.ProtocolBaseController extends BaseEntityController
 				name: "Select Assay Stage"
 			selectedCode: @model.getAssayStage().get('codeValue')
 
+	setupRequiredEntityType: ->
+		if window.conf.protocol?.requiredEntityType?.allowEmpty? and window.conf.protocol.requiredEntityType.allowEmpty is false
+			@$('.bv_requiredEntityTypeLabel').html '*Required Entity Type'
+		else
+			@$('.bv_requiredEntityTypeLabel').html 'Required Entity Type'
+		@requiredEntityTypeList = new PickListList()
+		@requiredEntityTypeList.url = "/api/entitymeta/configuredTestedEntityTypes/displayName?asCodes=true"
+		@requiredEntityTypeListController = new PickListSelectController
+			el: @$('.bv_requiredEntityType')
+			collection: @requiredEntityTypeList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Entity Type"
+			selectedCode: @model.getRequiredEntityType().get('codeValue')
+
 	setupProjectSelect: ->
 		@projectList = new PickListList()
 		@projectList.url = "/api/projects"
@@ -323,6 +374,39 @@ class window.ProtocolBaseController extends BaseEntityController
 		@attachFileListController.on 'amDirty', =>
 			@trigger 'amDirty' #need to put this after the first time @attachFileListController is rendered or else the module will always start off dirty
 			@model.trigger 'change'
+
+	setupSelRequiredAttrs: =>
+		#get codetable values for required sel attrs
+		$.ajax
+			type: 'GET'
+			url: "/api/codetables/protocol/sel required attribute"
+			dataType: 'json'
+			error: (err) ->
+				alert 'Could not get list of sel required attributes'
+			success: (json) =>
+				unless json.length == 0
+					for attr in json
+						@setupSelRequiredAttrCheckboxes attr
+
+	setupSelRequiredAttrCheckboxes: (attr) =>
+		camelCaseAttrCode = attr.code.replace /\s(.)/g, (match, group1) -> group1.toUpperCase()
+		@$('.bv_selRequiredAttributesSection').append '<div class="control-group bv_group_'+camelCaseAttrCode+'">
+		<label class="control-label" style="padding-top:2px;">'+attr.name+' Required</label><div class="controls"><input type="checkbox" name="bv_'+camelCaseAttrCode+'" class="bv_'+camelCaseAttrCode+'"/></div></div>'
+
+		currentVal = @model.getSelRequiredAttr attr.code
+		if currentVal.get('codeValue') is "true"
+			@$(".bv_#{camelCaseAttrCode}").attr 'checked', 'checked'
+		else
+			@$(".bv_#{camelCaseAttrCode}").removeAttr 'checked'
+		@$(".bv_#{camelCaseAttrCode}").on "click", =>
+			@handleSelRequiredAttrChkbxChanged attr.code, camelCaseAttrCode
+
+	handleSelRequiredAttrChkbxChanged: (attrCode, camelCaseAttrCode) =>
+		currentVal = @model.getSelRequiredAttr attrCode
+		unless currentVal.isNew()
+			currentVal.set 'ignored', true
+			currentVal = @model.getSelRequiredAttr attrCode
+		currentVal.set 'codeValue', JSON.stringify(@$(".bv_#{camelCaseAttrCode}").is(":checked"))
 
 	handleDeleteStatusChosen: =>
 		@$(".bv_deleteButtons").removeClass "hide"
@@ -374,6 +458,10 @@ class window.ProtocolBaseController extends BaseEntityController
 	handleAssayStageChanged: =>
 		value = @assayStageListController.getSelectedCode()
 		@handleValueChanged "AssayStage", value
+
+	handleRequiredEntityTypeChanged: =>
+		value = @requiredEntityTypeListController.getSelectedCode()
+		@handleValueChanged "RequiredEntityType", value
 
 	handleProjectCodeChanged: =>
 		value = @projectListController.getSelectedCode()

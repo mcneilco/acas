@@ -332,8 +332,8 @@ class window.ExperimentSummaryTableController extends Backbone.View
 					rolesToTest.push role
 			if rolesToTest.length is 0
 				return false
-			unless UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, rolesToTest
-				return false
+			if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, rolesToTest
+				return true
 		return false
 
 class window.ExperimentBrowserController extends Backbone.View

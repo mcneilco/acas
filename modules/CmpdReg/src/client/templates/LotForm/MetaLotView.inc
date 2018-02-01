@@ -11,5 +11,6 @@
         <a class="button newLotButton" href="#" onclick="this.blur(); return false;"></a>
 	</div>
     <div class="floatingPanel NewLotSuccessView"></div>
-	
+	<div class="bv_lotInventory"></div>
+
 </script>

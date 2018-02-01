@@ -6,6 +6,17 @@ class window.AbstractFormController extends Backbone.View
 
 	formFieldDefinitions: []
 
+
+#	Setup edit lock check for the user session, form and entity identifier
+#	disable feature if set to null
+#	Override this in initilize() give model key for entity ID like 'codeName'
+# Form must open socket, probably during initialize
+# @openFormControllerSocket()
+#	Form subclass must send request to lock when it has the id in hand
+#	@socket.emit 'editLockEntity', @errorOwnerName, @model.get(@lockEditingForSessionKey)
+#	This is safe to call repeatedly
+	lockEditingForSessionKey: null
+
 	show: ->
 		$(@el).show()
 
@@ -54,6 +65,8 @@ class window.AbstractFormController extends Backbone.View
 			@trigger 'valid'
 		else
 			@trigger 'invalid'
+		if @lockEditingForSessionKey?
+			@socket.emit 'updateEditLock', @errorOwnerName, @model.get(@lockEditingForSessionKey)
 
 	disableAllInputs: ->
 		@$('input').not('.dontdisable').attr 'disabled', 'disabled'
@@ -83,10 +96,28 @@ class window.AbstractFormController extends Backbone.View
 		@$(".bv_group_tags div.bootstrap-tagsinput").css "background-color", "#ffffff"
 		@$(".bv_group_tags input").css "background-color", "transparent"
 
+	openFormControllerSocket: ->
+		if @lockEditingForSessionKey?
+			@socket = io '/formController:connected'
+			@socket.on 'editLockRequestResult', @handleEditLockRequestResult
+			@socket.on 'editLockAvailable', @handleEditLockAvailable
+
+	handleEditLockRequestResult: (result) =>
+		if !result.okToEdit
+			updateDate = new Date	result.lastActivityDate
+			alert "This is being edited by #{result.currentEditor}. It was last edited at #{updateDate}. If you leave this tab open, you will be notified when it becomes available. For now, the form will be displayed as read-only."
+			@disableAllInputs()
+			@trigger 'editLocked'
+		else
+			@trigger 'editUnLocked'
+
+	handleEditLockAvailable: =>
+		@trigger 'editUnLocked'
+		#you should extend this
 
 class window.AbstractThingFormController extends AbstractFormController
 
-	setupFormFields: (fieldDefs) ->
+	setupFormFields: (fieldDefs, useDirectRef) ->
 		unless @formFields?
 			@formFields = {}
 
@@ -97,6 +128,10 @@ class window.AbstractThingFormController extends AbstractFormController
 		if fieldDefs.secondLsThingItxs? then fDefs = fDefs.concat fieldDefs.secondLsThingItxs
 
 		for field in fDefs
+			if useDirectRef? and useDirectRef
+				mdl = @model.get field.key
+			else
+				mdl = @model
 			opts =
 				modelKey: field.key
 				inputClass: field.fieldSettings.inputClass
@@ -104,11 +139,22 @@ class window.AbstractThingFormController extends AbstractFormController
 				placeholder: field.fieldSettings.placeholder
 				required: field.fieldSettings.required
 				url: field.fieldSettings.url
-				thingRef: @model
+				thingRef: mdl
 				insertUnassigned: field.fieldSettings.insertUnassigned
+				firstSelectText: field.fieldSettings.firstSelectText
+				modelDefaults: field.modelDefaults
+				allowedFileTypes: field.fieldSettings.allowedFileTypes
+				extendedLabel: field.fieldSettings.extendedLabel
+				tabIndex: field.fieldSettings.tabIndex
+				toFixed: field.fieldSettings.toFixed
+				pickList: field.fieldSettings.pickList
 
 			switch field.fieldSettings.fieldType
-				when 'label' then newField = new ACASFormLSLabelFieldController opts
+				when 'label'
+					if field.multiple? and field.multiple
+						newField = new ACASFormMultiLabelListController opts
+					else
+						newField = new ACASFormLSLabelFieldController opts
 				when 'numericValue' then newField = new ACASFormLSNumericValueFieldController opts
 				when 'codeValue' then newField = new ACASFormLSCodeValueFieldController opts
 				when 'htmlClobValue'
@@ -122,17 +168,26 @@ class window.AbstractThingFormController extends AbstractFormController
 					newField = new ACASFormLSThingInteractionFieldController opts
 				when 'stringValue' then newField = new ACASFormLSStringValueFieldController opts
 				when 'dateValue' then newField = new ACASFormLSDateValueFieldController opts
+				when 'fileValue' then newField = new ACASFormLSFileValueFieldController opts
+				when 'locationTree'
+					opts.tubeCode = @model.get('tubeCode')
+					newField = new ACASFormLocationTreeController opts
 
 			@$("."+field.fieldSettings.fieldWrapper).append newField.render().el
 			newField.afterRender()
 			@formFields[field.key] = newField
-		@setupFormTables fieldDefs.stateTables
+		if fieldDefs.stateTables?
+			@setupFormTables fieldDefs.stateTables
+		if fieldDefs.stateDisplayTables?
+			@setupFormStateDisplayTables fieldDefs.stateDisplayTables
 
 	fillFieldsFromModels: =>
 		for modelKey, formField of @formFields
 			formField.renderModelContent()
 		for stateKey, formTable of @formTables
 			formTable.renderModelContent()
+		for stateKey, formDisplayTable of @formDisplayTables
+			formDisplayTable.renderModelContent()
 
 	setupFormTables: (tableDefs) ->
 		unless @formTables?
@@ -146,6 +201,19 @@ class window.AbstractThingFormController extends AbstractFormController
 				thingRef: @model
 			fTable.render()
 			@formTables[tDef.key] = fTable
+
+	setupFormStateDisplayTables: (tableDefs) ->
+		unless @formDisplayTables?
+			@formDisplayTables = {}
+		for tDef in tableDefs
+			tdiv = $("<div>")
+			@$("."+tDef.tableWrapper).append tdiv
+			fTable = new ACASFormStateDisplayUpdateController
+				el: tdiv
+				tableDef: tDef
+				thingRef: @model
+			fTable.render()
+			@formDisplayTables[tDef.key] = fTable
 
 	disableAllInputs: ->
 		super()

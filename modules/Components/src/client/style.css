@@ -36,3 +36,15 @@
   border-color: #bbbbbb;
   /* base width matches edit prot and expt */
 }
+
+.bv_stateDisplayUpdateTable .valueWasEdited {
+    color: red;
+}
+
+.bv_stateDisplayUpdateTable .valueNotEditable {
+    color: #9D9D9D;
+}
+
+.bv_stateDisplayUpdateTable .valueEditable {
+    cursor: pointer;
+}

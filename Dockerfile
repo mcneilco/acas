@@ -6,6 +6,7 @@ RUN \
 # tar for pulling down node
 # git required for some npm packages
   yum install -y tar git && \
+  yum install -y fontconfig urw-fonts && \
   yum clean all
 
 # node
@@ -66,6 +67,14 @@ ENV     PREPARE_MODULE_CONF_JSON=true
 ENV     PREPARE_CONFIG_FILES=true
 ENV     RUN_SYSTEM_TEST=true
 ENV     ACAS_HOME=$BUILD_PATH
+
+#Install python dependencies
+USER	root
+RUN		curl -SLO dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm && rpm -ivh epel-release-6-8.noarch.rpm && rm epel-release-6-8.noarch.rpm
+RUN		yum install -y centos-release-SCL
+RUN		yum install -y python-pip python-psycopg2 python27
+RUN		source /opt/rh/python27/enable && pip install argparse requests psycopg2
+USER	runner
 
 EXPOSE 3000
 EXPOSE 3001

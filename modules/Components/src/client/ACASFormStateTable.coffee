@@ -177,7 +177,9 @@ class window.ACASFormStateTableController extends Backbone.View
 			afterValidate: @handleAfterValidate
 			afterCreateRow: @handleRowCreated
 			minSpareRows: 1,
+			allowInsertRow: true
 			contextMenu: contextMenu
+			comments: true
 			startRows: 1,
 			className: "htCenter",
 			colHeaders: _.pluck @colHeaders, 'displayName'
@@ -192,6 +194,7 @@ class window.ACASFormStateTableController extends Backbone.View
 				if @tableReadOnly
 					cellProperties.readOnly = true
 				return cellProperties;
+		@hot.addHook 'afterChange', @validateUniqueness
 
 	readOnlyRenderer: (instance, td, row, col, prop, value, cellProperties) =>
 		Handsontable.renderers.TextRenderer.apply(this, arguments)
@@ -266,7 +269,7 @@ class window.ACASFormStateTableController extends Backbone.View
 		newVal = changes[0][3]
 		dateDef = _.filter @tableDef.values, (def) ->
 			def.modelDefaults.type == 'dateValue' and def.modelDefaults.kind == prop
-		if dateDef.length == 1
+		if dateDef.length == 1 and value?
 			parsedDate = newVal.split(/([ ,./-])\w/g)
 			if parsedDate.length < 5
 				currentYear = new Date().getFullYear()
@@ -276,7 +279,7 @@ class window.ACASFormStateTableController extends Backbone.View
 	handleBeforeValidate: (value, row, prop, sources) =>
 		dateDef = _.filter @tableDef.values, (def) ->
 			def.modelDefaults.type == 'dateValue' and def.modelDefaults.kind == prop
-		if dateDef.length == 1
+		if dateDef.length == 1 and value?
 			parsedDate = value.split(/([ ,./-])\w/g)
 			if parsedDate.length < 5
 				currentYear = new Date().getFullYear()
@@ -313,6 +316,8 @@ class window.ACASFormStateTableController extends Backbone.View
 						switch valueDef.modelDefaults.type
 							when 'stringValue'
 								value.set stringValue: if cellContent? then cellContent else ""
+							when 'clobValue'
+								value.set clobValue: if cellContent? then cellContent else ""
 							when 'numericValue'
 								numVal = parseFloat(cellContent)
 								if isNaN(numVal) or isNaN(Number(numVal))
@@ -404,11 +409,11 @@ class window.ACASFormStateTableController extends Backbone.View
 		@hot.updateSettings
 			readOnly: true
 			contextMenu: false
+			comments: false
 #Other options I decided not to use
 #			disableVisualSelection: true
 #			manualColumnResize: false
 #			manualRowResize: false
-#			comments: false
 
 	enableInput: ->
 		if @tableDef.contextMenu?
@@ -418,11 +423,35 @@ class window.ACASFormStateTableController extends Backbone.View
 		@hot.updateSettings
 			readOnly: false
 			contextMenu: contextMenu
+			comments: true
 #Other options I decided not to use
 #			disableVisualSelection: false
 #			manualColumnResize: true
 #			manualRowResize: true
-#			comments: true
+
+	validateUniqueness: (changes, source) =>
+		uniqueColumnIndices = @tableDef.values.map (value, idx) ->
+			if value.fieldSettings.unique? and value.fieldSettings.unique
+				idx
+			else
+				null
+		uniqueColumnIndices = uniqueColumnIndices.filter (idx) ->
+			idx?
+		_.each uniqueColumnIndices, (columnIndex) =>
+			column = @hot.getDataAtCol columnIndex
+			column.forEach (value, row) =>
+				data = extend [], column
+				idx = data.indexOf value
+				data.splice idx, 1
+				secondIdx = data.indexOf value
+				cell = @hot.getCellMeta row, columnIndex
+				if idx > -1 and secondIdx > -1 and value? and value != ''
+					cell.valid = false
+					cell.comment = 'Error: Duplicates not allowed'
+				else
+					cell.valid = true
+					cell.comment = ''
+		@hot.render()
 
 
 

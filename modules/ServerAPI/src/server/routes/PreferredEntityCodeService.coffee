@@ -1,6 +1,8 @@
 exports.setupAPIRoutes = (app) ->
 	app.get '/api/entitymeta/configuredEntityTypes/:asCodes?', exports.getConfiguredEntityTypesRoute
 	app.get '/api/entitymeta/configuredEntityTypes/displayName/:displayName', exports.getSpecificEntityTypeRoute
+	app.get '/api/entitymeta/configuredTestedEntityTypes/:asCodes?', exports.getConfiguredTestedEntityTypesRoute
+	app.get '/api/entitymeta/configuredTestedEntityTypes/displayName/:displayName', exports.getSpecificTestedEntityTypeRoute
 	app.post '/api/entitymeta/referenceCodes/:csv?', exports.referenceCodesRoute
 	app.post '/api/entitymeta/pickBestLabels/:csv?', exports.pickBestLabelsRoute
 	app.post '/api/entitymeta/searchForEntities', exports.searchForEntitiesRoute
@@ -9,6 +11,8 @@ exports.setupAPIRoutes = (app) ->
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/entitymeta/configuredEntityTypes/:asCodes?', loginRoutes.ensureAuthenticated, exports.getConfiguredEntityTypesRoute
 	app.get '/api/entitymeta/ConfiguredEntityTypes/displayName/:displayName', loginRoutes.ensureAuthenticated, exports.getSpecificEntityTypeRoute
+	app.get '/api/entitymeta/configuredTestedEntityTypes/:asCodes?', loginRoutes.ensureAuthenticated, exports.getConfiguredTestedEntityTypesRoute
+	app.get '/api/entitymeta/configuredTestedEntityTypes/displayName/:displayName', loginRoutes.ensureAuthenticated, exports.getSpecificTestedEntityTypeRoute
 	app.post '/api/entitymeta/referenceCodes/:csv?', loginRoutes.ensureAuthenticated, exports.referenceCodesRoute
 	app.post '/api/entitymeta/pickBestLabels/:csv?', loginRoutes.ensureAuthenticated, exports.pickBestLabelsRoute
 	app.post '/api/entitymeta/searchForEntities', loginRoutes.ensureAuthenticated ,exports.searchForEntitiesRoute
@@ -31,11 +35,11 @@ exports.getConfiguredEntityTypesRoute = (req, resp) ->
 		resp.json json
 
 exports.getConfiguredEntityTypes = (asCodes, callback) ->
-	console.log "asCodes: "+asCodes
+	console.debug "asCodes: "+asCodes
 	if asCodes
-		codes = for own name, et of configuredEntityTypes.entityTypes
-			code: name
-			name: name
+		codes = for type in configuredEntityTypes.entityTypes
+			code: type.code
+			name: type.displayName
 			ignored: false
 		callback codes
 	else
@@ -47,11 +51,47 @@ exports.getSpecificEntityTypeRoute = (req, resp) ->
 	exports.getSpecificEntityType displayName, (json) ->
 		resp.json json
 
-exports.getSpecificEntityType = (displayName, callback) ->
-	if configuredEntityTypes.entityTypes[displayName]?
-		callback configuredEntityTypes.entityTypes[displayName]
+exports.getSpecificEntityType = (codeNameOrDisplayName, callback) ->
+	entityType = _.findWhere configuredEntityTypes.entityTypes, {displayName:codeNameOrDisplayName}
+	if !entityType?
+		entityType = _.findWhere configuredEntityTypes.entityTypes, {code:codeNameOrDisplayName}
+	entityType ?= {}
+	if callback?
+		callback entityType
 	else
-		callback {}
+		return entityType
+
+exports.getConfiguredTestedEntityTypesRoute = (req, resp) ->
+	if req.params.asCodes?
+		asCodes = true
+	else
+		asCodes = false
+	testedEntityTypes = exports.getConfiguredTestedEntityTypes asCodes
+	resp.json testedEntityTypes
+
+exports.getConfiguredTestedEntityTypes = (asCodes) ->
+	testedEntityTypes = _.where configuredEntityTypes.entityTypes, {isTestedEntity: true}
+	if asCodes
+		codes = for type in testedEntityTypes
+			code: type.code
+			name: type.displayName
+			ignored: false
+		return codes
+	else
+		return testedEntityTypes
+
+exports.getSpecificTestedEntityTypeRoute = (req, resp) ->
+	displayName = req.params.displayName
+	specificTestedEntityType = exports.getSpecificTestedEntityType displayName
+	resp.json specificTestedEntityType
+
+exports.getSpecificTestedEntityType = (codeNameOrDisplayName) ->
+	testedEntityTypes = exports.getConfiguredTestedEntityTypes asCodes = false
+	entityType = _.findWhere testedEntityTypes, {displayName:codeNameOrDisplayName}
+	if !entityType?
+		entityType = _.findWhere testedEntityTypes, {code:codeNameOrDisplayName}
+	entityType ?= {}
+	return entityType
 
 exports.getSpecificEntityTypeByTypeKindAndCodeOrigin = (type, kind, codeOrigin) ->
 	entityType = _.findWhere configuredEntityTypes.entityTypes, {type: type, kind: kind, codeOrigin: codeOrigin}
@@ -79,14 +119,20 @@ exports.referenceCodesRoute = (req, resp) ->
 		resp.json json
 
 exports.referenceCodes = (requestData, csv, callback) ->
-	console.log "stubs mode is: "+global.specRunnerTestmode 	#Note specRunnerTestMode is handled within functions called from here
-	console.log("csv is " + csv)
+	console.debug "stubs mode is: "+global.specRunnerTestmode 	#Note specRunnerTestMode is handled within functions called from here
+	console.debug("csv is " + csv)
 
 	# convert displayName to type and kind
-	exports.getSpecificEntityType requestData.displayName, (json) ->
-		requestData.type = json.type
-		requestData.kind = json.kind
-		requestData.sourceExternal = json.sourceExternal
+	entityType = exports.getSpecificEntityType requestData.displayName
+	if _.isEmpty entityType
+		#this is the fall-through for internal. External fall-through is in csUtilities.getExternalReferenceCodes
+			message = "problem with internal preferred Code request: code type and kind are unknown to system"
+			callback message
+			console.error message
+			return
+	requestData.type = entityType.type
+	requestData.kind = entityType.kind
+	requestData.sourceExternal = entityType.sourceExternal
 
 	if csv
 		reqList = formatCSVRequestAsReqArray(requestData.entityIdStringLines)
@@ -94,7 +140,7 @@ exports.referenceCodes = (requestData, csv, callback) ->
 		reqList = requestData.requests
 
 	if requestData.sourceExternal
-		console.log("looking up external entity")
+		console.debug("looking up external entity")
 		csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
 		csUtilities.getExternalReferenceCodes requestData.displayName, reqList, (prefResp) ->
 			if csv
@@ -108,7 +154,6 @@ exports.referenceCodes = (requestData, csv, callback) ->
 		return
 
 	else  # internal source
-		entityType = configuredEntityTypes.entityTypes[requestData.displayName]
 		if entityType.codeOrigin is "ACAS LsThing"
 			preferredThingService = require "./ThingServiceRoutes.js"
 			reqHashes =
@@ -128,26 +173,56 @@ exports.referenceCodes = (requestData, csv, callback) ->
 						displayName: requestData.displayName
 						results: formatJSONReferenceCode(codeResponse.results, "referenceName")
 		else if entityType.codeOrigin is "ACAS LsContainer"
-			console.log "entityType.codeOrigin is ACAS LsContainer"
-			console.log reqList
-			console.log reqList
-#			reqList = [reqList[0].requestName]
+			console.debug "entityType.codeOrigin is ACAS LsContainer"
+			console.debug reqList
 			preferredContainerService = require "./InventoryServiceRoutes.js"
-			reqHashes =
-				containerType: entityType.type
-				containerKind: entityType.kind
-				requests: reqList
-			preferredContainerService.getContainerCodesFromNamesOrCodes reqHashes, (codeResponse) ->
-				console.log "codeResponse"
-				console.log codeResponse
-				callback
-					displayName: requestData.displayName
-					results: formatJSONReferenceCode(codeResponse.results, "referenceName")
+#			reqList = [reqList[0].requestName]
+			if entityType.code == "Solution Container Tube"
+				reqHashes =
+					containerType: entityType.type
+					containerKind: entityType.kind
+					requests: reqList
+				labels =  _.pluck reqList, 'requestName'
+				preferredContainerService.getWellContentByContainerLabelsInternal labels, null, null, null, null, (response, statusCode) ->
+					out = []
+					for res in response
+						if res.containerCodeName? && res.wellContent? && res.wellContent.length == 1 && res.wellContent[0].physicalState == "solution"
+							codeName = res.containerCodeName
+						else
+							codeName = ""
+						out.push
+							requestName: res.label
+							referenceCode: codeName
+					if csv
+						out = for res in out
+							res.requestName + "," + res.referenceCode
+						outStr =  "Requested Name,Reference Code\n"+out.join('\n')
+						callback
+							displayName: requestData.displayName
+							resultCSV: outStr
+					else
+						callback
+							displayName: requestData.displayName
+							results: out
+			else
+				reqHashes =
+					containerType: entityType.type
+					containerKind: entityType.kind
+					requests: reqList
+				preferredContainerService.getContainerCodesFromNamesOrCodes reqHashes, (codeResponse) ->
+					if csv
+						out = for res in codeResponse.results
+							res.requestName + "," + res.referenceName
+						outStr =  "Requested Name,Reference Code\n"+out.join('\n')
+						callback
+							displayName: requestData.displayName
+							resultCSV: outStr
+					else
+						callback
+							displayName: requestData.displayName
+							results: formatJSONReferenceCode(codeResponse.results, "referenceName")
 			return
-		#this is the fall-through for internal. External fall-through is in csUtilities.getExternalReferenceCodes
-			message = "problem with internal preferred Code request: code type and kind are unknown to system"
-			callback message
-			console.error message
+
 
 ####################################################################
 # BEST LABELS
@@ -168,10 +243,10 @@ exports.pickBestLabelsRoute = (req, resp) ->
 		resp.json json
 
 exports.pickBestLabels = (requestData, csv, callback) ->
-	exports.getSpecificEntityType requestData.displayName, (json) ->
-		requestData.type = json.type
-		requestData.kind = json.kind
-		requestData.sourceExternal = json.sourceExternal
+	entityType = exports.getSpecificEntityType requestData.displayName
+	requestData.type = entityType.type
+	requestData.kind = entityType.kind
+	requestData.sourceExternal = entityType.sourceExternal
 
 	if csv
 		reqList = formatCSVRequestAsReqArray(requestData.referenceCodes)
@@ -193,7 +268,6 @@ exports.pickBestLabels = (requestData, csv, callback) ->
 		return
 
 	else  # sourceExternal = false
-		entityType = configuredEntityTypes.entityTypes[requestData.displayName]
 		if entityType.codeOrigin is "ACAS LsThing"
 			preferredThingService = require "./ThingServiceRoutes.js"
 			reqHashes =
@@ -212,10 +286,10 @@ exports.pickBestLabels = (requestData, csv, callback) ->
 					callback
 						displayName: requestData.displayName
 						results: formatJSONBestLabel(codeResponse.results, "preferredName")
-		else if entityType.codeOrigin is "ACAS LSContainer"
+		else if entityType.codeOrigin is "ACAS LsContainer"
 			console.log "entityType.codeOrigin is ACAS LSContainer"
 			console.log reqList
-			preferredContainerService = require "./ContainerServiceRoutes.js"
+			preferredContainerService = require "./InventoryServiceRoutes.js"
 			reqHashes =
 				containerType: entityType.type
 				containerKind: entityType.kind
@@ -388,10 +462,10 @@ exports.projectCodes = (requestData, csv, callback) ->
 	console.log "requestData.displayName is " + requestData.displayName
 
 	# convert displayName to type and kind
-	exports.getSpecificEntityType requestData.displayName, (json) ->
-		requestData.type = json.type
-		requestData.kind = json.kind
-		requestData.sourceExternal = json.sourceExternal
+	entityType = exports.getSpecificEntityType requestData.displayName
+	requestData.type = entityType.type
+	requestData.kind = entityType.kind
+	requestData.sourceExternal = entityType.sourceExternal
 
 	if csv
 		reqList = formatCSVRequestAsReqArray(requestData.entityIdStringLines)
@@ -415,8 +489,6 @@ exports.projectCodes = (requestData, csv, callback) ->
 		return
 
 	else  # internal source
-		entityType = configuredEntityTypes.entityTypes[requestData.displayName]
-		console.log "entityType: " + entityType
 		if entityType.codeOrigin is "ACAS LsThing"
 			preferredThingService = require "./ThingServiceRoutes.js"
 			reqHashes =
@@ -436,6 +508,58 @@ exports.projectCodes = (requestData, csv, callback) ->
 						displayName: requestData.displayName
 						results: formatJSONProjectCode(codeResponse.results, "projectCode")
 			return
+		else if entityType.codeOrigin is "ACAS LsContainer"
+			console.debug "entityType.codeOrigin is ACAS LsContainer"
+			preferredContainerService = require "./InventoryServiceRoutes.js"
+#			reqList = [reqList[0].requestName]
+			reqHashes =
+				containerType: entityType.type
+				containerKind: entityType.kind
+				requests: reqList
+			requestContainerCodes =  _.pluck reqList, 'requestName'
+			preferredContainerService.getWellContentByContainerCodesInternal requestContainerCodes, (response, statusCode) ->
+				batchCodeRequestList = []
+				for res in response
+					req = _.findWhere reqList, {requestName:res.containerCodeName}
+					req.projectCode = null
+					if res.containerCodeName? && res.wellContent? && res.wellContent.length == 1 && res.wellContent[0].batchCode?
+						req.foundCodeName = res.containerCodeName
+						req.batchCode = res.wellContent[0].batchCode
+						batchCodeRequest = requestName: res.wellContent[0].batchCode
+						batchCodeRequestList.push batchCodeRequest
+					else
+						req.foundCodeName = null
+						req.batchCode = null
+				callProjectCodesOrReturnNull = (callFunctionBoolean, funct, request, isCsv, callback) ->
+					if callFunctionBoolean
+						funct request, isCsv, (response, statusCode) ->
+							callback response
+					else
+						callback null
+				shouldCall  = batchCodeRequestList.length > 0
+				batchCodeRequest = 
+					displayName: exports.getSpecificEntityType("Corporate Batch ID").displayName
+					requests: batchCodeRequestList
+				isCsvRequest = false
+				callProjectCodesOrReturnNull shouldCall, exports.projectCodes, batchCodeRequest, isCsvRequest, (batchCodeProjectResponse) =>
+					if shouldCall
+						for res in batchCodeProjectResponse.results
+							req = _.findWhere reqList, {batchCode:res.requestName}
+							req.projectCode = res.projectCode
+					if csv
+						out = for res in reqList
+							res.requestName + "," + res.projectCode
+						outStr =  "Requested Name,Project Code\n"+out.join('\n')
+						callback
+							displayName: requestData.displayName
+							resultCSV: outStr
+					else
+						callback
+							displayName: requestData.displayName
+							results: formatJSONProjectCode(reqList, "projectCode")
+			return
 		#this is the fall-through for internal. External fall-through is in csUtilities.getExternalReferenceCodes
 		callback.statusCode = 500
 		callback "problem with internal preferred Code request: code type and kind are unknown to system"
+
+
