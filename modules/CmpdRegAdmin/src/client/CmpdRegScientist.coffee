@@ -43,6 +43,7 @@ class window.ScientistController extends AbstractCmpdRegAdminController
 	entityTypeUpper: "Scientist"
 	entityTypeUpperPlural: "Scientists"
 	modelClass: "Scientist"
+	showIgnore: true
 
 	completeInitialization: =>
 		@errorOwnerName = 'ScientistController'
@@ -63,3 +64,4 @@ class window.ScientistBrowserController extends AbstractCmpdRegAdminBrowserContr
 	entityClass: "Scientist"
 	entityControllerClass: "ScientistController"
 	moduleLaunchName: "scientist_browser"
+	showIgnore: true

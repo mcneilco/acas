@@ -87,20 +87,33 @@ class window.CmpdRegAdminRowSummaryController extends Backbone.View
 
 	initialize: ->
 		@template = _.template($('#CmpdRegAdminRowSummaryView').html())
+		if @options.showIgnore?
+			@showIgnore = @options.showIgnore
+		else
+			@showIgnore = false
 
 	render: =>
 		toDisplay =
 			code: @model.get('code')
 			name: @model.get('name')
-			ignored: if @model.get('ignore')? then @model.get('ignore') else false
 
 		$(@el).html(@template(toDisplay))
+		if @showIgnore
+			ignored = if @model.get('ignore')? then @model.get('ignore') else false
 
+			@$(".bv_cmpdRegAdminIgnore").show()
+			@$(".bv_cmpdRegAdminIgnore").html ignored.toString()
+		else
+			@$(".bv_cmpdRegAdminIgnore").hide()
 		@
 
 ############################################################################
 class window.CmpdRegAdminSummaryTableController extends Backbone.View
 	initialize: ->
+		if @options.showIgnore?
+			@showIgnore = @options.showIgnore
+		else
+			@showIgnore = false
 
 	selectedRowChanged: (row) =>
 		@trigger "selectedRowUpdated", row
@@ -112,11 +125,17 @@ class window.CmpdRegAdminSummaryTableController extends Backbone.View
 		@collection.each (admin) =>
 			prsc = new CmpdRegAdminRowSummaryController
 				model: admin
+				showIgnore: @showIgnore
 			prsc.on "gotClick", @selectedRowChanged
 			@$("tbody").append prsc.render().el
 
 		@$("table").dataTable oLanguage:
 			sSearch: "Filter results: " #rename summary table's search bar
+
+		if @showIgnore
+			@$(".bv_ignoredHeader").show()
+		else
+			@$(".bv_ignoredHeader").hide()
 
 		@
 
@@ -146,6 +165,8 @@ class window.AbstractCmpdRegAdminBrowserController extends Backbone.View
 			entityTypeUpper: @entityTypeUpper
 			entityTypeUpperPlural: @entityTypeUpperPlural
 		$(@el).html(template(@toDisplay))
+		unless @showIgnore?
+			@showIgnore = false
 		@searchController = new CmpdRegAdminSimpleSearchController
 			model: new CmpdRegAdminSearch()
 			el: @$('.bv_cmpdRegAdminSearchController')
@@ -173,6 +194,7 @@ class window.AbstractCmpdRegAdminBrowserController extends Backbone.View
 			@cmpdRegAdminSummaryTable = new CmpdRegAdminSummaryTableController
 				collection: new CmpdRegAdminList cmpdRegAdmins
 				toDisplay: @toDisplay
+				showIgnore: @showIgnore
 
 			@cmpdRegAdminSummaryTable.on "selectedRowUpdated", @selectedCmpdRegAdminUpdated
 			@$(".bv_cmpdRegAdminTableController").html @cmpdRegAdminSummaryTable.render().el
