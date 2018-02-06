@@ -108,7 +108,7 @@ exports.getCmpdRegEntityByCode = (req, resp) ->
 			resp.json json
 		else
 			resp.statusCode = 404
-			console.log 'got ajax error trying to do find #{entityType}'
+			console.log "got ajax error trying to do find #{entityType}"
 			console.log json
 			resp.end JSON.stringify {error: "something went wrong :("}
 	)
@@ -132,7 +132,7 @@ exports.searchCmpdRegEntities = (req, resp) ->
 			resp.json json
 		else
 			resp.statusCode = 404
-			console.log 'got ajax error trying to do find #{entityType}'
+			console.log "got ajax error trying to do find #{entityType}"
 			console.log json
 			resp.end JSON.stringify {error: "something went wrong :("}
 	)

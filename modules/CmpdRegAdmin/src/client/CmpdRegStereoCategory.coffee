@@ -44,6 +44,7 @@ class window.StereoCategoryController extends AbstractCmpdRegAdminController
 	entityTypeUpper: "Stereo Category"
 	entityTypeUpperPlural: "Stereo Categories"
 	modelClass: "StereoCategory"
+	showIgnore: false
 
 	completeInitialization: =>
 		@errorOwnerName = 'StereoCategoryController'
@@ -63,3 +64,4 @@ class window.StereoCategoryBrowserController extends AbstractCmpdRegAdminBrowser
 	entityClass: "StereoCategory"
 	entityControllerClass: "StereoCategoryController"
 	moduleLaunchName: "stereo_category_browser"
+	showIgnore: false
