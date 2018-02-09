@@ -661,6 +661,11 @@ class window.ThingLabelComboBoxController extends PickListSelect2Controller
 		match = _.where @latestData, code: code, ignored: false
 		match[0]?.id
 
+	getSelectedName: ->
+		code = @getSelectedCode()
+		match = _.where @latestData, code: code, ignored: false
+		match[0]?.name
+
 	setSelectedCode: (selection) ->
 		newOption = $('<option selected="selected"></option>').val(selection.code).text(selection.label)
 		@$el.append(newOption).trigger('change')

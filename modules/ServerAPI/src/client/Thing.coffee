@@ -277,6 +277,7 @@ class window.Thing extends Backbone.Model
 		# add key as attribute of model
 		if @lsProperties.defaultFirstLsThingItx?
 			for itx in @lsProperties.defaultFirstLsThingItx
+				#TODO fix - broken when have more than one itx that has same type/kind
 				thingItx = @get('firstLsThings').getOrCreateItxByTypeAndKind itx.itxType, itx.itxKind
 				@set itx.key, thingItx
 
@@ -285,6 +286,7 @@ class window.Thing extends Backbone.Model
 		# add key as attribute of model
 		if @lsProperties.defaultSecondLsThingItx?
 			for itx in @lsProperties.defaultSecondLsThingItx
+				#TODO fix - broken when have more than one itx that has same type/kind
 				thingItx = @get('secondLsThings').getOrCreateItxByTypeAndKind itx.itxType, itx.itxKind
 				@set itx.key, thingItx
 
