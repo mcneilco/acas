@@ -652,18 +652,28 @@ exports.getThingThingItxsByFirstThingAndItxTypeKind = (req, resp) ->
 		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
 		resp.json thingTestJSON.thingParent
 	else
-		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"/itxLsThingLsThings/byfirstthing/#{req.params.lsType}/#{req.params.lsKind}?firstthing=#{req.params.firstThingId}"
-		serverUtilityFunctions.getFromACASServer(baseurl, resp)
+		exports.getThingThingItxsByFirstThingAndItxTypeKindInternal req.params.lsType, req.params.lsKind, req.params.firstThingId, req.query.with, (statusCode, itxs) ->
+			resp.statusCode = statusCode
+			resp.json itxs
+
+exports.getThingThingItxsByFirstThingAndItxTypeKindInternal = (itxType, itxKind, firstThingId, withFlag, callback)	->
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.persistence.fullpath+"/itxLsThingLsThings/byfirstthing/#{itxType}/#{itxKind}?firstthing=#{firstThingId}&with=#{withFlag}"
+	serverUtilityFunctions.getFromACASServerInternal(baseurl, callback)
 
 exports.getThingThingItxsBySecondThingAndItxTypeKind = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
 		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
 		resp.json thingTestJSON.thingParent
 	else
-		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"/itxLsThingLsThings/bysecondthing/#{req.params.lsType}/#{req.params.lsKind}?secondthing=#{req.params.secondThingId}"
-		serverUtilityFunctions.getFromACASServer(baseurl, resp)
+		exports.getThingThingItxsBySecondThingAndItxTypeKindInternal req.params.lsType, req.params.lsKind, req.params.secondThingId, req.query.with, (statusCode, itxs) ->
+			resp.statusCode = statusCode
+			resp.json itxs
+
+exports.getThingThingItxsBySecondThingAndItxTypeKindInternal = (itxType, itxKind, secondThingId, withFlag, callback)	->
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.persistence.fullpath+"/itxLsThingLsThings/bysecondthing/#{itxType}/#{itxKind}?secondthing=#{secondThingId}&with=#{withFlag}"
+	serverUtilityFunctions.getFromACASServerInternal(baseurl, callback)
 
 exports.getThingThingItxsByFirstThingAndExcludeItxTypeKind = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
