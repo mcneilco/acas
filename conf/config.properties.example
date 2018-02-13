@@ -579,3 +579,6 @@ client.compoundInventory.daughterVials.strictMatchPhysicalState=false
 
 # Whether to save location as a codeValue or as a full location interaction
 client.compoundInventory.saveLocationAsCodeValue=true
+
+#config for whether SOLR should be updated when things are saved/updated
+client.solr.updateSolrForThings=false
