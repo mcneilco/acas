@@ -193,7 +193,7 @@ exports.thingByCodeName = (req, resp) ->
 #			baseurl += "?#{stub}"
 #		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
-getThingInternal = (lsType, lsKind, format, testMode, codeName, callback) ->
+exports.getThingInternal = (lsType, lsKind, format, testMode, codeName, callback) ->
 	if testMode or global.specRunnerTestmode
 		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
 		callback thingTestJSON.thingParent
@@ -395,7 +395,7 @@ exports.putThingInternal = (thing, lsType, lsKind, testMode, callback) ->
 			thingToSave = serverUtilityFunctions.insertTransactionIntoEntity transaction.id, thingToSave
 			updateThing thingToSave, testMode, (updatedThing) ->
 				format = "nestedfull"
-				getThingInternal lsType, lsKind, format, testMode, updatedThing.codeName, (thing) ->
+				exports.getThingInternal lsType, lsKind, format, testMode, updatedThing.codeName, (thing) ->
 					callback thing
 
 	fileSaveCompleted = (passed) ->
