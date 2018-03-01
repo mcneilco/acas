@@ -2767,7 +2767,7 @@ exports.createParentVialsFromCSVInternal = (csvFileName, dryRun, user, callback)
 					prepareSummaryInfo fileEntryArray, (summaryInfo) ->
 						exports.getContainerTubeDefinitionCode (definitionCode) ->
 							if !definitionCode?
-								console.log "Container definition missing. This is system configuratio problem"
+								console.log "Container definition missing. This is system configuration problem"
 								error =
 									errorLevel: 'error'
 									message: 'Could not find definition container for tube'
