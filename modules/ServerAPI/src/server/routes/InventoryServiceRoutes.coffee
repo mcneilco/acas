@@ -2767,6 +2767,7 @@ exports.createParentVialsFromCSVInternal = (csvFileName, dryRun, user, callback)
 					prepareSummaryInfo fileEntryArray, (summaryInfo) ->
 						exports.getContainerTubeDefinitionCode (definitionCode) ->
 							if !definitionCode?
+								console.log "Container definition missing. This is system configuration problem"
 								error =
 									errorLevel: 'error'
 									message: 'Could not find definition container for tube'
@@ -2785,7 +2786,7 @@ exports.createParentVialsFromCSVInternal = (csvFileName, dryRun, user, callback)
 									definition: definitionCode
 									recordedBy: user
 									createdUser: entry.preparedBy
-									createdDate: entry.createdDate
+									createdDate: new Date(entry.preparedDate).getTime()
 									physicalState: entry.physicalState
 									wells: [
 										wellName: "A001"
@@ -3556,7 +3557,7 @@ exports.createDaughterVialsInternal = (vialsToCreate, user, callback) ->
 					definition: definitionCode
 					recordedBy: user
 					createdUser: entry.preparedBy
-					createdDate: entry.createdDate
+					createdDate: new Date(entry.preparedDate).getTime()
 					physicalState: entry.physicalState
 					wells: [
 						wellName: "A001"
