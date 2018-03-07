@@ -1293,7 +1293,7 @@ getContainerCodesFromLabels = (req, callback) ->
 				callback json
 		)
 
-getContainerCodesFromLabelsInternal = (barcodes, containerType, containerKind, callback) ->
+exports.getContainerCodesFromLabelsInternal = (barcodes, containerType, containerKind, callback) ->
 	if global.specRunnerTestmode
 		response =
 			codeName: 'CONT-0000001'
@@ -1362,7 +1362,7 @@ exports.updateWellContentInternal = (wellContent, copyPreviousValues, callCustom
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getContainerCodesByLabelsResponse
 	else
-		console.debug 'incoming updateWellContentInternal request: ', JSON.stringify(wellContent.wells)
+		console.debug 'incoming updateWellContentInternal request: ', JSON.stringify(wellContent)
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers/updateWellContent?copyPreviousValues="+copyPreviousValues
 		console.debug 'base url: ', baseurl
@@ -3152,7 +3152,7 @@ checkLocationsExist = (fileEntryArray, callback) ->
 			callback missingLocations
 
 checkBarcodesExist = (barcodes, callback) ->
-	getContainerCodesFromLabelsInternal barcodes, 'container', 'tube', (containerCodes) ->
+	exports.getContainerCodesFromLabelsInternal barcodes, 'container', 'tube', (containerCodes) ->
 		existingBarcodes = []
 		newBarcodes = []
 		_.each containerCodes, (containerCodeEntry) ->
@@ -3203,12 +3203,17 @@ exports.checkParentWellContent = (fileEntryArray, callback) ->
 						errorLevel: flexibleErrorLevel
 						message: "Daughter vial #{fileEntry.destinationVialBarcode} must have the same concentration as parent vial #{fileEntry.sourceVialBarcode}, which is #{parentWellContent.batchConcentration} #{parentWellContent.batchConcUnits}."
 					errorMessages.push error
-				if parentWellContent.amountUnits != fileEntry.amountUnits
+				if !parentWellContent.amount?
+					error =
+						errorLevel: flexibleErrorLevel
+						message: "Parent vial #{fileEntry.sourceVialBarcode} does not have an amount set."
+					errorMessages.push error
+				if parentWellContent.amount? and parentWellContent.amountUnits != fileEntry.amountUnits
 					error =
 						errorLevel: flexibleErrorLevel
 						message: "Daughter vial #{fileEntry.destinationVialBarcode} must use the same amount units as parent vial #{fileEntry.sourceVialBarcode}, which is in #{parentWellContent.amountUnits}."
 					errorMessages.push error
-				else if parentWellContent.amount < totalRequestedAmounts[fileEntry.sourceVialBarcode]
+				else if parentWellContent.amount? and parentWellContent.amount < totalRequestedAmounts[fileEntry.sourceVialBarcode]
 					error =
 						errorLevel: 'warning'
 						message: "Creating daughter vial #{fileEntry.destinationVialBarcode} with #{fileEntry.amount.toFixed(3)} #{fileEntry.amountUnits} gives a total request of #{totalRequestedAmounts[fileEntry.sourceVialBarcode].toFixed(3)} #{fileEntry.amountUnits}, which will remove more than the #{parentWellContent.amount.toFixed(3)} #{parentWellContent.amountUnits} currently in parent vial #{fileEntry.sourceVialBarcode}, leaving a negative amount in the parent vial."
@@ -3313,10 +3318,11 @@ decrementAmountsFromVials = (toDecrementList, parentWellContentList, user, callb
 		oldContainerWellContent = _.findWhere parentWellContentList, {label: toDecrement.sourceVialBarcode}
 		oldWellContent = oldContainerWellContent.wellContent[0]
 		#Check that the amount is valid to decrement.
+		noParentAmount = !oldWellContent.amount?
 		differentState = (oldWellContent.physicalState != toDecrement.physicalState)
 		concentrationMismatch = (toDecrement.physicalState == 'solution' and (Math.abs(toDecrement.concentration - oldWellContent.batchConcentration) > 0.0001 or toDecrement.concUnits != oldWellContent.batchConcUnits))
 		unitMismatch = (oldWellContent.amountUnits != toDecrement.amountUnits)
-		if !differentState and !concentrationMismatch and !unitMismatch
+		if !differentState and !concentrationMismatch and !unitMismatch and !noParentAmount
 			wellCode = oldWellContent.containerCodeName
 			if runningTotals[wellCode]?
 				runningTotals[wellCode] -= toDecrement.amount
@@ -3394,7 +3400,11 @@ exports.saveWellToWellInteractionsInternal = (interactionsToSave, user, callback
 	barcodes = []
 	barcodes.push (_.pluck interactionsToSave, 'firstContainerBarcode')...
 	barcodes.push (_.pluck interactionsToSave, 'secondContainerBarcode')...
+	if config.all.client.compoundInventory.enforceUppercaseBarcodes
+		for i in [0..barcodes.length-1]
+			barcodes[i] = barcodes[i].toUpperCase()
 	console.log barcodes
+
 	exports.getWellCodesByPlateBarcodesInternal barcodes, (plateWellCodes) ->
 		wellCodes = _.pluck plateWellCodes, 'wellCodeName'
 		exports.getContainersByCodeNamesInternal wellCodes, (wells, statusCode) ->
@@ -3404,6 +3414,9 @@ exports.saveWellToWellInteractionsInternal = (interactionsToSave, user, callback
 				formattedItxList = []
 				_.each interactionsToSave, (itx) ->
 					requiredParams = ['firstContainerBarcode', 'firstWellLabel', 'secondContainerBarcode', 'secondWellLabel', 'interactionType', 'interactionKind']
+					if config.all.client.compoundInventory.enforceUppercaseBarcodes
+						itx.firstContainerBarcode = itx.firstContainerBarcode.toUpperCase()
+						itx.secondContainerBarcode = itx.secondContainerBarcode.toUpperCase()
 					for param in requiredParams
 						if !itx[param]?
 							callback "Error: all entries must include #{param}"

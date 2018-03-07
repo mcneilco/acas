@@ -194,7 +194,7 @@ class window.ACASFormStateTableController extends Backbone.View
 				if @tableReadOnly
 					cellProperties.readOnly = true
 				return cellProperties;
-		@hot.addHook 'afterChange', @validateUniqueness
+		@hot.addHook 'afterChange', @validateRequiredAndUniqueness
 
 	readOnlyRenderer: (instance, td, row, col, prop, value, cellProperties) =>
 		Handsontable.renderers.TextRenderer.apply(this, arguments)
@@ -429,6 +429,38 @@ class window.ACASFormStateTableController extends Backbone.View
 #			manualColumnResize: true
 #			manualRowResize: true
 
+	validateRequiredAndUniqueness: (changes, source) =>
+		@validateRequired changes, source
+		@validateUniqueness changes, source
+
+	validateRequired: (changes, source) =>
+		console.log "validateRequired"
+		requiredColumnIndices = @tableDef.values.map (value, idx) ->
+			if value.fieldSettings.required? and value.fieldSettings.required
+				idx
+			else
+				null
+		requiredColumnIndices = requiredColumnIndices.filter (idx) ->
+			idx?
+		_.each requiredColumnIndices, (columnIndex) =>
+			column = @hot.getDataAtCol columnIndex
+			column.forEach (value, row) =>
+				cell = @hot.getCellMeta row, columnIndex
+				rowData = @hot.getDataAtRow row
+				nonEmptyValues = _.filter rowData, (data) =>
+					data? and data != ""
+				if nonEmptyValues.length > 0
+					isRowEmpty = false
+				else
+					isRowEmpty = true
+				if (!value? or value is "") and !isRowEmpty #if cell is empty and the entire row is empty
+					cell.valid = false
+					cell.comment = 'required'
+				else
+					cell.valid = true
+					cell.comment = ''
+				@hot.render()
+
 	validateUniqueness: (changes, source) =>
 		uniqueColumnIndices = @tableDef.values.map (value, idx) ->
 			if value.fieldSettings.unique? and value.fieldSettings.unique
@@ -448,7 +480,8 @@ class window.ACASFormStateTableController extends Backbone.View
 				if idx > -1 and secondIdx > -1 and value? and value != ''
 					cell.valid = false
 					cell.comment = 'Error: Duplicates not allowed'
-				else
+				else if !(@tableDef.values[columnIndex].fieldSettings.required? and @tableDef.values[columnIndex].fieldSettings.required)
+					#only set cell to valid if value is not required or else this will overwrite validateRequired
 					cell.valid = true
 					cell.comment = ''
 		@hot.render()

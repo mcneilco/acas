@@ -407,13 +407,14 @@ $(function() {
 	    },
 
 	    allowedToUpdate: function () {
-		    var chemist = this.model.get('lot').get('chemist');
+				var chemist = this.model.get('lot').get('chemist');
+				var registeredBy = this.model.get('lot').get('registeredBy');
 
 		    if (this.user == null || chemist == null || this.model.get('lot').isNew()) return true; // test mode or new
 
 		    if (this.user.get('isAdmin')) {
 			    return true;
-		    }else if (!window.configuration.metaLot.disableEditMyLots && this.user.get('code') == chemist.get('code')){
+		    }else if (!window.configuration.metaLot.disableEditMyLots && (this.user.get('code') == chemist.get('code') || (registeredBy != null && this.user.get('code') == registeredBy.code))) {
 				return true;
 			} else {
 			    return false;

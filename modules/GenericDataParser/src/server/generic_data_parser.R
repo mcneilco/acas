@@ -92,11 +92,19 @@ validateMetaData <- function(metaData, configList, username, formatSettings = li
   useExisting <- metaData$Format %in% c("Use Existing Experiment", "Precise For Existing Experiment")
   
   if (useExisting) {
-    expectedDataFormat <- data.frame(
-      headers = c("Format","Experiment Code Name"),
-      class = c("Text", "Text"),
-      isNullable = c(FALSE, FALSE)
-    )
+    if(metaData$Format == "Use Existing Experiment") {
+      expectedOneFieldOfThese <- c("Experiment Code Name", "Experiment Corp Name")
+      missingExpectedOne <- !toupper(expectedOneFieldOfThese) %in% toupper(names(metaData))
+      if(all(missingExpectedOne)) {
+        addError(paste0("The loader needs one of '", paste(expectedOneFieldOfThese, collapse = "' or '"),"'"), errorEnv)
+      }
+      expectedDataFormat <- data.frame(
+        headers = c("Format",expectedOneFieldOfThese),
+        class = c("Text", rep("Text", length(expectedOneFieldOfThese))),
+        isNullable = c(FALSE, missingExpectedOne)
+      )
+    }
+
   } else {
     expectedDataFormat <- data.frame(
       headers = c("Format","Protocol Name","Assay Tree Rule","Experiment Name","Experiment Details","Scientist","Notebook","In Life Notebook", 
@@ -641,7 +649,7 @@ getEntityCodeFromEntityDisplayNameOrCode <- function(mainCodeOrDisplayName) {
                                                              "/api/entitymeta/configuredEntityTypes/"), 
                                                              requireJSON = TRUE))
   # Expected column names: 'type', 'kind', 'codeOrigin', 'displayName', 'sourceExternal'
-  entityTypeAndKindTable <- as.data.table(do.call(rbind, entityTypeAndKindList))
+  entityTypeAndKindTable <- rbindlist(entityTypeAndKindList, fill = TRUE)
   entityTypeAndKindTable[, displayName := unlist(displayName)]
   if (length(entityTypeAndKindTable[displayName == mainCodeOrDisplayName, code])) {
     mainCode <- entityTypeAndKindTable[displayName == mainCodeOrDisplayName, code][[1]]
@@ -659,7 +667,7 @@ getDisplayNameFromEntityCode <- function(mainCode) {
                                                              "/api/entitymeta/configuredEntityTypes/"), 
                                                              requireJSON = TRUE))
   # Expected column names: 'type', 'kind', 'codeOrigin', 'displayName', 'sourceExternal'
-  entityTypeAndKindTable <- as.data.table(do.call(rbind, entityTypeAndKindList))
+  entityTypeAndKindTable <- rbindlist(entityTypeAndKindList, fill = TRUE)
   entityTypeAndKindTable[, displayName := unlist(displayName)]
   if (length(entityTypeAndKindTable[code == mainCode, displayName])) {
     displayName <- entityTypeAndKindTable[code == mainCode, displayName][[1]]
@@ -1809,6 +1817,17 @@ createNewProtocol <- function(metaData, lsTransaction, recordedBy) {
   if (is.null(protocolStatus) || protocolStatus == "") {
     protocolStatus <- "created"
   }
+
+  protocolValues[[length(protocolValues)+1]] <- createStateValue(
+    recordedBy = recordedBy,
+    lsType = "codeValue",
+    lsKind = "scientist",
+    codeValue = metaData$Scientist,
+    codeType = "assay",
+    codeKind = "scientist",
+    codeOrigin = racas::applicationSettings$client.scientistCodeOrigin,
+    lsTransaction= lsTransaction)
+
   protocolValues[[length(protocolValues)+1]] <- createStateValue(
     recordedBy = recordedBy,
     lsType = "codeValue",
@@ -1982,7 +2001,6 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
                                                                        lsKind = "model fit transformation",
                                                                        stringValue = modelFitTransformation,
                                                                        lsTransaction= lsTransaction)
-    modelFitTransformation
   }
   # Create an experiment state for metadata
   experimentStates[[length(experimentStates)+1]] <- createExperimentState(experimentValues=experimentValues,
@@ -2854,16 +2872,34 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   
   # Get the protocol and experiment
   newProtocol <- FALSE
+  protocol <- NULL
   if (!useExisting) {
     protocol <- getProtocolByNameAndFormat(protocolName = validatedMetaData$'Protocol Name'[1], configList, inputFormat)
     newProtocol <- is.na(protocol[[1]])
     if (!newProtocol) {
       metaData$'Protocol Name'[1] <- getPreferredProtocolName(protocol, validatedMetaData$'Protocol Name'[1])
     }
+  } else {
+    if(!is.null(validatedMetaData$'Experiment Code Name'[1]) || !is.null(validatedMetaData$'Experiment Corp Name'[1])) {
+        if(!is.null(validatedMetaData$'Experiment Code Name'[1])) {
+          searchBy <- 'Experiment Code Name'
+          searchFor <- validatedMetaData$'Experiment Code Name'[1]
+          experiment <- try(getExperimentByCodeName(searchFor))
+        } else {
+          searchBy <- 'Experiment Corp Name'
+          searchFor <- validatedMetaData$'Experiment Corp Name'[1]
+          experiment <- try(getExperimentsByName(searchFor)[[1]])
+        }
+      if(class(experiment) == "try-error") {
+        addError(paste0("Could not find ",searchBy,": ", searchFor))
+      } else {
+        protocol <- getProtocolById(experiment$protocol$id)
+      }
+    }
   }
-
+  
   # Organize the Calculated Results
-  if (inputFormat %in% c("Gene ID Data", "Generic", "Dose Response")) {
+  if (inputFormat %in% c("Gene ID Data", "Generic", "Dose Response", "Use Existing Experiment")) {
     mainCode <- calculatedResults[2, 1] #Getting this from its standard position
   } else {
     mainCode <- "Corporate Batch ID"
@@ -2873,7 +2909,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   mainCode <- getEntityCodeFromEntityDisplayNameOrCode(mainCode)
   displayName <- getDisplayNameFromEntityCode(mainCode)
   
-  if(!newProtocol) {
+  if(!newProtocol && !is.null(protocol)) {
     requiredMainCode <- getProtocolRequiredEntityCode(protocol)
     if(length(requiredMainCode) > 0 && !is.na(requiredMainCode) && requiredMainCode != "" && requiredMainCode != "unassigned") {
       requiredMainCode <- requiredMainCode[[1]]
@@ -2949,10 +2985,15 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
 
   useExistingExperiment <- inputFormat %in% c("Use Existing Experiment", "Precise For Existing Experiment")
   if (useExistingExperiment) {
-    experiment <- getExperimentByCodeName(validatedMetaData$'Experiment Code Name'[1])
-    protocol <- getProtocolById(experiment$protocol$id)
-    validatedMetaData$'Protocol Name' <- getPreferredName(protocol)
-    validatedMetaData$'Experiment Name' <- getPreferredName(experiment)
+    if(errorFree) {
+      # At this point, if there are no errors, experiment, protocol and search by should already be pre defined
+      validatedMetaData$'Protocol Name' <- getPreferredName(protocol)
+      validatedMetaData$'Experiment Name' <- getPreferredName(experiment)
+      warnUser(paste0("The ",searchBy," '",searchFor,"' refers to Experiment Name '",validatedMetaData$'Experiment Name',"', the loader will delete this experiment's current data and replace it with your new upload.",
+                      " If you do not intend to delete and reload this data, enter a different experiment code."))
+    } else {
+      experiment <- NA
+    }
   } else {
     experiment <- getExperimentByNameCheck(experimentName = validatedMetaData$'Experiment Name'[1], protocol, configList, duplicateExperimentNamesAllowed)
   }
@@ -2972,13 +3013,37 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   ## SEL column oder info
   columnOrderStates <- createColumnOrderStates(selColumnOrderInfo, errorEnv, recordedBy, lsTransaction)
  
-  if (!dryRun && errorFree && !useExistingExperiment) {
-    experiment <- createNewExperiment(metaData = validatedMetaData, protocol, lsTransaction, fullPathToFile, 
-                                      recordedBy, configList, deletedExperimentCodes, validatedCustomMetaDataStates,
-                                      modelFitTransformation, columnOrderStates)
-    
-    # If an error occurs, this allows the experiment to still be accessed
-    assign(x="experiment", value=experiment, envir=parent.frame())
+  if (!dryRun && errorFree) {
+    if(!useExistingExperiment) {
+      experiment <- createNewExperiment(metaData = validatedMetaData, protocol, lsTransaction, fullPathToFile, 
+                                        recordedBy, configList, deletedExperimentCodes, validatedCustomMetaDataStates,
+                                        modelFitTransformation, columnOrderStates)
+      
+      # If an error occurs, this allows the experiment to still be accessed
+      assign(x="experiment", value=experiment, envir=parent.frame())
+    } else {
+      if(!is.null(modelFitTransformation)) {
+        # Update model fit transformation if it exists
+        updatedExperimentValue <- update_or_replace_experiment_metadata_value(experimentCode = experiment$codeName, lsType = "stringValue", lsKind = "model fit transformation", value = modelFitTransformation)
+      }
+      # Ignore Current Column Order states and values
+      experiment$lsStates <- lapply(experiment$lsStates, function(state) {
+        if(state$lsType == "metadata" && state$lsKind == "data column order") {
+          state$ignored <- TRUE
+          state$lsValues <- lapply(state$lsValues, function(value) {
+            value$ignored <- TRUE
+            return(value)
+          })
+          
+        }
+        return(state)
+      })
+      # Add new Column Order
+      if(!is.null(columnOrderStates)) {
+        experiment$lsStates <- c(experiment$lsStates, columnOrderStates)
+      }
+      updatedExperiment <- updateAcasEntity(experiment,"experiments")
+    }
   }
 
   if(!is.null(imagesFile) && imagesFile != "") {
@@ -2988,7 +3053,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   # Upload the data if this is not a dry run
   if(!dryRun & errorFree) {
     
-    reportFileSummary <- paste0(validatedMetaData$'Protocol Name', " - ", validatedMetaData$'Experiment Name')
+    reportFileSummary <- basename(reportFilePath)
     if(rawOnlyFormat) { 
       uploadRawDataOnly(metaData = validatedMetaData, lsTransaction, subjectData = calculatedResults,
                         experiment, fileStartLocation = pathToGenericDataFormatExcelFile, configList, 
@@ -3065,6 +3130,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   }
   summaryInfo$experimentEntity <- experiment
   
+  summaryInfo$info <- summaryInfo$info[lapply(summaryInfo$info,length)>0]
   return(summaryInfo)
 }
 
@@ -3087,7 +3153,7 @@ deleteOldData <- function(experiment, useExistingExperiment) {
     deleteAnnotation(experiment, racas::applicationSettings)
   }
   if(useExistingExperiment) {
-    deleteAnalysisGroupByExperiment(experiment)
+    deleteAnalysisGroupsByExperiment(experiment)
   } else {
     deletedExperimentCodes <- c(experiment$codeName, getPreviousExperimentCodes(experiment))
     deleteExperiment(experiment)
