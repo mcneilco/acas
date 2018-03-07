@@ -563,6 +563,9 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
     calculatedResults$batchCode[batchesToCheck] <- prefDT$preferredName[match(calculatedResults$batchCode[batchesToCheck],prefDT$requestName)]
   }
   
+  #### ================= Check the unit kinds =======================================================
+  validateUnitKinds(c(calculatedResults$"valueUnit", calculatedResults$"concUnit"), errorEnv)
+    
   #### ================= Check the value kinds =======================================================
   neededValueKinds <- c(calculatedResults$"valueKind", curveNames)
   neededValueKindTypes <- c(calculatedResults$Class, rep("Text", length(curveNames)))
@@ -877,6 +880,15 @@ validateCalculatedResultDatatypes <- function(classRow, LabelRow, lockCorpBatchI
   # Return classRow
   return(classRow)
 }
+
+validateUnitKinds <- function(neededUnitKinds, errorEnv) {
+  # Throw errors for value kinds greater than 64 characters
+  unitKindsTooLong <- unique(neededUnitKinds)[which(nchar(unique(neededUnitKinds)) > 25)]
+  if(length(unitKindsTooLong) > 0) {
+    addError(paste0(length(unitKindsTooLong)," unit kinds are too long: ",sqliz(unitKindsTooLong), ". Unit kinds must be 25 characters or less."), errorEnv)
+  }
+}
+
 validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun, reserved = c("concentration", "time")) {
   # Checks that column headers are valid valueKinds (or creates them if they are new)
   #
