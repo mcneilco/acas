@@ -469,7 +469,8 @@ class window.ACASFormLSHTMLClobValueFieldController extends ACASFormAbstractFiel
 
 	renderModelContent: =>
 		if @editor?
-			@editor.setContent @getModel().get('value')
+			if @getModel().get('value')?
+				@editor.setContent @getModel().get('value')
 		else
 			@contentToLoad = @getModel().get('value')
 		super()
