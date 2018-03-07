@@ -882,7 +882,7 @@ validateCalculatedResultDatatypes <- function(classRow, LabelRow, lockCorpBatchI
 }
 
 validateUnitKinds <- function(neededUnitKinds, errorEnv) {
-  # Throw errors for value kinds greater than 64 characters
+  # Throw errors for unit kinds greater than 25 characters
   unitKindsTooLong <- unique(neededUnitKinds)[which(nchar(unique(neededUnitKinds)) > 25)]
   if(length(unitKindsTooLong) > 0) {
     addError(paste0(length(unitKindsTooLong)," unit kinds are too long: ",sqliz(unitKindsTooLong), ". Unit kinds must be 25 characters or less."), errorEnv)
