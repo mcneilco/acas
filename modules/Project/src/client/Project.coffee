@@ -793,9 +793,11 @@ class window.ProjectController extends AbstractFormController
 		@tagListController = new TagListController
 			el: @$('.bv_tags')
 			collection: lsTags
+		@$('.bv_tags').on 'itemAdded', =>
+			@model.trigger 'change'
+		@$('.bv_tags').on 'itemRemoved', =>
+			@model.trigger 'change'
 		@tagListController.render()
-		console.log "setupTagList"
-		console.log @tagListController
 
 	setupAttachFileListController: =>
 		$.ajax
