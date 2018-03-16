@@ -47,6 +47,31 @@ class window.UtilityFunctions
 		monthNum = date.getMonth()+1
 		date.getFullYear()+'-'+("0" + monthNum).slice(-2)+'-'+("0" + date.getDate()).slice(-2)
 
+	convertMSToYMDTimeDate: (ms, timeFormat) ->
+		date = new Date ms
+		monthNum = date.getMonth()+1
+		formattedDate = date.getFullYear()+'-'+("0" + monthNum).slice(-2)+'-'+("0" + date.getDate()).slice(-2) + " "
+
+		hours = date.getHours()
+		hours = ("0"+hours).slice(-2)
+		minutes = date.getMinutes()
+		minutes = ("0"+minutes).slice(-2)
+		unless timeFormat?
+			#default time format = 24 hr clock
+			timeFormat = "24hr"
+		if timeFormat is "12hr"
+			if parseInt(hours) > 12
+				hours = hours-12
+				hours = ("0"+hours).slice(-2)
+				period = "PM"
+			else
+				period = "AM"
+			formattedDate += "#{hours}:#{minutes} #{period}"
+		else
+			formattedDate += "#{hours}:#{minutes}"
+
+		return formattedDate
+
 	convertTextAreaToDiv: (controller) =>
 		for textarea in controller.$('textarea')
 			text = $(textarea).val().replace(/\r?\n/g,'<br/>')

@@ -85,6 +85,12 @@ window.ModuleMenusConfiguration =
 		collapsible: false
 	,
 		isHeader: false
+		menuName: "CmpdReg Standardization"
+		mainControllerClassName: "StandardizationController"
+		autoLaunchName: "standardization"
+		requireUserRoles: [window.conf.roles.cmpdreg.adminRole]
+	,
+		isHeader: false
 		menuName: "CmpdReg Vendors"
 		mainControllerClassName: "VendorBrowserController"
 		autoLaunchName: "vendor_browser"
