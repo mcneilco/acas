@@ -1,7 +1,30 @@
 body {
-    padding-top: 60px;
-    padding-bottom: 40px;
+    /* padding-top: 60px;
+    padding-bottom: 40px; */
 }
+
+.bv_username {
+  color: #ffffff;
+}
+
+.bv_logout {
+  margin-left: 10px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* old css */
+
 .sidebar-nav {
     padding: 9px 0;
 }
@@ -39,8 +62,7 @@ body {
 }
 
 .bv_headerName {
-    font-weight: 200;
-    font-size: 20px;
+
 }
 
 /*.bv_GenericDataParserController {

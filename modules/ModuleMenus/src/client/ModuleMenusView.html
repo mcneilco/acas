@@ -1,40 +1,82 @@
 <script type="text/template" id="ModuleMenusView">
+
+  <!-- ACAS Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <span class="navbar-brand bv_headerName" href="">ACAS LIMS</span>
+    <button class="navbar-toggler" type="button" data-toggle="collapse">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav mr-auto bv_externalACASModules">
+        <li class="nav-item active">
+          <a class="nav-link" href="">Home</a>
+        </li>
+      </ul>
+      <span class="navbar-text">
+        <span>Logged in as</span>
+        <span class="bv_username">
+            <span class="bv_loginUserFirstName">First Name</span>
+            <span class="bv_loginUserLastName">Last Name</span>
+            <!-- TODO: style fast user switching select -->
+            <select class="bv_fastUserSelect"></select>
+        </span>
+      </span>
+      <a href="/logout" class="btn btn-outline-light bv_logout" role="button">Logout</a>
+    </div>
+  </nav>
+
+  <!-- External Navbar -->
+
+
+
+
+  <!-- Module Menu -->
+  <!-- ACAS Landing Page -->
+  <!-- Footer -->
+  <hr />
+  <footer>
+      <p class="bv_copyrightMessage pull-right" style="padding-right:50px;">&copy; John McNeil & Company 2012-2015</p>
+  </footer>
+
+  <!-- Error -->
+  <div class="modal hide bv_serverUnavailable">
+      <div class="modal-header">
+          <h4><i class="icon-exclamation-sign" style="margin-top: 5px;"></i> Error</h4>
+      </div>
+      <div class="modal-body">
+          ACAS is currently unavailable.
+      </div>
+      <div class="modal-footer">
+          <a href="/login" class="btn hide bv_loginBtn">Login</a>
+      </div>
+  </div>
+
+  <!-- Change Username -->
+  <div class="modal hide bv_changeUserName">
+      <div class="modal-header">
+          <h4>Change User Name</h4>
+      </div>
+      <div class="modal-body">
+          <input class="input bv_firstName" placeholder="first name" >
+      </div>
+      <div class="modal-footer">
+          <a class="btn bv_changeNameBtn">Change My Name</a>
+      </div>
+  </div>
+
+
     <div class="">
 
-        <div class="navbar navbar-inverse navbar-fixed-top">
-            <div class="navbar-inner">
-                <div class="container-fluid">
-
-                    <div class="navbar-text pull-right bv_userInfo" style="">
-
-                        <span>Logged in as</span>
-                        <span class="bv_username">
-                            <a href="#" class="navbar-link bv_loginUserFirstName">First Name</a>
-                            <a href="#" class="navbar-link bv_loginUserLastName">Last Name</a>
-                            <select class="bv_fastUserSelect"></select>
-                        </span>
-                        <a href="/logout" class="btn btn-inverse bv_logout">Logout</a>
-                    </div>
 
 
-                    <ul class="nav" >
-                        <li class="bv_toggleModuleMenuControl">
+
+
+
+                        <!-- <li class="bv_toggleModuleMenuControl">
                             <img src="/img/hamburgerwhite.png" style="width:20px;" />
-                        </li>
-                        <li>
-                            <a class="bv_headerName" href="/">ACAS</a>
-                        </li>
-                    </ul>
-                    <ul class="nav" style="display:none;">
-                        <li class="active"><a href="#">Home</a></li>
-                        <li><a href="#about">About</a></li>
-                        <li><a href="#contact">Contact</a></li>
-                    </ul>
-                    <ul class="nav bv_externalACASModules">
-                    </ul>
-                </div><!--/.nav-collapse -->
-            </div>
-        </div>
+                        </li> -->
+
+
 
 
         <div class="container-fluid">
@@ -44,6 +86,10 @@
                     </div><!--/.well -->
                     <div class="bv_deployMode"><h1 style="color:#e2e2e2;font-size:62px;"></h1></div>
                 </div><!--/span-->
+
+
+
+
                 <div class="span8 bv_homePageWrapper">
                         <h3 class="bv_homePageMessage" style="margin-bottom:25px; margin-top:25px;">Welcome to ACAS</h3>
                         <div class="well bv_summaryStats" style="background:#FFFFFF; padding-top:22px; padding-left:17px; padding-bottom:12px;"></div>
@@ -51,6 +97,7 @@
                             <a class="btn btn-small" href="/passwordChange" style="margin-top:0px;margin-left:5px;">Change Password</a>
                         </div>
                 </div>
+
                 <div class="span9 bv_mainModuleWellWrapper">
                     <div class="mainModuleWell" >
                         <div class="bv_mainModuleWrapper" style="min-width:600px;padding-top:10px;">
@@ -60,33 +107,8 @@
                 </div>
             </div>
         </div>
-        <hr />
-        <footer>
-            <p class="bv_copyrightMessage pull-right" style="padding-right:50px;">&copy; John McNeil & Company 2012-2015</p>
-        </footer>
     </div>
 
-    <div class="modal hide bv_serverUnavailable">
-        <div class="modal-header">
-            <h4><i class="icon-exclamation-sign" style="margin-top: 5px;"></i> Error</h4>
-        </div>
-        <div class="modal-body">
-            ACAS is currently unavailable.
-        </div>
-        <div class="modal-footer">
-            <a href="/login" class="btn hide bv_loginBtn">Login</a>
-        </div>
-    </div>
 
-    <div class="modal hide bv_changeUserName">
-        <div class="modal-header">
-            <h4>Change User Name</h4>
-        </div>
-        <div class="modal-body">
-            <input class="input bv_firstName" placeholder="first name" >
-        </div>
-        <div class="modal-footer">
-            <a class="btn bv_changeNameBtn">Change My Name</a>
-        </div>
-    </div>
+
 </script>
