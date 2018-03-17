@@ -43,11 +43,11 @@ describe "Module Menus Controller testing", ->
 		it "should show the deploy mode if set", ->
 			window.AppLaunchParams.deployMode = "Stage"
 			@mmc.render()
-			expect(@mmc.$('.bv_deployMode h1').html()).toEqual "STAGE"
+			expect(@mmc.$('.bv_deployMode').html()).toEqual "STAGE"
 		it "should not show the deploy mode if set to Prod", ->
 			window.AppLaunchParams.deployMode = "Prod"
 			@mmc.render()
-			expect(@mmc.$('.bv_deployMode h1').html()).toEqual ""
+			expect(@mmc.$('.bv_deployMode').html()).toEqual ""
 
 	describe "change password display", ->
 		describe "show password change link mode", ->
@@ -72,5 +72,3 @@ describe "Module Menus Controller testing", ->
 				window.conf.roologin.showpasswordchange = @showPassMode
 			it "should hide the change password link", ->
 				expect(@mmc.$('.bv_changePassword')).not.toBeVisible()
-
-

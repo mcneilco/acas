@@ -1,7 +1,7 @@
 <script type="text/template" id="ModuleMenusView">
 
   <!-- ACAS Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
     <span class="navbar-brand bv_headerName" href="">ACAS LIMS</span>
     <button class="navbar-toggler" type="button" data-toggle="collapse">
       <span class="navbar-toggler-icon"></span>
@@ -12,6 +12,7 @@
           <a class="nav-link" href="">Home</a>
         </li>
       </ul>
+      <span class="navbar-text bv_deployMode"></span>
       <span class="navbar-text">
         <span>Logged in as</span>
         <span class="bv_username">
@@ -26,17 +27,53 @@
   </nav>
 
   <!-- External Navbar -->
-
-
-
+  <!-- This is set in inividual Jade files -->
 
   <!-- Module Menu -->
-  <!-- ACAS Landing Page -->
-  <!-- Footer -->
-  <hr />
-  <footer>
-      <p class="bv_copyrightMessage pull-right" style="padding-right:50px;">&copy; John McNeil & Company 2012-2015</p>
-  </footer>
+  <div class="">
+    <nav class="bg-light bv_moduleMenuComponent">
+      <div class="bv_moduleMenuWellWrapper">
+        <div class="bv_modLaunchMenuWrapper">
+        </div>
+      </div>
+    </nav>
+  </div>
+
+  <!-- ACAS Container -->
+  <div class="container-fluid">
+    <div class="row">
+
+      <!-- Module -->
+      <div class="col-12 col-lg-6 col-xl-3 bv_homePageWrapper">
+        <h3 class="bv_homePageMessage">Welcome to ACAS</h3>
+        <div class="bv_summaryStats"></div>
+        <div class="bv_changePassword">
+          <a class="btn btn-light" href="/passwordChange" role="button">Change Password</a>
+        </div>
+      </div>
+
+      <div class="col bv_mainModuleWellWrapper">
+        <div class="mainModuleWell" >
+            <div class="bv_mainModuleWrapper">
+                module should load here
+            </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="row">
+      <div class="col-12 bv_copyrightWrapper">
+        <hr />
+        <p class="bv_copyrightMessage">&copy; John McNeil & Company 2012-2018</p>
+      </div>
+    </div>
+
+    <!-- End ACAS Container -->
+  </div>
+
+
+
 
   <!-- Error -->
   <div class="modal hide bv_serverUnavailable">
@@ -65,49 +102,7 @@
   </div>
 
 
-    <div class="">
 
-
-
-
-
-
-                        <!-- <li class="bv_toggleModuleMenuControl">
-                            <img src="/img/hamburgerwhite.png" style="width:20px;" />
-                        </li> -->
-
-
-
-
-        <div class="container-fluid">
-            <div class="row-fluid">
-                <div class="span3 bv_moduleMenuWellWrapper">
-                    <div class="bv_modLaunchMenuWrapper well sidebar-nav">
-                    </div><!--/.well -->
-                    <div class="bv_deployMode"><h1 style="color:#e2e2e2;font-size:62px;"></h1></div>
-                </div><!--/span-->
-
-
-
-
-                <div class="span8 bv_homePageWrapper">
-                        <h3 class="bv_homePageMessage" style="margin-bottom:25px; margin-top:25px;">Welcome to ACAS</h3>
-                        <div class="well bv_summaryStats" style="background:#FFFFFF; padding-top:22px; padding-left:17px; padding-bottom:12px;"></div>
-                        <div class="pull-right bv_changePassword">
-                            <a class="btn btn-small" href="/passwordChange" style="margin-top:0px;margin-left:5px;">Change Password</a>
-                        </div>
-                </div>
-
-                <div class="span9 bv_mainModuleWellWrapper">
-                    <div class="mainModuleWell" >
-                        <div class="bv_mainModuleWrapper" style="min-width:600px;padding-top:10px;">
-                            module should load here
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
 
 

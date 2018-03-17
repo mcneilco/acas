@@ -1,6 +1,17 @@
 body {
     /* padding-top: 60px;
     padding-bottom: 40px; */
+    padding-top: 56px;
+    padding-right: 0;
+    padding-left: 0;
+}
+
+.hide {
+  display: none;
+}
+
+.show {
+  display: block;
 }
 
 .bv_username {
@@ -11,23 +22,75 @@ body {
   margin-left: 10px;
 }
 
+/* if modules are cut off the bottom of the window, expand the bottom padding; default is 100px */
+.bv_navList {
+  padding: 37px 20px 100px 20px;
+  width: 245px;
+}
 
+.bv_moduleMenuComponent {
+  position: fixed;
+  /* top: 56px; */
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
 
+.bv_moduleMenuComponent .nav-link {
+  padding: 3px 10px 3px 10px;
+  color: rgba(0,0,0,.65);
+}
 
+.bv_moduleMenuComponent .nav-link:hover {
+  color: #007bff;
+}
 
+.bv_moduleMenuComponent .nav-link:active {
+  color: #007bff;
+}
 
+.bv_modLaunchMenuWrapper .active {
+  font-weight: bold;
+  /* color: #007bff !important; */
+}
 
+.bv_menuName {
+  font-size: 14px;
+}
 
+.nav-header {
+  font-size: 12px;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: #99979c;
+  margin: 6px 10px 3px 10px;
+}
 
+.bv_homePageWrapper, .bv_mainModuleWellWrapper, .bv_copyrightWrapper {
+  margin-left: 260px;
+}
+
+.bv_deployMode {
+  color: #ffffff !important;
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.bv_copyrightWrapper {
+  padding-right: 0;
+  padding-left: 0;
+}
+
+.bv_copyrightMessage {
+  font-size: 12px;
+  color: #99979c;
+  padding-left: 20px;
+}
 
 
 
 
 /* old css */
-
-.sidebar-nav {
-    padding: 9px 0;
-}
 
 .mainModuleWell {
 
@@ -40,10 +103,6 @@ body {
 
 .rowSelected {
 	background-color: green;
-}
-
-.bv_modLaunchMenuWrapper .active {
-    font-weight: bold;
 }
 
 .bv_showModuleMenuControl, .bv_hideModuleMenuControl {
@@ -64,6 +123,8 @@ body {
 .bv_headerName {
 
 }
+
+
 
 /*.bv_GenericDataParserController {
 
@@ -141,16 +202,16 @@ body {
 }
 
 .bv_modLaunchMenuWrapper {
-    width: 267px;
+    /* width: 267px; */
 }
 .bv_modLaunchMenuWrapper .bv_menuItem {
-    margin-top: 3px;
+    /* margin-top: 3px; */
 
     /*margin-bottom: 5px;*/
 }
 
 .bv_notTopHeader {
-    margin-top: 5px;
+    /* margin-top: 5px; */
 }
 
 .bv_expandAll, .bv_collapseAll {

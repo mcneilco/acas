@@ -187,7 +187,7 @@ client.moduleMenus.logoText=ACAS
 client.moduleMenus.logoImageFilePath=
 client.moduleMenus.logoTextLink=/
 client.moduleMenus.homePageMessage=Welcome to ACAS
-client.moduleMenus.copyrightMessage=&copy; John McNeil & Company 2012-2017
+client.moduleMenus.copyrightMessage=&copy; John McNeil & Company 2012-2018
 # client.moduleMenus.menuConfigurationSettings=ModuleMenusConfiguration
 # If summary statistics is an included feature, set the following to true
 client.moduleMenus.summaryStats=false

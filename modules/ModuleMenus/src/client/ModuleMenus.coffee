@@ -74,7 +74,7 @@ class window.ModuleMenusController extends Backbone.View
 	render: =>
 		if window.AppLaunchParams.deployMode?
 			unless window.AppLaunchParams.deployMode.toUpperCase() =="PROD"
-				@$('.bv_deployMode h1').html(window.AppLaunchParams.deployMode.toUpperCase())
+				@$('.bv_deployMode').html(window.AppLaunchParams.deployMode.toUpperCase())
 
 		@
 
