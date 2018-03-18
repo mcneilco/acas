@@ -3,10 +3,10 @@
   <!-- ACAS Navbar -->
   <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
     <span class="navbar-brand bv_headerName" href="">ACAS LIMS</span>
-    <button class="navbar-toggler" type="button" data-toggle="collapse">
+    <button class="navbar-toggler" type="button" data-target="acasCollapseNavbarContent" data-toggle="collapse" aria-controls="acasCollapseNavbarContent" aria-expanded="false" aria-label="Expand">
       <span class="navbar-toggler-icon"></span>
     </button>
-    <div class="collapse navbar-collapse">
+    <div class="collapse navbar-collapse" id="acasCollapseNavbarContent">
       <ul class="navbar-nav mr-auto bv_externalACASModules">
         <li class="nav-item active">
           <a class="nav-link" href="">Home</a>
@@ -18,10 +18,11 @@
         <span class="bv_username">
             <span class="bv_loginUserFirstName">First Name</span>
             <span class="bv_loginUserLastName">Last Name</span>
-            <!-- TODO: style fast user switching select -->
-            <select class="bv_fastUserSelect"></select>
         </span>
       </span>
+      <form class="form-inline">
+        <select class="form-control bv_fastUserSelect"></select>
+      </form>
       <a href="/logout" class="btn btn-outline-light bv_logout" role="button">Logout</a>
     </div>
   </nav>
