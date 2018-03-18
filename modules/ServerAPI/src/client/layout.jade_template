@@ -4,7 +4,6 @@ html
 
         title= title
         link(rel='stylesheet', href='/stylesheets/bootstrap.css')
-        link(rel='stylesheet', href='/stylesheets/bootstrap-responsive.min.css')
         link(rel='stylesheet', href='/stylesheets/bootstrap-image-gallery.min.css')
         link(rel='stylesheet', href='/lib/jqueryFileUpload/css/jquery.fileupload-ui.css')
         link(rel='stylesheet', href='/stylesheets/base.css')
@@ -17,7 +16,7 @@ html
         link(rel='stylesheet', href='/lib/jsxgraph/jsxgraph.css')
         link(rel='stylesheet', href='/lib/jstree/themes/default/style.min.css')
         link(rel='stylesheet', href='/lib/handsontable/dist/handsontable.full.css')
-        link(rel='stylesheet', href='/lib/font-awesome/css/font-awesome.css')
+        link(rel='stylesheet', href='/lib/font-awesome-5/web-fonts-with-css/css/fontawesome-all.css')
         link(rel='stylesheet', href='/lib/tinymce/js/tinymce/skins/lightgray/skin.min.css')
         link(rel='stylesheet', href='/lib/select2-4.0.2/dist/css/select2.css')
         // inserted by PrepareModuleIncludes

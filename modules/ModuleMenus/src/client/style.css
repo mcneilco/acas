@@ -24,7 +24,7 @@ body {
 
 /* if modules are cut off the bottom of the window, expand the bottom padding; default is 100px */
 .bv_navList {
-  padding: 37px 20px 100px 20px;
+  padding: 16px 20px 100px 20px;
   width: 245px;
 }
 
@@ -34,6 +34,7 @@ body {
   height: 100%;
   overflow-x: hidden;
   overflow-y: auto;
+  z-index: 999;
 }
 
 .bv_moduleMenuComponent .nav-link {
@@ -49,25 +50,41 @@ body {
   color: #007bff;
 }
 
-.bv_modLaunchMenuWrapper .active {
-  font-weight: bold;
-  /* color: #007bff !important; */
+.bv_modLaunchMenuWrapper .active .nav-link {
+  /* font-weight: bold; */
+  color: #007bff !important;
 }
 
 .bv_menuName {
   font-size: 14px;
 }
 
+.bv_isLoaded {
+  padding: 4px 10px 4px 9px;
+}
+
+.bv_isDirty {
+  padding: 4px 8px 4px 10px;
+}
+
+.bv_isLocked {
+  padding: 4px 10px 4px 10px;
+}
+
 .nav-header {
   font-size: 12px;
   text-transform: uppercase;
   font-weight: 500;
-  color: #99979c;
-  margin: 6px 10px 3px 10px;
+  /* color: #99979c; */
+  color: #000000;
+  margin: 16px 10px 3px 10px;
 }
 
-.bv_homePageWrapper, .bv_mainModuleWellWrapper, .bv_copyrightWrapper {
-  margin-left: 260px;
+/* TODO fix colors of active module to read better */
+
+.acasWrapper {
+  margin-left: 245px;
+  padding: 20px;
 }
 
 .bv_deployMode {
@@ -79,6 +96,11 @@ body {
 .bv_copyrightWrapper {
   padding-right: 0;
   padding-left: 0;
+  margin-left: 245px;
+  background-color: #ffffff;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #f8f9fa;
 }
 
 .bv_copyrightMessage {
@@ -193,10 +215,10 @@ body {
     /*border-bottom-color: #999999;*/
 }
 
-.bv_collapsibleHeaderController .bv_modules {
+/* .bv_collapsibleHeaderController .bv_modules {
     list-style-type: none;
     margin-left: 15px;
-}
+} */
 .bv_collapsibleHeaderController .bv_moduleCategory {
     cursor: pointer;
 }

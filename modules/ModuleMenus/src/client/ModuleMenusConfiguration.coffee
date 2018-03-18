@@ -3,7 +3,7 @@ window.ModuleMenusConfiguration =
 		isHeader: true
 		menuName: "Load Data"
 		requireUserRoles: [window.conf.roles.acas.userRole]
-		collapsible: false
+		collapsible: true
 	,
 		isHeader: false
 		menuName: "Experiment Loader"

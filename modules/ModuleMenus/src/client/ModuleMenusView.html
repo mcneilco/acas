@@ -40,36 +40,51 @@
   </div>
 
   <!-- ACAS Container -->
-  <div class="container-fluid">
-    <div class="row">
+  <div class="acasWrapper">
+    <div class="container-fluid">
+
+      <!-- Welcome Message -->
+      <div class="row">
+        <div class="col-12 bv_homePageWrapper">
+          <h3 class="bv_homePageMessage">Welcome to ACAS LIMS</h3>
+          <div class="row">
+            <div class="col-8">
+              <div class="card">
+                <div class="card-body">
+                  <p class="card-text">
+                    It's nice to see you today! Get started by clicking on <strong>Experiment Loader</strong> to load some of your data. Or take a look at our documentation!
+                  </p>
+                  <a href="https://docs.google.com/document/d/1tPz5VliAhCD0sELDsZlNvt9jcGiNxi7iQQB4NJ1120Y/edit?usp=sharing" target="_blank" class="card-link">Documentation</a>
+                  <a href="/passwordChange" class="card-link">Change Password</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bv_summaryStats"></div>
+        </div>
+      </div>
 
       <!-- Module -->
-      <div class="col-12 col-lg-6 col-xl-3 bv_homePageWrapper">
-        <h3 class="bv_homePageMessage">Welcome to ACAS</h3>
-        <div class="bv_summaryStats"></div>
-        <div class="bv_changePassword">
-          <a class="btn btn-light" href="/passwordChange" role="button">Change Password</a>
+      <div class="row">
+        <div class="col-12 bv_mainModuleWellWrapper">
+          <div class="mainModuleWell">
+              <div class="bv_mainModuleWrapper">
+                  module should load here
+              </div>
+          </div>
         </div>
       </div>
 
-      <div class="col bv_mainModuleWellWrapper">
-        <div class="mainModuleWell" >
-            <div class="bv_mainModuleWrapper">
-                module should load here
-            </div>
-        </div>
+      <!-- Footer -->
+      <div class="row">
+        <nav class="navbar fixed-bottom navbar-light bv_copyrightWrapper">
+          <span class="bv_copyrightMessage">&copy; John McNeil & Company 2012-2018</span>
+        </nav>
       </div>
-    </div>
-
-    <!-- Footer -->
-    <div class="row">
-      <div class="col-12 bv_copyrightWrapper">
-        <hr />
-        <p class="bv_copyrightMessage">&copy; John McNeil & Company 2012-2018</p>
-      </div>
-    </div>
 
     <!-- End ACAS Container -->
+    </div>
   </div>
 
 
