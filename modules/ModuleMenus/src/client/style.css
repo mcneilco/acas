@@ -111,6 +111,22 @@ body {
   margin: 16px 10px 3px 10px;
 }
 
+.bv_expandAll {
+  position: absolute;
+  top: 20px;
+  left: 190px;
+}
+
+.bv_collapseAll {
+  position: absolute;
+  top: 20px;
+  left: 190px;
+}
+
+.expandControlsIcon {
+  width: 12px;
+}
+
 /* TODO fix colors of active module to read better */
 
 .bv_deployMode {
@@ -241,11 +257,4 @@ body {
 
 .bv_notTopHeader {
     /* margin-top: 5px; */
-}
-
-.bv_expandAll, .bv_collapseAll {
-    width: 12px;
-    position: absolute;
-    top: 75px;
-    left: 265px;
 }
