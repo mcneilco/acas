@@ -2,12 +2,14 @@ exports.setupAPIRoutes = (app) ->
 	app.get '/cmpdReg/getStandardizationSettings', exports.getStandardizationSettings
 	app.get '/cmpdReg/getStandardizationHistory', exports.getStandardizationHistory
 	app.get '/cmpdReg/standardizationDryRun', exports.standardizationDryRun
+	app.get '/cmpdReg/standardizationDryRunStats', loginRoutes.ensureAuthenticated, exports.getDryRunStats	
 	app.get '/cmpdReg/standardizationExecute', exports.standardizationExecution
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/cmpdReg/getStandardizationSettings', loginRoutes.ensureAuthenticated, exports.getStandardizationSettings
 	app.get '/cmpdReg/getStandardizationHistory', loginRoutes.ensureAuthenticated, exports.getStandardizationHistory
 	app.get '/cmpdReg/standardizationDryRun', loginRoutes.ensureAuthenticated, exports.standardizationDryRun
+	app.get '/cmpdReg/standardizationDryRunStats', loginRoutes.ensureAuthenticated, exports.getDryRunStats
 	app.get '/cmpdReg/standardizationExecute', loginRoutes.ensureAuthenticated, exports.standardizationExecution
 
 _ = require 'underscore'
@@ -119,6 +121,25 @@ exports.standardizationDryRunInternal = (reportOnly, callback) ->
 			console.log error
 			console.log json
 			callback error, response.statusCode
+	)
+
+exports.getDryRunStats = (req, resp) ->
+	req.setTimeout 86400000
+	url = config.all.client.service.cmpdReg.persistence.fullpath + '/standardization/dryRunStats'
+	console.log url
+	request(
+		method: 'GET'
+		url: url
+		json: true
+	, (error, response, json) =>
+		if !error && response.statusCode == 200
+			resp.json json
+		else
+			console.log 'Error getting dry run stats'
+			console.log error
+			console.log json
+			resp.statusCode = response.statusCode
+			resp.end JSON.stringify error
 	)
 
 exports.standardizationExecution = (req, resp) ->

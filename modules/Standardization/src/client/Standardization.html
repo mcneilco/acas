@@ -8,6 +8,7 @@
         <button class="btn bv_executeDryRun pull-right">Execute Standardization Dry Run</button>
     </div>
 
+    <div class="bv_standardizationDryRunReportStats span12" style="margin-top:20px; margin-left:0px;" ></div>
     <div class="bv_standardizationDryRunReport span12" style="margin-top:20px; margin-left:0px;" ></div>
 
     <div class='modal bv_executingStandardizationDryRunModal hide'>
@@ -53,10 +54,12 @@
                 Summary
                 <ul>
                     <li>Date of standardization: <span class="bv_standardizationCompleteRecordedDate"></span></li>
+                    <li>Number of structures standardized: <span class="bv_standardizationCompleteStructuresStandardizedCount"></span></li>
                     <li>Number of structures changed: <span class="bv_standardizationCompleteChangedStructureCount"></span></li>
                     <li>Number of display changes: <span class="bv_standardizationCompleteDisplayChangeCount"></span></li>
                     <li>Number of new duplicates: <span class="bv_standardizationCompleteNewDuplicateCount"></span></li>
-                    <li>Number of old duplicates: <span class="bv_standardizationCompleteExistingDuplicateCount"></span></li>
+                    <li>Number of as drawn display change: <span class="bv_standardizationCompleteAsDrawnDisplayChangeCount"></span></li>
+                    <li>Number of existing duplicates: <span class="bv_standardizationCompleteExistingDuplicateCount"></span></li>
                 </ul>
             </div>
         </div>
@@ -95,82 +98,30 @@
 </script>
 
 <script type="text/template" id="StandardizationHistorySummaryTableView" xmlns="http://www.w3.org/1999/html">
-    <h4 style="margin-top:30px;">Standardization History</h4>
+    <h4 style="margin-top:30px;">Standardization History
+        <a href="#" class="bv_standardizationHistoryPopover" data-toggle="popover " data-placement="bottom">
+            <i class="icon-question-sign"style="margin-top:-3px;"></i>
+        </a>
+    </h4>
     <table class="table table-bordered table-striped table-hover bv_standardizationHistorySummaryTable" style="margin: 0px; width: 100%; ">
         <thead style="">
         <tr>
             <th style="width: 50px;">#</th>
             <th style="width: 50px;">Date of Standardization</th>
-            <th style="width: 50px;"># Structures Standardized
-                <a href="#" class="bv_structuresStandardizedCountPopover" data-toggle="popover ">
-                    <i class="icon-question-sign"style="margin-top:-3px;"></i>
-                </a>
-            </th>
-            <th style="width: 50px;"># Structures Updated
-                <a href="#" class="bv_structuresUpdatedCountPopover" data-toggle="popover ">
-                    <i class="icon-question-sign"style="margin-top:-3px;"></i>
-                </a>
-            </th>
-            <th style="width: 50px;"># Structures Changed
-                <a href="#" class="bv_changedStructureCountPopover" data-toggle="popover ">
-                    <i class="icon-question-sign"style="margin-top:-3px;"></i>
-                </a>
-            </th>
-            <th style="width: 50px;"># Display Change
-                <a href="#" class="bv_displayChangeCountPopover" data-toggle="popover ">
-                    <i class="icon-question-sign"style="margin-top:-3px;"></i>
-                </a>
-            </th>
-            <th style="width: 50px;"># New Duplicates
-                <a href="#" class="bv_newDuplicateCountPopover" data-toggle="popover ">
-                    <i class="icon-question-sign"style="margin-top:-3px;"></i>
-                </a>
-            </th>
-            <th style="width: 50px;"># As Drawn Display Change
-                <a href="#" class="bv_asDrawnDisplayChangeCountPopover" data-toggle="popover ">
-                    <i class="icon-question-sign"style="margin-top:-3px;"></i>
-                </a>
-            </th>
-            <th style="width: 50px;"># Existing Duplicates
-                <a href="#" class="bv_existingDuplicateCountPopover" data-toggle="popover ">
-                    <i class="icon-question-sign"style="margin-top:-3px;"></i>
-                </a>
-            </th>
-            <th style="width: 50px;">Settings Hash
-                <a href="#" class="bv_settingsHashPopover" data-toggle="popover ">
-                    <i class="icon-question-sign"style="margin-top:-3px;"></i>
-                </a>
-            </th>
-            <th style="width: 50px;">Dry-Run Status
-                <a href="#" class="bv_dryRunStatusPopover" data-toggle="popover ">
-                    <i class="icon-question-sign"style="margin-top:-3px;"></i>
-                </a>
-            </th>
-            <th style="width: 50px;">Dry-Run Start
-                <a href="#" class="bv_dryRunStartPopover" data-toggle="popover ">
-                    <i class="icon-question-sign"style="margin-top:-3px;"></i>
-                </a>
-            </th>
-            <th style="width: 50px;">Dry-Run Complete
-                <a href="#" class="bv_dryRunCompletePopover" data-toggle="popover ">
-                    <i class="icon-question-sign"style="margin-top:-3px;"></i>
-                </a>
-            </th>
-            <th style="width: 50px;">Standardization Status
-                <a href="#" class="bv_standardizationStatusPopover" data-toggle="popover ">
-                    <i class="icon-question-sign"style="margin-top:-3px;"></i>
-                </a>
-            </th>
-            <th style="width: 50px;">Standardization Start
-                <a href="#" class="bv_standardizationStartPopover" data-toggle="popover ">
-                    <i class="icon-question-sign"style="margin-top:-3px;"></i>
-                </a>
-            </th>
-            <th style="width: 50px;">Standardization Complete
-                <a href="#" class="bv_standardizationCompletePopover" data-toggle="popover ">
-                    <i class="icon-question-sign"style="margin-top:-3px;"></i>
-                </a>
-            </th>
+            <th style="width: 50px;"># Structures Standardized</th>
+            <th style="width: 50px;"># Structures Updated</th>
+            <th style="width: 50px;"># Structures Changed</th>
+            <th style="width: 50px;"># Display Change</th>
+            <th style="width: 50px;"># New Duplicates</th>
+            <th style="width: 50px;"># As Drawn Display Change</th>
+            <th style="width: 50px;"># Existing Duplicates</th>
+            <th style="width: 50px;">Settings Hash</th>
+            <th style="width: 50px;">Dry-Run Status</th>
+            <th style="width: 50px;">Dry-Run Start</th>
+            <th style="width: 50px;">Dry-Run Complete</th>
+            <th style="width: 50px;">Standardization Status</th>
+            <th style="width: 50px;">Standardization Start</th>
+            <th style="width: 50px;">Standardization Complete</th>
         </tr>
         </thead>
         <tbody style="">
@@ -179,13 +130,22 @@
     </table>
 </script>
 
+<script type="text/template" id="StandardizationDryRunReportStatsView" xmlns="http://www.w3.org/1999/html">
+    <h4>Latest Standardization Dry Run Results
+        <a href="#" class="bv_dryRunResultsPopover" data-toggle="popover " data-placement="bottom">
+            <i class="icon-question-sign"style="margin-top:-3px;"></i>
+        </a>
+    </h4>
+    <table class="table table-bordered table-striped table-hover bv_standardizationDryRunReportStatsTable" style="margin: 0px; ">
+    </table>
+
+</script>
+
 <script type="text/template" id="StandardizationDryRunReportRowSummaryView" xmlns="http://www.w3.org/1999/html">
     <td class='bv_corpName'><%=corpName%></td>
-    <td class='bv_parentStructure'>
-        <!--<img src='/cmpdreg/structureimage/parent/CMPD-0000126'>-->
-    </td>
-    <td class='bv_standardizedStructure'></td>
-    <td class='bv_asDrawnStructure'></td>
+    <td class='bv_parentStructure' style="height:120px;"></td>
+    <td class='bv_standardizedStructure' style="height:120px;"></td>
+    <td class='bv_asDrawnStructure' style="height:120px;"></td>
     <td class='bv_changedStructure'><%=changedStructure%></td>
     <td class='bv_displayChange'><%=displayChange%></td>
     <td class='bv_newDuplicates'><%=newDuplicates%></td>
@@ -197,59 +157,24 @@
 </script>
 
 <script type="text/template" id="StandardizationDryRunReportSummaryTableView" xmlns="http://www.w3.org/1999/html">
-    <h4>Latest Standardization Dry Run Results</h4>
-    <table class="table table-bordered table-striped table-hover bv_standardizationDryRunReportSummaryTable" style="margin: 0px; width: 100%; ">
+    <table class="table table-bordered table-striped table-hover bv_standardizationDryRunReportSummaryTable" style="margin: 0px;">
         <thead style="">
         <tr>
-            <th style="width: 50px;">Corporate ID</th>
-            <th style="width: 50px;">Parent Structure</th>
-            <th style="width: 50px;">Standardized Structure</th>
-            <th style="width: 50px;">As Drawn Structure</th>
-            <th style="width: 50px;">Structure Change
-                <!--<a href="#" class="bv_changedStructurePopover" data-toggle="popover ">-->
-                    <!--<i class="icon-question-sign"style="margin-top:-3px;"></i>-->
-                <!--</a>-->
-            </th>
-            <th style="width: 50px;">Display Change
-                <!--<a href="#" class="bv_displayChangePopover" data-toggle="popover ">-->
-                    <!--<i class="icon-question-sign"style="margin-top:-3px;"></i>-->
-                <!--</a>-->
-            </th>
-            <th style="width: 50px;">New Duplicates
-                <!--<a href="#" class="bv_newDuplicatesPopover" data-toggle="popover ">-->
-                    <!--<i class="icon-question-sign"style="margin-top:-3px;"></i>-->
-                <!--</a>-->
-            </th>
-            <th style="width: 50px;">Existing Duplicates
-                <!--<a href="#" class="bv_existingDuplicatePopover" data-toggle="popover ">-->
-                    <!--<i class="icon-question-sign"style="margin-top:-3px;"></i>-->
-                <!--</a>-->
-            </th>
-            <th style="width: 50px;">Delta Mol. Weight
-                <!--<a href="#" class="bv_deltaMolWeightPopover" data-toggle="popover ">-->
-                    <!--<i class="icon-question-sign"style="margin-top:-3px;"></i>-->
-                <!--</a>-->
-            </th>
-            <th style="width: 50px;">New Mol. Weight
-                <!--<a href="#" class="bv_newMolWeightPopover" data-toggle="popover ">-->
-                    <!--<i class="icon-question-sign"style="margin-top:-3px;"></i>-->
-                <!--</a>-->
-            </th>
-            <th style="width: 50px;">Old Mol. Weight
-                <!--<a href="#" class="bv_oldMolWeightPopover" data-toggle="popover ">-->
-                    <!--<i class="icon-question-sign"style="margin-top:-3px;"></i>-->
-                <!--</a>-->
-            </th>
-            <th style="width: 50px;">As Drawn Display Change
-                <!--<a href="#" class="bv_asDrawnDisplayChange" data-toggle="popover ">-->
-                    <!--<i class="icon-question-sign"style="margin-top:-3px;"></i>-->
-                <!--</a>-->
-            </th>
+            <th>Corporate ID</th>
+            <th>Parent Structure</th>
+            <th>Standardized Structure</th>
+            <th>As Drawn Structure</th>
+            <th>Structure Change</th>
+            <th>Display Change</th>
+            <th>New Duplicates</th>
+            <th>Existing Duplicates</th>
+            <th>Delta Mol. Weight</th>
+            <th>New Mol. Weight</th>
+            <th>Old Mol. Weight</th>
+            <th>As Drawn Display Change</th>
         </tr>
         </thead>
-        <tbody style="">
-
-        </tbody>
+        <tbody style=""></tbody>
     </table>
 </script>
 

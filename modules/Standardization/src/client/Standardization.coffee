@@ -97,6 +97,19 @@ class window.StandardizationHistorySummaryTableController extends Backbone.View
 	render: =>
 		@template = _.template($("#StandardizationHistorySummaryTableView").html())
 		$(@el).html @template
+		structuresStandardizedCountInfo = "<li># Structures Standardized: Total number of structures run through the standardizer.</li>"
+		structuresUpdatedCountInfo = "<li># Structures Updated: Count of parent structures that were changed as a result of standardization.</li>"
+		changedStructureCountInfo = "<li># Structures Changed: Count of structures that are no longer the same as their parent structure taking into account tautomers.</li>"
+		displayChangeCountInfo = "<li># Display Change: Count of structures that are no longer exact string matches for their parent structure.</li>"
+		newDuplicateCountInfo = "<li># New Duplicates: Count of structures that are now the same as one or more parent structures taking into account tautomers, stereo comments and stereo categories.</li>"
+		asDrawnDisplayChangeCountInfo = "<li># As Drawn Display Change: Count of structures that are no longer exact string matches for their originally drawn as structure.</li>"
+		existingDuplicateCountIinfo = "<li># Existing Duplicates: Count of structures that were already the same as one or more parent structures taking into account tautomers, stereo comments and stereo categories.</li>"
+		settingsHashInfo = "<li>Settings Hash: Hash of the effective standardization settings</li>"
+
+		@$('.bv_standardizationHistoryPopover').popover
+			title: "Standardization History Table Attributes"
+			content: "<ul>#{structuresStandardizedCountInfo}#{structuresUpdatedCountInfo}#{changedStructureCountInfo}#{displayChangeCountInfo}#{newDuplicateCountInfo}#{asDrawnDisplayChangeCountInfo}#{existingDuplicateCountIinfo}#{settingsHashInfo}</ul>"
+		@$("body").tooltip selector: '.bv_structuresStandardizedCountPopover'
 		console.dir @collection
 		if @collection.models.length is 0
 			#TODO: display message indicating no results were found
@@ -111,79 +124,59 @@ class window.StandardizationHistorySummaryTableController extends Backbone.View
 				oLanguage:
 					sSearch: "Filter history: " #rename summary table's search bar
 
-			#TODO decide btw tooltips (flickers for columns that are hidden on initial load (iow have horizontal scroll) and popovers (will sort column too when press on it and not in right location when have horizontal scroll)
-			#https://github.com/twbs/bootstrap/issues/15590
-			#TODO maybe just have one info icon that's a popover and a list of descriptions
-			@$('.bv_structuresStandardizedCountPopover').popover
-				content: "# Structures Standardized: "
-			@$("body").tooltip selector: '.bv_structuresStandardizedCountPopover'
-			@$('.bv_changedStructureCountPopover').popover
-				content: "# Structures Changed: "
-			@$("body").tooltip selector: '.bv_changedStructureCountPopover'
-			@$('.bv_displayChangeCountPopover').popover
-				content: "# Display Change: "
-			@$("body").tooltip selector: '.bv_displayChangeCountPopover'
-			@$('.bv_newDuplicateCountPopover').popover
-				content: "# New Duplicates: "
-			@$("body").tooltip selector: '.bv_newDuplicateCountPopover'
-			@$('.bv_asDrawnDisplayChangeCountPopover').popover
-				content: "# As Drawn Display Change: "
-			@$("body").tooltip selector: '.bv_asDrawnDisplayChangeCountPopover'
-			@$('.bv_existingDuplicateCountPopover').popover
-				content: "# Existing Duplicates: "
-			@$("body").tooltip selector: '.bv_existingDuplicateCountPopover'
-			@$('.bv_settingsHashPopover').popover
-				content: "Settings Hash: "
-			@$("body").tooltip selector: '.bv_settingsHashPopover'
-			@$('.bv_dryRunStatusPopover').popover
-				content: "Dry-Run Status: "
-			@$("body").tooltip selector: '.bv_dryRunStatusPopover'
-			@$('.bv_dryRunStartPopover').popover
-				content: "Dry-Run Start: "
-			@$("body").tooltip selector: '.bv_dryRunStartPopover'
-			@$('.bv_dryRunCompletePopover').popover
-				content: "Dry-Run Complete: "
-			@$("body").tooltip selector: '.bv_dryRunCompletePopover'
-			@$('.bv_standardizationStatusPopover').popover
-				content: "Standardization Status: "
-			@$("body").tooltip selector: '.bv_standardizationStatusPopover'
-			@$('.bv_standardizationStartPopover').popover
-				content: "Standardization Start: "
-			@$("body").tooltip selector: '.bv_standardizationStartPopover'
-			@$('.bv_standardizationCompletePopover').popover
-				content: "Standardization Complete: "
-			@$("body").tooltip selector: '.bv_standardizationCompletePopover'
-
-#			@$('.bv_structuresStandardizedCountTooltip').tooltip
-#				title: "# Structures Standardized: "
-#			@$('.bv_changedStructureCountTooltip').tooltip
-#				title: "# Structures Changed: "
-#			@$('.bv_displayChangeCountTooltip').tooltip
-#				title: "# Display Change: "
-#			@$('.bv_newDuplicateCountTooltip').tooltip
-#				title: "# New Duplicates: "
-#			@$('.bv_asDrawnDisplayChangeCountTooltip').tooltip
-#				title: "# As Drawn Display Change: "
-#			@$('.bv_existingDuplicateCountTooltip').tooltip
-#				title: "# Existing Duplicates: "
-#			@$('.bv_settingsHashTooltip').tooltip
-#				title: "Settings Hash: "
-#			@$('.bv_dryRunStatusTooltip').tooltip
-#				title: "Dry-Run Status: "
-#			@$('.bv_dryRunStartTooltip').tooltip
-#				title: "Dry-Run Start: "
-#			@$('.bv_dryRunCompleteTooltip').tooltip
-#				title: "Dry-Run Complete: "
-#			@$('.bv_standardizationStatusTooltip').tooltip
-#				title: "Standardization Status: "
-#				container: ".bv_standardizationStatusTooltip"
-#			@$('.bv_standardizationStartTooltip').tooltip
-#				title: "Standardization Start: "
-#			@$('.bv_standardizationCompleteTooltip').tooltip
-#				title: "Standardization Complete: "
-
 		@
 
+class window.StandardizationDryRunReportStatsController extends Backbone.View
+	template: _.template($("#StandardizationDryRunReportStatsView").html())
+
+	initialize: ->
+		$(@el).empty()
+		$(@el).html @template()
+		structuresStandardizedCountInfo = "<li># Structures Standardized: Total number of structures run through the standardizer.</li>"
+		structuresUpdatedCountInfo = "<li># Structures Updated: Count of parent structures that were changed as a result of standardization.</li>"
+		changedStructureCountInfo = "<li># Structures Changed: Standardized structure is no longer the same as it's parent structure taking into account tautomers.</li>"
+		displayChangeCountInfo = "<li># Display Change: Standardized structure is no longer an exact string matches for it's parent structure.</li>"
+		newDuplicateCountInfo = "<li># New Duplicates: List of parent corp names that are now the same structure as the standardized structure taking into account tautomers, stereo comments and stereo categories.</li>"
+		asDrawnDisplayChangeCountInfo = "<li># As Drawn Display Change: Count of structures that are no longer exact string matches for their originally drawn as structure.</li>"
+		existingDuplicateCountIinfo = "<li># Existing Duplicates: List of parent corp names that were already the same structure as the standardized structure taking into account tautomers, stereo comments and stereo categories.</li>"
+
+		@$('.bv_dryRunResultsPopover').popover
+			title: "Dry Run Results Table Attributes"
+			content: "<ul>#{structuresStandardizedCountInfo}#{structuresUpdatedCountInfo}#{changedStructureCountInfo}#{displayChangeCountInfo}#{newDuplicateCountInfo}#{asDrawnDisplayChangeCountInfo}#{existingDuplicateCountIinfo}</ul>"
+		@$("body").tooltip selector: '.bv_structuresStandardizedCountPopover'
+
+		@getDryRunReportStats()
+
+	getDryRunReportStats: ->
+		$.ajax
+			type: 'GET'
+			url: "/cmpdReg/standardizationDryRunStats"
+			success: (dryRunStats) =>
+				console.log "got dry run stats"
+				console.log dryRunStats
+				@setupDryRunStatsTable dryRunStats
+			error: (err) =>
+				console.log "error getting dry run stats"
+				#TODO: error handling
+
+	setupDryRunStatsTable: (stats) ->
+		@$('.bv_standardizationDryRunReportStatsTable').dataTable
+			"aaData": [
+				[stats.structuresStandardizedCount, stats.changedStructureCount, stats.displayChangeCount, stats.newDuplicateCount, stats.asDrawnDisplayChangeCount, stats.existingDuplicateCount]
+			]
+			"aoColumns": [
+				{ "sTitle": "# Structures Standardized" },
+				{ "sTitle": "# Structures Changed" },
+				{ "sTitle": "# Display Change" },
+				{ "sTitle": "# New Duplicates" },
+				{ "sTitle": "# As Drawn Display Change" },
+				{ "sTitle": "# Existing Duplicates" }
+			]
+			bFilter: false
+			bInfo: false
+			bPaginate: false
+			bSort: false
+		
 class window.StandardizationDryRunReportRowSummaryController extends Backbone.View
 	tagName: 'tr'
 	className: 'dataTableRow'
@@ -222,86 +215,22 @@ class window.StandardizationDryRunReportSummaryTableController extends Backbone.
 				@$("tbody").append sdrrrsc.render().el
 
 			@$(".bv_standardizationDryRunReportSummaryTable").dataTable
+					bAutoWidth: false
 					fnRowCallback: (row, data, index) =>
-						$('.bv_parentStructure', row).html "<img src='/cmpdreg/structureimage/parent/"+data[0]+"'>"
-						data[1] = "<img src='/cmpdreg/structureimage/parent/"+data[0]+"'>"
-						$('.bv_standardizedStructure', row).html "<img src='/cmpdreg/structureimage/standardization/"+data[0]+"'>"
-						data[2] = "<img src='/cmpdreg/structureimage/standardization/"+data[0]+"'>"
-						$('.bv_asDrawnStructure', row).html "<img src='/cmpdreg/structureimage/originallydrawnas/"+data[0]+"'>"
-						data[3] = "<img src='/cmpdreg/structureimage/originallydrawnas/"+data[0]+"'>"
+						$('.bv_parentStructure', row).html "<img src='/cmpdreg/structureimage/parent/"+data[0]+"?hSize=200&wSize=200'>"
+						data[1] = "<img src='/cmpdreg/structureimage/parent/"+data[0]+"?hSize=200&wSize=200'>"
+						$('.bv_standardizedStructure', row).html "<img src='/cmpdreg/structureimage/standardization/"+data[0]+"?hSize=200&wSize=200'>"
+						data[2] = "<img src='/cmpdreg/structureimage/standardization/"+data[0]+"?hSize=200&wSize=200'>"
+						$('.bv_asDrawnStructure', row).html "<img src='/cmpdreg/structureimage/originallydrawnas/"+data[0]+"?hSize=200&wSize=200'>"
+						data[3] = "<img src='/cmpdreg/structureimage/originallydrawnas/"+data[0]+"?hSize=200&wSize=200'>"
 					oLanguage:
 						sSearch: "Filter results: " #rename summary table's search bar
-
-			#TODO decide btw tooltips (flickers for columns that are hidden on initial load (iow have horizontal scroll) and popovers (will sort column too when press on it and not in right location when have horizontal scroll)
-			#https://github.com/twbs/bootstrap/issues/15590
-			#TODO maybe just have one info icon that's a popover and a list of descriptions
-#			@$('.bv_structuresStandardizedCountPopover').popover
-#				content: "# Structures Standardized: "
-#			@$("body").tooltip selector: '.bv_structuresStandardizedCountPopover'
-#			@$('.bv_changedStructureCountPopover').popover
-#				content: "# Structures Changed: "
-#			@$("body").tooltip selector: '.bv_changedStructureCountPopover'
-#			@$('.bv_displayChangeCountPopover').popover
-#				content: "# Display Change: "
-#			@$("body").tooltip selector: '.bv_displayChangeCountPopover'
-#			@$('.bv_newDuplicateCountPopover').popover
-#				content: "# New Duplicates: "
-#			@$("body").tooltip selector: '.bv_newDuplicateCountPopover'
-#			@$('.bv_asDrawnDisplayChangeCountPopover').popover
-#				content: "# As Drawn Display Change: "
-#			@$("body").tooltip selector: '.bv_asDrawnDisplayChangeCountPopover'
-#			@$('.bv_existingDuplicateCountPopover').popover
-#				content: "# Existing Duplicates: "
-#			@$("body").tooltip selector: '.bv_existingDuplicateCountPopover'
-#			@$('.bv_settingsHashPopover').popover
-#				content: "Settings Hash: "
-#			@$("body").tooltip selector: '.bv_settingsHashPopover'
-#			@$('.bv_dryRunStatusPopover').popover
-#				content: "Dry-Run Status: "
-#			@$("body").tooltip selector: '.bv_dryRunStatusPopover'
-#			@$('.bv_dryRunStartPopover').popover
-#				content: "Dry-Run Start: "
-#			@$("body").tooltip selector: '.bv_dryRunStartPopover'
-#			@$('.bv_dryRunCompletePopover').popover
-#				content: "Dry-Run Complete: "
-#			@$("body").tooltip selector: '.bv_dryRunCompletePopover'
-#			@$('.bv_standardizationStatusPopover').popover
-#				content: "Standardization Status: "
-#			@$("body").tooltip selector: '.bv_standardizationStatusPopover'
-#			@$('.bv_standardizationStartPopover').popover
-#				content: "Standardization Start: "
-#			@$("body").tooltip selector: '.bv_standardizationStartPopover'
-#			@$('.bv_standardizationCompletePopover').popover
-#				content: "Standardization Complete: "
-#			@$("body").tooltip selector: '.bv_standardizationCompletePopover'
-
-#			@$('.bv_structuresStandardizedCountTooltip').tooltip
-#				title: "# Structures Standardized: "
-#			@$('.bv_changedStructureCountTooltip').tooltip
-#				title: "# Structures Changed: "
-#			@$('.bv_displayChangeCountTooltip').tooltip
-#				title: "# Display Change: "
-#			@$('.bv_newDuplicateCountTooltip').tooltip
-#				title: "# New Duplicates: "
-#			@$('.bv_asDrawnDisplayChangeCountTooltip').tooltip
-#				title: "# As Drawn Display Change: "
-#			@$('.bv_existingDuplicateCountTooltip').tooltip
-#				title: "# Existing Duplicates: "
-#			@$('.bv_settingsHashTooltip').tooltip
-#				title: "Settings Hash: "
-#			@$('.bv_dryRunStatusTooltip').tooltip
-#				title: "Dry-Run Status: "
-#			@$('.bv_dryRunStartTooltip').tooltip
-#				title: "Dry-Run Start: "
-#			@$('.bv_dryRunCompleteTooltip').tooltip
-#				title: "Dry-Run Complete: "
-#			@$('.bv_standardizationStatusTooltip').tooltip
-#				title: "Standardization Status: "
-#				container: ".bv_standardizationStatusTooltip"
-#			@$('.bv_standardizationStartTooltip').tooltip
-#				title: "Standardization Start: "
-#			@$('.bv_standardizationCompleteTooltip').tooltip
-#				title: "Standardization Complete: "
+					"aoColumnDefs": [
+						{ "sWidth": "10%", "aTargets": [0] },
+						{ "sWidth": "10%", "aTargets": [1] },
+						{ "sWidth": "10%", "aTargets": [2] },
+						{ "sWidth": "10%", "aTargets": [3] }
+					]
 
 		@
 
@@ -344,9 +273,11 @@ class window.StandardizationController extends Backbone.View
 				else if runType is 'standardization'
 					@$('.bv_executingStandardizationModal').modal 'hide'
 					@$('.bv_standardizationCompleteRecordedDate').html UtilityFunctions::convertMSToYMDDate report.recordedDate
+					@$('.bv_standardizationCompleteStructuresStandardizedCount').html report.structuresStandardizedCount
 					@$('.bv_standardizationCompleteChangedStructureCount').html report.changedStructureCount
 					@$('.bv_standardizationCompleteDisplayChangeCount').html report.displayChangeCount
 					@$('.bv_standardizationCompleteNewDuplicateCount').html report.newDuplicateCount
+					@$('.bv_standardizationCompleteAsDrawnDisplayChangeCount').html report.asDrawnDisplayChangeCount
 					@$('.bv_standardizationCompleteExistingDuplicateCount').html report.existingDuplicateCount
 					@$('.bv_standardizationCompleteModal').modal
 						backdrop: 'static'
@@ -423,15 +354,24 @@ class window.StandardizationController extends Backbone.View
 				if @standardizationDryRunReportSummaryTableController?
 					@standardizationDryRunReportSummaryTableController.undelegateEvents()
 				if dryRunReport.length > 0
+					@setupLastDryRunReportStatsSummaryTable()
 					@$(".bv_standardizationDryRunReport").show()
+					@$(".bv_standardizationDryRunReportStats").show()
 					@standardizationDryRunReportSummaryTableController = new StandardizationDryRunReportSummaryTableController
 						collection: new Backbone.Collection dryRunReport
 					@$(".bv_standardizationDryRunReport").html @standardizationDryRunReportSummaryTableController.render().el
 				else
 					@$(".bv_standardizationDryRunReport").hide()
+					@$(".bv_standardizationDryRunReportStats").hide()
 			error: (err) =>
 				console.log "error getting dry run report"
 				#TODO: error handling
+
+	setupLastDryRunReportStatsSummaryTable: ->
+		if @standardizationDryRunReportStatsController?
+			@standardizationDryRunReportStatsController.undelegateEvents()
+		@standardizationDryRunReportStatsController = new StandardizationDryRunReportStatsController
+			el: @$(".bv_standardizationDryRunReportStats")
 
 	handleRefreshClicked: ->
 		@initialize()
