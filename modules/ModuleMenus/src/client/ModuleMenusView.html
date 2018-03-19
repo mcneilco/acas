@@ -1,26 +1,26 @@
 <script type="text/template" id="ModuleMenusView">
 
   <!-- ACAS Navbar -->
-  <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+  <nav class="navbar fixed-top navbar-expand navbar-dark bg-primary">
     <span class="navbar-brand bv_headerName" href="">ACAS LIMS</span>
-    <button class="navbar-toggler" type="button" data-target="acasCollapseNavbarContent" data-toggle="collapse" aria-controls="acasCollapseNavbarContent" aria-expanded="false" aria-label="Expand">
+    <button class="navbar-toggler" type="button" data-target="" data-toggle="collapse" aria-controls="acasCollapseNavbarContent" aria-expanded="false" aria-label="Expand">
       <span class="navbar-toggler-icon"></span>
     </button>
-    <div class="collapse navbar-collapse" id="acasCollapseNavbarContent">
+    <div class="collapse navbar-collapse">
       <ul class="navbar-nav mr-auto bv_externalACASModules">
-        <li class="nav-item active">
+        <!-- <li class="nav-item active">
           <a class="nav-link" href="">Home</a>
-        </li>
+        </li> -->
       </ul>
-      <span class="navbar-text bv_deployMode"></span>
-      <span class="navbar-text">
+      <span class="navbar-text d-none d-sm-none d-md-none d-lg-block bv_deployMode"></span>
+      <span class="navbar-text d-none d-sm-none d-md-block">
         <span>Logged in as</span>
         <span class="bv_username">
             <span class="bv_loginUserFirstName">First Name</span>
             <span class="bv_loginUserLastName">Last Name</span>
         </span>
       </span>
-      <form class="form-inline">
+      <form class="form-inline d-none d-sm-none d-md-block">
         <select class="form-control bv_fastUserSelect"></select>
       </form>
       <a href="/logout" class="btn btn-outline-light bv_logout" role="button">Logout</a>

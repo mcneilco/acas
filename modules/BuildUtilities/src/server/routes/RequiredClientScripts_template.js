@@ -1,7 +1,7 @@
 exports.requiredScripts = [
-	// '/lib/jquery.min.js',
-	'http://code.jquery.com/jquery-1.9.1.js',
-	'http://code.jquery.com/jquery-migrate-1.1.0.js',
+	'/lib/jquery-1.9.1.js',
+	// jquery-migrate let's you know if any migrations failed within jquery
+	// 'http://code.jquery.com/jquery-migrate-1.1.0.js',
 	'/lib/json2.js',
 	'/lib/underscore.js',
 	'/lib/backbone-min.js',

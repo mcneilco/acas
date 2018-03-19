@@ -1,8 +1,8 @@
 body {
-    padding-top: 56px;
-    padding-right: 0;
-    padding-bottom: 35px;
-    padding-left: 0;
+  padding-top: 56px;
+  padding-right: 0;
+  padding-bottom: 35px;
+  padding-left: 0;
 }
 
 .hide {
@@ -124,6 +124,12 @@ body {
   margin-right: 10px;
 }
 
+.card {
+  -webkit-box-shadow: 0px 1px 6px -3px rgba(0,0,0,0.75);
+  -moz-box-shadow: 0px 1px 6px -3px rgba(0,0,0,0.75);
+  box-shadow: 0px 1px 6px -3px rgba(0,0,0,0.75);
+}
+
 .bv_copyrightWrapper {
   padding-right: 0;
   padding-left: 0;
@@ -146,7 +152,6 @@ body {
 /* old css */
 
 .mainModuleWell {
-
     background-color:white;
 }
 
@@ -172,13 +177,6 @@ body {
     padding-top: 8px;
     margin-right: 5px;
 }
-
-.bv_headerName {
-
-}
-
-
-
 /*.bv_GenericDataParserController {
 
     background-color: yellow;
@@ -200,11 +198,6 @@ body {
 .bv_BulkLoadSampleTransfersController {
     background-color: green;
 }*/
-
-
-
-
-
 
 .bv_collapsibleHeaderController .bv_caret {
     margin-left: 5px;

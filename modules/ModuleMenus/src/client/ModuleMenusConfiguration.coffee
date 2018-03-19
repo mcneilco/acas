@@ -3,7 +3,7 @@ window.ModuleMenusConfiguration =
 		isHeader: true
 		menuName: "Load Data"
 		requireUserRoles: [window.conf.roles.acas.userRole]
-		collapsible: true
+		collapsible: false
 	,
 		isHeader: false
 		menuName: "Experiment Loader"
@@ -43,7 +43,7 @@ window.ModuleMenusConfiguration =
 	,
 		isHeader: true
 		menuName: "Admin"
-		collapsible: false
+		collapsible: true
 		requireUserRoles: [window.conf.roles.acas.adminRole]
 	,
 		isHeader: false
@@ -82,7 +82,7 @@ window.ModuleMenusConfiguration =
 		isHeader: true
 		menuName: "CmpdReg Admin"
 		requireUserRoles: [window.conf.roles.cmpdreg.adminRole]
-		collapsible: false
+		collapsible: true
 	,
 		isHeader: false
 		menuName: "CmpdReg Vendors"

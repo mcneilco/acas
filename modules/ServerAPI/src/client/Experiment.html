@@ -1,93 +1,97 @@
 <script type="text/template" id="ExperimentBaseView" xmlns="http://www.w3.org/1999/html">
 
-    <div class="span9 bv_openInQueryToolWrapper">
-        <a class="bv_openInQueryToolLink btn pull-right" style="margin-bottom:15px;" target="_blank">Open in <span class="bv_queryToolDisplayName"></span></a>
+  <h4>Experiment Editor</h4>
+
+  <div class="card">
+    <div class="card-body">
+
+      <div class="bv_openInQueryToolWrapper">
+          <a class="bv_openInQueryToolLink btn" target="_blank">Open in <span class="bv_queryToolDisplayName"></span></a>
+      </div>
+
+      <form>
+        <div class="form-group">
+          <label><i class="fas fa-lock bv_lock"></i> Status</label>
+          <select class="form-control bv_status select-picker">
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Code</label>
+          <input class="form-control uneditable-input bv_experimentCode" placeholder="Autofills when saved" />
+        </div>
+        <div class="form-group bv_group_experimentName">
+          <label class="bv_experimentNameLabel">*Experiment Name</label>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="bv_exptNameChkbx" class="bv_exptNameChkbx" checked="checked">
+            <label class="form-check-label">
+              Same as experiment code
+            </label>
+          </div>
+          <input class="form-control bv_experimentName" type="text" placeholder="" />
+        </div>
+        <div class="form-group bv_group_scientist">
+          <label>*Scientist</label>
+          <select class="form-control bv_scientist"></select>
+        </div>
+        <div class="form-group bv_group_completionDate">
+          <label>*Date</label>
+          <div class="input-group date" id="dp3" data-date="" data-date format="yy-mm-dd">
+            <input class="form-control bv_completionDate" type="text" value="" placeholder="yyyy-mm-dd">
+            <div class="input-group-append">
+              <span class="input-group-text bv_completionDateIcon"><i class="far fa-calendar-alt"></i></span>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <form>
+        <div class="form-group bv_Ã‚Â¡Code bv_group_protocolCode">
+          <label>*Protocol</label>
+          <select class="form-control bv_protocolCode"></select>
+          <span class="bv_spinner"></span>
+          <button type="button" class="btn bv_useProtocolParameters hide">Use Parameters</button>
+        </div>
+      </form>
+
+      <form>
+        <div class="form-group bv_group_projectCode">
+          <label class="bv_projectLabel">*Project</label>
+          <select class="form-control bv_projectCode"></select>
+        </div>
+        <div class="form-group bv_group_notebook">
+          <label class="bv_notebookLabel">*Notebook</label>
+          <input class="form-control bv_notebook" type="text" placeholder="" />
+        </div>
+        <div class="form-group bv_group_notebookPage">
+          <label class="bv_notebookPageLabel">Notebook Page</label>
+          <input class="form-control bv_notebookPage" type="text" placeholder="" />
+        </div>
+        <div class="form-group bv_group_tags">
+          <label>Key Words</label>
+          <input class="form-control bv_tags" type="text" data-role="tagsinput" placeholder="Add tags" />
+        </div>
+      </form>
+
+
     </div>
+  </div>
+
+
+
+
+
+
+
     <div class="span12">
-        <div class="form-horizontal">
-            <div class="control-group">
-                <label class="control-label"><i class="icon-lock bv_lock"></i> Status</label>
-                <div class="controls">
-                    <select class="bv_status select-picker" style="width:350px;">
-                    </select>
-                </div>
-            </div>
-            <div class="control-group">
-                <label class="control-label">Code</label>
-                <div class="controls">
-                    <span class="uneditable-input bv_experimentCode" style="width:336px;">autofill when saved</span>
-                </div>
-            </div>
-            <div class="control-group bv_group_experimentName">
-                <label class="control-label bv_experimentNameLabel" style="margin-top:17px;">*Experiment Name</label>
-                <div class="controls" style="width:300px;">
-                    <input type="checkbox" name="bv_exptNameChkbx" class="bv_exptNameChkbx" style="margin-top:-3px;margin-right:2px;" checked="checked">Same as experiment code
-                    <input class="bv_experimentName" style="width:336px; margin-top:5px;" type="text" placeholder="">
-                </div>
-            </div>
-        </div>
-
-
-        <div class="form-horizontal">
-            <div class="control-group bv_group_scientist">
-                <label class="control-label">*Scientist</label>
-                <div class="controls">
-                    <select class="bv_scientist" style="width:350px;"></select>
-                </div>
-            </div>
-            <div class="control-group bv_group_completionDate">
-                <label class="control-label">*Date</label>
-                <div class="controls">
-                    <div class="input-append date" id="dp3" data-date="" data-date format="yy-mm-dd">
-                        <input class="bv_completionDate" type="text" value="" placeholder="yyyy-mm-dd" style="width:310px;">
-                        <span class="add-on bv_completionDateIcon"><i class="icon-th"></i></span>
-                    </div>
-                </div>
-            </div>
-        </div>
 
 
 
-        <div class="form-horizontal">
-            <div class="control-group bv_Ã‚Â¡Code bv_group_protocolCode">
-                <label class="control-label ">*Protocol</label>
-                <div class="controls">
-                    <select class="bv_protocolCode" style="width:350px;">
-                    </select>
-                    <span class="bv_spinner"></span>
-                </div>
-                <div class="controls">
-                    <button type="button" class="btn bv_useProtocolParameters hide" style="margin-top:5px;">Use Parameters</button>
-                </div>
-            </div>
-        </div>
 
-        <div class="form-horizontal">
-            <div class="control-group bv_group_projectCode">
-                <label class="control-label bv_projectLabel">*Project</label>
-                <div class="controls">
-                    <select class="bv_projectCode" style="width:350px;"></select>
-                </div>
-            </div>
-            <div class="control-group bv_group_notebook">
-                <label class="control-label bv_notebookLabel">*Notebook</label>
-                <div class="controls">
-                    <input class="bv_notebook" style="width:336px;" type="text" placeholder="" />
-                </div>
-            </div>
-            <div class="control-group bv_group_notebookPage">
-                <label class="control-label bv_notebookPageLabel">Notebook Page</label>
-                <div class="controls">
-                    <input class="bv_notebookPage" style="width:336px;" type="text" placeholder="" />
-                </div>
-            </div>
-            <div class="control-group bv_group_tags">
-                <label class="control-label">Key Words</label>
-                <div class="controls">
-                    <input class="bv_tags" type="text" data-role="tagsinput" placeholder="Add tags" />
-                </div>
-            </div>
-        </div>
+
+
+
+
+
 
     </div>
 
