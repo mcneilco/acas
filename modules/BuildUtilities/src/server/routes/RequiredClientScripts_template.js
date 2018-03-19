@@ -1,5 +1,6 @@
 exports.requiredScripts = [
 	'/lib/jquery-1.9.1.js',
+	// '/lib/jquery.min.js',
 	// jquery-migrate let's you know if any migrations failed within jquery
 	// 'http://code.jquery.com/jquery-migrate-1.1.0.js',
 	'/lib/json2.js',

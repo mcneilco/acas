@@ -180,6 +180,13 @@ body {
   padding-left: 20px;
 }
 
+.uneditable-input {
+  background-color: #e9ecef;
+  border: 1px solid #ced4da;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 
 
 
