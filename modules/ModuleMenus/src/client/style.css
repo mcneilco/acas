@@ -135,6 +135,11 @@ body {
   margin-bottom: 20px;
 }
 
+/*code to overwrite the 0 opacity from the fade class*/
+.acasWrapper .template-download {
+  opacity: 1;
+}
+
 .bv_copyrightWrapper {
   padding-right: 0;
   padding-left: 0;

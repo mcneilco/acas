@@ -1,13 +1,13 @@
 <script type="text/template" id="LSFileChooserView">
 	<form class="fileupload" action="server/php/" method="POST" enctype="multipart/form-data">
-		<div class="row fileupload-buttonbar">
-			<div class="span7 bv_manualFileSelect" style="padding-left:50px;">
-				<span class="btn fileinput-button">
+		<div class="fileupload-buttonbar">
+			<div class="bv_manualFileSelect">
+				<span class="btn btn-success fileinput-button">
 					<span>Browse Files...</span>
 					<input type="file" name="files[]" multiple>
 				</span>
 			</div>
-			<div class="span7 well <%= dropZoneClassId %>" style="display: none; text-align: center">
+			<div class="<%= dropZoneClassId %>" style="display: none; text-align: center">
 				<h4 class='bv_dragOverMessage'><%= dragOverMessage %></h4>
 			</div>
 			<% if (allowMultipleFiles) { %>
@@ -70,7 +70,7 @@
             </td>
             <td class="size"><span>{%=o.formatFileSize(file.size)%}</span></td>
             <td colspan="2">
-            
+
             	<div class="progress progress-striped progress-info active dv_validatingProgressBar hide" >
     				<div class="bar" style="width: 100%;"><strong>validating file…</strong></div>
     			</div>
@@ -81,7 +81,7 @@
                 <i class="icon-trash icon-white"></i>
                 <span>{%=locale.fileupload.destroy%}</span>
             </button>
-            
+
         </td>
     </tr>
 {% } %}
