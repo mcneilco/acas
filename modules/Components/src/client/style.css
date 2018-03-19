@@ -2,6 +2,11 @@
   margin-left: 10px;
 }
 
+.notificationWrapper {
+  margin-top: 20px;
+  margin-bottom: 0 !important;
+}
+
 .bv_outerContainer {
     /*width: 670px;*/
     /* margin-top: 10px; */

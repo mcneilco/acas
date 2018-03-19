@@ -1,11 +1,27 @@
 <script type="text/template" id="LSNotificationView">
 
 
+	<div id="accordion bv_notificationContainer">
+	  <div class="card notificationWrapper">
+	    <div class="card-header">
+	      <div class="bv_notificationCountContainer" data-toggle="collapse" data-target="#collapseOne">
+						<span class="bv_errorNotificationCountContainer"></span>
+						<span class="bv_warningNotificationCountContainer"></span>
+						<span class="bv_infoNotificationCountContainer"></span>
+						<div class="bv_notificationMessagePreview" style="float: right;"></div>
+	      </div>
+	    </div>
+
+	    <div class="collapse hide bv_notificationMessages" data-parent="#accordion">
+				<div class="bv_errorNotificationMessages"></div>
+				<div class="bv_warningNotificationMessages"></div>
+				<div class="bv_infoNotificationMessages"></div>
+	    </div>
+	  </div>
 
 
 
-
-<div class='bv_notificationContainer accordion'>
+<!-- <div class='bv_notificationContainer accordion'>
 	<div class="accordion-group">
 		<div class="accordion-heading">
 			<div class="accordion-toggle bv_notificationCountContainer" >
@@ -21,44 +37,44 @@
             <div class='bv_infoNotificationMessages'></div>
         </div>
 
-	</div>
+	</div> -->
 </script>
 
 <script type="text/template" id="LSErrorNotificationCount">
-	<span class='badge badge-important bv_notificationsCount'>
+	<span class="badge badge-danger bv_notificationsCount">
 		<%= count %>
 	</span>
 	&nbsp;
 </script>
 
 <script type="text/template" id="LSErrorNotificationMessage">
-	<div class='alert alert-error'>
+	<div class="card-body bg-danger">
 		<%= message %>
 	</div>
 </script>
 
 <script type="text/template" id="LSWarningNotificationCount">
-	<span class='badge badge-warning bv_notificationsCount'>
+	<span class="badge badge-warning bv_notificationsCount">
 		<%= count %>
 	</span>
 	&nbsp;
 </script>
 
 <script type="text/template" id="LSWarningNotificationMessage">
-	<div class='alert alert-warning'>
+	<div class="card-body bg-warning">
 		<%= message %>
 	</div>
 </script>
 
 <script type="text/template" id="LSInfoNotificationCount">
-	<span class='badge badge-info bv_notificationsCount'>
+	<span class="badge badge-info bv_notificationsCount">
 		<%= count %>
 	</span>
 	&nbsp;
 </script>
 
 <script type="text/template" id="LSInfoNotificationMessage">
-	<div class='alert alert-info'>
+	<div class="alert alert-info">
 		<%= message %>
 	</div>
 </script>
