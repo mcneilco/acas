@@ -140,6 +140,14 @@ body {
   opacity: 1;
 }
 
+.bv_save, .bv_newEntity, .bv_cancel {
+  margin-left: 10px;
+}
+
+.bv_updateComplete, .bv_cancelComplete, .bv_saving, .bv_saveFailed, .bv_canceling {
+  padding-top: 7px;
+}
+
 .bv_copyrightWrapper {
   padding-right: 0;
   padding-left: 0;
