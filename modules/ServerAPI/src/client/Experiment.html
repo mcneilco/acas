@@ -2,77 +2,116 @@
 
   <h4>Experiment Editor</h4>
 
-  <div class="card">
-    <div class="card-body">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
 
-      <div class="bv_openInQueryToolWrapper">
-          <a class="bv_openInQueryToolLink btn" target="_blank">Open in <span class="bv_queryToolDisplayName"></span></a>
-      </div>
-
-      <form>
-        <div class="form-group">
-          <label><i class="fas fa-lock bv_lock"></i> Status</label>
-          <select class="form-control bv_status select-picker">
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Code</label>
-          <input class="form-control uneditable-input bv_experimentCode" placeholder="Autofills when saved" />
-        </div>
-        <div class="form-group bv_group_experimentName">
-          <label class="bv_experimentNameLabel">*Experiment Name</label>
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="bv_exptNameChkbx" class="bv_exptNameChkbx" checked="checked">
-            <label class="form-check-label">
-              Same as experiment code
-            </label>
+          <div class="bv_openInQueryToolWrapper">
+              <a class="bv_openInQueryToolLink btn" target="_blank">Open in <span class="bv_queryToolDisplayName"></span></a>
           </div>
-          <input class="form-control bv_experimentName" type="text" placeholder="" />
+
+          <form>
+            <div class="form-group">
+              <label><i class="fas fa-lock bv_lock"></i> Status</label>
+              <select class="form-control bv_status select-picker">
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Code</label>
+              <input class="form-control uneditable-input bv_experimentCode" placeholder="Autofills when saved" />
+            </div>
+            <div class="form-group bv_group_experimentName">
+              <label class="bv_experimentNameLabel">*Experiment Name</label>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="bv_exptNameChkbx" class="bv_exptNameChkbx" checked="checked">
+                <label class="form-check-label">
+                  Same as experiment code
+                </label>
+              </div>
+              <input class="form-control bv_experimentName" type="text" placeholder="" />
+            </div>
+            <div class="form-group bv_group_scientist">
+              <label>*Scientist</label>
+              <select class="form-control bv_scientist"></select>
+            </div>
+            <div class="form-group bv_group_completionDate">
+              <label>*Date</label>
+              <div class="input-group date" id="dp3" data-date="" data-date format="yy-mm-dd">
+                <input class="form-control bv_completionDate" type="text" value="" placeholder="yyyy-mm-dd">
+                <div class="input-group-append">
+                  <span class="input-group-text bv_completionDateIcon"><i class="far fa-calendar-alt"></i></span>
+                </div>
+              </div>
+            </div>
+          </form>
+
+          <form>
+            <div class="form-group bv_Ã‚Â¡Code bv_group_protocolCode">
+              <label>*Protocol</label>
+              <select class="form-control bv_protocolCode"></select>
+              <span class="bv_spinner"></span>
+              <button type="button" class="btn bv_useProtocolParameters hide">Use Parameters</button>
+            </div>
+          </form>
+
+          <form>
+            <div class="form-group bv_group_projectCode">
+              <label class="bv_projectLabel">*Project</label>
+              <select class="form-control bv_projectCode"></select>
+            </div>
+            <div class="form-group bv_group_notebook">
+              <label class="bv_notebookLabel">*Notebook</label>
+              <input class="form-control bv_notebook" type="text" placeholder="" />
+            </div>
+            <div class="form-group bv_group_notebookPage">
+              <label class="bv_notebookPageLabel">Notebook Page</label>
+              <input class="form-control bv_notebookPage" type="text" placeholder="" />
+            </div>
+            <div class="form-group bv_group_tags">
+              <label>Key Words</label>
+              <input class="form-control bv_tags" type="text" data-role="tagsinput" placeholder="Add tags" />
+            </div>
+          </form>
+
+          <form>
+            <div class="form-group bv_group_shortDescription">
+              <label>Short Description</label>
+              <textarea class="form-control bv_shortDescription" rows="2" placeholder=""></textarea>
+            </div>
+            <div class="form-group bv_group_details">
+              <label>Experiment Details</label>
+              <textarea class="form-control bv_details" rows="7" placeholder=""></textarea>
+            </div>
+            <div class="form-group bv_group_comments">
+              <label>Comments</label>
+              <textarea class="form-control bv_comments" rows="7" placeholder=""></textarea>
+            </div>
+          </form>
+
+          <div class="bv_custom_experiment_metadata"></div>
+
         </div>
-        <div class="form-group bv_group_scientist">
-          <label>*Scientist</label>
-          <select class="form-control bv_scientist"></select>
-        </div>
-        <div class="form-group bv_group_completionDate">
-          <label>*Date</label>
-          <div class="input-group date" id="dp3" data-date="" data-date format="yy-mm-dd">
-            <input class="form-control bv_completionDate" type="text" value="" placeholder="yyyy-mm-dd">
-            <div class="input-group-append">
-              <span class="input-group-text bv_completionDateIcon"><i class="far fa-calendar-alt"></i></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+
+          <div class="bv_group_attachFile ">
+            <h5>Attach Files</h5>
+            <div class="">
+              <span class="bv_group_fileType">File Type</span>
+              <span>File Name</span>
+              <div class="bv_attachFileList"></div>
             </div>
           </div>
-        </div>
-      </form>
 
-      <form>
-        <div class="form-group bv_Ã‚Â¡Code bv_group_protocolCode">
-          <label>*Protocol</label>
-          <select class="form-control bv_protocolCode"></select>
-          <span class="bv_spinner"></span>
-          <button type="button" class="btn bv_useProtocolParameters hide">Use Parameters</button>
         </div>
-      </form>
-
-      <form>
-        <div class="form-group bv_group_projectCode">
-          <label class="bv_projectLabel">*Project</label>
-          <select class="form-control bv_projectCode"></select>
-        </div>
-        <div class="form-group bv_group_notebook">
-          <label class="bv_notebookLabel">*Notebook</label>
-          <input class="form-control bv_notebook" type="text" placeholder="" />
-        </div>
-        <div class="form-group bv_group_notebookPage">
-          <label class="bv_notebookPageLabel">Notebook Page</label>
-          <input class="form-control bv_notebookPage" type="text" placeholder="" />
-        </div>
-        <div class="form-group bv_group_tags">
-          <label>Key Words</label>
-          <input class="form-control bv_tags" type="text" data-role="tagsinput" placeholder="Add tags" />
-        </div>
-      </form>
-
-
+      </div>
     </div>
   </div>
 
@@ -82,45 +121,7 @@
 
 
 
-    <div class="span12">
 
-
-
-
-
-
-
-
-
-
-    </div>
-
-    <div class="span12 bv_group_shortDescription" style="margin-left:0px;">
-        <div style="margin-bottom:5px;">Short Description</div>
-        <textarea rows="2" class="bv_shortDescription" style="width:650px;resize:none;margin-bottom:20px;" placeholder="Short Description"></textarea>
-    </div>
-
-    <div class="span12 bv_group_details" style="margin-left:0px;">
-        <div style="margin-bottom:5px;">Experiment Details</div>
-        <textarea rows="7" class="bv_details" style="width:650px; max-width:650px;margin-bottom:20px;" placeholder="Experiment Details"></textarea>
-    </div>
-
-    <div class="span12 bv_group_comments" style="margin-left:0px;">
-        <div style="margin-bottom:5px;">Comments</div>
-        <textarea rows="7" class="bv_comments" style="width:650px; max-width:650px;margin-bottom:20px;" placeholder="Comments"></textarea>
-    </div>
-
-    <div class="bv_custom_experiment_metadata"  style="width:650px; max-width:650px;margin-bottom:20px;" ></div>
-    <div class="row span12" style="margin-left:0px;">
-        <div class="control-group bv_group_attachFile span8" style="margin-bottom:30px;margin-left:0px;">
-            <div style="margin-bottom:5px;font-weight:bold;">Attach Files</div>
-            <div class="controls" style="margin-left:0px;">
-                <span class ="bv_group_fileType" style="margin-left:6px;margin-bottom:5px;">File Type</span>
-                <span style="margin-left:77px;margin-bottom:5px;">File Name</span>
-                <div class="bv_attachFileList" style="width:670px;"></div>
-            </div>
-        </div>
-    </div>
     <!-- SAVE AND CANCEL -->
     <div class="span10" style="width:650px;margin-left:0px;">
         <div class="span12" style="margin-left:25px;margin-top:25px;">

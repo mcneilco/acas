@@ -113,21 +113,26 @@ body {
 
 /* TODO fix colors of active module to read better */
 
-.acasWrapper {
-  margin-left: 245px;
-  padding: 20px;
-}
-
 .bv_deployMode {
   color: #ffffff !important;
   font-weight: bold;
   margin-right: 10px;
 }
 
+.acasWrapper {
+  margin-left: 245px;
+  padding: 20px;
+}
+
+.acasWrapper textarea {
+  resize: none;
+}
+
 .card {
   -webkit-box-shadow: 0px 1px 6px -3px rgba(0,0,0,0.75);
   -moz-box-shadow: 0px 1px 6px -3px rgba(0,0,0,0.75);
   box-shadow: 0px 1px 6px -3px rgba(0,0,0,0.75);
+  margin-bottom: 20px;
 }
 
 .bv_copyrightWrapper {
