@@ -76,7 +76,7 @@ class window.BaseEntity extends Backbone.Model
 		if status.get('codeValue') is undefined or status.get('codeValue') is ""
 			if window.conf.entity?.status?.default?
 				defaultStatus = window.conf.entity.status.default
-			else 
+			else
 				defaultStatus = "created"
 			status.set codeValue: defaultStatus
 			status.set codeType: subclass
@@ -173,7 +173,7 @@ class window.BaseEntity extends Backbone.Model
 						errors.push
 							attribute: 'notebookPage'
 							message: "Notebook Page must be set"
-						
+
 			scientist = @getScientist().get('codeValue')
 			if scientist is "unassigned" or scientist is undefined or scientist is "" or scientist is null
 				errors.push
@@ -303,7 +303,8 @@ class window.BaseEntityController extends AbstractThingFormController #TODO: che
 		if bestName?
 			@$('.bv_'+subclass+'Name').val bestName.get('labelText')
 		@$('.bv_scientist').val(@model.getScientist().get('codeValue'))
-		@$('.bv_'+subclass+'Code').html(@model.get('codeName'))
+		@$('.bv_'+subclass+'Code').html(@model.get('codeName')) #this is only here because original code name field was a span, not an input; this line should be removed once all code name fields are inputs
+		@$('.bv_'+subclass+'Code').val(@model.get('codeName'))
 		@$('.bv_'+subclass+'Kind').html(@model.get('lsKind')) #should get value from protocol create form
 		@$('.bv_details').val(@model.getDetails().get('clobValue'))
 		@$('.bv_comments').val(@model.getComments().get('clobValue'))
