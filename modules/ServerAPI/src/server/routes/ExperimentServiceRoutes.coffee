@@ -377,7 +377,7 @@ exports.putExperimentInternal = (experiment, testMode, callback) ->
 
 	completeExptUpdate = ->
 		updateExpt exptToSave, testMode, (updatedExpt) ->
-			if updatedExpt.codeName? and (newExptExptItxs.length > 0 or exptExptItxsToIgnore.length > 0)
+			if updatedExpt.codeName? and (newExptExptItxs.length > 0 or exptExptItxsToIgnore.length > 0) and updatedExpt.lsKind != "study"
 				#is default/expt base
 				_.each exptExptItxsToIgnore, (itx) =>
 					itx.secondExperiment = {id: updatedExpt.id}
@@ -431,7 +431,7 @@ exports.putExperiment = (req, resp) ->
 
 	completeExptUpdate = ->
 		updateExpt exptToSave, req.query.testMode, (updatedExpt) ->
-			if updatedExpt.codeName? and (newExptExptItxs.length > 0 or exptExptItxsToIgnore.length > 0)
+			if updatedExpt.codeName? and (newExptExptItxs.length > 0 or exptExptItxsToIgnore.length > 0) and updatedExpt.lsKind != "study"
 				#is default/expt base
 				_.each exptExptItxsToIgnore, (itx) =>
 					itx.secondExperiment = {id: updatedExpt.id}

@@ -447,9 +447,16 @@ class window.ExperimentBrowserController extends Backbone.View
 		if @experimentController.model.getScientist().get('codeValue') is "unassigned"
 			return true
 		else
-			if window.conf.entity?.editingRoles?
+			if @experimentController.model.get('lsKind') is 'study'
+				if window.conf.entity?.study?.editingRoles?
+					editingRoles = window.conf.entity.study.editingRoles
+				else
+					editingRoles = null
+			else if window.conf.entity?.editingRoles?
+				editingRoles = window.conf.entity.editingRoles
+			if editingRoles?
 				rolesToTest = []
-				for role in window.conf.entity.editingRoles.split(",")
+				for role in editingRoles.split(",")
 					role = $.trim(role)
 					if role is 'entityScientist'
 						if (window.AppLaunchParams.loginUserName is @experimentController.model.getScientist().get('codeValue'))

@@ -604,3 +604,8 @@ exports.moveToLocation = (request) ->
 exports.throwInTrash = (request, callback) ->
 	callback {"successful":true}, 200
 	console.debug "inside base customer specific server function throwInTrash"
+
+exports.updateSolrIndex = (callback) ->
+	answer = null
+	callback answer, 200
+	console.debug "inside base customer specific server function updateSolrIndex"
