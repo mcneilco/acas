@@ -20,6 +20,10 @@ API = '/api/'
 
 
 def parse_options(argv):
+    with open(argv[1], "r") as groupsJSONFile:
+        import_json = groupsJSONFile.read()
+        argv[1] = import_json
+
     parser = optparse.OptionParser(usage="%prog [--dry-run] <config.json> <import.json>")
 
     parser.add_option(

@@ -414,7 +414,7 @@ $(function() {
 
 		    if (this.user.get('isAdmin')) {
 			    return true;
-		    }else if (!window.configuration.metaLot.disableEditMyLots && (this.user.get('code') == chemist.get('code') || this.user.get('code') == registeredBy.code)) {
+		    }else if (!window.configuration.metaLot.disableEditMyLots && (this.user.get('code') == chemist.get('code') || (registeredBy != null && this.user.get('code') == registeredBy.code))) {
 				return true;
 			} else {
 			    return false;
