@@ -53,6 +53,15 @@ unlockStandardizationSessions = (socket, runType, report) ->
 
 exports.getStandardizationSettings = (req, resp) ->
 	req.setTimeout 86400000
+
+	exports.getStandardizationSettingsInternal (getStandardizationSettingsResp, statusCode) =>
+		if statusCode is 500
+			resp.statusCode = statusCode
+			resp.end getStandardizationSettingsResp
+		else
+			resp.json getStandardizationSettingsResp
+	
+exports.getStandardizationSettingsInternal = (callback) ->
 	url = config.all.client.service.cmpdReg.persistence.fullpath + '/standardization/settings'
 	console.log url
 	request(
@@ -61,13 +70,12 @@ exports.getStandardizationSettings = (req, resp) ->
 		json: true
 	, (error, response, json) =>
 		if !error && response.statusCode == 200
-			resp.json json
+			callback json, response.statusCode
 		else
 			console.log 'Error getting standardization settings'
 			console.log error
 			console.log json
-			resp.statusCode = response.statusCode
-			resp.end JSON.stringify error
+			callback error, response.statusCode
 	)
 
 exports.getStandardizationHistory = (req, resp) ->

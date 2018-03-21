@@ -15,6 +15,7 @@
 			<div class="regAndSearchButtonsInner">
 				<a class="searchButton applicationPage" href="#" onclick="this.blur(); return false;"></a>
 				<a class="registerButton applicationPage" href="#" onclick="this.blur(); return false;"></a>
+				<span class="disableCmpdRegistrationMessage hide"></span>
 			</div>
 		</div>
 

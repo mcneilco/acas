@@ -17,6 +17,31 @@ $(function () {
                 'lotBack');
             this.render();
 
+            $.ajax({
+                type: 'GET',
+                url: "/cmpdReg/allowCmpdRegistration",
+                success: (function (_this) {
+                    return function (allowRegResp) {
+                        console.log("got allow cmpd registration");
+                        if (allowRegResp.allowCmpdRegistration) {
+                            return _this.finishSetupRegistration();
+                        } else {
+                            _this.$('.DisableCmpdRegistrationMessage').show();
+                            return _this.$('.DisableCmpdRegistrationMessage').html(allowRegResp.message);
+                        }
+                    };
+                })(this),
+                error: (function (_this) {
+                    return function (err) {
+                        console.log("error allow cmpd registration");
+                        _this.$('.DisableCmpdRegistrationMessage').show();
+                        return _this.$('.DisableCmpdRegistrationMessage').html(JSON.parse(err.responseText).message);
+                    };
+                })(this)
+            });
+        },
+
+        finishSetupRegistration: function() {
             this.eNotiList = this.options.errorNotifList;
 
 

@@ -232,6 +232,35 @@ $(function() {
 				this.$('.isMixture').attr('disabled', true);
                 //this.$('.commonName').attr('disabled', true);
             }
+
+			$.ajax({
+				type: 'GET',
+				url: "/cmpdReg/allowCmpdRegistration",
+				success: (function (_this) {
+					return function (allowRegResp) {
+						console.log("got allow cmpd registration");
+						console.log(allowRegResp);
+						if (allowRegResp.allowCmpdRegistration) {
+							return _this.finishRenderParentController();
+						} else {
+							//TODO show disabled Edit Parent Button
+							_this.$('.disableCmpdRegistrationMessage').show();
+							return _this.$('.disableCmpdRegistrationMessage').html(allowRegResp.message);
+						}
+					};
+				})(this),
+				error: (function (_this) {
+					return function (err) {
+						console.log("error allow cmpd registration");
+						//TODO show disabled Edit Parent Button
+						_this.$('.disableCmpdRegistrationMessage').show();
+						return _this.$('.disableCmpdRegistrationMessage').html(JSON.parse(err.responseText).message);
+					};
+				})(this)
+			});
+		},
+
+		finishRenderParentController: function() {
 			if ( this.options.isEditable ) {
 				this.$('.editParentButtonWrapper').show();
 			} else {

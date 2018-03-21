@@ -48,6 +48,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/cmpdReg/ketcher/layout', loginRoutes.ensureAuthenticated, exports.ketcherLayout
 	app.post '/api/cmpdReg/ketcher/calculate_cip', loginRoutes.ensureAuthenticated, exports.ketcherCalculateCip
 	app.get '/cmpdReg/labelPrefixes', loginRoutes.ensureAuthenticated, exports.getAuthorizedPrefixes
+	app.get '/cmpdReg/allowCmpdRegistration', loginRoutes.ensureAuthenticated, exports.allowCmpdRegistration
 
 _ = require 'underscore'
 request = require 'request'
@@ -864,3 +865,29 @@ exports.getAuthorizedPrefixes = (req, resp) ->
 				thingTypeAndKind: labelSeq.thingTypeAndKind
 			codeTables.push codeTable
 		resp.json codeTables
+
+exports.allowCmpdRegistration = (req, resp) ->
+	#for checking if standardization needed or if user wants to enable/disable cmpd registration
+	if req.query.userOverride?
+		#if req.query.userOverride = true, then always allow cmpd reg
+		#if req.query.userOverride = false, then always disable cmpd reg
+		response =
+			allowCmpdRegistration: req.query.userOverride == "true"
+			message: "Compounds can not be registered at this time. Please contact an administrator for help."
+		resp.json response
+	else
+		#check if needs standardization
+		standardizationRoutes = require './StandardizationRoutes.js'
+		standardizationRoutes.getStandardizationSettingsInternal (getStandardizationSettingsResp, statusCode) =>
+			if statusCode is 500
+				console.log "error getting current standardization settings"
+				resp.statusCode = statusCode
+				response =
+					allowCmpdRegistration: false
+					message: "Compounds can not be registered at this time due to an error getting current standardization settings. Please contact an administrator for help."
+				resp.json response
+			else
+				response =
+					allowCmpdRegistration: !getStandardizationSettingsResp.needsStandardization
+					message: "Compounds can not be registered at this time because the registered compounds require standardization."
+				resp.json response
