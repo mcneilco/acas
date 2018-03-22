@@ -1,14 +1,15 @@
-.bv_currentSettings {
-  background-color: blue;
-}
-
 .standardizerControlsWrapper {
   margin-top: 30px;
+  margin-bottom: 30px;
   margin-left: 0px;
 }
 
 .standardizerControlsWrapper .bv_refresh, .standardizerControlsWrapper .bv_executeStandardization {
   margin-left: 10px;
+}
+
+.bv_standardizationHistory select, .bv_standardizationDryRunReport select {
+  height: 30px;
 }
 
 .bv_standardizationDryRunReportStats {
@@ -21,4 +22,19 @@
 
 .bv_executingStandardizationDryRunModal .modal-body, .bv_executingStandardizationModal .modal-body {
   padding-top:0px;
+}
+
+.bv_dryRunResultsPopover .icon-question-sign {
+  margin-top:-3px;
+}
+
+.bv_standardizationDryRunReportSummaryTable {
+  margin: 0px;
+}
+
+
+
+
+.bv_standardizationDryRunReportStats:parent {
+  background-color: yellow;
 }
