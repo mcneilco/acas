@@ -4,6 +4,8 @@ class window.StandardizationCurrentSettingsController extends Backbone.View
 	initialize: ->
 		$(@el).empty()
 		$(@el).html @template()
+		@$('.bv_getCurrentSettingsError').hide()
+		@$('.bv_currentSettingsTable').hide()
 		@getCurrentSettings()
 
 	getCurrentSettings: ->
@@ -11,12 +13,10 @@ class window.StandardizationCurrentSettingsController extends Backbone.View
 			type: 'GET'
 			url: "/cmpdReg/getStandardizationSettings"
 			success: (currentSettings) =>
-				console.log "got current settings"
-				console.log currentSettings
+				@$('.bv_currentSettingsTable').show()
 				@setupCurrentSettingsTable currentSettings
 			error: (err) =>
-				console.log "error getting current settings"
-				#TODO: error handling
+				@$('.bv_getCurrentSettingsError').show()
 
 	setupCurrentSettingsTable: (settings) ->
 		@$('.bv_currentSettingsTable').dataTable
@@ -111,9 +111,7 @@ class window.StandardizationHistorySummaryTableController extends Backbone.View
 			content: "<ul>#{structuresStandardizedCountInfo}#{structuresUpdatedCountInfo}#{changedStructureCountInfo}#{displayChangeCountInfo}#{newDuplicateCountInfo}#{asDrawnDisplayChangeCountInfo}#{existingDuplicateCountIinfo}#{settingsHashInfo}</ul>"
 		@$("body").tooltip selector: '.bv_structuresStandardizedCountPopover'
 		console.dir @collection
-		if @collection.models.length is 0
-			#TODO: display message indicating no results were found
-		else
+		if @collection.models.length > 0
 			@collection.each (run) =>
 				shrsc = new StandardizationHistoryRowSummaryController
 					model: run
@@ -132,6 +130,8 @@ class window.StandardizationDryRunReportStatsController extends Backbone.View
 	initialize: ->
 		$(@el).empty()
 		$(@el).html @template()
+		@$('.bv_standardizationDryRunReportStatsTable').hide()
+		@$('.bv_getDryRunReportStatsError').hide()
 		structuresStandardizedCountInfo = "<li># Structures Standardized: Total number of structures run through the standardizer.</li>"
 		structuresUpdatedCountInfo = "<li># Structures Updated: Count of parent structures that were changed as a result of standardization.</li>"
 		changedStructureCountInfo = "<li># Structures Changed: Standardized structure is no longer the same as it's parent structure taking into account tautomers.</li>"
@@ -152,12 +152,10 @@ class window.StandardizationDryRunReportStatsController extends Backbone.View
 			type: 'GET'
 			url: "/cmpdReg/standardizationDryRunStats"
 			success: (dryRunStats) =>
-				console.log "got dry run stats"
-				console.log dryRunStats
+				@$('.bv_standardizationDryRunReportStatsTable').show()
 				@setupDryRunStatsTable dryRunStats
 			error: (err) =>
-				console.log "error getting dry run stats"
-				#TODO: error handling
+				@$('.bv_getDryRunReportStatsError').show()
 
 	setupDryRunStatsTable: (stats) ->
 		@$('.bv_standardizationDryRunReportStatsTable').dataTable
@@ -206,9 +204,7 @@ class window.StandardizationDryRunReportSummaryTableController extends Backbone.
 		@template = _.template($("#StandardizationDryRunReportSummaryTableView").html())
 		$(@el).html @template
 		console.dir @collection
-		if @collection.models.length is 0
-			#TODO: display message indicating no results were found
-		else
+		if @collection.models.length > 0
 			@collection.each (result) =>
 				sdrrrsc = new StandardizationDryRunReportRowSummaryController
 					model: result
@@ -248,7 +244,11 @@ class window.StandardizationController extends Backbone.View
 		@openStandardizationControllerSocket()
 		$(@el).empty()
 		$(@el).html @template()
-		#TODO maybe call current settings controller after getting history
+		@$('.bv_standardizerControlsWrapper').hide()
+		@$('.bv_getStandardizationHistoryError').hide()
+		@$('.bv_getStandardizationDryRunReportError').hide()
+		@$('.bv_executeDryRunError').hide()
+		@$('.bv_executeStandardizationError').hide()
 		@getStandardizationHistory()
 		@setupCurrentSettingsController()
 
@@ -266,7 +266,6 @@ class window.StandardizationController extends Backbone.View
 					@$('.bv_executingStandardizationModal').modal 'show'
 					
 			@socket.on 'dryRunOrStandardizationComplete', (runType, report) =>
-				console.log 'dryRunOrStandardizationComplete'
 				if runType is 'dryRun'
 					@$('.bv_executingStandardizationDryRunModal').modal 'hide'
 					@initialize()
@@ -283,7 +282,17 @@ class window.StandardizationController extends Backbone.View
 						backdrop: 'static'
 					@$('.bv_standardizationCompleteModal').modal 'show'
 
-		
+			@socket.on 'dryRunOrStandardizationError', (runType, report) =>
+				if runType is 'dryRun'
+					@$('.bv_executingStandardizationDryRunModal').modal 'hide'
+					@$('.bv_executeDryRunError').show()
+				else if runType is 'standardization'
+					@$('.bv_executingStandardizationModal').modal 'hide'
+					@$('.bv_executeStandardizationError').show()
+				@$('.bv_standardizationDryRunReportStats').hide()
+				@$('.bv_standardizationDryRunReport').hide()
+				@$('.bv_standardizerControlsWrapper').hide()
+
 	setupCurrentSettingsController: ->
 		if @currentSettingsController?
 			@currentSettingsController.undelegateEvents()
@@ -295,8 +304,7 @@ class window.StandardizationController extends Backbone.View
 			type: 'GET'
 			url: "/cmpdReg/getStandardizationHistory"
 			success: (history) =>
-				console.log "got history"
-				console.log history
+				@$('.bv_standardizerControlsWrapper').show()
 				mostRecentHistoryEntry = _.max history, (row) =>
 					row.id
 				runningDryRunOrStandardization = @isDryRunOrStandardizationInProgress mostRecentHistoryEntry
@@ -306,13 +314,12 @@ class window.StandardizationController extends Backbone.View
 					@setupExecuteButtons mostRecentHistoryEntry
 					@setupLastDryRunReportSummaryTable()
 			error: (err) =>
-				console.log "error getting history"
-				#TODO: error handling
+				@$('.bv_getStandardizationHistoryError').show()
 
 	isDryRunOrStandardizationInProgress: (mostRecentHistoryEntry) ->
 		dryRunStatus = mostRecentHistoryEntry.dryRunStatus
 		standardizationStatus = mostRecentHistoryEntry.standardizationStatus
-		if dryRunStatus is 'running' #TODO change back to running
+		if dryRunStatus is 'running'
 			@$('.bv_executingStandardizationDryRunModal').modal
 				backdrop: 'static'
 			@$('.bv_executingStandardizationDryRunModal').modal 'show'			
@@ -335,8 +342,6 @@ class window.StandardizationController extends Backbone.View
 	setupExecuteButtons: (mostRecentHistory) ->
 		dryRunStatus = mostRecentHistory.dryRunStatus
 		standardizationStatus = mostRecentHistory.standardizationStatus
-		console.log "dryRunStatus: " + dryRunStatus
-		console.log "standardizationStatus: " + standardizationStatus
 		#Execution Dry-run Disabled when most recent history dryRunStatus is running or standardizationStatus running
 		if dryRunStatus is "running" or standardizationStatus is "running"
 			@$('.bv_executeDryRun').attr 'disabled', 'disabled'
@@ -348,9 +353,7 @@ class window.StandardizationController extends Backbone.View
 		$.ajax
 			type: 'GET'
 			url: "/cmpdReg/standardizationDryRun?reportOnly=true"
-			success: (dryRunReport) =>
-				console.log "got dry run report"
-				console.log dryRunReport
+			success: (dryRunReport) =>				
 				if @standardizationDryRunReportSummaryTableController?
 					@standardizationDryRunReportSummaryTableController.undelegateEvents()
 				if dryRunReport.length > 0
@@ -364,8 +367,8 @@ class window.StandardizationController extends Backbone.View
 					@$(".bv_standardizationDryRunReport").hide()
 					@$(".bv_standardizationDryRunReportStats").hide()
 			error: (err) =>
-				console.log "error getting dry run report"
-				#TODO: error handling
+				@$('.bv_getStandardizationDryRunReportError').show()
+				@$('.bv_standardizerControlsWrapper').hide()
 
 	setupLastDryRunReportStatsSummaryTable: ->
 		if @standardizationDryRunReportStatsController?
@@ -379,12 +382,10 @@ class window.StandardizationController extends Backbone.View
 	handleExecuteDryRunClicked: ->
 		@disableExecuteButtons()
 		@socket.emit 'executeDryRunOrStandardization', 'dryRun'
-		#TODO: error handling
 		
 	handleExecuteStandardizationClicked: ->
 		@disableExecuteButtons()
 		@socket.emit 'executeDryRunOrStandardization', 'standardization'
-		#TODO: error handling
 
 	handleStandardizationCompleteModalCloseClicked: ->
 		#refreshes standardization history summary table and last dry run report summary table

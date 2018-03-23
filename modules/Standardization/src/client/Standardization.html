@@ -1,8 +1,11 @@
 <script type="text/template" id="StandardizationView" xmlns="http://www.w3.org/1999/html">
     <div class="bv_currentSettings"></div>
     <div class="bv_standardizationHistory"></div>
+    <div class="alert bv_getStandardizationHistoryError" style="margin-top:20px;">
+        There was an error getting the standardization history. Please contact an administrator.
+    </div>
 
-    <div class="span12 standardizerControlsWrapper">
+    <div class="span12 standardizerControlsWrapper bv_standardizerControlsWrapper">
         <button class="btn bv_refresh pull-right">Refresh</button>
         <button class="btn bv_executeStandardization pull-right">Execute Standardization</button>
         <button class="btn bv_executeDryRun pull-right">Execute Standardization Dry Run</button>
@@ -11,6 +14,15 @@
 
     <div class="bv_standardizationDryRunReportStats"></div>
     <div class="bv_standardizationDryRunReport"></div>
+    <div class="span12 alert bv_getStandardizationDryRunReportError" style="margin-left:0px; margin-top:20px;">
+        There was an error getting the results of the latest standardization dry run. Please contact an administrator.
+    </div>
+    <div class="span12 alert bv_executeDryRunError hide" style="margin-left:0px; margin-top:20px;">
+        There was an error executing the dry run. Please contact an administrator.
+    </div>
+    <div class="span12 alert bv_executeStandardizationError hide" style="margin-left:0px; margin-top:20px;">
+        There was an error executing the standardization. Please contact an administrator.
+    </div>
 
     <div class="modal bv_executingStandardizationDryRunModal hide">
         <div class="modal-header">
@@ -75,6 +87,9 @@
     <h4>Current Settings</h4>
     <table class="table table-bordered table-striped table-hover bv_currentSettingsTable" style="margin: 0px; width: 400px; ">
     </table>
+    <div class="alert bv_getCurrentSettingsError">
+        There was an error getting the current standardization settings. Please contact an administrator.
+    </div>
 
 </script>
 
@@ -139,6 +154,9 @@
     </h4>
     <table class="table table-bordered table-striped table-hover bv_standardizationDryRunReportStatsTable" style="margin: 0px; ">
     </table>
+    <div class="alert bv_getDryRunReportStatsError">
+        There was an error getting the summary of the latest standardization dry run results. Please contact an administrator.
+    </div>
 
 </script>
 

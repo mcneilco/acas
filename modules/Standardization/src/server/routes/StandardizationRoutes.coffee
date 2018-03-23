@@ -2,7 +2,7 @@ exports.setupAPIRoutes = (app) ->
 	app.get '/cmpdReg/getStandardizationSettings', exports.getStandardizationSettings
 	app.get '/cmpdReg/getStandardizationHistory', exports.getStandardizationHistory
 	app.get '/cmpdReg/standardizationDryRun', exports.standardizationDryRun
-	app.get '/cmpdReg/standardizationDryRunStats', loginRoutes.ensureAuthenticated, exports.getDryRunStats	
+	app.get '/cmpdReg/standardizationDryRunStats', exports.getDryRunStats
 	app.get '/cmpdReg/standardizationExecute', exports.standardizationExecution
 
 exports.setupRoutes = (app, loginRoutes) ->
@@ -34,10 +34,10 @@ exports.setupChannels = (io, sessionStore, loginRoutes) ->
 			if runType is 'dryRun'
 				exports.standardizationDryRunInternal false, (standardizationDryRunInternalResp, statusCode) =>
 					console.log "standardizationDryRunInternal returned, should emit unlockStandardizationSessions"
-					unlockStandardizationSessions socket, runType, standardizationDryRunInternalResp
+					unlockStandardizationSessions socket, runType, standardizationDryRunInternalResp, statusCode
 			else if runType is 'standardization'
 				exports.standardizationExecutionInternal (standardizationExecutionInternalResp, statusCode) =>
-					unlockStandardizationSessions socket, runType, standardizationExecutionInternalResp
+					unlockStandardizationSessions socket, runType, standardizationExecutionInternalResp, statusCode
 
 lockStandardizationSessions = (socket, runType) ->
 	for sessionSocketId in global.standardizationSessions
@@ -45,10 +45,14 @@ lockStandardizationSessions = (socket, runType) ->
 	socket.emit 'dryRunOrStandardizationInProgress', runType
 	#broadcast doesn't emit for the socket
 
-unlockStandardizationSessions = (socket, runType, report) ->
+unlockStandardizationSessions = (socket, runType, report, statusCode) ->
+	if statusCode is 200
+		emitMessage = 'dryRunOrStandardizationComplete'
+	else
+		emitMessage = 'dryRunOrStandardizationError'
 	for sessionSocketId in global.standardizationSessions
-		socket.broadcast.to(sessionSocketId).emit 'dryRunOrStandardizationComplete', runType, report
-	socket.emit 'dryRunOrStandardizationComplete', runType, report
+		socket.broadcast.to(sessionSocketId).emit emitMessage, runType, report
+	socket.emit emitMessage, runType, report
 	#broadcast doesn't emit for the socket
 
 exports.getStandardizationSettings = (req, resp) ->
