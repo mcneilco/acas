@@ -950,7 +950,33 @@ class window.CurveCuratorController extends Backbone.View
 		shouldLock = (status == 'approved') & experimentMatchesAFilter
 		return shouldLock
 
-	setupCurator: (exptCode, curveID)=>
+	setupCurator: (exptCorpNameOrCode, curveID)=>
+		if window.conf.entity?.saveInitialsCorpName? and window.conf.entity.saveInitialsCorpName
+			@getExptCodesFromLabels exptCorpNameOrCode, 'corpName', 'experiment corpName', curveID
+		else
+			@finishSetupCurator exptCorpNameOrCode, curveID
+
+	getExptCodesFromLabels: (exptCorpNameOrCode, labelType, labelKind, curveID) =>
+		$.ajax
+			type: 'POST'
+			url: "/api/experiments/getExperimentCodeByLabel/default/default"
+			data:
+				JSON.stringify
+					labelType: labelType
+					labelKind: labelKind
+					requests: [{requestName:exptCorpNameOrCode}]
+			contentType: 'application/json'
+			dataType: 'json'
+			success: (json) =>
+				if json.results.length is 1
+					exptCode = json.results[0].referenceName
+					@finishSetupCurator exptCode, curveID
+				else
+					@showBadExperimentModal()
+			error: (err) =>
+				@showBadExperimentModal()
+
+	finishSetupCurator: (exptCode, curveID) =>
 		$.ajax
 			type: 'GET'
 			url: "/api/experiments/"+exptCode+"/exptvalues/bystate/metadata/experiment metadata/byvalue/codeValue/experiment status"
