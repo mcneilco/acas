@@ -248,7 +248,8 @@ $(function () {
                             _this.$('.disableCmpdRegistrationMessage').html(allowRegResp.message);
                         }
                         else {
-                          _this.$('.registerButtonDisabled').hide();
+                            _this.$('.registerButton').show();
+                            _this.$('.registerButtonDisabled').hide();
                         }
                         return _this.$('.searchButton').show();
                     };

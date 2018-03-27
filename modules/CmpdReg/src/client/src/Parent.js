@@ -241,13 +241,14 @@ $(function() {
 						console.log("got allow cmpd registration");
 						console.log(allowRegResp);
 						if (allowRegResp.allowCmpdRegistration) {
-							return _this.finishRenderParentController();
+							_this.$('.editParentButtonDisabled').hide();
 						} else {
 							_this.$('.disableCmpdRegistrationMessage').show();
 							_this.$('.editParentButton').hide();
 							_this.$('.editParentButtonDisabled').show();
-							return _this.$('.disableCmpdRegistrationMessage').html(allowRegResp.message);
+							_this.$('.disableCmpdRegistrationMessage').html(allowRegResp.message);
 						}
+						return _this.finishRenderParentController();
 					};
 				})(this),
 				error: (function (_this) {

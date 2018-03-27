@@ -393,9 +393,7 @@ class window.StandardizationController extends Backbone.View
 	handleStandardizationCompleteModalCloseClicked: ->
 		#refreshes standardization history summary table and last dry run report summary table
 		@$('.bv_standardizationCompleteModal').modal 'hide'
-		@getStandardizationHistory()
-		@$('.bv_executeDryRun').removeAttr 'disabled'
-		@$('.bv_executeStandardization').attr 'disabled', 'disabled'
+		@initialize()
 
 	enableExecuteButtons: ->
 		@$('.bv_executeDryRun').removeAttr 'disabled'

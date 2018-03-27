@@ -871,9 +871,14 @@ exports.allowCmpdRegistration = (req, resp) ->
 	if req.query.userOverride?
 		#if req.query.userOverride = true, then always allow cmpd reg
 		#if req.query.userOverride = false, then always disable cmpd reg
+		allowCmpdRegistration = req.query.userOverride == "true"
+		if allowCmpdRegistration
+			message = "Compounds can be registerd"
+		else
+			message = "Compounds can not be registered at this time. Please contact an administrator for help."
 		response =
-			allowCmpdRegistration: req.query.userOverride == "true"
-			message: "Compounds can not be registered at this time. Please contact an administrator for help."
+			allowCmpdRegistration: allowCmpdRegistration
+			message: message
 		resp.json response
 	else
 		#check if needs standardization
@@ -887,7 +892,12 @@ exports.allowCmpdRegistration = (req, resp) ->
 					message: "Compounds can not be registered at this time due to an error getting current standardization settings. Please contact an administrator for help."
 				resp.json response
 			else
+				allowCmpdRegistration = !getStandardizationSettingsResp.needsStandardization
+				if allowCmpdRegistration
+					message = "Compounds can be registered"
+				else
+					message = "Compounds can not be registered at this time because the registered compounds require standardization."
 				response =
-					allowCmpdRegistration: !getStandardizationSettingsResp.needsStandardization
-					message: "Compounds can not be registered at this time because the registered compounds require standardization."
+					allowCmpdRegistration: allowCmpdRegistration
+					message: message
 				resp.json response

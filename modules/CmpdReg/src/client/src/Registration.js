@@ -24,6 +24,8 @@ $(function () {
                     return function (allowRegResp) {
                         console.log("got allow cmpd registration");
                         if (allowRegResp.allowCmpdRegistration) {
+                            _this.$('.disableCmpdRegistrationMessage').hide();
+                            _this.$('.DisableCmpdRegistrationMessage').hide();
                             return _this.finishSetupRegistration();
                         } else {
                             _this.$('.DisableCmpdRegistrationMessage').show();
