@@ -46,6 +46,7 @@
 		"type": "jchem",
 		"livedesignSettings": {
 		  "url": "https://livedesignserver/standardizer/api/v0/standardize",
+		  "version": "1.0",
 		  "token": "nonce",
 		  "outputFormat": "MOL",
 		  "timeout": 10,
