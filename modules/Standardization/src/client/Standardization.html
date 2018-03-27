@@ -1,7 +1,7 @@
 <script type="text/template" id="StandardizationView" xmlns="http://www.w3.org/1999/html">
     <div class="bv_currentSettings"></div>
     <div class="bv_standardizationHistory"></div>
-    <div class="alert bv_getStandardizationHistoryError" style="margin-top:20px;">
+    <div class="alert bv_getStandardizationHistoryError">
         There was an error getting the standardization history. Please contact an administrator.
     </div>
 
@@ -14,13 +14,13 @@
 
     <div class="bv_standardizationDryRunReportStats"></div>
     <div class="bv_standardizationDryRunReport"></div>
-    <div class="span12 alert bv_getStandardizationDryRunReportError" style="margin-left:0px; margin-top:20px;">
+    <div class="alert bv_getStandardizationDryRunReportError">
         There was an error getting the results of the latest standardization dry run. Please contact an administrator.
     </div>
-    <div class="span12 alert bv_executeDryRunError hide" style="margin-left:0px; margin-top:20px;">
+    <div class="alert bv_executeDryRunError hide">
         There was an error executing the dry run. Please contact an administrator.
     </div>
-    <div class="span12 alert bv_executeStandardizationError hide" style="margin-left:0px; margin-top:20px;">
+    <div class="alert bv_executeStandardizationError hide">
         There was an error executing the standardization. Please contact an administrator.
     </div>
 
@@ -114,9 +114,9 @@
 </script>
 
 <script type="text/template" id="StandardizationHistorySummaryTableView" xmlns="http://www.w3.org/1999/html">
-    <h4 style="margin-top:30px;">Standardization History
-        <a href="#" class="bv_standardizationHistoryPopover" data-toggle="popover " data-placement="bottom">
-            <i class="icon-question-sign"style="margin-top:-3px;"></i>
+    <h4>Standardization History
+        <a class="bv_standardizationHistoryInfo">
+            <i class="icon-question-sign"></i>
         </a>
     </h4>
     <table class="table table-bordered table-striped table-hover bv_standardizationHistorySummaryTable" style="margin: 0px; width: 100%; ">
@@ -144,11 +144,35 @@
 
         </tbody>
     </table>
+
+    <div class="modal bv_standardizationHistoryModal hide">
+        <div class="modal-header">
+            <h3>Standardization History Table Attributes</h3>
+        </div>
+        <div class="modal-body">
+            <div>
+                <ul>
+                    <li># Structures Standardized: Total number of structures run through the standardizer.</li>
+                    <li># Structures Updated: Count of parent structures that were changed as a result of standardization.</li>
+                    <li># Structures Changed: Count of structures that are no longer the same as their parent structure taking into account tautomers.</li>
+                    <li># Display Change: Count of structures that are no longer exact string matches for their parent structure.</li>
+                    <li># New Duplicates: Count of structures that are now the same as one or more parent structures taking into account tautomers, stereo comments and stereo categories.</li>
+                    <li># As Drawn Display Change: Count of structures that are no longer exact string matches for their originally drawn as structure.</li>
+                    <li># Existing Duplicates: Count of structures that were already the same as one or more parent structures taking into account tautomers, stereo comments and stereo categories.</li>
+                    <li>Settings Hash: Hash of the effective standardization settings.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn bv_standardizationHistoryModalCloseBtn">Close</button>
+        </div>
+    </div>
+
 </script>
 
 <script type="text/template" id="StandardizationDryRunReportStatsView" xmlns="http://www.w3.org/1999/html">
     <h4>Latest Standardization Dry Run Results
-        <a href="#" class="bv_dryRunResultsPopover" data-toggle="popover " data-placement="right">
+        <a class="bv_dryRunResultsInfo">
             <i class="icon-question-sign"></i>
         </a>
     </h4>
@@ -156,6 +180,28 @@
     </table>
     <div class="alert bv_getDryRunReportStatsError">
         There was an error getting the summary of the latest standardization dry run results. Please contact an administrator.
+    </div>
+
+    <div class="modal bv_dryRunResultsModal hide">
+        <div class="modal-header">
+            <h3>Dry Run Results Table Attributes</h3>
+        </div>
+        <div class="modal-body">
+            <div>
+                <ul>
+                    <li># Structures Standardized: Total number of structures run through the standardizer.</li>
+                    <li># Structures Updated: Count of parent structures that were changed as a result of standardization.</li>
+                    <li># Structures Changed: Standardized structure is no longer the same as it's parent structure taking into account tautomers.</li>
+                    <li># Display Change: Standardized structure is no longer an exact string matches for it's parent structure.</li>
+                    <li># New Duplicates: List of parent corp names that are now the same structure as the standardized structure taking into account tautomers, stereo comments and stereo categories.</li>
+                    <li># As Drawn Display Change: Count of structures that are no longer exact string matches for their originally drawn as structure.</li>
+                    <li># Existing Duplicates: List of parent corp names that were already the same structure as the standardized structure taking into account tautomers, stereo comments and stereo categories.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn bv_dryRunResultsModalCloseBtn">Close</button>
+        </div>
     </div>
 
 </script>

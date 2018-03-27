@@ -1,3 +1,7 @@
+.bv_StandardizationController .bv_currentSettings {
+  margin-bottom: 30px;
+}
+
 .standardizerControlsWrapper {
   margin-top: 30px;
   margin-bottom: 30px;
@@ -13,28 +17,23 @@
 }
 
 .bv_standardizationDryRunReportStats {
-  margin-top:20px; margin-left:0px;
+  margin-top: 20px;
+  margin-left: 0px;
 }
 
 .bv_standardizationDryRunReport {
-  margin-top:20px; margin-left:0px;
+  margin-top: 20px;
+  margin-left: 0px;
 }
 
 .bv_executingStandardizationDryRunModal .modal-body, .bv_executingStandardizationModal .modal-body {
-  padding-top:0px;
-}
-
-.bv_dryRunResultsPopover .icon-question-sign {
-  margin-top:-3px;
+  padding-top: 0px;
 }
 
 .bv_standardizationDryRunReportSummaryTable {
   margin: 0px;
 }
 
-
-
-
-.bv_standardizationDryRunReportStats:parent {
-  background-color: yellow;
+.bv_getStandardizationHistoryError, .bv_getStandardizationDryRunReportError, .bv_executeDryRunError, .bv_executeStandardizationError, .bv_getCurrentSettingsError, .bv_getDryRunReportStatsError {
+  margin-top: 40px;
 }

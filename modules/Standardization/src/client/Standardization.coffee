@@ -70,7 +70,7 @@ class window.StandardizationHistoryRowSummaryController extends Backbone.View
 			standardizationComplete = UtilityFunctions::convertMSToYMDTimeDate(standardizationComplete, "12hr")
 		else
 			standardizationComplete = ""
-			
+
 		toDisplay =
 			id: @model.get('id')
 			recordedDate: recordedDate
@@ -97,18 +97,7 @@ class window.StandardizationHistorySummaryTableController extends Backbone.View
 	render: =>
 		@template = _.template($("#StandardizationHistorySummaryTableView").html())
 		$(@el).html @template
-		structuresStandardizedCountInfo = "<li># Structures Standardized: Total number of structures run through the standardizer.</li>"
-		structuresUpdatedCountInfo = "<li># Structures Updated: Count of parent structures that were changed as a result of standardization.</li>"
-		changedStructureCountInfo = "<li># Structures Changed: Count of structures that are no longer the same as their parent structure taking into account tautomers.</li>"
-		displayChangeCountInfo = "<li># Display Change: Count of structures that are no longer exact string matches for their parent structure.</li>"
-		newDuplicateCountInfo = "<li># New Duplicates: Count of structures that are now the same as one or more parent structures taking into account tautomers, stereo comments and stereo categories.</li>"
-		asDrawnDisplayChangeCountInfo = "<li># As Drawn Display Change: Count of structures that are no longer exact string matches for their originally drawn as structure.</li>"
-		existingDuplicateCountIinfo = "<li># Existing Duplicates: Count of structures that were already the same as one or more parent structures taking into account tautomers, stereo comments and stereo categories.</li>"
-		settingsHashInfo = "<li>Settings Hash: Hash of the effective standardization settings</li>"
 
-		@$('.bv_standardizationHistoryPopover').popover
-			title: "Standardization History Table Attributes"
-			content: "<ul>#{structuresStandardizedCountInfo}#{structuresUpdatedCountInfo}#{changedStructureCountInfo}#{displayChangeCountInfo}#{newDuplicateCountInfo}#{asDrawnDisplayChangeCountInfo}#{existingDuplicateCountIinfo}#{settingsHashInfo}</ul>"
 		@$("body").tooltip selector: '.bv_structuresStandardizedCountPopover'
 		console.dir @collection
 		if @collection.models.length > 0
@@ -124,6 +113,18 @@ class window.StandardizationHistorySummaryTableController extends Backbone.View
 
 		@
 
+	events: ->
+		"click .bv_standardizationHistoryInfo": "handleStandardizationHistoryModalOpen"
+		"click .bv_standardizationHistoryModalCloseBtn": "handleStandardizationHistoryModalClose"
+
+	handleStandardizationHistoryModalOpen: ->
+		@$('.bv_standardizationHistoryModal').modal
+			backdrop: 'static'
+		@$('.bv_standardizationHistoryModal').modal 'show'
+
+	handleStandardizationHistoryModalClose: ->
+		@$('.bv_standardizationHistoryModal').modal 'hide'
+
 class window.StandardizationDryRunReportStatsController extends Backbone.View
 	template: _.template($("#StandardizationDryRunReportStatsView").html())
 
@@ -132,17 +133,7 @@ class window.StandardizationDryRunReportStatsController extends Backbone.View
 		$(@el).html @template()
 		@$('.bv_standardizationDryRunReportStatsTable').hide()
 		@$('.bv_getDryRunReportStatsError').hide()
-		structuresStandardizedCountInfo = "<li># Structures Standardized: Total number of structures run through the standardizer.</li>"
-		structuresUpdatedCountInfo = "<li># Structures Updated: Count of parent structures that were changed as a result of standardization.</li>"
-		changedStructureCountInfo = "<li># Structures Changed: Standardized structure is no longer the same as it's parent structure taking into account tautomers.</li>"
-		displayChangeCountInfo = "<li># Display Change: Standardized structure is no longer an exact string matches for it's parent structure.</li>"
-		newDuplicateCountInfo = "<li># New Duplicates: List of parent corp names that are now the same structure as the standardized structure taking into account tautomers, stereo comments and stereo categories.</li>"
-		asDrawnDisplayChangeCountInfo = "<li># As Drawn Display Change: Count of structures that are no longer exact string matches for their originally drawn as structure.</li>"
-		existingDuplicateCountIinfo = "<li># Existing Duplicates: List of parent corp names that were already the same structure as the standardized structure taking into account tautomers, stereo comments and stereo categories.</li>"
 
-		@$('.bv_dryRunResultsPopover').popover
-			title: "Dry Run Results Table Attributes"
-			content: "<ul>#{structuresStandardizedCountInfo}#{structuresUpdatedCountInfo}#{changedStructureCountInfo}#{displayChangeCountInfo}#{newDuplicateCountInfo}#{asDrawnDisplayChangeCountInfo}#{existingDuplicateCountIinfo}</ul>"
 		@$("body").tooltip selector: '.bv_structuresStandardizedCountPopover'
 
 		@getDryRunReportStats()
@@ -174,7 +165,19 @@ class window.StandardizationDryRunReportStatsController extends Backbone.View
 			bInfo: false
 			bPaginate: false
 			bSort: false
-		
+
+	events: ->
+		"click .bv_dryRunResultsInfo": "handleDryRunResultsModalOpen"
+		"click .bv_dryRunResultsModalCloseBtn": "handleDryRunResultsModalClose"
+
+	handleDryRunResultsModalOpen: ->
+		@$('.bv_dryRunResultsModal').modal
+			backdrop: 'static'
+		@$('.bv_dryRunResultsModal').modal 'show'
+
+	handleDryRunResultsModalClose: ->
+		@$('.bv_dryRunResultsModal').modal 'hide'
+
 class window.StandardizationDryRunReportRowSummaryController extends Backbone.View
 	tagName: 'tr'
 	className: 'dataTableRow'
@@ -259,12 +262,12 @@ class window.StandardizationController extends Backbone.View
 				if runType is 'dryRun'
 					@$('.bv_executingStandardizationDryRunModal').modal
 						backdrop: 'static'
-					@$('.bv_executingStandardizationDryRunModal').modal 'show'						
+					@$('.bv_executingStandardizationDryRunModal').modal 'show'
 				else if runType is 'standardization'
 					@$('.bv_executingStandardizationModal').modal
 						backdrop: 'static'
 					@$('.bv_executingStandardizationModal').modal 'show'
-					
+
 			@socket.on 'dryRunOrStandardizationComplete', (runType, report) =>
 				if runType is 'dryRun'
 					@$('.bv_executingStandardizationDryRunModal').modal 'hide'
@@ -322,7 +325,7 @@ class window.StandardizationController extends Backbone.View
 		if dryRunStatus is 'running'
 			@$('.bv_executingStandardizationDryRunModal').modal
 				backdrop: 'static'
-			@$('.bv_executingStandardizationDryRunModal').modal 'show'			
+			@$('.bv_executingStandardizationDryRunModal').modal 'show'
 			return true
 		else if standardizationStatus is 'running'
 			@$('.bv_executingStandardizationModal').modal
@@ -353,7 +356,7 @@ class window.StandardizationController extends Backbone.View
 		$.ajax
 			type: 'GET'
 			url: "/cmpdReg/standardizationDryRun?reportOnly=true"
-			success: (dryRunReport) =>				
+			success: (dryRunReport) =>
 				if @standardizationDryRunReportSummaryTableController?
 					@standardizationDryRunReportSummaryTableController.undelegateEvents()
 				if dryRunReport.length > 0
@@ -382,7 +385,7 @@ class window.StandardizationController extends Backbone.View
 	handleExecuteDryRunClicked: ->
 		@disableExecuteButtons()
 		@socket.emit 'executeDryRunOrStandardization', 'dryRun'
-		
+
 	handleExecuteStandardizationClicked: ->
 		@disableExecuteButtons()
 		@socket.emit 'executeDryRunOrStandardization', 'standardization'

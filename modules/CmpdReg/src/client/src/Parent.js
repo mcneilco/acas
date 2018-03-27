@@ -245,6 +245,8 @@ $(function() {
 						} else {
 							//TODO show disabled Edit Parent Button
 							_this.$('.disableCmpdRegistrationMessage').show();
+							_this.$('.editParentButton').hide();
+							_this.$('.editParentButtonDisabled').show();
 							return _this.$('.disableCmpdRegistrationMessage').html(allowRegResp.message);
 						}
 					};
@@ -254,6 +256,8 @@ $(function() {
 						console.log("error allow cmpd registration");
 						//TODO show disabled Edit Parent Button
 						_this.$('.disableCmpdRegistrationMessage').show();
+						_this.$('.editParentButton').hide();
+						_this.$('.editParentButtonDisabled').show();
 						return _this.$('.disableCmpdRegistrationMessage').html(JSON.parse(err.responseText).message);
 					};
 				})(this)
@@ -451,7 +455,7 @@ $(function() {
 					errorsMsg += "<li>"+err.message+"</li>";
 				});
 				this.$('.parentErrors').html(errorsMsg);
-				
+
 			}
 			else {
 				this.$('.ConfirmEditParentPanel').show();
@@ -476,7 +480,7 @@ $(function() {
 			this.$('.ValidateParentErrorsPanel').html($('#ValidateParentErrorsPanel_template').html());
 			this.$('.validateParentErrorsMsg').html("There was an error validating the parent. Please try again or contact an administrator.");
 		},
-		
+
 		updateParentConfirmed: function(){
 			$.ajax({
 				type: "POST",

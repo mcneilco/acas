@@ -13,7 +13,8 @@
 
 	<div class="editParentButtonWrapper">
 		<a class="editParentButton" href="#" onclick="this.blur(); return false;"></a>
-		<span class="disableCmpdRegistrationMessage hide"></span>
+		<span class="editParentButtonDisabled"></span>
+		<div class="disableCmpdRegistrationMessage hide"></div>
 	</div>
 
 	<div class="marvinWrapper hide"> <!--dependent? change name...-->

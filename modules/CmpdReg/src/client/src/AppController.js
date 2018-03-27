@@ -36,7 +36,7 @@ $(function () {
         },
         showRegSearchResults: function() {
             this.appController.showRegSearchResults();
-        }    
+        }
 
     });
 
@@ -44,13 +44,13 @@ $(function () {
     window.AppController = Backbone.View.extend({
 
 		template: _.template($('#AppControllerView_template').html()),
-		
+
 		events: {
 			'click .registerButton': 'launchRegister',
             'click .searchButton': 'launchSearch',
             'click .applicationName': 'reset'
 		},
-		
+
 		initialize: function(){
 			_.bindAll(this, 'render', 'startRegister','startSearch','launchRegister','launchSearch', 'reset', 'openLot', 'updateLot');
 
@@ -80,37 +80,37 @@ $(function () {
             this.$('.logoutLink').attr("href",window.configuration.serverConnection.logoutURL);
             this.$('.applicationName').html(window.configuration.clientUILabels.applicationNameForTitleBar);
 			return this;
-            
+
         },
         startRegister: function(corpName) {
             if (!this.allowedToRegister()){return}
-            
+
             if(this.registrationController==null) {
                 this.registrationController = new RegistrationController({
                     el: '.RegistrationView',
                     corpName: corpName,
                     errorNotifList: this.eNotiList,
                     user: this.user
-                }); 
+                });
             } else {
-                this.registrationController.searchController.show(); 
-                this.registrationController.searchResultsController.hide(); 
+                this.registrationController.searchController.show();
+                this.registrationController.searchResultsController.hide();
             }
             this.hideControls();
         },
-        
+
         showRegSearchResults: function() {
             if(this.registrationController) {
                 this.registrationController.mlController.hide();
                 this.registrationController.searchResultsController.show();
             }
         },
-        
+
         launchRegister: function() {
             if (!this.allowedToRegister()){return}
             this.router.navigate('register',true);
         },
-        
+
         startSearch: function() {
             if(this.searchController==null) {
                 this.searchController = new SearchController({
@@ -122,16 +122,16 @@ $(function () {
                 this.searchController.searchResultsController.hide();
             }
             this.hideControls();
-            
+
         },
         launchSearch: function() {
             this.router.navigate('search',true);
         },
-        
+
         hideControls: function() {
             this.$('.regAndSearchButtons').hide();
         },
-        
+
         openLot: function(corpName) {
             this.trigger('clearErrors', "AppController");
 
@@ -197,7 +197,7 @@ $(function () {
         showControls: function() {
             this.$('.regAndSearchButtons').show();
         },
-        
+
         reset: function() {
             //console.log('got app controller reset');
             this.eNotiList.reset();
@@ -222,7 +222,7 @@ $(function () {
             }
             document.title = title;
         },
-        
+
         allowedToRegister: function() {
             if(this.user.get('isAdmin') || this.user.get('isChemist')) {
                 return true;
@@ -241,6 +241,8 @@ $(function () {
                         if (!allowRegResp.allowCmpdRegistration) {
                             //TODO show disabled Register Button
                             _this.$('.disableCmpdRegistrationMessage').show();
+                            _this.$('.registerButton').hide();
+                            _this.$('.registerButtonDisabled').show();
                             return _this.$('.disableCmpdRegistrationMessage').html(allowRegResp.message);
                         }
                     };
@@ -250,6 +252,8 @@ $(function () {
                         console.log("error allow cmpd registration");
                         //TODO show disabled Register Button
                         _this.$('.disableCmpdRegistrationMessage').show();
+                        _this.$('.registerButton').hide();
+                        _this.$('.registerButtonDisabled').show();
                         return _this.$('.disableCmpdRegistrationMessage').html(JSON.parse(err.responseText).message);
                     };
                 })(this)

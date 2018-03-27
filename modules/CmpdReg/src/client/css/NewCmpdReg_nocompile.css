@@ -550,6 +550,14 @@ div {
     width: 198px;
     padding: 0 15px 0 15px;
 }
+#AppControllerView .registerButtonDisabled {
+  background: no-repeat url('../images/register_off.png');
+  display: block;
+  float: left;
+  height: 79px;
+  width: 198px;
+  padding: 0 15px 0 15px;
+}
 #AppControllerView a.searchButton.applicationPage {
     background: no-repeat url('../images/search_magnify.png');
 }
@@ -561,12 +569,32 @@ div {
     cursor:pointer;
     color: #ffffff;
 }
+#AppControllerView .regAndSearchButtons .disableCmpdRegistrationMessage {
+  background-color: #fcf8e3;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #fbeed5;
+  padding: 10px;
+  width: 405px;
+  margin-top: 100px;
+  margin-left: 0;
+}
 
 /****** REGISTRATION STEP 1 ******/
+.RegistrationView .disableCmpdRegistrationMessage {
+  background-color: #fcf8e3;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #fbeed5;
+  padding: 10px;
+  width: 405px;
+  margin-top: 100px;
+  margin-left: 25%;
+  text-align: center;
+}
 .SearchView {
     margin-left: 150px;
 }
-
 .RegistrationSearchView {
     width: 700px;
     margin-left: 150px;
@@ -805,6 +833,19 @@ div {
     margin-left: 150px;
 }
 .MetaLotView .LotForm_ParentView {
+}
+
+.MetaLotView .LotForm_ParentView .disableCmpdRegistrationMessage {
+  background-color: #fcf8e3;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #fbeed5;
+  padding: 10px;
+  width: 405px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  margin-left: 60px;
+  text-align: center;
 }
 
 .LotForm_ParentView .parentImageWrapper {
@@ -1422,7 +1463,15 @@ div.MetaLotViewButtons.buttons {
     width: 90px;
     padding: 0px 0px 0px 0px;
     margin: 5px 60px 0 0;
+}
 
+.editParentButtonWrapper .editParentButtonDisabled {
+    background: no-repeat url('../images/edit_parent_off.png');
+    float: right;
+    height: 27px;
+    width: 90px;
+    padding: 0px 0px 0px 0px;
+    margin: 5px 60px 0 0;
 }
 
 .EditParentViewButtons .bv_saveUpdateParentButton, .bv_cancelUpdateParentButton, .bv_backUpdateParentButton {
