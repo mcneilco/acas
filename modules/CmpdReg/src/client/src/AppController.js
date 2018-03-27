@@ -232,6 +232,9 @@ $(function () {
         },
 
         checkAllowCmpdRegistration: function() {
+            this.$('.registerButton').hide();
+            this.$('.searchButton').hide();
+            this.$('.registerButtonDisabled').hide();
             $.ajax({
                 type: 'GET',
                 url: "/cmpdReg/allowCmpdRegistration",
@@ -239,21 +242,24 @@ $(function () {
                     return function (allowRegResp) {
                         console.log("got allow cmpd registration");
                         if (!allowRegResp.allowCmpdRegistration) {
-                            //TODO show disabled Register Button
                             _this.$('.disableCmpdRegistrationMessage').show();
                             _this.$('.registerButton').hide();
                             _this.$('.registerButtonDisabled').show();
-                            return _this.$('.disableCmpdRegistrationMessage').html(allowRegResp.message);
+                            _this.$('.disableCmpdRegistrationMessage').html(allowRegResp.message);
                         }
+                        else {
+                          _this.$('.registerButtonDisabled').hide();
+                        }
+                        return _this.$('.searchButton').show();
                     };
                 })(this),
                 error: (function (_this) {
                     return function (err) {
                         console.log("error allow cmpd registration");
-                        //TODO show disabled Register Button
                         _this.$('.disableCmpdRegistrationMessage').show();
                         _this.$('.registerButton').hide();
                         _this.$('.registerButtonDisabled').show();
+                        _this.$('.searchButton').show();
                         return _this.$('.disableCmpdRegistrationMessage').html(JSON.parse(err.responseText).message);
                     };
                 })(this)

@@ -243,7 +243,6 @@ $(function() {
 						if (allowRegResp.allowCmpdRegistration) {
 							return _this.finishRenderParentController();
 						} else {
-							//TODO show disabled Edit Parent Button
 							_this.$('.disableCmpdRegistrationMessage').show();
 							_this.$('.editParentButton').hide();
 							_this.$('.editParentButtonDisabled').show();
@@ -254,7 +253,6 @@ $(function() {
 				error: (function (_this) {
 					return function (err) {
 						console.log("error allow cmpd registration");
-						//TODO show disabled Edit Parent Button
 						_this.$('.disableCmpdRegistrationMessage').show();
 						_this.$('.editParentButton').hide();
 						_this.$('.editParentButtonDisabled').show();

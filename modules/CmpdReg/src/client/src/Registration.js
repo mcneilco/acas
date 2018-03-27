@@ -27,8 +27,6 @@ $(function () {
                             return _this.finishSetupRegistration();
                         } else {
                             _this.$('.DisableCmpdRegistrationMessage').show();
-                            _this.$('.newLotButton').hide();
-                            _this.$('.editParentButtonDisabled').show();
                             return _this.$('.DisableCmpdRegistrationMessage').html(allowRegResp.message);
                         }
                     };
@@ -37,8 +35,6 @@ $(function () {
                     return function (err) {
                         console.log("error allow cmpd registration");
                         _this.$('.DisableCmpdRegistrationMessage').show();
-                        _this.$('.newLotButton').hide();
-                        _this.$('.editParentButtonDisabled').show();
                         return _this.$('.DisableCmpdRegistrationMessage').html(JSON.parse(err.responseText).message);
                     };
                 })(this)
