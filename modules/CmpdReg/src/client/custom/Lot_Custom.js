@@ -1,47 +1,48 @@
 $(function() {
 
-	window.Lot = Lot_Abstract.extend({
-		defaults: {
-			corpName: '',
-			asDrawnStruct: null,
-			lotMolWeight: null,
-			synthesisDate: '',
-			color: '',
-			physicalState: null,
-			notebookPage: '',
-			amount: null,
-			amountUnits: null,
-			supplier: '',
-			supplierID: '',
-			purity: null,
-			purityMeasuredBy: null,
-			purityOperator: null,
-			percentEE: null,
-			comments: '',
-			chemist: null,
-			project: null,
-			supplierLot: null,
-			meltingPoint: null,
-			boilingPoint: null,
-			buid: null,
-			isVirtual: false,
-			lotNumber: null,
-			retain: null,
-			retainUnits: null,
-			solutionAmount: null,
-			solutionAmountUnits: null,
-			tareWeight: null,
-			tareWeightUnits: null,
-			totalAmountStored: null,
-			totalAmountStoredUnits: null,
-			vendor: null
-		},
-		
-		initialize: function(){
-			if (this.has('json') ) {
-				var js = this.get('json');
-				// set all attributes, realizing that some need to be replaced by real objcts
-				this.set(js,{silent: true});
+  window.Lot = Lot_Abstract.extend({
+    defaults: {
+      corpName: '',
+      asDrawnStruct: null,
+      lotMolWeight: null,
+      synthesisDate: '',
+      color: '',
+      physicalState: null,
+      notebookPage: '',
+      amount: null,
+      amountUnits: null,
+      supplier: '',
+      supplierID: '',
+      purity: null,
+      purityMeasuredBy: null,
+      purityOperator: null,
+      percentEE: null,
+      comments: '',
+      chemist: null,
+      project: null,
+      supplierLot: null,
+      meltingPoint: null,
+      boilingPoint: null,
+      buid: null,
+      isVirtual: false,
+      lotNumber: null,
+      retain: null,
+      retainUnits: null,
+      solutionAmount: null,
+      solutionAmountUnits: null,
+      tareWeight: null,
+      tareWeightUnits: null,
+      totalAmountStored: null,
+      totalAmountStoredUnits: null,
+      vendor: null,
+      vendorID: null
+    },
+    
+    initialize: function(){
+      if (this.has('json') ) {
+        var js = this.get('json');
+        // set all attributes, realizing that some need to be replaced by real objcts
+        this.set(js,{silent: true});
                 this.set({
                     physicalState: new PickList(js.physicalState),
                     amountUnits: new PickList(js.amountUnits),
@@ -55,21 +56,21 @@ $(function() {
                     project: new PickList(js.project),
                     vendor: new PickList(js.vendor)
                 })
-				// replace composite object pointers with real objects
-				this.set({fileList: new BackboneFileList()});
-				this.get('fileList').model = BackboneFileDesc;
-				this.get('fileList').add(js.fileList);
+        // replace composite object pointers with real objects
+        this.set({fileList: new BackboneFileList()});
+        this.get('fileList').model = BackboneFileDesc;
+        this.get('fileList').add(js.fileList);
 
-			} else if (this.isNew()){
-				this.set({
-					fileList: new BackboneFileList()
-				});
-				this.get('fileList').model = BackboneFileDesc;
-			}
-		},
-		
-		validate: function(attr) {
-			var errors = new Array();
+      } else if (this.isNew()){
+        this.set({
+          fileList: new BackboneFileList()
+        });
+        this.get('fileList').model = BackboneFileDesc;
+      }
+    },
+    
+    validate: function(attr) {
+      var errors = new Array();
             
             var nbAndDateReq = true;
             if(attr.isVirtual !=null) {
@@ -101,77 +102,77 @@ $(function() {
                 }
             }
 
-			if (attr.percentEE!=null) {
-				if(isNaN(attr.percentEE) && attr.percentEE!='') { 
-					errors.push({'attribute': 'percentEE', 'message':  "%e.e. must be a number if provided"});
-				}
-			}
-			if (attr.amount!=null) {
-				if(isNaN(attr.amount) && attr.amount!='') { 
-					errors.push({'attribute': 'amount', 'message':  "Amount must be a number if provided"});
-				}
-			}
-			if (attr.amount!=null && attr.amount!='') {
-				if(attr.amountUnits==null || attr.amountUnits=='unassigned') {
-					errors.push({'attribute': 'amountUnits', 'message':  "Amount units must be set if amount set"});
-				}
-			}
-			if (attr.retain!=null) {
-				if(isNaN(attr.retain) && attr.retain!='') {
-					errors.push({'attribute': 'retain', 'message':  "Retain must be a number if provided"});
-				}
-			}
-			if (attr.solutionAmount!=null) {
-				if(isNaN(attr.solutionAmount) && attr.solutionAmount!='') {
-					errors.push({'attribute': 'solutionAmount', 'message':  "Solution Amount must be a number if provided"});
-				}
-			}
-			if (attr.solutionAmount!=null && attr.solutionAmount!='') {
-				if(attr.solutionAmountUnits==null || attr.solutionAmountUnits=='unassigned') {
-					errors.push({'attribute': 'solutionAmountUnits', 'message':  "Solution amount units must be set if amount set"});
-				}
-			}
-			if (attr.tareWeight!=null) {
-				if(isNaN(attr.tareWeight) && attr.tareWeight!='') {
-					errors.push({'attribute': 'tareWeight', 'message':  "Tare weight must be a number if provided"});
-				}
-			}
-			if (attr.totalAmountStored!=null) {
-				if(isNaN(attr.totalAmountStored) && attr.totalAmountStored!='') {
-					errors.push({'attribute': 'totalAmountStored', 'message':  "Total amount stored must be a number if provided"});
-				}
-			}
-			if (attr.purity!=null) {
-				if(isNaN(attr.purity) && attr.purity!='') { 
-					errors.push({'attribute': 'purity', 'message':  "Purity must be a number if provided"});
-				}
-			}
-			if (attr.meltingPoint!=null) {
-				if(isNaN(attr.meltingPoint) && attr.meltingPoint!='') { 
-					errors.push({'attribute': 'meltingPoint', 'message':  "MP must be a number if provided"});
-				}
-			}
-			if (attr.boilingPoint!=null) {
-				if(isNaN(attr.boilingPoint) && attr.boilingPoint!='') { 
-					errors.push({'attribute': 'boilingPoint', 'message':  "BP must be a number if provided"});
-				}
-			}
-			if (attr.project != null && typeof(attr.project) == 'undefined'){
-				errors.push({'attribute': 'project', 'message':  "Project must be provided"});
-			}
-			if (errors.length > 0) {return errors;}
-		}
-	});
-	
-	window.LotController = LotController_Abstract.extend({
-		template: _.template($('#LotForm_LotView_Labsynch_template').html()),
-		
-		render: function() {
-			this.model.set({
+      if (attr.percentEE!=null) {
+        if(isNaN(attr.percentEE) && attr.percentEE!='') { 
+          errors.push({'attribute': 'percentEE', 'message':  "%e.e. must be a number if provided"});
+        }
+      }
+      if (attr.amount!=null) {
+        if(isNaN(attr.amount) && attr.amount!='') { 
+          errors.push({'attribute': 'amount', 'message':  "Amount must be a number if provided"});
+        }
+      }
+      if (attr.amount!=null && attr.amount!='') {
+        if(attr.amountUnits==null || attr.amountUnits=='unassigned') {
+          errors.push({'attribute': 'amountUnits', 'message':  "Amount units must be set if amount set"});
+        }
+      }
+      if (attr.retain!=null) {
+        if(isNaN(attr.retain) && attr.retain!='') {
+          errors.push({'attribute': 'retain', 'message':  "Retain must be a number if provided"});
+        }
+      }
+      if (attr.solutionAmount!=null) {
+        if(isNaN(attr.solutionAmount) && attr.solutionAmount!='') {
+          errors.push({'attribute': 'solutionAmount', 'message':  "Solution Amount must be a number if provided"});
+        }
+      }
+      if (attr.solutionAmount!=null && attr.solutionAmount!='') {
+        if(attr.solutionAmountUnits==null || attr.solutionAmountUnits=='unassigned') {
+          errors.push({'attribute': 'solutionAmountUnits', 'message':  "Solution amount units must be set if amount set"});
+        }
+      }
+      if (attr.tareWeight!=null) {
+        if(isNaN(attr.tareWeight) && attr.tareWeight!='') {
+          errors.push({'attribute': 'tareWeight', 'message':  "Tare weight must be a number if provided"});
+        }
+      }
+      if (attr.totalAmountStored!=null) {
+        if(isNaN(attr.totalAmountStored) && attr.totalAmountStored!='') {
+          errors.push({'attribute': 'totalAmountStored', 'message':  "Total amount stored must be a number if provided"});
+        }
+      }
+      if (attr.purity!=null) {
+        if(isNaN(attr.purity) && attr.purity!='') { 
+          errors.push({'attribute': 'purity', 'message':  "Purity must be a number if provided"});
+        }
+      }
+      if (attr.meltingPoint!=null) {
+        if(isNaN(attr.meltingPoint) && attr.meltingPoint!='') { 
+          errors.push({'attribute': 'meltingPoint', 'message':  "MP must be a number if provided"});
+        }
+      }
+      if (attr.boilingPoint!=null) {
+        if(isNaN(attr.boilingPoint) && attr.boilingPoint!='') { 
+          errors.push({'attribute': 'boilingPoint', 'message':  "BP must be a number if provided"});
+        }
+      }
+      if (attr.project != null && typeof(attr.project) == 'undefined'){
+        errors.push({'attribute': 'project', 'message':  "Project must be provided"});
+      }
+      if (errors.length > 0) {return errors;}
+    }
+  });
+  
+  window.LotController = LotController_Abstract.extend({
+    template: _.template($('#LotForm_LotView_Labsynch_template').html()),
+    
+    render: function() {
+      this.model.set({
                 saved: !this.model.isNew()
             });
-			$(this.el).html(this.template(this.model.toJSON()));
-			this.model.unset('saved');
+      $(this.el).html(this.template(this.model.toJSON()));
+      this.model.unset('saved');
 
             if (this.model.get('lotMolWeight') != null) {
                 this.$('.lotMolWeight').val(
@@ -239,14 +240,14 @@ $(function() {
 
                 if (window.configuration.metaLot.showTareWeight) {
                     this.$('.bv_tareWeightContainer').show();
-			    } else {
-				    this.$('.bv_tareWeightContainer').hide();
-			    }
+          } else {
+            this.$('.bv_tareWeightContainer').hide();
+          }
                 if (window.configuration.metaLot.showTotalAmountStored) {
                     this.$('.bv_totalAmountStoredContainer').show();
-			    } else {
-				    this.$('.bv_totalAmountStoredContainer').hide();
-			    }
+          } else {
+            this.$('.bv_totalAmountStoredContainer').hide();
+          }
 
                 this.fileListRenderer = new FileRenderer(this.model.get('fileList'));
                 this.$('.analyticalFiles').append(this.fileListRenderer.el);
@@ -263,19 +264,19 @@ $(function() {
                 this.$('.editAnalyticalFiles').hide();
                 this.$('.analyticalFiles').html('Add analytical files by editing lot after it is saved');
             } else {
-	            if (window.configuration.metaLot.showLotInventory) {
-		            this.$('.amountWrapper').hide();
-		            this.$('.barcodeWrapper').hide();
-	            }
+              if (window.configuration.metaLot.showLotInventory) {
+                this.$('.amountWrapper').hide();
+                this.$('.barcodeWrapper').hide();
+              }
             }
-			return this;
-		},
+      return this;
+    },
         
-		updateModel: function() {
-			if (this.projectCodeController.collection.length == 0){
-				alert('System Configuration Error: There must be at least one project to proceed')
-			}
-			this.clearValidationErrors();
+    updateModel: function() {
+      if (this.projectCodeController.collection.length == 0){
+        alert('System Configuration Error: There must be at least one project to proceed')
+      }
+      this.clearValidationErrors();
             
             if (this.model.isNew() ) {
                 this.model.set({
@@ -295,6 +296,7 @@ $(function() {
                     amount: null,
                     barcode: null,
                     purity: null,
+                    vendorID: null,
                     physicalState: null,
                     purityOperator: null,
                     amountUnits: null,
@@ -311,35 +313,36 @@ $(function() {
                     tareWeightUnits: null,
                     totalAmountStored: null,
                     totalAmountStoredUnits: null,
-                    vendor: null
+                    vendor: null,
+                    vendorID: null
                 });
             } else {
-            	//set unselected properties to null
-            	
-            	var physicalState;
-            	if (this.physicalStateCodeController.getSelectedModel().isNew()) physicalState = null;
-            	else physicalState = this.physicalStateCodeController.getSelectedModel();
+              //set unselected properties to null
+              
+              var physicalState;
+              if (this.physicalStateCodeController.getSelectedModel().isNew()) physicalState = null;
+              else physicalState = this.physicalStateCodeController.getSelectedModel();
                 var amountUnits; 
-            	if (this.amountUnitsCodeController.getSelectedModel().isNew()) amountUnits = null;
-            	else amountUnits = this.amountUnitsCodeController.getSelectedModel();
+              if (this.amountUnitsCodeController.getSelectedModel().isNew()) amountUnits = null;
+              else amountUnits = this.amountUnitsCodeController.getSelectedModel();
                 var retainUnits; 
-            	if (this.retainUnitsCodeController.getSelectedModel().isNew()) retainUnits = null;
-            	else retainUnits = this.retainUnitsCodeController.getSelectedModel();
+              if (this.retainUnitsCodeController.getSelectedModel().isNew()) retainUnits = null;
+              else retainUnits = this.retainUnitsCodeController.getSelectedModel();
                 var solutionAmountUnits; 
-            	if (this.solutionAmountUnitsCodeController.getSelectedModel().isNew()) solutionAmountUnits = null;
-            	else solutionAmountUnits = this.solutionAmountUnitsCodeController.getSelectedModel();
+              if (this.solutionAmountUnitsCodeController.getSelectedModel().isNew()) solutionAmountUnits = null;
+              else solutionAmountUnits = this.solutionAmountUnitsCodeController.getSelectedModel();
                 var tareWeightUnits; 
-            	if (this.tareWeightUnitsCodeController.getSelectedModel().isNew()) tareWeightUnits = null;
-            	else tareWeightUnits = this.tareWeightUnitsCodeController.getSelectedModel();
+              if (this.tareWeightUnitsCodeController.getSelectedModel().isNew()) tareWeightUnits = null;
+              else tareWeightUnits = this.tareWeightUnitsCodeController.getSelectedModel();
                 var totalAmountStoredUnits; 
-            	if (this.totalAmountStoredUnitsCodeController.getSelectedModel().isNew()) totalAmountStoredUnits = null;
-            	else totalAmountStoredUnits = this.totalAmountStoredUnitsCodeController.getSelectedModel();
+              if (this.totalAmountStoredUnitsCodeController.getSelectedModel().isNew()) totalAmountStoredUnits = null;
+              else totalAmountStoredUnits = this.totalAmountStoredUnitsCodeController.getSelectedModel();
                 var purityMeasuredBy; 
-            	if (this.purityMeasuredByCodeController.getSelectedModel().isNew()) purityMeasuredBy = null;
-            	else purityMeasuredBy = this.purityMeasuredByCodeController.getSelectedModel();
+              if (this.purityMeasuredByCodeController.getSelectedModel().isNew()) purityMeasuredBy = null;
+              else purityMeasuredBy = this.purityMeasuredByCodeController.getSelectedModel();
                 var vendor;
-            	if (this.vendorCodeController.getSelectedModel().isNew()) vendor = null;
-            	else vendor = this.vendorCodeController.getSelectedModel();
+              if (this.vendorCodeController.getSelectedModel().isNew()) vendor = null;
+              else vendor = this.vendorCodeController.getSelectedModel();
                 this.model.set({
                     supplier: jQuery.trim(this.$('.supplier').val()),
                     supplierID: jQuery.trim(this.$('.supplierID').val()),
@@ -367,6 +370,7 @@ $(function() {
                     purity:
                         (jQuery.trim(this.$('.purity').val())=='') ? null :
                         parseFloat(jQuery.trim(this.$('.purity').val())),
+                    vendorID: jQuery.trim(this.$('.vendorID').val()),
                     physicalState: physicalState,
                     purityOperator: this.operatorCodeController.getSelectedModel(),
                     amountUnits: amountUnits,
@@ -385,13 +389,13 @@ $(function() {
                         (jQuery.trim(this.$('.boilingPoint').val())=='') ? null :
                         parseFloat(jQuery.trim(this.$('.boilingPoint').val())),
                     lotNumber:
-                    	(jQuery.trim(this.$('.lotNumber').val())=='') ? null :
+                      (jQuery.trim(this.$('.lotNumber').val())=='') ? null :
                             parseInt(jQuery.trim(this.$('.lotNumber').val())),
                 });
             }
-		}
-			
-	});
-	
-	
+    }
+      
+  });
+  
+  
 });
