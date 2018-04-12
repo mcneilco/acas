@@ -368,20 +368,40 @@ class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractF
 			@placeholder = @options.placeholder
 		if @options.extendedLabel?
 			@extendedLabel = @options.extendedLabel
+		if @options.linkBaseUrl?
+			@linkBaseUrl = @options.linkBaseUrl
+		else
+			@$('.bv_link').hide()
+			@linkBaseUrl = null
 
 
 	handleInputChanged: =>
 		@clearError()
 		if @userInputEvent
 			thingID = @thingSelectController.getSelectedID()
+			console.log "handle input changed - getSelectedCode"
+			console.log @thingSelectController.getSelectedCode()
 			if thingID?
 				@getModel().setItxThing id: thingID
 				@getModel().set ignored: false
 			else
+				console.log "call setEmptyValue"
 				@setEmptyValue()
 		super()
-
+		console.log "handleInputChanged"
+		if @linkBaseUrl?
+			@setupLink @thingSelectController.getSelectedCode()
+		
+	setupLink: (code) =>
+		if code? and code != ""			
+			@$('.bv_link').attr 'href', @linkBaseUrl+code
+			@$('.bv_link').show()
+		else
+			@$('.bv_link').removeAttr 'href'
+			@$('.bv_link').hide()
+		
 	setEmptyValue: ->
+		console.log "setEmptyValue"
 		@getModel().set ignored: true
 
 	isEmpty: ->
@@ -407,6 +427,8 @@ class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractF
 				label: labelText
 			super()
 		@userInputEvent = true
+		if @linkBaseUrl?
+			@setupLink @getModel().getItxThing().codeName
 
 	setupSelect: ->
 		opts =

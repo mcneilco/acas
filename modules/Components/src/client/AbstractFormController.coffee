@@ -166,6 +166,7 @@ class window.AbstractThingFormController extends AbstractFormController
 					opts.thingKind = field.fieldSettings.thingKind
 					opts.queryUrl = field.fieldSettings.queryUrl
 					opts.labelType = field.fieldSettings.labelType
+					opts.linkBaseUrl = field.fieldSettings.linkBaseUrl
 					newField = new ACASFormLSThingInteractionFieldController opts
 				when 'stringValue' then newField = new ACASFormLSStringValueFieldController opts
 				when 'dateValue' then newField = new ACASFormLSDateValueFieldController opts
