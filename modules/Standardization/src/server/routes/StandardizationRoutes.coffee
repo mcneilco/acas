@@ -28,15 +28,16 @@ exports.setupChannels = (io, sessionStore, loginRoutes) ->
 		socket.on 'disconnect', =>
 			console.log 'got disconnected in standardization...'
 
-		socket.on 'executeDryRunOrStandardization', (runType) =>
-			console.log "got executeDryRunOrStandardization, #{runType} request"
+		socket.on 'executeDryRunOrStandardization', (options) =>
+			runType = options.runType
+			console.log "got executeDryRunOrStandardization, #{JSON.stringify(options)} request"
 			lockStandardizationSessions socket, runType
 			if runType is 'dryRun'
 				exports.standardizationDryRunInternal false, (standardizationDryRunInternalResp, statusCode) =>
 					console.log "standardizationDryRunInternal returned, should emit unlockStandardizationSessions"
 					unlockStandardizationSessions socket, runType, standardizationDryRunInternalResp, statusCode
 			else if runType is 'standardization'
-				exports.standardizationExecutionInternal (standardizationExecutionInternalResp, statusCode) =>
+				exports.standardizationExecutionInternal options.username, options.reason, (standardizationExecutionInternalResp, statusCode) =>
 					unlockStandardizationSessions socket, runType, standardizationExecutionInternalResp, statusCode
 
 lockStandardizationSessions = (socket, runType) ->
@@ -157,15 +158,15 @@ exports.getDryRunStats = (req, resp) ->
 exports.standardizationExecution = (req, resp) ->
 	req.setTimeout 86400000
 
-	exports.standardizationExecutionInternal (standardizationExecutionInternalResp, statusCode) =>
+	exports.standardizationExecutionInternal req.query.username, req.query.reason, (standardizationExecutionInternalResp, statusCode) =>
 		if statusCode is 500
 			resp.statusCode = statusCode
 			resp.end standardizationExecutionInternalResp
 		else
 			resp.json standardizationExecutionInternalResp
 
-exports.standardizationExecutionInternal = (callback) ->
-	url = config.all.client.service.cmpdReg.persistence.fullpath + '/standardization/execute'
+exports.standardizationExecutionInternal = (username, reason, callback) ->
+	url = config.all.client.service.cmpdReg.persistence.fullpath + "/standardization/execute?username=#{username}&reason=#{reason}"
 	console.log url
 	request(
 		method: 'GET'

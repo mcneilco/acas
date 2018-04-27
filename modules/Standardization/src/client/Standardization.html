@@ -1,4 +1,5 @@
 <script type="text/template" id="StandardizationView" xmlns="http://www.w3.org/1999/html">
+    <div class="bv_standardizationReasonPanelView"></div>
     <div class="bv_currentSettings"></div>
     <div class="bv_standardizationHistory"></div>
     <div class="alert bv_getStandardizationHistoryError">
@@ -110,6 +111,7 @@
     <td class='bv_standardizationStatus'><%=standardizationStatus%></td>
     <td class='bv_standardizationStart'><%=standardizationStart%></td>
     <td class='bv_standardizationComplete'><%=standardizationComplete%></td>
+    <td style="max-width: 100px; text-overflow: ellipsis; overflow: hidden;"class='bv_standardizationReason'><%=standardizationReason%></td>
 
 </script>
 
@@ -119,7 +121,7 @@
             <i class="icon-question-sign"></i>
         </a>
     </h4>
-    <table class="table table-bordered table-striped table-hover bv_standardizationHistorySummaryTable" style="margin: 0px; width: 100%; ">
+    <table class="table table-bordered table-striped table-hover bv_standardizationHistorySummaryTable" style="margin: 0px; width: 100%; font-size:70%;">
         <thead style="">
         <tr>
             <th style="width: 50px;">#</th>
@@ -138,6 +140,7 @@
             <th style="width: 50px;">Standardization Status</th>
             <th style="width: 50px;">Standardization Start</th>
             <th style="width: 50px;">Standardization Complete</th>
+            <th style="width: 100px;">Standardization Reason</th>
         </tr>
         </thead>
         <tbody style="">
@@ -176,7 +179,7 @@
             <i class="icon-question-sign"></i>
         </a>
     </h4>
-    <table class="table table-bordered table-striped table-hover bv_standardizationDryRunReportStatsTable" style="margin: 0px; ">
+    <table class="table table-bordered table-striped table-hover bv_standardizationDryRunReportStatsTable" style="margin: 0px; font-size:70%; ">
     </table>
     <div class="alert bv_getDryRunReportStatsError">
         There was an error getting the summary of the latest standardization dry run results. Please contact an administrator.
@@ -206,23 +209,23 @@
 
 </script>
 
-<script type="text/template" id="StandardizationDryRunReportRowSummaryView" xmlns="http://www.w3.org/1999/html">
+<script type="text/template" id="StandardizationDryRunReportRowSummaryView" xmlns="http://www.w3.org/1999/html" >
     <td class='bv_corpName'><%=corpName%></td>
-    <td class='bv_parentStructure' style="height:120px;"></td>
-    <td class='bv_standardizedStructure' style="height:120px;"></td>
-    <td class='bv_asDrawnStructure' style="height:120px;"></td>
-    <td class='bv_changedStructure'><%=changedStructure%></td>
-    <td class='bv_displayChange'><%=displayChange%></td>
-    <td class='bv_newDuplicates'><%=newDuplicates%></td>
+    <td class='bv_parentStructure' style="height:300px;"></td>
+    <td class='bv_standardizedStructure' style="height:300px;"></td>
+    <td class='bv_asDrawnStructure' style="height:300px;"></td>
+    <td class='bv_changedStructure' style="width:30px;"><%=changedStructure%></td>
+    <td class='bv_displayChange' style="width:30px;"><%=displayChange%></td>
+    <td class='bv_newDuplicates' style="width:30px;"><%=newDuplicates%></td>
     <td class='bv_existingDuplicates'><%=existingDuplicates%></td>
-    <td class='bv_deltaMolWeight'><%=deltaMolWeight%></td>
-    <td class='bv_newMolWeight'><%=newMolWeight%></td>
-    <td class='bv_oldMolWeight'><%=oldMolWeight%></td>
-    <td class='bv_asDrawnDisplayChange'><%=asDrawnDisplayChange%></td>
+    <td class='bv_deltaMolWeight' style="width:30px;"><%=deltaMolWeight%></td>
+    <td class='bv_newMolWeight' style="width:30px;"><%=newMolWeight%></td>
+    <td class='bv_oldMolWeight' style="width:30px;"><%=oldMolWeight%></td>
+    <td class='bv_asDrawnDisplayChange' style="width:30px;"><%=asDrawnDisplayChange%></td>
 </script>
 
 <script type="text/template" id="StandardizationDryRunReportSummaryTableView" xmlns="http://www.w3.org/1999/html">
-    <table class="table table-bordered table-striped table-hover bv_standardizationDryRunReportSummaryTable">
+    <table class="table table-bordered table-striped table-hover bv_standardizationDryRunReportSummaryTable" style="margin: 0px; width: 100%; font-size:70%;">
         <thead style="">
         <tr>
             <th>Corporate ID</th>
@@ -242,3 +245,20 @@
         <tbody style=""></tbody>
     </table>
 </script>
+
+<script type="text/template" id="StandardizationReasonPanelView" xmlns="http://www.w3.org/1999/html">
+    <div class="modal bv_standardizationReasonPanel hide">
+        <div class="modal-header">
+            <h4>Standardization Reason</h4>
+        </div>
+        <div class="controls modal-body">
+            Reason for standardization: <textarea rows="2" class="bv_reasonForStandardization" style="width:500px;height:140px;" placeholder=""></textarea>
+
+        </div>
+        <div class="modal-footer">
+          <button class="btn bv_standardizationReasonPanelCancelBtn" aria-hidden="true">Cancel</button>
+          <button class="btn bv_standardizationReasonPanelExecuteBtn" aria-hidden="true" disabled="disabled" >Execute</button>
+        </div>
+    </div>
+</script>
+

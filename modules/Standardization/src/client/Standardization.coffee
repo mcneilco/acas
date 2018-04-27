@@ -88,6 +88,8 @@ class window.StandardizationHistoryRowSummaryController extends Backbone.View
 			standardizationStatus: @model.get('standardizationStatus')
 			standardizationStart: standardizationStart
 			standardizationComplete: standardizationComplete
+			standardizationReason: @model.get('standardizationReason')
+
 
 		$(@el).html(@template(toDisplay))
 		@
@@ -107,6 +109,7 @@ class window.StandardizationHistorySummaryTableController extends Backbone.View
 				@$("tbody").append shrsc.render().el
 
 			@$(".bv_standardizationHistorySummaryTable").dataTable
+				iDisplayLength: 3
 				aaSorting: [[ 0, "desc" ]]
 				oLanguage:
 					sSearch: "Filter history: " #rename summary table's search bar
@@ -215,20 +218,23 @@ class window.StandardizationDryRunReportSummaryTableController extends Backbone.
 
 			@$(".bv_standardizationDryRunReportSummaryTable").dataTable
 					bAutoWidth: false
+					bLengthChange: true
+					iDisplayLength: 20
+					sPaginationType: "full_numbers"
 					fnRowCallback: (row, data, index) =>
-						$('.bv_parentStructure', row).html "<img src='/cmpdreg/structureimage/parent/"+data[0]+"?hSize=200&wSize=200'>"
-						data[1] = "<img src='/cmpdreg/structureimage/parent/"+data[0]+"?hSize=200&wSize=200'>"
-						$('.bv_standardizedStructure', row).html "<img src='/cmpdreg/structureimage/standardization/"+data[0]+"?hSize=200&wSize=200'>"
-						data[2] = "<img src='/cmpdreg/structureimage/standardization/"+data[0]+"?hSize=200&wSize=200'>"
-						$('.bv_asDrawnStructure', row).html "<img src='/cmpdreg/structureimage/originallydrawnas/"+data[0]+"?hSize=200&wSize=200'>"
-						data[3] = "<img src='/cmpdreg/structureimage/originallydrawnas/"+data[0]+"?hSize=200&wSize=200'>"
+						$('.bv_parentStructure', row).html "<img src='/cmpdreg/structureimage/parent/"+data[0]+"?hSize=300&wSize=300'>"
+						data[1] = "<img src='/cmpdreg/structureimage/parent/"+data[0]+"?hSize=300&wSize=300'>"
+						$('.bv_standardizedStructure', row).html "<img src='/cmpdreg/structureimage/standardization/"+data[0]+"?hSize=300&wSize=300'>"
+						data[2] = "<img src='/cmpdreg/structureimage/standardization/"+data[0]+"?hSize=300&wSize=300'>"
+						$('.bv_asDrawnStructure', row).html "<img src='/cmpdreg/structureimage/originallydrawnas/"+data[0]+"?hSize=300&wSize=300'>"
+						data[3] = "<img src='/cmpdreg/structureimage/originallydrawnas/"+data[0]+"?hSize=300&wSize=300'>"
 					oLanguage:
 						sSearch: "Filter results: " #rename summary table's search bar
 					"aoColumnDefs": [
 						{ "sWidth": "10%", "aTargets": [0] },
-						{ "sWidth": "10%", "aTargets": [1] },
-						{ "sWidth": "10%", "aTargets": [2] },
-						{ "sWidth": "10%", "aTargets": [3] }
+						{ "sWidth": "20%", "aTargets": [1] },
+						{ "sWidth": "20%", "aTargets": [2] },
+						{ "sWidth": "20%", "aTargets": [3] }
 					]
 
 		@
@@ -252,6 +258,15 @@ class window.StandardizationController extends Backbone.View
 		@$('.bv_getStandardizationDryRunReportError').hide()
 		@$('.bv_executeDryRunError').hide()
 		@$('.bv_executeStandardizationError').hide()
+		@standardizationReasonPanel = new StandardizationReasonPanelController
+			el: @$('.bv_standardizationReasonPanelView')
+		@standardizationReasonPanel.on 'readyForExecution', (reason) =>
+			@socket.emit 'executeDryRunOrStandardization', {runType:'standardization', username: window.AppLaunchParams.loginUserName, reason: reason}
+		@standardizationReasonPanel.on 'executionCancelled', () =>
+			@enableExecuteButtons()
+
+		@standardizationReasonPanel.render()
+		# @$('.bv_standardizationReasonPanel').hide()
 		@getStandardizationHistory()
 		@setupCurrentSettingsController()
 
@@ -384,11 +399,11 @@ class window.StandardizationController extends Backbone.View
 
 	handleExecuteDryRunClicked: ->
 		@disableExecuteButtons()
-		@socket.emit 'executeDryRunOrStandardization', 'dryRun'
+		@socket.emit 'executeDryRunOrStandardization', {runType:'dryRun'}
 
-	handleExecuteStandardizationClicked: ->
+	handleExecuteStandardizationClicked: =>
 		@disableExecuteButtons()
-		@socket.emit 'executeDryRunOrStandardization', 'standardization'
+		@standardizationReasonPanel.show()
 
 	handleStandardizationCompleteModalCloseClicked: ->
 		#refreshes standardization history summary table and last dry run report summary table
@@ -402,3 +417,54 @@ class window.StandardizationController extends Backbone.View
 	disableExecuteButtons: ->
 		@$('.bv_executeDryRun').attr 'disabled', 'disabled'
 		@$('.bv_executeStandardization').attr 'disabled', 'disabled'
+		
+class window.StandardizationReasonPanelController extends Backbone.View
+	template: _.template($("#StandardizationReasonPanelView").html())
+
+	render: =>
+		@$el.empty()
+		@$el.html @template()
+		@$('.bv_standardizationReasonPanel').on "show", =>
+			@$('.bv_reasonForStandardization').focus()
+		@
+
+	events: ->
+		"input .bv_reasonForStandardization": "handleReasonChanged"
+		"click .bv_standardizationReasonPanelExecuteBtn": "handleExecuteClicked"
+		"click .bv_standardizationReasonPanelCancelBtn": "handleCancelClicked"
+
+	show: =>
+		@$('.bv_standardizationReasonPanel').modal
+			backdrop: "static"
+		@$('.bv_standardizationReasonPanel').modal "show"
+
+	handleReasonChanged: =>
+		val = @$('.bv_reasonForStandardization')[0].value
+		if val? && val != ""
+			@$('.bv_standardizationReasonPanelExecuteBtn').removeAttr 'disabled'
+		else
+			@$('.bv_standardizationReasonPanelExecuteBtn').attr 'disabled', 'disabled'
+
+	handleExecuteClicked: =>
+		@$('.bv_standardizationReasonPanel').modal "hide"
+		@trigger 'readyForExecution', @$('.bv_reasonForStandardization')[0].value
+
+	handleCancelClicked: =>
+		console.log 'hiasdf'
+		@$('.bv_standardizationReasonPanel').modal "hide"
+		@trigger 'executionCancelled'
+		
+	setupKnockoutPicklist: =>
+		@knockoutObservationList = new PickListList()
+		@knockoutObservationList.url = "/api/codetables/user well flags/flag observation"
+		@knockoutObservationListController = new PickListSelectController
+			el: @$('.bv_dataDictPicklist')
+			collection: @knockoutObservationList
+
+	handleDoseResponseKnockoutPanelHidden: =>
+		status = "knocked out"
+		observation = @knockoutObservationListController.getSelectedCode()
+		cause = "curvefit ko"
+		comment = @knockoutObservationListController.getSelectedModel().get 'name'
+		@trigger 'observationSelected', status, observation, cause, comment
+
