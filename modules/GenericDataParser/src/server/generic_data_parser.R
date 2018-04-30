@@ -3360,33 +3360,63 @@ organizeSubjectData <- function(
   }
   
   createTreatmentGroupData <- function(x) {
-    uncertainty <- as.numeric(sd(x$numericValue, na.rm=T))
-    data.table(
-      batchCode = as.character(uniqueOrNA(x$batchCode)),
-      numericValue = as.numeric(mean(x$numericValue, na.rm=T)),
-      stringValue = as.character(concatUniqNonNA(x$stringValue)),
-      valueOperator = as.character(uniqueOrNA(x$valueOperator)),
-      # TODO figure out if this should be coerced
-      dateValue = uniqueOrNA(x$dateValue),
-      clobValue = as.character(uniqueOrNA(x$clobValue)),
-      urlValue = as.character(uniqueOrNA(x$urlValue)),
-      fileValue = as.character(uniqueOrNA(x$fileValue)),
-      inlineFileValue = as.character(uniqueOrNA(x$inlineFileValue)),
-      codeValue = as.character(uniqueOrNA(x$codeValue)),
-      uncertaintyType = if (is.na(uncertainty)) NA_character_ else "standard deviation",
-      uncertainty = uncertainty,
-      tempStateId = x$tempStateId[1]
-    )
+    if(all(x$isExcluded)) {
+      data.table(
+          batchCode = as.character(uniqueOrNA(x$batchCode)),
+          numericValue = NA_real_,
+          stringValue = NA_character_,
+          valueOperator = NA_character_,
+          # TODO figure out if this should be coerced
+          dateValue = uniqueOrNA(x$dateValue),
+          clobValue = NA_character_,
+          urlValue = NA_character_,
+          fileValue = NA_character_,
+          inlineFileValue = NA_character_,
+          codeValue = "knocked out",
+          uncertaintyType = NA_character_,
+          uncertainty = NA_real_,
+          tempStateId = x$tempStateId[1],
+          newValueType="codeValue",
+          newValueKind="flag status"
+        )
+    } else {
+      x <- x[isExcluded==FALSE]
+      uncertainty <- as.numeric(sd(x$numericValue, na.rm=T))
+      data.table(
+        batchCode = as.character(uniqueOrNA(x$batchCode)),
+        numericValue = as.numeric(mean(x$numericValue, na.rm=T)),
+        stringValue = as.character(concatUniqNonNA(x$stringValue)),
+        valueOperator = as.character(uniqueOrNA(x$valueOperator)),
+        # TODO figure out if this should be coerced
+        dateValue = uniqueOrNA(x$dateValue),
+        clobValue = as.character(uniqueOrNA(x$clobValue)),
+        urlValue = as.character(uniqueOrNA(x$urlValue)),
+        fileValue = as.character(uniqueOrNA(x$fileValue)),
+        inlineFileValue = as.character(uniqueOrNA(x$inlineFileValue)),
+        codeValue = as.character(uniqueOrNA(x$codeValue)),
+        uncertaintyType = if (is.na(uncertainty)) NA_character_ else "standard deviation",
+        uncertainty = uncertainty,
+        tempStateId = x$tempStateId[1],
+        newValueType=x$valueType[1],
+        newValueKind=x$valueKind[1]
+      )
+    }
   }
   
   groupByColumnsNoUnit <- trim(gsub("\\(\\w*\\)", "", groupByColumns))
   excludedSubjects <- subjectData2$subjectID[subjectData2$valueKind %in% excludedRowKinds]
-  subjectData3 <- subjectData2[valueKind %in% c(keepColumn, groupByColumnsNoUnit) & !(subjectID %in% excludedSubjects)]
+
+  # Mark subject values that should be exluded as such so that later we can filter them out from treatment group averaging
+  # marking also because where all subjects have been flagged, we will upload a codeValue of flag status/knocked out 
+  subjectData2[ , isExcluded := any(valueKind %in% excludedRowKinds), by = subjectID]
+  subjectData3 <- subjectData2[valueKind %in% c(keepColumn, groupByColumnsNoUnit)]
   treatmentGroupData <- subjectData3[!is.na(groupingID), createTreatmentGroupData(.SD), 
                                      by = list(groupingID, valueType, valueKind, concentration, 
                                                concUnit, time, timeUnit, valueUnit, 
                                                valueKindAndUnit, publicData, linkID, stateType,
-                                               stateKind)]
+                                               stateKind), .SDcols = names(subjectData3)]
+  treatmentGroupData[ , c('valueType','valueKind') := list(newValueType, newValueKind)]
+  treatmentGroupData[ , c("newValueType", "newValueKind") := NULL]
   treatmentGroupData[valueKind %in% groupByColumnsNoUnit, c("uncertainty", "uncertaintyType") := list(NA_real_, NA_character_)]
   treatmentGroupData[, treatmentGroupID := groupingID]
   treatmentGroupData[, analysisGroupID := linkID]
