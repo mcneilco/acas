@@ -3363,7 +3363,7 @@ organizeSubjectData <- function(
     uncertainty <- as.numeric(sd(x$numericValue, na.rm=T))
     data.table(
       batchCode = as.character(uniqueOrNA(x$batchCode)),
-      numericValue = as.numeric(mean(x$numericValue, na.rm=T)),
+      numericValue = if(all(is.na(x$numericValue))) NA_real_ else  as.numeric(mean(x$numericValue, na.rm=T)),
       stringValue = as.character(concatUniqNonNA(x$stringValue)),
       valueOperator = as.character(uniqueOrNA(x$valueOperator)),
       # TODO figure out if this should be coerced
@@ -3381,7 +3381,8 @@ organizeSubjectData <- function(
   
   groupByColumnsNoUnit <- trim(gsub("\\(\\w*\\)", "", groupByColumns))
   excludedSubjects <- subjectData2$subjectID[subjectData2$valueKind %in% excludedRowKinds]
-  subjectData3 <- subjectData2[valueKind %in% c(keepColumn, groupByColumnsNoUnit) & !(subjectID %in% excludedSubjects)]
+  # For treatment groups for where all subjects have been flagged, we will upload a codeValue of flag status/knocked out 
+  subjectData3 <- subjectData2[valueKind %in% c(keepColumn, groupByColumnsNoUnit)][(subjectID %in% excludedSubjects), c("valueType","valueKind", "codeValue","numericValue") := list("codeValue", "flag status", "knocked out", NA)]
   treatmentGroupData <- subjectData3[!is.na(groupingID), createTreatmentGroupData(.SD), 
                                      by = list(groupingID, valueType, valueKind, concentration, 
                                                concUnit, time, timeUnit, valueUnit, 
