@@ -1362,6 +1362,15 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
   # Link to parent analysis group or subject, and include batch codes
   results$linkID <- NA
   if (!is.null(link)) {
+    # Throw and error if there is no link between raw results and calculated results
+    missingLinksFromCalculatedResults <- setdiff(link$stringValue, results$link)
+    missingLinksFromRawResults <- setdiff(results$link, link$stringValue)
+    if(length(missingLinksFromCalculatedResults) > 0) {
+      addError(paste0("Could not find `Raw Results` match for `Calculated Results` links: ",sqliz(missingLinksFromCalculatedResults)), errorEnv)
+    }
+    if(length(missingLinksFromRawResults) > 0) {
+      addError(paste0("Could not find `Calculated Results` match for `Raw Results` links: ",sqliz(missingLinksFromRawResults)), errorEnv)
+    }
     results$linkID <- link$rowID[match(results$link, link$stringValue)]
     if (!is.null(link$originalMainID))
       results$batchCode <- link$originalMainID[match(results$link, link$stringValue)]
