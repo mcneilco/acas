@@ -37,7 +37,7 @@ renderCurve <- function(getParams) {
   #Get Protocol Curve Display Min and Max for first curve in list
   if(any(is.na(parsedParams$yMin),is.na(parsedParams$yMax))) {
     protocol_display_values <- racas::get_protocol_curve_display_min_and_max_by_curve_id(parsedParams$curveIds[[1]])
-    plotWindowPoints <- fitData[1]$points[[1]][!userFlagStatus == "knocked out" & !preprocessFlagStatus == "knocked out" & !algorithmFlagStatus == "knocked out",]
+    plotWindowPoints <- rbindlist(fitData[ , points])[!userFlagStatus == "knocked out" & !preprocessFlagStatus == "knocked out" & !algorithmFlagStatus == "knocked out",]
     if(nrow(plotWindowPoints) == 0) {
       plotWindow <- racas::get_plot_window(fitData[1]$points[[1]])      
     } else {
