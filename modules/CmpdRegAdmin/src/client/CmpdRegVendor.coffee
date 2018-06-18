@@ -42,6 +42,7 @@ class window.VendorController extends AbstractCmpdRegAdminController
 	entityTypeUpper: "Vendor"
 	entityTypeUpperPlural: "Vendors"
 	modelClass: "Vendor"
+	showIgnore: false
 
 	completeInitialization: =>
 		@errorOwnerName = 'VendorController'
@@ -62,3 +63,4 @@ class window.VendorBrowserController extends AbstractCmpdRegAdminBrowserControll
 	entityClass: "Vendor"
 	entityControllerClass: "VendorController"
 	moduleLaunchName: "vendor_browser"
+	showIgnore: false

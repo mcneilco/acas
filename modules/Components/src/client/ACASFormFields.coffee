@@ -95,6 +95,8 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 			@setFormLabel @options.formLabel
 		if @options.formLabelClass?
 			@addFormLabelClass @options.formLabelClass
+		if @options.formLabelOrientation?
+			@setupFormLabelOrientation @options.formLabelOrientation
 		if @options.inputClass?
 			@addInputClass @options.inputClass
 		if @options.controlGroupClass?
@@ -112,6 +114,11 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 
 	addFormLabelClass: (value) ->
 		@$('label').addClass value
+
+	setupFormLabelOrientation: (value) ->
+		if value is "top"
+			@$('label').removeClass 'control-label'
+		# else set label to left, this is already the default
 
 	addInputClass: (value) ->
 		@$('input').addClass value
@@ -201,6 +208,12 @@ class window.ACASFormLSNumericValueFieldController extends ACASFormAbstractField
 		super()
 		if @options.toFixed?
 			@toFixed = @options.toFixed
+
+	render: =>
+		super()
+		if @getModel()? and @getModel().has('unitKind')
+			@$('.bv_units').html @getModel().get('unitKind')
+		@
 
 	handleInputChanged: =>
 		@clearError()
@@ -456,7 +469,8 @@ class window.ACASFormLSHTMLClobValueFieldController extends ACASFormAbstractFiel
 
 	renderModelContent: =>
 		if @editor?
-			@editor.setContent @getModel().get('value')
+			if @getModel().get('value')?
+				@editor.setContent @getModel().get('value')
 		else
 			@contentToLoad = @getModel().get('value')
 		super()

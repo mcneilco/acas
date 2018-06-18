@@ -53,13 +53,16 @@ exports.toPrint = (req, res, moduleLaunchParams) ->
 	console.log "toPrint"
 	console.log req.query.moduleName
 	console.log req.query.controller
-	#TODO: on redirect, pass in moduleName and code. Hardcoded right now.
+	unregistered = req.query.unregistered
+	if typeof unregistered is "string"
+		unregistered = (unregistered.toLowerCase() is "true")
 	moduleLaunchParams =
 		moduleName: req.query.moduleName
 		code: req.params.code
 		copy: false
 		createFromOtherEntity: false
 		print: true
+		unregistered: unregistered
 
 	console.log "moduleLaunchParams"
 	console.log moduleLaunchParams

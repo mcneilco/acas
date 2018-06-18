@@ -134,6 +134,7 @@
 				{"name": "Lot Total Amount Stored Units", "dataType": "string", "required": false},
 				{"name": "Lot Total Amount Stored", "dataType": "numeric", "required": false},
 				{"name": "Lot Vendor", "dataType": "string", "required": false},
+				{"name": "Lot Vendor ID", "dataType": "string", "required": false},
 				{"name": "Parent Alias", "dateType": "string", "required": false},
 				{"name": "Parent Annotation", "dateType": "string", "required": false},
 				{"name": "Parent Comment", "dataType": "string", "required": false},
