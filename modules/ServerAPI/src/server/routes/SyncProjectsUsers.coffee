@@ -5,6 +5,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/syncLiveDesignProjectsUsers', loginRoutes.ensureAuthenticated, exports.syncLiveDesignProjectsUsers
 
 exports.syncLiveDesignProjectsUsers = (req, resp) ->
+	req.setTimeout 600000
 	exports.getGroupsJSON (groupsJSON, acasGroupsAndProjects) ->
 		exports.getProjectsJSON (projectsJSON) ->
 			exports.getConfigJSON (configJSON) ->
