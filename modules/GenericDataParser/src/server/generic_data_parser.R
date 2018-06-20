@@ -1258,6 +1258,10 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
       stopUser(paste0("Only one Rendering Hint can be used within one file. ",
                       "Split different kinds of curves into multiple experiments."))
     }
+    configuredRenderingHints  <- rbindlist(fromJSON(applicationSettings$client.curvefit.modelfitparameter.classes), fill = TRUE)$code
+    if(!doseResponseHint %in% configuredRenderingHints) {
+      stopUser(paste0("The Rendering Hint '",doseResponseHint,"' is not configured for this system. Please enter one of the following instead: ",sqliz(configuredRenderingHints)))
+    }
     doseResponseSettings <- getFormatSettings()$doseResponseRender
     if (doseResponseHint %in% names(doseResponseSettings)) {
       doseResponseKinds <- doseResponseSettings[[doseResponseHint]]$doseResponseKinds
