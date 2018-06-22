@@ -77,6 +77,5 @@ RUN		source /opt/rh/python27/enable && pip install argparse requests psycopg2
 USER	runner
 
 EXPOSE 3000
-EXPOSE 3001
 
 CMD     ["/bin/sh","bin/acas.sh", "run"]
