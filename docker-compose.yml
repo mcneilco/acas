@@ -60,7 +60,7 @@ services:
     ports:
      - "5432:5432"
   tomcat:
-    image: mcneilco/tomcat-maven:1.0-openjdk8
+    image: mcneilco/tomcat-maven:1.2-openjdk8
     restart: always
     depends_on:
      - db
@@ -69,8 +69,9 @@ services:
      - "8000:8000"
     environment:
      - ACAS_HOME=/home/runner/build
-     - CATALINA_OPTS=-Xms512M -Xmx1024M -XX:MaxPermSize=512m
+     - CATALINA_OPTS=-Xms512M -Xmx1024M -XX:MaxPermSize=512m -Dlisten.address=$${TOMCAT_LISTEN_ADDRESS}
      - JAVA_OPTS=-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8000
+     - TOMCAT_LISTEN_ADDRESS=0.0.0.0
     volumes_from:
      - roo
      - acas
