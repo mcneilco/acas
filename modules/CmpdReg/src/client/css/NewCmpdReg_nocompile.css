@@ -1309,6 +1309,16 @@ div.MetaLotViewButtons.buttons {
     float: left;
     width: 166px;
 }
+.SearchFormView .corpNameListLabel {
+    float: left;
+    width: 166px;
+}
+.SearchFormView .corpNameList {
+    width: 221px;
+    margin-left:0px;
+    resize: vertical;
+    overflow: auto;
+}
 
 /*.SearchFormView input.FormInput.corpNameFrom {
     margin-right: 50px;
