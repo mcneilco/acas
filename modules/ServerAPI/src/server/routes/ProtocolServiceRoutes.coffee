@@ -67,23 +67,23 @@ exports.protocolByCodename = (req, resp) ->
 		if req.user? && config.all.server.project.roles.enable
 			serverUtilityFunctions.getRestrictedEntityFromACASServerInternal baseurl, req.user.username, "metadata", "protocol metadata", (statusCode, json) =>
 			#if prot is deleted, need to check if user has privs to view deleted protocols
-			if json.codeName? and json.ignored and !json.deleted
-				if config.all.client.entity?.viewDeletedRoles?
-					viewDeletedRoles = config.all.client.entity.viewDeletedRoles.split(",")
+				if json.codeName? and json.ignored and !json.deleted
+					if config.all.client.entity?.viewDeletedRoles?
+						viewDeletedRoles = config.all.client.entity.viewDeletedRoles.split(",")
+					else
+						viewDeletedRoles = []
+					grantedRoles = _.map req.user.roles, (role) ->
+						role.roleEntry.roleName
+					canViewDeleted = (config.all.client.entity?.viewDeletedRoles? && config.all.client.entity.viewDeletedRoles in grantedRoles)
+					if canViewDeleted
+						resp.statusCode = statusCode
+						resp.end JSON.stringify json
+					else
+						resp.statusCode = 500
+						resp.end JSON.stringify "Protocol does not exist"
 				else
-					viewDeletedRoles = []
-				grantedRoles = _.map req.user.roles, (role) ->
-					role.roleEntry.roleName
-				canViewDeleted = (config.all.client.entity?.viewDeletedRoles? && config.all.client.entity.viewDeletedRoles in grantedRoles)
-				if canViewDeleted
 					resp.statusCode = statusCode
 					resp.end JSON.stringify json
-				else
-					resp.statusCode = 500
-					resp.end JSON.stringify "Protocol does not exist"
-			else
-				resp.statusCode = statusCode
-				resp.end JSON.stringify json
 		else
 			serverUtilityFunctions.getFromACASServer baseurl, resp
 
@@ -247,6 +247,28 @@ exports.createProtocolInternal = (protToSave, testMode, callback) ->
 exports.postProtocol = (req, resp) ->
 	postProtocol req, resp
 
+exports.putProtocolInternal = (protocol, testMode, callback) ->
+	protToSave = protocol
+	fileVals = serverUtilityFunctions.getFileValuesFromEntity protToSave, true
+	filesToSave = fileVals.length
+
+	completeProtUpdate = ->
+		updateProt protToSave, testMode, (updatedProt) ->
+			callback updatedProt
+
+	fileSaveCompleted = (passed) ->
+		if !passed
+			callback "put protocol internal saveFailed: file move failed"
+		if --filesToSave == 0 then completeProtUpdate()
+
+	if filesToSave > 0
+		prefix = serverUtilityFunctions.getPrefixFromEntityCode protToSave.codeName
+		for fv in fileVals
+			if !fv.id?
+				csUtilities.relocateEntityFile fv, prefix, protToSave.codeName, fileSaveCompleted
+	else
+		completeProtUpdate()
+
 exports.putProtocol = (req, resp) ->
 	protToSave = req.body
 	fileVals = serverUtilityFunctions.getFileValuesFromEntity protToSave, true
@@ -269,6 +291,15 @@ exports.putProtocol = (req, resp) ->
 				csUtilities.relocateEntityFile fv, prefix, req.body.codeName, fileSaveCompleted
 	else
 		completeProtUpdate()
+
+#TODO replace putProtocol with call to putProtocolInternal
+#exports.putProtocol = (req, resp) ->
+#	exports.putProtocolInternal req.body, req.query.testMode, (putProtocolResp) =>
+#		if putProtocolResp.indexOf("saveFailed") > -1
+#			resp.statusCode = 500
+#			resp.json putProtocolResp
+#		else
+#			resp.json putProtocolResp
 
 exports.getProtocolLabelsInternal = (callback) ->
 	if global.specRunnerTestmode

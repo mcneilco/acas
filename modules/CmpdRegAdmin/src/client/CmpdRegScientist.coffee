@@ -7,6 +7,7 @@ class window.Scientist extends Backbone.Model
 		name: null
 		code: null
 		id: null
+		ignored: false
 
 	validate: (attrs) ->
 		errors = []
@@ -42,6 +43,7 @@ class window.ScientistController extends AbstractCmpdRegAdminController
 	entityTypeUpper: "Scientist"
 	entityTypeUpperPlural: "Scientists"
 	modelClass: "Scientist"
+	showIgnore: true
 
 	completeInitialization: =>
 		@errorOwnerName = 'ScientistController'
@@ -62,3 +64,4 @@ class window.ScientistBrowserController extends AbstractCmpdRegAdminBrowserContr
 	entityClass: "Scientist"
 	entityControllerClass: "ScientistController"
 	moduleLaunchName: "scientist_browser"
+	showIgnore: true

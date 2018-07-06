@@ -45,15 +45,22 @@ class window.Experiment extends BaseEntity
 			resp
 
 	copyProtocolAttributes: (protocol) =>
-#only need to copy protocol's experiment metadata attributes
+		#copy protocol's experiment metadata attributes
+		#copy protocol values from protocol metadata state as defined in config
+		if window.conf.experiment?.copiedProtocolMetadataAttrs?
+			protocolMetaAttrsToCopy = window.conf.experiment.copiedProtocolMetadataAttrs
+			protocolMetaAttrsToCopy = protocolMetaAttrsToCopy.split ","
+		else
+			protocolMetaAttrsToCopy = []
+
 		pstates = protocol.get('lsStates')
 		pExptMeta = pstates.getStatesByTypeAndKind "metadata", "experiment metadata"
+		eExptMeta = @.get('lsStates').getStatesByTypeAndKind "metadata", "experiment metadata"
 		if pExptMeta.length > 0
-			eExptMeta = @.get('lsStates').getStatesByTypeAndKind "metadata", "experiment metadata"
 			if eExptMeta.length > 0
 				dapVal = eExptMeta[0].getValuesByTypeAndKind "clobValue", "data analysis parameters"
 				if dapVal.length > 0
-#mark existing data analysis parameters, model fit parameters, and model fit type as ignored
+					#mark existing data analysis parameters, model fit parameters, and model fit type as ignored
 					if dapVal[0].isNew()
 						eExptMeta[0].get('lsValues').remove dapVal[0]
 					else
@@ -108,6 +115,22 @@ class window.Experiment extends BaseEntity
 			mftu.unset 'id'
 			mftu.unset 'lsTransaction'
 			eExptMeta[0].get('lsValues').add mftu
+
+		pMetaState = pstates.getStatesByTypeAndKind "metadata", "protocol metadata"
+		if pMetaState.length > 0
+			_.each protocolMetaAttrsToCopy, (pma) =>
+				unless eExptMeta.length > 0
+					eExptMeta = [@.get('lsStates').getOrCreateStateByTypeAndKind("metadata", "experiment metadata")]
+				pmaVal = eExptMeta[0].getValuesByTypeAndKind "clobValue", pma
+				if pmaVal.length > 0
+					if pmaVal[0].isNew()
+						eExptMeta[0].get('lsValues').remove pmaVal[0]
+					else
+						pmaVal[0].set ignored: true
+				newVal = new Value(_.clone(pstates.getOrCreateValueByTypeAndKind "metadata", "protocol metadata", "clobValue", pma).attributes)
+				newVal.unset 'id'
+				newVal.unset 'lsTransaction'
+				eExptMeta[0].get('lsValues').add newVal
 
 		# 		commented because experiment base does not have these values
 		#			@getDryRunStatus().set ignored: true

@@ -159,6 +159,14 @@ exports.loginStrategy = (req, username, password, done) ->
 			return done(null, false,
 				message: "Invalid credentials"
 			)
+		else if results.indexOf("role_check_error")>=0
+			try
+				exports.logUsage "User failed login: ", JSON.stringify(ip: req.ip, referer: req.headers['referer'], agent: req.headers['user-agent']), username
+			catch error
+				console.log "Exception trying to log:"+error
+			return done(null, false,
+				message: "Unauthorized user"
+			)
 		else if results.indexOf("connection_error")>=0
 			try
 				exports.logUsage "Connection to authentication service failed: ", JSON.stringify(ip: req.ip, referer: req.headers['referer'], agent: req.headers['user-agent']), username
@@ -518,7 +526,7 @@ exports.checkRoles = (user, retFun) ->
 				retFun 'success'
 			else
 				console.log 'Role check failed'
-				retFun 'login_error'
+				retFun 'role_check_error'
 		else if config.all.client.roles?.loginRole?
 			retFun 'login_error'
 		else

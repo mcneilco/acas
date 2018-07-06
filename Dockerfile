@@ -6,6 +6,7 @@ RUN \
 # tar for pulling down node
 # git required for some npm packages
   yum install -y tar git && \
+  yum install -y fontconfig urw-fonts && \
   yum clean all
 
 # node
@@ -76,6 +77,5 @@ RUN		source /opt/rh/python27/enable && pip install argparse requests psycopg2
 USER	runner
 
 EXPOSE 3000
-EXPOSE 3001
 
 CMD     ["/bin/sh","bin/acas.sh", "run"]

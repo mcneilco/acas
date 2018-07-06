@@ -5,6 +5,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/syncLiveDesignProjectsUsers', loginRoutes.ensureAuthenticated, exports.syncLiveDesignProjectsUsers
 
 exports.syncLiveDesignProjectsUsers = (req, resp) ->
+	req.setTimeout 600000
 	exports.getGroupsJSON (groupsJSON, acasGroupsAndProjects) ->
 		exports.getProjectsJSON (projectsJSON) ->
 			exports.getConfigJSON (configJSON) ->
@@ -181,26 +182,48 @@ exports.syncLiveDesignRoles = (caughtPythonErrors, pythonErrors, configJSON, gro
 		exec = require('child_process').exec
 		_ = require "underscore"
 		config = require '../conf/compiled/conf.js'
-		#Filter out ignored projects
-		filteredProjects = _.filter groupsJSON.projects, (project) ->
-			project.active
-		groupsJSON.projects = filteredProjects
-		#Call ld_entitlements.py to update list of user-project ACLs in LiveDesign
-		command = "python ./src/python/ServerAPI/syncProjectsUsers/ld_entitlements.py "
-		command += "\'"+(JSON.stringify configJSON.ld_server)+"\' "+"\'"+(JSON.stringify groupsJSON)+"\'"
-		#		data = {"compounds":["V035000","CMPD-0000002"],"assays":[{"protocolName":"Target Y binding","resultType":"curve id"}]}
-		#		command += (JSON.stringify data)+"'"
-		console.log "About to call python using command: "+command
-		child = exec command, {maxBuffer: 1024 * 1000}, (error, stdout, stderr) ->
-			reportURLPos = stdout.indexOf config.all.client.service.result.viewer.liveDesign.baseUrl
-			reportURL = stdout.substr reportURLPos
-			#console.warn "stderr: " + stderr
-			console.log "stdout: " + stdout
-			if error?
-				caughtPythonErrors = true
-				console.error error
-				pythonErrors.push error
-			callback caughtPythonErrors, pythonErrors
+
+		writeGroupsJSONToTempFile = (groupsJSON, callback) ->
+			console.log "writeGroupsJSONToTempFile"
+			groupsJSONFilePath = "/tmp/syncLiveDesignGroupsJSON.txt"
+			fs = require 'fs'
+			fs.writeFile(groupsJSONFilePath, JSON.stringify(groupsJSON), 'utf8', (error) ->
+				if error
+					callback "error", error
+				else
+					callback "successful", groupsJSONFilePath
+			)
+
+		writeGroupsJSONToTempFile groupsJSON, (status, writeGroupsJSONToTempFileResp) =>
+			console.log "writeGroupsJSONToTempFileResp"
+			console.log status
+			console.log writeGroupsJSONToTempFileResp
+			if status is "successful"
+				#Filter out ignored projects
+				filteredProjects = _.filter groupsJSON.projects, (project) ->
+					project.active
+				groupsJSON.projects = filteredProjects
+				#Call ld_entitlements.py to update list of user-project ACLs in LiveDesign
+				command = "python ./src/python/ServerAPI/syncProjectsUsers/ld_entitlements.py "
+				command += "\'"+(JSON.stringify configJSON.ld_server)+"\' "+"\'"+writeGroupsJSONToTempFileResp+"\'"
+				#		data = {"compounds":["V035000","CMPD-0000002"],"assays":[{"protocolName":"Target Y binding","resultType":"curve id"}]}
+				#		command += (JSON.stringify data)+"'"
+				console.log "About to call python using command: "+command
+				child = exec command, {maxBuffer: 1024 * 1000}, (error, stdout, stderr) ->
+					reportURLPos = stdout.indexOf config.all.client.service.result.viewer.liveDesign.baseUrl
+					reportURL = stdout.substr reportURLPos
+					#console.warn "stderr: " + stderr
+					console.log "stdout: " + stdout
+					if error?
+						caughtPythonErrors = true
+						console.error error
+						pythonErrors.push error
+					callback caughtPythonErrors, pythonErrors
+			else
+				console.error "Error writing groups JSON to temp file"
+				caughtErrors = true
+				pythonErrors.push writeGroupsJSONToTempFileResp #pushing error even though technically it's not a python error
+				callback caughtErrors, pythonErrors
 	else
 		console.warn "some live design configs are null, skipping sync of live design roles"
 		callback caughtPythonErrors, pythonErrors
