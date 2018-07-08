@@ -70,7 +70,8 @@ $(function() {
             }
 			this.hide();
 			if(window.configuration.clientUILabels.corpNameLabel) {
-                this.$('.corpNameLabel').html(window.configuration.clientUILabels.corpNameLabel);
+				this.$('.corpNameLabel').html(window.configuration.clientUILabels.corpNameLabel+" Range");
+				this.$('.corpNameListLabel').html(window.configuration.clientUILabels.corpNameLabel+" List");
             }
             this.$('.dateFrom').datepicker( );
             this.$('.dateFrom').datepicker( "option", "dateFormat", "mm/dd/yy" );
@@ -175,6 +176,7 @@ $(function() {
             searchForm.bind('error',  this.validationError);
 
             searchForm.set({
+                corpNameList: jQuery.trim(this.$('.corpNameList').val()),
                 corpNameFrom: jQuery.trim(this.$('.corpNameFrom').val()),
                 corpNameTo: jQuery.trim(this.$('.corpNameTo').val()),
                 aliasContSelect: this.$('.aliasContSelect').val(),
