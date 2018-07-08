@@ -156,7 +156,10 @@ getRApacheSpecificConfString = (config, apacheCompileOptions, acasHome) ->
 	confs.push('HostnameLookups ' + config.server.rapache.conf.hostnamelookups)
 	confs.push('ServerAdmin ' + config.server.rapache.conf.serveradmin)
 	confs.push('LogFormat ' + config.server.rapache.conf.logformat)
-	confs.push('ErrorLog ' + config.server.log.path + '/racas.log')
+	if config.server.rapache.forceAllToStdErrOnly? && config.server.rapache.forceAllToStdErrOnly
+		confs.push('ErrorLog ' + '/dev/stderr')
+	else
+		confs.push('ErrorLog ' + config.server.log.path + '/racas.log')
 	confs.push('LogLevel ' + config.server.log.level.toLowerCase())
 	if Boolean(config.client.use.ssl)
 		urlPrefix = 'https'
