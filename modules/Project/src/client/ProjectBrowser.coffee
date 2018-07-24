@@ -120,6 +120,7 @@ class window.ProjectRowSummaryController extends Backbone.View
 		toDisplay =
 			projectCode: @model.get('codeName')
 			projectName: projectBestName
+			isRestricted: @model.get('is restricted').get('value')
 			projectLeaders: projLeaders
 			startDate: startDate
 			status: @model.get('project status').get('value')
