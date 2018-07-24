@@ -13,6 +13,7 @@ class window.ProtocolSimpleSearchController extends AbstractFormController
 	events:
 		'keyup .bv_protocolSearchTerm': 'updateProtocolSearchTerm'
 		'click .bv_doSearch': 'handleDoSearchClicked'
+		'click .bv_showAll': 'handleShowAllClicked'
 
 	render: =>
 		$(@el).empty()
@@ -28,6 +29,23 @@ class window.ProtocolSimpleSearchController extends AbstractFormController
 				@handleDoSearchClicked()
 		else
 			@$(".bv_doSearch").attr("disabled", true)
+
+	handleShowAllClicked: =>
+		$(".bv_protocolTableController").addClass "hide"
+		$(".bv_errorOccurredPerformingSearch").addClass "hide"
+		protocolSearchTerm = "*"
+		$(".bv_protSearchTerm").val ""
+		if protocolSearchTerm isnt ""
+			$(".bv_noMatchesFoundMessage").addClass "hide"
+			$(".bv_protocolBrowserSearchInstructions").addClass "hide"
+			$(".bv_searchProtocolsStatusIndicator").removeClass "hide"
+			if !window.conf.browser.enableSearchAll and protocolSearchTerm is "*"
+				$(".bv_moreSpecificProtocolSearchNeeded").removeClass "hide"
+			else
+				$(".bv_searchingProtocolsMessage").removeClass "hide"
+				$(".bv_protSearchTerm").html protocolSearchTerm
+				$(".bv_moreSpecificProtocolSearchNeeded").addClass "hide"
+				@doSearch protocolSearchTerm
 
 	handleDoSearchClicked: =>
 		$(".bv_protocolTableController").addClass "hide"
@@ -229,10 +247,10 @@ class window.ProtocolBrowserController extends Backbone.View
 				readOnly: true
 			@showMasterView()
 		else
-			if window.conf.protocol?.mainControllerClassName? 
+			if window.conf.protocol?.mainControllerClassName?
 				protControllerClassName = window.conf.protocol.mainControllerClassName
 			else
-				protControllerClassName = "ProtocolBaseController"			
+				protControllerClassName = "ProtocolBaseController"
 			@protocolController = new window[protControllerClassName]
 				model: protocol
 				readOnly: true

@@ -27,6 +27,7 @@ class window.CmpdRegAdminSimpleSearchController extends AbstractFormController
 		'keyup .bv_cmpdRegAdminSearchTerm': 'updateCmpdRegAdminSearchTerm'
 		'click .bv_doSearch': 'handleDoSearchClicked'
 		"click .bv_createNewCmpdRegAdminBtn": "handleCreateNewCmpdRegAdminClicked"
+		'click .bv_showAll': 'handleShowAllClicked'
 
 	render: =>
 		console.log "rendering SimpleSearchController"
@@ -46,6 +47,13 @@ class window.CmpdRegAdminSimpleSearchController extends AbstractFormController
 				@trigger 'searchRequested'
 		else
 			@$(".bv_doSearch").attr("disabled", true)
+
+	handleDoSearchClicked: =>
+		@trigger 'searchRequested'
+
+	handleShowAllClicked: =>
+		cmpdRegAdminSearchTerm = "*"
+		@trigger 'searchAllRequested'
 
 	doSearch: (cmpdRegAdminSearchTerm) =>
 # disable the search text field while performing a search
@@ -174,6 +182,7 @@ class window.AbstractCmpdRegAdminBrowserController extends Backbone.View
 			toDisplay: @toDisplay
 		@searchController.render()
 		@searchController.on "searchRequested", @handleSearchRequested
+		@searchController.on "searchAllRequested", @handleSearchAllRequested
 		@searchController.on "searchReturned", @setupCmpdRegAdminSummaryTable
 		@searchController.on "createNewCmpdRegAdmin", @handleCreateNewCmpdRegAdminClicked
 	#@searchController.on "resetSearch", @destroyCmpdRegAdminSummaryTable
@@ -228,7 +237,23 @@ class window.AbstractCmpdRegAdminBrowserController extends Backbone.View
 				@$(".bv_cmpdRegAdminSearchTerm").html cmpdRegAdminSearchTerm
 				@$(".bv_moreSpecificCmpdRegAdminSearchNeeded").addClass "hide"
 				@searchController.doSearch cmpdRegAdminSearchTerm
-		
+
+	handleSearchAllRequested: =>
+		@$(".bv_cmpdRegAdminTableController").addClass "hide"
+		@$(".bv_errorOccurredPerformingSearch").addClass "hide"
+		cmpdRegAdminSearchTerm = "*"
+		if cmpdRegAdminSearchTerm isnt ""
+			@$(".bv_noMatchingCmpdRegAdminsFoundMessage").addClass "hide"
+			@$(".bv_cmpdRegAdminBrowserSearchInstructions").addClass "hide"
+			@$(".bv_searchCmpdRegAdminsStatusIndicator").removeClass "hide"
+			if !window.conf.browser.enableSearchAll and cmpdRegAdminSearchTerm is "*"
+				@$(".bv_moreSpecificCmpdRegAdminSearchNeeded").removeClass "hide"
+			else
+				@$(".bv_searchingCmpdRegAdminsMessage").removeClass "hide"
+				@$(".bv_cmpdRegAdminSearchTerm").html cmpdRegAdminSearchTerm
+				@$(".bv_moreSpecificCmpdRegAdminSearchNeeded").addClass "hide"
+				@searchController.doSearch cmpdRegAdminSearchTerm
+
 	handleDeleteCmpdRegAdminClicked: =>
 		@$(".bv_cmpdRegAdminCodeName").html @cmpdRegAdminController.model.get("code")
 		@$(".bv_deleteButtons").removeClass "hide"

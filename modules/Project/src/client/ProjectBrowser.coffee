@@ -25,6 +25,7 @@ class window.ProjectSimpleSearchController extends AbstractFormController
 	events:
 		'keyup .bv_projectSearchTerm': 'updateProjectSearchTerm'
 		'click .bv_doSearch': 'handleDoSearchClicked'
+		'click .bv_showAll': 'handleShowAllClicked'
 
 	render: =>
 		$(@el).empty()
@@ -40,6 +41,23 @@ class window.ProjectSimpleSearchController extends AbstractFormController
 				@handleDoSearchClicked()
 		else
 			@$(".bv_doSearch").attr("disabled", true)
+
+	handleShowAllClicked: =>
+		$(".bv_projectTableController").addClass "hide"
+		$(".bv_errorOccurredPerformingSearch").addClass "hide"
+		projectSearchTerm = "*"
+		$(".bv_exptSearchTerm").val ""
+		if projectSearchTerm isnt ""
+			$(".bv_noMatchingProjectsFoundMessage").addClass "hide"
+			$(".bv_projectBrowserSearchInstructions").addClass "hide"
+			$(".bv_searchProjectsStatusIndicator").removeClass "hide"
+			if !window.conf.browser.enableSearchAll and projectSearchTerm is "*"
+				$(".bv_moreSpecificProjectSearchNeeded").removeClass "hide"
+			else
+				$(".bv_searchingProjectsMessage").removeClass "hide"
+				$(".bv_exptSearchTerm").html projectSearchTerm
+				$(".bv_moreSpecificProjectSearchNeeded").addClass "hide"
+				@doSearch projectSearchTerm
 
 	handleDoSearchClicked: =>
 		$(".bv_projectTableController").addClass "hide"

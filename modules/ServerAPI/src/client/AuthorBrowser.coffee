@@ -15,6 +15,7 @@ class window.AuthorSimpleSearchController extends AbstractFormController
 	events:
 		'keyup .bv_authorSearchTerm': 'updateAuthorSearchTerm'
 		'click .bv_doSearch': 'handleDoSearchClicked'
+		'click .bv_showAll': 'handleShowAllClicked'
 
 	render: =>
 		$(@el).empty()
@@ -30,6 +31,23 @@ class window.AuthorSimpleSearchController extends AbstractFormController
 				@handleDoSearchClicked()
 		else
 			@$(".bv_doSearch").attr("disabled", true)
+
+	handleShowAllClicked: =>
+		$(".bv_authorTableController").addClass "hide"
+		$(".bv_errorOccurredPerformingSearch").addClass "hide"
+		authorSearchTerm = "*"
+		$(".bv_exptSearchTerm").val ""
+		if authorSearchTerm isnt ""
+			$(".bv_noMatchingAuthorsFoundMessage").addClass "hide"
+			$(".bv_authorBrowserSearchInstructions").addClass "hide"
+			$(".bv_searchAuthorsStatusIndicator").removeClass "hide"
+			if !window.conf.browser.enableSearchAll and authorSearchTerm is "*"
+				$(".bv_moreSpecificAuthorSearchNeeded").removeClass "hide"
+			else
+				$(".bv_searchingAuthorsMessage").removeClass "hide"
+				$(".bv_exptSearchTerm").html authorSearchTerm
+				$(".bv_moreSpecificAuthorSearchNeeded").addClass "hide"
+				@doSearch authorSearchTerm
 
 	handleDoSearchClicked: =>
 		$(".bv_authorTableController").addClass "hide"

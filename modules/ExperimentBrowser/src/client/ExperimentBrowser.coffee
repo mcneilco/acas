@@ -156,6 +156,7 @@ class window.ExperimentSimpleSearchController extends AbstractFormController
 	events:
 		'keyup .bv_experimentSearchTerm': 'updateExperimentSearchTerm'
 		'click .bv_doSearch': 'handleDoSearchClicked'
+		'click .bv_showAll': 'handleShowAllClicked'
 
 	render: =>
 		$(@el).empty()
@@ -171,6 +172,23 @@ class window.ExperimentSimpleSearchController extends AbstractFormController
 				@handleDoSearchClicked()
 		else
 			@$(".bv_doSearch").attr("disabled", true)
+
+	handleShowAllClicked: =>
+		$(".bv_experimentTableController"+@domSuffix).addClass "hide"
+		$(".bv_errorOccurredPerformingSearch"+@domSuffix).addClass "hide"
+		experimentSearchTerm = "*"
+		$(".bv_exptSearchTerm"+@domSuffix).val ""
+		if experimentSearchTerm isnt ""
+			$(".bv_noMatchingExperimentsFoundMessage"+@domSuffix).addClass "hide"
+			$(".bv_experimentBrowserSearchInstructions"+@domSuffix).addClass "hide"
+			$(".bv_searchExperimentsStatusIndicator"+@domSuffix).removeClass "hide"
+			if !window.conf.browser.enableSearchAll and experimentSearchTerm is "*"
+				$(".bv_moreSpecificExperimentSearchNeeded").removeClass "hide"
+			else
+				$(".bv_searchingExperimentsMessage").removeClass "hide"
+				$(".bv_exptSearchTerm").html experimentSearchTerm
+				$(".bv_moreSpecificExperimentSearchNeeded").addClass "hide"
+				@doSearch experimentSearchTerm
 
 	handleDoSearchClicked: =>
 		$(".bv_experimentTableController"+@domSuffix).addClass "hide"
