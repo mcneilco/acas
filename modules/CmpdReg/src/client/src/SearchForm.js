@@ -244,8 +244,7 @@ $(function() {
         },
 
 	    keyupHandler: function(e) {
-		    console.log( "got keyup");
-		    if(e.which === 13) {// enter key
+		    if(e.which === 13 && !this.$('.corpNameList').is(":focus")) {// enter key
 			    this.search();
 		    }
 	    }
