@@ -161,17 +161,22 @@ class window.DetectSdfPropertiesController extends Backbone.View
 			dataType: 'json'
 
 	handlePropertiesDetected: (response) ->
-		if response is "Error"
+		if response is "Error" || response.errors? && response.errors.length > 0
 			@handleReadError(response)
 		else
 			@trigger 'propsDetected', response
 
 	handleReadError: (err) ->
 		@$('.bv_detectedSdfPropertiesList').addClass 'readError'
-		@$('.bv_detectedSdfPropertiesList').html "An error occurred reading the SD file. Please retry upload or contact an administrator."
+		if err? && typeof(err) == 'object' && err.errors? && err.errors.length > 0
+			errorList = []
+			for error in err.errors
+				errorList.push(error.message)
+			err = errorList.join("\n")
+		@$('.bv_detectedSdfPropertiesList').html "An error occurred reading the SD file. Please retry upload or contact an administrator.\n\n#{err}"
 
 	handleFileRemoved: =>
-		@disableInputs()
+		@disableInputs()	
 		@$('.bv_detectedSdfPropertiesList').html ""
 		@fileName = null
 		@numRecords = 100
