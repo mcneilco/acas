@@ -176,14 +176,17 @@ exports.registerCmpds = (req, resp) ->
 					json: true
 				, (error, response, json) =>
 					console.log json
-					if !error && response.statusCode == 200
+					if !error && response.statusCode == 200 && json.reportFiles?
 						createSummaryZip fileName, json
 					else
 						console.log 'got ajax error trying to register compounds'
 						console.log error
 						console.log json
 						console.log response
-						resp.end JSON.stringify "Error"
+						if json.summary?
+							resp.json [json]
+						else
+							resp.end JSON.stringify "Error"
 				)
 
 	moveSdfFile = (req, resp, callback) ->
