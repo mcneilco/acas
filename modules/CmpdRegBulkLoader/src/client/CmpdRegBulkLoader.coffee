@@ -161,7 +161,15 @@ class window.DetectSdfPropertiesController extends Backbone.View
 			dataType: 'json'
 
 	handlePropertiesDetected: (response) ->
-		if response is "Error" || response.errors? && response.errors.length > 0
+		hasError = false
+		if response is "Error"
+			hasError = true
+		if response.errors? && response.errors.length > 0
+			for err in response.errors
+				if err.level = 'error'
+					hasError = true
+					break
+		if hasError
 			@handleReadError(response)
 		else
 			@trigger 'propsDetected', response
