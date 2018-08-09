@@ -865,22 +865,3 @@ exports.getAuthorizedPrefixes = (req, resp) ->
 				thingTypeAndKind: labelSeq.thingTypeAndKind
 			codeTables.push codeTable
 		resp.json codeTables
-
-exports.getLotsByParent = (req, callback) ->
-	console.log 'in getProjects'
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/projects"
-	request(
-		method: 'GET'
-		url: cmpdRegCall
-		json: true
-	, (error, response, json)=>
-		if !error
-			console.log JSON.stringify json
-			callback JSON.stringify json
-		else
-			console.log 'got ajax error trying to get CmpdReg projects'
-			console.log error
-			console.log json
-			console.log response
-			callback JSON.stringify {error: "something went wrong :("}
-	)
