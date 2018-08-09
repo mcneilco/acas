@@ -48,6 +48,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/cmpdReg/ketcher/layout', loginRoutes.ensureAuthenticated, exports.ketcherLayout
 	app.post '/api/cmpdReg/ketcher/calculate_cip', loginRoutes.ensureAuthenticated, exports.ketcherCalculateCip
 	app.get '/cmpdReg/labelPrefixes', loginRoutes.ensureAuthenticated, exports.getAuthorizedPrefixes
+	app.get '/cmpdReg/parentLot/getLotsByParent', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
 
 _ = require 'underscore'
 request = require 'request'
@@ -864,3 +865,22 @@ exports.getAuthorizedPrefixes = (req, resp) ->
 				thingTypeAndKind: labelSeq.thingTypeAndKind
 			codeTables.push codeTable
 		resp.json codeTables
+
+exports.getLotsByParent = (req, callback) ->
+	console.log 'in getProjects'
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/projects"
+	request(
+		method: 'GET'
+		url: cmpdRegCall
+		json: true
+	, (error, response, json)=>
+		if !error
+			console.log JSON.stringify json
+			callback JSON.stringify json
+		else
+			console.log 'got ajax error trying to get CmpdReg projects'
+			console.log error
+			console.log json
+			console.log response
+			callback JSON.stringify {error: "something went wrong :("}
+	)

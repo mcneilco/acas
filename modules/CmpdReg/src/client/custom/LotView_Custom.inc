@@ -61,7 +61,8 @@
         <div>
 			<div>
 				<label class="FormLabel">Lot Number:</label>
-				<input type="textfield" class="FormInput lotNumber" disabled=true value="<%= lotNumber %>" />
+				<input type="textfield" class="FormInput lotNumber" <%= (saved | isVirtual | !allowManualLotNumber) ? 'disabled=true': '' %> value="<%= lotNumber %>"/>
+				<img class="insertNextAutoLotNumberButton" href="#" title="Fill with next lot number" src="/CmpdReg/client/images/edit.png" <%= (saved | isVirtual | !allowManualLotNumber) ? 'style="display:none;"': 'style="width: 15px;"' %>/>
 			</div>
 			<div>
 				<label class="FormLabel">*Project:</label>
