@@ -38,6 +38,7 @@ $(function() {
       vendorID: null,
       parent: null,
       lotNumbers: null
+      // Example for setting a maxAutoLotNumber (see below for Lot validation, LotController getNextAutoLot)
       // maxAutoLotNumber: 1000
     },
     
@@ -73,6 +74,23 @@ $(function() {
     },
     
     validate: function(attr) {
+
+      this.requireLotNumber = false
+      this.autoPopulateNextLotNumber = false
+      this.allowManualLotNumber = false
+      if(typeof window.configuration.metaLot.requireLotNumber !== "undefined" && window.configuration.metaLot.requireLotNumber !== null) {
+        this.requireLotNumber = window.configuration.metaLot.requireLotNumber
+      }
+      if(typeof window.configuration.metaLot.autoPopulateNextLotNumber !== "undefined" && window.configuration.metaLot.autoPopulateNextLotNumber !== null) {
+        this.autoPopulateNextLotNumber = window.configuration.metaLot.autoPopulateNextLotNumber
+      }
+      if(typeof window.configuration.metaLot.allowManualLotNumber !== "undefined" && window.configuration.metaLot.allowManualLotNumber !== null) {
+        this.allowManualLotNumber = window.configuration.metaLot.allowManualLotNumber
+      }
+      if(this.requireLotNumber && !this.autoPopulateNextLotNumber && !this.allowManualLotNumber) {
+        alert("Server configuration error, metaLot.requireLotNumber is true but both metaLot.autoPopulateNextLotNumber and metaLot.allowManualLotNumber are set to false.  Either set metaLot.requireLotNumber to false or set one of the other properties to true")
+      }
+
       var errors = new Array();
             
             var nbAndDateReq = true;
@@ -179,6 +197,7 @@ $(function() {
                 if(lotNumbers.includes(attr.lotNumber)) {
                   errors.push({'attribute': 'lotNumber', 'message':  "This lot number is already taken by one of the lots for this compound "+lotNumbers.join(',')});
                 }
+                // Example validation for some maximum maxAutoLotNumber set on the model (see Lot model above and LotController.getNextAutoLot)
                 //  else {
                 //   nextAutoLot = this.get('nextAutoLot');
                 //   if(attr.lotNumber != nextAutoLot) {
@@ -209,14 +228,24 @@ $(function() {
     initialize: function() {
       LotController_Abstract.prototype.initialize.apply(this, arguments);
       if(this.model.isNew()) {
-        if(window.configuration.metaLot.requireLotNumber && !window.configuration.metaLot.autoPopulateNextLotNumber && !window.configuration.metaLot.allowManualLotNumber) {
+        this.requireLotNumber = false
+        this.autoPopulateNextLotNumber = false
+        this.allowManualLotNumber = false
+        if(typeof window.configuration.metaLot.requireLotNumber !== "undefined" && window.configuration.metaLot.requireLotNumber !== null) {
+          this.requireLotNumber = window.configuration.metaLot.requireLotNumber
+        }
+        if(typeof window.configuration.metaLot.autoPopulateNextLotNumber !== "undefined" && window.configuration.metaLot.autoPopulateNextLotNumber !== null) {
+          this.autoPopulateNextLotNumber = window.configuration.metaLot.autoPopulateNextLotNumber
+        }
+        if(typeof window.configuration.metaLot.allowManualLotNumber !== "undefined" && window.configuration.metaLot.allowManualLotNumber !== null) {
+          this.allowManualLotNumber = window.configuration.metaLot.allowManualLotNumber
+        }
+        if(this.requireLotNumber && !this.autoPopulateNextLotNumber && !this.allowManualLotNumber) {
           alert("Server configuration error, metaLot.requireLotNumber is true but both metaLot.autoPopulateNextLotNumber and metaLot.allowManualLotNumber are set to false.  Either set metaLot.requireLotNumber to false or set one of the other properties to true")
         }
-        if(window.configuration.metaLot.autoPopulateNextLotNumber | window.configuration.metaLot.allowManualLotNumber | window.configuration.metaLot.requireLotNumber) {
-          if(window.configuration.metaLot.autoPopulateNextLotNumber) {
-            _.bindAll(this, 'handleLotNumbersPopulated');
-            this.model.bind('change:lotNumbers', this.handleLotNumbersPopulated);
-          }
+        if(this.autoPopulateNextLotNumber | this.allowManualLotNumber | this.requireLotNumber) {
+          _.bindAll(this, 'handleLotNumbersPopulated');
+          this.model.bind('change:lotNumbers', this.handleLotNumbersPopulated);
           this.populateModelWithCurrentLotNumbers();
 
         }  else {
@@ -229,7 +258,7 @@ $(function() {
     render: function() {
       this.model.set({
                 saved: !this.model.isNew(),
-                allowManualLotNumber: window.configuration.metaLot.allowManualLotNumber
+                allowManualLotNumber: this.allowManualLotNumber
             }, {silent:true});
       $(this.el).html(this.template(this.model.toJSON()));
       this.model.unset('saved', {silent:true});
@@ -323,7 +352,7 @@ $(function() {
                 this.$('.synthesisDate').datepicker( "option", "dateFormat", "mm/dd/yy" );
                 this.$('.editAnalyticalFiles').hide();
                 this.$('.analyticalFiles').html('Add analytical files by editing lot after it is saved');
-                if(!this.model.get('isVirtual') & window.configuration.metaLot.autoPopulateNextLotNumber) {
+                if(!this.model.get('isVirtual') & this.autoPopulateNextLotNumber) {
                   this.fillNextAutoLot();
                 }
             } else {
@@ -350,7 +379,7 @@ $(function() {
         if(lotNumbers.length > 0) {
           nextAutoLot = Math.max.apply(Math, lotNumbers)+1;
         }
-
+        // Example of setting nextAutoLot by excluding numbers over some maximum maxAutoLotNumber (see Lot model above and Lot validation)
         // lotNumbersLessThanMaxAuto = lotNumbers.filter(function(x){return x <= this.model.get('maxAutoLotNumber')})
         // if(lotNumbersLessThanMaxAuto.length > 0) {
         //   nextAutoLot = Math.max.apply(Math, lotNumbersLessThanMaxAuto)+1;

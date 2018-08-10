@@ -40,9 +40,9 @@
 		"disableAliasEdit": false,
 		"showLotInventory": false,
 		"disableEditMyLots": false,
-		"requireLotNumber": true,
-		"allowManualLotNumber": true,
-		"autoPopulateNextLotNumber": true
+		"requireLotNumber": false,
+		"allowManualLotNumber": false,
+		"autoPopulateNextLotNumber": false
 	},
 	"serverSettings": {
 		"corpPrefix": "CMPD",
