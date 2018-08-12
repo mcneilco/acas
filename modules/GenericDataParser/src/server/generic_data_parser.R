@@ -3620,7 +3620,13 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
       }
       
       yColumn <- getResultKindWithoutExtras(subjectData[2, 3]) # usually "Response"
-      
+
+      if(any(is.na(suppressWarnings(as.numeric(subjectData[3:nrow(subjectData), 3]))))) {
+        addError(paste0("Some y values in the 'Raw Results' section are missing numeric values.  Please check the 'Raw Results' section."), errorEnv)
+      }
+      if(any(is.na(suppressWarnings(as.numeric(subjectData[3:nrow(subjectData), 2]))))) {
+        addError(paste0("Some x values in the 'Raw Results' section are missing numeric values.  Please check the 'Raw Results' section."), errorEnv)
+      }
       subjectData[1, 1:4] <- c("Datatype", "Number", "Number", "Text")
       
       subjectData[2, 1] <- "link"
