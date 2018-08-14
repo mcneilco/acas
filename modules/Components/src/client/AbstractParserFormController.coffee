@@ -28,7 +28,7 @@ class window.AbstractParserFormController extends AbstractFormController
 			collection: @protocolList
 			insertFirstOption: new PickList
 				code: "unassigned"
-				name: "Select Protocol"
+				name: "Select #{window.conf.protocol.label}"
 			selectedCode: "unassigned"
 
 	enableAllInputs: ->
