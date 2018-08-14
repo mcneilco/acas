@@ -217,7 +217,7 @@ class window.ProtocolBaseController extends BaseEntityController
 									else
 										@model = prot
 								else
-									alert 'Could not get protocol for code in this URL. Creating new protocol'
+									alert 'Could not get #{window.conf.protocol.label} for code in this URL. Creating new #{window.conf.protocol.label}'
 							@completeInitialization()
 				else
 					@completeInitialization()

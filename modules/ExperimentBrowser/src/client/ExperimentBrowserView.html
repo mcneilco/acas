@@ -3,19 +3,19 @@
 
 	<div class="form-horizontal">
 		<div class="control-group bv_group_protocolCode">
-			<label class="control-label ">*Protocol Kind</label>
+			<label class="control-label ">*<%= window.conf.protocol.label %> Kind</label>
 			<div class="controls">
 				<select class="bv_protocolKind" style="width:417px;"></select>
 			</div>
 		</div>
 		<div class="control-group bv_group_protocolName">
-			<label class="control-label ">*Protocol Name</label>
+			<label class="control-label ">*<%= window.conf.protocol.label %> Name</label>
 			<div class="controls">
 				<select class="bv_protocolName" style="width:417px;"></select>
 			</div>
 		</div>
 		<div class="control-group">
-			<label class="control-label">Experiment Code</label>
+			<label class="control-label"><%= window.conf.experiment.label %> Code</label>
 			<div class="controls">
 				<input class="bv_experimentCode" type="text" placeholder="EXPT-00000000" style="width:336px;"/>
 			</div>
@@ -37,7 +37,7 @@
 							padding-right: 14px;
 							border-top-left-radius: 15px;
 							border-bottom-left-radius: 15px;
-							" type="text" placeholder="Search for experiments">
+							" type="text" placeholder="Search for <%= window.conf.experiment.label.toLowerCase() %>s">
 						<button class="btn bv_doSearch add-on" style="
 							border-top-right-radius: 15px;
 							border-bottom-right-radius: 15px;
@@ -65,19 +65,19 @@
 
 	<div class="form-horizontal">
 		<div class="control-group bv_group_protocolCode">
-			<label class="control-label ">*Protocol Kind</label>
+			<label class="control-label ">*<%= window.conf.protocol.label %> Kind</label>
 			<div class="controls">
 				<select class="bv_protocolKind" style="width:417px;"></select>
 			</div>
 		</div>
 		<div class="control-group bv_group_protocolName">
-			<label class="control-label ">*Protocol Name</label>
+			<label class="control-label ">*<%= window.conf.protocol.label %> Name</label>
 			<div class="controls">
 				<select class="bv_protocolName" style="width:417px;"></select>
 			</div>
 		</div>
 		<div class="control-group">
-			<label class="control-label">Experiment Code</label>
+			<label class="control-label"><%= window.conf.experiment.label %> Code</label>
 			<div class="controls">
 				<input class="bv_experimentCode" type="text" placeholder="EXPT-00000000" style="width:336px;"/>
 			</div>
@@ -107,8 +107,8 @@
 		<tr>
 			<th style="width: 125px;">Code</th>
 			<th style="width: 200px;">Name</th>
-			<th style="width: 125px;">Protocol Code</th>
-			<th class="bv_protocolNameHeader" style="width: 175px;">Protocol Name</th>
+			<th style="width: 125px;"><%= window.conf.protocol.label %> Code</th>
+			<th class="bv_protocolNameHeader" style="width: 175px;"><%= window.conf.protocol.label %> Name</th>
 			<th style="width: 80px;">Scientist</th>
 			<th style="width: 80px;">Date</th>
 			<th >Status</th>
@@ -137,16 +137,16 @@
 					<tbody>
 					<tr>
 						<td style="text-align: center; width: 100%; align-content: center; height: 250px;">
-							<h5 class="bv_noMatchingExperimentsFoundMessage hide">No Matching Experiments Found</h5>
+							<h5 class="bv_noMatchingExperimentsFoundMessage hide">No Matching <%= window.conf.experiment.label %>s Found</h5>
                             <h5 class="bv_moreSpecificExperimentSearchNeeded hide">A more specific search term is required.</h5>
-							<h5 class="bv_errorOccurredPerformingSearch hide">An error occurred while searching for the experiment.</h5>
+							<h5 class="bv_errorOccurredPerformingSearch hide">An error occurred while searching for the <%= window.conf.experiment.label %>.</h5>
 
 							<div class="bv_experimentBrowserSearchInstructions">
 								<i class="icon-search bv_doSearchIcon"></i>
-								Experiment Browser
+								<%= window.conf.experiment.label %> Browser
 							</div>
 							<div class="hide bv_searchingExperimentsMessage" style="margin: auto;">
-								<h5>Searching for Experiments containing text "<i class="bv_exptSearchTerm"></i>"</h5>
+								<h5>Searching for <%= window.conf.experiment.label %>s containing text "<i class="bv_exptSearchTerm"></i>"</h5>
 								<div class="progress progress-striped active " style="width: 90%; margin: auto;">
 									<div class="bar" style="width: 100%; margin: auto;"></div>
 								</div>
@@ -191,17 +191,17 @@
 	<div class="modal hide bv_confirmDeleteExperiment">
 		<div class="modal-header">
 			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-			<h3>Delete Experiment</h3>
+			<h3>Delete <%= window.conf.experiment.label %></h3>
 		</div>
 		<div class="modal-body">
 			<div class="bv_deleteWarningMessage">
-				<p>Are you sure you would like to delete experiment: <span class="bv_experimentCodeName"></span>?</p>
+				<p>Are you sure you would like to delete <%= window.conf.experiment.label %>: <span class="bv_experimentCodeName"></span>?</p>
 			</div>
 			<div class="bv_deletingStatusIndicator hide">
 				<table width="100%"></table>
 				<tr>
 					<td style="text-align: center; width: 100%">
-						<h4>Deleting Experiment</h4>
+						<h4>Deleting <%= window.conf.experiment.label %></h4>
 						<div class="progress progress-striped active" style="width: 100%;">
 							<div class="bar" style="width: 100%;"></div>
 						</div>
@@ -209,16 +209,16 @@
 				</tr>
 			</div>
 			<div class="bv_experimentDeletedSuccessfullyMessage hide">
-				<p>Experiment <span class="bv_experimentCodeName"></span> has successfully been deleted</p>
+				<p><%= window.conf.experiment.label %> <span class="bv_experimentCodeName"></span> has successfully been deleted</p>
 			</div>
 			<div class="bv_errorDeletingExperimentMessage hide">
-				<p>An error occured deleting Experiment <span class="bv_experimentCodeName"></span>.  Please contact support for additional help.</p>
+				<p>An error occured deleting <%= window.conf.experiment.label %> <span class="bv_experimentCodeName"></span>.  Please contact support for additional help.</p>
 			</div>
 		</div>
 		<div class="modal-footer">
 		    <span class="bv_deleteButtons">
 		      <a href="#" class="btn btn-primary bv_cancelDelete">Cancel</a>
-		      <a href="#" class="btn btn-danger bv_confirmDeleteExperimentButton">Delete Experiment</a>
+		      <a href="#" class="btn btn-danger bv_confirmDeleteExperimentButton">Delete <%= window.conf.experiment.label %></a>
 			  </span>
 		    <span class="bv_okayButton hide">
 			    <a href="#" class="btn btn-primary bv_cancelDelete">Okay</a>

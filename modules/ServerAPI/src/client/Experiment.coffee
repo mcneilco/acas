@@ -13,7 +13,7 @@ class window.Experiment extends BaseEntity
 			console.dir "config for client.include.project is not set"
 
 	parse: (resp) =>
-		if resp == "not unique experiment name" or resp == '"not unique experiment name"'
+		if resp == "not unique experiment name" or resp == '"not unique experiment name"' or resp == "saveFailed: not unique experiment name"
 			@trigger 'notUniqueName'
 			resp
 		else if resp == "saveFailed" or resp == '"saveFailed"'
@@ -199,7 +199,7 @@ class window.Experiment extends BaseEntity
 		if attrs.protocol == null
 			errors.push
 				attribute: 'protocolCode'
-				message: "Protocol must be set"
+				message: "#{window.conf.protocol.label} must be set"
 		if attrs.subclass?
 			unless window.conf.save?.project? and window.conf.save.project.toLowerCase() is "false"
 				reqProject = window.conf.include.project
@@ -478,6 +478,8 @@ class window.ExperimentBaseController extends BaseEntityController
 				@$('.bv_openInQueryToolWrapper').show()
 			@$('.bv_queryToolDisplayName').html window.conf.service.result.viewer.displayName
 			@$('.bv_openInQueryToolLink').attr 'href', "/openExptInQueryTool?experiment="+@model.get('codeName')
+		@$('.bv_experimentNameLabel').text("#{window.conf.experiment.label} Name")
+		@$('.bv_exptNameChkbxLabel').text("Same as #{window.conf.experiment.label.toLowerCase()} code")
 		@
 
 	modelSyncCallback: =>
@@ -546,7 +548,7 @@ class window.ExperimentBaseController extends BaseEntityController
 			collection: @protocolList
 			insertFirstOption: new PickList
 				code: "unassigned"
-				name: "Select Protocol"
+				name: "Select #{window.conf.protocol.label}"
 			selectedCode: protocolCode
 
 	setupProjectSelect: ->
@@ -692,13 +694,13 @@ class window.ExperimentBaseController extends BaseEntityController
 					@$('.bv_spinner').spin(false)
 					@$('.bv_protocolCode').removeAttr('disabled')
 					if json.length == 0
-						alert("Could not find selected protocol in database")
+						alert("Could not find selected #{window.conf.protocol.label} in database")
 					else
 						@model.set protocol: new Protocol(json)
 						if setAnalysisParams
 							@getFullProtocol() # this will fetch full protocol
 				error: (err) ->
-					alert 'got ajax error from getting protocol '+ code
+					alert 'got ajax error from getting #{window.conf.protocol.label} '+ code
 				dataType: 'json'
 
 	handleKeepOldParams: =>
