@@ -478,8 +478,6 @@ class window.ExperimentBaseController extends BaseEntityController
 				@$('.bv_openInQueryToolWrapper').show()
 			@$('.bv_queryToolDisplayName').html window.conf.service.result.viewer.displayName
 			@$('.bv_openInQueryToolLink').attr 'href', "/openExptInQueryTool?experiment="+@model.get('codeName')
-		@$('.bv_experimentNameLabel').text("#{window.conf.experiment.label} Name")
-		@$('.bv_exptNameChkbxLabel').text("Same as #{window.conf.experiment.label.toLowerCase()} code")
 		@
 
 	modelSyncCallback: =>
