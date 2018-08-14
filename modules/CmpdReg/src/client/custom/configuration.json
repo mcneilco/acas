@@ -39,7 +39,10 @@
 		"showTotalAmountStored": false,
 		"disableAliasEdit": false,
 		"showLotInventory": false,
-		"disableEditMyLots": false
+		"disableEditMyLots": false,
+		"requireLotNumber": false,
+		"allowManualLotNumber": false,
+		"autoPopulateNextLotNumber": false
 	},
 	"serverSettings": {
 		"corpPrefix": "CMPD",

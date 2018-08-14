@@ -48,6 +48,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/cmpdReg/ketcher/layout', loginRoutes.ensureAuthenticated, exports.ketcherLayout
 	app.post '/api/cmpdReg/ketcher/calculate_cip', loginRoutes.ensureAuthenticated, exports.ketcherCalculateCip
 	app.get '/cmpdReg/labelPrefixes', loginRoutes.ensureAuthenticated, exports.getAuthorizedPrefixes
+	app.get '/cmpdReg/parentLot/getLotsByParent', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
 
 _ = require 'underscore'
 request = require 'request'

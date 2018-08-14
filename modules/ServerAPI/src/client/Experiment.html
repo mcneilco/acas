@@ -19,9 +19,9 @@
                 </div>
             </div>
             <div class="control-group bv_group_experimentName">
-                <label class="control-label bv_experimentNameLabel" style="margin-top:17px;">*Experiment Name</label>
+                <label class="control-label bv_experimentNameLabel" style="margin-top:17px;">*<%= window.conf.experiment.label %> Name</label>
                 <div class="controls" style="width:300px;">
-                    <input type="checkbox" name="bv_exptNameChkbx" class="bv_exptNameChkbx" style="margin-top:-3px;margin-right:2px;" checked="checked">Same as experiment code
+                    <input type="checkbox" name="bv_exptNameChkbx" class="bv_exptNameChkbx" style="margin-top:-3px;margin-right:2px;" checked="checked"><span class="bv_exptNameChkbxLabel">Same as <%= window.conf.experiment.label %> code</span>
                     <input class="bv_experimentName" style="width:336px; margin-top:5px;" type="text" placeholder="">
                 </div>
             </div>
@@ -49,8 +49,8 @@
 
 
         <div class="form-horizontal">
-            <div class="control-group bv_Ã‚Â¡Code bv_group_protocolCode">
-                <label class="control-label ">*Protocol</label>
+            <div class="control-group bv_protocolCode bv_group_protocolCode">
+                <label class="control-label ">*<%= window.conf.protocol.label %></label>
                 <div class="controls">
                     <select class="bv_protocolCode" style="width:350px;">
                     </select>
@@ -97,8 +97,8 @@
     </div>
 
     <div class="span12 bv_group_details" style="margin-left:0px;">
-        <div style="margin-bottom:5px;">Experiment Details</div>
-        <textarea rows="7" class="bv_details" style="width:650px; max-width:650px;margin-bottom:20px;" placeholder="Experiment Details"></textarea>
+        <div style="margin-bottom:5px;"><%= window.conf.experiment.label %> Details</div>
+        <textarea rows="7" class="bv_details" style="width:650px; max-width:650px;margin-bottom:20px;" placeholder="<%= window.conf.experiment.label %> Details"></textarea>
     </div>
 
     <div class="span12 bv_group_comments" style="margin-left:0px;">
@@ -138,10 +138,10 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close bv_closeSaveFailedModal" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only"></span></button>
-                    <h4 class="modal-title bv_saveErrorTitle" style="color:red;">Error: Experiment Not Saved</h4>
+                    <h4 class="modal-title bv_saveErrorTitle" style="color:red;">Error: <%= window.conf.experiment.label %> Not Saved</h4>
                 </div>
                 <div class="modal-body" style="padding-left:0px;">
-                    <label style="margin-left:30px;">The entered experiment name is already used by another experiment. Please enter in a new experiment name.</label>
+                    <label style="margin-left:30px;">The entered <%= window.conf.experiment.label %> name is already used by another <%= window.conf.experiment.label %>. Please enter in a new <%= window.conf.experiment.label %> name.</label>
                     <!--<label style="margin-left:30px;margin-top:20px;">To view the experiment(s) with the same name, click-->
                     <!--<a class="bv_exptLink" href="http://localhost:3000">here</a> </label>-->
                     <!--<span>The experiment could not be saved because the entered experiment name is already used by another experiment. Please enter in a new experiment name.</span>-->
@@ -176,14 +176,14 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <!--<button type="button" class="close bv_closeProtocolParametersModal" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only"></span></button>-->
-                    <h4 class="modal-title">Do you want to change the experiment analysis parameters?</h4>
+                    <h4 class="modal-title">Do you want to change the <%= window.conf.experiment.label %> analysis parameters?</h4>
                 </div>
                 <div class="modal-body" style="padding-left:0px;">
-                    <label style="margin-left:30px;">This experiment already has parameters for data analysis and model fit. Would you like to keep the existing parameters or change them to the new protocol's parameters?</label>
+                    <label style="margin-left:30px;">This <%= window.conf.experiment.label %> already has parameters for data analysis and model fit. Would you like to keep the existing parameters or change them to the new <%= window.conf.protocol.label %>'s parameters?</label>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary bv_keepOldParams" disabled="disabled">Keep existing parameters</button>
-                    <button type="button" class="btn btn-danger bv_useNewParams" disabled="disabled">Use new protocol's parameters</button>
+                    <button type="button" class="btn btn-danger bv_useNewParams" disabled="disabled">Use new <%= window.conf.protocol.label %>'s parameters</button>
                 </div>
             </div>
         </div>
@@ -197,7 +197,7 @@
                     <h4 class="modal-title">Analysis Parameters Not Changed</h4>
                 </div>
                 <div class="modal-body" style="padding-left:0px;">
-                    <label style="margin-left:30px;">Data analysis for this experiment has already begun. The experiment parameters for data analysis and model fit have not been replaced with the new protocol's parameters.</label>
+                    <label style="margin-left:30px;">Data analysis for this <%= window.conf.experiment.label %> has already begun. The <%= window.conf.experiment.label %> parameters for data analysis and model fit have not been replaced with the new protocol's parameters.</label>
                 </div>
             </div>
         </div>
@@ -206,17 +206,17 @@
     <div class="modal hide bv_confirmDeleteExperimentModal">
         <div class="modal-header">
             <button type="button" class="close bv_closeDeleteExperimentModal" data-dismiss="modal" aria-hidden="true">&times;</button>
-            <h3>Delete Experiment</h3>
+            <h3>Delete <%= window.conf.experiment.label %></h3>
         </div>
         <div class="modal-body">
             <div class="bv_deleteWarningMessage">
-                <p>Are you sure you would like to delete this experiment?</p>
+                <p>Are you sure you would like to delete this <%= window.conf.experiment.label %>?</p>
             </div>
             <div class="bv_deletingStatusIndicator hide">
                 <table width="100%"></table>
                 <tr>
                     <td style="text-align: center; width: 100%">
-                        <h4>Deleting Experiment</h4>
+                        <h4>Deleting <%= window.conf.experiment.label %></h4>
                         <div class="progress progress-striped active" style="width: 100%;">
                             <div class="bar" style="width: 100%;"></div>
                         </div>
@@ -224,16 +224,16 @@
                 </tr>
             </div>
             <div class="bv_experimentDeletedSuccessfullyMessage hide">
-                <p>The Experiment <span class="bv_experimentCodeName"></span> has been successfully deleted</p>
+                <p>The <%= window.conf.experiment.label %> <span class="bv_experimentCodeName"></span> has been successfully deleted</p>
             </div>
             <div class="bv_errorDeletingExperimentMessage hide">
-                <p>An error occurred deleting Experiment <span class="bv_experimentCodeName"></span>.  Please contact support for additional help.</p>
+                <p>An error occurred deleting <%= window.conf.experiment.label %> <span class="bv_experimentCodeName"></span>.  Please contact support for additional help.</p>
             </div>
         </div>
         <div class="modal-footer">
 		    <span class="bv_deleteButtons">
 		      <a href="#" class="btn btn-primary bv_cancelDelete">Cancel</a>
-		      <a href="#" class="btn btn-danger bv_confirmDeleteExperimentButton">Delete Experiment</a>
+		      <a href="#" class="btn btn-danger bv_confirmDeleteExperimentButton">Delete <%= window.conf.experiment.label %></a>
 			  </span>
 		    <span class="bv_okayButton hide" data-dismiss="modal">
 			    <a href="#" class="btn bv_closeDeleteExperimentModal">Okay</a>

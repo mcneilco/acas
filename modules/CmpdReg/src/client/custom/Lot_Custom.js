@@ -35,7 +35,11 @@ $(function() {
       totalAmountStored: null,
       totalAmountStoredUnits: null,
       vendor: null,
-      vendorID: null
+      vendorID: null,
+      parent: null,
+      lotNumbers: null
+      // Example for setting a maxAutoLotNumber (see below for Lot validation, LotController getNextAutoLot)
+      // maxAutoLotNumber: 1000
     },
     
     initialize: function(){
@@ -57,19 +61,36 @@ $(function() {
                     vendor: new PickList(js.vendor)
                 })
         // replace composite object pointers with real objects
-        this.set({fileList: new BackboneFileList()});
+        this.set({fileList: new BackboneFileList()}, {silent: true});
         this.get('fileList').model = BackboneFileDesc;
         this.get('fileList').add(js.fileList);
 
       } else if (this.isNew()){
         this.set({
           fileList: new BackboneFileList()
-        });
+        }, {silent: true});
         this.get('fileList').model = BackboneFileDesc;
       }
     },
     
     validate: function(attr) {
+
+      this.requireLotNumber = false
+      this.autoPopulateNextLotNumber = false
+      this.allowManualLotNumber = false
+      if(typeof window.configuration.metaLot.requireLotNumber !== "undefined" && window.configuration.metaLot.requireLotNumber !== null) {
+        this.requireLotNumber = window.configuration.metaLot.requireLotNumber
+      }
+      if(typeof window.configuration.metaLot.autoPopulateNextLotNumber !== "undefined" && window.configuration.metaLot.autoPopulateNextLotNumber !== null) {
+        this.autoPopulateNextLotNumber = window.configuration.metaLot.autoPopulateNextLotNumber
+      }
+      if(typeof window.configuration.metaLot.allowManualLotNumber !== "undefined" && window.configuration.metaLot.allowManualLotNumber !== null) {
+        this.allowManualLotNumber = window.configuration.metaLot.allowManualLotNumber
+      }
+      if(this.requireLotNumber && !this.autoPopulateNextLotNumber && !this.allowManualLotNumber) {
+        alert("Server configuration error, metaLot.requireLotNumber is true but both metaLot.autoPopulateNextLotNumber and metaLot.allowManualLotNumber are set to false.  Either set metaLot.requireLotNumber to false or set one of the other properties to true")
+      }
+
       var errors = new Array();
             
             var nbAndDateReq = true;
@@ -160,6 +181,37 @@ $(function() {
       if (attr.project != null && typeof(attr.project) == 'undefined'){
         errors.push({'attribute': 'project', 'message':  "Project must be provided"});
       }
+      if(this.isNew() & !this.get('isVirtual')) {
+        if("lotNumber" in attr) {
+          if(window.configuration.metaLot.requireLotNumber && attr.lotNumber == null) {
+             errors.push({'attribute': 'lotNumber', 'message':  "Please fill in Lot Number"});
+          }
+          if (attr.lotNumber!=null) {
+            if(isNaN(attr.lotNumber) && attr.lotNumber!='') {
+              errors.push({'attribute': 'lotNumber', 'message':  "Lot Number must be an integer"});
+            } else {
+              if(attr.lotNumber == 0) {
+                errors.push({'attribute': 'lotNumber', 'message':  "Lot Number 0 is reserved for virtual lots"});
+              } else {
+                lotNumbers = this.get('lotNumbers');
+                if(lotNumbers.includes(attr.lotNumber)) {
+                  errors.push({'attribute': 'lotNumber', 'message':  "This lot number is already taken by one of the lots for this compound "+lotNumbers.join(',')});
+                }
+                // Example validation for some maximum maxAutoLotNumber set on the model (see Lot model above and LotController.getNextAutoLot)
+                //  else {
+                //   nextAutoLot = this.get('nextAutoLot');
+                //   if(attr.lotNumber != nextAutoLot) {
+                //     maxAutoLotNumber = this.get('maxAutoLotNumber');
+                //     if(attr.lotNumber <= maxAutoLotNumber) {
+                //       errors.push({'attribute': 'lotNumber', 'message':  "Lot Number must be the next lot number ("+nextAutoLot+") or be greater than "+maxAutoLotNumber+" if manually set."});
+                //     }
+                //   }    
+                // }
+              }
+            }
+          }
+        }
+      }
       if (errors.length > 0) {return errors;}
     }
   });
@@ -167,12 +219,49 @@ $(function() {
   window.LotController = LotController_Abstract.extend({
     template: _.template($('#LotForm_LotView_Labsynch_template').html()),
     
+    defaults: {
+      readyForRender: false
+    },
+    events: {
+      'click .insertNextAutoLotNumberButton': 'handleInsertNextAutoLotNumberButtonClicked'
+    },
+    initialize: function() {
+      LotController_Abstract.prototype.initialize.apply(this, arguments);
+      if(this.model.isNew()) {
+        this.requireLotNumber = false
+        this.autoPopulateNextLotNumber = false
+        this.allowManualLotNumber = false
+        if(typeof window.configuration.metaLot.requireLotNumber !== "undefined" && window.configuration.metaLot.requireLotNumber !== null) {
+          this.requireLotNumber = window.configuration.metaLot.requireLotNumber
+        }
+        if(typeof window.configuration.metaLot.autoPopulateNextLotNumber !== "undefined" && window.configuration.metaLot.autoPopulateNextLotNumber !== null) {
+          this.autoPopulateNextLotNumber = window.configuration.metaLot.autoPopulateNextLotNumber
+        }
+        if(typeof window.configuration.metaLot.allowManualLotNumber !== "undefined" && window.configuration.metaLot.allowManualLotNumber !== null) {
+          this.allowManualLotNumber = window.configuration.metaLot.allowManualLotNumber
+        }
+        if(this.requireLotNumber && !this.autoPopulateNextLotNumber && !this.allowManualLotNumber) {
+          alert("Server configuration error, metaLot.requireLotNumber is true but both metaLot.autoPopulateNextLotNumber and metaLot.allowManualLotNumber are set to false.  Either set metaLot.requireLotNumber to false or set one of the other properties to true")
+        }
+        if(this.autoPopulateNextLotNumber | this.allowManualLotNumber | this.requireLotNumber) {
+          _.bindAll(this, 'handleLotNumbersPopulated');
+          this.model.bind('change:lotNumbers', this.handleLotNumbersPopulated);
+          this.populateModelWithCurrentLotNumbers();
+
+        }  else {
+          this.triggerReadyForRender()
+        }
+      } else {
+        this.triggerReadyForRender()
+      }
+    },
     render: function() {
       this.model.set({
-                saved: !this.model.isNew()
-            });
+                saved: !this.model.isNew(),
+                allowManualLotNumber: this.allowManualLotNumber
+            }, {silent:true});
       $(this.el).html(this.template(this.model.toJSON()));
-      this.model.unset('saved');
+      this.model.unset('saved', {silent:true});
 
             if (this.model.get('lotMolWeight') != null) {
                 this.$('.lotMolWeight').val(
@@ -263,6 +352,9 @@ $(function() {
                 this.$('.synthesisDate').datepicker( "option", "dateFormat", "mm/dd/yy" );
                 this.$('.editAnalyticalFiles').hide();
                 this.$('.analyticalFiles').html('Add analytical files by editing lot after it is saved');
+                if(!this.model.get('isVirtual') & this.autoPopulateNextLotNumber) {
+                  this.fillNextAutoLot();
+                }
             } else {
               if (window.configuration.metaLot.showLotInventory) {
                 this.$('.amountWrapper').hide();
@@ -271,7 +363,65 @@ $(function() {
             }
       return this;
     },
-        
+    triggerReadyForRender: function() {
+      this.readyForRender = true
+      this.trigger('readyForRender')
+    },
+    fillNextAutoLot: function() {
+      this.model.set({nextAutoLot: this.getNextAutoLot()});
+      this.$('.lotNumber').val(this.getNextAutoLot());
+    },
+    getNextAutoLot: function() {
+      var nextAutoLot = 1
+      if(this.model.get("parent") != null && this.model.get("parent").get("corpName") != null && this.model.get("parent").get("corpName") != "") {
+        lotNumbers = this.model.get('lotNumbers')
+
+        if(lotNumbers.length > 0) {
+          nextAutoLot = Math.max.apply(Math, lotNumbers)+1;
+        }
+        // Example of setting nextAutoLot by excluding numbers over some maximum maxAutoLotNumber (see Lot model above and Lot validation)
+        // lotNumbersLessThanMaxAuto = lotNumbers.filter(function(x){return x <= this.model.get('maxAutoLotNumber')})
+        // if(lotNumbersLessThanMaxAuto.length > 0) {
+        //   nextAutoLot = Math.max.apply(Math, lotNumbersLessThanMaxAuto)+1;
+        // }
+      }
+      return(nextAutoLot)
+    },
+    handleInsertNextAutoLotNumberButtonClicked: function () {
+      this.fillNextAutoLot()
+    },
+    handleLotNumbersPopulated: function() {
+      this.triggerReadyForRender();
+    },
+    populateModelWithCurrentLotNumbers: function() {
+      lotNumbers = [];
+      model = this.model
+      if(this.model.get("parent") != null && this.model.get("parent").get("corpName") != null && this.model.get("parent").get("corpName") != "") {
+        var url = window.configuration.serverConnection.baseServerURL+"parentLot/getLotsByParent?parentCorpName="+this.model.get("parent").get("corpName")+"&with=fullobject";
+        $.ajax({
+          type: "GET",
+          url: url,
+          dataType: "json",
+          success: function (response) {
+            for (i = 0; i < response.length; i++) {
+              lotNumbers.push(response[i].lotNumber)
+            }
+            model.set({
+              lotNumbers: lotNumbers
+            })
+          },
+          error: function(error) {
+            model.set({
+              lotNumbers: lotNumbers
+            })
+          }
+        });
+      } else {
+        model.set({
+          lotNumbers: lotNumbers
+        })
+      }
+    },
     updateModel: function() {
       if (this.projectCodeController.collection.length == 0){
         alert('System Configuration Error: There must be at least one project to proceed')
@@ -282,8 +432,12 @@ $(function() {
                 this.model.set({
                     notebookPage: jQuery.trim(this.$('.notebookPage').val()),
                     synthesisDate: jQuery.trim(this.$('.synthesisDate').val()),
-                    chemist: this.chemistCodeController.getSelectedModel()
-                });
+                    chemist: this.chemistCodeController.getSelectedModel(),
+                    lotNumber:
+                      (jQuery.trim(this.$('.lotNumber').val())=='') ? null :
+                            parseInt(jQuery.trim(this.$('.lotNumber').val()))
+
+                  });
             }
  
             if(this.model.get('isVirtual')) {
@@ -387,10 +541,7 @@ $(function() {
                         parseFloat(jQuery.trim(this.$('.meltingPoint').val())),
                     boilingPoint: 
                         (jQuery.trim(this.$('.boilingPoint').val())=='') ? null :
-                        parseFloat(jQuery.trim(this.$('.boilingPoint').val())),
-                    lotNumber:
-                      (jQuery.trim(this.$('.lotNumber').val())=='') ? null :
-                            parseInt(jQuery.trim(this.$('.lotNumber').val())),
+                        parseFloat(jQuery.trim(this.$('.boilingPoint').val()))
                 });
             }
     }

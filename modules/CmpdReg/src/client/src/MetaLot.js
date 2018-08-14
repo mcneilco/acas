@@ -115,7 +115,7 @@ $(function() {
 	    initialize: function () {
 		    //TODO the template load be in render(), but saltFormController won't work that way, unless I new it in the render'
 		    $(this.el).html(this.template());
-		    _.bindAll(this, 'save', 'back', 'newLot', 'newLotSaved', 'lotUpdated', 'editParentRequest');
+		    _.bindAll(this, 'save', 'back', 'newLot', 'newLotSaved', 'lotUpdated', 'editParentRequest', 'handleLotControllerReadyForRender');
 
 		    var eNoti = this.options.errorNotifList;
 
@@ -160,7 +160,6 @@ $(function() {
 
 		    this.saveInProgress = false;
 	    },
-
 	    render: function () {
 		    this.setupButtonsAndTitles();
 
@@ -168,8 +167,15 @@ $(function() {
 		    this.saltFormController.render();
 		    if (this.model.get('lot').get('isVirtual')) {
 			    this.saltFormController.hide();
-		    }
-		    this.lotController.render();
+			}
+			if(typeof(this.lotController.triggerReadyForRender) == 'function') {
+				this.lotController.bind('readyForRender', this.handleLotControllerReadyForRender);
+				if(this.lotController.readyForRender == true) {
+					this.lotController.render()
+				}
+			} else {
+				this.lotController.render();
+			}
 		    if (!this.allowedToUpdate()) {
 			    this.lotController.disableAll();
 			    this.parentController.setAliasToReadOnly();
@@ -184,7 +190,9 @@ $(function() {
 
 		    return this;
 	    },
-
+		handleLotControllerReadyForRender: function() {
+			this.lotController.render();
+		},
 	    setupButtonsAndTitles: function () {
 		    var lisb = window.configuration.metaLot.lotCalledBatch;
 		    if (this.model.get('lot').isNew()) {

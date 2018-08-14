@@ -523,7 +523,7 @@ $(function() {
             return new MetaLot({
                     saltForm: sf,
                     parent: this.model,
-                    lot: new Lot()
+					lot: new Lot({parent: this.model})
             });
         }
 
