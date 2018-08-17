@@ -1726,7 +1726,7 @@ getProtocolByNameAndFormat <- function(protocolName, configList, formFormat) {
     protocol <- NA
   } else {
     # If the protocol does exist, get the full version
-    protocol <- getProtocolById(protocolList[[1]]$id)
+    protocol <- getProtocolByCodeName(protocolList[[1]]$codeName)
   }
   return(protocol)
 }
@@ -1765,9 +1765,9 @@ getExperimentByNameCheck <- function(experimentName, protocol, configList, dupli
     }
   } else {
     tryCatch({
-      protocolIds <- sapply(experimentList, function(x) x$protocol$id)
+      protocolCodeNames <- sapply(experimentList, function(x) x$protocol$codeName)
       if(!is.na(protocol[[1]])) {
-        correctExperiments <- experimentList[protocolIds == protocol$id]
+        correctExperiments <- experimentList[protocolCodeNames == protocol$codeName]
         if(length(correctExperiments) > 0) {
           experimentList <- correctExperiments
         }
@@ -1779,10 +1779,10 @@ getExperimentByNameCheck <- function(experimentName, protocol, configList, dupli
     if (experimentList[[1]]$protocol$ignored) {
       return(experimentList[[1]])
     }
-    protocolOfExperiment <- getProtocolById(experimentList[[1]]$protocol$id)
+    protocolOfExperiment <- getProtocolByCodeName(experimentList[[1]]$protocol$codeName)
 
     
-    if (is.na(protocol) || protocolOfExperiment$id != protocol$id) {
+    if (is.na(protocol) || protocolOfExperiment$id != protocol$codeName) {
       if (duplicateNamesAllowed) {
         experiment <- NA
       } else {
@@ -2124,7 +2124,7 @@ validateProject <- function(projectName, configList, username, protocolName = NU
       stopUser("There was an error in accessing the protocol. Please contact your system administrator.")
     })
     if (length(protocolList) !=0) {
-      protocol <- getProtocolById(protocolList[[1]]$id)
+      protocol <- getProtocolByCodeName(protocolList[[1]]$codeName)
       metadataState <- getStatesByTypeAndKind(protocol, "metadata_protocol metadata")
       if(length(metadataState) > 0) {
         metadataState <- metadataState[[1]]
@@ -2906,7 +2906,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
       if(class(experiment) == "try-error") {
         addError(paste0("Could not find ",searchBy,": ", searchFor))
       } else {
-        protocol <- getProtocolById(experiment$protocol$id)
+        protocol <- getProtocolByCodeName(experiment$protocol$codeName)
       }
     }
   }
