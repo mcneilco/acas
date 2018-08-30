@@ -535,6 +535,30 @@ client.basePath=/
 server.curveCurator.onRejectMakeReportedValuesNonPublic=false
 server.curveRender.drawPointsForRejectedCurve=true
 
+### Plot colors
+# Colors of curves to be cycled through when coloring curves.  Black is usually the first color as the first color is used for single, non overlayed curves.
+# If supplied, the config server.curveRender.mostRecentCurveColor will override the first color in this list for the most recent
+# Valid colors can be found here:
+#  http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf
+# Some examples of other color schemes:
+# server.curveRender.plotColors=black,red,blue,orange,purple,cyan,darkolivegreen4,firebrick4,aquamarine4,chocolate3,dodgerblue4,coral2,darkorchid3,cadetblue4,darkgoldenrod3,lightcyan4,seagreen4,mediumvioletred
+# server.curveRender.plotColors=black,#a6cee3,#1f78b4,#b2df8a,#33a02c,#fb9a99,#e31a1c,#fdbf6f,#ff7f00,#cab2d6,#6a3d9a,#ffff99,#b15928
+# server.curveRender.plotColors=black
+
+### Most recent curve color
+## If supplied the most recent uploaded curve will get the supplied color
+server.curveRender.mostRecentCurveColor=green
+
+### Curve line width
+# Default: 1
+# If supplied, a with 0.5, the line widths of curves will be 1/2 the thickness of the default of 1.  Converseley, a value of 2 will produce curves with twice the thickeness.
+server.curveRender.curveLwd=1.5
+
+### Plot points on overlay
+# If true, curves that are overlayed will show points for all the curves in the plot.  If false, no points will be shown on overlayed curves.
+# This does not affect single/non overlayed curves
+server.curveRender.plotPointsOnOverlay=false
+
 # Restrict experiment search by project
 server.service.projects.restrictExperiments=false
 
