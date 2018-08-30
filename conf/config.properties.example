@@ -585,3 +585,12 @@ client.compoundInventory.daughterVials.strictMatchPhysicalState=false
 
 # Whether to save location as a codeValue or as a full location interaction
 client.compoundInventory.saveLocationAsCodeValue=true
+
+# Copy Assay Date to analysis group values
+# When this setting is set to true, the loader will ensure that for each row an SEL file 
+# an analysis state of ls_type 'data', ls_kind 'results' and analysis group value of 
+# ls_type 'dateValue' and ls_kind 'Assay Date' is uploaded.  If an 'Assay Date' value of 
+# Datatype 'Date' is provided in the calculated results section the loader will
+# preferentially use the calculated results provided Assay Date value and will also 
+# preferentially use the (hidden) flag if provided in the column header.
+server.sel.copyAssayDateToAnalysisGroupValues=true

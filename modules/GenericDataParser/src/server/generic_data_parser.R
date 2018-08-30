@@ -3076,6 +3076,10 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     } else {
       calculatedResults$experimentID <- experiment$id
       calculatedResults$experimentVersion <- experiment$version
+      if(!is.null(validatedMetaData) && racas::applicationSettings$server.sel.copyAssayDateToAnalysisGroupValues) {
+        calculatedResults <- copyAssayDateToAnalysisGroupValues(calculatedResults, validatedMetaData)
+      }
+        
       uploadData(metaData = validatedMetaData,lsTransaction,calculatedResults,treatmentGroupData, subjectData,
                  xLabel,yLabel,tempIdLabel,testOutputLocation,developmentMode,protocol,experiment, 
                  fileStartLocation = pathToGenericDataFormatExcelFile, configList=configList, 
@@ -3814,5 +3818,26 @@ createColumnOrderStates <- function(exptDataColumns=selColumnOrderInfo, errorEnv
     return(experimentStates)
 }
 
+copyAssayDateToAnalysisGroupValues <- function(calculatedResults, validatedMetaData) {
+  calculatedResults <- as.data.table(calculatedResults)
+  assayDateValues <- calculatedResults[valueKind=='Assay Date' & valueType=='dateValue']
+  isAssayDateValuesPublicData <- FALSE
+  if(nrow(assayDateValues) > 0) {
+    isAssayDateValuesPublicData <- assayDateValues[1]$publicData
+  }
+  assayDateResults <- calculatedResults[, {
+    assayDateValues <- .SD[valueKind=='Assay Date' & valueType=='dateValue']
+    if(nrow(assayDateValues) == 0) {
+      .SD[NA][ , c('valueKind', 'dateValue', 'Class', 'valueType', 'valueKindAndUnit', 
+                        'publicData', 'stateType', 'stateKind', 'linkColumn') 
+                    := list('Assay Date', validatedMetaData$`Assay Date`, 'Date', 'dateValue', 'Assay Date',
+                            isAssayDateValuesPublicData, 'data', 'results', FALSE)]
+    } else {
+      .SD[FALSE]
+    }
+  }, by = c('batchCode','originalMainID','groupingID','groupingID_2','rowID','analysisGroupID', 'stateGroupIndex', 'experimentID', 'experimentVersion')]
+  calculatedResults <- rbind(calculatedResults, assayDateResults, fill = TRUE)
+  return(as.data.frame(calculatedResults))
+}
 
 

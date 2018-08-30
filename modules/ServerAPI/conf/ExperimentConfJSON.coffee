@@ -69,6 +69,9 @@
 				typeName: "dateValue"
 				kindName: "completion date"
 			,
+				typeName: "dateValue"
+				kindName: "Assay Date"
+			,
 				typeName: "stringValue"
 				kindName: "notebook"
 			,
