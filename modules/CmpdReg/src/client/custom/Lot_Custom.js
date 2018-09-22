@@ -227,22 +227,23 @@ $(function() {
     },
     initialize: function() {
       LotController_Abstract.prototype.initialize.apply(this, arguments);
+      this.requireLotNumber = false
+      this.autoPopulateNextLotNumber = false
+      this.allowManualLotNumber = false
+      if(typeof window.configuration.metaLot.requireLotNumber !== "undefined" && window.configuration.metaLot.requireLotNumber !== null) {
+      	this.requireLotNumber = window.configuration.metaLot.requireLotNumber
+      }
+      if(typeof window.configuration.metaLot.autoPopulateNextLotNumber !== "undefined" && window.configuration.metaLot.autoPopulateNextLotNumber !== null) {
+      	this.autoPopulateNextLotNumber = window.configuration.metaLot.autoPopulateNextLotNumber
+      }
+      if(typeof window.configuration.metaLot.allowManualLotNumber !== "undefined" && window.configuration.metaLot.allowManualLotNumber !== null) {
+      	this.allowManualLotNumber = window.configuration.metaLot.allowManualLotNumber
+      }
+      if(this.requireLotNumber && !this.autoPopulateNextLotNumber && !this.allowManualLotNumber) {
+      	alert("Server configuration error, metaLot.requireLotNumber is true but both metaLot.autoPopulateNextLotNumber and metaLot.allowManualLotNumber are set to false.  Either set metaLot.requireLotNumber to false or set one of the other properties to true")
+      }
+      
       if(this.model.isNew()) {
-        this.requireLotNumber = false
-        this.autoPopulateNextLotNumber = false
-        this.allowManualLotNumber = false
-        if(typeof window.configuration.metaLot.requireLotNumber !== "undefined" && window.configuration.metaLot.requireLotNumber !== null) {
-          this.requireLotNumber = window.configuration.metaLot.requireLotNumber
-        }
-        if(typeof window.configuration.metaLot.autoPopulateNextLotNumber !== "undefined" && window.configuration.metaLot.autoPopulateNextLotNumber !== null) {
-          this.autoPopulateNextLotNumber = window.configuration.metaLot.autoPopulateNextLotNumber
-        }
-        if(typeof window.configuration.metaLot.allowManualLotNumber !== "undefined" && window.configuration.metaLot.allowManualLotNumber !== null) {
-          this.allowManualLotNumber = window.configuration.metaLot.allowManualLotNumber
-        }
-        if(this.requireLotNumber && !this.autoPopulateNextLotNumber && !this.allowManualLotNumber) {
-          alert("Server configuration error, metaLot.requireLotNumber is true but both metaLot.autoPopulateNextLotNumber and metaLot.allowManualLotNumber are set to false.  Either set metaLot.requireLotNumber to false or set one of the other properties to true")
-        }
         if(this.autoPopulateNextLotNumber | this.allowManualLotNumber | this.requireLotNumber) {
           _.bindAll(this, 'handleLotNumbersPopulated');
           this.model.bind('change:lotNumbers', this.handleLotNumbersPopulated);
