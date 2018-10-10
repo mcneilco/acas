@@ -166,7 +166,7 @@ class window.DetectSdfPropertiesController extends Backbone.View
 			hasError = true
 		if response.errors? && response.errors.length > 0
 			for err in response.errors
-				if err.level = 'error'
+				if err.level == 'error'
 					hasError = true
 					break
 		if hasError
