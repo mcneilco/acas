@@ -222,9 +222,11 @@ $(function() {
     defaults: {
       readyForRender: false
     },
-    events: {
-      'click .insertNextAutoLotNumberButton': 'handleInsertNextAutoLotNumberButtonClicked'
-    },
+    events: function(){
+        return _.extend({},LotController_Abstract.prototype.events,{
+          'click .insertNextAutoLotNumberButton': 'handleInsertNextAutoLotNumberButtonClicked'
+        })
+    },      
     initialize: function() {
       LotController_Abstract.prototype.initialize.apply(this, arguments);
       this.requireLotNumber = false
