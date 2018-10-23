@@ -71,7 +71,7 @@ def make_acas_live_report(api, compound_ids, assays_to_add, experiment_code, log
             assay_tree=api.get_folder_tree_data(projectId, assay_to_add['protocolName'])
             #print json.dumps(assay_tree)
             if type(assay_tree) is list:
-                assay_tree=assay_tree[0]
+                assay_tree=[x for x in assay_tree if x['name'] == 'Experimental Assays'][0]
                 #print json.dumps(assay_tree)
             assay = findassay(assay_tree, assay_to_add['protocolName'])
             assay_column_ids = extract_endpoints(assay, [])
