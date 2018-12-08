@@ -32,7 +32,7 @@ $(function() {
 					exactMass: js.exactMass,
                     molFormula: js.molFormula,
 					comment: js.comment,
-                    chemist: new PickList(js.chemist),
+                    chemist: js.chemist,
 					parentAliases: new AliasCollection(js.parentAliases),
 					registrationDate: js.registrationDate,
 					cdId: js.cdId,

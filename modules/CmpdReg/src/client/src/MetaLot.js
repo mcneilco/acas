@@ -380,7 +380,7 @@ $(function() {
 		    this.lotController.updateModel();
 		    if (this.lotController.model.isNew() && this.user != null) {
 			    this.lotController.model.set({
-				    'registeredBy': this.user
+				    'registeredBy': this.user.get("code")
 			    });
 		    }
 		    this.parentController.updateModel();
@@ -422,7 +422,7 @@ $(function() {
 
 		    if (this.user.get('isAdmin')) {
 			    return true;
-		    }else if (!window.configuration.metaLot.disableEditMyLots && (this.user.get('code') == chemist.get('code') || (registeredBy != null && this.user.get('code') == registeredBy.code))) {
+		    }else if (!window.configuration.metaLot.disableEditMyLots && (this.user.get('code') == chemist || (registeredBy != null && this.user.get('code') == registeredBy))) {
 				return true;
 			} else {
 			    return false;

@@ -435,7 +435,7 @@ $(function() {
                 this.model.set({
                     notebookPage: jQuery.trim(this.$('.notebookPage').val()),
                     synthesisDate: jQuery.trim(this.$('.synthesisDate').val()),
-                    chemist: this.chemistCodeController.getSelectedModel(),
+                    chemist: this.chemistCodeController.getSelectedModel().get("code"),
                     lotNumber:
                       (jQuery.trim(this.$('.lotNumber').val())=='') ? null :
                             parseInt(jQuery.trim(this.$('.lotNumber').val()))

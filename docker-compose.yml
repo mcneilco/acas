@@ -75,24 +75,24 @@ services:
     volumes_from:
      - roo
      - acas
-     - cmpdreg
+    #  - cmpdreg
     env_file:
       - ./conf/docker/acas/environment/acas.env
       - ./conf/docker/roo/environment/roo.env
       - ./conf/docker/cmpdreg/environment/cmpdreg.env
     command: catalina.sh run
   roo:
-    image: mcneilco/acas-roo-server-oss:${ACAS_TAG}
+    image: test
     volumes:
      - /usr/local/tomcat/webapps/acas
     command: /bin/true
-  cmpdreg:
-    image: mcneilco/acas-cmpdreg-roo-server-oss:${ACAS_TAG}
-    volumes:
-     - /usr/local/tomcat/webapps/cmpdreg
-    # Add chemaxon license files here
-    # - ./chemaxon/licenses/marvin4js-license.cxl:/usr/local/tomcat/webapps/ROOT/marvin4js-license.cxl
-    # - ./chemaxon/licenses/license.cxl:/root/.chemaxon/license.cxl
+  # cmpdreg:
+  #   image: test
+  #   volumes:
+  #    - /usr/local/tomcat/webapps/cmpdreg
+  #   # Add chemaxon license files here
+  #   # - ./chemaxon/licenses/marvin4js-license.cxl:/usr/local/tomcat/webapps/ROOT/marvin4js-license.cxl
+  #   # - ./chemaxon/licenses/license.cxl:/root/.chemaxon/license.cxl
     command: /bin/true
 volumes:
   dbstore:

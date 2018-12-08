@@ -240,16 +240,15 @@ exports.validateCloneAndGetTarget = (req, resp) ->
 	psProtocolServiceTestJSON = require "#{ACAS_HOME}/public/javascripts/spec/PrimaryScreen/testFixtures/PrimaryScreenProtocolServiceTestJSON.js"
 	resp.json psProtocolServiceTestJSON.successfulCloneValidation
 
-exports.getAuthors = (req, resp) -> #req passed in as input to be able to filter users by roles
+exports.getAllAuthors = (opts, callback) ->
 	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 	serverUtilityFunctions = require "#{ACAS_HOME}/routes/ServerUtilityFunctions.js"
 	baseurl = config.all.client.service.persistence.fullpath+"authors/codeTable"
-
-	if req.query.roleType? and req.query.roleKind? and req.query.roleName?
+	if opts.roleType? and opts.roleKind? and opts.roleName?
 		baseurl = config.all.client.service.persistence.fullpath+"authors/findByRoleTypeKindAndName"
 		baseurl += "?roleType=#{req.query.roleType}&roleKind=#{req.query.roleKind}&roleName=#{req.query.roleName}&format=codeTable"
-
-	serverUtilityFunctions.getFromACASServer(baseurl, resp)
+	serverUtilityFunctions.getFromACASServerInternal baseurl, (statusCode, json) ->
+		callback statusCode, json
 
 exports.getAllAuthorObjectsInternal = (callback) ->
 	config = require "#{ACAS_HOME}/conf/compiled/conf.js"

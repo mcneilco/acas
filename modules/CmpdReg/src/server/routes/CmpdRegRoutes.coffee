@@ -1,12 +1,13 @@
 exports.setupAPIRoutes = (app) ->
 	app.post '/api/cmpdReg', exports.postAssignedProperties
-	app.get '/cmpdReg/scientists', exports.getBasicCmpdReg
+	app.get '/cmpdReg/scientists', exports.getScientists
 	app.get '/cmpdReg/metalots/corpName/[\\S]*', exports.getMetaLot
+	app.post '/cmpdReg/metalots', exports.metaLots
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/cmpdReg', loginRoutes.ensureAuthenticated, exports.cmpdRegIndex
 	app.get '/marvin4js-license.cxl', loginRoutes.ensureAuthenticated, exports.getMarvinJSLicense
-	app.get '/cmpdReg/scientists', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
+	app.get '/cmpdReg/scientists', loginRoutes.ensureAuthenticated, exports.getScientists
 	app.get '/cmpdReg/parentAliasKinds', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
 	app.get '/cmpdReg/units', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
 	app.get '/cmpdReg/solutionUnits', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
@@ -102,7 +103,7 @@ exports.cmpdRegIndex = (req, res) ->
 			cmpdRegConfig: cmpdRegConfig
 
 syncCmpdRegUser = (req, cmpdRegUser) ->
-	exports.getScientists req, (scientistResponse) ->
+	exports.getScientistsInternal (scientistResponse) ->
 		foundScientists = JSON.parse scientistResponse
 		if (_.findWhere foundScientists, {code: cmpdRegUser.code})?
 			#update scientist
@@ -224,24 +225,14 @@ exports.updateProjects = (jsonBody, callback) ->
 			callback JSON.stringify {error: "something went wrong :("}
 	)
 
-exports.getScientists = (req, callback) ->
-	console.log 'in getScientists'
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/scientists"
-	request(
-		method: 'GET'
-		url: cmpdRegCall
-		json: true
-	, (error, response, json)=>
-		if !error
-			console.log JSON.stringify json
-			callback JSON.stringify json
-		else
-			console.log 'got ajax error trying to get CmpdReg scientists'
-			console.log error
-			console.log json
-			console.log response
-			callback JSON.stringify {error: "something went wrong :("}
-	)
+exports.getScientists = (req, resp) =>
+	exports.getScientistsInternal (authors) ->
+		resp.json authors 
+
+exports.getScientistsInternal = (callback) ->
+	loginRoutes = require './loginRoutes.js'
+	loginRoutes.getAuthorsInternal {}, (statusCode, authors) =>
+		callback authors
 
 exports.saveScientists = (jsonBody, callback) ->
 	console.log 'in saveScientists'
