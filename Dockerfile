@@ -43,7 +43,7 @@ ENV     ACAS_BASE /home/runner/acas
 ENV     ACAS_CUSTOM /home/runner/acas_custom
 ENV     ACAS_SHARED /home/runner/acas_shared
 ENV     APACHE Redhat
-RUN     npm install -g gulpjs/gulp.git#4.0 forever nodemon mocha coffee-script
+RUN     npm install -g gulp@4.0.0 forever nodemon mocha coffeescript
 COPY    package.json $ACAS_BASE/package.json
 RUN     chown -R runner:runner $ACAS_BASE
 USER    runner

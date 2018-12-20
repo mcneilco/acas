@@ -397,7 +397,7 @@ createExecuteTask = (options) =>
       return
     command.on 'exit', (code) ->
       cb code
-  unless watch == false
+  unless watch == false || !options.src?
     watchTaskName = "watch:#{taskName}"
     watchOptions = watch?.options ? {}
     gulp.task watchTaskName, ->
