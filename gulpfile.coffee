@@ -218,6 +218,9 @@ taskConfigs =
         command: 'npm'
         args: [ 'install' ]
         options: _.extend _.clone(globalExecuteOptions), cwd: build
+        src: [
+          build + '/package.json'
+        ]
       ,
         taskName: "prepare_config_files"
         command: 'node'
