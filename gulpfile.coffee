@@ -218,6 +218,9 @@ taskConfigs =
         command: 'npm'
         args: [ 'install' ]
         options: _.extend _.clone(globalExecuteOptions), cwd: build
+        src: [
+          build + '/package.json'
+        ]
       ,
         taskName: "prepare_config_files"
         command: 'node'
@@ -397,7 +400,7 @@ createExecuteTask = (options) =>
       return
     command.on 'exit', (code) ->
       cb code
-  unless watch == false
+  unless watch == false || !options.src?
     watchTaskName = "watch:#{taskName}"
     watchOptions = watch?.options ? {}
     gulp.task watchTaskName, ->
