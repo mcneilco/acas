@@ -1782,7 +1782,7 @@ getExperimentByNameCheck <- function(experimentName, protocol, configList, dupli
     protocolOfExperiment <- getProtocolByCodeName(experimentList[[1]]$protocol$codeName)
 
     
-    if (is.na(protocol) || protocolOfExperiment$id != protocol$codeName) {
+    if (is.na(protocol) || protocolOfExperiment$id != protocol$id) {
       if (duplicateNamesAllowed) {
         experiment <- NA
       } else {
