@@ -24,7 +24,7 @@ RUN set -ex \
   ; do \
     gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key" || \
     gpg --keyserver pgp.mit.edu --recv-keys "$key" || \
-    gpg --keyserver keyserver.pgp.com --recv-keys "$key" \
+    gpg --keyserver keyserver.pgp.com --recv-keys "$key"; \
   done
 
 ENV NPM_CONFIG_LOGLEVEL warn
