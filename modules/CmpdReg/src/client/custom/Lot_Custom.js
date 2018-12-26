@@ -458,7 +458,7 @@ $(function() {
                     purityOperator: null,
                     amountUnits: null,
                     purityMeasuredBy: null,
-                    project: this.projectCodeController.getSelectedModel(),
+                    project: this.projectCodeController.getSelectedModel().get("code"),
                     supplierLot: '',
                     meltingPoint: null,
                     boilingPoint: null,
@@ -536,7 +536,7 @@ $(function() {
                     tareWeightUnits: tareWeightUnits,
                     totalAmountStoredUnits: totalAmountStoredUnits,
                     purityMeasuredBy: purityMeasuredBy,
-                    project: this.projectCodeController.getSelectedModel(),
+                    project: this.projectCodeController.getSelectedModel().get("code"),
                     vendor: vendor,
                     supplierLot: jQuery.trim(this.$('.supplierLot').val()),
                     meltingPoint: 
