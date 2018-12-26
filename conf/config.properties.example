@@ -538,7 +538,7 @@ server.curveRender.drawPointsForRejectedCurve=true
 # Restrict experiment search by project
 server.service.projects.restrictExperiments=false
 
-flyway.location=db/migration/postgres,com.labsynch.labseer.db.migration.postgres
+flyway.location=db/migration/postgres,com.labsynch.labseer.db.migration.postgres,db/migration/indigo/postgres
 flyway.schema=acas
 flyway.database.username=${server.database.username}
 flyway.database.password=${server.database.password}
