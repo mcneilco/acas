@@ -3,6 +3,7 @@ path = require 'path'
 exports.setupAPIRoutes = (app) ->
 	app.post '/api/cmpdRegBulkLoader', exports.postAssignedProperties
 	app.post '/api/cmpdRegBulkLoader/registerCmpds', exports.registerCmpds
+	app.post '/api/cmpdRegBulkLoader/validationProperties', exports.validationProperties
 	app.get '/api/cmpdRegBulkLoader/getFilesToPurge', exports.getFilesToPurge
 	app.post '/api/cmpdRegBulkLoader/purgeFile', exports.purgeFile
 
@@ -126,12 +127,41 @@ exports.saveTemplate = (req, resp) ->
 				resp.end JSON.stringify "Error"
 		)
 
+exports.validationProperties = (req, resp) ->
+	req.connection.setTimeout 6000000
+	exports.validationPropertiesInternal req.body, (json) =>
+		resp.json json
+
+exports.validationPropertiesInternal = (reqObject, callback) ->
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"bulkload/validationProperties"
+	request = require 'request'
+	request(
+		method: 'POST'
+		url: baseurl
+		body: reqObject
+		json: true
+	, (error, response, json) =>
+		console.log json
+		if !error && response.statusCode == 200
+			callback json
+		else
+			console.error 'got ajax error trying to validate sdf properties'
+			console.error error
+			console.error json
+			console.error response
+			callback {error: json}
+	)
+
+exports.getScientistsInternal = (callback) ->
+	loginRoutes = require './loginRoutes.js'
+	loginRoutes.getAuthorsInternal {}, (statusCode, authors) =>
+		callback authors
+
 exports.registerCmpds = (req, resp) ->
 	req.connection.setTimeout 6000000
 	createSummaryZip = (fileName, json) ->
 		#remove .sdf from fileName
-		console.log "fileName"
-		console.log fileName
 		fileName = fileName.substring(0, fileName.length-4)
 		zipFileName = fileName+".zip"
 		fs = require 'fs'
@@ -166,28 +196,38 @@ exports.registerCmpds = (req, resp) ->
 			else
 				fileName = req.body.fileName
 				delete req.body.fileName
-				config = require '../conf/compiled/conf.js'
-				baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"bulkload/registerSdf"
-				request = require 'request'
-				request(
-					method: 'POST'
-					url: baseurl
-					body: req.body
-					json: true
-				, (error, response, json) =>
-					console.log json
-					if !error && response.statusCode == 200 && json.reportFiles?
-						createSummaryZip fileName, json
-					else
-						console.log 'got ajax error trying to register compounds'
-						console.log error
-						console.log json
-						console.log response
-						if json.summary?
-							resp.json [json]
+				exports.getScientistsInternal (authors) =>
+					_ = require 'underscore'
+
+					authorCodes = _.pluck authors, "code"
+
+					exports.validationPropertiesInternal req.body, (sdfProperties) =>
+						missingAuthorCodes = _.difference sdfProperties.chemists, authorCodes
+						if missingAuthorCodes.length > 0
+							resp.json [{summary: "Some chemists have not been registered please make sure they are registered and try again: #{JSON.stringify(missingAuthorCodes)}"}]
+							return
 						else
-							resp.end JSON.stringify "Error"
-				)
+							config = require '../conf/compiled/conf.js'
+							baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"bulkload/registerSdf"
+							request = require 'request'
+							request(
+								method: 'POST'
+								url: baseurl
+								body: req.body
+								json: true
+							, (error, response, json) =>
+								if !error && response.statusCode == 200 && json.reportFiles?
+									createSummaryZip fileName, json
+								else
+									console.log 'got ajax error trying to register compounds'
+									console.log error
+									console.log json
+									console.log response
+									if json.summary?
+										resp.json [json]
+									else
+										resp.end JSON.stringify "Error"
+							)
 
 	moveSdfFile = (req, resp, callback) ->
 		fileName = req.body.fileName
