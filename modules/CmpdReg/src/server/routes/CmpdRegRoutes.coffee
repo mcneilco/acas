@@ -140,9 +140,10 @@ exports.getAPICmpdReg = (req, resp) ->
 	req.pipe(request(cmpdRegCall)).pipe(resp)
 
 exports.getAuthorizedCmpdRegProjects = (req, resp) ->
-	exports.getAuthorizedCmpdRegProjectsInternal req, (response) =>
+	authorRoutes = require './AuthorRoutes.js'
+	authorRoutes.allowedProjectsInternal req.user, (statusCode, allowedUserProjects) ->
 		resp.status "200"
-		resp.end JSON.stringify response
+		resp.end JSON.stringify allowedUserProjects
 
 exports.getAuthorizedCmpdRegProjectsInternal = (req, callback) ->
 	exports.getACASProjects req, (statusCode, acasProjectsResponse)->
