@@ -145,46 +145,6 @@ exports.getAuthorizedCmpdRegProjects = (req, resp) ->
 		resp.status "200"
 		resp.end JSON.stringify allowedUserProjects
 
-exports.getAuthorizedCmpdRegProjectsInternal = (req, callback) ->
-	exports.getACASProjects req, (statusCode, acasProjectsResponse)->
-		acasProjects = acasProjectsResponse
-		exports.getProjects req, (cmpdRegProjectsResponse)->
-			cmpdRegProjects = JSON.parse cmpdRegProjectsResponse
-			allowedProjectCodes = _.pluck acasProjects, 'code'
-			allowedProjects = _.filter cmpdRegProjects, (cmpdRegProject) ->
-				return (cmpdRegProject.code in allowedProjectCodes)
-			callback allowedProjects
-
-
-exports.getACASProjects = (req, callback) ->
-	csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
-	if !req.user?
-		req.user = {}
-		req.user.username = req.params.username
-	if global.specRunnerTestmode
-		resp.end JSON.stringify "testMode not implemented"
-	else
-		csUtilities.getProjectsInternal req, callback
-
-exports.getProjects = (req, callback) ->
-	console.log 'in getProjects'
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/projects"
-	request(
-		method: 'GET'
-		url: cmpdRegCall
-		json: true
-	, (error, response, json)=>
-		if !error
-			console.log JSON.stringify json
-			callback JSON.stringify json
-		else
-			console.log 'got ajax error trying to get CmpdReg projects'
-			console.log error
-			console.log json
-			console.log response
-			callback JSON.stringify {error: "something went wrong :("}
-	)
-
 exports.saveProjects = (jsonBody, callback) ->
 
 	console.log 'in saveProjects'
@@ -325,7 +285,7 @@ exports.getMetaLot = (req, resp) ->
 			if json?.lot?.project?.code?
 				projectCode = json.lot.project.code
 				if cmpdRegConfig.metaLot.useProjectRolesToRestrictLotDetails
-					exports.getACASProjects req, (statusCode, acasProjectsForUsers) =>
+					authorRoutes.allowedProjectsInternal req.user, (statusCode, acasProjectsForUsers) =>
 						if statusCode != 200
 							resp.statusCode = statusCode
 							resp.end JSON.stringify acasProjectsForUsers
@@ -343,7 +303,6 @@ exports.getMetaLot = (req, resp) ->
 					resp.end JSON.stringify "Could not find lot"
 				else
 					resp.json json
-
 		else
 			console.log 'got ajax error trying to get CmpdReg MetaLot'
 			console.log error
