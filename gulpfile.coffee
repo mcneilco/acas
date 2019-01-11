@@ -299,7 +299,7 @@ taskConfigs =
       renameFunction: getRPath
     ,
       taskName: "python"
-      src: getGlob('modules/**/src/server/python/**')
+      src: getGlob('modules/**/src/server/python/**', '!modules/**/src/server/python/**/venv/**')
       dest: build + '/src/python'
       options: _.extend _.clone(globalCopyOptions), {}
       renameFunction: getPythonPath
