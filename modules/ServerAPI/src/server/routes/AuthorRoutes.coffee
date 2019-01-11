@@ -73,7 +73,6 @@ exports.allowedProjectsInternal = (user, callback) ->
 			projects = filteredProjects
 		else
 			projects = allProjects
-		console.error "Authorized projects: #{JSON.stringify(projects)}"
 		callback 200, projects
 
 
