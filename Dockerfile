@@ -24,9 +24,9 @@ RUN set -ex \
   ; do \
     gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key" || \
     gpg --keyserver pgp.mit.edu --recv-keys "$key" || \
-    gpg --keyserver keyserver.pgp.com --recv-keys "$key"; || \
-    gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys "$key"; || \
-    gpg --keyserver hkp://p80.pool.sks-keyservers.net:80 "$key"; || \
+    gpg --keyserver keyserver.pgp.com --recv-keys "$key" || \
+    gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys "$key" || \
+    gpg --keyserver hkp://p80.pool.sks-keyservers.net:80 "$key" || \
     gpg --keyserver pgp.mit.edu "$key"; \
   done
 
