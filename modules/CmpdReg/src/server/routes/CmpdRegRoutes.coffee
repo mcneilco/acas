@@ -335,7 +335,7 @@ exports.regSearch = (req, resp) ->
 	)
 
 exports.getMarvinJSLicense = (req, resp) ->
-	cmpdRegCall = (config.all.client.service.cmpdReg.persistence.basepath).replace '\/cmpdreg', "/"
+	cmpdRegCall = (config.all.client.service.cmpdReg.persistence.basepath).replace '\/acas', "/"
 	licensePath = cmpdRegCall + 'marvin4js-license.cxl'
 	console.log licensePath
 	req.pipe(request(licensePath)).pipe(resp)
