@@ -585,3 +585,11 @@ client.compoundInventory.daughterVials.strictMatchPhysicalState=false
 
 # Whether to save location as a codeValue or as a full location interaction
 client.compoundInventory.saveLocationAsCodeValue=true
+
+# Allows the override of the words "Experiment" and "Protocol" throughout the ACAS UI
+# These configs should NOT be set to the same value as this would break some functionality
+# of data loaders.
+# The values are often pluralized by putting an "s" at the end, so whatever values are used
+# should be able to be pluralized with an "s" appended to them.
+client.protocol.label=Protocol
+client.experiment.label=Experiment
