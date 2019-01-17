@@ -997,8 +997,8 @@ validateUploadedImages <- function(imageLocation, listedImageFiles, experimentFo
     stopUser(paste0("The following files were listed in the spreadsheet, but were not uploaded in a zip file: ",
                     paste(notUploaded, collapse = ", ")))
   }
-  
-  return(TRUE)
+  matchedUploadedFileNames <- uploadedImageFiles[match(listedImageFilesLower,uploadedImageFilesLower)]
+  return(matchedUploadedFileNames)
 }
 
 getExcelColumnFromNumber <- function(number) {
@@ -1654,7 +1654,8 @@ addImageFiles <- function(imagesFile, calculatedResults, experiment, dryRun, rec
   if (!is.null(imagesFile)) {
     imageLocation <- unzipUploadedImages(imagesFile = racas::getUploadedFilePath(imagesFile), experimentFolderLocation = experimentFolderLocation)
     listedImageFiles <- calculatedResults[!is.na(calculatedResults$inlineFileValue),]$inlineFileValue
-    isValid <- validateUploadedImages(imageLocation = imageLocation, listedImageFiles = listedImageFiles, experimentFolderLocation = experimentFolderLocation)
+    matchedUploadedFileNames <- validateUploadedImages(imageLocation = imageLocation, listedImageFiles = listedImageFiles, experimentFolderLocation = experimentFolderLocation)
+    calculatedResults[!is.na(calculatedResults$inlineFileValue),]$inlineFileValue <- matchedUploadedFileNames
     calculatedResults <- addComment(calculatedResults = calculatedResults)
     if (racas::applicationSettings$server.service.external.file.type == "custom") {
       fileValueVector <- ifelse(is.na(calculatedResults$inlineFileValue),
