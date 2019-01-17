@@ -992,23 +992,25 @@ validateUploadedImages <- function(imageLocation, listedImageFiles, experimentFo
   uploadedImageFiles <- list.files(imageLocation)
   
   # Make sure all elements are part of both vectors.
-  # We allow the same file to be listed multiple times -- setdiff disregards duplicates (and you can't
+  # We allow the same file to be listed multiple times -- %in% disregards duplicates (and you can't
   # put the same file into a directory twice, so we don't have a problem there)
-  notUploaded <- setdiff(listedImageFiles, uploadedImageFiles)
-  notListed <- setdiff(uploadedImageFiles, listedImageFiles)
+  listedImageFilesLower <- tolower(listedImageFiles)
+  uploadedImageFilesLower <- tolower(uploadedImageFiles)
+  notUploaded <- listedImageFiles[!listedImageFilesLower %in% uploadedImageFilesLower]
+  notListed <- uploadedImageFiles[!uploadedImageFilesLower %in% listedImageFilesLower]
   
   if (length(notListed) > 0) {
     unlink(experimentFolderLocation, recursive = TRUE)
-    stopUser(paste0("The following files were uploaded in a zip file, but were not listed in the spreadsheet: ",
-                    paste(notListed, collapse = ", "), ". If in doubt, please check your capitalization."))
+    warnUser(paste0("The following files were uploaded in a zip file, but were not listed in the spreadsheet: ",
+                    paste(notListed, collapse = ", ")))
   }
   if (length(notUploaded) > 0) {
     unlink(experimentFolderLocation, recursive = TRUE)
     stopUser(paste0("The following files were listed in the spreadsheet, but were not uploaded in a zip file: ",
-                    paste(notUploaded, collapse = ", "), ". If in doubt, please check your capitalization."))
+                    paste(notUploaded, collapse = ", ")))
   }
-  
-  return(TRUE)
+  matchedUploadedFileNames <- uploadedImageFiles[match(listedImageFilesLower,uploadedImageFilesLower)]
+  return(matchedUploadedFileNames)
 }
 
 getExcelColumnFromNumber <- function(number) {
@@ -1664,7 +1666,8 @@ addImageFiles <- function(imagesFile, calculatedResults, experiment, dryRun, rec
   if (!is.null(imagesFile)) {
     imageLocation <- unzipUploadedImages(imagesFile = racas::getUploadedFilePath(imagesFile), experimentFolderLocation = experimentFolderLocation)
     listedImageFiles <- calculatedResults[!is.na(calculatedResults$inlineFileValue),]$inlineFileValue
-    isValid <- validateUploadedImages(imageLocation = imageLocation, listedImageFiles = listedImageFiles, experimentFolderLocation = experimentFolderLocation)
+    matchedUploadedFileNames <- validateUploadedImages(imageLocation = imageLocation, listedImageFiles = listedImageFiles, experimentFolderLocation = experimentFolderLocation)
+    calculatedResults[!is.na(calculatedResults$inlineFileValue),]$inlineFileValue <- matchedUploadedFileNames
     calculatedResults <- addComment(calculatedResults = calculatedResults)
     if (racas::applicationSettings$server.service.external.file.type == "custom") {
       fileValueVector <- ifelse(is.na(calculatedResults$inlineFileValue),
