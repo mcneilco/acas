@@ -473,7 +473,7 @@ validateTreatmentGroupData <- function(treatmentGroupData,calculatedResults,temp
   }
   return(NULL) 
 }
-validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, testMode = FALSE, replaceFakeCorpBatchId="", mainCode, inputFormat, projectCode, errorEnv = NULL, user=recordedBy, configList=configList) {
+validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, testMode = FALSE, replaceFakeCorpBatchId="", mainCode, inputFormat, projectCode, protocol, errorEnv = NULL, user=recordedBy, configList=configList) {
   # Valides the calculated results (for now, this only validates the mainCode)
   #
   # Args:
@@ -485,6 +485,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   #   mainCode:                 A string, normally the corporate batch ID
   #   inputFormat:              The format of the input file
   #   projectCode:              Project code entered
+  #   protocol:               Protocol  entered
   #
   # Returns:
   #   a "data.frame" of the validated calculated results
@@ -582,7 +583,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   neededValueKinds <- c(calculatedResults$"valueKind", curveNames)
   neededValueKindTypes <- c(calculatedResults$Class, rep("Text", length(curveNames)))
   
-  validateValueKinds(neededValueKinds, neededValueKindTypes, dryRun)
+  validateValueKinds(neededValueKinds, neededValueKindTypes, dryRun, protocol = protocol)
   
   
   ### ================== Check batch projects ========================================================
@@ -901,7 +902,7 @@ validateUnitKinds <- function(neededUnitKinds, errorEnv) {
   }
 }
 
-validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun, reserved = c("concentration", "time")) {
+validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun, reserved = c("concentration", "time"), protocol = NA) {
   # Checks that column headers are valid valueKinds (or creates them if they are new)
   #
   # Args:
@@ -915,7 +916,7 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun, r
   
   require(rjson)
   require(RCurl)
-  
+  saveSession('/tmp/blah')
   # Throw errors for value kinds greater than 64 characters
   valueKindsTooLong <- unique(neededValueKinds)[which(nchar(unique(neededValueKinds)) > 64)]
   if(length(valueKindsTooLong) > 0) {
@@ -972,6 +973,49 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun, r
     warnUser(paste0("The following column headers have never been loaded in an ",racas::applicationSettings$client.experiment.label," before: '", 
                    paste(newValueKinds,collapse="', '"), "'. If you have loaded a similar ",racas::applicationSettings$client.experiment.label," before, please use the same",
                    " headers that were used previously. If this is a new ",racas::applicationSettings$client.protocol.label,", you can proceed without worry."))
+  } else {
+    if(configList$server.validate.protocol.valueKinds && !identical(NA, protocol)) {
+      protocolKindsDF <- query(paste0('SELECT distinct a.ls_kind ',
+                                             'FROM protocol p JOIN experiment e ON p.id = e.protocol_id ',
+                                             'JOIN experiment_analysisgroup eag ON e.id = eag.experiment_id ',
+                                             'JOIN analysis_group ag ON eag.analysis_group_id = ag.id ',
+                                      'LEFT JOIN ( ',
+                                             'SELECT ags.analysis_group_id AS ag_id, agv.ls_kind ',
+                                             'FROM analysis_group_state ags ',
+                                             'JOIN analysis_group_value agv ON ags.id = agv.analysis_state_id ',
+                                            'WHERE ags.ignored = \'0\' AND ags.deleted = \'0\' ',
+                                            'AND agv.ignored = \'0\' AND agv.deleted = \'0\' ',
+                                      'UNION ALL ',
+                                            'SELECT agtg.analysis_group_id AS ag_id, sv.ls_kind ',
+                                            'FROM analysisgroup_treatmentgroup agtg ',
+                                            'JOIN treatment_group tg ON agtg.treatment_group_id = tg.id ',
+                                            'JOIN treatmentgroup_subject tgs ON tg.id = tgs.treatment_group_id ',
+                                            'JOIN subject s ON tgs.subject_id = s.id ',
+                                            'JOIN subject_state ss ON s.id = ss.subject_id ',
+                                            'JOIN subject_value sv ON ss.id = sv.subject_state_id ',
+                                            'WHERE tg.ignored = \'0\' AND tg.deleted = \'0\' ',
+                                            'AND s.ignored = \'0\' AND s.deleted = \'0\' ',
+                                            'AND ss.ignored = \'0\' AND ss.deleted = \'0\' ',
+                                            'AND sv.ignored = \'0\' AND sv.deleted = \'0\' ',
+                                            ') a ',
+                                      'ON ag.id = a.ag_id ',
+                                      'WHERE p.ignored = \'0\' and p.deleted = \'0\' ',
+                                      'AND e.ignored = \'0\' and e.deleted = \'0\' ',
+                                      'AND ag.ignored = \'0\' and ag.deleted = \'0\' ',
+                                      'AND p.code_name = \'',protocol$codeName,'\''
+      ), globalConnect = TRUE)
+      
+      if(nrow(protocolKindsDF) > 0) {
+        protocolKinds <- protocolKindsDF[,1]
+        newToProtocolKinds <- setdiff(neededValueKinds, protocolKinds)
+        if(length(newToProtocolKinds) > 0) {
+          warnUser(paste0("The following column headers have never been loaded in this ",racas::applicationSettings$client.protocol.label," before: '", 
+                          paste(newToProtocolKinds,collapse="', '"), "'. If you have loaded a similar ",racas::applicationSettings$client.experiment.label," before, please use the same",
+                          " headers that were used previously. If this is a new ",racas::applicationSettings$client.protocol.label,", you can proceed without worry.",
+                          " If you don't recognize some of the headers they may be used by the loader internally and can be safely ignored."))
+        }
+      }
+    }
   }
   if (!dryRun && (length(newValueKinds) > 0 || nrow(problemFrame) > 0)) {
     # Create the new valueKinds, using the correct valueType
@@ -2988,6 +3032,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     calculatedResults, dryRun, curveNames=formatParameters$curveNames, testMode=testMode,
     replaceFakeCorpBatchId=formatParameters$replaceFakeCorpBatchId, mainCode, inputFormat,
     projectCode = validatedMetaData$Project,
+    protocol = protocol,
     user = recordedBy,
     configList = configList)
   
@@ -2996,7 +3041,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   subjectData <- subjectAndTreatmentData$subjectData
   treatmentGroupData <- subjectAndTreatmentData$treatmentGroupData
   modelFitTransformation <- subjectAndTreatmentData$modelFitTransformation
-  validateSubjectData(subjectData, dryRun)
+  validateSubjectData(subjectData, dryRun, protocol)
   
   # If there are errors, do not allow an upload
   errorFree <- length(messenger()$errors)==0
@@ -3710,12 +3755,12 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
   return(intermedList)
 }
 
-validateSubjectData <- function(subjectData, dryRun) {
+validateSubjectData <- function(subjectData, dryRun, protocol) {
   # Validates Subject Data
   # For now, just passes information to validateValue Kinds
   uniqueDF <- unique(subjectData[, c("Class", "valueKind")])
   uniqueDF <- uniqueDF[!(uniqueDF$valueKind %in% c('flag cause', 'flag observation', 'flag status')), ]
-  validateValueKinds(uniqueDF$valueKind, uniqueDF$Class, dryRun, reserved = NULL)
+  validateValueKinds(uniqueDF$valueKind, uniqueDF$Class, dryRun, reserved = NULL, protocol = protocol)
 }
 getUnitFromParentheses <- function(columnHeaders) {
   # gets text that is between two parentheses
