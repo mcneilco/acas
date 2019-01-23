@@ -916,7 +916,7 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun, r
   
   require(rjson)
   require(RCurl)
-  saveSession('/tmp/blah')
+
   # Throw errors for value kinds greater than 64 characters
   valueKindsTooLong <- unique(neededValueKinds)[which(nchar(unique(neededValueKinds)) > 64)]
   if(length(valueKindsTooLong) > 0) {
@@ -974,7 +974,7 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun, r
                    paste(newValueKinds,collapse="', '"), "'. If you have loaded a similar ",racas::applicationSettings$client.experiment.label," before, please use the same",
                    " headers that were used previously. If this is a new ",racas::applicationSettings$client.protocol.label,", you can proceed without worry."))
   } else {
-    if(configList$server.validate.protocol.valueKinds && !identical(NA, protocol)) {
+    if(racas::applicationSettings$server.validate.protocol.valueKinds && !identical(NA, protocol)) {
       protocolKindsDF <- query(paste0('SELECT distinct a.ls_kind ',
                                              'FROM protocol p JOIN experiment e ON p.id = e.protocol_id ',
                                              'JOIN experiment_analysisgroup eag ON e.id = eag.experiment_id ',
