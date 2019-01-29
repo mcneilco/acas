@@ -236,25 +236,31 @@ exports.updateScientists = (jsonBody, callback) ->
 	)
 
 exports.searchCmpds = (req, resp) ->
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/search/cmpds'
-	request(
-		method: 'POST'
-		url: cmpdRegCall
-		body: JSON.stringify req.body
-		json: true
-		timeout: 6000000
-	, (error, response, json) =>
-		if !error
-			console.log JSON.stringify json
-			resp.setHeader('Content-Type', 'application/json')
-			resp.end JSON.stringify json
-		else
-			console.log 'got ajax error trying to search for compounds'
-			console.log error
-			console.log json
-			console.log response
-			resp.end JSON.stringify {error: "something went wrong :("}
-	)
+	authorRoutes = require './AuthorRoutes.js'
+	authorRoutes.allowedProjectsInternal req.user, (statusCode, allowedUserProjects) ->
+		_ = require "underscore"
+		allowedProjectCodes = _.pluck(allowedUserProjects, "code")
+		req.body.projects = allowedProjectCodes
+		console.log req.body
+		cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/search/cmpds'
+		request(
+			method: 'POST'
+			url: cmpdRegCall
+			body: JSON.stringify req.body
+			json: true
+			timeout: 6000000
+		, (error, response, json) =>
+			if !error
+				console.log JSON.stringify json
+				resp.setHeader('Content-Type', 'application/json')
+				resp.end JSON.stringify json
+			else
+				console.log 'got ajax error trying to search for compounds'
+				console.log error
+				console.log json
+				console.log response
+				resp.end JSON.stringify {error: "something went wrong :("}
+		)
 
 exports.getStructureImage = (req, resp) ->
 	imagePath = (req.originalUrl).replace /\/cmpdreg\/structureimage/, ""

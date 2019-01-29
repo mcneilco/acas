@@ -47,7 +47,7 @@ services:
       - logs:/home/runner/logs
     command: ["bin/acas.sh", "run", "rservices"]
   db:
-    image: mcneilco/acas-postgres:1.0-bingo
+    image: mcneilco/acas-postgres:1.1-bingo
     restart: always
     volumes:
      - dbstore:/var/lib/postgresql/data
@@ -56,7 +56,6 @@ services:
       - ./conf/docker/db/environment/db.env
       - ./conf/docker/acas/environment/acas.env
       - ./conf/docker/cmpdreg/environment/cmpdreg.env
-      - ./conf/docker/seurat/environment/seurat.env
     ports:
      - "5432:5432"
   tomcat:
