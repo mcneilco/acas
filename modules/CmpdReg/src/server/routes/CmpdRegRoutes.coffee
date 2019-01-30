@@ -358,6 +358,8 @@ exports.fileSave = (req, resp) ->
 	req.pipe(request[req.method.toLowerCase()](cmpdRegCall)).pipe(resp)
 
 exports.metaLots = (req, resp) ->
+	if req.user? && !req.body.modifiedBy?
+		req.body.lot.modifiedBy = req.user.username
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/metalots'
 	request(
 		method: 'POST'
@@ -547,7 +549,8 @@ exports.validateParent = (req, resp) ->
 
 exports.updateParent = (req, resp) ->
 	console.log "exports.updateParent"
-
+	if req.user? && !req.body.modifiedBy?
+		req.body.modifiedBy = req.user.username	
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parents/updateParent'
 	request(
 		method: 'POST'
@@ -575,7 +578,8 @@ exports.updateLotMetadata = (req, resp) ->
 	console.log 'in update lot metaData'
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parentLot/updateLot/metadata'
 	console.log cmpdRegCall
-
+	if req.user? && !req.body.modifiedBy?
+		req.body.modifiedBy = req.user.username
 	request(
 		method: 'POST'
 		url: cmpdRegCall
@@ -599,7 +603,11 @@ exports.updateLotsMetadata = (req, resp) ->
 	console.log 'in update lot array metaData'
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parentLot/updateLot/metadata/jsonArray'
 	console.log cmpdRegCall
-
+	if req.user?
+		req.body.map((lot) ->
+			if !lot.modifiedBy?
+				lot.modifiedBy = req.user.username
+		)
 	request(
 		method: 'POST'
 		url: cmpdRegCall
@@ -623,7 +631,8 @@ exports.updateParentMetadata = (req, resp) ->
 	console.log 'in update parent metaData'
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parents/updateParent/metadata'
 	console.log cmpdRegCall
-
+	if req.user? && !req.body.modifiedBy?
+		req.body.modifiedBy = req.user.username
 	request(
 		method: 'POST'
 		url: cmpdRegCall

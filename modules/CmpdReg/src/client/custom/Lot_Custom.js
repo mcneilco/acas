@@ -536,6 +536,7 @@ $(function() {
                     tareWeightUnits: tareWeightUnits,
                     totalAmountStoredUnits: totalAmountStoredUnits,
                     purityMeasuredBy: purityMeasuredBy,
+                    chemist: this.chemistCodeController.getSelectedModel().get("code"),
                     project: this.projectCodeController.getSelectedModel().get("code"),
                     vendor: vendor,
                     supplierLot: jQuery.trim(this.$('.supplierLot').val()),
