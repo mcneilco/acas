@@ -1,12 +1,13 @@
 exports.setupAPIRoutes = (app) ->
 	app.post '/api/cmpdReg', exports.postAssignedProperties
-	app.get '/cmpdReg/scientists', exports.getBasicCmpdReg
+	app.get '/cmpdReg/scientists', exports.getScientists
 	app.get '/cmpdReg/metalots/corpName/[\\S]*', exports.getMetaLot
+	app.post '/cmpdReg/metalots', exports.metaLots
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/cmpdReg', loginRoutes.ensureAuthenticated, exports.cmpdRegIndex
 	app.get '/marvin4js-license.cxl', loginRoutes.ensureAuthenticated, exports.getMarvinJSLicense
-	app.get '/cmpdReg/scientists', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
+	app.get '/cmpdReg/scientists', loginRoutes.ensureAuthenticated, exports.getScientists
 	app.get '/cmpdReg/parentAliasKinds', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
 	app.get '/cmpdReg/units', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
 	app.get '/cmpdReg/solutionUnits', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
@@ -102,7 +103,7 @@ exports.cmpdRegIndex = (req, res) ->
 			cmpdRegConfig: cmpdRegConfig
 
 syncCmpdRegUser = (req, cmpdRegUser) ->
-	exports.getScientists req, (scientistResponse) ->
+	exports.getScientistsInternal (scientistResponse) ->
 		foundScientists = JSON.parse scientistResponse
 		if (_.findWhere foundScientists, {code: cmpdRegUser.code})?
 			#update scientist
@@ -139,49 +140,10 @@ exports.getAPICmpdReg = (req, resp) ->
 	req.pipe(request(cmpdRegCall)).pipe(resp)
 
 exports.getAuthorizedCmpdRegProjects = (req, resp) ->
-	exports.getAuthorizedCmpdRegProjectsInternal req, (response) =>
+	authorRoutes = require './AuthorRoutes.js'
+	authorRoutes.allowedProjectsInternal req.user, (statusCode, allowedUserProjects) ->
 		resp.status "200"
-		resp.end JSON.stringify response
-
-exports.getAuthorizedCmpdRegProjectsInternal = (req, callback) ->
-	exports.getACASProjects req, (statusCode, acasProjectsResponse)->
-		acasProjects = acasProjectsResponse
-		exports.getProjects req, (cmpdRegProjectsResponse)->
-			cmpdRegProjects = JSON.parse cmpdRegProjectsResponse
-			allowedProjectCodes = _.pluck acasProjects, 'code'
-			allowedProjects = _.filter cmpdRegProjects, (cmpdRegProject) ->
-				return (cmpdRegProject.code in allowedProjectCodes)
-			callback allowedProjects
-
-
-exports.getACASProjects = (req, callback) ->
-	csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
-	if !req.user?
-		req.user = {}
-		req.user.username = req.params.username
-	if global.specRunnerTestmode
-		resp.end JSON.stringify "testMode not implemented"
-	else
-		csUtilities.getProjectsInternal req, callback
-
-exports.getProjects = (req, callback) ->
-	console.log 'in getProjects'
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/projects"
-	request(
-		method: 'GET'
-		url: cmpdRegCall
-		json: true
-	, (error, response, json)=>
-		if !error
-			console.log JSON.stringify json
-			callback JSON.stringify json
-		else
-			console.log 'got ajax error trying to get CmpdReg projects'
-			console.log error
-			console.log json
-			console.log response
-			callback JSON.stringify {error: "something went wrong :("}
-	)
+		resp.end JSON.stringify allowedUserProjects
 
 exports.saveProjects = (jsonBody, callback) ->
 
@@ -224,24 +186,14 @@ exports.updateProjects = (jsonBody, callback) ->
 			callback JSON.stringify {error: "something went wrong :("}
 	)
 
-exports.getScientists = (req, callback) ->
-	console.log 'in getScientists'
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/scientists"
-	request(
-		method: 'GET'
-		url: cmpdRegCall
-		json: true
-	, (error, response, json)=>
-		if !error
-			console.log JSON.stringify json
-			callback JSON.stringify json
-		else
-			console.log 'got ajax error trying to get CmpdReg scientists'
-			console.log error
-			console.log json
-			console.log response
-			callback JSON.stringify {error: "something went wrong :("}
-	)
+exports.getScientists = (req, resp) =>
+	exports.getScientistsInternal (authors) ->
+		resp.json authors 
+
+exports.getScientistsInternal = (callback) ->
+	loginRoutes = require './loginRoutes.js'
+	loginRoutes.getAuthorsInternal {}, (statusCode, authors) =>
+		callback authors
 
 exports.saveScientists = (jsonBody, callback) ->
 	console.log 'in saveScientists'
@@ -284,25 +236,31 @@ exports.updateScientists = (jsonBody, callback) ->
 	)
 
 exports.searchCmpds = (req, resp) ->
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/search/cmpds'
-	request(
-		method: 'POST'
-		url: cmpdRegCall
-		body: JSON.stringify req.body
-		json: true
-		timeout: 6000000
-	, (error, response, json) =>
-		if !error
-			console.log JSON.stringify json
-			resp.setHeader('Content-Type', 'application/json')
-			resp.end JSON.stringify json
-		else
-			console.log 'got ajax error trying to search for compounds'
-			console.log error
-			console.log json
-			console.log response
-			resp.end JSON.stringify {error: "something went wrong :("}
-	)
+	authorRoutes = require './AuthorRoutes.js'
+	authorRoutes.allowedProjectsInternal req.user, (statusCode, allowedUserProjects) ->
+		_ = require "underscore"
+		allowedProjectCodes = _.pluck(allowedUserProjects, "code")
+		req.body.projects = allowedProjectCodes
+		console.log req.body
+		cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/search/cmpds'
+		request(
+			method: 'POST'
+			url: cmpdRegCall
+			body: JSON.stringify req.body
+			json: true
+			timeout: 6000000
+		, (error, response, json) =>
+			if !error
+				console.log JSON.stringify json
+				resp.setHeader('Content-Type', 'application/json')
+				resp.end JSON.stringify json
+			else
+				console.log 'got ajax error trying to search for compounds'
+				console.log error
+				console.log json
+				console.log response
+				resp.end JSON.stringify {error: "something went wrong :("}
+		)
 
 exports.getStructureImage = (req, resp) ->
 	imagePath = (req.originalUrl).replace /\/cmpdreg\/structureimage/, ""
@@ -333,7 +291,7 @@ exports.getMetaLot = (req, resp) ->
 			if json?.lot?.project?.code?
 				projectCode = json.lot.project.code
 				if cmpdRegConfig.metaLot.useProjectRolesToRestrictLotDetails
-					exports.getACASProjects req, (statusCode, acasProjectsForUsers) =>
+					authorRoutes.allowedProjectsInternal req.user, (statusCode, acasProjectsForUsers) =>
 						if statusCode != 200
 							resp.statusCode = statusCode
 							resp.end JSON.stringify acasProjectsForUsers
@@ -351,7 +309,6 @@ exports.getMetaLot = (req, resp) ->
 					resp.end JSON.stringify "Could not find lot"
 				else
 					resp.json json
-
 		else
 			console.log 'got ajax error trying to get CmpdReg MetaLot'
 			console.log error
@@ -384,7 +341,7 @@ exports.regSearch = (req, resp) ->
 	)
 
 exports.getMarvinJSLicense = (req, resp) ->
-	cmpdRegCall = (config.all.client.service.cmpdReg.persistence.basepath).replace '\/cmpdreg', "/"
+	cmpdRegCall = (config.all.client.service.cmpdReg.persistence.basepath).replace '\/acas', "/"
 	licensePath = cmpdRegCall + 'marvin4js-license.cxl'
 	console.log licensePath
 	req.pipe(request(licensePath)).pipe(resp)
@@ -401,6 +358,8 @@ exports.fileSave = (req, resp) ->
 	req.pipe(request[req.method.toLowerCase()](cmpdRegCall)).pipe(resp)
 
 exports.metaLots = (req, resp) ->
+	if req.user? && !req.body.modifiedBy?
+		req.body.lot.modifiedBy = req.user.username
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/metalots'
 	request(
 		method: 'POST'
@@ -590,7 +549,8 @@ exports.validateParent = (req, resp) ->
 
 exports.updateParent = (req, resp) ->
 	console.log "exports.updateParent"
-
+	if req.user? && !req.body.modifiedBy?
+		req.body.modifiedBy = req.user.username	
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parents/updateParent'
 	request(
 		method: 'POST'
@@ -618,7 +578,8 @@ exports.updateLotMetadata = (req, resp) ->
 	console.log 'in update lot metaData'
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parentLot/updateLot/metadata'
 	console.log cmpdRegCall
-
+	if req.user? && !req.body.modifiedBy?
+		req.body.modifiedBy = req.user.username
 	request(
 		method: 'POST'
 		url: cmpdRegCall
@@ -642,7 +603,11 @@ exports.updateLotsMetadata = (req, resp) ->
 	console.log 'in update lot array metaData'
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parentLot/updateLot/metadata/jsonArray'
 	console.log cmpdRegCall
-
+	if req.user?
+		req.body.map((lot) ->
+			if !lot.modifiedBy?
+				lot.modifiedBy = req.user.username
+		)
 	request(
 		method: 'POST'
 		url: cmpdRegCall
@@ -666,7 +631,8 @@ exports.updateParentMetadata = (req, resp) ->
 	console.log 'in update parent metaData'
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parents/updateParent/metadata'
 	console.log cmpdRegCall
-
+	if req.user? && !req.body.modifiedBy?
+		req.body.modifiedBy = req.user.username
 	request(
 		method: 'POST'
 		url: cmpdRegCall

@@ -285,6 +285,7 @@ client.service.result.viewer.liveDesign.database.username=
 client.service.result.viewer.liveDesign.database.password=
 client.service.result.viewer.liveDesign.database.hostname=
 client.service.result.viewer.liveDesign.database.port=
+server.liveDesign.installClientOnStart=false
 client.service.result.viewer.simpleSAR.baseUrl=
 client.service.result.viewer.seurat.protocolPrefix=http://${client.service.persistence.host}:9080/seurat/runseurat?cmd=newjob&AssayName=
 client.service.result.viewer.seurat.experimentPrefix=&AssayProtocol=
@@ -371,9 +372,9 @@ client.browser.enableSearchAll=true
 
 ## Cmpd Reg Bulk Loader Options
 client.service.cmpdReg.persistence.host=tomcat
-client.service.cmpdReg.persistence.path=cmpdreg/api/v1
+client.service.cmpdReg.persistence.path=acas/api/v1
 client.service.cmpdReg.persistence.fullpath=http://${client.service.cmpdReg.persistence.host}:${client.service.persistence.port}/${client.service.cmpdReg.persistence.path}/
-client.service.cmpdReg.persistence.basepath=http://${client.service.cmpdReg.persistence.host}:${client.service.persistence.port}/cmpdreg
+client.service.cmpdReg.persistence.basepath=http://${client.service.cmpdReg.persistence.host}:${client.service.persistence.port}/acas
 
 # If project select is shown separately in the Configuration part of the GUI
 client.cmpdReg.showProjectSelect=true
@@ -538,7 +539,6 @@ server.curveRender.drawPointsForRejectedCurve=true
 # Restrict experiment search by project
 server.service.projects.restrictExperiments=false
 
-flyway.location=db/migration/postgres,com.labsynch.labseer.db.migration.postgres
 flyway.schema=acas
 flyway.database.username=${server.database.username}
 flyway.database.password=${server.database.password}

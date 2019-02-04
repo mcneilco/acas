@@ -435,7 +435,7 @@ $(function() {
                 this.model.set({
                     notebookPage: jQuery.trim(this.$('.notebookPage').val()),
                     synthesisDate: jQuery.trim(this.$('.synthesisDate').val()),
-                    chemist: this.chemistCodeController.getSelectedModel(),
+                    chemist: this.chemistCodeController.getSelectedModel().get("code"),
                     lotNumber:
                       (jQuery.trim(this.$('.lotNumber').val())=='') ? null :
                             parseInt(jQuery.trim(this.$('.lotNumber').val()))
@@ -458,7 +458,7 @@ $(function() {
                     purityOperator: null,
                     amountUnits: null,
                     purityMeasuredBy: null,
-                    project: this.projectCodeController.getSelectedModel(),
+                    project: this.projectCodeController.getSelectedModel().get("code"),
                     supplierLot: '',
                     meltingPoint: null,
                     boilingPoint: null,
@@ -536,7 +536,8 @@ $(function() {
                     tareWeightUnits: tareWeightUnits,
                     totalAmountStoredUnits: totalAmountStoredUnits,
                     purityMeasuredBy: purityMeasuredBy,
-                    project: this.projectCodeController.getSelectedModel(),
+                    chemist: this.chemistCodeController.getSelectedModel().get("code"),
+                    project: this.projectCodeController.getSelectedModel().get("code"),
                     vendor: vendor,
                     supplierLot: jQuery.trim(this.$('.supplierLot').val()),
                     meltingPoint: 
