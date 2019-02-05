@@ -495,6 +495,19 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   
   # Get the current batch Ids
   batchesToCheck <- calculatedResults$originalMainID != replaceFakeCorpBatchId
+  
+  # The preferred id function strips new line characters from entity reference codes because it
+  # posts the list as a new line seperated string. The best way to deal with this is to clean up 
+  # the codes beforehand and warn the user of the changed data.
+  newLineCharacterRegex <- "\n|\r"
+  batchIdsWithNewLine <- grepl(newLineCharacterRegex,calculatedResults$batchCode)
+  if(any(batchIdsWithNewLine)) {
+    calculatedResults$batchCode[batchIdsWithNewLine] <- gsub(newLineCharacterRegex, "", calculatedResults$batchCode[batchIdsWithNewLine])
+    warnUser(paste0("The loader found and removed new line characters from  ", mainCode, " rows: '", 
+                paste(unique(calculatedResults$batchCode[batchIdsWithNewLine]),collapse="' ,'"), 
+                "'."))
+  }
+  
   batchIds <- unique(calculatedResults$batchCode[batchesToCheck])
   
   if (inputFormat == "Gene ID Data") {
