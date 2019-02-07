@@ -258,7 +258,7 @@ $(function() {
 		    this.saltFormController.updateModel(function () {
 			    if (mlself.saltFormController.model.isNew()) {
 				    mlself.saltFormController.model.set({
-					    'chemist': mlself.lotController.model.get('chemist')
+					    'chemist': mlself.lotController.model.get('chemist').get("code")
 				    });
 			    }
 
@@ -288,7 +288,6 @@ $(function() {
 				    message: 'Saving ' + (lisb ? 'batch' : 'lot') + '...'
 			    });
 			    mlself.delegateEvents({}); // stop listening to buttons
-
 			    $.ajax({
 				    type: "POST",
 				    url: url,
@@ -386,7 +385,7 @@ $(function() {
 		    this.parentController.updateModel();
 		    if (this.parentController.model.isNew()) {
 			    this.parentController.model.set({
-				    'chemist': this.lotController.model.get('chemist')
+				    'chemist': this.lotController.model.get('chemist').get("code")
 			    });
 		    }
 	    },
@@ -415,7 +414,7 @@ $(function() {
 	    },
 
 	    allowedToUpdate: function () {
-				var chemist = this.model.get('lot').get('chemist');
+				var chemist = this.model.get('lot').get('chemist').get('selectedCode');
 				var registeredBy = this.model.get('lot').get('registeredBy');
 
 		    if (this.user == null || chemist == null || this.model.get('lot').isNew()) return true; // test mode or new
