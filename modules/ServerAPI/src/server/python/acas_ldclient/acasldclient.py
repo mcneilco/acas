@@ -63,8 +63,13 @@ def list_groups(client, test):
     print test
     return client.list_groups()
 
-def auth_check(client, username, password):
-    auth_return = client.auth_check(username = username, password = password)
+def auth_check(endpoint, username, password):
+    auth_return = {'authorized': True, 'error': None}
+    try:
+        sessionClient = LDClient(host=endpoint, username=username, password=password)
+    except Exception as e:
+        auth_return['authorized'] = False
+        auth_return['error'] = e.message    
     return auth_return
 
 def ld_group_to_acas_role(group):
@@ -75,7 +80,7 @@ def ld_group_to_acas_role(group):
     ls_kind = split[1]
     role_name = "_".join(split[2:len(split)])
     acas_role = {
-        "id": group["id"],
+        "id": group["id"], 
         "roleEntry": {
             'id': group["id"],
             'lsType': ls_type,
@@ -179,10 +184,13 @@ def main():
     parser = get_parser()
     args = parser.parse_args()
     endpoint = "{0}/api".format(args.ld_server)
-    client = LDClient(host=endpoint, username=args.username, password=args.password)
-    method = eval(args.method)
+    if args.method != "auth_check":
+        client = LDClient(host=endpoint, username=args.username, password=args.password)
+        method = eval(args.method)
+        result = method(client, *args.args)
+    else:
+        result = auth_check(endpoint, *args.args)
 
-    result = method(client, *args.args)
     print json.dumps(result)
 
 if __name__ == "__main__":
