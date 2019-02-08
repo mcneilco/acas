@@ -1775,7 +1775,7 @@ getExperimentByNameCheck <- function(experimentName, protocol, configList, dupli
   tryCatch({
     experimentList <- getExperimentsByName(experimentName)
   }, error = function(e) {
-    stopUser("There was an error checking if the ",racas::applicationSettings$client.experiment.label," already exists. Please contact your system administrator.")
+    stopUser(paste0("There was an error checking if the ",racas::applicationSettings$client.experiment.label," already exists. Please contact your system administrator."))
   })
   
   # Warn the user if the experiment already exists (the else block)
@@ -1800,7 +1800,7 @@ getExperimentByNameCheck <- function(experimentName, protocol, configList, dupli
         }
       }
     }, error = function(e) {
-      stopUser("There was an error checking if the experiment is in the correct ",racas::applicationSettings$client.protocol.label,". Please contact your system administrator.")
+      stopUser(paste0("There was an error checking if the experiment is in the correct ",racas::applicationSettings$client.protocol.label,". Please contact your system administrator."))
     })
     # Finish if the previous experiment was part of a deleted protocol, we can just delete and reload
     if (experimentList[[1]]$protocol$ignored) {
@@ -2148,7 +2148,7 @@ validateProject <- function(projectName, configList, username, protocolName = NU
     tryCatch({
       protocolList <- getProtocolsByName(protocolName)
     }, error = function(e) {
-      stopUser("There was an error in accessing the ",racas::applicationSettings$client.protocol.label,". Please contact your system administrator.")
+      stopUser(paste0("There was an error in accessing the ",racas::applicationSettings$client.protocol.label,". Please contact your system administrator."))
     })
     if (length(protocolList) !=0) {
       protocol <- getProtocolByCodeName(protocolList[[1]]$codeName)
