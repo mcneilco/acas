@@ -470,11 +470,11 @@
 				name: "None"
 				ignored: false
 			,
-				codeType: "model fit"
-				codeKind: "transformation units"
+				codeType: "compound"
+				codeKind: "scientist"
 				codeOrigin: "ACAS DDICT"
-				code: "%"
-				name: "%"
+				code: "Pharmaron"
+				name: "Pharmaron"
 				ignored: false
 			]
 

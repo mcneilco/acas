@@ -248,7 +248,15 @@ exports.getAllAuthors = (opts, callback) ->
 		baseurl = config.all.client.service.persistence.fullpath+"authors/findByRoleTypeKindAndName"
 		baseurl += "?roleType=#{req.query.roleType}&roleKind=#{req.query.roleKind}&roleName=#{req.query.roleName}&format=codeTable"
 	serverUtilityFunctions.getFromACASServerInternal baseurl, (statusCode, json) ->
-		callback statusCode, json
+		# If additional codeType and codeKind parameters are supplied then append the code values for the additional authors
+		# This is was added for the purpose of allowing additional non-authors to show up in picklists throughout ACAS and Creg
+		if opts.additionalCodeType? and opts.additionalCodeKind?
+			codeTableServiceRoutes = require "#{ACAS_HOME}/routes/CodeTableServiceRoutes.js"
+			codeTableServiceRoutes.getCodeTableValuesInternal opts.additionalCodeType, opts.additionalCodeKind, (codes) ->
+				Array::push.apply json, codes
+				callback statusCode, json
+		else
+			callback statusCode, json
 
 exports.getAllAuthorObjectsInternal = (callback) ->
 	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
