@@ -441,7 +441,7 @@ class window.BaseEntityController extends AbstractThingFormController #TODO: che
 
 	setupScientistSelect: ->
 		@scientistList = new PickListList()
-		@scientistList.url = "/api/authors"
+		@scientistList.url = "/api/authors?additionalCodeType=assay&additionalCodeKind=scientist"
 		@scientistListController = new PickListSelectController
 			el: @$('.bv_scientist')
 			collection: @scientistList

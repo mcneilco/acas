@@ -155,7 +155,7 @@ exports.validationPropertiesInternal = (reqObject, callback) ->
 
 exports.getScientistsInternal = (callback) ->
 	loginRoutes = require './loginRoutes.js'
-	loginRoutes.getAuthorsInternal {}, (statusCode, authors) =>
+	loginRoutes.getAuthorsInternal {additionalCodeType: 'compound', additionalCodeKind: 'scientist'}, (statusCode, authors) =>
 		callback authors
 
 exports.registerCmpds = (req, resp) ->

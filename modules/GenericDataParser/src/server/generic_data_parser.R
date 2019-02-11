@@ -2224,7 +2224,7 @@ validateScientist <- function(scientistName, configList, testMode = FALSE) {
   
   if (!testMode) {
     response <- tryCatch({
-      getURL(URLencode(paste0(racas::applicationSettings$server.nodeapi.path, racas::applicationSettings$client.service.users.path, "/", scientistName)))
+      getURL(URLencode(paste0(racas::applicationSettings$server.nodeapi.path, "/api/authors?additionalCodeType=assay&additionalCodeKind=scientist")))
     }, error = function(e) {
       addError( paste("There was an error in validating the scientist's name:", scientistName))
       return("")
@@ -2238,14 +2238,15 @@ validateScientist <- function(scientistName, configList, testMode = FALSE) {
       response <- toJSON(list(username = scientistName))
     }
   }
-  
-  if (response == "") {
-    addError( paste0("The Scientist you supplied, '", scientistName, "', is not a valid name. Please enter the scientist's login name."))
-    return("")
-  }
-  
+
   username <- tryCatch({
-    fromJSON(response)$username
+    response <- jsonlite::fromJSON(response)
+    if (nrow(response) == 0 || nrow(response[response$code == scientistName, ]) == 0) {
+      addError( paste0("The Scientist you supplied, '", scientistName, "', is not a valid name. Please enter the scientist's name."))
+      return("")
+    } else {
+      return(scientistName)
+    }
   }, error = function(e) {
     addError( paste("There was an error in validating the scientist's name:", scientistName))
     return("")

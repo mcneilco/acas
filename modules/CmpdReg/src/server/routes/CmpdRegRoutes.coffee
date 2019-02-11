@@ -192,7 +192,7 @@ exports.getScientists = (req, resp) =>
 
 exports.getScientistsInternal = (callback) ->
 	loginRoutes = require './loginRoutes.js'
-	loginRoutes.getAuthorsInternal {}, (statusCode, authors) =>
+	loginRoutes.getAuthorsInternal {additionalCodeType: 'compound', additionalCodeKind: 'scientist'}, (statusCode, authors) =>
 		callback authors
 
 exports.saveScientists = (jsonBody, callback) ->
