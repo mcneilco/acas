@@ -1487,8 +1487,15 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
   
   longResults$"UnparsedValue" <- trim(as.character(longResults$"UnparsedValue"))
   
+  # Get supportedOperators from config
+  # operators <- ">,<,>=,<=,~"
+  # supportedOperators <- strsplit(operators,",")[[1]]
+  # longResults <- list(UnparsedValue = c("asdf", ">1234.1234","<123.123",">=1234.1234","<=1234.1234","~1234.1234",">asdf"))
+  supportedOperators <- strsplit(racas::applicationSettings$server.sel.supportedOperators,",")[[1]]
+  matchExpression <- paste0(supportedOperators, collapse = "|")
+  
   # Parse numeric data from the unparsed values
-  matches <- is.na(suppressWarnings(as.numeric(gsub("^(>|<)(.*)", "\\2", gsub(",","",longResults$"UnparsedValue")))))
+  matches <- is.na(suppressWarnings(as.numeric(gsub(paste0("^(",matchExpression,")(.*)"), "\\2", gsub(",","",longResults$"UnparsedValue")))))
   longResults$"numericValue" <- longResults$"UnparsedValue"
   longResults$"numericValue"[matches] <- ""
   
@@ -1501,7 +1508,6 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
   longResults$"stringValue"[longResults$Class == "Clob"] <- ""
   
   # Parse Operators from the unparsed value
-  matchExpression <- ">|<"
   longResults$"valueOperator" <- longResults$"numericValue"
   matches <- gregexpr(matchExpression,longResults$"numericValue")
   regmatches(longResults$"valueOperator",matches, invert = TRUE) <- ""

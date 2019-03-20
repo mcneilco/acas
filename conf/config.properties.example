@@ -472,6 +472,11 @@ client.experiment.hideFields=
 # Experiment status after successful SEL upload
 server.sel.experimentStatus=approved
 
+# Supported operator types, to add additional operator types you must create a 
+# confJSON.coffee file which registers new operator_kinds or manually add new rows in the
+# operator_kind table
+server.sel.supportedOperators=approved
+
 
 # User role that allows changing protocol and experiment statuses to "Approved" or "Rejected"
 client.entity.approvalRole=

@@ -445,6 +445,9 @@
 			,
 				typeName: "comparison"
 				kindName: "="
+			,
+				typeName: "comparison"
+				kindName: "~"
 			]
 
 		unittypes:
