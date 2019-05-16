@@ -102,7 +102,7 @@ cd acas-cmpdreg-roo-server
 * Login and/or Sign-Up
 * Click Download > JChem Suite > JChem
 * Scroll down to Archives and select 16.4.25.0, click Get Archive
-* Download jchem-merged-lib-16.4.25.0.zip
+* Download [jchem-merged-lib-16.4.25.0.zip](https://chemaxon.com/download?dl=%2Fdata%2Fdownload%2Fjchem%2F16.4.25.0%2Fjchem-merged-lib-16.4.25.0.zip)
 * Unzip it and rename jchem.jar to jchem-16.4.25.0.jar
 
 ##### Add chemaxon jar file to a lib folder in the checkout
@@ -157,23 +157,41 @@ docker-compose up -d
 ```
 
 #### Login
+
+Visit `http://localhost:3000` in your browser to login. You will need to create a user in order to access the web app: 
+
+```bash
+curl localhost:3001/api/systemTest/getOrCreateACASBob
+curl localhost:3001/api/systemTest/getOrCreateGlobalProject
+curl localhost:3001/api/systemTest/getOrCreateGlobalProjectRole
+curl localhost:3001/api/systemTest/giveBobRoles
+curl localhost:3001/api/systemTest/getOrCreateCmpdRegBob
+curl localhost:3001/api/systemTest/syncRoles
 ```
-http://localhost:3000
-```
+Optionally you could run the shell script `docker_bob_setup.sh` in this repository instead of manually `curl`ing each endpoint.
 
 #### Viewing logs
 
+```
 docker-compose logs --tail=20 -f <service>
+```
 
 e.g. for all containers
+
 ```
-docker-compose logs --tail=20 -f 
+docker-compose logs -f 
 ```
 
 e.g. for only tomcat
 
 ```
 docker-compose logs --tail=20 -f tomcat
+```
+
+Once you want to bring everything down:
+
+```bash
+docker-compose down
 ```
 
 #### Troubleshooting
