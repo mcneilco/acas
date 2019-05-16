@@ -170,6 +170,8 @@ curl localhost:3001/api/systemTest/syncRoles
 ```
 Optionally you could run the shell script `docker_bob_setup.sh` in this repository instead of manually `curl`ing each endpoint.
 
+This will create a user "bob" with password "secret". 
+
 #### Viewing logs
 
 ```
@@ -188,7 +190,7 @@ e.g. for only tomcat
 docker-compose logs --tail=20 -f tomcat
 ```
 
-Once you want to bring everything down:
+Stop the web stack
 
 ```bash
 docker-compose down
