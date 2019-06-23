@@ -103,7 +103,8 @@ def ld_user_to_acas_user_code_table(ld_user):
     return acas_user
 
 def get_users(client, ls_type = None, ls_kind = None, role_name = None):
-    ld_users = client.list_users()
+    # ld_users = client.list_users()
+    ld_users = client.client.get("/users?include_permissions=false", '')
     if ls_type == None and ls_kind == None and role_name == None:
         acas_users = map(ld_user_to_acas_user_code_table, ld_users)
     else:
