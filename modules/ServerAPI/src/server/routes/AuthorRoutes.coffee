@@ -57,7 +57,7 @@ exports.allowedProjectsInternal = (user, callback) ->
 			allowedProjectCodes = []
 			user.roles.forEach (role) ->
 				if role.roleEntry.lsType != null && role.roleEntry.lsType == "Project"
-					allowedProjectCodes.push role.lsKind
+					allowedProjectCodes.push role.roleEntry.lsKind
 				else if role.roleEntry.roleName == config.all.client.roles.acas.adminRole
 					isAdmin = true
 			if isAdmin
