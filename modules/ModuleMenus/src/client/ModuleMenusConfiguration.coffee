@@ -79,6 +79,12 @@ window.ModuleMenusConfiguration =
 		autoLaunchName: "acasLabelSequence"
 		requireUserRoles: [window.conf.roles.acas.adminRole]
 	,
+		isHeader: false
+		menuName: "Additional Assay Scientists"
+		mainControllerClassName: "AssayScientistBrowserController"
+		autoLaunchName: "assay_scientist_browser"
+		requireUserRoles: [window.conf.roles.acas.adminRole]
+	,
 		isHeader: true
 		menuName: "CmpdReg Admin"
 		requireUserRoles: [window.conf.roles.cmpdreg.adminRole]
@@ -97,8 +103,8 @@ window.ModuleMenusConfiguration =
 		requireUserRoles: [window.conf.roles.cmpdreg.adminRole]
 	,
 		isHeader: false
-		menuName: "CmpdReg Scientists"
-		mainControllerClassName: "ScientistBrowserController"
-		autoLaunchName: "scientist_browser"
+		menuName: "Additional CmpdReg Scientists"
+		mainControllerClassName: "CompoundScientistBrowserController"
+		autoLaunchName: "compound_scientist_browser"
 		requireUserRoles: [window.conf.roles.cmpdreg.adminRole]
 	]
