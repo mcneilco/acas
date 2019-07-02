@@ -106,7 +106,7 @@ exports.searchCodeTablesEntities = (req, resp) ->
 			searchResults = results
 		else
 			for r in results
-				if r.code.toLowerCase().indexOf(searchTerm) >= 0 || r.comments.toLowerCase().indexOf(searchTerm) >= 0 || r.description.toLowerCase().indexOf(searchTerm) >= 0 || r.name.toLowerCase().indexOf(searchTerm) >= 0 
+				if (r.code? && r.code.toLowerCase().indexOf(searchTerm) >= 0) || (r.comments? && r.comments.toLowerCase().indexOf(searchTerm) >= 0) || (r.description? && r.description.toLowerCase().indexOf(searchTerm) >= 0) || (r.name? && r.name.toLowerCase().indexOf(searchTerm) >= 0) 
 					searchResults.push(r)
 		resp.json searchResults
 
