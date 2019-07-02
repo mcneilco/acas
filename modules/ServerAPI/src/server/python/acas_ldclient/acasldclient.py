@@ -109,19 +109,28 @@ def get_users(client, ls_type = None, ls_kind = None, role_name = None):
         acas_users = map(ld_user_to_acas_user_code_table, ld_users)
     else:
         groups = client.list_groups()
-        roles = map(ld_group_to_acas_role, groups)
-        role = [r for r in roles if r["roleEntry"]["lsType"] == ls_type and r["roleEntry"]["lsKind"] == ls_kind and r["roleEntry"]["roleName"] == role_name]
-        if len(role) == 0:
-            return []
-        users = []
+        permissions = client.list_permissions()
         memberships = client.list_memberships()
-        userDict = {}
-        for u in ld_users:
-            userDict[u["id"]] = u
-        for m in memberships:
-            if m["group_id"] == role[0]["id"]:
-                users.append(userDict[m["user_id"]])
-        acas_users = map(ld_user_to_acas_user_code_table, users) 
+        projects = client.projects()
+        user_projects = {}
+        for p in permissions:
+            for g in groups:
+                if p["group_id"] == g["id"]:
+                    for proj in projects:
+                        if p["project_id"] == proj.id:
+                            if proj.name in user_projects:
+                                user_projects[proj.name]["granting_groups"].append(g["name"])
+                            else:
+                                user_projects[proj.name] = {"id":proj.id, "granting_groups": [g["name"]], "ld_users": []}
+                            for m in memberships:
+                                if m["group_id"] == g["id"]:
+                                    for u in ld_users:
+                                        if u["id"] == m["user_id"]:
+                                            user_projects[proj.name]["ld_users"].append(u)
+        if ls_kind in user_projects:
+            acas_users = map(ld_user_to_acas_user_code_table, user_projects[ls_kind]["ld_users"]) 
+        else:
+            acas_users = []
     return acas_users
 
 def ld_user_to_acas_user(ld_user, roles):
@@ -156,13 +165,35 @@ def get_user(client, username):
     user = client.get_user(username)
     permissions = client.list_permissions()
     memberships = client.list_memberships()
+    projects = client.projects()
     groups = client.list_groups()
     user_memberships = [m for m in memberships if m['user_id'] == user['id']]
     user_groups = [next(g for g in groups if g["id"]==m["group_id"]) for m in user_memberships]
-    roles = map(ld_group_to_acas_role, user_groups)
+    user_projects = {}
+    for p in permissions:
+        for g in user_groups:
+            if p["group_id"] == g["id"]:
+                for proj in projects:
+                    if p["project_id"] == proj.id:
+                        if proj.name in user_projects:
+                            user_projects[proj.name]["granting_groups"].append(g["name"])
+                        else:
+                            user_projects[proj.name] = {"id":proj.id, "granting_groups": [g["name"]]}
+    roles = []
+    for proj, data in user_projects.iteritems():
+        roles.append({
+            "id": data["id"], 
+            "roleEntry": {
+                'id': data["id"],
+                'lsType': 'Project',
+                'lsKind': proj,
+                'lsTypeAndKind':  "Project_" + proj,
+                'roleDescription': "Permission to Project granted by Live Design group(s): "+', '.join("'{0}'".format(g) for g in data["granting_groups"]),
+                'roleName': "User",
+                'version': 0
+            }
+        })
     acas_user = ld_user_to_acas_user(user, roles)
-    # user = {"id":1,"username":"bob","email":"bob@mcneilco.com","firstName":"Ham","lastName":"Cheese","roles":[{"id":2,"roleEntry":{"id":1,"lsKind":"ACAS","lsType":"System","lsTypeAndKind":"System_ACAS","roleDescription":"ROLE_ACAS-USERS autocreated by ACAS","roleName":"ROLE_ACAS-USERS","version":0},"version":0},{"id":1,"roleEntry":{"id":2,"lsKind":"ACAS","lsType":"System","lsTypeAndKind":"System_ACAS","roleDescription":"ROLE_ACAS-ADMINS autocreated by ACAS","roleName":"ROLE_ACAS-ADMINS","version":0},"version":0},{"id":4,"roleEntry":{"id":4,"lsKind":"CmpdReg","lsType":"System","lsTypeAndKind":"System_CmpdReg","roleDescription":"ROLE_CMPDREG-ADMINS autocreated by ACAS","roleName":"ROLE_CMPDREG-ADMINS","version":0},"version":0},{"id":3,"roleEntry":{"id":5,"lsKind":"ACAS","lsType":"System","lsTypeAndKind":"System_ACAS","roleDescription":"ROLE_ACAS-CROSS-PROJECT-LOADER autocreated by ACAS","roleName":"ROLE_ACAS-CROSS-PROJECT-LOADER","version":0},"version":0},{"id":5,"roleEntry":{"id":3,"lsKind":"CmpdReg","lsType":"System","lsTypeAndKind":"System_CmpdReg","roleDescription":"ROLE_CMPDREG-USERS autocreated by ACAS","roleName":"ROLE_CMPDREG-USERS","version":0},"version":0},{"id":6,"roleEntry":{"id":6,"lsKind":"PROJ-00000001","lsType":"Project","lsTypeAndKind":"Project_PROJ-00000001","roleDescription":"User autocreated by ACAS","roleName":"User","version":0},"version":0}]}
-
     return acas_user
 
 def get_projects(client):
