@@ -2224,7 +2224,12 @@ validateScientist <- function(scientistName, configList, testMode = FALSE) {
   
   if (!testMode) {
     response <- tryCatch({
-      getURL(URLencode(paste0(racas::applicationSettings$server.nodeapi.path, "/api/authors?additionalCodeType=assay&additionalCodeKind=scientist")))
+      url <- paste0(racas::applicationSettings$server.nodeapi.path, "/api/authors?additionalCodeType=assay&additionalCodeKind=scientist")
+      userRole <- racas::applicationSettings$client.roles.acas.userRole
+      if(!is.null(userRole) && userRole!="") {
+        url <- paste0(url,"&roleName=",userRole)
+      }
+      getURL(URLencode(url))
     }, error = function(e) {
       addError( paste("There was an error in validating the scientist's name:", scientistName))
       return("")
