@@ -155,7 +155,11 @@ exports.validationPropertiesInternal = (reqObject, callback) ->
 
 exports.getScientistsInternal = (callback) ->
 	loginRoutes = require './loginRoutes.js'
-	loginRoutes.getAuthorsInternal {additionalCodeType: 'compound', additionalCodeKind: 'scientist'}, (statusCode, authors) =>
+	config = require '../conf/compiled/conf.js'
+	roleName = null
+	if config.all.client.roles.cmpdreg.chemistRole? && config.all.client.roles.cmpdreg.chemistRole != ""
+		roleName = config.all.client.roles.cmpdreg.chemistRole
+	loginRoutes.getAuthorsInternal {additionalCodeType: 'compound', additionalCodeKind: 'scientist', roleName: roleName}, (statusCode, authors) =>
 		callback authors
 
 exports.registerCmpds = (req, resp) ->
