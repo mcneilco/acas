@@ -2246,11 +2246,12 @@ validateScientist <- function(scientistName, configList, testMode = FALSE) {
 
   username <- tryCatch({
     response <- jsonlite::fromJSON(response)
-    if (nrow(response) == 0 || nrow(response[response$code == scientistName, ]) == 0) {
+    matchingScientist <- response[tolower(response$code) == tolower(scientistName), ]
+    if (nrow(response) == 0 || nrow(matchingScientist) == 0) {
       addError( paste0("The Scientist you supplied, '", scientistName, "', is not a valid name. Please enter the scientist's name."))
       return("")
     } else {
-      return(scientistName)
+      return(matchingScientist[1,]$code)
     }
   }, error = function(e) {
     addError( paste("There was an error in validating the scientist's name:", scientistName))
