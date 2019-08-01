@@ -9,9 +9,17 @@ exports.setupRoutes = (app, loginRoutes) ->
 
 exports.getProjects = (req, resp) ->
 	authorRoutes = require './AuthorRoutes.js'
-	authorRoutes.allowedProjectsInternal req.user, (statusCode, allowedUserProjects) ->
-		resp.status "200"
-		resp.end JSON.stringify allowedUserProjects
+	csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
+	callback = (err, user) =>
+		authorRoutes.allowedProjectsInternal user, (statusCode, allowedUserProjects) ->
+			resp.status "200"
+			resp.end JSON.stringify allowedUserProjects
+	if req.params.username?
+		user = csUtilities.getUser req.params.username, callback
+	else
+		user = req.user
+		callback null, user
+
 
 exports.getProjectStubs = (req, resp) ->
 	csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
