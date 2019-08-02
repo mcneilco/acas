@@ -200,17 +200,32 @@ exports.registerCmpds = (req, resp) ->
 			else
 				fileName = req.body.fileName
 				delete req.body.fileName
+
+				# get a list of scientists that are allowed to be registered chemists
 				exports.getScientistsInternal (authors) =>
 					_ = require 'underscore'
-
 					authorCodes = _.pluck authors, "code"
 
-					exports.validationPropertiesInternal req.body, (sdfProperties) =>
-						missingAuthorCodes = _.difference sdfProperties.chemists, authorCodes
-						if missingAuthorCodes.length > 0
-							resp.json [{summary: "Some chemists have not been registered please make sure they are registered and try again: #{JSON.stringify(missingAuthorCodes)}"}]
-							return
-						else
+					# get a list of allowed projects for the user doing the registration
+					authorRoutes = require './AuthorRoutes.js'
+					authorRoutes.allowedProjectsInternal req.user, (statusCode, allowedUserProjects) ->
+						projectCodes = _.pluck allowedUserProjects, "code"
+
+						# get the list of chemists/projects in the SDF file/DB mappings
+						exports.validationPropertiesInternal req.body, (sdfProperties) =>
+						    # find chemists and projects that are invalid
+							missingAuthorCodes = _.difference sdfProperties.chemists, authorCodes
+							missingProjectCodes = _.difference sdfProperties.projects, projectCodes
+
+							# if any chemists are invalid then pass those invalid users to the registration
+							# service for automatic failure
+							if missingAuthorCodes.length > 0
+								_.extend(_.findWhere(req.body.mappings, { dbProperty: 'Lot Chemist' }), {invalidValues: missingAuthorCodes});
+							# if any chemists are invalid then pass those invalid users to the registration
+							# service for automatic failure
+							if missingProjectCodes.length > 0
+								_.extend(_.findWhere(req.body.mappings, { dbProperty: 'Project' }), {invalidValues: missingProjectCodes});
+
 							config = require '../conf/compiled/conf.js'
 							baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"bulkload/registerSdf"
 							request = require 'request'
