@@ -198,13 +198,24 @@ def get_user(client, username):
 
 def get_projects(client):
     ld_projects = client.projects()
+    configs = client.config()
+
+    # If HIDE_GLOBAL_PROJECT ld config is set to 'true'
+    # then we need to remove "Global" from the list of projects
+    hide_global_project_config = next((config for config in configs if config['key'] == "HIDE_GLOBAL_PROJECT"), None)
+    if hide_global_project_config != None:
+        hide_global_project = hide_global_project_config['value']
+        if hide_global_project == 'true':
+            ld_projects = [ p for p in ld_projects if p.name != "Global"]
+    
     projects = map(ld_project_to_acas, ld_projects)
+
     return projects
 
 def ld_project_to_acas(ld_project):
     acas_project = {
         'id': ld_project.id,
-        'code': ld_project.alternate_id,
+        'code': ld_project.name,
         'alias': ld_project.name,
         'active': True if ld_project.active == "Y" else False,
         'isRestricted': ld_project.restricted,
