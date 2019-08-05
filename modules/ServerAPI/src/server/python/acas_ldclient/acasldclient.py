@@ -204,7 +204,7 @@ def get_projects(client):
 def ld_project_to_acas(ld_project):
     acas_project = {
         'id': ld_project.id,
-        'code': ld_project.alternate_id,
+        'code': ld_project.name,
         'alias': ld_project.name,
         'active': True if ld_project.active == "Y" else False,
         'isRestricted': ld_project.restricted,
