@@ -1001,7 +1001,6 @@ validateUploadedImages <- function(imageLocation, listedImageFiles, experimentFo
   notListed <- uploadedImageFiles[!uploadedImageFilesLower %in% listedImageFilesLower]
   
   if (length(notListed) > 0) {
-    unlink(experimentFolderLocation, recursive = TRUE)
     warnUser(paste0("The following files were uploaded in a zip file, but were not listed in the spreadsheet: ",
                     paste(notListed, collapse = ", ")))
   }
