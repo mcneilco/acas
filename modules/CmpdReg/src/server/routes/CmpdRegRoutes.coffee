@@ -292,9 +292,10 @@ exports.getMetaLot = (req, resp) ->
 				resp.end JSON.stringify "Could not find lot"
 				return			
 
-			if json?.lot?.project?.code?
-				projectCode = json.lot.project.code
+			if json?.lot?.project?
+				projectCode = json.lot.project
 				if cmpdRegConfig.metaLot.useProjectRolesToRestrictLotDetails
+					authorRoutes = require './AuthorRoutes.js'
 					authorRoutes.allowedProjectsInternal req.user, (statusCode, acasProjectsForUsers) =>
 						if statusCode != 200
 							resp.statusCode = statusCode
