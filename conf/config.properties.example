@@ -593,3 +593,6 @@ client.compoundInventory.saveLocationAsCodeValue=true
 # should be able to be pluralized with an "s" appended to them.
 client.protocol.label=Protocol
 client.experiment.label=Experiment
+
+client.cmpdRegBulkLoader.validationMode.enable=true
+client.cmpdRegBulkLoader.validationMode.allowRegistrationOnError=false
