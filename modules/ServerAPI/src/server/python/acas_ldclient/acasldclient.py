@@ -218,6 +218,7 @@ def ld_project_to_acas(ld_project):
         'code': ld_project.name,
         'alias': ld_project.name,
         'active': True if ld_project.active == "Y" else False,
+        'ignored': False if ld_project.active == "Y" else True,
         'isRestricted': ld_project.restricted,
         'name': ld_project.name
     }
