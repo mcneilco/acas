@@ -44,7 +44,7 @@ class window.DocForBatches extends Backbone.Model
 			url: "api/protocols/codename/"+docForBatchesProtocolCode
 			success: (json) =>
 				if json.length == 0
-					alert "Could not find required protocol with code: "+docForBatchesProtocolCode+". Please seek help from an administrator"
+					alert "Could not find required #{window.conf.protocol.label} with code: "+docForBatchesProtocolCode+". Please seek help from an administrator"
 				else
 					@.protocol = new Protocol(json)
 			error: (err) ->

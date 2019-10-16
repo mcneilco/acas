@@ -258,7 +258,7 @@ $(function() {
 		    this.saltFormController.updateModel(function () {
 			    if (mlself.saltFormController.model.isNew()) {
 				    mlself.saltFormController.model.set({
-					    'chemist': mlself.lotController.model.get('chemist')
+					    'chemist': mlself.lotController.model.get('chemist').get("code")
 				    });
 			    }
 
@@ -288,7 +288,6 @@ $(function() {
 				    message: 'Saving ' + (lisb ? 'batch' : 'lot') + '...'
 			    });
 			    mlself.delegateEvents({}); // stop listening to buttons
-
 			    $.ajax({
 				    type: "POST",
 				    url: url,
@@ -380,13 +379,13 @@ $(function() {
 		    this.lotController.updateModel();
 		    if (this.lotController.model.isNew() && this.user != null) {
 			    this.lotController.model.set({
-				    'registeredBy': this.user
+				    'registeredBy': this.user.get("code")
 			    });
 		    }
 		    this.parentController.updateModel();
 		    if (this.parentController.model.isNew()) {
 			    this.parentController.model.set({
-				    'chemist': this.lotController.model.get('chemist')
+				    'chemist': this.lotController.model.get('chemist').get("code")
 			    });
 		    }
 	    },
@@ -415,14 +414,14 @@ $(function() {
 	    },
 
 	    allowedToUpdate: function () {
-				var chemist = this.model.get('lot').get('chemist');
+				var chemist = this.model.get('lot').get('chemist').get('selectedCode');
 				var registeredBy = this.model.get('lot').get('registeredBy');
 
 		    if (this.user == null || chemist == null || this.model.get('lot').isNew()) return true; // test mode or new
 
 		    if (this.user.get('isAdmin')) {
 			    return true;
-		    }else if (!window.configuration.metaLot.disableEditMyLots && (this.user.get('code') == chemist.get('code') || (registeredBy != null && this.user.get('code') == registeredBy.code))) {
+		    }else if (!window.configuration.metaLot.disableEditMyLots && (this.user.get('code') == chemist || (registeredBy != null && this.user.get('code') == registeredBy))) {
 				return true;
 			} else {
 			    return false;

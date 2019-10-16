@@ -49,6 +49,7 @@ startApp = ->
 
 	httpServer = http.createServer(app).listen(app.get('port'), ->
 		console.log("ACAS API server listening on port " + app.get('port'))
+		require "./src/javascripts/ServerAPI/Bootstrap.js"
 	)
 
 	###TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES###

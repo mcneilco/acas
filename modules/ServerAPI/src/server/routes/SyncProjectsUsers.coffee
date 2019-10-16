@@ -14,16 +14,15 @@ exports.syncLiveDesignProjectsUsers = (req, resp) ->
 				exports.syncLiveDesignProjects caughtErrors, pythonErrors, configJSON, projectsJSON, (caughtErrors, pythonErrors) ->
 					console.debug caughtErrors
 					console.debug pythonErrors
-					exports.syncCmpdRegProjects req, acasGroupsAndProjects, caughtErrors, (syncCmpdRegProjectsCallback, caughtErrors) ->
-						exports.syncLiveDesignRoles caughtErrors, pythonErrors, configJSON, groupsJSON, (caughtErrors, pythonErrors) ->
-							if !caughtErrors
-								resp.statusCode = 200
-								console.log "Successfully synced projects and permissions with LiveDesign and Compound Reg"
-								resp.end "Successfully synced projects and permissions with LiveDesign and Compound Reg"
-							else
-								resp.statusCode = 500
-								console.log "An error has occurred trying to sync projects and permissions with LiveDesign and Compound Reg. Please contact an administrator."
-								resp.end "An error has occurred trying to sync projects and permissions with LiveDesign and Compound Reg. Please contact an administrator."
+					exports.syncLiveDesignRoles caughtErrors, pythonErrors, configJSON, groupsJSON, (caughtErrors, pythonErrors) ->
+						if !caughtErrors
+							resp.statusCode = 200
+							console.log "Successfully synced projects and permissions with LiveDesign"
+							resp.end "Successfully synced projects and permissions with LiveDesign"
+						else
+							resp.statusCode = 500
+							console.log "An error has occurred trying to sync projects and permissions with LiveDesign. Please contact an administrator."
+							resp.end "An error has occurred trying to sync projects and permissions with LiveDesign. Please contact an administrator."
 
 exports.getGroupsJSON = (callback) ->
 	request = require 'request'
@@ -113,58 +112,6 @@ exports.syncLiveDesignProjects = (caughtErrors, pythonErrors, configJSON, projec
 	else
 		console.warn "some live design configs are null, skipping sync of live design projects"
 		callback caughtErrors, pythonErrors
-
-exports.syncCmpdRegProjects = (req, acasGroupsAndProjects, caughtErrors, callback) ->
-	config = require '../conf/compiled/conf.js'
-	if config.all.server.project?.sync?.cmpdReg? && config.all.server.project.sync.cmpdReg
-		cmpdRegRoutes = require '../routes/CmpdRegRoutes.js'
-		_ = require "underscore"
-		#Get or create projects in CmpdReg
-		projectCodes = _.pluck acasGroupsAndProjects.projects, 'code'
-		console.debug 'project codes are:' + JSON.stringify projectCodes
-		cmpdRegRoutes.getProjects req, (projectResponse) ->
-			if (projectResponse.indexOf '<html>') > -1
-				console.error "Caught error getting CmpdReg projects"
-				console.error projectResponse
-				caughtErrors = true
-				callback 'ERROR', caughtErrors
-			foundProjects = JSON.parse projectResponse
-			foundProjectCodes = _.pluck foundProjects, 'code'
-			console.debug 'found projects are: '+foundProjectCodes
-			newProjectCodes = _.difference projectCodes, foundProjectCodes
-			newProjects = _.filter acasGroupsAndProjects.projects, (project) ->
-				return project.code in newProjectCodes
-			projectsToUpdate = _.filter acasGroupsAndProjects.projects, (project) ->
-				found = (_.findWhere foundProjects, {code: project.code})?
-				unchanged = (_.findWhere foundProjects, {code: project.code, name: project.name})?
-				return (found and !unchanged)
-			if (newProjects? and newProjects.length > 0) or (projectsToUpdate? and projectsToUpdate.length > 0)
-				if (newProjects? and newProjects.length > 0)
-					console.debug 'saving new projects with JSON: '+ JSON.stringify newProjects
-					cmpdRegRoutes.saveProjects newProjects, (saveProjectsResponse) ->
-						if (saveProjectsResponse.indexOf '<html>') > -1
-							console.error "Caught error saving CmpdReg projects"
-							console.error projectResponse
-							caughtErrors = true
-							callback 'ERROR', caughtErrors
-				else
-					for projectToUpdate in projectsToUpdate
-						oldProject = _.findWhere foundProjects, {code: projectToUpdate.code}
-						projectToUpdate.id = oldProject.id
-						projectToUpdate.version = oldProject.version
-					console.debug 'updating projects with JSON: '+ JSON.stringify projectsToUpdate
-					cmpdRegRoutes.updateProjects projectsToUpdate, (updateProjectsResponse) ->
-						if (updateProjectsResponse.indexOf '<html>') > -1
-							console.error "Caught error updating CmpdReg projects"
-							console.error updateProjectsResponse
-							caughtErrors = true
-							callback 'ERROR', caughtErrors
-			else
-				console.debug 'CmpdReg projects are up-to-date'
-			callback 'CmpdReg projects are up-to-date', caughtErrors
-	else
-		console.warn "config server.project.sync.cmpdReg is not set to true, skipping sync of CmpdReg projects"
-		callback 'Skipped sync of CmpdReg projects', caughtErrors
 
 exports.validateLiveDesignConfigs = (configJSON) ->
 	_ = require "underscore"

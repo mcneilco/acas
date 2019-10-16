@@ -72,9 +72,13 @@ exports.getCodeTableValuesInternal = (type, kind, cb) ->
 
 
 exports.postCodeTable = (req, resp) ->
+	exports.postCodeTableInternal req.body.codeEntry, (statusCode, response) =>
+		resp.end JSON.stringify response
+
+exports.postCodeTableInternal = (codeTableEntry, callback) ->
 	if global.specRunnerTestmode
 		codeTablePostTestJSON = require '../public/javascripts/spec/Components/testFixtures/codeTablePostTestJSON.js'
-		resp.end JSON.stringify codeTablePostTestJSON.codeEntry
+		callback 201, JSON.stringify codeTablePostTestJSON.codeEntry
 	else
 		console.log "attempting to post new code table value"
 		config = require '../conf/compiled/conf.js'
@@ -83,48 +87,76 @@ exports.postCodeTable = (req, resp) ->
 		request(
 			method: 'POST'
 			url: baseurl
-			body: req.body.codeEntry
+			body: codeTableEntry
 			json: true
 		, (error, response, json) =>
 			if !error && response.statusCode == 201
-				resp.end JSON.stringify json
+				callback 201, JSON.stringify json
 			else
 				console.log 'got ajax error trying to save new code table'
 				console.log error
 				console.log json
-				console.log response
+				callback response.statusCode, response.json
 		)
 
-
 exports.putCodeTable = (req, resp) ->
-	#console.log JSON.stringify req.body
+	exports.putCodeTableInternal req.body.codeEntry, (statusCode, response) =>
+		resp.end JSON.stringify response
+
+exports.putCodeTableInternal = (codeTableEntry, callback) ->
 	if global.specRunnerTestmode
 		codeTablePostTestJSON = require '../public/javascripts/spec/Components/testFixtures/codeTablePutTestJSON.js'
 		resp.end JSON.stringify codeTablePostTestJSON.codeEntry
 	else
 		config = require '../conf/compiled/conf.js'
-		putId = req.body.id
+		putId = codeTableEntry.id
 		baseurl = "#{config.all.client.service.persistence.fullpath}ddictvalues/codetable/#{putId}"
 
 		request = require 'request'
 		request(
 			method: 'PUT'
 			url: baseurl
-			body: req.body
+			body: codeTableEntry
 			json: true
 		, (error, response, json) =>
 			console.log response.statusCode
 			if !error && response.statusCode == 200
-				resp.end JSON.stringify json
+				callback 200, JSON.stringify json
 			else
 				console.log 'got ajax error trying to update code table'
 				console.log error
 				console.log response
+				callback response.statusCode, response.json
 		)
 
+exports.deleteCodeTable = (req, resp) ->
+	exports.deleteCodeTableInternal req.body.codeEntry, (statusCode, response) =>
+		resp.end JSON.stringify response
 
-
-
+exports.deleteCodeTableInternal = (codeTableEntry, callback) ->
+	config = require '../conf/compiled/conf.js'
+	console.log "#{config.all.client.service.persistence.fullpath}ddictvalues/#{codeTableEntry.id}"
+	if global.specRunnerTestmode
+		codeTablePostTestJSON = require '../public/javascripts/spec/Components/testFixtures/codeTablePostTestJSON.js'
+		callback 201, JSON.stringify codeTablePostTestJSON.codeEntry
+	else
+		console.log "attempting to delete code table value"
+		config = require '../conf/compiled/conf.js'
+		baseurl = "#{config.all.client.service.persistence.fullpath}ddictvalues/#{codeTableEntry.id}"
+		request = require 'request'
+		request(
+			method: 'DELETE'
+			url: baseurl
+			json: true
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				callback 200, JSON.stringify json
+			else
+				console.log 'got ajax error trying to delete code table'
+				console.log error
+				console.log json
+				callback response.statusCode, response.json
+		)
 
 
 

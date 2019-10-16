@@ -6,7 +6,7 @@ window.ModuleMenusConfiguration =
 		collapsible: false
 	,
 		isHeader: false
-		menuName: "Experiment Loader"
+		menuName: "#{window.conf.experiment.label} Loader"
 		mainControllerClassName: "GenericDataParserController"
 		autoLaunchName:"generic_data_parser"
 		requireUserRoles: [window.conf.roles.acas.userRole]
@@ -17,13 +17,13 @@ window.ModuleMenusConfiguration =
 		requireUserRoles: [window.conf.roles.acas.userRole]
 	,
 		isHeader: false
-		menuName: "Protocol Editor"
+		menuName: "#{window.conf.protocol.label} Editor"
 		mainControllerClassName: window.conf.protocol.mainControllerClassName
 		autoLaunchName:"protocol_base"
 		requireUserRoles: [window.conf.roles.acas.userRole]
 	,
 		isHeader: false
-		menuName: "Experiment Editor"
+		menuName: "#{window.conf.experiment.label} Editor"
 		mainControllerClassName: window.conf.experiment.mainControllerClassName
 		autoLaunchName:"experiment_base"
 		requireUserRoles: [window.conf.roles.acas.userRole]
@@ -33,11 +33,11 @@ window.ModuleMenusConfiguration =
 		collapsible: false
 		requireUserRoles: [window.conf.roles.acas.userRole]
 	,
-		isHeader: false, menuName: "Protocol Browser"
+		isHeader: false, menuName: "#{window.conf.protocol.label} Browser"
 		mainControllerClassName: "ProtocolBrowserController"
 		requireUserRoles: [window.conf.roles.acas.userRole]
 	,
-		isHeader: false, menuName: "Experiment Browser"
+		isHeader: false, menuName: "#{window.conf.experiment.label} Browser"
 		mainControllerClassName: "ExperimentBrowserController"
 		requireUserRoles: [window.conf.roles.acas.userRole]
 	,
@@ -79,6 +79,12 @@ window.ModuleMenusConfiguration =
 		autoLaunchName: "acasLabelSequence"
 		requireUserRoles: [window.conf.roles.acas.adminRole]
 	,
+		isHeader: false
+		menuName: "Additional Assay Scientists"
+		mainControllerClassName: "AssayScientistBrowserController"
+		autoLaunchName: "assay_scientist_browser"
+		requireUserRoles: [window.conf.roles.acas.adminRole]
+	,
 		isHeader: true
 		menuName: "CmpdReg Admin"
 		requireUserRoles: [window.conf.roles.cmpdreg.adminRole]
@@ -97,8 +103,8 @@ window.ModuleMenusConfiguration =
 		requireUserRoles: [window.conf.roles.cmpdreg.adminRole]
 	,
 		isHeader: false
-		menuName: "CmpdReg Scientists"
-		mainControllerClassName: "ScientistBrowserController"
-		autoLaunchName: "scientist_browser"
+		menuName: "Additional CmpdReg Scientists"
+		mainControllerClassName: "CompoundScientistBrowserController"
+		autoLaunchName: "compound_scientist_browser"
 		requireUserRoles: [window.conf.roles.cmpdreg.adminRole]
 	]

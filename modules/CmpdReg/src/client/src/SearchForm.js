@@ -7,7 +7,7 @@ $(function() {
             _.each(attributes, function(att, key) {
                 if( (att != '' && att!=null) && key!='aliasContSelect' && key!='searchType' && key!='percentSimilarity' && key!='maxResults' && key!='loggedInUser' ) {
                     if( key=='chemist') {
-                        if( att.get('code')!='anyone') {
+                        if( att!='anyone') {
                             allEmpty = false;
                         }
                     } else {
@@ -187,7 +187,7 @@ $(function() {
                 percentSimilarity:
                     (jQuery.trim(this.$('.percentSimilarity').val())=='') ? null :
                     parseFloat(jQuery.trim(this.$('.percentSimilarity').val())),
-                chemist: this.chemistCodeController.getSelectedModel(),
+                chemist: this.chemistCodeController.getSelectedModel().get("code"),
                 maxResults:
                     (jQuery.trim(this.$('.maxResults').val())=='') ? null :
                     parseFloat(jQuery.trim(this.$('.maxResults').val())),

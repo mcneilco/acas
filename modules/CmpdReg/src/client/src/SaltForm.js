@@ -33,6 +33,7 @@ $(function() {
 					id: js.id,
 					corpName: js.corpName,
 					casNumber: js.casNumber,
+					chemist: js.chemist,
 					isosalts: isel,
 					molStructure: js.molStructure
 				});

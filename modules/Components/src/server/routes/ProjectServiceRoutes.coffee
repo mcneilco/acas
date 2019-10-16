@@ -8,15 +8,18 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/projects/getAllProjects/stubs', loginRoutes.ensureAuthenticated, exports.getProjectStubs
 
 exports.getProjects = (req, resp) ->
+	authorRoutes = require './AuthorRoutes.js'
 	csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
-	if !req.user?
-		req.user = {}
-		req.user.username = req.params.username
-	if global.specRunnerTestmode
-		projectServiceTestJSON = require '../public/javascripts/spec/testFixtures/projectServiceTestJSON.js'
-		resp.end JSON.stringify projectServiceTestJSON.projects
+	callback = (err, user) =>
+		authorRoutes.allowedProjectsInternal user, (statusCode, allowedUserProjects) ->
+			resp.status "200"
+			resp.end JSON.stringify allowedUserProjects
+	if req.params.username?
+		user = csUtilities.getUser req.params.username, callback
 	else
-		csUtilities.getProjects req, resp
+		user = req.user
+		callback null, user
+
 
 exports.getProjectStubs = (req, resp) ->
 	csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'

@@ -222,4 +222,14 @@ exports.getAuthors = (req, resp) ->
 		baseEntityServiceTestJSON = require '../src/javascripts/spec/testFixtures/BaseEntityServiceTestJSON.js'
 		resp.end JSON.stringify baseEntityServiceTestJSON.authorsList
 	else
-		csUtilities.getAuthors req, resp
+		if csUtilities.getAuthors?
+			csUtilities.getAuthors req, resp
+		else
+			opts = req.query
+			exports.getAuthorsInternal opts, (statusCode, response) =>
+				resp.json response
+
+exports.getAuthorsInternal = (opts, callback) ->
+	csUtilities.getAllAuthors(opts, (statusCode, response) ->
+		callback statusCode, response
+	)

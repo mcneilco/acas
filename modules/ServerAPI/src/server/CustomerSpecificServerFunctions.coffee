@@ -240,16 +240,28 @@ exports.validateCloneAndGetTarget = (req, resp) ->
 	psProtocolServiceTestJSON = require "#{ACAS_HOME}/public/javascripts/spec/PrimaryScreen/testFixtures/PrimaryScreenProtocolServiceTestJSON.js"
 	resp.json psProtocolServiceTestJSON.successfulCloneValidation
 
-exports.getAuthors = (req, resp) -> #req passed in as input to be able to filter users by roles
+exports.getAllAuthors = (opts, callback) ->
 	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 	serverUtilityFunctions = require "#{ACAS_HOME}/routes/ServerUtilityFunctions.js"
 	baseurl = config.all.client.service.persistence.fullpath+"authors/codeTable"
-
-	if req.query.roleType? and req.query.roleKind? and req.query.roleName?
-		baseurl = config.all.client.service.persistence.fullpath+"authors/findByRoleTypeKindAndName"
-		baseurl += "?roleType=#{req.query.roleType}&roleKind=#{req.query.roleKind}&roleName=#{req.query.roleName}&format=codeTable"
-
-	serverUtilityFunctions.getFromACASServer(baseurl, resp)
+	if opts.roleName?
+		if opts.roleType? and opts.roleKind?
+			baseurl = config.all.client.service.persistence.fullpath+"authors/findByRoleTypeKindAndName"
+			baseurl += "?roleType=#{opts.roleType}&roleKind=#{opts.roleKind}&roleName=#{opts.roleName}&format=codeTable"
+		else
+			baseurl = config.all.client.service.persistence.fullpath+"authors/findByRoleName"
+			baseurl += "?authorRoleName=#{opts.roleName}&format=codeTable"
+	console.log "Calling baseurl in get all authors: #{baseurl}"
+	serverUtilityFunctions.getFromACASServerInternal baseurl, (statusCode, json) ->
+		# If additional codeType and codeKind parameters are supplied then append the code values for the additional authors
+		# This is was added for the purpose of allowing additional non-authors to show up in picklists throughout ACAS and Creg
+		if opts.additionalCodeType? and opts.additionalCodeKind?
+			codeTableServiceRoutes = require "#{ACAS_HOME}/routes/CodeTableServiceRoutes.js"
+			codeTableServiceRoutes.getCodeTableValuesInternal opts.additionalCodeType, opts.additionalCodeKind, (codes) ->
+				Array::push.apply json, codes
+				callback statusCode, json
+		else
+			callback statusCode, json
 
 exports.getAllAuthorObjectsInternal = (callback) ->
 	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
