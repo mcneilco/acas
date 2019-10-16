@@ -2,7 +2,7 @@
 # ROUTE: /getExperimentalMetadata
 
 library(racas)
-
+library(data.table)
 # Sample usage:
 # curl "http://localhost:1080/r-services-api/getExperimentalMetadata?startTime=2019-09-05%2020:00:00&endTime=2019-09-05%2021:00:00"
 # curl "http://localhost:1080/r-services-api/getExperimentalMetadata?hoursBack=24"
@@ -24,8 +24,10 @@ findExperiments <- function(GET) {
     }
   }
   
-  queryString = paste0("select e.id, e.code_name as current_experiment, el.label_text as experiment_name, e.recorded_date, ev_prev.code_value as previous_experiment, ev_proj.code_value ",
-                       " from experiment e ",
+  queryString = paste0("select e.id, e.code_name as current_experiment, el.label_text as experiment_name, e.recorded_date, ev_prev.code_value as previous_experiment, ev_proj.code_value project, pl.label_text as protocol_name ",
+                       " from protocol p ",
+                       " join protocol_label pl on p.deleted = '0' and p.ignored = '0' and p.id = pl.protocol_id and pl.ls_type = 'name' and pl.ls_kind = 'protocol name' and pl.ignored = '0' and pl.deleted = '0' ",
+                       " join experiment e on p.id = e.protocol_id and e.deleted = '0' and e.ignored = '0' ",
                        " join experiment_label el on e.id = el.experiment_id and el.ls_type = 'name' and el.ls_kind = 'experiment name' and el.ignored = '0' and el.deleted = '0' ",
                        " left join experiment_state es on es.experiment_id = e.id and es.ls_type = 'metadata' and es.ls_kind = 'experiment metadata' and es.ignored = '0' and es.deleted = '0' ",
                        " left join experiment_value ev_prev on ev_prev.experiment_state_id = es.id and ev_prev.ls_type = 'codeValue' and ev_prev.ls_kind = 'previous experiment code' and ev_prev.ignored = '0' and ev_prev.deleted = '0' ",
@@ -47,9 +49,15 @@ findExperiments <- function(GET) {
     }
   }
   
-  results <- query(queryString)
-  names(results) <- tolower(names(results))
-  return (jsonlite::toJSON(results))
+  results <- as.data.table(query(queryString))
+  if(nrow(results) > 0) {
+    setnames(results, tolower(names(results)))
+    results[ , is_reload := any(!is.na(previous_experiment)), by = id]
+    results[ , previous_experiment := NULL]
+    results <- unique(results)
+    setorder(results, -recorded_date)
+  }
+  return (jsonlite::toJSON(results, auto_unbox = TRUE))
 }
 
 resultList <- findExperiments(GET);
