@@ -401,7 +401,7 @@ class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractF
 			if @extendedLabel? and @extendedLabel
 				labelText = labels.getExtendedNameText()
 			else
-				labelText = labels.pickBestNonEmptyLabel().get('labelText')
+				labelText = labels.pickBestLabel().get('labelText')
 			@thingSelectController.setSelectedCode
 				code: @getModel().getItxThing().codeName
 				label: labelText
