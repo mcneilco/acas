@@ -124,7 +124,12 @@ class window.AbstractThingFormController extends AbstractFormController
 		fDefs = []
 		if fieldDefs.labels? then fDefs = fDefs.concat fieldDefs.labels
 		if fieldDefs.values? then fDefs = fDefs.concat fieldDefs.values
-		if fieldDefs.firstLsThingItxs? then fDefs = fDefs.concat fieldDefs.firstLsThingItxs
+		if fieldDefs.firstLsThingItxs?
+			# Tag any firstItx fieldDefinitions with "firstItx" so the controllers know which direction of interaction to create
+			firstDefs = _.map(fieldDefs.firstLsThingItxs, (fdef) =>
+				fdef.fieldSettings.firstItx = true
+				return fdef)
+			fDefs = fDefs.concat firstDefs
 		if fieldDefs.secondLsThingItxs? then fDefs = fDefs.concat fieldDefs.secondLsThingItxs
 
 		for field in fDefs
@@ -166,7 +171,11 @@ class window.AbstractThingFormController extends AbstractFormController
 					opts.thingKind = field.fieldSettings.thingKind
 					opts.queryUrl = field.fieldSettings.queryUrl
 					opts.labelType = field.fieldSettings.labelType
-					newField = new ACASFormLSThingInteractionFieldController opts
+					opts.firstItx = field.fieldSettings.firstItx
+					if field.multiple? and field.multiple
+						newField = new ACASFormMultiInteractionListController opts
+					else
+						newField = new ACASFormLSThingInteractionFieldController opts
 				when 'stringValue' then newField = new ACASFormLSStringValueFieldController opts
 				when 'dateValue' then newField = new ACASFormLSDateValueFieldController opts
 				when 'fileValue' then newField = new ACASFormLSFileValueFieldController opts
