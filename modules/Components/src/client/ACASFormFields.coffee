@@ -489,13 +489,15 @@ class window.ACASFormLSHTMLClobValueFieldController extends ACASFormAbstractFiel
 					if @contentToLoad?
 						@editor.setContent @contentToLoad
 					if @disableEditor?
-						@editor.getBody().setAttribute('contenteditable', @disableEditor)
+						@editor.getBody().setAttribute('contenteditable', !@disableEditor)
+						@editor.getBody().setAttribute('disabled', @disableEditor)
 				editor.on 'change', (e) =>
 					@textChanged editor.getContent()
 
 	disableInput: ->
 		if @editor?
 			@editor.getBody().setAttribute('contenteditable', false)
+			@editor.getBody().setAttribute('disabled', true)
 		else
 			@disableEditor = true
 

@@ -1,0 +1,4 @@
+.mce-content-body[disabled] {
+    cursor: not-allowed;
+    background-color: #eeeeee;
+}
