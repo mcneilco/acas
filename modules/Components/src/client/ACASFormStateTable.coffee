@@ -406,10 +406,11 @@ class window.ACASFormStateTableController extends Backbone.View
 		return newValue
 
 	disableInput: ->
-		@hot.updateSettings
-			readOnly: true
-			contextMenu: false
-			comments: false
+		if @hot?
+			@hot.updateSettings
+				readOnly: true
+				contextMenu: false
+				comments: false
 #Other options I decided not to use
 #			disableVisualSelection: true
 #			manualColumnResize: false
@@ -420,10 +421,11 @@ class window.ACASFormStateTableController extends Backbone.View
 			contextMenu = @tableDef.contextMenu
 		else
 			contextMenu = true
-		@hot.updateSettings
-			readOnly: false
-			contextMenu: contextMenu
-			comments: true
+		if @hot?
+			@hot.updateSettings
+				readOnly: false
+				contextMenu: contextMenu
+				comments: true
 #Other options I decided not to use
 #			disableVisualSelection: false
 #			manualColumnResize: true
