@@ -219,6 +219,10 @@ class window.ACASFormStateTableController extends Backbone.View
 				newValue.set unitType: valueDef.modelDefaults.unitType
 			if valueDef.modelDefaults.unitKind?
 				newValue.set unitKind: valueDef.modelDefaults.unitKind
+			if valueDef.modelDefaults.codeType?
+				newValue.set codeType: valueDef.modelDefaults.codeType
+			if valueDef.modelDefaults.codeKind?
+				newValue.set codeKind: valueDef.modelDefaults.codeKind
 		return newState
 
 	getCurrentStates: ->
