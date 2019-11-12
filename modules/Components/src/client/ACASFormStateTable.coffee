@@ -243,6 +243,8 @@ class window.ACASFormStateTableController extends Backbone.View
 				else if valDef.modelDefaults.type == 'dateValue'
 					if value.get('dateValue')?
 						displayVal = new Date(value.get('dateValue')).toISOString().split('T')[0]
+					else:
+						displayVal = null
 				else
 					displayVal = value.get valDef.modelDefaults.type
 
