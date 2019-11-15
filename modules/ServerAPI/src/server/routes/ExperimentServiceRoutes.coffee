@@ -494,7 +494,7 @@ exports.genericExperimentSearch = (req, res) ->
 		authorRoutes.allowedProjectsInternal req.user, (statusCode, allowedUserProjects) ->
 			_ = require "underscore"
 			allowedProjectCodes = _.pluck(allowedUserProjects, "code")
-			baseurl = config.all.client.service.persistence.fullpath+"experiments/search?q="+req.params.searchTerm+"&projects=#{allowedProjectCodes.join(',')}"
+			baseurl = config.all.client.service.persistence.fullpath+"experiments/search?q="+req.params.searchTerm+"&projects=#{encodeURIComponent(allowedProjectCodes.join(','))}"
 			console.log "baseurl"
 			console.log baseurl
 			serverUtilityFunctions = require './ServerUtilityFunctions.js'
