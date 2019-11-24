@@ -201,13 +201,18 @@ def get_projects(client):
     configs = client.config()
 
     # If HIDE_GLOBAL_PROJECT ld config is set to 'true'
-    # then we need to remove "Global" from the list of projects
+    # then we set Global to a restricted project.
+    # Hide Global project in LD is restricted to Admins so we will restrict the Global project in ACAS 
+    # This allows us to give admins and users with ACLs to the Global project rather than just removing it from ACAS
     hide_global_project_config = next((config for config in configs if config['key'] == "HIDE_GLOBAL_PROJECT"), None)
     if hide_global_project_config != None:
         hide_global_project = hide_global_project_config['value']
         if hide_global_project == 'true':
-            ld_projects = [ p for p in ld_projects if p.name != "Global"]
-    
+            def set_global_restricted(project):
+                if project.name == "Global":
+                    project.restricted = True
+                return project
+            ld_projects = map(set_global_restricted, ld_projects)         
     projects = map(ld_project_to_acas, ld_projects)
 
     return projects
