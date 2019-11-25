@@ -50,8 +50,9 @@ exports.getUrlForNewLiveDesignLiveReportForExperimentInternal = (exptCode, usern
     exptInfo.username = username
     console.log @responseJSON
     #install fresh ldclient
-    exports.installLiveDesignPythonClientInternal (statusCode, output) ->
-        console.log 'Updated LDClient'
+    if !config.all.server.liveDesign.installClientOnStart? || !config.all.server.liveDesign.installClientOnStart
+      exports.installLiveDesignPythonClientInternal (statusCode, output) ->
+          console.log 'Updated LDClient'
     command = "python ./src/python/ServerAPI/createLiveDesignLiveReportForACAS/create_lr_for_acas.py -e "
     command += "'"+config.all.client.service.result.viewer.liveDesign.baseUrl+"' -u '"+config.all.client.service.result.viewer.liveDesign.username+"' -p '"+config.all.client.service.result.viewer.liveDesign.password+"' -d '"+config.all.client.service.result.viewer.liveDesign.database+"' -r '"+config.all.client.service.result.viewer.liveDesign.makeReportReadonly+"' -i '"
     #		data = {"compounds":["V035000","CMPD-0000002"],"assays":[{"protocolName":"Target Y binding","resultType":"curve id"}]}
