@@ -86,3 +86,4 @@ class window.UtilityFunctions
 		else
 			console.log "can't find entry in pickLists hash for: "+value.get('lsKind')
 			console.dir pickLists
+			return "not found"
