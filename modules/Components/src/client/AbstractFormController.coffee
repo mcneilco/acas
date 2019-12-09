@@ -154,6 +154,7 @@ class window.AbstractThingFormController extends AbstractFormController
 				tabIndex: field.fieldSettings.tabIndex
 				toFixed: field.fieldSettings.toFixed
 				pickList: field.fieldSettings.pickList
+				showDescription: field.fieldSettings.showDescription
 
 			switch field.fieldSettings.fieldType
 				when 'label'
