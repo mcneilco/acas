@@ -97,6 +97,9 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 			@addFormLabelClass @options.formLabelClass
 		if @options.formLabelOrientation?
 			@setupFormLabelOrientation @options.formLabelOrientation
+		if @options.formLabelTooltip?
+			@setFormLabelTooltip @options.formLabelTooltip
+			@showFormLabelTooltip()
 		if @options.inputClass?
 			@addInputClass @options.inputClass
 		if @options.controlGroupClass?
@@ -119,6 +122,12 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 		if value is "top"
 			@$('label').removeClass 'control-label'
 		# else set label to left, this is already the default
+	
+	setFormLabelTooltip: (value) ->
+		@$('.label-tooltip').attr 'title', value
+	
+	showFormLabelTooltip: ->
+		@$('.label-tooltip').removeClass 'hide'
 
 	addInputClass: (value) ->
 		@$('input').addClass value

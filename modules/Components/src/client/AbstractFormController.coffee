@@ -142,6 +142,7 @@ class window.AbstractThingFormController extends AbstractFormController
 				inputClass: field.fieldSettings.inputClass
 				formLabel: field.fieldSettings.formLabel
 				formLabelOrientation: field.fieldSettings.formLabelOrientation
+				formLabelTooltip: field.fieldSettings.formLabelTooltip
 				placeholder: field.fieldSettings.placeholder
 				required: field.fieldSettings.required
 				url: field.fieldSettings.url
