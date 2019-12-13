@@ -142,6 +142,7 @@ class window.AbstractThingFormController extends AbstractFormController
 				inputClass: field.fieldSettings.inputClass
 				formLabel: field.fieldSettings.formLabel
 				formLabelOrientation: field.fieldSettings.formLabelOrientation
+				formLabelTooltip: field.fieldSettings.formLabelTooltip
 				placeholder: field.fieldSettings.placeholder
 				required: field.fieldSettings.required
 				url: field.fieldSettings.url
@@ -154,6 +155,7 @@ class window.AbstractThingFormController extends AbstractFormController
 				tabIndex: field.fieldSettings.tabIndex
 				toFixed: field.fieldSettings.toFixed
 				pickList: field.fieldSettings.pickList
+				showDescription: field.fieldSettings.showDescription
 
 			switch field.fieldSettings.fieldType
 				when 'label'

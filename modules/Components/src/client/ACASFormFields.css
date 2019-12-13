@@ -2,3 +2,8 @@
     cursor: not-allowed;
     background-color: #eeeeee;
 }
+
+.desc-inline {
+    font-style: italic;
+    color: #aaa;
+}

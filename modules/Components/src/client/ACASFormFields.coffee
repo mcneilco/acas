@@ -97,6 +97,9 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 			@addFormLabelClass @options.formLabelClass
 		if @options.formLabelOrientation?
 			@setupFormLabelOrientation @options.formLabelOrientation
+		if @options.formLabelTooltip?
+			@setFormLabelTooltip @options.formLabelTooltip
+			@showFormLabelTooltip()
 		if @options.inputClass?
 			@addInputClass @options.inputClass
 		if @options.controlGroupClass?
@@ -119,6 +122,12 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 		if value is "top"
 			@$('label').removeClass 'control-label'
 		# else set label to left, this is already the default
+	
+	setFormLabelTooltip: (value) ->
+		@$('.label-tooltip').attr 'title', value
+	
+	showFormLabelTooltip: ->
+		@$('.label-tooltip').removeClass 'hide'
 
 	addInputClass: (value) ->
 		@$('input').addClass value
@@ -282,6 +291,11 @@ class window.ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldCon
 			@getModel().set
 				value: value
 				ignored: false
+		if @options.showDescription? and @options.showDescription
+			@clearDescription()
+			desc = @pickListController.getSelectedModel().get('description')
+			if desc?
+				@setDescription(desc)
 		super()
 
 	setEmptyValue: ->
@@ -342,6 +356,13 @@ class window.ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldCon
 
 	enableInput: ->
 		@$('select').removeAttr 'disabled'
+	
+	setDescription: (message) ->
+		@$('.desc-inline').removeClass 'hide'
+		@$('.desc-inline').html message
+
+	clearDescription: ->
+		@$('.desc-inline').addClass 'hide'
 
 class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractFieldController
 	###
