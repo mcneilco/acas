@@ -89,6 +89,8 @@
 		ddicttypes:
 			[
 				typeName: "metadata"
+			,
+				typeName: "boolean"
 			]
 
 		ddictkinds:
@@ -98,6 +100,9 @@
 			,
 				typeName: "metadata"
 				kindName: "color"
+			,
+				typeName: "boolean"
+				kindName: "boolean"
 			]
 
 		codetables:
@@ -128,6 +133,20 @@
 				codeOrigin: "ACAS DDICT"
 				code: "purple"
 				name: "Purple"
+				ignored: false
+			,
+				codeType: "boolean"
+				codeKind: "boolean"
+				codeOrigin: "ACAS DDict"
+				code: "true"
+				name: "true"
+				ignored: false
+			,
+				codeType: "boolean"
+				codeKind: "boolean"
+				codeOrigin: "ACAS DDict"
+				code: "false"
+				name: "false"
 				ignored: false
 			]
 

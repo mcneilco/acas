@@ -668,3 +668,40 @@ class window.ACASFormLSFileValueFieldController extends ACASFormAbstractFieldCon
 		@handleFileRemoved()
 		@$('.bv_deleteSavedFile').hide()
 		@createNewFileChooser()
+
+class window.ACASFormLSBooleanFieldController extends ACASFormAbstractFieldController
+	###
+		Launching controller must:
+		- Initialize the model with an LSValue
+		- Strongly recommended to use a codeValue of codeType: "boolean", codeKind: "boolean"
+    Do whatever else is required or optional in ACASFormAbstractFieldController
+	###
+
+	template: _.template($("#ACASFormLSBooleanFieldView").html())
+	events: ->
+		"change input": "handleInputChanged"
+
+	render: ->
+		super()
+		@
+
+	handleInputChanged: =>
+		@clearError()
+		@userInputEvent = true
+		isChecked = @$('input').is(":checked")
+		@getModel().set
+			value: isChecked.toString()
+			ignored: false
+		super()
+
+	setEmptyValue: ->
+		@getModel().set
+			value: null
+			ignored: true
+
+	renderModelContent: =>
+		if @getModel().get('value') is "false"
+			@$('input').removeAttr 'checked'
+		else
+			@$('input').attr 'checked', 'checked'
+		super()
