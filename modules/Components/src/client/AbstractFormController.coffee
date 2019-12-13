@@ -179,6 +179,7 @@ class window.AbstractThingFormController extends AbstractFormController
 				when 'stringValue' then newField = new ACASFormLSStringValueFieldController opts
 				when 'dateValue' then newField = new ACASFormLSDateValueFieldController opts
 				when 'fileValue' then newField = new ACASFormLSFileValueFieldController opts
+				when 'booleanValue' then newField = new ACASFormLSBooleanFieldController opts
 				when 'locationTree'
 					opts.tubeCode = @model.get('tubeCode')
 					newField = new ACASFormLocationTreeController opts
