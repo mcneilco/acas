@@ -19,8 +19,10 @@ class window.ACASFormStateTableController extends Backbone.View
 	initialize: ->
 		@thingRef = @options.thingRef
 		@tableDef = @options.tableDef
+		@formWrapper = @options.formWrapper
 		@tableSetupComplete = false
 		@callWhenSetupComplete = null
+		@stateTableFormControllersCollection = []
 
 	getCollection: ->
 		#TODO get states by type and kind
@@ -49,6 +51,10 @@ class window.ACASFormStateTableController extends Backbone.View
 			@setTableLabel @tableDef.tableLabel
 		if @tableDef?.tableLabelClass?
 			@addFormLabelClass @options.tableDef.tableLabelClass
+		anyValuesHaveFieldWrapper = _.some @tableDef.values, (v) -> 
+			_.has v.fieldSettings, 'fieldWrapper'
+		if @formWrapper? and anyValuesHaveFieldWrapper
+			@hasFormWrapper = true
 		@tableReadOnly = if @tableDef.tableReadOnly? then @tableDef.tableReadOnly else false
 
 
@@ -62,6 +68,9 @@ class window.ACASFormStateTableController extends Backbone.View
 
 	removeTableLabelClass: (value) ->
 		@$('.bv_tableLabel').removeClass value
+
+	addFormWrapper: (formEl) ->
+		@$('.bv_formWrapper').html formEl
 
 	defineColumnsAndSetupHOT: ->
 			@fetchPickLists =>
@@ -111,19 +120,23 @@ class window.ACASFormStateTableController extends Backbone.View
 			@colHeaders = []
 		unless @colDefs?
 			@colDefs = []
+		unless @formValueDefs?
+			@formValueDefs = []
 		unless @unitKeyValueMap?
 			#keeps track of which values unit keys are for
 			@unitKeyValueMap = {}
 
 		for val in @tableDef.values
+			isTableValue = !val.fieldSettings.fieldWrapper?
 			displayName = val.fieldSettings.formLabel
 			if @showUnits
 				if val.modelDefaults.unitKind?
 					displayName += "<br />(#{val.modelDefaults.unitKind})"
-			@colHeaders.push
-				displayName: displayName
-				keyName: val.modelDefaults.kind
-				width: if val.fieldSettings.width? then val.fieldSettings.width else 75
+			if isTableValue
+				@colHeaders.push
+					displayName: displayName
+					keyName: val.modelDefaults.kind
+					width: if val.fieldSettings.width? then val.fieldSettings.width else 75
 
 			colOpts = data: val.modelDefaults.kind
 			colOpts.readOnly = if val.fieldSettings.readOnly? then val.fieldSettings.readOnly else false
@@ -146,7 +159,10 @@ class window.ACASFormStateTableController extends Backbone.View
 			if val.validator?
 				colOpts.validator = val.validator
 
-			@colDefs.push colOpts
+			if isTableValue
+				@colDefs.push colOpts
+			else
+				@formValueDefs.push val
 
 			if val.fieldSettings.unitColumnKey?
 				@colHeaders.push
@@ -176,6 +192,7 @@ class window.ACASFormStateTableController extends Backbone.View
 			afterChange: @handleCellChanged
 			afterValidate: @handleAfterValidate
 			afterCreateRow: @handleRowCreated
+			afterSelection: @handleSelection
 			minSpareRows: 1,
 			allowInsertRow: true
 			contextMenu: contextMenu
@@ -189,11 +206,17 @@ class window.ACASFormStateTableController extends Backbone.View
 			afterRemoveRow: @handleRowRemoved
 			columns: @colDefs
 			search: @tableDef.search
+			currentRowClassName: 'bv_stateDisplayCurrentRow',
+  			currentColClassName: 'bv_stateDisplayCurrentColumn'
 			cells: (row, col, prop) =>
 				cellProperties = {}
 				if @tableReadOnly
 					cellProperties.readOnly = true
 				return cellProperties;
+
+		# Select the first row on start
+		@hot.selectCell(0,0,0,0)
+
 		@hot.addHook 'afterChange', @validateRequiredAndUniqueness
 
 	readOnlyRenderer: (instance, td, row, col, prop, value, cellProperties) =>
@@ -223,10 +246,28 @@ class window.ACASFormStateTableController extends Backbone.View
 				newValue.set codeType: valueDef.modelDefaults.codeType
 			if valueDef.modelDefaults.codeKind?
 				newValue.set codeKind: valueDef.modelDefaults.codeKind
+				
+		if @hasFormWrapper
+			@setupFormForNewState newState
+		@hot.selectCell(row,0,row,0)
 		return newState
 
 	getCurrentStates: ->
 		@thingRef.get('lsStates').getStatesByTypeAndKind @tableDef.stateType, @tableDef.stateKind
+
+	setupFormForNewState: (state) ->
+		fDiv = @formWrapper.clone()
+		@$('.bv_formWrapper').append fDiv
+		formController = new ACASFormStateTableFormController
+			el: fDiv
+			thingRef: @thingRef
+			valueDefs: @formValueDefs
+			stateType: @tableDef.stateType
+			stateKind: @tableDef.stateKind
+			rowNumber: @getRowNumberForState(state)
+			rowNumberKind: @rowNumberKind
+		@stateTableFormControllersCollection.push formController
+		formController.hide()
 
 	renderState: (state) ->
 		rowNum = @getRowNumberForState(state)
@@ -262,6 +303,7 @@ class window.ACASFormStateTableController extends Backbone.View
 					cols.push unitCellInfo
 
 			@hot.setDataAtRowProp cols, "autofill"
+
 
 	getRowNumberForState: (state) ->
 		rowValues = state.getValuesByTypeAndKind 'numericValue', @rowNumberKind
@@ -369,6 +411,28 @@ class window.ACASFormStateTableController extends Backbone.View
 			else
 				state.set ignored: true
 				@trigger 'removedRow', state
+
+			# This happens before the table is rendered and the row really removed
+			if @hasFormWrapper
+				# First destroy the form controller we are removing
+				controllerToRemove = @stateTableFormControllersCollection[rowNum]
+				controllerToRemove.remove()
+				controllerToRemove.unbind()
+			
+				# Remove the controller from the list
+				@stateTableFormControllersCollection.splice rowNum, 1
+
+				# After controller removal we want to select the row that took its place if it exists
+				# which should be the conroller below it if it exists
+				if @stateTableFormControllersCollection[rowNum]?
+					@hot.selectCell(rowNum,0,rowNum,0)
+				# If it doesn't exist then the row below it doesn't have a controller yet
+				# This means that we just deleted the last row in the table with a controller
+				# so we select the row above it if it exists
+				else if rowNum-1 > -1
+					@hot.selectCell(rowNum-1,0,rowNum-1,0)
+
+
 		nextRow = index+amount
 		nRows = @hot.countRows() + amount #to get number of rows before removing
 		if nextRow < nRows-1
@@ -377,6 +441,17 @@ class window.ACASFormStateTableController extends Backbone.View
 				rowValues = state.getValuesByTypeAndKind 'numericValue', @rowNumberKind
 				if rowValues.length == 1
 					rowValues[0].set numericValue: rowNum - amount
+
+	handleSelection: (row, column, row2, column2, preventScrolling, selectionLayerLevel) => 
+		if @hasFormWrapper?
+			$(@el).find(".bv_moreDetails").show()
+			for cont, index in @stateTableFormControllersCollection
+				if index == row
+					$(@el).find(".bv_moreDetails").hide()
+					cont.show()
+				else 
+					cont.hide()
+				  
 
 	setCodeForName: (value, nameToLookup) ->
 		if @pickLists[value.get('lsKind')]?
@@ -497,4 +572,101 @@ class window.ACASFormStateTableController extends Backbone.View
 		@hot.render()
 
 
+class window.ACASFormStateTableFormController extends Backbone.View
 
+
+	initialize: ->
+		@hide()
+		@valueDefs = @options.valueDefs
+		@stateType = @options.stateType
+		@stateKind = @options.stateKind
+		@thingRef = @options.thingRef
+		@rowNumber = @options.rowNumber
+		@rowNumberKind = @options.rowNumberKind
+		@setupForm()
+		@show()
+
+	render: =>
+		@setupForm()
+
+	show: ->
+		$(@el).show()
+
+	hide: ->
+		$(@el).hide()
+		
+	setupForm: ->
+		state = @getStateForRow()
+		
+		for field in @valueDefs
+			value = state.getOrCreateValueByTypeAndKind field.modelDefaults.type, field.modelDefaults.kind
+			keyBase = field.key
+			newKey = keyBase + value.cid
+			value.set key: newKey
+			@thingRef.set newKey, value
+
+			opts =
+				modelKey: newKey
+				inputClass: field.fieldSettings.inputClass
+				formLabel: field.fieldSettings.formLabel
+				formLabelOrientation: field.fieldSettings.formLabelOrientation
+				placeholder: field.fieldSettings.placeholder
+				required: field.fieldSettings.required
+				url: field.fieldSettings.url
+				thingRef: @thingRef
+				insertUnassigned: field.fieldSettings.insertUnassigned
+				firstSelectText: field.fieldSettings.firstSelectText
+				modelDefaults: field.modelDefaults
+				allowedFileTypes: field.fieldSettings.allowedFileTypes
+				extendedLabel: field.fieldSettings.extendedLabel
+				tabIndex: field.fieldSettings.tabIndex
+				toFixed: field.fieldSettings.toFixed
+				pickList: field.fieldSettings.pickList
+				rowNumber: @rowNumber
+				rowNumberKind: @rowNumberKind
+				stateType: @stateType
+				stateKind: @stateKind
+
+			#Should refactor this into a function for other places to use when selcting a controller
+			switch field.fieldSettings.fieldType
+				when 'label'
+					if field.multiple? and field.multiple
+						newField = new ACASFormMultiLabelListController opts
+					else
+						newField = new ACASFormLSLabelFieldController opts
+				when 'numericValue' then newField = new ACASFormLSNumericValueFieldController opts
+				when 'codeValue' then newField = new ACASFormLSCodeValueFieldController opts
+				when 'htmlClobValue'
+					opts.rows = field.fieldSettings?.rows
+					newField = new ACASFormLSHTMLClobValueFieldController opts
+				when 'thingInteractionSelect'
+					opts.thingType = field.fieldSettings.thingType
+					opts.thingKind = field.fieldSettings.thingKind
+					opts.queryUrl = field.fieldSettings.queryUrl
+					opts.labelType = field.fieldSettings.labelType
+					newField = new ACASFormLSThingInteractionFieldController opts
+				when 'stringValue' then newField = new ACASFormLSStringValueFieldController opts
+				when 'dateValue' then newField = new ACASFormLSDateValueFieldController opts
+				when 'fileValue' then newField = new ACASFormLSFileValueFieldController opts
+				when 'locationTree'
+					opts.tubeCode = @model.get('tubeCode')
+					newField = new ACASFormLocationTreeController opts
+
+			valueDiv = $(@el).find("."+field.fieldSettings.fieldWrapper)
+			valueDiv[0].append newField.render().el
+
+	getStateForRow: () ->
+		currentStates = @getCurrentStates()
+		for state in currentStates
+			if @getRowNumberForState(state) == @rowNumber
+				return state
+
+	getCurrentStates: ->
+		@thingRef.get('lsStates').getStatesByTypeAndKind @stateType, @stateKind
+
+	getRowNumberForState: (state) ->
+		rowValues = state.getValuesByTypeAndKind 'numericValue', @rowNumberKind
+		if rowValues.length == 1
+			return rowValues[0].get('numericValue')
+		else
+			return null

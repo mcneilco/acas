@@ -207,9 +207,15 @@ class window.AbstractThingFormController extends AbstractFormController
 			@formTables = {}
 		for tDef in tableDefs
 			tdiv = $("<div>")
+
 			@$("."+tDef.tableWrapper).append tdiv
+
+			formWrapper = null
+			if tDef.formWrapper?
+				formWrapper = @$("."+tDef.formWrapper)
 			fTable = new ACASFormStateTableController
 				el: tdiv
+				formWrapper: formWrapper
 				tableDef: tDef
 				thingRef: @model
 			fTable.render()
