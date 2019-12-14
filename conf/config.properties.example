@@ -565,7 +565,7 @@ client.projectEditor.isRestricted.default=false
 
 client.roles.crossProjectLoaderRole=ROLE_ACAS-CROSS-PROJECT-LOADER
 
-# List of project codes to filter from ACAS
+# List of project codes to filter out and hide from ACAS
 # e.g. server.projects.filterList = ["SomeProject"]
 server.projects.filterList = []
 

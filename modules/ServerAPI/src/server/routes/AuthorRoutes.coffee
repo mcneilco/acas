@@ -54,8 +54,6 @@ exports.allowedProjectsInternal = (user, callback) ->
 		# Filter out any projects that exist in the config for filtering projects
 		projectFilterList = JSON.parse config.all.server.projects.filterList
 		allProjects = _.filter allProjects, (project, index) ->
-			console.log project
-			console.log projectFilterList[0]
 			! _.contains projectFilterList, project.code
 
 		if (config.all.server.project.roles.enable)
