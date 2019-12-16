@@ -291,11 +291,7 @@ class window.ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldCon
 			@getModel().set
 				value: value
 				ignored: false
-		if @options.showDescription? and @options.showDescription
-			@clearDescription()
-			desc = @pickListController.getSelectedModel().get('description')
-			if desc?
-				@setDescription(desc)
+			@showDescription()
 		super()
 
 	setEmptyValue: ->
@@ -305,6 +301,7 @@ class window.ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldCon
 
 	renderModelContent: =>
 		@pickListController.setSelectedCode @getModel().get('value')
+		@showDescription()
 		super()
 
 	setupSelect: ->
@@ -356,6 +353,14 @@ class window.ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldCon
 
 	enableInput: ->
 		@$('select').removeAttr 'disabled'
+	
+	showDescription: ->
+		if @options.showDescription? and @options.showDescription
+			@clearDescription()
+			if @pickListController.getSelectedModel()?
+				desc = @pickListController.getSelectedModel().get('description')
+				if desc?
+					@setDescription(desc)
 	
 	setDescription: (message) ->
 		@$('.desc-inline').removeClass 'hide'
