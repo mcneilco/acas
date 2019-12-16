@@ -258,15 +258,16 @@ class window.ACASFormStateTableController extends Backbone.View
 	setupFormForNewState: (state) ->
 		fDiv = @formWrapper.clone()
 		@$('.bv_formWrapper').append fDiv
+		rowNumber = @getRowNumberForState(state)
 		formController = new ACASFormStateTableFormController
 			el: fDiv
 			thingRef: @thingRef
 			valueDefs: @formValueDefs
 			stateType: @tableDef.stateType
 			stateKind: @tableDef.stateKind
-			rowNumber: @getRowNumberForState(state)
+			rowNumber: rowNumber
 			rowNumberKind: @rowNumberKind
-		@stateTableFormControllersCollection.push formController
+		@stateTableFormControllersCollection[rowNumber] = formController
 		formController.hide()
 
 	renderState: (state) ->
@@ -303,6 +304,7 @@ class window.ACASFormStateTableController extends Backbone.View
 					cols.push unitCellInfo
 
 			@hot.setDataAtRowProp cols, "autofill"
+			@setupFormForNewState state
 
 
 	getRowNumberForState: (state) ->
@@ -583,6 +585,7 @@ class window.ACASFormStateTableFormController extends Backbone.View
 		@thingRef = @options.thingRef
 		@rowNumber = @options.rowNumber
 		@rowNumberKind = @options.rowNumberKind
+		@formFields = {}
 		@setupForm()
 		@show()
 
@@ -590,6 +593,8 @@ class window.ACASFormStateTableFormController extends Backbone.View
 		@setupForm()
 
 	show: ->
+		for modelKey, formField of @formFields
+			formField.renderModelContent()
 		$(@el).show()
 
 	hide: ->
@@ -600,6 +605,13 @@ class window.ACASFormStateTableFormController extends Backbone.View
 		
 		for field in @valueDefs
 			value = state.getOrCreateValueByTypeAndKind field.modelDefaults.type, field.modelDefaults.kind
+			if field.modelDefaults.codeType?
+				value.set 'codeType', field.modelDefaults.codeType
+			if field.modelDefaults.codeKind?
+				value.set 'codeKind', field.modelDefaults.codeKind
+			if field.modelDefaults.codeOrigin?
+				value.set 'codeOrigin', field.modelDefaults.codeOrigin
+			value.set 'value', value.get(value.get('lsType'))
 			keyBase = field.key
 			newKey = keyBase + value.cid
 			value.set key: newKey
@@ -610,6 +622,7 @@ class window.ACASFormStateTableFormController extends Backbone.View
 				inputClass: field.fieldSettings.inputClass
 				formLabel: field.fieldSettings.formLabel
 				formLabelOrientation: field.fieldSettings.formLabelOrientation
+				formLabelTooltip: field.fieldSettings.formLabelTooltip
 				placeholder: field.fieldSettings.placeholder
 				required: field.fieldSettings.required
 				url: field.fieldSettings.url
@@ -622,6 +635,7 @@ class window.ACASFormStateTableFormController extends Backbone.View
 				tabIndex: field.fieldSettings.tabIndex
 				toFixed: field.fieldSettings.toFixed
 				pickList: field.fieldSettings.pickList
+				showDescription: field.fieldSettings.showDescription
 				rowNumber: @rowNumber
 				rowNumberKind: @rowNumberKind
 				stateType: @stateType
@@ -653,7 +667,8 @@ class window.ACASFormStateTableFormController extends Backbone.View
 					newField = new ACASFormLocationTreeController opts
 
 			valueDiv = $(@el).find("."+field.fieldSettings.fieldWrapper)
-			valueDiv[0].append newField.render().el
+			valueDiv.append newField.render().el
+			@formFields[newKey] = newField
 
 	getStateForRow: () ->
 		currentStates = @getCurrentStates()
