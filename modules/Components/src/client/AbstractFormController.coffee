@@ -164,7 +164,11 @@ class window.AbstractThingFormController extends AbstractFormController
 					else
 						newField = new ACASFormLSLabelFieldController opts
 				when 'numericValue' then newField = new ACASFormLSNumericValueFieldController opts
-				when 'codeValue' then newField = new ACASFormLSCodeValueFieldController opts
+				when 'codeValue'
+					if field.multiple? and field.multiple
+						newField = new ACASFormMultiCodeValueCheckboxController opts
+					else
+						newField = new ACASFormLSCodeValueFieldController opts
 				when 'htmlClobValue'
 					opts.rows = field.fieldSettings?.rows
 					newField = new ACASFormLSHTMLClobValueFieldController opts
