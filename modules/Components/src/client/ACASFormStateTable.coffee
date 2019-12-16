@@ -304,7 +304,8 @@ class window.ACASFormStateTableController extends Backbone.View
 					cols.push unitCellInfo
 
 			@hot.setDataAtRowProp cols, "autofill"
-			@setupFormForNewState state
+			if @hasFormWrapper
+				@setupFormForNewState state
 
 
 	getRowNumberForState: (state) ->
