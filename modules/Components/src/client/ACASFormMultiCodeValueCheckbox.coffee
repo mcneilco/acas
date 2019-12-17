@@ -149,5 +149,7 @@ class window.ACASFormMultiCodeValueCheckboxController extends ACASFormAbstractFi
             thingRef: @thingRef
         checkboxController = new ACASFormCodeValueCheckboxController opts
         @checkboxControllerList.push checkboxController
-        @$('.bv_multiCodeValueCheckboxWrapper').append checkboxController.render().el
+        checkBoxEl = checkboxController.render().el
+        checkBoxEl.style.float = "left"
+        @$('.bv_multiCodeValueCheckboxWrapper').append checkBoxEl
 
