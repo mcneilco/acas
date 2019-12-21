@@ -215,15 +215,61 @@ class window.ACASFormStateTableController extends Backbone.View
 				return cellProperties;
 
 		# Select the first row on start
-		@hot.selectCell(0,0,0,0)
+		if @$('.bv_tableWrapper').is ":visible"
+			@hot.selectCell(0,0,0,0)
 
 		@hot.addHook 'afterChange', @validateRequiredAndUniqueness
+
+	addRow: (values, callback) ->
+		# when we update the handsontable cell data directly we don't know when the "afterChange" function
+		# will complete, so we lock the table, count the number of triggers to the number of completions of the
+		# afterChange function, when it equals the number of changes we expect, we reset the table back to its
+		# original settings, and trigger the callback function
+		@hotPseudoTransaction(callback, values.length)
+		lastRow = @getLastRow()		
+		for value, index in values
+			@hot.setDataAtCell(lastRow, index, value)
+
+	hotPseudoTransaction: (callback, changeCount) ->
+		# Get the settings related th elo
+		originalSettings = @getCurrentLockSettings()
+		@lockTable()
+		@changeCount = 0
+		@.on "cellChangeComplete", =>
+			@changeCount = @changeCount + 1
+			if @changeCount == changeCount
+				@hot.updateSettings(originalSettings)
+				callback changeCount
+
+	getCurrentLockSettings: ->
+		settings  = @hot.getSettings()
+		currentLockSettings = 
+			readOnly: settings.readOnly, # make table cells read-only
+			contextMenu: settings.contextMenu, # disable context menu to change things
+			disableVisualSelection: settings.disableVisualSelection, # prevent user from visually selecting
+			manualColumnResize: settings.manualColumnResize, # prevent dragging to resize columns
+			manualRowResize: settings.manualRowResize, # prevent dragging to resize rows
+			comments: settings.comments #3 prevent editing of comments
+
+	lockTable: ->
+		@hot.updateSettings({
+			readOnly: true, # make table cells read-only
+			contextMenu: false, # disable context menu to change things
+			disableVisualSelection: true, # prevent user from visually selecting
+			manualColumnResize: false, # prevent dragging to resize columns
+			manualRowResize: false, # prevent dragging to resize rows
+			comments: false #3 prevent editing of comments
+		})
 
 	readOnlyRenderer: (instance, td, row, col, prop, value, cellProperties) =>
 		Handsontable.renderers.TextRenderer.apply(this, arguments)
 		td.style.background = '#EEE'
 		td.style.color = 'black';
 		cellProperties.readOnly = true;
+
+	getLastRow: ->
+		lastRow = @getCurrentStates().length
+		return lastRow
 
 	getStateForRow: (row, forceNew) ->
 		currentStates = @getCurrentStates()
@@ -251,6 +297,13 @@ class window.ACASFormStateTableController extends Backbone.View
 			@setupFormForNewState newState
 		@hot.selectCell(row,0,row,0)
 		return newState
+
+	show: =>
+		$(@el).show()
+		@hot.render()
+
+	hide: ->
+		$(@el).hide()
 
 	getCurrentStates: ->
 		@thingRef.get('lsStates').getStatesByTypeAndKind @tableDef.stateType, @tableDef.stateKind
@@ -392,6 +445,8 @@ class window.ACASFormStateTableController extends Backbone.View
 									@setCodeForName(value, cellContent)
 					rowNumValue = state.getOrCreateValueByTypeAndKind 'numericValue', @rowNumberKind
 					rowNumValue.set numericValue: changeRow
+			@trigger 'cellChangeComplete', state
+
 
 	handleRowCreated: (index, amount) =>
 		#TODO: if update handsontable version, can add source input to only do something when row created via context menu
