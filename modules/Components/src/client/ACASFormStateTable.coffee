@@ -231,7 +231,7 @@ class window.ACASFormStateTableController extends Backbone.View
 			@hot.setDataAtCell(lastRow, index, value)
 
 	hotPseudoTransaction: (callback, changeCount) ->
-		# Get the settings related th elo
+		# Get the current settings related the lock
 		originalSettings = @getCurrentLockSettings()
 		@lockTable()
 		@changeCount = 0
