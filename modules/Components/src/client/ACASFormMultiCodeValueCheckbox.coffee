@@ -32,7 +32,7 @@ class window.ACASFormCodeValueCheckboxController extends ACASFormAbstractFieldCo
         @userInputEvent = true
         isChecked = @$('input').is(":checked")
         if isChecked
-            value = @getState().createValueByTypeAndKind @valueType, @valueKind
+            value = @getState().getOrCreateValueByTypeAndKind @valueType, @valueKind
             value.set
                 codeValue: @code
                 codeType: @codeType
@@ -45,14 +45,14 @@ class window.ACASFormCodeValueCheckboxController extends ACASFormAbstractFieldCo
             @getState().get('lsValues').add value
         else
             # Find existing value with codeValue matching this controller's code, and mark as ignored.
-            value = @getState().get('lsValues').findWhere({lsType: @valueType, lsKind: @valueKind, codeValue: @code})
+            value = @getState().get('lsValues').findWhere({lsType: @valueType, lsKind: @valueKind, codeValue: @code, ignored: false})
             value.set
                 ignored: true 
         super()
 
     renderModelContent: =>
         # Check for value matching this controller's code, and mark as checked if found
-        if @getState().get('lsValues').findWhere({lsType: @valueType, lsKind: @valueKind, codeValue: @code})?
+        if @getState().get('lsValues').findWhere({lsType: @valueType, lsKind: @valueKind, codeValue: @code, ignored: false})?
             @$('input').attr 'checked', 'checked'
         else
             @$('input').removeAttr 'checked'
