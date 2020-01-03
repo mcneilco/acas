@@ -235,6 +235,7 @@ class window.ACASFormStateTableController extends Backbone.View
 		originalSettings = @getCurrentLockSettings()
 		@lockTable()
 		@changeCount = 0
+		@.off "cellChangeComplete"
 		@.on "cellChangeComplete", =>
 			@changeCount = @changeCount + 1
 			if @changeCount == changeCount
