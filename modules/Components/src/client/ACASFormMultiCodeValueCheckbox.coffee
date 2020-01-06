@@ -86,10 +86,10 @@ class window.ACASFormCodeValueCheckboxController extends ACASFormAbstractFieldCo
             return null
     
     disableInput: ->
-		@$('input').attr 'disabled', 'disabled'
+        @$('input').attr 'disabled', 'disabled'
 
-	enableInput: ->
-		@$('input').removeAttr 'disabled'
+    enableInput: ->
+        @$('input').removeAttr 'disabled'
 
 
 class window.ACASFormMultiCodeValueCheckboxController extends ACASFormAbstractFieldController
