@@ -141,6 +141,11 @@ class window.ACASFormStateTableController extends Backbone.View
 			colOpts = data: val.modelDefaults.kind
 			colOpts.readOnly = if val.fieldSettings.readOnly? then val.fieldSettings.readOnly else false
 			colOpts.wordWrap = true
+
+			# put a value or placeholder in place
+			if val.fieldSettings.placeholder?
+				colOpts.placeholder = if _.isFunction(val.fieldSettings.placeholder) then val.fieldSettings.placeholder() else val.fieldSettings.placeholder
+				
 			if val.modelDefaults.type == 'numericValue'
 				colOpts.type = 'numeric'
 				if val.fieldSettings.fieldFormat?
@@ -284,7 +289,7 @@ class window.ACASFormStateTableController extends Backbone.View
 		rowValue = newState.createValueByTypeAndKind 'numericValue', @rowNumberKind
 		rowValue.set numericValue: row
 		for valueDef in @tableDef.values
-			newValue = newState.createValueByTypeAndKind valueDef.modelDefaults.type, valueDef.modelDefaults.kind
+			newValue = newState.createValueByTypeAndKind valueDef.modelDefaults.type, valueDef.modelDefaults.kind, valueDef.modelDefaults.value
 			if valueDef.modelDefaults.unitType?
 				newValue.set unitType: valueDef.modelDefaults.unitType
 			if valueDef.modelDefaults.unitKind?
@@ -334,7 +339,7 @@ class window.ACASFormStateTableController extends Backbone.View
 			cols = []
 			for valDef in @tableDef.values
 				cellInfo = []
-				value = state.getOrCreateValueByTypeAndKind valDef.modelDefaults.type, valDef.modelDefaults.kind
+				value = state.getOrCreateValueByTypeAndKind valDef.modelDefaults.type, valDef.modelDefaults.kind, valDef.modelDefaults.value
 				if valDef.modelDefaults.type == 'codeValue'
 					if valDef.fieldSettings.fieldType == 'stringValue'
 						displayVal = value.get 'codeValue'
@@ -409,7 +414,7 @@ class window.ACASFormStateTableController extends Backbone.View
 					valueDefs = _.filter @tableDef.values, (def) ->
 						def.modelDefaults.kind == attr
 					valueDef = valueDefs[0]
-					value = state.getOrCreateValueByTypeAndKind valueDef.modelDefaults.type, valueDef.modelDefaults.kind
+					value = state.getOrCreateValueByTypeAndKind valueDef.modelDefaults.type, valueDef.modelDefaults.kind, valueDef.modelDefaults.value
 					unless value.isNew()
 						oldValueAttr = value.get(valueDef.modelDefaults.type)
 						value = @cloneValueAndIgnoreOld state, value
@@ -665,7 +670,7 @@ class window.ACASFormStateTableFormController extends Backbone.View
 		state = @getStateForRow()
 		
 		for field in @valueDefs
-			value = state.getOrCreateValueByTypeAndKind field.modelDefaults.type, field.modelDefaults.kind
+			value = state.getOrCreateValueByTypeAndKind field.modelDefaults.type, field.modelDefaults.kind, field.modelDefaults.value
 			if field.modelDefaults.codeType?
 				value.set 'codeType', field.modelDefaults.codeType
 			if field.modelDefaults.codeKind?
@@ -692,7 +697,7 @@ class window.ACASFormStateTableFormController extends Backbone.View
 				formLabel: field.fieldSettings.formLabel
 				formLabelOrientation: field.fieldSettings.formLabelOrientation
 				formLabelTooltip: field.fieldSettings.formLabelTooltip
-				placeholder: field.fieldSettings.placeholder
+				placeholder: if _.isFunction(field.fieldSettings.placeholder) then field.fieldSettings.placeholder() else field.fieldSettings.placeholder
 				required: field.fieldSettings.required
 				url: field.fieldSettings.url
 				thingRef: @thingRef
