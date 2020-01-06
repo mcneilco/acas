@@ -84,6 +84,12 @@ class window.ACASFormCodeValueCheckboxController extends ACASFormAbstractFieldCo
             return rowValues[0].get('numericValue')
         else
             return null
+    
+    disableInput: ->
+		@$('input').attr 'disabled', 'disabled'
+
+	enableInput: ->
+		@$('input').removeAttr 'disabled'
 
 
 class window.ACASFormMultiCodeValueCheckboxController extends ACASFormAbstractFieldController
@@ -153,3 +159,10 @@ class window.ACASFormMultiCodeValueCheckboxController extends ACASFormAbstractFi
         checkBoxEl.style.float = "left"
         @$('.bv_multiCodeValueCheckboxWrapper').append checkBoxEl
 
+    disableInput: ->
+        @checkboxControllerList.forEach (controller) ->
+            controller.disableInput()
+
+	enableInput: ->
+		@checkboxControllerList.forEach (controller) ->
+            controller.enableInput()
