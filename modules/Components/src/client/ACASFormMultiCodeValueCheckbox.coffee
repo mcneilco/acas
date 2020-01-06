@@ -163,6 +163,6 @@ class window.ACASFormMultiCodeValueCheckboxController extends ACASFormAbstractFi
         @checkboxControllerList.forEach (controller) ->
             controller.disableInput()
 
-	enableInput: ->
-		@checkboxControllerList.forEach (controller) ->
+    enableInput: ->
+        @checkboxControllerList.forEach (controller) ->
             controller.enableInput()
