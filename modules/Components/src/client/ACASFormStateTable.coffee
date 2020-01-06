@@ -562,10 +562,16 @@ class window.ACASFormStateTableController extends Backbone.View
 				readOnly: true
 				contextMenu: false
 				comments: false
+				cells: (row, col, prop) =>
+					cellProperties = {readOnly: true}
+					return cellProperties;
 #Other options I decided not to use
 #			disableVisualSelection: true
 #			manualColumnResize: false
 #			manualRowResize: false
+		if @hasFormWrapper?
+			for cont, index in @stateTableFormControllersCollection
+				cont.disableAllInputs()
 
 	enableInput: ->
 		if @tableDef.contextMenu?
@@ -577,10 +583,16 @@ class window.ACASFormStateTableController extends Backbone.View
 				readOnly: false
 				contextMenu: contextMenu
 				comments: true
+				cells: (row, col, prop) =>
+					cellProperties = {}
+					return cellProperties;
 #Other options I decided not to use
 #			disableVisualSelection: false
 #			manualColumnResize: true
 #			manualRowResize: true
+		if @hasFormWrapper?
+			for cont, index in @stateTableFormControllersCollection
+				cont.disableAllInputs()
 
 	validateRequiredAndUniqueness: (changes, source) =>
 		@validateRequired changes, source
@@ -782,3 +794,11 @@ class window.ACASFormStateTableFormController extends Backbone.View
 		@thingRef.set key, newValue
 		# Add a listener in case this new value is changed again
 		@listenTo newValue, 'createNewValue', @createNewValue
+	
+	disableAllInputs: ->
+		for key, fld of @formFields
+			fld.disableInput()
+
+	enableAllInputs: ->
+		for key, fld of @formFields
+			fld.enableInput()
