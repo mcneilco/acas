@@ -677,6 +677,14 @@ class window.ACASFormStateTableFormController extends Backbone.View
 			newKey = keyBase + value.cid
 			value.set key: newKey
 			@thingRef.set newKey, value
+			# Deep copy the field modelDefaults and change the key to the newKey
+			newField = $.extend( true, {}, field)
+			newField.modelDefaults.key = newKey
+			# Save the modelDefaults to the Thing's defaultValues with the new key
+			# This allows @createNewValue to find the correct modelDefaults when creating a new value should this value be edited
+			@thingRef.lsProperties.defaultValues.push newField.modelDefaults
+			# Add a new listener to value changes to create a new value in the proper state
+			@listenTo value, 'createNewValue', @createNewValue
 
 			opts =
 				modelKey: newKey
@@ -750,3 +758,22 @@ class window.ACASFormStateTableFormController extends Backbone.View
 			return rowValues[0].get('numericValue')
 		else
 			return null
+		
+	createNewValue: (vKind, newVal, key) =>
+		state = @getStateForRow()
+		# Get the modelDefaults for this key that was populated above during setupForm
+		valInfo = _.where(@thingRef.lsProperties.defaultValues, {key: key})[0]
+		@thingRef.unset(key)
+		newValue = state.createValueByTypeAndKind valInfo['type'], valInfo['kind']
+		newValue.set valInfo['type'], newVal
+		newValue.set
+			unitKind: valInfo['unitKind']
+			unitType: valInfo['unitType']
+			codeKind: valInfo['codeKind']
+			codeType: valInfo['codeType']
+			codeOrigin: valInfo['codeOrigin']
+			value: newVal
+		# Replace the Thing's reference to the old ignored value with a reference to the newValue
+		@thingRef.set key, newValue
+		# Add a listener in case this new value is changed again
+		@listenTo newValue, 'createNewValue', @createNewValue
