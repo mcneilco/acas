@@ -113,7 +113,10 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 		@required = if @options.required? then @options.required else false
 
 	setFormLabel: (value) ->
-		@$('label').html value
+		if @$('label .label-text').length
+			@$('label .label-text').html value
+		else
+			@$('label').html value
 
 	addFormLabelClass: (value) ->
 		@$('label').addClass value
