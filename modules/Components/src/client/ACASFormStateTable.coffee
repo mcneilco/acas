@@ -568,6 +568,10 @@ class window.ACASFormStateTableController extends Backbone.View
 				readOnly: true
 				contextMenu: false
 				comments: false
+				cells: (row, col, prop) =>
+					cellProperties = {readOnly: true}
+					return cellProperties;
+
 #Other options I decided not to use
 #			disableVisualSelection: true
 #			manualColumnResize: false
@@ -583,6 +587,10 @@ class window.ACASFormStateTableController extends Backbone.View
 				readOnly: false
 				contextMenu: contextMenu
 				comments: true
+				cells: (row, col, prop) =>
+					cellProperties = {}
+					return cellProperties;
+
 #Other options I decided not to use
 #			disableVisualSelection: false
 #			manualColumnResize: true
