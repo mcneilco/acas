@@ -43,6 +43,12 @@ class window.ACASFormStateTableController extends Backbone.View
 			@callWhenSetupComplete = @completeRenderModelContent
 
 	completeRenderModelContent: ->
+		# Destroy all current form controllers as they will be recreated when rendering the state
+		if @stateTableFormControllersCollection?
+			@stateTableFormControllersCollection.forEach (controller) ->
+				controller.remove()
+				controller.unbind()
+
 		for state in @getCurrentStates()
 			@renderState state
 
