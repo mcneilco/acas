@@ -32,17 +32,25 @@ class window.ACASFormCodeValueCheckboxController extends ACASFormAbstractFieldCo
         @userInputEvent = true
         isChecked = @$('input').is(":checked")
         if isChecked
-            value = @getState().getOrCreateValueByTypeAndKind @valueType, @valueKind
-            value.set
-                codeValue: @code
-                codeType: @codeType
-                codeKind: @codeKind
-                codeOrigin: @codeOrigin
-                ignored: false
-            newKey = @keyBase + value.cid
-            value.set key: newKey
-            @thingRef.set newKey, value
-            @getState().get('lsValues').add value
+            # Checkbox was just checked. Check for a new / unsaved ignored value with matching type/kind/code
+            value = @getState().get('lsValues').findWhere({lsType: @valueType, lsKind: @valueKind, codeValue: @code, ignored: true, id: undefined})
+            if value?
+                # This means the box was toggled on and off multiple times, so we just flip the value to non-ignored
+                value.set
+                    ignored: false
+            else
+                # Create a new value
+                value = @getState().createValueByTypeAndKind @valueType, @valueKind
+                value.set
+                    codeValue: @code
+                    codeType: @codeType
+                    codeKind: @codeKind
+                    codeOrigin: @codeOrigin
+                    ignored: false
+                newKey = @keyBase + value.cid
+                value.set key: newKey
+                @thingRef.set newKey, value
+                @getState().get('lsValues').add value
         else
             # Find existing value with codeValue matching this controller's code, and mark as ignored.
             value = @getState().get('lsValues').findWhere({lsType: @valueType, lsKind: @valueKind, codeValue: @code, ignored: false})
