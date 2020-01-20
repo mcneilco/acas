@@ -79,6 +79,12 @@ $(function() {
             } else {
                 this.showIgnored = false;
             }
+
+            if (this.options.insertSelectedCode !=null) {
+                      this.insertSelectedCode = this.options.insertSelectedCode;
+            } else {
+                      this.insertSelectedCode = true;
+            }
 		},
 		
 		handleListReset: function() {
@@ -90,8 +96,20 @@ $(function() {
             }
 			if (this.insertFirstOption) {
 	            this.collection.add(this.insertFirstOption, {at: 0, silent: true});
-            }
-      this.render();
+			}
+
+			//If insert selected code is set to true (it is by default) then
+			// check if the selectedCode is null or undefined and also if it is in the list
+			// if it is not in the list then we artificially insert the selected code as to not change
+			// the value stored in the db.
+			if (this.insertSelectedCode && this.selectedCode != null && typeof(this.selectedCode) != "undefined" && (typeof(this.collection.getModelWithCode(this.selectedCode)) == "undefined")) {
+				newOption = new PickList({
+					code: this.selectedCode,
+					name: this.selectedCode
+				});
+				this.collection.add(newOption, {at: 0, silent: true});
+			}
+			this.render();
 		},
 		
 		render: function() {

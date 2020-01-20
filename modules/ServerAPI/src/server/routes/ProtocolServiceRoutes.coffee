@@ -495,7 +495,7 @@ exports.genericProtocolSearch = (req, res) ->
 			_ = require "underscore"
 			allowedProjectCodes = _.pluck(allowedUserProjects, "code")
 			config = require '../conf/compiled/conf.js'
-			baseurl = config.all.client.service.persistence.fullpath+"protocols/search?q="+req.params.searchTerm+"&projects=#{allowedProjectCodes.join(',')}"
+			baseurl = config.all.client.service.persistence.fullpath+"protocols/search?q="+req.params.searchTerm+"&projects=#{encodeURIComponent(allowedProjectCodes.join(','))}"
 			console.log "baseurl"
 			console.log baseurl
 			serverUtilityFunctions = require './ServerUtilityFunctions.js'
