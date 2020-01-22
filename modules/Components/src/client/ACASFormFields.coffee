@@ -221,10 +221,10 @@ class window.ACASFormLSLabelFieldController extends ACASFormAbstractFieldControl
 	checkUnique: (value, callback) ->
 		$.ajax
 			type: 'POST'
-			url: "/api/getThingCodeByLabel/#{@getModel().get("uniqueBy").thingType}/#{@getModel().get("uniqueBy").thingKind}"
+			url: "/api/getThingCodeByLabel/#{@getModel().get("thingType")}/#{@getModel().get("thingKind")}"
 			data: 
-				thingType: @getModel().get("uniqueBy").thingType
-				thingKind: @getModel().get("uniqueBy").thingKind
+				thingType: @getModel().get("thingType")
+				thingKind: @getModel().get("thingKind")
 				labelType: @getModel().get("lsType")
 				labelKind: @getModel().get("lskind")
 				requests: [requestName: value]

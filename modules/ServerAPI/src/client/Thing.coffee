@@ -216,9 +216,8 @@ class window.Thing extends Backbone.Model
 					newLabel.set preferred: dLabel.preferred
 
 					newLabel.set unique: dLabel.unique
-					newLabel.set uniqueBy:
-						thingType: @get("lsType")
-						thingKind: @get("lsKind")
+					newLabel.set thingType: @get("lsType")
+					newLabel.set thingKind: @get("lsKind")
 
 					newLabel.set validationRegex: dLabel.validationRegex
 
@@ -232,7 +231,8 @@ class window.Thing extends Backbone.Model
 			key: key
 			labelText: newText
 			preferred: oldLabel.get 'preferred'
-			uniqueBy: oldLabel.get 'uniqueBy'
+			thingType: oldLabel.get 'thingType'
+			thingKind: oldLabel.get 'thingKind'
 			unique: oldLabel.get 'unique'
 			validationRegex: oldLabel.get 'validationRegex'
 		newLabel.on 'change', =>
