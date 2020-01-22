@@ -184,11 +184,7 @@ class window.ACASFormLSLabelFieldController extends ACASFormAbstractFieldControl
 		value = UtilityFunctions::getTrimmedInput(@$('input'))
 
 		# check
-		@isValid value, =>
-			super()
-
-	isValid: (value, callback) =>
-		@checkUnique value, (isValid) =>
+		@isValid value, (isValid) =>
 			if isValid
 				@clearError()
 				if value != ""
@@ -197,58 +193,61 @@ class window.ACASFormLSLabelFieldController extends ACASFormAbstractFieldControl
 						ignored: false
 				else
 					@setEmptyValue()
-			callback()
+			super()
 
-	checkUnique: (value, callback) ->
+	isValid: (value, callback) =>
+		# if the value is empty, don't check for uniqueness, the form field should evaluate if this is required
+		# so we don't need to do that here
+		if(value == "") 
+			callback true 
+			return
 		if @getModel().get("validationRegex")?
 			regex = new RegExp(@getModel().get("validationRegex"));
 			if !regex.test(value)
 				@setError("label does not meet format requirements")
+				callback false
 				return
 		if value.length > @maxLabelLength
 				@setError("label is too long")
 				@setEmptyValue()
 				callback false
 				return
-		
 		if @getModel().get("unique")? && @getModel().get("unique")
-			# if the value is empty, don't check for uniqueness, the form field should evaluate if this is required
-			# so we don't need to do that here
-			if(value == "") 
-				callback(true)
-				return
-			# check for uniqueness
-			$.ajax
-				type: 'POST'
-				url: "/api/getThingCodeByLabel/#{@getModel().get("uniqueBy").thingType}/#{@getModel().get("uniqueBy").thingKind}"
-				data: 
-					thingType: @getModel().get("uniqueBy").thingType
-					thingKind: @getModel().get("uniqueBy").thingKind
-					labelType: @getModel().get("lsType")
-					labelKind: @getModel().get("lskind")
-					requests: [requestName: value]
-				dataType: 'json'
-				error: (err) =>
-					#codename is new
-					@setError("error checking for unique labels")
-					callback(false)
-					# @model.set codeName: codeName
-				success: (json) =>
-					# the route currently returns an ambiguous error if there are duplicates so give an ambigous error to the user but with a hint
-					if typeof json is 'string'
-						@setError("error checking for unique labels, possibly duplicates already exist")
-						@setEmptyValue()
-						callback(false)
-					else
-						if json.results? && json.results[0]? && json.results[0].referenceName == ""
-							@clearError()
-							callback(true)
-						else
-							@setError("label must be unique")
-							@setEmptyValue()
-							callback(false)
+			@checkUnique value, (isUnique) =>
+				callback isUnique
 		else
-			callback(true)
+			callback true
+
+	checkUnique: (value, callback) ->
+		$.ajax
+			type: 'POST'
+			url: "/api/getThingCodeByLabel/#{@getModel().get("uniqueBy").thingType}/#{@getModel().get("uniqueBy").thingKind}"
+			data: 
+				thingType: @getModel().get("uniqueBy").thingType
+				thingKind: @getModel().get("uniqueBy").thingKind
+				labelType: @getModel().get("lsType")
+				labelKind: @getModel().get("lskind")
+				requests: [requestName: value]
+			dataType: 'json'
+			error: (err) =>
+				#codename is new
+				@setError("error checking for unique labels")
+				callback false 
+				# @model.set codeName: codeName
+			success: (json) =>
+				# the route currently returns an ambiguous error if there are duplicates so give an ambigous error to the user but with a hint
+				if typeof json is 'string'
+					@setError("error checking for unique labels, possibly duplicates already exist")
+					@setEmptyValue()
+					callback false 
+				else
+					if json.results? && json.results[0]? && json.results[0].referenceName == ""
+						@clearError()
+						callback true
+					else
+						@setError("label must be unique")
+						@setEmptyValue()
+						callback false 
 		
 	setEmptyValue: ->
 		@getModel().set
