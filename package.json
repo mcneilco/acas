@@ -39,7 +39,7 @@
     "jade": "0.35.0",
     "jasmine-core": "^2.4.1",
     "jasmine-jquery": "^2.1.1",
-    "jquery": "^2.2.0",
+    "jquery": "^3.4.1",
     "jquery-file-upload-middleware": "https://github.com/mcneilco/jquery-file-upload-middleware.git",
     "json2csv": "^3.9.1",
     "jszip": "3.1.4",
