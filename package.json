@@ -55,7 +55,7 @@
     "passport-local": "1.0.0",
     "properties": "1.2.1",
     "properties-parser": "0.3.1",
-    "request": "2.34.0",
+    "request": "2.88.0",
     "request-promise": "4.2.1",
     "shelljs": "0.6.0",
     "socket.io": "^1.7.3",
