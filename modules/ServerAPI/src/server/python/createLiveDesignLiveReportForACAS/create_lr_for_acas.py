@@ -193,7 +193,7 @@ def main():
     print "LDClient version is:"+str(ld_client_version)
     try:
 #    	projectId = api.get_project_id_by_name(project)
-        matching_projects = filter(lambda p: p.alternate_id == project, api.projects())
+        matching_projects = filter(lambda p: p.name == project, api.projects())
         projectId = int(matching_projects[0].id.encode('ascii'))
         print "Project " + project + " found with id: " + str(projectId)
     except:
