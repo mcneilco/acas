@@ -198,6 +198,9 @@ def get_user(client, username):
 
 def get_projects(client):
     ld_projects = client.projects()      
+
+    # Sort by name
+    ld_projects.sort(key=lambda x: x.name, reverse=False)
     projects = map(ld_project_to_acas, ld_projects)
     return projects
 
