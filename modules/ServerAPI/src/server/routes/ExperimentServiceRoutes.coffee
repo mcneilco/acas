@@ -144,7 +144,7 @@ exports.experimentsByProtocolCodename = (request, response) ->
 		response.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer
 	else
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"experiments/protocolCodename/"+request.params.code
+		baseurl = config.all.client.service.persistence.fullpath+"experiments/protocol/"+request.params.code
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		serverUtilityFunctions.getFromACASServer(baseurl, response)
 
