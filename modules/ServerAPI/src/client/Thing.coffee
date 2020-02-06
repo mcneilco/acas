@@ -201,6 +201,7 @@ class window.Thing extends Backbone.Model
 								counter++
 								@set labelKey, label
 								label.set key: labelKey
+								@stopListening label, 'createNewLabel'
 								@listenTo label, 'createNewLabel', @createNewLabel
 					else
 						newLabel = @get('lsLabels').getOrCreateLabelByTypeAndKind dLabel.type, dLabel.kind
@@ -209,6 +210,7 @@ class window.Thing extends Backbone.Model
 						newLabel.set key: newKey
 				else
 					newLabel = @get('lsLabels').getOrCreateLabelByTypeAndKind dLabel.type, dLabel.kind
+					@stopListening newLabel, 'createNewLabel'
 					@listenTo newLabel, 'createNewLabel', @createNewLabel
 					@set dLabel.key, newLabel
 					#			if newLabel.get('preferred') is undefined
