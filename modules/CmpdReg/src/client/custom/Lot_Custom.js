@@ -56,8 +56,8 @@ $(function() {
                     totalAmountStoredUnits: new PickList(js.totalAmountStoredUnits),
                     purityMeasuredBy: new PickList(js.purityMeasuredBy),
                     purityOperator: new PickList(js.purityOperator),
-                    chemist: new PickList(js.chemist),
-                    project: new PickList(js.project),
+                    chemist: new PickList({selectedCode: js.chemist}),
+                    project: new PickList({selectedCode: js.project}),
                     vendor: new PickList(js.vendor)
                 })
         // replace composite object pointers with real objects
@@ -536,6 +536,7 @@ $(function() {
                     tareWeightUnits: tareWeightUnits,
                     totalAmountStoredUnits: totalAmountStoredUnits,
                     purityMeasuredBy: purityMeasuredBy,
+                    chemist: this.chemistCodeController.getSelectedModel(),
                     project: this.projectCodeController.getSelectedModel(),
                     vendor: vendor,
                     supplierLot: jQuery.trim(this.$('.supplierLot').val()),

@@ -24,7 +24,10 @@ RUN set -ex \
   ; do \
     gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key" || \
     gpg --keyserver pgp.mit.edu --recv-keys "$key" || \
-    gpg --keyserver keyserver.pgp.com --recv-keys "$key"; \
+    gpg --keyserver keyserver.pgp.com --recv-keys "$key" || \
+    gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys "$key" || \
+    gpg --keyserver hkp://p80.pool.sks-keyservers.net:80 "$key" || \
+    gpg --keyserver pgp.mit.edu "$key"; \
   done
 
 ENV NPM_CONFIG_LOGLEVEL warn
@@ -76,7 +79,7 @@ USER	root
 RUN		curl -SLO dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm && rpm -ivh epel-release-6-8.noarch.rpm && rm epel-release-6-8.noarch.rpm
 RUN		yum install -y centos-release-SCL
 RUN		yum install -y python-pip python-psycopg2 python27
-RUN		source /opt/rh/python27/enable && pip install argparse requests psycopg2
+RUN		source /opt/rh/python27/enable && pip install argparse requests psycopg2-binary
 USER	runner
 
 EXPOSE 3000

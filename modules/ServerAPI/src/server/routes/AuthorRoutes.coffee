@@ -16,6 +16,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/author', loginRoutes.ensureAuthenticated, exports.saveAuthor
 	app.put '/api/author/:id', loginRoutes.ensureAuthenticated, exports.updateAuthor
 	app.get '/activateUser', exports.activateUserAndRedirectToChangePassword
+	app.get '/api/allowedProjects', loginRoutes.ensureAuthenticated, exports.allowedProjects
 
 serverUtilityFunctions = require './ServerUtilityFunctions.js'
 _ = require 'underscore'
@@ -37,6 +38,48 @@ FirstThingItx = serverUtilityFunctions.FirstThingItx
 LsThingItxList = serverUtilityFunctions.LsThingItxList
 FirstLsThingItxList = serverUtilityFunctions.FirstLsThingItxList
 SecondLsThingItxList = serverUtilityFunctions.SecondLsThingItxList
+
+
+exports.allowedProjects = (req, resp) ->
+	exports.allowedProjectsInternal req.user, (statusCode, json) ->
+		resp.statusCode = statusCode
+		resp.json json
+
+exports.allowedProjectsInternal = (user, callback) ->
+	csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
+	csUtilities.getProjectStubsInternal (statusCode, allProjects) ->
+		config = require '../conf/compiled/conf.js'
+		_ = require 'underscore'
+
+		# Filter out any projects that exist in the config for filtering projects
+		projectFilterList = JSON.parse config.all.server.projects.filterList
+		allProjects = _.filter allProjects, (project, index) ->
+			! _.contains projectFilterList, project.code
+
+		if (config.all.server.project.roles.enable)
+			filteredProjects = []
+			isAdmin = false;
+			roles = user.roles
+			allowedProjectCodes = []
+			user.roles.forEach (role) ->
+				if role.roleEntry.lsType != null && role.roleEntry.lsType == "Project"
+					allowedProjectCodes.push role.roleEntry.lsKind
+				else if role.roleEntry.roleName == config.all.client.roles.acas.adminRole
+					isAdmin = true
+			if isAdmin
+				filteredProjects = allProjects
+			else
+				allProjects.forEach (project) ->
+					isRestricted = project.isRestricted
+					if isRestricted
+						if _.contains(allowedProjectCodes, project.code)
+							filteredProjects.push(project)
+					else 
+						filteredProjects.push(project)
+			projects = filteredProjects
+		else
+			projects = allProjects
+		callback 200, projects
 
 
 exports.getAuthorByUsername = (req, resp) ->

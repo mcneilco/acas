@@ -490,12 +490,16 @@ exports.genericProtocolSearch = (req, res) ->
 		else
 			res.end JSON.stringify [protocolServiceTestJSON.fullSavedProtocol, protocolServiceTestJSON.fullDeletedProtocol]
 	else
-		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"protocols/search?q="+req.params.searchTerm+"&userName="+req.user.username
-		console.log "baseurl"
-		console.log baseurl
-		serverUtilityFunctions = require './ServerUtilityFunctions.js'
-		serverUtilityFunctions.getFromACASServer(baseurl, res)
+		authorRoutes = require './AuthorRoutes.js'
+		authorRoutes.allowedProjectsInternal req.user, (statusCode, allowedUserProjects) ->
+			_ = require "underscore"
+			allowedProjectCodes = _.pluck(allowedUserProjects, "code")
+			config = require '../conf/compiled/conf.js'
+			baseurl = config.all.client.service.persistence.fullpath+"protocols/search?q="+req.params.searchTerm+"&projects=#{encodeURIComponent(allowedProjectCodes.join(','))}"
+			console.log "baseurl"
+			console.log baseurl
+			serverUtilityFunctions = require './ServerUtilityFunctions.js'
+			serverUtilityFunctions.getFromACASServer(baseurl, res)
 
 exports.deleteProtocol = (req, res) ->
 	if global.specRunnerTestmode

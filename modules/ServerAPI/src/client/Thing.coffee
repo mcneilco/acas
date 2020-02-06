@@ -92,21 +92,20 @@ class window.Thing extends Backbone.Model
 				if attsToSave.secondLsThings.length == 0
 					delete attsToSave.secondLsThings
 
-			if @lsProperties.defaultLabels?
+			if @lsProperties.defaultLabels? and @lsProperties.defaultLabels.length > 0
 				for dLabel in @lsProperties.defaultLabels
 					delete attsToSave[dLabel.key]
 
-			if @lsProperties.defaultFirstLsThingItx?
+			if @lsProperties.defaultFirstLsThingItx? and @lsProperties.defaultFirstLsThingItx.length > 0
 				for itx in @lsProperties.defaultFirstLsThingItx
 					delete attsToSave[itx.key]
 
-			if @lsProperties.defaultSecondLsThingItx?
+			if @lsProperties.defaultSecondLsThingItx? and @lsProperties.defaultSecondLsThingItx.length > 0
 				console.log "deleting empty 2nd ls thing itxs"
-
 				for itx in @lsProperties.defaultSecondLsThingItx
 					delete attsToSave[itx.key]
 
-			if @lsProperties.defaultValues?
+			if @lsProperties.defaultValues? and @lsProperties.defaultValues.length > 0
 				for dValue in @lsProperties.defaultValues
 					if attsToSave[dValue.key]?
 						val = attsToSave[dValue.key].get('value')
@@ -216,6 +215,13 @@ class window.Thing extends Backbone.Model
 					newLabel.set key: dLabel.key
 					newLabel.set preferred: dLabel.preferred
 
+					newLabel.set unique: dLabel.unique
+					newLabel.set thingType: @get("lsType")
+					newLabel.set thingKind: @get("lsKind")
+
+					newLabel.set validationRegex: dLabel.validationRegex
+
+
 	createNewLabel: (lKind, newText, key) =>
 		oldLabel = @get(key)
 		@unset(key)
@@ -225,6 +231,10 @@ class window.Thing extends Backbone.Model
 			key: key
 			labelText: newText
 			preferred: oldLabel.get 'preferred'
+			thingType: oldLabel.get 'thingType'
+			thingKind: oldLabel.get 'thingKind'
+			unique: oldLabel.get 'unique'
+			validationRegex: oldLabel.get 'validationRegex'
 		newLabel.on 'change', =>
 			@trigger('change')
 		@get('lsLabels').add newLabel
@@ -277,18 +287,56 @@ class window.Thing extends Backbone.Model
 		# add key as attribute of model
 		if @lsProperties.defaultFirstLsThingItx?
 			for itx in @lsProperties.defaultFirstLsThingItx
-				#TODO fix - broken when have more than one itx that has same type/kind
-				thingItx = @get('firstLsThings').getOrCreateItxByTypeAndKind itx.itxType, itx.itxKind
-				@set itx.key, thingItx
+				if itx.multiple? and itx.multiple
+					thingItxs = @get('firstLsThings').getItxByTypeAndKind itx.itxType, itx.itxKind
+					if thingItxs.length > 0
+						counter = 0
+						_.each thingItxs, (thingItx) =>
+							if !thingItx.has('key')
+								thingItxKey = itx.key + counter
+								counter++
+								@set thingItxKey, thingItx
+								thingItx.set key: thingItxKey
+								#@listenTo thingItx, 'createNewLabel', @createNewLabel
+					else
+						thingItx = @get('firstLsThings').getOrCreateItxByTypeAndKind itx.itxType, itx.itxKind
+						newKey = itx.key + 0
+						@set newKey, thingItx
+						thingItx.set key: newKey
+				else
+					thingItx = @get('firstLsThings').getOrCreateItxByTypeAndKind itx.itxType, itx.itxKind
+					#@listenTo newLabel, 'createNewLabel', @createNewLabel
+					@set itx.key, thingItx
+					#			if newLabel.get('preferred') is undefined
+					thingItx.set key: itx.key
 
 	createDefaultSecondLsThingItx: =>
 		# loop over defaultSecondLsThingItx
 		# add key as attribute of model
 		if @lsProperties.defaultSecondLsThingItx?
 			for itx in @lsProperties.defaultSecondLsThingItx
-				#TODO fix - broken when have more than one itx that has same type/kind
-				thingItx = @get('secondLsThings').getOrCreateItxByTypeAndKind itx.itxType, itx.itxKind
-				@set itx.key, thingItx
+				if itx.multiple? and itx.multiple
+					thingItxs = @get('secondLsThings').getItxByTypeAndKind itx.itxType, itx.itxKind
+					if thingItxs.length > 0
+						counter = 0
+						_.each thingItxs, (thingItx) =>
+							if !thingItx.has('key')
+								thingItxKey = itx.key + counter
+								counter++
+								@set thingItxKey, thingItx
+								thingItx.set key: thingItxKey
+								#@listenTo thingItx, 'createNewLabel', @createNewLabel
+					else
+						thingItx = @get('secondLsThings').getOrCreateItxByTypeAndKind itx.itxType, itx.itxKind
+						newKey = itx.key + 0
+						@set newKey, thingItx
+						thingItx.set key: newKey
+				else
+					thingItx = @get('secondLsThings').getOrCreateItxByTypeAndKind itx.itxType, itx.itxKind
+					#@listenTo newLabel, 'createNewLabel', @createNewLabel
+					@set itx.key, thingItx
+					#			if newLabel.get('preferred') is undefined
+					thingItx.set key: itx.key
 
 	getAnalyticalFiles: (fileTypes) => #TODO: rename from analytical files to attachFiles or something more generic
 		#get list of possible kinds of analytical files

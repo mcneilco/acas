@@ -24,6 +24,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/experiments/getExperimentCodeByLabel/:exptType/:exptKind', exports.getExperimentCodeByLabel
 	app.post '/api/bulkPostExperiments', exports.bulkPostExperiments
 	app.put '/api/bulkPutExperiments', exports.bulkPutExperiments
+	app.get '/api/getExperimentalMetadata', exports.getExperimentalMetadata
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/experiments/codename/:code', loginRoutes.ensureAuthenticated, exports.experimentByCodename
@@ -52,6 +53,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/experiments/getExperimentCodeByLabel/:exptType/:exptKind', loginRoutes.ensureAuthenticated, exports.getExperimentCodeByLabel
 	app.post '/api/bulkPostExperiments', loginRoutes.ensureAuthenticated, exports.bulkPostExperiments
 	app.put '/api/bulkPostExperiments', loginRoutes.ensureAuthenticated, exports.bulkPutExperiments
+	app.get '/api/getExperimentalMetadata', loginRoutes.ensureAuthenticated, exports.getExperimentalMetadata
 
 serverUtilityFunctions = require './ServerUtilityFunctions.js'
 csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
@@ -142,7 +144,7 @@ exports.experimentsByProtocolCodename = (request, response) ->
 		response.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer
 	else
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"experiments/protocolCodename/"+request.params.code
+		baseurl = config.all.client.service.persistence.fullpath+"experiments/protocol/"+request.params.code
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		serverUtilityFunctions.getFromACASServer(baseurl, response)
 
@@ -490,11 +492,15 @@ exports.genericExperimentSearch = (req, res) ->
 			username = req.query.username
 		else
 			username = "none"
-		baseurl = config.all.client.service.persistence.fullpath+"experiments/search?q="+req.params.searchTerm+"&userName="+username
-		console.log "baseurl"
-		console.log baseurl
-		serverUtilityFunctions = require './ServerUtilityFunctions.js'
-		serverUtilityFunctions.getFromACASServer(baseurl, res)
+		authorRoutes = require './AuthorRoutes.js'
+		authorRoutes.allowedProjectsInternal req.user, (statusCode, allowedUserProjects) ->
+			_ = require "underscore"
+			allowedProjectCodes = _.pluck(allowedUserProjects, "code")
+			baseurl = config.all.client.service.persistence.fullpath+"experiments/search?q="+req.params.searchTerm+"&projects=#{encodeURIComponent(allowedProjectCodes.join(','))}"
+			console.log "baseurl"
+			console.log baseurl
+			serverUtilityFunctions = require './ServerUtilityFunctions.js'
+			serverUtilityFunctions.getFromACASServer(baseurl, res)
 
 exports.editExperimentLookupAndRedirect = (req, res) ->
 	if global.specRunnerTestmode
@@ -1035,3 +1041,10 @@ exports.getExperimentCodeByLabel = (req, resp) ->
 				resp.statusCode = 500
 				resp.json json.errorMessages
 		)
+
+exports.getExperimentalMetadata = (req, resp) ->
+	request = require 'request'
+	config = require '../conf/compiled/conf.js'
+	redirectQuery = req._parsedUrl.query
+	rapacheCall = config.all.client.service.rapache.fullpath + '/getExperimentalMetadata?' + redirectQuery
+	req.pipe(request(rapacheCall)).pipe(resp)
