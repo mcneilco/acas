@@ -98,7 +98,8 @@ class window.ACASFormMultiCodeValueCheckboxController extends ACASFormAbstractFi
     ###
       Launching controller must instantiate with the full field conf including modelDefaults, not just the fieldDefinition.
     Specifying rowNumber and rowNumberKind are optional, and will make this controller act on a specific state.
-      Controls a list of 
+      Controls a list of checkboxes that allow a user to select multiple "picklist" options as a horizontal set of checkboxes.
+      Checked values are saved as multiple LsValues within the same LsState, all with lsType "codeValue" and the same lsKind.
     ###
     template: _.template($("#ACASFormMultiCodeValueCheckbox").html())
 
