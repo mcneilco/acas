@@ -245,17 +245,22 @@ class window.State extends Backbone.Model
 	getFirstValueOfKind: (kind) ->
 		@get('lsValues').findWhere lsKind: kind
 
-	getOrCreateValueByTypeAndKind: (vType, vKind) ->
+	getOrCreateValueByTypeAndKind: (vType, vKind, vValue) ->
 		descVals = @getValuesByTypeAndKind vType, vKind
 		descVal = descVals[0] #TODO should do something smart if there are more than one
 		unless descVal?
-			descVal = @createValueByTypeAndKind(vType, vKind)
+			descVal = @createValueByTypeAndKind(vType, vKind, vValue)
 		return descVal
 
-	createValueByTypeAndKind: (vType, vKind) ->
+	createValueByTypeAndKind: (vType, vKind, vValue) ->
 		descVal = new Value
 			lsType: vType
 			lsKind: vKind
+		if vValue?
+			if !_.isFunction(vValue)
+				descVal.set 'value', vValue
+			else
+				descVal.set 'value', vValue()
 		@get('lsValues').add descVal
 		descVal.on 'change', =>
 			@trigger('change')
@@ -285,12 +290,12 @@ class window.StateList extends Backbone.Collection
 			mState = @createStateByTypeAndKind sType, sKind
 		return mState
 
-	getOrCreateValueByTypeAndKind: (sType, sKind, vType, vKind) ->
+	getOrCreateValueByTypeAndKind: (sType, sKind, vType, vKind, vValue) ->
 		metaState = @getOrCreateStateByTypeAndKind sType, sKind
 		descVals = metaState.getValuesByTypeAndKind vType, vKind
 		descVal = descVals[0] #TODO should do something smart if there are more than one
 		unless descVal?
-			descVal = @createValueByTypeAndKind(sType, sKind, vType, vKind)
+			descVal = @createValueByTypeAndKind(sType, sKind, vType, vKind, vValue)
 		return descVal
 
 	createStateByTypeAndKind: (sType, sKind) ->
@@ -303,10 +308,15 @@ class window.StateList extends Backbone.Collection
 
 		return mState
 
-	createValueByTypeAndKind: (sType, sKind, vType, vKind) ->
+	createValueByTypeAndKind: (sType, sKind, vType, vKind, vValue) ->
 		descVal = new Value
 			lsType: vType
 			lsKind: vKind
+		if vValue?
+			if !_.isFunction(vValue)
+				descVal.set 'value', vValue
+			else
+				descVal.set 'value', vValue()
 		metaState = @getOrCreateStateByTypeAndKind sType, sKind
 		metaState.get('lsValues').add descVal
 		descVal.on 'change', =>

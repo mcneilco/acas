@@ -34,6 +34,8 @@ class window.ACASFormStateDisplayUpdateCellController extends Backbone.View
 				content = @options.cellDef.displayOverride content
 			if val.get('lsType') == 'dateValue'
 				content = UtilityFunctions::convertMSToYMDDate val.get('dateValue')
+			else if val.get('lsType') == 'codeValue'
+				content = UtilityFunctions::getNameForCode val, content, @options.pickLists
 
 		$(@el).html content
 		$(@el).addClass if @collection.length > 1 then "valueWasEdited" else ""
@@ -56,6 +58,7 @@ class window.ACASFormStateDisplayUpdateRowController extends Backbone.View
 			cellController = new ACASFormStateDisplayUpdateCellController
 				collection: new ValueList vals
 				cellDef: valDef
+				pickLists: @options.pickLists
 			$(@el).append cellController.render().el
 			cellController.on 'cellClicked', (values) =>
 				@trigger 'cellClicked', values
@@ -76,10 +79,44 @@ class window.ACASFormStateDisplayUpdateController extends Backbone.View
 		$(@el).empty()
 		$(@el).html @template()
 		@applyOptions()
-		@tableSetupComplete = true
+		@fetchPickLists =>
+			@tableSetupComplete = true
+			@
 
-		@
+	fetchPickLists: (callback) =>
+		@pickLists = {}
+		listCount = 0
 
+		for val in @tableDef.values
+			if val.modelDefaults.type == 'codeValue' and val.fieldSettings.fieldType == 'codeValue'
+				listCount++
+
+		doneYet = =>
+			listCount--
+			if listCount == 0
+				callback()
+
+		if listCount == 0
+			callback()
+
+		for val in @tableDef.values
+			if val.modelDefaults.type == 'codeValue' and val.fieldSettings.fieldType == "codeValue"
+				if val.fieldSettings.optionURL?
+					url = val.fieldSettings.optionURL
+				else
+					url = "/api/codetables/#{val.modelDefaults.codeType}/#{val.modelDefaults.codeKind}"
+				kind = val.modelDefaults.kind
+
+				$.ajax
+					type: 'GET'
+					url: url
+					json: true
+					self: @
+					kind: kind
+					success: (response) ->
+						this.self.pickLists[this.kind] = new PickListList response
+						doneYet()
+	
 	renderModelContent: =>
 		if @tableSetupComplete
 			@completeRenderModelContent()
@@ -98,6 +135,7 @@ class window.ACASFormStateDisplayUpdateController extends Backbone.View
 			rowController = new ACASFormStateDisplayUpdateRowController
 				collection: state.get 'lsValues'
 				tableDef: @options.tableDef
+				pickLists: @pickLists
 			@$("tbody").append rowController.render().el
 
 			rowController.on 'cellClicked', (values) =>
@@ -108,6 +146,7 @@ class window.ACASFormStateDisplayUpdateController extends Backbone.View
 					el: @$('.bv_valueEditor')
 					tableDef: @tableDef
 					stateID: state.id
+					pickLists: @pickLists
 				@currentCellEditor.render()
 				@currentCellEditor.on 'saveNewValue', @handleCellUpdate
 
@@ -185,7 +224,11 @@ class window.ACASFormStateDisplayOldValueController extends Backbone.View
 			value = @options.valueDef.displayOverride value
 		if @options.previousLsTransaction
 			prevLsTransaction = @options.previousLsTransaction
-
+		if @model.get('lsType') == 'dateValue'
+			value = UtilityFunctions::convertMSToYMDDate value
+		else if @model.get('lsType') == 'codeValue'
+			value = content = UtilityFunctions::getNameForCode @model, value, @options.pickLists
+		
 		attrs =
 			value: value
 		attrs.valueClass = if @model.get 'ignored' then "valueWasEdited" else ""
@@ -249,6 +292,7 @@ class window.ACASFormStateDisplayValueEditController extends Backbone.View
 					valueDef: @valueDef
 					initialVal: initialVal
 					previousLsTransaction: previousLsTransaction
+					pickLists: @options.pickLists
 				@$("tbody").append oldRow.render().el
 
 				index++
@@ -325,5 +369,3 @@ class window.ACASFormStateDisplayValueEditController extends Backbone.View
 #TODO value editor:
 # - maybe show transaction creator as modified by and date?
 # - add new value where none existed?
-# show human readable codevalue instead of code
-
