@@ -124,7 +124,12 @@ class window.AbstractThingFormController extends AbstractFormController
 		fDefs = []
 		if fieldDefs.labels? then fDefs = fDefs.concat fieldDefs.labels
 		if fieldDefs.values? then fDefs = fDefs.concat fieldDefs.values
-		if fieldDefs.firstLsThingItxs? then fDefs = fDefs.concat fieldDefs.firstLsThingItxs
+		if fieldDefs.firstLsThingItxs?
+			# Tag any firstItx fieldDefinitions with "firstItx" so the controllers know which direction of interaction to create
+			firstDefs = _.map(fieldDefs.firstLsThingItxs, (fdef) =>
+				fdef.fieldSettings.firstItx = true
+				return fdef)
+			fDefs = fDefs.concat firstDefs
 		if fieldDefs.secondLsThingItxs? then fDefs = fDefs.concat fieldDefs.secondLsThingItxs
 
 		for field in fDefs
@@ -137,6 +142,7 @@ class window.AbstractThingFormController extends AbstractFormController
 				inputClass: field.fieldSettings.inputClass
 				formLabel: field.fieldSettings.formLabel
 				formLabelOrientation: field.fieldSettings.formLabelOrientation
+				formLabelTooltip: field.fieldSettings.formLabelTooltip
 				placeholder: field.fieldSettings.placeholder
 				required: field.fieldSettings.required
 				url: field.fieldSettings.url
@@ -149,6 +155,7 @@ class window.AbstractThingFormController extends AbstractFormController
 				tabIndex: field.fieldSettings.tabIndex
 				toFixed: field.fieldSettings.toFixed
 				pickList: field.fieldSettings.pickList
+				showDescription: field.fieldSettings.showDescription
 
 			switch field.fieldSettings.fieldType
 				when 'label'
@@ -157,7 +164,11 @@ class window.AbstractThingFormController extends AbstractFormController
 					else
 						newField = new ACASFormLSLabelFieldController opts
 				when 'numericValue' then newField = new ACASFormLSNumericValueFieldController opts
-				when 'codeValue' then newField = new ACASFormLSCodeValueFieldController opts
+				when 'codeValue'
+					if field.multiple? and field.multiple
+						newField = new ACASFormMultiCodeValueCheckboxController opts
+					else
+						newField = new ACASFormLSCodeValueFieldController opts
 				when 'htmlClobValue'
 					opts.rows = field.fieldSettings?.rows
 					newField = new ACASFormLSHTMLClobValueFieldController opts
@@ -166,10 +177,15 @@ class window.AbstractThingFormController extends AbstractFormController
 					opts.thingKind = field.fieldSettings.thingKind
 					opts.queryUrl = field.fieldSettings.queryUrl
 					opts.labelType = field.fieldSettings.labelType
-					newField = new ACASFormLSThingInteractionFieldController opts
+					opts.firstItx = field.fieldSettings.firstItx
+					if field.multiple? and field.multiple
+						newField = new ACASFormMultiInteractionListController opts
+					else
+						newField = new ACASFormLSThingInteractionFieldController opts
 				when 'stringValue' then newField = new ACASFormLSStringValueFieldController opts
 				when 'dateValue' then newField = new ACASFormLSDateValueFieldController opts
 				when 'fileValue' then newField = new ACASFormLSFileValueFieldController opts
+				when 'booleanValue' then newField = new ACASFormLSBooleanFieldController opts
 				when 'locationTree'
 					opts.tubeCode = @model.get('tubeCode')
 					newField = new ACASFormLocationTreeController opts
@@ -195,9 +211,15 @@ class window.AbstractThingFormController extends AbstractFormController
 			@formTables = {}
 		for tDef in tableDefs
 			tdiv = $("<div>")
+
 			@$("."+tDef.tableWrapper).append tdiv
+
+			formWrapper = null
+			if tDef.formWrapper?
+				formWrapper = @$("."+tDef.formWrapper)
 			fTable = new ACASFormStateTableController
 				el: tdiv
+				formWrapper: formWrapper
 				tableDef: tDef
 				thingRef: @model
 			fTable.render()

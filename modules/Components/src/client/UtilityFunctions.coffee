@@ -77,3 +77,13 @@ class window.UtilityFunctions
 			return 0
 		else
 			return Math.round((num+0.000001)*1000)/1000
+	
+	getNameForCode: (value, codeToLookup, pickLists) ->
+		if pickLists[value.get('lsKind')]?
+			code = pickLists[value.get('lsKind')].findWhere({code: codeToLookup})
+			name = if code? then code.get 'name' else "not found"
+			return name
+		else
+			console.log "can't find entry in pickLists hash for: "+value.get('lsKind')
+			console.dir pickLists
+			return "not found"
