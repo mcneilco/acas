@@ -704,7 +704,8 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		@$('.bv_errorMessage').html "An error occurred while trying to save the template. The compounds have not been registered yet. Please try again or contact an administrator."
 
 	addProjectToMappingsPayLoad: ->
-		@assignedPropertiesList.remove(@assignedPropertiesListController.collection.findWhere({dbProperty: "Project"}))
+		if @project != false
+			@assignedPropertiesList.remove(@assignedPropertiesListController.collection.findWhere({dbProperty: "Project"}))
 		if @project?
 			dbProjectProperty = new AssignedProperty
 				dbProperty: "Project"
