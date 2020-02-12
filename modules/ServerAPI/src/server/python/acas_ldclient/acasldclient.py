@@ -5,6 +5,7 @@ from ldclient.client import LDClient
 import argparse
 import json
 import os, sys
+import locale
 
 def get_parser():
     """
@@ -199,9 +200,12 @@ def get_user(client, username):
 def get_projects(client):
     ld_projects = client.projects()      
 
-    # Sort by name
-    ld_projects.sort(key=lambda x: x.name, reverse=False)
     projects = map(ld_project_to_acas, ld_projects)
+
+    # Sort by name
+    locale.setlocale(locale.LC_ALL, '')
+    projects = sorted(projects, key=lambda k: k['name'], cmp=locale.strcoll) 
+
     return projects
 
 def ld_project_to_acas(ld_project):
