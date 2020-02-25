@@ -24,7 +24,7 @@ findExperiments <- function(GET) {
     }
   }
   
-  queryString = paste0("select e.id, e.code_name as current_experiment, el.label_text as experiment_name, e.recorded_date,e.recorded_by, ev_prev.code_value as previous_experiment, ev_proj.code_value project, ev_scientist.code_value scientist, ev_status.code_value experiment_status, p.recorded_date as protocol_recorded_date, pl.label_text as protocol_name ",
+  queryString = paste0("select e.id, e.code_name as current_experiment, el.label_text as experiment_name, e.recorded_date,e.recorded_by, ev_prev.code_value as previous_experiment, ev_proj.code_value project, ev_scientist.code_value scientist, ev_jira.string_value as jira_id, cro.label_text as cro, ev_status.code_value experiment_status, p.recorded_date as protocol_recorded_date, pl.label_text as protocol_name ",
                        " from protocol p ",
                        " join protocol_label pl on p.deleted = '0' and p.ignored = '0' and p.id = pl.protocol_id and pl.ls_type = 'name' and pl.ls_kind = 'protocol name' and pl.ignored = '0' and pl.deleted = '0' ",
                        " join experiment e on p.id = e.protocol_id and e.deleted = '0' and e.ignored = '0' ",
@@ -33,7 +33,11 @@ findExperiments <- function(GET) {
                        " left join experiment_value ev_prev on ev_prev.experiment_state_id = es.id and ev_prev.ls_type = 'codeValue' and ev_prev.ls_kind = 'previous experiment code' and ev_prev.ignored = '0' and ev_prev.deleted = '0' ",
                        " left join experiment_value ev_scientist on ev_scientist.experiment_state_id = es.id and ev_scientist.ls_type = 'codeValue' and ev_scientist.ls_kind = 'scientist' and ev_scientist.ignored = '0' and ev_scientist.deleted = '0' ",
                        " left join experiment_value ev_proj on ev_proj.experiment_state_id = es.id and ev_proj.ls_type = 'codeValue' and ev_proj.ls_kind = 'project' and ev_proj.ignored = '0' and ev_proj.deleted = '0' ",
-                       " left join experiment_value ev_status on ev_status.experiment_state_id = es.id and ev_status.ls_type = 'codeValue' and ev_status.ls_kind = 'experiment status' and ev_status.ignored = '0' and ev_status.deleted = '0' "
+                       " left join experiment_value ev_status on ev_status.experiment_state_id = es.id and ev_status.ls_type = 'codeValue' and ev_status.ls_kind = 'experiment status' and ev_status.ignored = '0' and ev_status.deleted = '0' ",
+                       " left join experiment_state cs on cs.experiment_id = e.id and cs.ls_type = 'metadata' and cs.ls_kind = 'custom experiment metadata' and cs.ignored = '0' and cs.deleted = '0' ",
+                       " left join experiment_value ev_jira on ev_jira.experiment_state_id = cs.id and ev_jira.ls_type = 'stringValue' and ev_jira.ls_kind = 'JIRA ID' and ev_jira.ignored = '0' and ev_jira.deleted = '0' ",
+                       " left join experiment_value ev_cro on ev_cro.experiment_state_id = cs.id and ev_cro.ls_type = 'codeValue' and ev_cro.ls_kind = 'CRO' and ev_cro.ignored = '0' and ev_cro.deleted = '0' ",
+                       " left join ddict_value cro on cro.short_name = ev_cro.code_value and cro.ls_type = 'custom experiment metadata' and cro.ls_kind = 'CRO' and cro.ignored = '0' "
   )
   
   if(!is.na(hoursBack)) {
