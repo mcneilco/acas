@@ -536,7 +536,7 @@ exports.getProtocolByLabel = (req, resp) ->
 		
 exports.getProtocolByLabelInternal = (label, callback) ->
 	config = require '../conf/compiled/conf.js'
-	url = config.all.client.service.persistence.fullpath+"protocols?FindByProtocolName&protocolName=#{label}"
+	url = config.all.client.service.persistence.fullpath+"protocols?FindByProtocolName&protocolName=#{encodeURIComponent(label)}"
 	request = require 'request'
 	request(
 		method: 'GET'
