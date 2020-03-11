@@ -37,11 +37,12 @@ setupRoutes = (app, loginRoutes, requireLogin) ->
 			if config.all.server.datafiles.without.login || !requireLogin
 				app.get '/dataFiles/*', (req, resp) ->
 					console.log dataFilesPath
-					resp.sendfile(dataFilesPath + req.params[0])
+					resp.sendfile(dataFilesPath + encodeURIComponent(req.params[0]))
 			else
 				app.get '/dataFiles/*', loginRoutes.ensureAuthenticated, (req, resp) ->
 					console.log dataFilesPath
-					resp.sendfile(dataFilesPath + req.params[0])
+					console.log req.params[0]
+					resp.sendfile(dataFilesPath + encodeURIComponent(req.params[0]))
 
 	serverUtilityFunctions.ensureExists tempFilesPath, 0o0744, (err) ->
 		if err?
@@ -50,10 +51,10 @@ setupRoutes = (app, loginRoutes, requireLogin) ->
 		else
 			if requireLogin
 				app.get '/tempfiles/*', loginRoutes.ensureAuthenticated, (req, resp) ->
-					resp.sendfile(tempFilesPath + req.params[0])
+					resp.sendfile(tempFilesPath + encodeURIComponent(req.params[0]))
 			else
 				app.get '/tempfiles/*', (req, resp) ->
-					resp.sendfile(tempFilesPath + req.params[0])
+					resp.sendfile(tempFilesPath + encodeURIComponent(req.params[0]))
 
 exports.setupAPIRoutes = (app, loginRoutes) ->
 	setupRoutes app, loginRoutes, false
