@@ -41,7 +41,6 @@ setupRoutes = (app, loginRoutes, requireLogin) ->
 			else
 				app.get '/dataFiles/*', loginRoutes.ensureAuthenticated, (req, resp) ->
 					console.log dataFilesPath
-					console.log req.params[0]
 					resp.sendfile(dataFilesPath + encodeURIComponent(req.params[0]))
 
 	serverUtilityFunctions.ensureExists tempFilesPath, 0o0744, (err) ->
