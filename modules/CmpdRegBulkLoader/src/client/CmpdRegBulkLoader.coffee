@@ -701,7 +701,7 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		@$('.bv_registering').hide()
 		@$('.bv_saveErrorModal').modal('show')
 		@$('.bv_saveErrorTitle').html "Error: Template Not Saved"
-		@$('.bv_errorMessage').html "An error occurred while trying to save the template. The compounds have not been registered yet. Please try again or contact an administrator."
+		@$('.bv_errorMessage').html "An error occurred while trying to save the template. The compounds have not been registered yet.<br>Please try again or contact an administrator."
 
 	addProjectToMappingsPayLoad: ->
 		if @project != false
@@ -776,7 +776,7 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		@$('.bv_registering').hide()
 		@$('.bv_saveErrorModal').modal('show')
 		@$('.bv_saveErrorTitle').html "Error: Compounds Not Registered"
-		@$('.bv_errorMessage').html "An error occurred while trying to register the compounds. Please try again or contact an administrator."
+		@$('.bv_errorMessage').html "An error occurred while trying to register the compounds.<br>Please try again or contact an administrator."
 
 class window.BulkRegCmpdsController extends Backbone.View
 	template: _.template($("#BulkRegCmpdsView").html())
@@ -979,7 +979,7 @@ class window.PurgeFilesController extends Backbone.View
 
 	handleGetFilesError: ->
 		$('.bv_fileTableController').addClass "well"
-		$('.bv_fileTableController').html "An error occurred when getting files to purge. Please try refreshing the page or contact an administrator."
+		$('.bv_fileTableController').html "An error occurred when getting files to purge.<br>Please try refreshing the page or contact an administrator."
 		$('.bv_purgeFileBtn').hide()
 
 	selectedFileUpdated: (file) =>
@@ -1023,7 +1023,7 @@ class window.PurgeFilesController extends Backbone.View
 				@$('.bv_dependencyCheckModal').modal "hide"
 				@$('.bv_dependenciesCheckErrorModal').modal 'show'
 #					backdrop: 'static'
-				@$('.bv_dependenciesCheckError').html "There has been an error checking the dependencies. Please try again or contact an administrator."
+				@$('.bv_dependenciesCheckError').html "There has been an error checking the dependencies.<br>Please try again or contact an administrator."
 
 	handleCancelBtnClicked: ->
 		@$('.bv_showDependenciesModal').modal "hide"
@@ -1058,13 +1058,16 @@ class window.PurgeFilesController extends Backbone.View
 		downloadUrl = window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" + response.fileName
 		@$('.bv_purgedFileName').attr "href", downloadUrl
 		@$('.bv_purgedFileName').html response.fileName
+		@$('.bv_purgeSummaryWrapper .bv_downloadPurgedFile').show()
 		@$('.bv_purgeSummaryWrapper').show()
 		@fileInfoToPurge = null
 		@fileNameToPurge = null
 		@getFiles()
 
 	handlePurgeError: ->
-		@$('.bv_purgeSummary').html "An error occurred purging the file: "+ @fileNameToPurge + " .Please try again or contact an administrator."
+		@$('.bv_showDependenciesModal').modal "hide"
+		@$('.bv_purgeSummaryWrapper .bv_downloadPurgedFile').hide()
+		@$('.bv_purgeSummary').html "An error occurred purging the file: "+ @fileNameToPurge + ".<br>Please try again or contact an administrator."
 		@$('.bv_purgeSummaryWrapper').show()
 		@fileInfoToPurge = null
 		@fileNameToPurge = null
