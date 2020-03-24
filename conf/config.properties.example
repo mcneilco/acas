@@ -546,6 +546,7 @@ server.curveRender.drawPointsForRejectedCurve=true
 # server.curveRender.plotColors=black,red,blue,orange,purple,cyan,darkolivegreen4,firebrick4,aquamarine4,chocolate3,dodgerblue4,coral2,darkorchid3,cadetblue4,darkgoldenrod3,lightcyan4,seagreen4,mediumvioletred
 # server.curveRender.plotColors=black,#a6cee3,#1f78b4,#b2df8a,#33a02c,#fb9a99,#e31a1c,#fdbf6f,#ff7f00,#cab2d6,#6a3d9a,#ffff99,#b15928
 # server.curveRender.plotColors=black
+server.curveRender.plotColors=black,#0C5BB0FF,#EE0011FF,#15983DFF,#EC579AFF,#FA6B09FF,#149BEDFF,#A1C720FF,#FEC10BFF,#16A08CFF,#9A703EFF
 
 ### Most recent curve color
 ## If supplied the most recent uploaded curve will get the supplied color
