@@ -549,6 +549,10 @@ server.curveRender.drawPointsForRejectedCurve=true
 server.curveRender.plotColors=black,#0C5BB0FF,#EE0011FF,#15983DFF,#EC579AFF,#FA6B09FF,#149BEDFF,#A1C720FF,#FEC10BFF,#16A08CFF,#9A703EFF
 
 ### Most recent curve color
+## Color curves by default according to the plot colors.  The list of plot colors is recycled if there are more curves in the plot than colors
+server.curveRender.usePlotColorsByDefault=true
+
+### Most recent curve color
 ## If supplied the most recent uploaded curve will get the supplied color
 server.curveRender.mostRecentCurveColor=green
 
