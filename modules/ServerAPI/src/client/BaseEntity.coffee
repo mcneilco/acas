@@ -440,8 +440,10 @@ class window.BaseEntityController extends AbstractThingFormController #TODO: che
 			@$(".bv_status option[value='deleted']").attr 'disabled', 'disabled'
 
 	setupScientistSelect: ->
-		@scientistList = new PickListList()
-		@scientistList.url = "/api/authors"
+		@scientistList = new PickListList()		
+		@scientistList.url = "/api/authors?additionalCodeType=assay&additionalCodeKind=scientist"
+		if window.conf.roles.acas.userRole? && window.conf.roles.acas.userRole != ""
+			@scientistList.url = @scientistList.url + "&roleName=" + window.conf.roles.acas.userRole
 		@scientistListController = new PickListSelectController
 			el: @$('.bv_scientist')
 			collection: @scientistList

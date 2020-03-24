@@ -1,0 +1,22 @@
+---
+title: "Lot Property Bulk Loader"
+author: "`r request$user`"
+date: '`r format(Sys.time(), "%Y/%m/%d")`'
+output: 
+  html_document: 
+    self_contained: no
+---
+
+<style>
+    body .main-container {
+        max-width: 1400px;
+    }
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r}
+validatedData
+```
