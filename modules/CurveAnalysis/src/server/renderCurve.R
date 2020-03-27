@@ -62,7 +62,7 @@ renderCurve <- function(getParams) {
   if(!is.na(parsedParams$logResponse)) {
     logResponse <- parsedParams$logResponse
   } else {
-    logResponse <- TRUE
+    logResponse <- FALSE
     if(fitData[1]$renderingHint %in% c("Scatter Log-y","Scatter Log-x,y")) logResponse <- TRUE
   }
 
