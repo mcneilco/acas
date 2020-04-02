@@ -240,7 +240,7 @@ validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction
 
   # make sure there are the correct number of columns
   if(ncol(metaData) < 3) {
-    stopUser("The Custom ",racas::applicationSettings$client.experiment.label," Meta Data section requires 3 columns; 1 - a value kind 2 - a value 3 - a type")
+    stopUser(paste0("The Custom ",racas::applicationSettings$client.experiment.label," Meta Data section requires 3 columns; 1 - a value kind 2 - a value 3 - a type"))
   } else {
     metaData <- metaData[ ,c(1,2,3)]
   }
