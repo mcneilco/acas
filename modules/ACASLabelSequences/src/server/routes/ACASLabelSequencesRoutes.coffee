@@ -41,6 +41,7 @@ exports.getAllLabelSequencesInternal = (req, callback) ->
 
 exports.getAuthorizedLabelSequences = (req, resp) ->
 	exports.getAuthorizedLabelSequencesInternal req, (statusCode, json) ->
+		resp.statusCode = statusCode
 		resp.json json
 
 exports.getAuthorizedLabelSequencesInternal = (req, callback) ->
@@ -48,13 +49,29 @@ exports.getAuthorizedLabelSequencesInternal = (req, callback) ->
 		labelSequenceTestJSON = require '../public/javascripts/spec/testFixtures/ACASLabelSequenceTestJSON.js'
 		callback labelSequenceTestJSON.labelSequenceArray
 	else
-		username = req.session.passport.user.username
-		baseurl = config.all.client.service.persistence.fullpath+"labelsequences/getAuthorizedLabelSequences?userName=#{username}"
+		roles = req.session.passport.user.roles
+		baseurl = config.all.client.service.persistence.fullpath+"labelsequences/getAuthorizedLabelSequences"
 		if req.query?.thingTypeAndKind?
 			baseurl += "&thingTypeAndKind=#{req.query.thingTypeAndKind}"
 		if req.query?.labelTypeAndKind?
 			baseurl += "&labelTypeAndKind=#{req.query.labelTypeAndKind}"
-		serverUtilityFunctions.getFromACASServerInternal(baseurl, callback)
+		request(
+			method: 'POST'
+			url: baseurl
+			body: JSON.stringify roles
+			json: true
+		, (error, response, json) =>
+			if !error && typeof(json) != "undefined" && json != null && response.statusCode == 200
+				callback 200, json
+			else if !error && response.statusCode == 500
+				callback 500, "Could not get authorized label sequences"
+			else
+				console.log 500, 'got ajax error trying to get authorized label sequences'
+				console.log error
+				console.log json
+				console.log response
+				callback 500, 'got ajax error trying to get authorized label sequences'
+		)
 
 exports.getLabelSequenceById = (req, resp) ->
 	if global.specRunnerTestmode
