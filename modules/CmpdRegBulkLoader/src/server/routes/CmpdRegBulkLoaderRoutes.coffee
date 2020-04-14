@@ -306,6 +306,7 @@ exports.purgeFile = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
 		resp.end JSON.stringify "Successful purge in stubsMode."
 	else
+		req.setTimeout 86400000
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"bulkload/purge"
 		request = require 'request'

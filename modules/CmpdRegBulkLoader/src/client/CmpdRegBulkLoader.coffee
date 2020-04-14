@@ -961,6 +961,7 @@ class window.PurgeFilesController extends Backbone.View
 			url: "/api/cmpdRegBulkLoader/purgeFile"
 			data: fileInfo
 			dataType: 'json'
+			timeout: 30000
 			success: (response) =>
 				@$('.bv_purging').hide()
 				if response.success
