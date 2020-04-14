@@ -75,7 +75,8 @@
 		"standardizeStructure": false,
 		"useExternalStandardizerConfig": false,
 		"standardizerConfigFilePath": "/opt/acas/conf/standardizerConfig.xml",
-		"orderSelectLists": true
+		"orderSelectLists": true,
+		"registerNoStructureCompoundsAsUniqueParents": false
 	},
 	"bulkLoadSettings": {
 		"useProjectRoles": false,
