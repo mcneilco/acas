@@ -577,6 +577,10 @@ class window.ExperimentBaseController extends BaseEntityController
 		@tagListController = new TagListController
 			el: @$('.bv_tags')
 			collection: @model.get 'lsTags'
+		@$('.bv_tags').on 'itemAdded', =>
+			@model.trigger 'change'
+		@$('.bv_tags').on 'itemRemoved', =>
+			@model.trigger 'change'
 		@tagListController.render()
 
 	setupCustomExperimentMetadataController: ->

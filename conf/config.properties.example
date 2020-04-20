@@ -627,3 +627,6 @@ client.compoundInventory.saveLocationAsCodeValue=true
 # should be able to be pluralized with an "s" appended to them.
 client.protocol.label=Protocol
 client.experiment.label=Experiment
+
+#config for whether SOLR should be updated when things are saved/updated
+client.solr.updateSolrForThings=false
