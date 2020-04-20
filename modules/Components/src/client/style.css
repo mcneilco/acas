@@ -48,3 +48,10 @@
 .bv_stateDisplayUpdateTable .valueEditable {
     cursor: pointer;
 }
+
+.bv_stateDisplayCurrentRow {
+    background-color: rgb(182, 182, 211) !important;
+}
+.bv_stateDisplayCurrentColumn {
+    background-color: rgb(182, 182, 211) !important;
+}

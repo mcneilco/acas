@@ -1,12 +1,13 @@
 
 exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.get '/api/curves/stubs/:exptCode', exports.getCurveStubs
+	app.post '/api/curves/detail', exports.getCurveDetailCurveIds
 	app.get '/api/curve/detail/:id', exports.getCurveDetail
 	app.get  '/api/curve/render/*', exports.renderCurve
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/curves/stubs/:exptCode', loginRoutes.ensureAuthenticated, exports.getCurveStubs
-	app.get '/api/curve/detail/:id', loginRoutes.ensureAuthenticated, exports.getCurveDetail
+	app.post '/api/curves/detail', loginRoutes.ensureAuthenticated, exports.getCurveDetailCurveIds
 	app.put '/api/curve/detail/:id', loginRoutes.ensureAuthenticated, exports.updateCurveDetail
 	app.post '/api/curve/stub/:id', loginRoutes.ensureAuthenticated, exports.updateCurveStub
 	app.get  '/api/curve/render/*', loginRoutes.ensureAuthenticated, exports.renderCurve
@@ -70,6 +71,33 @@ exports.getCurveDetail = (req, resp) ->
 				console.log json
 				console.log response
 				resp.send 'got ajax error trying to retrieve curve detail', 500
+		)
+
+exports.getCurveDetailCurveIds = (req, resp) ->
+	if global.specRunnerTestmode
+		curveCuratorTestData = require '../public/src/spec/testFixtures/curveCuratorTestFixtures.js'
+		resp.end JSON.stringify curveCuratorTestData.curveDetail
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.rapache.fullpath+"/curve/detail?"+req._parsedUrl.query
+		request = require 'request'
+		console.log JSON.stringify req.body
+		request(
+			method: 'POST'
+			url: baseurl
+			body: JSON.stringify req.body
+			json: true
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				resp.end JSON.stringify json
+			else if !error && response.statusCode == 500
+				resp.send "Could not get curve details", 500
+			else
+				console.log 'got ajax error trying to get curve details'
+				console.log error
+				console.log json
+				console.log response
+				resp.send 'got ajax error trying to get curve details', 500
 		)
 
 exports.updateCurveUserFlag = (req, resp) ->

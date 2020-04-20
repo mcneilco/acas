@@ -11,6 +11,7 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.post '/api/validateName', exports.validateName
 	app.get '/api/getAssembliesFromComponent/:lsType/:lsKind/:componentCode', exports.getAssemblies
 	app.get '/api/genericSearch/things/:searchTerm', exports.genericThingSearch
+	app.post '/api/advancedSearch/things/:lsType/:lsKind', exports.advancedThingSearch
 	app.get '/api/getThingThingItxsByFirstThing/:firstThingId', exports.getThingThingItxsByFirstThing
 	app.get '/api/getThingThingItxsBySecondThing/:secondThingId', exports.getThingThingItxsBySecondThing
 	app.get '/api/getThingThingItxsByFirstThing/:lsType/:lsKind/:firstThingId', exports.getThingThingItxsByFirstThingAndItxTypeKind
@@ -38,6 +39,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/validateName', loginRoutes.ensureAuthenticated, exports.validateName
 	app.get '/api/getAssembliesFromComponent/:lsType/:lsKind/:componentCode', loginRoutes.ensureAuthenticated, exports.getAssemblies
 	app.get '/api/genericSearch/things/:searchTerm', loginRoutes.ensureAuthenticated, exports.genericThingSearch
+	app.post '/api/advancedSearch/things/:lsType/:lsKind', loginRoutes.ensureAuthenticated, exports.advancedThingSearch
 	app.get '/api/getThingThingItxsByFirstThing/:firstThingId', loginRoutes.ensureAuthenticated, exports.getThingThingItxsByFirstThing
 	app.get '/api/getThingThingItxsBySecondThing/:secondThingId', loginRoutes.ensureAuthenticated, exports.getThingThingItxsBySecondThing
 	app.get '/api/getThingThingItxsByFirstThing/:lsType/:lsKind/:firstThingId', loginRoutes.ensureAuthenticated, exports.getThingThingItxsByFirstThingAndItxTypeKind
@@ -620,6 +622,47 @@ exports.genericThingSearch = (req, resp) ->
 		console.log baseurl
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
+
+exports.advancedThingSearch = (req, resp) ->
+	console.log "advanced thing search"
+	console.log req.query.testMode
+	console.log global.specRunnerTestmode
+	if req.query.testMode is true or global.specRunnerTestmode is true
+		resp.end JSON.stringify "Stubs mode not implemented yet"
+	else
+		console.log "search req body"
+		console.log req.body
+		exports.advancedThingSearchInternal req.body, req.query.format, (results) =>
+			if typeof response is "string" and results.indexOf("error") > -1
+				resp.statusCode = 500
+				resp.end results
+			else 
+				resp.json results
+
+exports.advancedThingSearchInternal = (input, format, callback) ->
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"lsthings/genericBrowserSearch"
+		if format?
+			baseurl += "?with=#{format}"
+		console.log "advanced thing search baseurl"
+		console.log baseurl
+		requestOptions = 
+			method: 'POST'
+			url: baseurl
+			body: input
+			json: true
+		request requestOptions, (error, response, object) ->
+			if !error 
+				if response.statusCode == 500
+					callback object, response
+				else 
+					callback object, null
+			else
+				console.log 'got ajax error trying to run advancedThingSearch'
+				console.log error
+				console.log json
+				console.log response
+				callback object, error
 
 exports.getProjectCodesFromNamesOrCodes = (codeRequest, callback) ->
 	#TODO: real implementation

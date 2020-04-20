@@ -48,8 +48,8 @@
 #########################################################################
 
 library(racas)
-source(file.path(applicationSettings$appHome,"src/r/ServerAPI/customFunctions.R"))
-source(file.path(applicationSettings$appHome,"src/r/ServerAPI/genericDataParserConfiguration.R"))
+source(file.path(racas::applicationSettings$appHome,"src/r/ServerAPI/customFunctions.R"))
+source(file.path(racas::applicationSettings$appHome,"src/r/ServerAPI/genericDataParserConfiguration.R"))
 
 #####
 # Define Functions
@@ -73,7 +73,7 @@ validateMetaData <- function(metaData, configList, username, formatSettings = li
     extraData <- c(as.character(metaData[[1]][2:length(metaData[[1]])]),
                    as.character(metaData[[2]][2:length(metaData[[2]])]))
     extraData <- extraData[extraData!=""]
-    addError(paste0("Extra data were found next to the Experiment Meta Data ",
+    addError(paste0("Extra data were found next to the ",racas::applicationSettings$client.experiment.label," Meta Data ",
                     "and should be removed: '",
                     paste(extraData, collapse="', '"), "'"),
              errorEnv)
@@ -86,7 +86,7 @@ validateMetaData <- function(metaData, configList, username, formatSettings = li
   names(metaData) <- metaDataNames
   
   if (is.null(metaData$Format)) {
-    stopUser("A Format must be entered in the Experiment Meta Data.")
+    stopUser("A Format must be entered in the ",racas::applicationSettings$client.experiment.label," Meta Data.")
   }
   
   useExisting <- metaData$Format %in% c("Use Existing Experiment", "Precise For Existing Experiment")
@@ -107,8 +107,8 @@ validateMetaData <- function(metaData, configList, username, formatSettings = li
 
   } else {
     expectedDataFormat <- data.frame(
-      headers = c("Format","Protocol Name","Assay Tree Rule","Experiment Name","Experiment Details","Scientist","Notebook","In Life Notebook", 
-                  "Short Description", "Experiment Keywords", "Page","Assay Date"),
+      headers = c("Format",paste0(racas::applicationSettings$client.protocol.label," Name"),"Assay Tree Rule",paste0(racas::applicationSettings$client.experiment.label, " Name"),paste0(racas::applicationSettings$client.experiment.label," Details"),"Scientist","Notebook","In Life Notebook", 
+                  "Short Description", paste0(racas::applicationSettings$client.experiment.label," Keywords"), "Page","Assay Date"),
       class = c("Text", "Text", "Text", "Text", "Text","Text","Text", "Text", "Text", "Text", "Text", "Date"),
       isNullable = c(FALSE, FALSE, TRUE,FALSE, TRUE,FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, FALSE)
     )
@@ -126,6 +126,18 @@ validateMetaData <- function(metaData, configList, username, formatSettings = li
     if ("Assay Completion Date" %in% names(metaData)) {
       names(metaData)[names(metaData) == "Assay Completion Date"] <- "Assay Date"
     }
+    
+    # This code adds backwards compatability for loader files with Protocol and Experiment labels where admins use
+    # client.protocol.label, client.experiment.label to specify new names
+    if (racas::applicationSettings$client.experiment.label != "Experiment" && "Experiment Name" %in% names(metaData)) {
+      warnUser(paste0("The file header 'Experiment Name' was used for the '",racas::applicationSettings$client.experiment.label, " Name' field.  Please update your files to use the header '",racas::applicationSettings$client.experiment.label, " Name' instead."))
+      names(metaData)[names(metaData) == "Experiment Name"] <- paste0(racas::applicationSettings$client.experiment.label, " Name")
+    }
+
+    if (racas::applicationSettings$client.protocol.label != "Protocol" && "Protocol Name" %in% names(metaData)) {
+      warnUser(paste0("The file header 'Protocol Name' was used for the '",racas::applicationSettings$client.protocol.label, " Name' field.  Please update your files to use the header '",racas::applicationSettings$client.protocol.label, " Name' instead."))
+      names(metaData)[names(metaData) == "Protocol Name"] <- paste0(racas::applicationSettings$client.protocol.label, " Name")
+    }
   }
   
   # Extract the expected headers from the input variable
@@ -135,7 +147,7 @@ validateMetaData <- function(metaData, configList, username, formatSettings = li
   missingColumns <- expectedHeaders[is.na(match(toupper(expectedHeaders),toupper(names(metaData)))) 
                                     & !(expectedDataFormat$isNullable)]
   for(m in missingColumns) {
-    addError(paste("The loader could not find required Experiment Meta Data row:",m), errorEnv)
+    addError(paste("The loader could not find required ",racas::applicationSettings$client.experiment.label," Meta Data row:",m), errorEnv)
   }
   
   # Validate that the matched columns are of the same data type and non-nullable fields are not null
@@ -160,7 +172,7 @@ validateMetaData <- function(metaData, configList, username, formatSettings = li
     receivedValue <- matchedColumns[1,m]
     
     if(!nullable && (is.null(receivedValue) | receivedValue==""  | receivedValue=="")) {
-      addError(paste0("The loader could not find an entry for '", column, "' in the Experiment Meta Data"), errorEnv = errorEnv)
+      addError(paste0("The loader could not find an entry for '", column, "' in the ",racas::applicationSettings$client.experiment.label," Meta Data"), errorEnv = errorEnv)
     }
     
     validationFunction <- switch(expectedDataType, 
@@ -177,11 +189,11 @@ validateMetaData <- function(metaData, configList, username, formatSettings = li
   additionalColumns <- names(metaData)[is.na(match(names(metaData),expectedHeaders))]
   if (length(additionalColumns) > 0) {
     if (length(additionalColumns) == 1) {
-      warnUser(paste0("The loader found an extra Experiment Meta Data row that will be ignored: '", 
+      warnUser(paste0("The loader found an extra ",racas::applicationSettings$client.experiment.label," Meta Data row that will be ignored: '", 
                      additionalColumns, 
                      "'. Please remove this row."))
     } else {
-      warnUser(paste0("The loader found extra Experiment Meta Data rows that will be ignored: '", 
+      warnUser(paste0("The loader found extra ",racas::applicationSettings$client.experiment.label," Meta Data rows that will be ignored: '", 
                      paste(additionalColumns,collapse="' ,'"), 
                      "'. Please remove these rows."))
     }
@@ -196,14 +208,14 @@ validateMetaData <- function(metaData, configList, username, formatSettings = li
   projectRowSupplied <- !is.null(metaData$Project)
   projectRowSuppliedButEmpty <- projectRowSupplied && (is.na(metaData$Project) | metaData$Project == "NA")
   if (projectRequired & projectRowSuppliedButEmpty) {
-    stopUser("The Experiment Meta Data row 'Project' cannot be empty")
+    stopUser("The ",racas::applicationSettings$client.experiment.label," Meta Data row 'Project' cannot be empty")
   }
   if (shouldSaveProject & projectRowSupplied & !projectRowSuppliedButEmpty) {
-    validatedMetaData$Project <- validateProject(validatedMetaData$Project, configList, username, validatedMetaData$'Protocol Name', errorEnv)
+    validatedMetaData$Project <- validateProject(validatedMetaData$Project, configList, username, validatedMetaData[,paste0(racas::applicationSettings$client.protocol.label," Name")], errorEnv)
   }
   
-  if(!is.null(validatedMetaData$"Experiment Name") && grepl("CREATETHISEXPERIMENT$", validatedMetaData$"Experiment Name")) {
-    validatedMetaData$"Experiment Name" <- trim(gsub("CREATETHISEXPERIMENT$", "", validatedMetaData$"Experiment Name"))
+  if(!is.null(validatedMetaData[paste0(racas::applicationSettings$client.experiment.label," Name")]) && grepl("CREATETHISEXPERIMENT$", validatedMetaData[paste0(racas::applicationSettings$client.experiment.label," Name")])) {
+    validatedMetaData[paste0(racas::applicationSettings$client.experiment.label," Name")] <- trim(gsub("CREATETHISEXPERIMENT$", "", validatedMetaData[paste0(racas::applicationSettings$client.experiment.label," Name")]))
     duplicateExperimentNamesAllowed <- TRUE
   } else {
     duplicateExperimentNamesAllowed <- FALSE
@@ -228,7 +240,7 @@ validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction
 
   # make sure there are the correct number of columns
   if(ncol(metaData) < 3) {
-    stopUser("The Custom Experiment Meta Data section requires 3 columns; 1 - a value kind 2 - a value 3 - a type")
+    stopUser(paste0("The Custom ",racas::applicationSettings$client.experiment.label," Meta Data section requires 3 columns; 1 - a value kind 2 - a value 3 - a type"))
   } else {
     metaData <- metaData[ ,c(1,2,3)]
   }
@@ -277,7 +289,7 @@ validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction
   ddictKinds <- as.data.table(racas::getDDictKinds())[lsType == customExperimentMetaDataDdictType,]
   notExistsDdictList <- selectListItems[!lsKind %in% ddictKinds$name,c("userLabel", "lsKind"), with = FALSE]
   if(nrow(notExistsDdictList) > 0) {
-    warnUser(paste0("The following Custom Experiment Meta Data select lists do not exist currently and will be created: ", paste0("'",paste(notExistsDdictList$userLabel, collapse = "', '"), "'")))
+    warnUser(paste0("The following Custom ",racas::applicationSettings$client.experiment.label," Meta Data select lists do not exist currently and will be created: ", paste0("'",paste(notExistsDdictList$userLabel, collapse = "', '"), "'")))
     if(!dryRun) {
       ddictKinds <- data.frame(typeName = customExperimentMetaDataDdictType, kindName = notExistsDdictList$lsKind)
       getOrCreateDDictKinds(ddictKinds)
@@ -365,7 +377,7 @@ validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction
     userWarningDT <- valueKindDT[!lsKindExists==TRUE,c('userType','lsKindName'), with = FALSE]
     setnames(userWarningDT, c('Type', 'Kind'))
     userWarningText <- paste0("<ul><li>",paste0(userWarningDT$Type, ': ', as.character(userWarningDT$Kind),collapse='</li><li>'),"</li></ul>")
-    warnUser(paste0("The following custom experiment meta data kinds have not been loaded before and will be created:<br>", userWarningText))
+    warnUser(paste0("The following custom ",racas::applicationSettings$client.experiment.label," meta data kinds have not been loaded before and will be created:<br>", userWarningText))
     if(!dryRun) {
       valueKindsToRegister <- valueKindDT[!lsKindExists==TRUE,c('lsTypeName','lsKindName'), with = FALSE]
       setnames(valueKindsToRegister, c('lsType', 'lsKind'))
@@ -495,6 +507,19 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   
   # Get the current batch Ids
   batchesToCheck <- calculatedResults$originalMainID != replaceFakeCorpBatchId
+  
+  # The preferred id function strips new line characters from entity reference codes because it
+  # posts the list as a new line seperated string. The best way to deal with this is to clean up 
+  # the codes beforehand and warn the user of the changed data.
+  newLineCharacterRegex <- "\n|\r"
+  batchIdsWithNewLine <- grepl(newLineCharacterRegex,calculatedResults$batchCode)
+  if(any(batchIdsWithNewLine)) {
+    calculatedResults$batchCode[batchIdsWithNewLine] <- gsub(newLineCharacterRegex, "", calculatedResults$batchCode[batchIdsWithNewLine])
+    warnUser(paste0("The loader found and removed new line characters from  ", mainCode, " rows: '", 
+                paste(unique(calculatedResults$batchCode[batchIdsWithNewLine]),collapse="' ,'"), 
+                "'."))
+  }
+  
   batchIds <- unique(calculatedResults$batchCode[batchesToCheck])
   
   if (inputFormat == "Gene ID Data") {
@@ -563,6 +588,9 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
     calculatedResults$batchCode[batchesToCheck] <- prefDT$preferredName[match(calculatedResults$batchCode[batchesToCheck],prefDT$requestName)]
   }
   
+  #### ================= Check the unit kinds =======================================================
+  validateUnitKinds(c(calculatedResults$"valueUnit", calculatedResults$"concUnit"), errorEnv)
+    
   #### ================= Check the value kinds =======================================================
   neededValueKinds <- c(calculatedResults$"valueKind", curveNames)
   neededValueKindTypes <- c(calculatedResults$Class, rep("Text", length(curveNames)))
@@ -603,7 +631,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
           }
           if(addProjectError) {
             addError(paste0("Compounds '", paste(rCompounds, collapse = "', '"),
-                            "' are in a restricted project that does not match the one entered for this experiment."))
+                            "' are in a restricted project that does not match the one entered for this ",racas::applicationSettings$client.experiment.label,"."))
           }
         }
       }
@@ -877,6 +905,15 @@ validateCalculatedResultDatatypes <- function(classRow, LabelRow, lockCorpBatchI
   # Return classRow
   return(classRow)
 }
+
+validateUnitKinds <- function(neededUnitKinds, errorEnv) {
+  # Throw errors for unit kinds greater than 25 characters
+  unitKindsTooLong <- unique(neededUnitKinds)[which(nchar(unique(neededUnitKinds)) > 25)]
+  if(length(unitKindsTooLong) > 0) {
+    addError(paste0(length(unitKindsTooLong)," unit kinds are too long: ",sqliz(unitKindsTooLong), ". Unit kinds must be 25 characters or less."), errorEnv)
+  }
+}
+
 validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun, reserved = c("concentration", "time")) {
   # Checks that column headers are valid valueKinds (or creates them if they are new)
   #
@@ -945,9 +982,9 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun, r
   
   # Warn about any new valueKinds
   if (length(newValueKinds) > 0) {
-    warnUser(paste0("The following column headers have never been loaded in an experiment before: '", 
-                   paste(newValueKinds,collapse="', '"), "'. If you have loaded a similar experiment before, please use the same",
-                   " headers that were used previously. If this is a new protocol, you can proceed without worry."))
+    warnUser(paste0("The following column headers have never been loaded in an ",racas::applicationSettings$client.experiment.label," before: '", 
+                   paste(newValueKinds,collapse="', '"), "'. If you have loaded a similar ",racas::applicationSettings$client.experiment.label," before, please use the same",
+                   " headers that were used previously. If this is a new ",racas::applicationSettings$client.protocol.label,", you can proceed without worry."))
   }
   if (!dryRun && (length(newValueKinds) > 0 || nrow(problemFrame) > 0)) {
     # Create the new valueKinds, using the correct valueType
@@ -980,23 +1017,24 @@ validateUploadedImages <- function(imageLocation, listedImageFiles, experimentFo
   uploadedImageFiles <- list.files(imageLocation)
   
   # Make sure all elements are part of both vectors.
-  # We allow the same file to be listed multiple times -- setdiff disregards duplicates (and you can't
+  # We allow the same file to be listed multiple times -- %in% disregards duplicates (and you can't
   # put the same file into a directory twice, so we don't have a problem there)
-  notUploaded <- setdiff(listedImageFiles, uploadedImageFiles)
-  notListed <- setdiff(uploadedImageFiles, listedImageFiles)
+  listedImageFilesLower <- tolower(listedImageFiles)
+  uploadedImageFilesLower <- tolower(uploadedImageFiles)
+  notUploaded <- listedImageFiles[!listedImageFilesLower %in% uploadedImageFilesLower]
+  notListed <- uploadedImageFiles[!uploadedImageFilesLower %in% listedImageFilesLower]
   
   if (length(notListed) > 0) {
-    unlink(experimentFolderLocation, recursive = TRUE)
-    stopUser(paste0("The following files were uploaded in a zip file, but were not listed in the spreadsheet: ",
-                    paste(notListed, collapse = ", "), ". If in doubt, please check your capitalization."))
+    warnUser(paste0("The following files were uploaded in a zip file, but were not listed in the spreadsheet: ",
+                    paste(notListed, collapse = ", ")))
   }
   if (length(notUploaded) > 0) {
     unlink(experimentFolderLocation, recursive = TRUE)
     stopUser(paste0("The following files were listed in the spreadsheet, but were not uploaded in a zip file: ",
-                    paste(notUploaded, collapse = ", "), ". If in doubt, please check your capitalization."))
+                    paste(notUploaded, collapse = ", ")))
   }
-  
-  return(TRUE)
+  matchedUploadedFileNames <- uploadedImageFiles[match(listedImageFilesLower,uploadedImageFilesLower)]
+  return(matchedUploadedFileNames)
 }
 
 getExcelColumnFromNumber <- function(number) {
@@ -1256,7 +1294,11 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
     doseResponseHint <- unique(results[["Rendering Hint"]][!is.na(results[["Rendering Hint"]]) & results[["Rendering Hint"]] != ""])
     if (length(doseResponseHint) > 1) {
       stopUser(paste0("Only one Rendering Hint can be used within one file. ",
-                      "Split different kinds of curves into multiple experiments."))
+                      "Split different kinds of curves into multiple ",racas::applicationSettings$client.experiment.label,"s."))
+    }
+    configuredRenderingHints  <- rbindlist(fromJSON(racas::applicationSettings$client.curvefit.modelfitparameter.classes), fill = TRUE)$code
+    if(!doseResponseHint %in% configuredRenderingHints) {
+      stopUser(paste0("The Rendering Hint '",doseResponseHint,"' is not configured for this system. Please enter one of the following instead: ",sqliz(configuredRenderingHints)))
     }
     doseResponseSettings <- getFormatSettings()$doseResponseRender
     if (doseResponseHint %in% names(doseResponseSettings)) {
@@ -1362,6 +1404,15 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
   # Link to parent analysis group or subject, and include batch codes
   results$linkID <- NA
   if (!is.null(link)) {
+    # Throw and error if there is no link between raw results and calculated results
+    missingLinksFromCalculatedResults <- setdiff(link$stringValue, results$link)
+    missingLinksFromRawResults <- setdiff(results$link, link$stringValue)
+    if(length(missingLinksFromCalculatedResults) > 0) {
+      addError(paste0("Could not find `Raw Results` match for `Calculated Results` links: ",sqliz(missingLinksFromCalculatedResults)), errorEnv)
+    }
+    if(length(missingLinksFromRawResults) > 0) {
+      addError(paste0("Could not find `Calculated Results` match for `Raw Results` links: ",sqliz(missingLinksFromRawResults)), errorEnv)
+    }
     results$linkID <- link$rowID[match(results$link, link$stringValue)]
     if (!is.null(link$originalMainID))
       results$batchCode <- link$originalMainID[match(results$link, link$stringValue)]
@@ -1639,7 +1690,8 @@ addImageFiles <- function(imagesFile, calculatedResults, experiment, dryRun, rec
   if (!is.null(imagesFile)) {
     imageLocation <- unzipUploadedImages(imagesFile = racas::getUploadedFilePath(imagesFile), experimentFolderLocation = experimentFolderLocation)
     listedImageFiles <- calculatedResults[!is.na(calculatedResults$inlineFileValue),]$inlineFileValue
-    isValid <- validateUploadedImages(imageLocation = imageLocation, listedImageFiles = listedImageFiles, experimentFolderLocation = experimentFolderLocation)
+    matchedUploadedFileNames <- validateUploadedImages(imageLocation = imageLocation, listedImageFiles = listedImageFiles, experimentFolderLocation = experimentFolderLocation)
+    calculatedResults[!is.na(calculatedResults$inlineFileValue),]$inlineFileValue <- matchedUploadedFileNames
     calculatedResults <- addComment(calculatedResults = calculatedResults)
     if (racas::applicationSettings$server.service.external.file.type == "custom") {
       fileValueVector <- ifelse(is.na(calculatedResults$inlineFileValue),
@@ -1697,7 +1749,7 @@ getProtocolByNameAndFormat <- function(protocolName, configList, formFormat) {
   tryCatch({
     protocolList <- getProtocolsByName(protocolName)
   }, error = function(e) {
-    stopUser("There was an error in accessing the protocol. Please contact your system administrator.")
+    stopUser(paste0("There was an error in accessing the ",racas::applicationSettings$client.protocol.label,". Please contact your system administrator."))
   })
   
   # If no protocol with the given name exists, warn the user
@@ -1705,15 +1757,15 @@ getProtocolByNameAndFormat <- function(protocolName, configList, formFormat) {
     allowedCreationFormats <- configList$server.allow.protocol.creation.formats
     allowedCreationFormats <- unlist(strsplit(allowedCreationFormats, ","))
     if (formFormat %in% allowedCreationFormats || forceProtocolCreation) {
-      warnUser(paste0("Protocol '", protocolName, "' does not exist, so it will be created. No user action is needed if you intend to create a new protocol."))
+      warnUser(paste0(racas::applicationSettings$client.protocol.label," '", protocolName, "' does not exist, so it will be created. No user action is needed if you intend to create a new ",racas::applicationSettings$client.protocol.label,"."))
     } else {
-      addError( paste0("Protocol '", protocolName, "' does not exist. Please enter a protocol name that exists. Contact your system administrator if you would like to create a new protocol."))
+      addError( paste0(racas::applicationSettings$client.protocol.label," '", protocolName, "' does not exist. Please enter a ",racas::applicationSettings$client.protocol.label," name that exists. Contact your system administrator if you would like to create a new ",racas::applicationSettings$client.protocol.label,"."))
     }
     # A flag for when the protocol will be created new
     protocol <- NA
   } else {
     # If the protocol does exist, get the full version
-    protocol <- getProtocolById(protocolList[[1]]$id)
+    protocol <- getProtocolByCodeName(protocolList[[1]]$codeName)
   }
   return(protocol)
 }
@@ -1735,7 +1787,7 @@ getExperimentByNameCheck <- function(experimentName, protocol, configList, dupli
   tryCatch({
     experimentList <- getExperimentsByName(experimentName)
   }, error = function(e) {
-    stopUser("There was an error checking if the experiment already exists. Please contact your system administrator.")
+    stopUser(paste0("There was an error checking if the ",racas::applicationSettings$client.experiment.label," already exists. Please contact your system administrator."))
   })
   
   # Warn the user if the experiment already exists (the else block)
@@ -1746,42 +1798,42 @@ getExperimentByNameCheck <- function(experimentName, protocol, configList, dupli
     if (!is.null(invalidCharacters) && invalidCharacters != "") {
       for (invalidCharacter in strsplit(invalidCharacters, "")[[1]]) {
         if (grepl(invalidCharacter, experimentName, fixed = TRUE)) {
-          addError(paste0("\"", invalidCharacter, "\" is not allowed in your experiment name. Please change the name."))
+          addError(paste0("\"", invalidCharacter, "\" is not allowed in your ",racas::applicationSettings$client.experiment.label," name. Please change the name."))
         }
       }
     }
   } else {
     tryCatch({
-      protocolIds <- sapply(experimentList, function(x) x$protocol$id)
+      protocolCodeNames <- sapply(experimentList, function(x) x$protocol$codeName)
       if(!is.na(protocol[[1]])) {
-        correctExperiments <- experimentList[protocolIds == protocol$id]
+        correctExperiments <- experimentList[protocolCodeNames == protocol$codeName]
         if(length(correctExperiments) > 0) {
           experimentList <- correctExperiments
         }
       }
     }, error = function(e) {
-      stopUser("There was an error checking if the experiment is in the correct protocol. Please contact your system administrator.")
+      stopUser(paste0("There was an error checking if the experiment is in the correct ",racas::applicationSettings$client.protocol.label,". Please contact your system administrator."))
     })
     # Finish if the previous experiment was part of a deleted protocol, we can just delete and reload
     if (experimentList[[1]]$protocol$ignored) {
       return(experimentList[[1]])
     }
-    protocolOfExperiment <- getProtocolById(experimentList[[1]]$protocol$id)
+    protocolOfExperiment <- getProtocolByCodeName(experimentList[[1]]$protocol$codeName)
 
     
     if (is.na(protocol) || protocolOfExperiment$id != protocol$id) {
       if (duplicateNamesAllowed) {
         experiment <- NA
       } else {
-        warnUser(paste0("Experiment '",experimentName,
-                        "' does not exist in the protocol that you entered, but it does exist in '", 
+        warnUser(paste0(racas::applicationSettings$client.experiment.label," '",experimentName,
+                        "' does not exist in the ",racas::applicationSettings$client.protocol.label," that you entered, but it does exist in '", 
                         getPreferredProtocolName(protocolOfExperiment), 
-                        "'. Reloading the file will update the data and change the protocol."))
+                        "'. Reloading the file will update the data and change the ",racas::applicationSettings$client.protocol.label,"."))
         experiment <- experimentList[[1]]
       }
     } else {
-      warnUser(paste0("Experiment '",experimentName,"' already exists, so the loader will delete its current data and replace it with your new upload.",
-                     " If you do not intend to delete and reload data, enter a new experiment name."))
+      warnUser(paste0(racas::applicationSettings$client.experiment.label," '",experimentName,"' already exists, so the loader will delete its current data and replace it with your new upload.",
+                     " If you do not intend to delete and reload data, enter a new ",racas::applicationSettings$client.experiment.label," Name."))
       experiment <- experimentList[[1]]
     }
   }
@@ -1792,7 +1844,7 @@ getPreferredProtocolName <- function(protocol, protocolName = NULL) {
   # gets the preferred protocol name from the protocol and checks that it is the same as the current protocol name
   preferredName <- pickBestName(protocol)$labelText
   if (!is.null(protocolName) && preferredName != protocolName) {
-    warnUser(paste0("The protocol name that you entered, '", protocolName, 
+    warnUser(paste0("The ",racas::applicationSettings$client.protocol.label," name that you entered, '", protocolName, 
                    "', was replaced by the preferred name '", preferredName, "'"))
   }
   return(preferredName)
@@ -1813,7 +1865,7 @@ createNewProtocol <- function(metaData, lsTransaction, recordedBy) {
   # Store the metaData in protocol values
   protocolValues <- list()
 
-  protocolStatus <- applicationSettings$server.sel.protocolStatus
+  protocolStatus <- racas::applicationSettings$server.sel.protocolStatus
   if (is.null(protocolStatus) || protocolStatus == "") {
     protocolStatus <- "created"
   }
@@ -1838,7 +1890,7 @@ createNewProtocol <- function(metaData, lsTransaction, recordedBy) {
     codeOrigin = "ACAS DDICT",
     lsTransaction= lsTransaction)
 
-  assayStage <- applicationSettings$server.sel.assayStage
+  assayStage <- racas::applicationSettings$server.sel.assayStage
   if (is.null(assayStage) || assayStage == "") {
     assayStage <- "unassigned"
   }
@@ -1871,7 +1923,7 @@ createNewProtocol <- function(metaData, lsTransaction, recordedBy) {
                                                                     recordedBy=recordedBy, 
                                                                     lsType="name", 
                                                                     lsKind="protocol name",
-                                                                    labelText=metaData$'Protocol Name'[1],
+                                                                    labelText=metaData[,paste0(racas::applicationSettings$client.protocol.label," Name")][1],
                                                                     preferred=TRUE)
 
   if (toupper(racas::applicationSettings$client.entity.saveInitialsCorpName) == "TRUE"){
@@ -1892,7 +1944,7 @@ createNewProtocol <- function(metaData, lsTransaction, recordedBy) {
   
   # Create the protocol
   protocol <- createProtocol(lsTransaction = lsTransaction,
-                             shortDescription="protocol created by generic data parser",  
+                             shortDescription=paste0(racas::applicationSettings$client.protocol.label," created by generic data parser"),  
                              recordedBy=recordedBy, 
                              protocolLabels=protocolLabels,
                              protocolStates=protocolStates)
@@ -1956,7 +2008,7 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
     codeType = "assay",
     codeKind = "scientist",
     lsTransaction= lsTransaction)
-  experimentStatus <- applicationSettings$server.sel.experimentStatus
+  experimentStatus <- racas::applicationSettings$server.sel.experimentStatus
   if (is.null(experimentStatus) || experimentStatus == "") {
     experimentStatus <- "approved"
   }
@@ -2016,7 +2068,7 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
     experimentStates <- c(experimentStates, columnOrderStates)
   }
   # Create a label for the experiment name
-  experimentName <- trim(gsub("CREATETHISEXPERIMENT$", "", metaData$"Experiment Name"[1]))
+  experimentName <- trim(gsub("CREATETHISEXPERIMENT$", "", metaData[paste0(racas::applicationSettings$client.experiment.label," Name")][1]))
   experimentLabels <- list()
   experimentLabels[[length(experimentLabels)+1]] <- createExperimentLabel(lsTransaction = lsTransaction, 
                                                                           recordedBy=recordedBy, 
@@ -2056,7 +2108,7 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
                                  shortDescription = if(!is.null(metaData$"Short Description"[1])) {
                                    metaData$"Short Description"[1]
                                      } else {
-                                   "experiment created by generic data parser"
+                                   paste0(racas::applicationSettings$client.experiment.label," created by generic data parser")
                                      },  
                                  recordedBy=recordedBy, 
                                  experimentLabels=experimentLabels,
@@ -2108,10 +2160,10 @@ validateProject <- function(projectName, configList, username, protocolName = NU
     tryCatch({
       protocolList <- getProtocolsByName(protocolName)
     }, error = function(e) {
-      stopUser("There was an error in accessing the protocol. Please contact your system administrator.")
+      stopUser(paste0("There was an error in accessing the ",racas::applicationSettings$client.protocol.label,". Please contact your system administrator."))
     })
     if (length(protocolList) !=0) {
-      protocol <- getProtocolById(protocolList[[1]]$id)
+      protocol <- getProtocolByCodeName(protocolList[[1]]$codeName)
       metadataState <- getStatesByTypeAndKind(protocol, "metadata_protocol metadata")
       if(length(metadataState) > 0) {
         metadataState <- metadataState[[1]]
@@ -2126,12 +2178,12 @@ validateProject <- function(projectName, configList, username, protocolName = NU
             projectCode <- systemProjectsDT[name == projectName]$code
             if(nrow(protocolProjectMatches) == 0) {
               protocolProjectExists <- FALSE
-              addError("The project that this protocol belongs to is no longer available please contact your administrator or if you have the appropriate privileges re-assign the protocol to a new project", errorEnv = errorEnv)
+              addError("The project that this ",racas::applicationSettings$client.protocol.label," belongs to is no longer available please contact your administrator or if you have the appropriate privileges re-assign the ",racas::applicationSettings$client.protocol.label," to a new project", errorEnv = errorEnv)
             } else {
               protocolProjectExists <- TRUE
             }
             if(protocolProjectExists && protocolProjectMatches[1]$isRestricted && (length(projectCode) == 0 || protocolProject != projectCode)) {
-              addError("The protocol you entered belongs to a restricted project, therefore, the experiment project must match protocol's project.", errorEnv = errorEnv)
+              addError(paste0("The ",racas::applicationSettings$client.protocol.label," you entered belongs to a restricted project, therefore, the ",racas::applicationSettings$client.experiment.label," project must match ",racas::applicationSettings$client.protocol.label,"'s project."), errorEnv = errorEnv)
             }
             
             rmNullObs <- function(x) {
@@ -2142,7 +2194,7 @@ validateProject <- function(projectName, configList, username, protocolName = NU
             userProjectDT <- rbindlist(lapply(projectList, rmNullObs), fill = TRUE)
             userHasAccess <- nrow(userProjectDT[code == protocolProject & ignored == FALSE]) > 0
             if(!userHasAccess) {
-              addError("The protocol you entered is being used in a project that you do not have access to.", errorEnv = errorEnv)
+              addError("The ",racas::applicationSettings$client.protocol.label," you entered is being used in a project that you do not have access to.", errorEnv = errorEnv)
             }
           }
         }
@@ -2184,7 +2236,12 @@ validateScientist <- function(scientistName, configList, testMode = FALSE) {
   
   if (!testMode) {
     response <- tryCatch({
-      getURL(URLencode(paste0(racas::applicationSettings$server.nodeapi.path, racas::applicationSettings$client.service.users.path, "/", scientistName)))
+      url <- paste0(racas::applicationSettings$server.nodeapi.path, "/api/authors?additionalCodeType=assay&additionalCodeKind=scientist")
+      userRole <- racas::applicationSettings$client.roles.acas.userRole
+      if(!is.null(userRole) && userRole!="") {
+        url <- paste0(url,"&roleName=",userRole)
+      }
+      getURL(URLencode(url))
     }, error = function(e) {
       addError( paste("There was an error in validating the scientist's name:", scientistName))
       return("")
@@ -2198,14 +2255,16 @@ validateScientist <- function(scientistName, configList, testMode = FALSE) {
       response <- toJSON(list(username = scientistName))
     }
   }
-  
-  if (response == "") {
-    addError( paste0("The Scientist you supplied, '", scientistName, "', is not a valid name. Please enter the scientist's login name."))
-    return("")
-  }
-  
+
   username <- tryCatch({
-    fromJSON(response)$username
+    response <- jsonlite::fromJSON(response)
+    matchingScientist <- response[tolower(response$code) == tolower(scientistName), ]
+    if (nrow(response) == 0 || nrow(matchingScientist) == 0) {
+      addError( paste0("The Scientist you supplied, '", scientistName, "', is not a valid name. Please enter the scientist's name."))
+      return("")
+    } else {
+      return(matchingScientist[1,]$code)
+    }
   }, error = function(e) {
     addError( paste("There was an error in validating the scientist's name:", scientistName))
     return("")
@@ -2874,10 +2933,10 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   newProtocol <- FALSE
   protocol <- NULL
   if (!useExisting) {
-    protocol <- getProtocolByNameAndFormat(protocolName = validatedMetaData$'Protocol Name'[1], configList, inputFormat)
+    protocol <- getProtocolByNameAndFormat(protocolName = validatedMetaData[,paste0(racas::applicationSettings$client.protocol.label," Name")][1], configList, inputFormat)
     newProtocol <- is.na(protocol[[1]])
     if (!newProtocol) {
-      metaData$'Protocol Name'[1] <- getPreferredProtocolName(protocol, validatedMetaData$'Protocol Name'[1])
+      validatedMetaData[,paste0(racas::applicationSettings$client.protocol.label," Name")][1] <- getPreferredProtocolName(protocol, validatedMetaData[,paste0(racas::applicationSettings$client.protocol.label," Name")][1])
     }
   } else {
     if(!is.null(validatedMetaData$'Experiment Code Name'[1]) || !is.null(validatedMetaData$'Experiment Corp Name'[1])) {
@@ -2893,7 +2952,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
       if(class(experiment) == "try-error") {
         addError(paste0("Could not find ",searchBy,": ", searchFor))
       } else {
-        protocol <- getProtocolById(experiment$protocol$id)
+        protocol <- getProtocolByCodeName(experiment$protocol$codeName)
       }
     }
   }
@@ -2915,7 +2974,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
       requiredMainCode <- requiredMainCode[[1]]
       if(mainCode != requiredMainCode) {
         requiredMainDisplayName <- getDisplayNameFromEntityCode(requiredMainCode)
-        addError(paste0("'",metaData$'Protocol Name'[1],"' requires an entity type of '",requiredMainDisplayName,"'. Please update your file with this entity type instead of the entity type '",displayName,"'"))
+        addError(paste0("'",metaData[,paste0(racas::applicationSettings$client.protocol.label," Name")][1],"' requires an entity type of '",requiredMainDisplayName,"'. Please update your file with this entity type instead of the entity type '",displayName,"'"))
       }
       mainCode <- requiredMainCode
     }
@@ -2987,15 +3046,15 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   if (useExistingExperiment) {
     if(errorFree) {
       # At this point, if there are no errors, experiment, protocol and search by should already be pre defined
-      validatedMetaData$'Protocol Name' <- getPreferredName(protocol)
-      validatedMetaData$'Experiment Name' <- getPreferredName(experiment)
-      warnUser(paste0("The ",searchBy," '",searchFor,"' refers to Experiment Name '",validatedMetaData$'Experiment Name',"', the loader will delete this experiment's current data and replace it with your new upload.",
-                      " If you do not intend to delete and reload this data, enter a different experiment code."))
+      validatedMetaData[,paste0(racas::applicationSettings$client.protocol.label," Name")] <- getPreferredName(protocol)
+      validatedMetaData[,paste0(racas::applicationSettings$client.experiment.label," Name")] <- getPreferredName(experiment)
+      warnUser(paste0("The ",searchBy," '",searchFor,"' refers to ",paste0(racas::applicationSettings$client.experiment.label," Name")," '",validatedMetaData[,paste0(racas::applicationSettings$client.experiment.label," Name")],"', the loader will delete this ",racas::applicationSettings$client.experiment.label,"'s current data and replace it with your new upload.",
+                      " If you do not intend to delete and reload this data, enter a different ",racas::applicationSettings$client.experiment.label," code."))
     } else {
       experiment <- NA
     }
   } else {
-    experiment <- getExperimentByNameCheck(experimentName = validatedMetaData$'Experiment Name'[1], protocol, configList, duplicateExperimentNamesAllowed)
+    experiment <- getExperimentByNameCheck(experimentName = validatedMetaData[,paste0(racas::applicationSettings$client.experiment.label," Name")][1], protocol, configList, duplicateExperimentNamesAllowed)
   }
   
   # Checks if we have a new experiment
@@ -3085,8 +3144,8 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     summaryInfo$info$"Transaction Id" <- lsTransaction
   }
   summaryInfo$info$"Format" <- as.character(validatedMetaData$Format)
-  summaryInfo$info$"Protocol" <- as.character(validatedMetaData$"Protocol Name")
-  summaryInfo$info$"Experiment" <- as.character(validatedMetaData$"Experiment Name")
+  summaryInfo$info[configList$client.protocol.label] <- as.character(validatedMetaData[,paste0(racas::applicationSettings$client.protocol.label," Name")])
+  summaryInfo$info[configList$client.experiment.label] <- as.character(validatedMetaData[,paste0(racas::applicationSettings$client.experiment.label," Name")])
   summaryInfo$info$"Scientist" <- validatedMetaData$Scientist
   summaryInfo$info$"Notebook" <- validatedMetaData$Notebook
   if(!is.null(validatedMetaData$Page)) {
@@ -3245,7 +3304,7 @@ parseGenericData <- function(request) {
     testMode <- FALSE
   }
   
-  # Set configList to the applicationSettings (shorter to type)
+  # Set configList to the racas::applicationSettings (shorter to type)
   configList <- racas::applicationSettings
   
   experiment <- NULL
@@ -3360,33 +3419,63 @@ organizeSubjectData <- function(
   }
   
   createTreatmentGroupData <- function(x) {
-    uncertainty <- as.numeric(sd(x$numericValue, na.rm=T))
-    data.table(
-      batchCode = as.character(uniqueOrNA(x$batchCode)),
-      numericValue = as.numeric(mean(x$numericValue, na.rm=T)),
-      stringValue = as.character(concatUniqNonNA(x$stringValue)),
-      valueOperator = as.character(uniqueOrNA(x$valueOperator)),
-      # TODO figure out if this should be coerced
-      dateValue = uniqueOrNA(x$dateValue),
-      clobValue = as.character(uniqueOrNA(x$clobValue)),
-      urlValue = as.character(uniqueOrNA(x$urlValue)),
-      fileValue = as.character(uniqueOrNA(x$fileValue)),
-      inlineFileValue = as.character(uniqueOrNA(x$inlineFileValue)),
-      codeValue = as.character(uniqueOrNA(x$codeValue)),
-      uncertaintyType = if (is.na(uncertainty)) NA_character_ else "standard deviation",
-      uncertainty = uncertainty,
-      tempStateId = x$tempStateId[1]
-    )
+    if(all(x$isExcluded)) {
+      data.table(
+          batchCode = as.character(uniqueOrNA(x$batchCode)),
+          numericValue = NA_real_,
+          stringValue = NA_character_,
+          valueOperator = NA_character_,
+          # TODO figure out if this should be coerced
+          dateValue = uniqueOrNA(x$dateValue),
+          clobValue = NA_character_,
+          urlValue = NA_character_,
+          fileValue = NA_character_,
+          inlineFileValue = NA_character_,
+          codeValue = "knocked out",
+          uncertaintyType = NA_character_,
+          uncertainty = NA_real_,
+          tempStateId = x$tempStateId[1],
+          newValueType="codeValue",
+          newValueKind="flag status"
+        )
+    } else {
+      x <- x[isExcluded==FALSE]
+      uncertainty <- as.numeric(sd(x$numericValue, na.rm=T))
+      data.table(
+        batchCode = as.character(uniqueOrNA(x$batchCode)),
+        numericValue = as.numeric(mean(x$numericValue, na.rm=T)),
+        stringValue = as.character(concatUniqNonNA(x$stringValue)),
+        valueOperator = as.character(uniqueOrNA(x$valueOperator)),
+        # TODO figure out if this should be coerced
+        dateValue = uniqueOrNA(x$dateValue),
+        clobValue = as.character(uniqueOrNA(x$clobValue)),
+        urlValue = as.character(uniqueOrNA(x$urlValue)),
+        fileValue = as.character(uniqueOrNA(x$fileValue)),
+        inlineFileValue = as.character(uniqueOrNA(x$inlineFileValue)),
+        codeValue = as.character(uniqueOrNA(x$codeValue)),
+        uncertaintyType = if (is.na(uncertainty)) NA_character_ else "standard deviation",
+        uncertainty = uncertainty,
+        tempStateId = x$tempStateId[1],
+        newValueType=x$valueType[1],
+        newValueKind=x$valueKind[1]
+      )
+    }
   }
   
   groupByColumnsNoUnit <- trim(gsub("\\(\\w*\\)", "", groupByColumns))
   excludedSubjects <- subjectData2$subjectID[subjectData2$valueKind %in% excludedRowKinds]
-  subjectData3 <- subjectData2[valueKind %in% c(keepColumn, groupByColumnsNoUnit) & !(subjectID %in% excludedSubjects)]
+
+  # Mark subject values that should be exluded as such so that later we can filter them out from treatment group averaging
+  # marking also because where all subjects have been flagged, we will upload a codeValue of flag status/knocked out 
+  subjectData2[ , isExcluded := any(valueKind %in% excludedRowKinds), by = subjectID]
+  subjectData3 <- subjectData2[valueKind %in% c(keepColumn, groupByColumnsNoUnit)]
   treatmentGroupData <- subjectData3[!is.na(groupingID), createTreatmentGroupData(.SD), 
                                      by = list(groupingID, valueType, valueKind, concentration, 
                                                concUnit, time, timeUnit, valueUnit, 
                                                valueKindAndUnit, publicData, linkID, stateType,
-                                               stateKind)]
+                                               stateKind), .SDcols = names(subjectData3)]
+  treatmentGroupData[ , c('valueType','valueKind') := list(newValueType, newValueKind)]
+  treatmentGroupData[ , c("newValueType", "newValueKind") := NULL]
   treatmentGroupData[valueKind %in% groupByColumnsNoUnit, c("uncertainty", "uncertaintyType") := list(NA_real_, NA_character_)]
   treatmentGroupData[, treatmentGroupID := groupingID]
   treatmentGroupData[, analysisGroupID := linkID]
@@ -3577,7 +3666,13 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
       }
       
       yColumn <- getResultKindWithoutExtras(subjectData[2, 3]) # usually "Response"
-      
+
+      if(any(is.na(suppressWarnings(as.numeric(subjectData[3:nrow(subjectData), 3]))))) {
+        addError(paste0("Some y values in the 'Raw Results' section are missing numeric values.  Please check the 'Raw Results' section."), errorEnv)
+      }
+      if(any(is.na(suppressWarnings(as.numeric(subjectData[3:nrow(subjectData), 2]))))) {
+        addError(paste0("Some x values in the 'Raw Results' section are missing numeric values.  Please check the 'Raw Results' section."), errorEnv)
+      }
       subjectData[1, 1:4] <- c("Datatype", "Number", "Number", "Text")
       
       subjectData[2, 1] <- "link"

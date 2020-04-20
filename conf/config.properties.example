@@ -149,6 +149,8 @@ server.ssl.cert.passphrase=selfCertForACASServer
 
 client.service.rapache.port=1080
 server.rapache.listen=*
+server.rapache.forceAllToStdErrOnly=true
+
 #todo not in codebase 6/2015
 client.service.rapache.use.ssl=${client.use.ssl}
 client.service.rapache.host=rservices
@@ -283,6 +285,8 @@ client.service.result.viewer.liveDesign.database.username=
 client.service.result.viewer.liveDesign.database.password=
 client.service.result.viewer.liveDesign.database.hostname=
 client.service.result.viewer.liveDesign.database.port=
+server.liveDesign.installClientOnStart=false
+client.service.result.viewer.liveDesign.makeReportReadonly=true
 client.service.result.viewer.simpleSAR.baseUrl=
 client.service.result.viewer.seurat.protocolPrefix=http://${client.service.persistence.host}:9080/seurat/runseurat?cmd=newjob&AssayName=
 client.service.result.viewer.seurat.experimentPrefix=&AssayProtocol=
@@ -320,7 +324,7 @@ server.service.external.file.service.url=
 
 # options for preferred batchid type are: NewLineSepBulkPost, SeuratCmpdReg, GeneCodeCheckByR, AcasCmpdReg, LabSynchCmpdReg, SingleBatchNameQueryString, AllPass
 client.service.external.preferred.batchid.type=NewLineSepBulkPost
-server.service.external.preferred.batchid.url=http://tomcat:8080/cmpdreg/api/v1/getPreferredName
+server.service.external.preferred.batchid.url=http://tomcat:8080/acas/api/v1/getPreferredName
 server.service.external.preferred.batchid.separator=-
 server.service.external.project.url=
 server.service.external.report.registration.url=
@@ -369,9 +373,9 @@ client.browser.enableSearchAll=true
 
 ## Cmpd Reg Bulk Loader Options
 client.service.cmpdReg.persistence.host=tomcat
-client.service.cmpdReg.persistence.path=cmpdreg/api/v1
+client.service.cmpdReg.persistence.path=acas/api/v1
 client.service.cmpdReg.persistence.fullpath=http://${client.service.cmpdReg.persistence.host}:${client.service.persistence.port}/${client.service.cmpdReg.persistence.path}/
-client.service.cmpdReg.persistence.basepath=http://${client.service.cmpdReg.persistence.host}:${client.service.persistence.port}/cmpdreg
+client.service.cmpdReg.persistence.basepath=http://${client.service.cmpdReg.persistence.host}:${client.service.persistence.port}/acas
 
 # If project select is shown separately in the Configuration part of the GUI
 client.cmpdReg.showProjectSelect=true
@@ -401,7 +405,11 @@ client.curvefit.modelfitparameter.classes=[{"code":"4 parameter D-R", "parameter
                                             {"code":"4 parameter D-R IC50", "parametersController":"DoseResponseAnalysisParametersController", "parametersClass": "DoseResponseIC50AnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveLL4IC50", "RSource":"src/r/CurveAnalysis/ll4IC50.R", "parametersOptions":{"defaultBaseline":0}},\
                                             {"code":"4 parameter D-R IC50/DMax", "parametersController":"DoseResponseAnalysisParametersController", "parametersClass": "DoseResponseIC50AnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveLL4IC50", "RSource":"src/r/CurveAnalysis/ll4IC50DMax.R", "parametersOptions":{"defaultBaseline":0}},\
                                             {"code":"Michaelis-Menten", "parametersController":"DoseResponseKmAnalysisParametersController", "parametersClass": "DoseResponseKmAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveKm", "RSource":"src/r/CurveAnalysis/mm2.R", "parametersOptions":{"defaultBaseline":0}},\
-                                            {"code":"Substrate Inhibition", "parametersController":"DoseResponseSubstrateInhibitionAnalysisParametersController", "parametersClass": "DoseResponseSubstrateInhibitionAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveSubstrateInhibition", "RSource":"src/r/CurveAnalysis/substrateInhibition.R", "parametersOptions":{"defaultBaseline":0}}]
+                                            {"code":"Substrate Inhibition", "parametersController":"DoseResponseSubstrateInhibitionAnalysisParametersController", "parametersClass": "DoseResponseSubstrateInhibitionAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveSubstrateInhibition", "RSource":"src/r/CurveAnalysis/substrateInhibition.R", "parametersOptions":{"defaultBaseline":0}},\
+                                            {"code":"Scatter", "RSource":"src/r/CurveAnalysis/scatter.R", "renderOptions": {"connectPoints": false}},\
+                                            {"code":"Scatter Log-x", "RSource":"src/r/CurveAnalysis/scatter.R", "renderOptions": {"connectPoints": false}},\
+                                            {"code":"Scatter Log-y", "RSource":"src/r/CurveAnalysis/scatter.R", "renderOptions": {"connectPoints": false}},\
+                                            {"code":"Scatter Log-x,y", "RSource":"src/r/CurveAnalysis/scatter.R", "renderOptions": {"connectPoints": false}}]
 
 
 # Lock when approved filter
@@ -529,10 +537,38 @@ client.basePath=/
 server.curveCurator.onRejectMakeReportedValuesNonPublic=false
 server.curveRender.drawPointsForRejectedCurve=true
 
+### Plot colors
+# Colors of curves to be cycled through when coloring curves.  Black is usually the first color as the first color is used for single, non overlayed curves.
+# If supplied, the config server.curveRender.mostRecentCurveColor will override the first color in this list for the most recent
+# Valid colors can be found here:
+#  http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf
+# Some examples of other color schemes:
+# server.curveRender.plotColors=black,red,blue,orange,purple,cyan,darkolivegreen4,firebrick4,aquamarine4,chocolate3,dodgerblue4,coral2,darkorchid3,cadetblue4,darkgoldenrod3,lightcyan4,seagreen4,mediumvioletred
+# server.curveRender.plotColors=black,#a6cee3,#1f78b4,#b2df8a,#33a02c,#fb9a99,#e31a1c,#fdbf6f,#ff7f00,#cab2d6,#6a3d9a,#ffff99,#b15928
+# server.curveRender.plotColors=black
+server.curveRender.plotColors=black,#0C5BB0FF,#EE0011FF,#15983DFF,#EC579AFF,#FA6B09FF,#149BEDFF,#A1C720FF,#FEC10BFF,#16A08CFF,#9A703EFF
+
+### Most recent curve color
+## Color curves by default according to the plot colors.  The list of plot colors is recycled if there are more curves in the plot than colors
+server.curveRender.usePlotColorsByDefault=true
+
+### Most recent curve color
+## If supplied the most recent uploaded curve will get the supplied color
+server.curveRender.mostRecentCurveColor=green
+
+### Curve line width
+# Default: 1
+# If supplied, a with 0.5, the line widths of curves will be 1/2 the thickness of the default of 1.  Converseley, a value of 2 will produce curves with twice the thickeness.
+server.curveRender.curveLwd=1.5
+
+### Plot points on overlay
+# If true, curves that are overlayed will show points for all the curves in the plot.  If false, no points will be shown on overlayed curves.
+# This does not affect single/non overlayed curves
+server.curveRender.plotPointsOnOverlay=false
+
 # Restrict experiment search by project
 server.service.projects.restrictExperiments=false
 
-flyway.location=db/migration/postgres,com.labsynch.labseer.db.migration.postgres
 flyway.schema=acas
 flyway.database.username=${server.database.username}
 flyway.database.password=${server.database.password}
@@ -558,6 +594,10 @@ client.projectEditor.isRestricted.default=false
 
 client.roles.crossProjectLoaderRole=ROLE_ACAS-CROSS-PROJECT-LOADER
 
+# List of project codes to filter out and hide from ACAS
+# e.g. server.projects.filterList = ["SomeProject"]
+server.projects.filterList = []
+
 # For whether protocols and experiments should have sequential user defined corpName labels
 client.entity.saveInitialsCorpName=false
 
@@ -579,6 +619,14 @@ client.compoundInventory.daughterVials.strictMatchPhysicalState=false
 
 # Whether to save location as a codeValue or as a full location interaction
 client.compoundInventory.saveLocationAsCodeValue=true
+
+# Allows the override of the words "Experiment" and "Protocol" throughout the ACAS UI
+# These configs should NOT be set to the same value as this would break some functionality
+# of data loaders.
+# The values are often pluralized by putting an "s" at the end, so whatever values are used
+# should be able to be pluralized with an "s" appended to them.
+client.protocol.label=Protocol
+client.experiment.label=Experiment
 
 #config for whether SOLR should be updated when things are saved/updated
 client.solr.updateSolrForThings=false

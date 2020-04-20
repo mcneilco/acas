@@ -7,7 +7,7 @@ $(function() {
             _.each(attributes, function(att, key) {
                 if( (att != '' && att!=null) && key!='aliasContSelect' && key!='searchType' && key!='percentSimilarity' && key!='maxResults' && key!='loggedInUser' ) {
                     if( key=='chemist') {
-                        if( att.get('code')!='anyone') {
+                        if( att!='anyone') {
                             allEmpty = false;
                         }
                     } else {
@@ -70,7 +70,8 @@ $(function() {
             }
 			this.hide();
 			if(window.configuration.clientUILabels.corpNameLabel) {
-                this.$('.corpNameLabel').html(window.configuration.clientUILabels.corpNameLabel);
+				this.$('.corpNameLabel').html(window.configuration.clientUILabels.corpNameLabel+" Range");
+				this.$('.corpNameListLabel').html(window.configuration.clientUILabels.corpNameLabel+" List");
             }
             this.$('.dateFrom').datepicker( );
             this.$('.dateFrom').datepicker( "option", "dateFormat", "mm/dd/yy" );
@@ -175,6 +176,7 @@ $(function() {
             searchForm.bind('error',  this.validationError);
 
             searchForm.set({
+                corpNameList: jQuery.trim(this.$('.corpNameList').val()),
                 corpNameFrom: jQuery.trim(this.$('.corpNameFrom').val()),
                 corpNameTo: jQuery.trim(this.$('.corpNameTo').val()),
                 aliasContSelect: this.$('.aliasContSelect').val(),
@@ -185,7 +187,7 @@ $(function() {
                 percentSimilarity:
                     (jQuery.trim(this.$('.percentSimilarity').val())=='') ? null :
                     parseFloat(jQuery.trim(this.$('.percentSimilarity').val())),
-                chemist: this.chemistCodeController.getSelectedModel(),
+                chemist: this.chemistCodeController.getSelectedModel().get("code"),
                 maxResults:
                     (jQuery.trim(this.$('.maxResults').val())=='') ? null :
                     parseFloat(jQuery.trim(this.$('.maxResults').val())),
@@ -242,8 +244,7 @@ $(function() {
         },
 
 	    keyupHandler: function(e) {
-		    console.log( "got keyup");
-		    if(e.which === 13) {// enter key
+		    if(e.which === 13 && !this.$('.corpNameList').is(":focus")) {// enter key
 			    this.search();
 		    }
 	    }
