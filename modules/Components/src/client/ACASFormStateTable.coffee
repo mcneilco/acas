@@ -57,6 +57,8 @@ class window.ACASFormStateTableController extends Backbone.View
 			@setTableLabel @tableDef.tableLabel
 		if @tableDef?.tableLabelClass?
 			@addFormLabelClass @options.tableDef.tableLabelClass
+		if @tableDef?.tableDescription?
+			@setTableDescription @tableDef.tableDescription
 		anyValuesHaveFieldWrapper = _.some @tableDef.values, (v) -> 
 			_.has v.fieldSettings, 'fieldWrapper'
 		if @formWrapper? and anyValuesHaveFieldWrapper
@@ -74,6 +76,9 @@ class window.ACASFormStateTableController extends Backbone.View
 
 	removeTableLabelClass: (value) ->
 		@$('.bv_tableLabel').removeClass value
+
+	setTableDescription: (value) ->
+		@$('.bv_tableDescription').html value
 
 	addFormWrapper: (formEl) ->
 		@$('.bv_formWrapper').html formEl
