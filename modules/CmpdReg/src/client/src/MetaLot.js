@@ -440,13 +440,22 @@ $(function() {
 	    },
 
 	    parentAllowedToUpdate: function () {
-		    if (!this.allowedToUpdate()) return false;
+			// Check if disableEditMyParents is defined and true.  If its true and the user is not an admin, then we disable the allowed to update feature
+			if(typeof(window.configuration.metaLot.disableEditMyParents) != "undefined" && window.configuration.metaLot.disableEditMyParents != null && window.configuration.metaLot.disableEditMyParents) {
+				if (!this.user.get('isAdmin')) return false;
+			}
+			// Further check to see if the parent is editable by checking the metalot allowedToUpdate function
+			if (!this.allowedToUpdate()) return false;
 
-		    if (this.model.get('lot').isNew() ) {
+			// If we get here, then just check if the lot is new or not
+		    if (this.model.get('lot').isNew()) {
 			    return false;
 		    } else {
 			    return true;
-		    }
+			}
+
+			// We shouldn't get here but lets disable edit parent by default to be safe
+			return false
 	    }
     });
 });
