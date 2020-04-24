@@ -286,31 +286,29 @@ updateThing = (thing, testMode, callback) ->
 				callback "update lsThing failed"
 		)
 
-checkFilesAndUpdate = (thing, callback) ->
-	fileVals = serverUtilityFunctions.getFileValuesFromEntity thing, false
-	filesToSave = fileVals.length
-
-	completeThingUpdate = (thingToUpdate)->
-		updateThing thingToUpdate, false, (updatedThing) ->
-			callback updatedThing, 200
-
-	fileSaveCompleted = (passed) ->
-		if !passed
-			callback "file move failed", 500
-		if --filesToSave == 0 then completeThingUpdate(thing)
-
-					
-	if filesToSave > 0
-		prefix = serverUtilityFunctions.getPrefixFromEntityCode thing.codeName
-		console.log("Here it is #{thing.codeName}")
-		for fv in fileVals
-			console.log "updating file"
-			csUtilities.relocateEntityFile fv, prefix, thing.codeName, fileSaveCompleted
-	else
-		callback thing, 200
 
 exports.bulkPostThingsSaveFile = (req, resp) ->
 	exports.bulkPostThingsInternal req.body, (response) =>
+		checkFilesAndUpdate = (thing, callback) ->
+			fileVals = serverUtilityFunctions.getFileValuesFromEntity thing, false
+			filesToSave = fileVals.length
+
+			completeThingUpdate = (thingToUpdate)->
+				updateThing thingToUpdate, false, (updatedThing) ->
+					callback updatedThing, 200
+
+			fileSaveCompleted = (passed) ->
+				if !passed
+					callback "file move failed", 500
+				if --filesToSave == 0 then completeThingUpdate(thing)
+
+			if filesToSave > 0
+				prefix = serverUtilityFunctions.getPrefixFromEntityCode thing.codeName
+				for fv in fileVals
+					csUtilities.relocateEntityFile fv, prefix, thing.codeName, fileSaveCompleted
+			else
+				callback thing, 200
+
 		if response.indexOf("saveFailed") > -1
 			resp.json response
 		else
