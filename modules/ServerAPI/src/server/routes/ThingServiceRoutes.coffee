@@ -319,9 +319,7 @@ exports.bulkPostThingsSaveFile = (req, resp) ->
 				checkFilesAndUpdate t, (response, statusCode) ->
 					resps.push response
 					i++
-					console.log("got here")
 					if i == lengthThingsToCheck
-						console.log("now here")
 						console.log(resps)
 						resp.json resps
 
