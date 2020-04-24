@@ -24,6 +24,7 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.post '/api/things/jsonArray', exports.postThings
 	app.post '/api/bulkPostThings', exports.bulkPostThings
 	app.put '/api/bulkPutThings', exports.bulkPutThings
+	app.post '/api/bulkPostThingsSaveFile', exports.bulkPostThingsSaveFile
 
 
 exports.setupRoutes = (app, loginRoutes) ->
@@ -53,6 +54,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/things/jsonArray', loginRoutes.ensureAuthenticated, exports.postThings
 	app.post '/api/bulkPostThings', loginRoutes.ensureAuthenticated, exports.bulkPostThings
 	app.put '/api/bulkPutThings', loginRoutes.ensureAuthenticated, exports.bulkPutThings
+	app.post '/api/bulkPostThingsSaveFile', loginRoutes.ensureAuthenticated, exports.bulkPostThingsSaveFile
 
 request = require 'request'
 
@@ -284,6 +286,46 @@ updateThing = (thing, testMode, callback) ->
 				callback "update lsThing failed"
 		)
 
+checkFilesAndUpdate = (thing, callback) ->
+	fileVals = serverUtilityFunctions.getFileValuesFromEntity thing, false
+	filesToSave = fileVals.length
+
+	completeThingUpdate = (thingToUpdate)->
+		updateThing thingToUpdate, false, (updatedThing) ->
+			callback updatedThing, 200
+
+	fileSaveCompleted = (passed) ->
+		if !passed
+			callback "file move failed", 500
+		if --filesToSave == 0 then completeThingUpdate(thing)
+
+					
+	if filesToSave > 0
+		prefix = serverUtilityFunctions.getPrefixFromEntityCode thing.codeName
+		console.log("Here it is #{thing.codeName}")
+		for fv in fileVals
+			console.log "updating file"
+			csUtilities.relocateEntityFile fv, prefix, thing.codeName, fileSaveCompleted
+	else
+		callback thing, 200
+
+exports.bulkPostThingsSaveFile = (req, resp) ->
+	exports.bulkPostThingsInternal req.body, (response) =>
+		if response.indexOf("saveFailed") > -1
+			resp.json response
+		else
+			lengthThingsToCheck = response.length
+			i = 0
+			resps = []
+			for t in response
+				checkFilesAndUpdate t, (response, statusCode) ->
+					resps.push response
+					i++
+					console.log("got here")
+					if i == lengthThingsToCheck
+						console.log("now here")
+						console.log(resps)
+						resp.json resps
 
 postThing = (isBatch, req, resp) ->
 	console.log "post thing parent"
