@@ -752,6 +752,7 @@ class window.ACASFormStateTableFormController extends Backbone.View
 					opts.labelType = field.fieldSettings.labelType
 					newField = new ACASFormLSThingInteractionFieldController opts
 				when 'stringValue' then newField = new ACASFormLSStringValueFieldController opts
+				when 'urlValue' then newField = new ACASFormLSURLValueFieldController opts
 				when 'dateValue' then newField = new ACASFormLSDateValueFieldController opts
 				when 'fileValue' then newField = new ACASFormLSFileValueFieldController opts
 				when 'locationTree'
