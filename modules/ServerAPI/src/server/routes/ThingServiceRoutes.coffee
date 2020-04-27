@@ -288,6 +288,7 @@ updateThing = (thing, testMode, callback) ->
 
 
 exports.bulkPostThingsSaveFile = (req, resp) ->
+
 	# First save all the ls things that come in
 	exports.bulkPostThingsInternal req.body, (response) =>
 
@@ -312,10 +313,15 @@ exports.bulkPostThingsSaveFile = (req, resp) ->
 				if --filesToSave == 0 then completeThingUpdate(thing)
 
 			# If there are any files to save, call the customer specific server function which should handle
-			# saving the file to the correct location and update the thing with the correct path
+			# saving the file to the correct location and update the thing file value with the correct path
 			if filesToSave > 0
 				prefix = serverUtilityFunctions.getPrefixFromEntityCode thing.codeName
 				for fv in fileVals
+
+					# Send just the file value "fv" to the relocateEntityFile function
+					# relocate entity file is responsible for moving the file and updating the 
+					# file value of thing in memory and later completeThingUpdate will handle persisting
+					# the change to the db.
 					csUtilities.relocateEntityFile fv, prefix, thing.codeName, fileSaveCompleted
 			else
 				callback thing, 200
