@@ -288,20 +288,31 @@ updateThing = (thing, testMode, callback) ->
 
 
 exports.bulkPostThingsSaveFile = (req, resp) ->
+	# First save all the ls things that come in
 	exports.bulkPostThingsInternal req.body, (response) =>
+
+		# Local function checkFilesAndUpdate
 		checkFilesAndUpdate = (thing, callback) ->
+
+			# Check if there are any files to save
 			fileVals = serverUtilityFunctions.getFileValuesFromEntity thing, false
 			filesToSave = fileVals.length
 
+			# Function called after final file is saved
 			completeThingUpdate = (thingToUpdate)->
 				updateThing thingToUpdate, false, (updatedThing) ->
 					callback updatedThing, 200
 
+			# Function to call after a file is saved
 			fileSaveCompleted = (passed) ->
 				if !passed
 					callback "file move failed", 500
+				# Decrement one from the filesToSave and if this is the final file that was saved call 
+				# completeThingUpdate
 				if --filesToSave == 0 then completeThingUpdate(thing)
 
+			# If there are any files to save, call the customer specific server function which should handle
+			# saving the file to the correct location and update the thing with the correct path
 			if filesToSave > 0
 				prefix = serverUtilityFunctions.getPrefixFromEntityCode thing.codeName
 				for fv in fileVals
@@ -309,9 +320,12 @@ exports.bulkPostThingsSaveFile = (req, resp) ->
 			else
 				callback thing, 200
 
+		# If we failed to bulk save the things then just respond
 		if response.indexOf("saveFailed") > -1
 			resp.json response
 		else
+			# Loop through the saved ls things and call the checkFilesAndUpdate function
+			# which should handle doing the correct thing with the files.
 			lengthThingsToCheck = response.length
 			i = 0
 			resps = []
@@ -320,7 +334,6 @@ exports.bulkPostThingsSaveFile = (req, resp) ->
 					resps.push response
 					i++
 					if i == lengthThingsToCheck
-						console.log(resps)
 						resp.json resps
 
 postThing = (isBatch, req, resp) ->
