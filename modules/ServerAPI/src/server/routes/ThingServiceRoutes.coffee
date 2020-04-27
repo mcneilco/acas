@@ -24,6 +24,7 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.post '/api/things/jsonArray', exports.postThings
 	app.post '/api/bulkPostThings', exports.bulkPostThings
 	app.put '/api/bulkPutThings', exports.bulkPutThings
+	app.post '/api/bulkPostThingsSaveFile', exports.bulkPostThingsSaveFile
 
 
 exports.setupRoutes = (app, loginRoutes) ->
@@ -53,6 +54,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/things/jsonArray', loginRoutes.ensureAuthenticated, exports.postThings
 	app.post '/api/bulkPostThings', loginRoutes.ensureAuthenticated, exports.bulkPostThings
 	app.put '/api/bulkPutThings', loginRoutes.ensureAuthenticated, exports.bulkPutThings
+	app.post '/api/bulkPostThingsSaveFile', loginRoutes.ensureAuthenticated, exports.bulkPostThingsSaveFile
 
 request = require 'request'
 config = require '../conf/compiled/conf.js'
@@ -278,6 +280,61 @@ updateThing = (thing, testMode, callback) ->
 				callback "update lsThing failed"
 		)
 
+
+exports.bulkPostThingsSaveFile = (req, resp) ->
+
+	# First save all the ls things that come in
+	exports.bulkPostThingsInternal req.body, (response) =>
+
+		# Local function checkFilesAndUpdate
+		checkFilesAndUpdate = (thing, callback) ->
+
+			# Check if there are any files to save
+			fileVals = serverUtilityFunctions.getFileValuesFromEntity thing, false
+			filesToSave = fileVals.length
+
+			# Function called after final file is saved
+			completeThingUpdate = (thingToUpdate)->
+				updateThing thingToUpdate, false, (updatedThing) ->
+					callback updatedThing, 200
+
+			# Function to call after a file is saved
+			fileSaveCompleted = (passed) ->
+				if !passed
+					callback "file move failed", 500
+				# Decrement one from the filesToSave and if this is the final file that was saved call 
+				# completeThingUpdate
+				if --filesToSave == 0 then completeThingUpdate(thing)
+
+			# If there are any files to save, call the customer specific server function which should handle
+			# saving the file to the correct location and update the thing file value with the correct path
+			if filesToSave > 0
+				prefix = serverUtilityFunctions.getPrefixFromEntityCode thing.codeName
+				for fv in fileVals
+
+					# Send just the file value "fv" to the relocateEntityFile function
+					# relocate entity file is responsible for moving the file and updating the 
+					# file value of thing in memory and later completeThingUpdate will handle persisting
+					# the change to the db.
+					csUtilities.relocateEntityFile fv, prefix, thing.codeName, fileSaveCompleted
+			else
+				callback thing, 200
+
+		# If we failed to bulk save the things then just respond
+		if response.indexOf("saveFailed") > -1
+			resp.json response
+		else
+			# Loop through the saved ls things and call the checkFilesAndUpdate function
+			# which should handle doing the correct thing with the files.
+			lengthThingsToCheck = response.length
+			i = 0
+			resps = []
+			for t in response
+				checkFilesAndUpdate t, (response, statusCode) ->
+					resps.push response
+					i++
+					if i == lengthThingsToCheck
+						resp.json resps
 
 postThing = (isBatch, req, resp) ->
 	console.log "post thing parent"
