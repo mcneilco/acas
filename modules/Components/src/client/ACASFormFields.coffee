@@ -697,7 +697,11 @@ class window.ACASFormLSFileValueFieldController extends ACASFormAbstractFieldCon
 			@allowedFileTypes = @options.allowedFileTypes
 		else
 			@allowedFileTypes = ['csv','xlsx','xls','png','jpeg']
-
+		if @options.displayInline?
+			@displayInline = @options.displayInline
+		else
+			@displayInline = false
+		
 	render: ->
 		super()
 		@setupFileController()
@@ -722,7 +726,10 @@ class window.ACASFormLSFileValueFieldController extends ACASFormAbstractFieldCon
 			displayText = @getModel().get('comments')
 			if !displayText?
 				displayText = fileValue
-			@$('.bv_file').html '<a href="'+window.conf.datafiles.downloadurl.prefix+fileValue+'">'+displayText+'</a>'
+			if @displayInline
+				@$('.bv_file').html '<img src="'+window.conf.datafiles.downloadurl.prefix+fileValue+'" alt="'+ displayText+'">'
+			else
+				@$('.bv_file').html '<a href="'+window.conf.datafiles.downloadurl.prefix+fileValue+'">'+displayText+'</a>'
 			@$('.bv_deleteSavedFile').show()
 
 	createNewFileChooser: ->

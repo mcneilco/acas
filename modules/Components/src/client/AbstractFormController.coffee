@@ -151,6 +151,7 @@ class window.AbstractThingFormController extends AbstractFormController
 				firstSelectText: field.fieldSettings.firstSelectText
 				modelDefaults: field.modelDefaults
 				allowedFileTypes: field.fieldSettings.allowedFileTypes
+				displayInline: field.fieldSettings.displayInline
 				extendedLabel: field.fieldSettings.extendedLabel
 				tabIndex: field.fieldSettings.tabIndex
 				toFixed: field.fieldSettings.toFixed
