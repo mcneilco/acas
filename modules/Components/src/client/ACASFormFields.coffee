@@ -750,6 +750,9 @@ class window.ACASFormLSFileValueFieldController extends ACASFormAbstractFieldCon
 			value: nameOnServer
 			ignored: false
 
+	disableInput: ->
+		@$('.bv_deleteSavedFile').hide()
+
 	handleFileRemoved: =>
 		@setEmptyValue()
 		@checkEmptyAndRequired()
