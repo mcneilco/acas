@@ -796,3 +796,46 @@ class window.ACASFormLSBooleanFieldController extends ACASFormAbstractFieldContr
 		else
 			@$('input').attr 'checked', 'checked'
 		super()
+
+
+
+class window.ACASFormLSURLValueFieldController extends ACASFormAbstractFieldController
+	###
+		Launching controller must:
+		- Initialize the model with an LSValue
+    Do whatever else is required or optional in ACASFormAbstractFieldController
+	###
+
+	template: _.template($("#ACASFormLSURLValueFieldView").html())
+
+	events: ->
+		"click .bv_linkBtn": "handleLinkBtnClicked"
+
+	handleInputChanged: =>
+		@clearError()
+		@userInputEvent = true
+		value = UtilityFunctions::getTrimmedInput(@$('input'))
+		if value == ""
+			@setEmptyValue()
+		else
+			@getModel().set
+				value: value
+				ignored: false
+		super()
+
+	setEmptyValue: ->
+		@getModel().set
+			value: null
+			ignored: true
+
+	setInputValue: (inputValue) ->
+		@$('input').val inputValue
+
+	handleLinkBtnClicked: =>
+		url = UtilityFunctions::getTrimmedInput(@$('input'))
+		window.open(url);
+
+
+	renderModelContent: =>
+		@$('input').val @getModel().get('value')
+		super()
