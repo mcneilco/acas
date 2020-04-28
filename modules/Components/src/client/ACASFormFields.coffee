@@ -565,7 +565,7 @@ class window.ACASFormLSHTMLClobValueFieldController extends ACASFormAbstractFiel
 
 	setupTinyMCE: ->
 		mdl = @getModel()
-		cname = mdl.get('lsKind').replace(" ","")+"_"+mdl.cid
+		cname = mdl.get('lsKind').split(' ').join('')+"_"+mdl.cid
 		selector = "."+cname
 		@$('.bv_wysiwygEditor').addClass cname
 		@wysiwygEditor = tinymce.init
