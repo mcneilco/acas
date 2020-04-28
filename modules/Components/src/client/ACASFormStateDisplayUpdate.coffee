@@ -357,6 +357,7 @@ class window.ACASFormStateDisplayValueEditController extends Backbone.View
 				when 'numericValue' then @newField = new ACASFormLSNumericValueFieldController opts
 				when 'codeValue' then @newField = new ACASFormLSCodeValueFieldController opts
 				when 'stringValue' then @newField = new ACASFormLSStringValueFieldController opts
+				when 'urlValue' then @newField = new ACASFormLSURLValueFieldController opts
 				when 'dateValue' then @newField = new ACASFormLSDateValueFieldController opts
 
 			@$('.bv_valueField').append @newField.render().el
