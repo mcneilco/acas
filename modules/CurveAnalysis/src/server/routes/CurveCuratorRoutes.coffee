@@ -7,6 +7,7 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/curves/stubs/:exptCode', loginRoutes.ensureAuthenticated, exports.getCurveStubs
+	app.get '/api/curve/detail/:id', loginRoutes.ensureAuthenticated, exports.getCurveDetail
 	app.post '/api/curves/detail', loginRoutes.ensureAuthenticated, exports.getCurveDetailCurveIds
 	app.put '/api/curve/detail/:id', loginRoutes.ensureAuthenticated, exports.updateCurveDetail
 	app.post '/api/curve/stub/:id', loginRoutes.ensureAuthenticated, exports.updateCurveStub

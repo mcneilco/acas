@@ -20,7 +20,7 @@ handle_response <- function(http_response_code, response) {
 
 get_curve_detail <- function() {
   postData <- rawToChar(receiveBin())
-  if(is.null(postData)) {
+  if(is.null(postData) || postData == "") {
     myMessenger$logger$debug(paste0('getting curve detail with get json: ', GET))
     myMessenger$capture_output("detail <- racas::api_doseResponse_get_curve_detail(GET)", userError = paste0("There was an error retrieving detail for '", GET, "'"))
     if(myMessenger$hasErrors()) {
