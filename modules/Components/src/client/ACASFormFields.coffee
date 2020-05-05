@@ -565,7 +565,7 @@ class window.ACASFormLSHTMLClobValueFieldController extends ACASFormAbstractFiel
 
 	setupTinyMCE: ->
 		mdl = @getModel()
-		cname = mdl.get('lsKind').replace(" ","")+"_"+mdl.cid
+		cname = mdl.get('lsKind').split(' ').join('')+"_"+mdl.cid
 		selector = "."+cname
 		@$('.bv_wysiwygEditor').addClass cname
 		@wysiwygEditor = tinymce.init
@@ -697,7 +697,11 @@ class window.ACASFormLSFileValueFieldController extends ACASFormAbstractFieldCon
 			@allowedFileTypes = @options.allowedFileTypes
 		else
 			@allowedFileTypes = ['csv','xlsx','xls','png','jpeg']
-
+		if @options.displayInline?
+			@displayInline = @options.displayInline
+		else
+			@displayInline = false
+		
 	render: ->
 		super()
 		@setupFileController()
@@ -722,7 +726,10 @@ class window.ACASFormLSFileValueFieldController extends ACASFormAbstractFieldCon
 			displayText = @getModel().get('comments')
 			if !displayText?
 				displayText = fileValue
-			@$('.bv_file').html '<a href="'+window.conf.datafiles.downloadurl.prefix+fileValue+'">'+displayText+'</a>'
+			if @displayInline
+				@$('.bv_file').html '<img src="'+window.conf.datafiles.downloadurl.prefix+fileValue+'" alt="'+ displayText+'">'
+			else
+				@$('.bv_file').html '<a href="'+window.conf.datafiles.downloadurl.prefix+fileValue+'">'+displayText+'</a>'
 			@$('.bv_deleteSavedFile').show()
 
 	createNewFileChooser: ->
@@ -749,6 +756,9 @@ class window.ACASFormLSFileValueFieldController extends ACASFormAbstractFieldCon
 		@getModel().set
 			value: nameOnServer
 			ignored: false
+
+	disableInput: ->
+		@$('.bv_deleteSavedFile').hide()
 
 	handleFileRemoved: =>
 		@setEmptyValue()
@@ -795,4 +805,47 @@ class window.ACASFormLSBooleanFieldController extends ACASFormAbstractFieldContr
 			@$('input').removeAttr 'checked'
 		else
 			@$('input').attr 'checked', 'checked'
+		super()
+
+
+
+class window.ACASFormLSURLValueFieldController extends ACASFormAbstractFieldController
+	###
+		Launching controller must:
+		- Initialize the model with an LSValue
+    Do whatever else is required or optional in ACASFormAbstractFieldController
+	###
+
+	template: _.template($("#ACASFormLSURLValueFieldView").html())
+
+	events: ->
+		"click .bv_linkBtn": "handleLinkBtnClicked"
+
+	handleInputChanged: =>
+		@clearError()
+		@userInputEvent = true
+		value = UtilityFunctions::getTrimmedInput(@$('input'))
+		if value == ""
+			@setEmptyValue()
+		else
+			@getModel().set
+				value: value
+				ignored: false
+		super()
+
+	setEmptyValue: ->
+		@getModel().set
+			value: null
+			ignored: true
+
+	setInputValue: (inputValue) ->
+		@$('input').val inputValue
+
+	handleLinkBtnClicked: =>
+		url = UtilityFunctions::getTrimmedInput(@$('input'))
+		window.open(url);
+
+
+	renderModelContent: =>
+		@$('input').val @getModel().get('value')
 		super()

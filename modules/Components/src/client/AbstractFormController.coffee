@@ -151,6 +151,7 @@ class window.AbstractThingFormController extends AbstractFormController
 				firstSelectText: field.fieldSettings.firstSelectText
 				modelDefaults: field.modelDefaults
 				allowedFileTypes: field.fieldSettings.allowedFileTypes
+				displayInline: field.fieldSettings.displayInline
 				extendedLabel: field.fieldSettings.extendedLabel
 				tabIndex: field.fieldSettings.tabIndex
 				toFixed: field.fieldSettings.toFixed
@@ -183,6 +184,7 @@ class window.AbstractThingFormController extends AbstractFormController
 					else
 						newField = new ACASFormLSThingInteractionFieldController opts
 				when 'stringValue' then newField = new ACASFormLSStringValueFieldController opts
+				when 'urlValue' then newField = new ACASFormLSURLValueFieldController opts
 				when 'dateValue' then newField = new ACASFormLSDateValueFieldController opts
 				when 'fileValue' then newField = new ACASFormLSFileValueFieldController opts
 				when 'booleanValue' then newField = new ACASFormLSBooleanFieldController opts

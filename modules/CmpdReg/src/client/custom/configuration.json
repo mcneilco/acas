@@ -40,6 +40,7 @@
 		"disableAliasEdit": false,
 		"showLotInventory": false,
 		"disableEditMyLots": false,
+		"disableEditMyParents": true,
 		"requireLotNumber": false,
 		"allowManualLotNumber": false,
 		"autoPopulateNextLotNumber": false
@@ -75,7 +76,8 @@
 		"standardizeStructure": false,
 		"useExternalStandardizerConfig": false,
 		"standardizerConfigFilePath": "/opt/acas/conf/standardizerConfig.xml",
-		"orderSelectLists": true
+		"orderSelectLists": true,
+		"registerNoStructureCompoundsAsUniqueParents": false
 	},
 	"bulkLoadSettings": {
 		"useProjectRoles": false,

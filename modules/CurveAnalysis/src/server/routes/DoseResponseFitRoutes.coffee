@@ -3,7 +3,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/doseResponseCurveFit', loginRoutes.ensureAuthenticated, exports.fitDoseResponse
 
 exports.fitDoseResponse = (request, response)  ->
-	request.connection.setTimeout 600000
+	request.connection.setTimeout 86400000
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 
 	response.writeHead(200, {'Content-Type': 'application/json'});
