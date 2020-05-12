@@ -50,7 +50,7 @@ exports.getAuthorizedLabelSequencesInternal = (req, callback) ->
 		callback labelSequenceTestJSON.labelSequenceArray
 	else
 		roles = req.session.passport.user.roles
-		baseurl = config.all.client.service.persistence.fullpath+"labelsequences/getAuthorizedLabelSequences"
+		baseurl = config.all.client.service.persistence.fullpath+"labelsequences/getAuthorizedLabelSequences?"
 		if req.query?.thingTypeAndKind?
 			baseurl += "&thingTypeAndKind=#{req.query.thingTypeAndKind}"
 		if req.query?.labelTypeAndKind?
