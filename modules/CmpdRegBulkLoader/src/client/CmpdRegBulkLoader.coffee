@@ -1118,6 +1118,7 @@ class window.CmpdRegBulkLoaderAppController extends Backbone.View
 		unless @$('.bv_purgeFiles').is(':visible')
 			@$('.bv_bulkReg').hide()
 			@$('.bv_bulkRegSummary').hide()
+			@$('.bv_bulkValSummary').hide()
 			@$('.bv_purgeFiles').show()
 			@setupPurgeFilesController()
 		@$('.bv_adminDropdown').dropdown('toggle')
