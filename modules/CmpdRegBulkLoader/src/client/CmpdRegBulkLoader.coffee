@@ -689,7 +689,7 @@ class window.AssignSdfPropertiesController extends Backbone.View
 			data: dataToPost
 			success: (response) =>
 				if response.id?
-					@validateCompounds()
+					@registerCompounds()
 				else
 					@handleSaveTemplateError()
 			error: (err) =>
