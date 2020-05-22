@@ -664,6 +664,8 @@ exports.genericThingSearch = (req, resp) ->
 			typeFilter = "lsType=" + req.query.lsType
 		if req.query.lsKind?
 			kindFilter = "lsKind=" + req.query.lsKind
+		if req.query.with?
+			format = "with=#{req.query.with}"
 		searchTerm = "q=" + req.params.searchTerm
 
 		searchParams = ""
@@ -671,6 +673,8 @@ exports.genericThingSearch = (req, resp) ->
 			searchParams += typeFilter + "&"
 		if kindFilter?
 			searchParams += kindFilter + "&"
+		if format?
+			searchParams += format + "&"
 		searchParams += searchTerm
 
 		baseurl = config.all.client.service.persistence.fullpath+"lsthings/search?"+searchParams
