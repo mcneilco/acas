@@ -704,18 +704,17 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		@$('.bv_errorMessage').html "An error occurred while trying to save the template. The compounds have not been registered yet.<br>Please try again or contact an administrator."
 
 	addProjectToMappingsPayLoad: ->
-		if @project != false
-			@assignedPropertiesList.remove(@assignedPropertiesListController.collection.findWhere({dbProperty: "Project"}))
-		if @project?
-			dbProjectProperty = new AssignedProperty
-				dbProperty: "Project"
-				required: true
-				sdfProperty: null
-				defaultVal: @project
-			@assignedPropertiesListController.collection.add dbProjectProperty
+		@assignedPropertiesList.remove(@assignedPropertiesListController.collection.findWhere({dbProperty: "Project"}))
+		dbProjectProperty = new AssignedProperty
+			dbProperty: "Project"
+			required: true
+			sdfProperty: null
+			defaultVal: @project
+		@assignedPropertiesListController.collection.add dbProjectProperty
 
 	registerCompounds: ->
-		@addProjectToMappingsPayLoad()
+		if window.conf.cmpdReg.showProjectSelect
+			@addProjectToMappingsPayLoad()
 		dataToPost =
 			fileName: @fileName
 			mappings: JSON.parse(JSON.stringify(@assignedPropertiesListController.collection.models))
@@ -741,7 +740,8 @@ class window.AssignSdfPropertiesController extends Backbone.View
 			dataType: 'json'
 
 	validateCompounds: ->
-		@addProjectToMappingsPayLoad()
+		if window.conf.cmpdReg.showProjectSelect
+			@addProjectToMappingsPayLoad()
 		dataToPost =
 			fileName: @fileName
 			mappings: JSON.parse(JSON.stringify(@assignedPropertiesListController.collection.models))
