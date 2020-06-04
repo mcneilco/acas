@@ -23,16 +23,14 @@ renderCurve <- function(getParams) {
   #                 "#149BEDFF", "#A1C720FF", "#FEC10BFF", "#16A08CFF", "#9A703EFF")
   plotColors <- trimws(strsplit(racas::applicationSettings$server.curveRender.plotColors,",")[[1]])
   if(!is.na(parsedParams$colorBy)) {
-    if(parsedParams$colorBy == "protocol") {
-      colorCategories <- suppressWarnings(unique(fitData[ , c("protocol_label"), with = FALSE])[, color:=plotColors][ , name:=protocol_label])
-      fitData <- merge(fitData, colorCategories, by = "protocol_label")
-    } else if(parsedParams$colorBy == "experiment") {
-      colorCategories <- suppressWarnings(unique(fitData[ , c("experiment_label"), with = FALSE])[, color:=plotColors][ , name:=experiment_label])
-      fitData <- merge(fitData, colorCategories, by = "experiment_label")    
-    } else if(parsedParams$colorBy == "batch") {
-      colorCategories <- suppressWarnings(unique(fitData[ , c("batch_code"), with = FALSE])[, color:= plotColors][ , name:=batch_code])
-      fitData <- merge(fitData, colorCategories, by = "batch_code")
-    }
+    key <- switch(parsedParams$colorBy,
+                "protocol" = "protocol_label",
+                "experiment" = "experiment_label",
+                "batch" = "batch_code"
+    )
+    uniqueKeys <- setkeyv(unique(fitData[ , key, with = FALSE]), key)
+    colorCategories <- suppressWarnings(uniqueKeys[, color:=plotColors][ , name:=get(key)])
+    fitData <- merge(fitData, colorCategories, by = key)
   }
   
   fitData <- fitData[exists("category") && (!is.null(category) & category %in% c("inactive","potent")), c("fittedMax", "fittedMin") := {
