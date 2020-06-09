@@ -618,7 +618,6 @@ class window.ThingLabelComboBoxController extends PickListSelect2Controller
 			placeholder: @placeholder
 			openOnEnter: false
 			allowClear: true
-			width: "100%"
 			ajax:
 				url: (params) =>
 					if !params.term?
