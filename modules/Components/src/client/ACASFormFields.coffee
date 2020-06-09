@@ -677,6 +677,8 @@ class window.ACASFormLSDateValueFieldController extends ACASFormAbstractFieldCon
 	handleDateIconClicked: =>
 		@$('input').datepicker( "show" )
 
+	disableInput: =>
+		$(@el).off('click', '.bv_dateIcon');
 
 class window.ACASFormLSFileValueFieldController extends ACASFormAbstractFieldController
 	###
