@@ -15,7 +15,6 @@ renderCurve <- function(getParams, postData) {
   }
 
   postParams <- NA
-  saveSession('/tmp/ham')
   if(!is.null(postData) && !is.na(postData) && postData != "") {
     postParams <- jsonlite::fromJSON(postData)
   }  
