@@ -3,7 +3,9 @@
 # MEMORY_LIMIT_EXEMPT
 library(data.table)
 
-renderCurve <- function(getParams) {
+
+renderCurve <- function(getParams, postData) {
+
   # Redirect to Curator if applicable
   redirectInfo <- racas::api_get_curve_curator_url(getParams$curveIds, getParams$inTable, globalConnect = TRUE)
   if(redirectInfo$shouldRedirect == TRUE) {
@@ -11,8 +13,14 @@ renderCurve <- function(getParams) {
     return(HTTP_MOVED_TEMPORARILY)
     DONE
   }
+
+  postParams <- NA
+  if(!is.null(postData) && !is.na(postData) && postData != "") {
+    postParams <- jsonlite::fromJSON(postData)
+  }  
   # Parse GET Parameters
-  parsedParams <- racas::parse_params_curve_render_dr(getParams)
+  parsedParams <- racas::parse_params_curve_render_dr(getParams, postParams)
+
 
   # GET FIT DATA
   #fitData <- racas::get_fit_data_curve_id(parsedParams$curveIds)
@@ -88,7 +96,7 @@ renderCurve <- function(getParams) {
   }
 
   setContentType("image/png")
-  setHeader("Content-Disposition", paste0("filename=\"",getParams$curveIds,".png\""))
+  setHeader("Content-Disposition", paste0("filename=\"",strtrim(getParams$curveIds,200),".png\""))
   t <- tempfile()
 
   racas::plotCurve(curveData = data$points, drawIntercept = renderingOptions$drawIntercept, params = data$parameters, fitFunction = renderingOptions$fct, paramNames = renderingOptions$paramNames, drawCurve = TRUE, logDose = logDose, logResponse = logResponse, outFile = t, ymin=parsedParams$yMin, ymax=parsedParams$yMax, xmin=parsedParams$xMin, xmax=parsedParams$xMax, height=parsedParams$height, width=parsedParams$width, showGrid = parsedParams$showGrid, showAxes = parsedParams$showAxes, labelAxes = parsedParams$labelAxes, showLegend=parsedParams$legend, mostRecentCurveColor = parsedParams$mostRecentCurveColor, axes = parsedParams$axes, plotColors = parsedParams$plotColors, curveLwd=parsedParams$curveLwd, plotPoints=parsedParams$plotPoints, connectPoints = renderingOptions$connectPoints, xlabel = parsedParams$xLab, ylabel = parsedParams$yLab)
@@ -97,7 +105,8 @@ renderCurve <- function(getParams) {
   DONE
 }
 
-renderCurve(getParams = GET)
+postData <- rawToChar(receiveBin(-1))
+renderCurve(getParams = GET, postData)
 
 
 
