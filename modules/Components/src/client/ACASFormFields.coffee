@@ -801,10 +801,11 @@ class window.ACASFormLSBooleanFieldController extends ACASFormAbstractFieldContr
 			ignored: true
 
 	renderModelContent: =>
-		if @getModel().get('value') is "false"
-			@$('input').removeAttr 'checked'
-		else
+		# If value is anything other than true (i.e. null), then default to unchecked
+		if @getModel().get('value') is "true"
 			@$('input').attr 'checked', 'checked'
+		else
+			@$('input').removeAttr 'checked'
 		super()
 
 
