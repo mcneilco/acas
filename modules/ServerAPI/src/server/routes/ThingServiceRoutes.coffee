@@ -26,6 +26,7 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.put '/api/bulkPutThings', exports.bulkPutThings
 	app.post '/api/bulkPostThingsSaveFile', exports.bulkPostThingsSaveFile
 	app.put '/api/bulkPutThingsSaveFile', exports.bulkPutThingsSaveFile
+	app.delete '/api/things/:lsType/:lsKind/:idOrCodeName', exports.deleteThing
 
 
 exports.setupRoutes = (app, loginRoutes) ->
@@ -57,6 +58,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.put '/api/bulkPutThings', loginRoutes.ensureAuthenticated, exports.bulkPutThings
 	app.post '/api/bulkPostThingsSaveFile', loginRoutes.ensureAuthenticated, exports.bulkPostThingsSaveFile
 	app.put '/api/bulkPutThingsSaveFile', loginRoutes.ensureAuthenticated, exports.bulkPutThingsSaveFile
+	app.delete '/api/things/:lsType/:lsKind/:idOrCodeName', loginRoutes.ensureAuthenticated, exports.deleteThing
 
 request = require 'request'
 config = require '../conf/compiled/conf.js'
@@ -995,3 +997,27 @@ exports.bulkPutThingsInternal = (thingArray, callback) ->
 			console.log error
 			callback JSON.stringify "bulk update things saveFailed: " + JSON.stringify error
 	)		
+
+exports.deleteThing = (req, resp) ->
+	exports.deleteThingInternal req.params.lsType, req.params.lsKind, req.params.idOrCodeName, (status, response) =>
+		resp.statusCode = status
+		resp.json response
+
+exports.deleteThingInternal = (lsType, lsKind, idOrCodeName, callback) ->
+	console.log "deleteThing #{idOrCodeName}"
+	baseurl = config.all.client.service.persistence.fullpath+"lsthings/#{lsType}/#{lsKind}/#{idOrCodeName}"
+	console.log baseurl
+	request(
+		method: 'DELETE'
+		url: baseurl
+		json: true
+	, (error, response, json) =>
+		console.log "deleteThingInternal complete"
+		console.log response.statusCode
+		if !error && response.statusCode == 200
+			callback 200, json
+		else
+			console.log "got error deleting thing"
+			console.log error
+			callback 500, JSON.stringify "delete thing: " + JSON.stringify error
+	)
