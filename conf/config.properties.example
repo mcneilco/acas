@@ -531,6 +531,7 @@ server.support.smtp.password=null
 server.support.smtp.auth=false
 server.support.smtp.tls=false
 server.support.smtp.ssl=false
+server.support.smtp.from=
 
 client.basePath=/
 
