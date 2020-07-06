@@ -3,6 +3,7 @@ exports.setupAPIRoutes = (app) ->
 	app.get '/cmpdReg/scientists', exports.getScientists
 	app.get '/cmpdReg/metalots/corpName/[\\S]*', exports.getMetaLot
 	app.post '/cmpdReg/metalots', exports.metaLots
+	app.get '/cmpdReg/parentLot/getAllAuthorizedLots', exports.getAllAuthorizedLots
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/cmpdReg', loginRoutes.ensureAuthenticated, exports.cmpdRegIndex
@@ -50,6 +51,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/cmpdReg/ketcher/calculate_cip', loginRoutes.ensureAuthenticated, exports.ketcherCalculateCip
 	app.get '/cmpdReg/labelPrefixes', loginRoutes.ensureAuthenticated, exports.getAuthorizedPrefixes
 	app.get '/cmpdReg/parentLot/getLotsByParent', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
+	app.get '/cmpdReg/parentLot/getAllAuthorizedLots', loginRoutes.ensureAuthenticated, exports.getAllAuthorizedLots
 
 _ = require 'underscore'
 request = require 'request'
@@ -263,6 +265,37 @@ exports.searchCmpds = (req, resp) ->
 				console.log error
 				console.log json
 				console.log response
+				resp.end JSON.stringify {error: "something went wrong :("}
+		)
+
+
+exports.getAllAuthorizedLots = (req, resp) ->
+	req.setTimeout 86400000
+	authorRoutes = require './AuthorRoutes.js'
+	authorRoutes.allowedProjectsInternal req.user, (statusCode, allowedUserProjects) ->
+		_ = require "underscore"
+		allowedProjectCodes = _.pluck(allowedUserProjects, "code")
+		requestJSON = allowedProjectCodes
+		console.log requestJSON
+		cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parentLot/getLotsByProjectsList'
+		request(
+			method: 'POST'
+			url: cmpdRegCall
+			body: requestJSON
+			json: true
+			timeout: 6000000
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				resp.setHeader('Content-Type', 'application/json')
+				resp.end JSON.stringify json
+			else
+				console.log resp.stat
+				console.log 'got ajax error trying to get all lots'
+				console.log error
+				console.log json
+				console.log response
+				resp.statusCode = 500
+				console.log response.statusCode
 				resp.end JSON.stringify {error: "something went wrong :("}
 		)
 

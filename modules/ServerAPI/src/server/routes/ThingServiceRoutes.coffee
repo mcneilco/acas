@@ -25,6 +25,8 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.post '/api/bulkPostThings', exports.bulkPostThings
 	app.put '/api/bulkPutThings', exports.bulkPutThings
 	app.post '/api/bulkPostThingsSaveFile', exports.bulkPostThingsSaveFile
+	app.put '/api/bulkPutThingsSaveFile', exports.bulkPutThingsSaveFile
+	app.delete '/api/things/:lsType/:lsKind/:idOrCodeName', exports.deleteThing
 
 
 exports.setupRoutes = (app, loginRoutes) ->
@@ -55,6 +57,8 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/bulkPostThings', loginRoutes.ensureAuthenticated, exports.bulkPostThings
 	app.put '/api/bulkPutThings', loginRoutes.ensureAuthenticated, exports.bulkPutThings
 	app.post '/api/bulkPostThingsSaveFile', loginRoutes.ensureAuthenticated, exports.bulkPostThingsSaveFile
+	app.put '/api/bulkPutThingsSaveFile', loginRoutes.ensureAuthenticated, exports.bulkPutThingsSaveFile
+	app.delete '/api/things/:lsType/:lsKind/:idOrCodeName', loginRoutes.ensureAuthenticated, exports.deleteThing
 
 request = require 'request'
 config = require '../conf/compiled/conf.js'
@@ -433,6 +437,69 @@ exports.postThingParent = (req, resp) ->
 exports.postThingBatch = (req, resp) ->
 	postThing true, req, resp
 
+exports.bulkPutThingsSaveFile = (req, resp) ->
+
+	# First save all the ls things that come in
+	exports.bulkPutThingsInternal req.body, (response) =>
+
+		# Local function checkFilesAndUpdate
+		checkFilesAndUpdate = (thing, callback) ->
+
+			# Check if there are any files to save
+			fileVals = serverUtilityFunctions.getFileValuesFromEntity thing, false
+			filesToSave = fileVals.length
+			console.log("got #{filesToSave} file values to check for updates")
+
+			# Function called after final file is saved
+			completeThingUpdate = (thingToUpdate)->
+				updateThing thingToUpdate, false, (updatedThing) ->
+					callback updatedThing, 200
+
+			# Function to call after a file is saved
+			fileSaveCompleted = (passed) ->
+				if !passed
+					callback "file move failed", 500
+				# Decrement one from the filesToSave and if this is the final file that was saved call 
+				# completeThingUpdate
+				if --filesToSave == 0 then completeThingUpdate(thing)
+
+			# If there are any files to save, call the customer specific server function which should handle
+			# saving the file to the correct location and update the thing file value with the correct path
+			if filesToSave > 0
+				prefix = serverUtilityFunctions.getPrefixFromEntityCode thing.codeName
+				for fv in fileVals
+
+					# Only update new files
+					if !fv.id?
+						console.log("file value was updated #{JSON.stringify(fv)}")
+						# Send just the file value "fv" to the relocateEntityFile function
+						# relocate entity file is responsible for moving the file and updating the 
+						# file value of thing in memory and later completeThingUpdate will handle persisting
+						# the change to the db.
+						csUtilities.relocateEntityFile fv, prefix, thing.codeName, fileSaveCompleted
+					else
+						fileSaveCompleted(true)
+			else
+				callback thing, 200
+
+		# If we failed to bulk save the things then just respond
+		if response.indexOf("saveFailed") > -1
+			resp.json response
+		else
+			# Loop through the saved ls things and call the checkFilesAndUpdate function
+			# which should handle doing the correct thing with the files.
+			lengthThingsToCheck = response.length
+			i = 0
+			resps = []
+			for t in response
+				console.log("running check on files for thing #{JSON.stringify(t)}")
+				checkFilesAndUpdate t, (response, statusCode) ->
+					console.log("got response from check files #{statusCode} #{JSON.stringify(response)}")
+					resps.push response
+					i++
+					if i == lengthThingsToCheck
+						resp.json resps
+
 exports.putThingInternal = (thing, lsType, lsKind, testMode, callback) ->
 	thingToSave = thing
 	fileVals = serverUtilityFunctions.getFileValuesFromEntity thingToSave, true
@@ -664,6 +731,8 @@ exports.genericThingSearch = (req, resp) ->
 			typeFilter = "lsType=" + req.query.lsType
 		if req.query.lsKind?
 			kindFilter = "lsKind=" + req.query.lsKind
+		if req.query.with?
+			format = "with=#{req.query.with}"
 		searchTerm = "q=" + req.params.searchTerm
 
 		searchParams = ""
@@ -671,6 +740,8 @@ exports.genericThingSearch = (req, resp) ->
 			searchParams += typeFilter + "&"
 		if kindFilter?
 			searchParams += kindFilter + "&"
+		if format?
+			searchParams += format + "&"
 		searchParams += searchTerm
 
 		baseurl = config.all.client.service.persistence.fullpath+"lsthings/search?"+searchParams
@@ -917,7 +988,7 @@ exports.bulkPutThingsInternal = (thingArray, callback) ->
 		body: thingArray
 		json: true
 	, (error, response, json) =>
-		console.log "bulkPutThingsInternal"
+		console.log "bulkPutThingsInternal complete"
 		console.log response.statusCode
 		if !error && response.statusCode == 200
 			callback json
@@ -926,3 +997,27 @@ exports.bulkPutThingsInternal = (thingArray, callback) ->
 			console.log error
 			callback JSON.stringify "bulk update things saveFailed: " + JSON.stringify error
 	)		
+
+exports.deleteThing = (req, resp) ->
+	exports.deleteThingInternal req.params.lsType, req.params.lsKind, req.params.idOrCodeName, (status, response) =>
+		resp.statusCode = status
+		resp.json response
+
+exports.deleteThingInternal = (lsType, lsKind, idOrCodeName, callback) ->
+	console.log "deleteThing #{idOrCodeName}"
+	baseurl = config.all.client.service.persistence.fullpath+"lsthings/#{lsType}/#{lsKind}/#{idOrCodeName}"
+	console.log baseurl
+	request(
+		method: 'DELETE'
+		url: baseurl
+		json: true
+	, (error, response, json) =>
+		console.log "deleteThingInternal complete"
+		console.log response.statusCode
+		if !error && response.statusCode == 200
+			callback 200, json
+		else
+			console.log "got error deleting thing"
+			console.log error
+			callback 500, JSON.stringify "delete thing: " + JSON.stringify error
+	)

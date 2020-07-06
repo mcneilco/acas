@@ -578,7 +578,10 @@ class window.ACASFormLSHTMLClobValueFieldController extends ACASFormAbstractFiel
 						@editor.setContent @contentToLoad
 					if @disableEditor?
 						@editor.getBody().setAttribute('contenteditable', !@disableEditor)
-						@editor.getBody().setAttribute('disabled', @disableEditor)
+						if @disableEditor
+							@editor.getBody().setAttribute('disabled', true)
+						else
+							@editor.getBody().removeAttribute('disabled')
 				editor.on 'change', (e) =>
 					@textChanged editor.getContent()
 
@@ -677,6 +680,8 @@ class window.ACASFormLSDateValueFieldController extends ACASFormAbstractFieldCon
 	handleDateIconClicked: =>
 		@$('input').datepicker( "show" )
 
+	disableInput: =>
+		$(@el).off('click', '.bv_dateIcon');
 
 class window.ACASFormLSFileValueFieldController extends ACASFormAbstractFieldController
 	###
@@ -801,10 +806,11 @@ class window.ACASFormLSBooleanFieldController extends ACASFormAbstractFieldContr
 			ignored: true
 
 	renderModelContent: =>
-		if @getModel().get('value') is "false"
-			@$('input').removeAttr 'checked'
-		else
+		# If value is anything other than true (i.e. null), then default to unchecked
+		if @getModel().get('value') is "true"
 			@$('input').attr 'checked', 'checked'
+		else
+			@$('input').removeAttr 'checked'
 		super()
 
 

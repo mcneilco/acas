@@ -3,7 +3,9 @@
 # MEMORY_LIMIT_EXEMPT
 library(data.table)
 
-renderCurve <- function(getParams) {
+
+renderCurve <- function(getParams, postData) {
+
   # Redirect to Curator if applicable
   redirectInfo <- racas::api_get_curve_curator_url(getParams$curveIds, getParams$inTable, globalConnect = TRUE)
   if(redirectInfo$shouldRedirect == TRUE) {
@@ -11,8 +13,14 @@ renderCurve <- function(getParams) {
     return(HTTP_MOVED_TEMPORARILY)
     DONE
   }
+
+  postParams <- NA
+  if(!is.null(postData) && !is.na(postData) && postData != "") {
+    postParams <- jsonlite::fromJSON(postData)
+  }  
   # Parse GET Parameters
-  parsedParams <- racas::parse_params_curve_render_dr(getParams)
+  parsedParams <- racas::parse_params_curve_render_dr(getParams, postParams)
+
 
   # GET FIT DATA
   #fitData <- racas::get_fit_data_curve_id(parsedParams$curveIds)
@@ -23,16 +31,14 @@ renderCurve <- function(getParams) {
   #                 "#149BEDFF", "#A1C720FF", "#FEC10BFF", "#16A08CFF", "#9A703EFF")
   plotColors <- trimws(strsplit(racas::applicationSettings$server.curveRender.plotColors,",")[[1]])
   if(!is.na(parsedParams$colorBy)) {
-    if(parsedParams$colorBy == "protocol") {
-      colorCategories <- suppressWarnings(unique(fitData[ , c("protocol_label"), with = FALSE])[, color:=plotColors][ , name:=protocol_label])
-      fitData <- merge(fitData, colorCategories, by = "protocol_label")
-    } else if(parsedParams$colorBy == "experiment") {
-      colorCategories <- suppressWarnings(unique(fitData[ , c("experiment_label"), with = FALSE])[, color:=plotColors][ , name:=experiment_label])
-      fitData <- merge(fitData, colorCategories, by = "experiment_label")    
-    } else if(parsedParams$colorBy == "batch") {
-      colorCategories <- suppressWarnings(unique(fitData[ , c("batch_code"), with = FALSE])[, color:= plotColors][ , name:=batch_code])
-      fitData <- merge(fitData, colorCategories, by = "batch_code")
-    }
+    key <- switch(parsedParams$colorBy,
+                "protocol" = "protocol_label",
+                "experiment" = "experiment_label",
+                "batch" = "batch_code"
+    )
+    uniqueKeys <- setkeyv(unique(fitData[ , key, with = FALSE]), key)
+    colorCategories <- suppressWarnings(uniqueKeys[, color:=plotColors][ , name:=get(key)])
+    fitData <- merge(fitData, colorCategories, by = key)
   }
   
   fitData <- fitData[exists("category") && (!is.null(category) & category %in% c("inactive","potent")), c("fittedMax", "fittedMin") := {
@@ -90,7 +96,7 @@ renderCurve <- function(getParams) {
   }
 
   setContentType("image/png")
-  setHeader("Content-Disposition", paste0("filename=\"",getParams$curveIds,".png\""))
+  setHeader("Content-Disposition", paste0("filename=\"",strtrim(getParams$curveIds,200),".png\""))
   t <- tempfile()
 
   racas::plotCurve(curveData = data$points, drawIntercept = renderingOptions$drawIntercept, params = data$parameters, fitFunction = renderingOptions$fct, paramNames = renderingOptions$paramNames, drawCurve = TRUE, logDose = logDose, logResponse = logResponse, outFile = t, ymin=parsedParams$yMin, ymax=parsedParams$yMax, xmin=parsedParams$xMin, xmax=parsedParams$xMax, height=parsedParams$height, width=parsedParams$width, showGrid = parsedParams$showGrid, showAxes = parsedParams$showAxes, labelAxes = parsedParams$labelAxes, showLegend=parsedParams$legend, mostRecentCurveColor = parsedParams$mostRecentCurveColor, axes = parsedParams$axes, plotColors = parsedParams$plotColors, curveLwd=parsedParams$curveLwd, plotPoints=parsedParams$plotPoints, connectPoints = renderingOptions$connectPoints, xlabel = parsedParams$xLab, ylabel = parsedParams$yLab)
@@ -99,7 +105,8 @@ renderCurve <- function(getParams) {
   DONE
 }
 
-renderCurve(getParams = GET)
+postData <- rawToChar(receiveBin(-1))
+renderCurve(getParams = GET, postData)
 
 
 
