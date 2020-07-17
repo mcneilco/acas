@@ -18,6 +18,7 @@ class window.AssignedProperty extends Backbone.Model
 		dbProperty: "none"
 		defaultVal: ""
 		required: false
+		ignored: false
 
 #	validate: (attrs) =>
 #		errors = []
@@ -275,17 +276,18 @@ class window.AssignedPropertyController extends AbstractFormController
 	formatDbSelectOptions: ->
 		formattedOptions = new PickListList()
 		@dbPropertiesList.each (dbProp) ->
-			code = dbProp.get('name')
-			if dbProp.get('required')
-				name = code+"*"
-			else
-				name = code
-			if code.toLowerCase().indexOf("date") > -1
-				name += " (YYYY-MM-DD or MM-DD-YYYY)"
-			newOption = new PickList
-				code: code
-				name: name
-			formattedOptions.add newOption
+			if !dbProp.get("ignored")? || dbProp.get("ignored") != true
+				code = dbProp.get('name')
+				if dbProp.get('required')
+					name = code+"*"
+				else
+					name = code
+				if code.toLowerCase().indexOf("date") > -1
+					name += " (YYYY-MM-DD or MM-DD-YYYY)"
+				newOption = new PickList
+					code: code
+					name: name
+				formattedOptions.add newOption
 		formattedOptions
 
 	handleDbPropertyChanged: ->
@@ -473,6 +475,7 @@ class window.AssignSdfPropertiesController extends Backbone.View
 					dbProperty: "none"
 					required: false
 					sdfProperty: sdfProperty
+					ignored: false
 				@assignedPropertiesList.add newAssignedProp
 
 	handleFileChanged: (newFileName) ->
@@ -703,6 +706,7 @@ class window.AssignSdfPropertiesController extends Backbone.View
 				required: true
 				sdfProperty: null
 				defaultVal: @project
+				ignored: false
 			@assignedPropertiesListController.collection.add dbProjectProperty
 
 	registerCompounds: ->
