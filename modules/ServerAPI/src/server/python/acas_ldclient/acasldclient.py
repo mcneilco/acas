@@ -6,6 +6,7 @@ import argparse
 import json
 import os, sys
 import locale
+from functools import cmp_to_key
 
 def get_parser():
     """
@@ -61,7 +62,7 @@ def get_parser():
     return parser
 
 def list_groups(client, test):
-    print test
+    print(test)
     return client.list_groups()
 
 def auth_check(endpoint, username, password):
@@ -107,7 +108,7 @@ def get_users(client, ls_type = None, ls_kind = None, role_name = None):
     # ld_users = client.list_users()
     ld_users = client.client.get("/users?include_permissions=false", '')
     if ls_type == None and ls_kind == None and role_name == None:
-        acas_users = map(ld_user_to_acas_user_code_table, ld_users)
+        acas_users = list(map(ld_user_to_acas_user_code_table, ld_users))
     else:
         groups = client.list_groups()
         permissions = client.list_permissions()
@@ -129,7 +130,7 @@ def get_users(client, ls_type = None, ls_kind = None, role_name = None):
                                         if u["id"] == m["user_id"]:
                                             user_projects[proj.name]["ld_users"].append(u)
         if ls_kind in user_projects:
-            acas_users = map(ld_user_to_acas_user_code_table, user_projects[ls_kind]["ld_users"]) 
+            acas_users = list(map(ld_user_to_acas_user_code_table, user_projects[ls_kind]["ld_users"])) 
         else:
             acas_users = []
     return acas_users
@@ -150,7 +151,7 @@ def get_users_roles(client, users):
     for u in users:
         usersDict[u["id"]] = u
     groups = client.list_groups()
-    roles = map(ld_group_to_acas_role, groups)
+    roles = list(map(ld_group_to_acas_role, groups))
     roleDict = {}
     for r in roles:
         roleDict[r["id"]] = r
@@ -158,7 +159,7 @@ def get_users_roles(client, users):
     for m in memberships:
         usersDict[m["user_id"]].append(roleDict[m["group_id"]])
     users = []
-    for user in usersDict.iteritems():
+    for user in usersDict.items():
         users.append(user)
     return users
 
@@ -181,7 +182,7 @@ def get_user(client, username):
                         else:
                             user_projects[proj.name] = {"id":proj.id, "granting_groups": [g["name"]]}
     roles = []
-    for proj, data in user_projects.iteritems():
+    for proj, data in user_projects.items():
         roles.append({
             "id": data["id"], 
             "roleEntry": {
@@ -200,12 +201,11 @@ def get_user(client, username):
 def get_projects(client):
     ld_projects = client.projects()      
 
-    projects = map(ld_project_to_acas, ld_projects)
+    projects = list(map(ld_project_to_acas, ld_projects))
 
     # Sort by name
     locale.setlocale(locale.LC_ALL, '')
-    projects = sorted(projects, key=lambda k: k['name'], cmp=locale.strcoll) 
-
+    projects = sorted(projects, key=lambda x: locale.strxfrm(x['name']))
     return projects
 
 def ld_project_to_acas(ld_project):
@@ -231,7 +231,7 @@ def main():
     else:
         result = auth_check(endpoint, *args.args)
 
-    print json.dumps(result)
+    print(json.dumps(result))
 
 if __name__ == "__main__":
     main()
