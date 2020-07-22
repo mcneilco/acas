@@ -78,8 +78,8 @@ ENV     ACAS_HOME=$BUILD_PATH
 USER	root
 RUN		curl -SLO dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm && rpm -ivh epel-release-6-8.noarch.rpm && rm epel-release-6-8.noarch.rpm
 RUN		yum install -y centos-release-SCL
-RUN		yum install -y python-pip python-psycopg2 python27
-RUN		source /opt/rh/python27/enable && pip install argparse requests psycopg2-binary
+RUN		yum install -y rh-python36-python-pip python-psycopg2 rh-python36
+RUN		source /opt/rh/rh-python36/enable && pip install argparse requests psycopg2-binary
 USER	runner
 
 EXPOSE 3000

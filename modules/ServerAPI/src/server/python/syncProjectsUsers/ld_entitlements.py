@@ -92,7 +92,7 @@ def reverse_mapping(m):
     """
     Reverse a mapping (ignoring duplicate keys)
     """
-    return dict((v, k) for k, v in m.iteritems())
+    return dict((v, k) for k, v in m.items())
 
 
 def retrieve_raw_model(config, session):
@@ -108,7 +108,7 @@ def retrieve_raw_model(config, session):
     }
 
     ret = {}
-    for endpoint, dest in get_targets.iteritems():
+    for endpoint, dest in get_targets.items():
         url = config['ld_url'] + API + endpoint
         response = session.get(url)
         response.raise_for_status()
@@ -167,7 +167,7 @@ def resolve_project_selector(model, model_projects_by_name, import_project):
         if predicate:
             ret = []
             # pattern has a beginning or end wildcard
-            for pid, name in model['projects'].iteritems():
+            for pid, name in model['projects'].items():
                 if predicate(name, pattern):
                     ret.append(pid)
             if len(ret) > 0:
@@ -183,7 +183,7 @@ def compute_changes(model, import_data):
 
     # Have to treat this specially since multiple projects might have same name
     projects_by_name = {}
-    for id, name in model['projects'].iteritems():
+    for id, name in model['projects'].items():
         projects_by_name[name] = projects_by_name.get(name, [])
         projects_by_name[name].append(id)
 
@@ -199,7 +199,7 @@ def compute_changes(model, import_data):
     permissions_to_create_by_name = set()  # set of (pid, group name) tuples
     permissions_to_remove = set()          # set of (pid, gid) tuples
 
-    for group, members in import_data['groups'].iteritems():
+    for group, members in import_data['groups'].items():
         # Check if the group already exists in the model.
         if group not in groups_by_name:
             assert group not in groups_to_create
@@ -305,7 +305,7 @@ def apply_changes(config, session, model, changes):
     projects_by_name = reverse_mapping(model['projects'])
 
     url = config['ld_url'] + API + 'groups'
-    for group, members in changes['create_groups'].iteritems():
+    for group, members in changes['create_groups'].items():
         data = { 'name': group }
         response = session.post(url, data=json.dumps(data))
         response.raise_for_status()
@@ -380,27 +380,27 @@ def main(argv):
     raw_model = retrieve_raw_model(config, session)
     model = crunch_model(raw_model)
 
-    print 'Current user model:'
+    print('Current user model:')
     pprint.pprint(model)
-    print
+    print()
 
     changes = compute_changes(model, import_data)
-    print 'Changes to make:'
+    print('Changes to make:')
     pprint.pprint(changes)
 
     if opts.dry_run:
-        print '\nExiting, as this is a dry run.'
+        print('\nExiting, as this is a dry run.')
         return 0
 
     # Check to see if the current run is a no-op.
     has_changes = False
-    for obj in changes.values():
+    for obj in list(changes.values()):
         if len(obj) > 0:
             has_changes = True
             break
 
     if not has_changes:
-        print '\nExiting, as no changes need to be made.'
+        print('\nExiting, as no changes need to be made.')
         return 0
 
     # Back the current model, import data and proposed changes (for forensics)
@@ -429,7 +429,7 @@ def main(argv):
         json.dump(import_data, fp)
 
     apply_changes(config, session, model, changes)
-    print '\nAll changes applied successfully'
+    print('\nAll changes applied successfully')
 
     return 0
 
