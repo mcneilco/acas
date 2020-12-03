@@ -1,13 +1,13 @@
-FROM centos:centos6
+FROM centos:centos8
 # Update
 RUN \
-  yum update -y && \
-  yum upgrade -y && \
+  dnf update -y && \
+  dnf upgrade -y && \
 # tar for pulling down node
 # git required for some npm packages
-  yum install -y tar git && \
-  yum install -y fontconfig urw-fonts && \
-  yum clean all
+  dnf install -y tar git && \
+  dnf install -y fontconfig urw-fonts && \
+  dnf clean all
 
 # node
 RUN set -ex \
@@ -56,7 +56,7 @@ USER    runner
 WORKDIR $ACAS_BASE
 # This installs the modules but not acas, doing this makes subsequent builds much faster so that the container isn't invalidated on a small code change
 RUN     npm install --ignore-scripts --loglevel warn
-COPY    . $ACAS_BASE
+COPY --chown=runner:runner . $ACAS_BASE
 USER    root
 RUN     chown -R runner:runner $ACAS_BASE
 USER    runner
@@ -73,15 +73,17 @@ ENV     PREPARE_MODULE_CONF_JSON=true
 ENV     PREPARE_CONFIG_FILES=true
 ENV     RUN_SYSTEM_TEST=true
 ENV     ACAS_HOME=$BUILD_PATH
+RUN     gulp execute:prepare_config_files
 
 #Install python dependencies
 USER	root
-RUN		curl -SLO dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm && rpm -ivh epel-release-6-8.noarch.rpm && rm epel-release-6-8.noarch.rpm
-RUN		yum install -y centos-release-SCL
-RUN		yum install -y rh-python36-python-pip python-psycopg2 rh-python36
-RUN		source /opt/rh/rh-python36/enable && pip install argparse requests psycopg2-binary
+RUN   dnf install -y python36 python3-pip
+RUN   alternatives --set python /usr/bin/python3
+RUN   alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
+RUN		pip install argparse requests psycopg2-binary
+RUN   dnf install -y initscripts
+
 USER	runner
 
 EXPOSE 3000
-
 CMD     ["/bin/sh","bin/acas.sh", "run"]
