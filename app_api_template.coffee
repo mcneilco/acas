@@ -15,7 +15,7 @@ startApp = ->
 	methodOverride = require('method-override')
 	session = require('express-session')
 	bodyParser = require('body-parser')
-	multer = require('multer')
+	# multer = require('multer')
 	errorHandler = require('errorhandler')
 	cookieParser = require('cookie-parser')
 
@@ -40,7 +40,7 @@ startApp = ->
 
 	app.use(bodyParser.json({limit: '100mb'}))
 	app.use(bodyParser.urlencoded({limit: '100mb', extended: true,parameterLimit: 1000000}))
-	app.use(multer())
+	# app.use(multer())
 	app.use express.static path.join(__dirname, 'public')
 
 

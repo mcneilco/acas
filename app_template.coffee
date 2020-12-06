@@ -16,7 +16,7 @@ startApp = ->
 	methodOverride = require('method-override')
 	session = require('express-session')
 	bodyParser = require('body-parser')
-	multer = require('multer')
+	# multer = require('multer')
 	errorHandler = require('errorhandler')
 	cookieParser = require('cookie-parser')
 
@@ -52,7 +52,12 @@ startApp = ->
 	passport.deserializeUser (user, done) ->
 		done null, user
 
-	passport.use new LocalStrategy csUtilities.loginStrategy
+	if csUtilities.loginStrategy.length > 3
+		passport.use new LocalStrategy {passReqToCallback: true}, csUtilities.loginStrategy
+	else
+		passport.use new LocalStrategy csUtilities.loginStrategy
+
+	# passport.use new LocalStrategy csUtilities.loginStrategy
 #	passport.isAdmin = (req, resp, next) ->
 #		if req.isAuthenticated() and csUtilities.isUserAdmin(req.user)
 #			next()
@@ -86,7 +91,7 @@ startApp = ->
 #		app.use express.bodyParser()
 	app.use(bodyParser.json({limit: '100mb'}))
 	app.use(bodyParser.urlencoded({limit: '100mb', extended: true,parameterLimit: 1000000}))
-	app.use(multer())
+	# app.use(multer())
 	app.use(express.static(path.join(__dirname, 'public')))
 
 	loginRoutes.setupRoutes(app, passport)
@@ -114,6 +119,8 @@ startApp = ->
 		)
 		#TODO hack to prevent bug: https://github.com/mikeal/request/issues/418
 		process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
+
+	###TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES###
 
 	options = if stubsMode then ["stubsMode"] else []
 	options.push ['--color']
