@@ -7,6 +7,9 @@
 class window.ACASFormStateDisplayUpdateHeaderRowController extends Backbone.View
 	tagName: 'tr'
 
+	initialize: (options) ->
+		@options = options
+
 	render: =>
 		for val in @options.tableDef.values
 			displayName = val.fieldSettings.formLabel
@@ -22,6 +25,9 @@ class window.ACASFormStateDisplayUpdateCellController extends Backbone.View
 
 	events: ->
 		"click": "handleCellClicked"
+
+	initialize: (options) ->
+		@options = options
 
 	render: =>
 		$(@el).empty()
@@ -52,6 +58,9 @@ class window.ACASFormStateDisplayUpdateCellController extends Backbone.View
 class window.ACASFormStateDisplayUpdateRowController extends Backbone.View
 	tagName: 'tr'
 
+	initialize: (options) ->
+		@options = options
+
 	render: =>
 		for valDef in @options.tableDef.values
 			vals = @collection.where lsKind: valDef.modelDefaults.kind
@@ -69,7 +78,8 @@ class window.ACASFormStateDisplayUpdateController extends Backbone.View
 	rowNumberKind: 'row number'
 	template: _.template($("#ACASFormStateDisplayUpdateView").html())
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@thingRef = @options.thingRef
 		@tableDef = @options.tableDef
 		@tableSetupComplete = false
@@ -218,6 +228,9 @@ class window.ACASFormStateDisplayOldValueController extends Backbone.View
 	tagName: 'tr'
 	template: _.template($("#ACASFormStateDisplayOldValueView").html())
 
+	initialize: (options) ->
+		@options = options
+
 	render: =>
 		value = @model.get(@model.get('lsType'))
 		if @options.valueDef.displayOverride?
@@ -258,7 +271,8 @@ class window.ACASFormStateDisplayValueEditController extends Backbone.View
 		"click .bv_cancelBtn": "handleCancelClicked"
 		"click .bv_saveBtn": "handleSaveClicked"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@tableDef = @options.tableDef
 		for valDef in @tableDef.values
 			if valDef.modelDefaults.kind == @collection.at(0).get('lsKind')

@@ -12,7 +12,8 @@ class window.LSFileInputController extends Backbone.View
 	allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg']
 
 	
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		_.bindAll(@,
 			'render',
 			'handleFileChooserUploadComplete',

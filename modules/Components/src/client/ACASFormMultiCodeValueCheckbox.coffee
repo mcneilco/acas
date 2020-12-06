@@ -8,7 +8,8 @@ class window.ACASFormCodeValueCheckboxController extends ACASFormAbstractFieldCo
     events: ->
         "change input": "handleInputChanged"
 
-    initialize: ->
+    initialize: (options) ->
+        @options = options
         @stateRef = @options.stateRef
         @thingRef = @options.thingRef
         @keyBase = @options.keyBase

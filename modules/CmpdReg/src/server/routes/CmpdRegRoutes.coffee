@@ -1,5 +1,4 @@
 exports.setupAPIRoutes = (app) ->
-	app.post '/api/cmpdReg', exports.postAssignedProperties
 	app.get '/cmpdReg/scientists', exports.getScientists
 	app.get '/cmpdReg/metalots/corpName/[\\S]*', exports.getMetaLot
 	app.post '/cmpdReg/metalots', exports.metaLots

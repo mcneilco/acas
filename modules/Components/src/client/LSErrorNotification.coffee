@@ -15,7 +15,8 @@ class window.LSAbstractNotificationCounterController extends Backbone.View
 	container: null
 	notificationsList: null
 	
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		_.bindAll(@,
 			'render')
 		@notificationsList = @.options.notificationsList
@@ -66,7 +67,8 @@ class window.LSErrorController extends Backbone.View
 	notificationsList: null
 	badgeEl: null
 	
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		_.bindAll(@,
 			'render')
 		@notificationsList = @.options.notificationsList
@@ -88,7 +90,8 @@ class window.LSWarningController extends Backbone.View
 	notificationsList: null
 	badgeEl: null
 	
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		_.bindAll(@,
 			'render')
 		@notificationsList = @.options.notificationsList
@@ -110,7 +113,8 @@ class window.LSInfoController extends Backbone.View
 	notificationsList: null
 	badgeEl: null
 	
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		_.bindAll(@,
 			'render')
 		@notificationsList = @.options.notificationsList
@@ -139,7 +143,8 @@ class window.LSNotificationController extends Backbone.View
 	events:
 		'click .bv_notificationCountContainer': 'toggleShowNotificationMessages'
 	
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		_.bindAll(@, 
 			'render',
 			'addError',

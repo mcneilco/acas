@@ -26,13 +26,13 @@ exports.redirectToNewLiveDesignLiveReportForExperiment = (req, resp) ->
   exptCode = req.params.experimentCode
   username = req.session.passport.user.username
   exports.getUrlForNewLiveDesignLiveReportForExperimentInternal exptCode, username, (url) ->
-	  resp.redirect url
+    resp.redirect url
 
 exports.getUrlForNewLiveDesignLiveReportForExperiment = (req, resp) ->
   exptCode = req.params.experimentCode
   username = req.session.passport.user.username
   exports.getUrlForNewLiveDesignLiveReportForExperimentInternal exptCode, (url) ->
-	  resp.json {url: url}
+  resp.json {url: url}
 
 exports.getUrlForNewLiveDesignLiveReportForExperimentInternal = (exptCode, username, callback) ->
   exec = require('child_process').exec

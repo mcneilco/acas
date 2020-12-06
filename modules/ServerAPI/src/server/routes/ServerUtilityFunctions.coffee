@@ -1460,9 +1460,9 @@ class Container extends Backbone.Model
 			lsStates.forEach (lsState) =>
 				additionalValues = lsState.get('lsValues').filter (value) ->
 					(!value.get('ignored')) and
-					 !((value.get('lsType')=='stringValue') and (value.get('lsKind')=='location')) and
-					 !((value.get('lsType')=='codeValue') and (value.get('lsKind')=='moved by')) and
-					 !((value.get('lsType')=='dateValue') and (value.get('lsKind')=='moved date'))
+						!((value.get('lsType')=='stringValue') and (value.get('lsKind')=='location')) and
+						!((value.get('lsType')=='codeValue') and (value.get('lsKind')=='moved by')) and
+						!((value.get('lsType')=='dateValue') and (value.get('lsKind')=='moved date'))
 				responseObject =
 					codeName: @get('codeName')
 					recordedBy: lsState.get('recordedBy')
@@ -1481,9 +1481,9 @@ class Container extends Backbone.Model
 			lsStates.forEach (lsState) =>
 				additionalValues = lsState.get('lsValues').filter (value) ->
 					(!value.get('ignored')) and
-					 !((value.get('lsType')=='stringValue') and (value.get('lsKind')=='location')) and
-					 !((value.get('lsType')=='codeValue') and (value.get('lsKind')=='moved by')) and
-					 !((value.get('lsType')=='dateValue') and (value.get('lsKind')=='moved date'))
+					!((value.get('lsType')=='stringValue') and (value.get('lsKind')=='location')) and
+					!((value.get('lsType')=='codeValue') and (value.get('lsKind')=='moved by')) and
+					!((value.get('lsType')=='dateValue') and (value.get('lsKind')=='moved date'))
 				responseObject =
 					codeName: @get('codeName')
 					recordedBy: lsState.get('recordedBy')

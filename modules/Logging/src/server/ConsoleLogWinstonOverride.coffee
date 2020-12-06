@@ -1,7 +1,7 @@
 ACAS_HOME="../../.."
 util = require('util')
 winston = require('winston')
-logger = new (winston.Logger)
+logger = winston.createLogger({})
 config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 
 shouldWarn = false
@@ -9,7 +9,7 @@ warningMessage = ""
 
 if config.all.server.log?.level?
 	logLevel = config.all.server.log.level.toLowerCase()
-	allowedLevels = Object.keys(winston.levels)
+	allowedLevels = Object.keys(winston.config.syslog)
 	if logLevel not in allowedLevels
 		shouldWarn = true
 		warningMessage = "log level '#{logLevel}' not in #{"'"+allowedLevels.join("','")+"'"}, setting to 'info'"
@@ -23,7 +23,7 @@ else
 formatArgs = (args) ->
 	[ util.format.apply(util.format, Array::slice.call(args)) ]
 
-logger.add winston.transports.Console,
+logger.add new winston.transports.Console
 	colorize: true
 	timestamp: true
 	level: logLevel

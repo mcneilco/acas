@@ -28,7 +28,8 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 		"mouseover .label-tooltip": "handleToolTipMouseover"
 		"mouseoff .label-tooltip": "handleToolTipMouseoff"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@modelKey = @options.modelKey
 		@thingRef = @options.thingRef
 		@errorSet = false
@@ -331,7 +332,7 @@ class window.ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldCon
     Do whatever else is required or optional in ACASFormAbstractFieldController
 	###
 	events: ->
-		_.extend {}, super,
+		_.extend {}, super(),
 		"change select": "handleInputChanged"
 
 	template: _.template($("#ACASFormLSCodeValueFieldView").html())
@@ -437,9 +438,11 @@ class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractF
     Do whatever else is required or optional in ACASFormAbstractFieldController
 	###
 	events: ->
-		_.extend {}, super,
+		_.extend {}, super(),
 		"change select": "handleInputChanged"
 
+	initialize: (options) ->
+		@options = options
 	template: _.template($("#ACASFormLSThingInteractionFieldView").html())
 
 	applyOptions: ->
@@ -642,7 +645,7 @@ class window.ACASFormLSDateValueFieldController extends ACASFormAbstractFieldCon
 
 	template: _.template($("#ACASFormLSDateValueFieldView").html())
 	events: ->
-		_.extend {}, super,
+		_.extend {}, super(),
 		"change input": "handleInputChanged"
 		"click .bv_dateIcon": "handleDateIconClicked"
 
@@ -693,7 +696,7 @@ class window.ACASFormLSFileValueFieldController extends ACASFormAbstractFieldCon
 
 	template: _.template($("#ACASFormLSFileValueFieldView").html())
 	events: ->
-		_.extend {}, super,
+		_.extend {}, super(),
 		"click .bv_deleteSavedFile": "handleDeleteSavedFile"
 
 	applyOptions: ->

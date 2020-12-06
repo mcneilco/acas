@@ -210,7 +210,8 @@ class window.ACASLabelSequenceController extends AbstractFormController
 		"click .bv_save": "handleSaveClicked"
 		"click .bv_cancel": "handleCancelClicked"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		if @model?
 			@completeInitialization()
 		else

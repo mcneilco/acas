@@ -8,8 +8,9 @@ class window.ModuleMenusController extends Backbone.View
 		'change .bv_fastUserSelect': 'handleLoginUserChange'
 #		'click .bv_showModuleMenuControl': "handleShowMenus"
 
-	initialize: ->
 		window.onbeforeunload = @handleBeforeUnload
+	initialize: (options) ->
+		@options = options
 		$(@el).html @template()
 
 		if window.conf.moduleMenus.menuConfigurationSettings?

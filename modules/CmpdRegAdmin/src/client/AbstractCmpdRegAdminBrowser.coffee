@@ -19,7 +19,8 @@ class window.CmpdRegAdminSimpleSearchController extends AbstractFormController
   	Instantiating controller must provide urlRoot and toDisplay in options
 	###
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@searchUrl = ""
 		@searchUrl = @options.urlRoot + '/search/'
 

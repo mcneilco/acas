@@ -28,7 +28,8 @@ class window.LSFileChooserController extends Backbone.View
 	requiresValidation: true
 	hideDelete: false #for hiding delete button after successful file upload
 	
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		_.bindAll(@,
 			'render',
 			'handleDragOverDocument', 

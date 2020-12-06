@@ -45,11 +45,11 @@ class window.AdminPanelController extends AbstractFormController
 recursivelyIterateAndDisplayValues = (dict) ->
 	keys = Object.keys dict
 	_.each(keys, (key) ->
-  	if isObject dict[key]
-  		recursivelyIterateAndDisplayValues dict[key]
-  	else
-			unless typeof dict[key] is "object"
-				@$('.bv_configProperties').append("<b>" + key + ":</b> " + dict[key] + "<br />")
+	if isObject dict[key]
+		recursivelyIterateAndDisplayValues dict[key]
+	else
+		unless typeof dict[key] is "object"
+			@$('.bv_configProperties').append("<b>" + key + ":</b> " + dict[key] + "<br />")
 	)
 	#TODO add full paths - Matt
 

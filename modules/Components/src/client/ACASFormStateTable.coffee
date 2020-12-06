@@ -223,7 +223,7 @@ class window.ACASFormStateTableController extends Backbone.View
 			columns: @colDefs
 			search: @tableDef.search
 			currentRowClassName: 'bv_stateDisplayCurrentRow',
-  			currentColClassName: 'bv_stateDisplayCurrentColumn'
+			currentColClassName: 'bv_stateDisplayCurrentColumn'
 			cells: (row, col, prop) =>
 				cellProperties = {}
 				if @tableReadOnly

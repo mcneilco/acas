@@ -68,6 +68,9 @@ class window.ACASFormChemicalStructureController extends Backbone.View
 	tagName: "DIV"
 	template: _.template($("#ACASFormChemicalStructureControllerView").html())
 
+	initialize: (options) ->
+		@options = options
+
 	render: =>
 		$(@el).empty()
 		$(@el).html @template()

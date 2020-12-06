@@ -313,9 +313,9 @@ class window.DoseResponsePlotController extends AbstractFormController
 						selection = brd.elementsByName.selection
 						selection.update()
 						selectionCoords = [selection.vertices[0].coords.usrCoords,
-						                   selection.vertices[1].coords.usrCoords,
-						                   selection.vertices[2].coords.usrCoords,
-						                   selection.vertices[3].coords.usrCoords]
+											selection.vertices[1].coords.usrCoords,
+											selection.vertices[2].coords.usrCoords,
+											selection.vertices[3].coords.usrCoords]
 						#Sort by response desc (south is on the top)
 						sorted = _.sortBy selection.vertices.slice(0,4), (vertex) -> vertex.coords.usrCoords[2]
 						#Sort north and south by response (order will then be 0 = west 1 = east)

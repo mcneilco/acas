@@ -21,7 +21,8 @@ class window.CodeTablesAdminSimpleSearchController extends AbstractFormControlle
   	Instantiating controller must provide urlRoot and toDisplay in options
 	###
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@searchUrl = ""
 		@searchUrl = @options.urlRoot + '/search/'
 
@@ -111,7 +112,8 @@ class window.CodeTablesAdminRowSummaryController extends Backbone.View
 
 ############################################################################
 class window.CodeTablesAdminSummaryTableController extends Backbone.View
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		if @options.showIgnore?
 			@showIgnore = @options.showIgnore
 		else

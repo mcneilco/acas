@@ -1,7 +1,6 @@
 path = require 'path'
 
-exports.setupAPIRoutes = (app) ->
-	app.post '/api/cmpdRegBulkLoader', exports.postAssignedProperties
+exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.post '/api/cmpdRegBulkLoader/registerCmpds', exports.registerCmpds
 	app.post '/api/cmpdRegBulkLoader/validateCmpds', exports.validateCmpds
 	app.post '/api/cmpdRegBulkLoader/validationProperties', exports.validationProperties
@@ -17,7 +16,6 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/cmpdRegBulkLoader/saveTemplate', loginRoutes.ensureAuthenticated, exports.saveTemplate
 	app.post '/api/cmpdRegBulkLoader/registerCmpds', loginRoutes.ensureAuthenticated, exports.registerCmpds
 	app.post '/api/cmpdRegBulkLoader/validateCmpds', loginRoutes.ensureAuthenticated, exports.validateCmpds
-	app.post '/api/cmpdRegBulkLoader', loginRoutes.ensureAuthenticated, exports.postAssignedProperties
 	app.post '/api/cmpdRegBulkLoader/checkFileDependencies', loginRoutes.ensureAuthenticated, exports.checkFileDependencies
 	app.post '/api/cmpdRegBulkLoader/purgeFile', loginRoutes.ensureAuthenticated, exports.purgeFile
 

@@ -560,10 +560,7 @@ exports.resultViewerURLFromExperimentCodeName = (codeName, callback) ->
 	# Error callback should be json
 	_ = require '../public/lib/underscore.js'
 	config = require '../conf/compiled/conf.js'
-	if config.all.client.service.result && config.all.client.service.result.viewer and
-		 config.all.client.service.result.viewer.experimentPrefix? and
-		 config.all.client.service.result.viewer.protocolPrefix? and
-		 config.all.client.service.result.viewer.experimentNameColumn?
+	if config.all.client.service.result && config.all.client.service.result.viewer and config.all.client.service.result.viewer.experimentPrefix? and config.all.client.service.result.viewer.protocolPrefix? and config.all.client.service.result.viewer.experimentNameColumn?
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		baseurl = config.all.client.service.persistence.fullpath+"experiments/codename/"+codeName
 		request = require 'request'
@@ -601,9 +598,9 @@ exports.resultViewerURLFromExperimentCodeName = (codeName, callback) ->
 								preferredProtocolLabelText = preferredProtocolLabel[0].labelText
 								callback null,
 									resultViewerURL: config.all.client.service.result.viewer.protocolPrefix +
-									 encodeURIComponent(preferredProtocolLabelText) +
-									 config.all.client.service.result.viewer.experimentPrefix +
-									 encodeURIComponent(experimentName)
+									encodeURIComponent(preferredProtocolLabelText) +
+									config.all.client.service.result.viewer.experimentPrefix +
+									encodeURIComponent(experimentName)
 							else
 								console.log error
 								console.log response
