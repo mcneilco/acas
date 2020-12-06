@@ -787,7 +787,7 @@ class window.ACASFormLSBooleanFieldController extends ACASFormAbstractFieldContr
 
 	template: _.template($("#ACASFormLSBooleanFieldView").html())
 	events: ->
-		_.extend {}, super,
+		_.extend {}, super(),
 		"change input": "handleInputChanged"
 
 	render: ->

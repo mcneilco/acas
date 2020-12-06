@@ -6,7 +6,7 @@ exports.setupAPIRoutes = (app) ->
 	global.cronJobs = {}
 	console.log "just declared global cronJobs in setup"
 	if config.all.server.service?.cron?.enable
-        addJobsOnStartup()
+		addJobsOnStartup()
 
 exports.setupRoutes = (app, loginRoutes) ->
 	#no public routes, and none can be added, they won't work since global is in context of api server
