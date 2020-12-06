@@ -13,7 +13,7 @@ class window.Experiment extends BaseEntity
 			console.dir "config for client.include.project is not set"
 
 	parse: (resp) =>
-		if resp == "not unique experiment name" or resp == '"not unique experiment name"'
+		if resp == "not unique experiment name" or resp == '"not unique experiment name"' or resp == "saveFailed: not unique experiment name"
 			@trigger 'notUniqueName'
 			resp
 		else if resp == "saveFailed" or resp == '"saveFailed"'
@@ -45,15 +45,22 @@ class window.Experiment extends BaseEntity
 			resp
 
 	copyProtocolAttributes: (protocol) =>
-#only need to copy protocol's experiment metadata attributes
+		#copy protocol's experiment metadata attributes
+		#copy protocol values from protocol metadata state as defined in config
+		if window.conf.experiment?.copiedProtocolMetadataAttrs?
+			protocolMetaAttrsToCopy = window.conf.experiment.copiedProtocolMetadataAttrs
+			protocolMetaAttrsToCopy = protocolMetaAttrsToCopy.split ","
+		else
+			protocolMetaAttrsToCopy = []
+
 		pstates = protocol.get('lsStates')
 		pExptMeta = pstates.getStatesByTypeAndKind "metadata", "experiment metadata"
+		eExptMeta = @.get('lsStates').getStatesByTypeAndKind "metadata", "experiment metadata"
 		if pExptMeta.length > 0
-			eExptMeta = @.get('lsStates').getStatesByTypeAndKind "metadata", "experiment metadata"
 			if eExptMeta.length > 0
 				dapVal = eExptMeta[0].getValuesByTypeAndKind "clobValue", "data analysis parameters"
 				if dapVal.length > 0
-#mark existing data analysis parameters, model fit parameters, and model fit type as ignored
+					#mark existing data analysis parameters, model fit parameters, and model fit type as ignored
 					if dapVal[0].isNew()
 						eExptMeta[0].get('lsValues').remove dapVal[0]
 					else
@@ -109,6 +116,22 @@ class window.Experiment extends BaseEntity
 			mftu.unset 'lsTransaction'
 			eExptMeta[0].get('lsValues').add mftu
 
+		pMetaState = pstates.getStatesByTypeAndKind "metadata", "protocol metadata"
+		if pMetaState.length > 0
+			_.each protocolMetaAttrsToCopy, (pma) =>
+				unless eExptMeta.length > 0
+					eExptMeta = [@.get('lsStates').getOrCreateStateByTypeAndKind("metadata", "experiment metadata")]
+				pmaVal = eExptMeta[0].getValuesByTypeAndKind "clobValue", pma
+				if pmaVal.length > 0
+					if pmaVal[0].isNew()
+						eExptMeta[0].get('lsValues').remove pmaVal[0]
+					else
+						pmaVal[0].set ignored: true
+				newVal = new Value(_.clone(pstates.getOrCreateValueByTypeAndKind "metadata", "protocol metadata", "clobValue", pma).attributes)
+				newVal.unset 'id'
+				newVal.unset 'lsTransaction'
+				eExptMeta[0].get('lsValues').add newVal
+
 		# 		commented because experiment base does not have these values
 		#			@getDryRunStatus().set ignored: true
 		#			@getDryRunStatus().set codeValue: 'not started'
@@ -143,11 +166,31 @@ class window.Experiment extends BaseEntity
 				attribute: 'recordedDate'
 				message: attrs.subclass+" date must be set"
 		if attrs.subclass?
-			notebook = @getNotebook().get('stringValue')
-			if notebook is "" or notebook is undefined or notebook is null
-				errors.push
-					attribute: 'notebook'
-					message: "Notebook must be set"
+			saveNotebook = true #default
+			if window.conf.entity?.notebook?.save?
+				saveNotebook= window.conf.entity.notebook.save
+			requireNotebook = true #default
+			if window.conf.entity?.notebook?.require?
+				requireNotebook= window.conf.entity.notebook.require
+			if saveNotebook and requireNotebook
+				notebook = @getNotebook().get('stringValue')
+				if notebook is "" or notebook is undefined or notebook is null
+					errors.push
+						attribute: 'notebook'
+						message: "Notebook must be set"
+				saveNotebookPage = true #default
+				if window.conf.entity?.notebookPage?.save?
+					saveNotebookPage = window.conf.entity.notebookPage.save
+				requireNotebookPage = false #default
+				if window.conf.entity?.notebookPage?.require?
+					requireNotebookPage= window.conf.entity.notebookPage.require
+				if saveNotebookPage and requireNotebookPage
+					notebookPage = @getNotebookPage().get('stringValue')
+					if notebookPage is "" or notebookPage is undefined or notebookPage is null
+						errors.push
+							attribute: 'notebookPage'
+							message: "Notebook Page must be set"
+
 			scientist = @getScientist().get('codeValue')
 			if scientist is "unassigned" or scientist is undefined or scientist is "" or scientist is null
 				errors.push
@@ -156,7 +199,7 @@ class window.Experiment extends BaseEntity
 		if attrs.protocol == null
 			errors.push
 				attribute: 'protocolCode'
-				message: "Protocol must be set"
+				message: "#{window.conf.protocol.label} must be set"
 		if attrs.subclass?
 			unless window.conf.save?.project? and window.conf.save.project.toLowerCase() is "false"
 				reqProject = window.conf.include.project
@@ -503,7 +546,7 @@ class window.ExperimentBaseController extends BaseEntityController
 			collection: @protocolList
 			insertFirstOption: new PickList
 				code: "unassigned"
-				name: "Select Protocol"
+				name: "Select #{window.conf.protocol.label}"
 			selectedCode: protocolCode
 
 	setupProjectSelect: ->
@@ -534,6 +577,10 @@ class window.ExperimentBaseController extends BaseEntityController
 		@tagListController = new TagListController
 			el: @$('.bv_tags')
 			collection: @model.get 'lsTags'
+		@$('.bv_tags').on 'itemAdded', =>
+			@model.trigger 'change'
+		@$('.bv_tags').on 'itemRemoved', =>
+			@model.trigger 'change'
 		@tagListController.render()
 
 	setupCustomExperimentMetadataController: ->
@@ -649,13 +696,13 @@ class window.ExperimentBaseController extends BaseEntityController
 					@$('.bv_spinner').spin(false)
 					@$('.bv_protocolCode').removeAttr('disabled')
 					if json.length == 0
-						alert("Could not find selected protocol in database")
+						alert("Could not find selected #{window.conf.protocol.label} in database")
 					else
 						@model.set protocol: new Protocol(json)
 						if setAnalysisParams
 							@getFullProtocol() # this will fetch full protocol
 				error: (err) ->
-					alert 'got ajax error from getting protocol '+ code
+					alert 'got ajax error from getting #{window.conf.protocol.label} '+ code
 				dataType: 'json'
 
 	handleKeepOldParams: =>
@@ -689,10 +736,6 @@ class window.ExperimentBaseController extends BaseEntityController
 
 	handleCompletionDateIconClicked: =>
 		@$( ".bv_completionDate" ).datepicker( "show" )
-
-
-	updateEditable: =>
-		super()
 
 	handleSaveClicked: =>
 		@$('.bv_saveFailed').hide()

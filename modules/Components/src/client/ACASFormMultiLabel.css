@@ -1,0 +1,15 @@
+.multiLabelListWell {
+    margin-bottom: 0;
+}
+
+.bv_removeLabelButton {
+    margin-left: 5px;
+    padding-right: 8px;
+    padding-left: 8px;
+}
+
+.bv_addLabelButton {
+    padding-right: 8px;
+    padding-left: 8px;
+    margin-left: 388px;
+}

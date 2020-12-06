@@ -12,8 +12,8 @@ $(function() {
             if (errors.length > 0) {return errors;}
         }
     });
-    
-    
+
+
     
     window.RegistrationSearchController = Backbone.View.extend({
 		template: _.template($('#RegistrationSearch_template').html()),
@@ -26,19 +26,22 @@ $(function() {
 		initialize: function(){
 			_.bindAll(this, 'next', 'cancel', 'render', 'validationError');
             this.valid = false;
-			this.marvinLoaded = false;
+			this.sketcherLoaded = false;
 			this.exportFormat = "mol";
 			if(window.configuration.marvin) {
+				this.useMarvin = true;
 				if (window.configuration.marvin.exportFormat) {
 					this.exportFormat = window.configuration.marvin.exportFormat;
 				}
+			} else if(window.configuration.ketcher) {
+				this.useKetcher = true;
 			}
 			this.hide();
 		},
 
 		render: function () {
 
-			if (!this.marvinLoaded) { // only load template once so we don't wipe out marvin
+			if (!this.sketcherLoaded) { // only load template once so we don't wipe out marvin
                 $(this.el).html(this.template());
                 if(this.options.corpName){
                     this.$('.corpName').val(this.options.corpName);
@@ -47,18 +50,30 @@ $(function() {
 
 			this.hide();
 			var self = this;
-			MarvinJSUtil.getEditor("#registrationSearchMarvinSketch").then(function (sketcherInstance) {
-				self.marvinSketcherInstance = sketcherInstance;
-				if (typeof window.marvinStructureTemplates !== 'undefined') {
-					for (i=0 ; i<window.marvinStructureTemplates.length; i++ ) {
-						sketcherInstance.addTemplate(window.marvinStructureTemplates[i]);
+
+			if (this.useMarvin) {
+				this.$('#registrationSearchMarvinSketch').attr('src',"/CmpdReg/marvinjs/editorws.html");
+				MarvinJSUtil.getEditor("#registrationSearchMarvinSketch").then(function (sketcherInstance) {
+					self.marvinSketcherInstance = sketcherInstance;
+					if (typeof window.marvinStructureTemplates !== 'undefined') {
+						for (i = 0; i < window.marvinStructureTemplates.length; i++) {
+							sketcherInstance.addTemplate(window.marvinStructureTemplates[i]);
+						}
 					}
-				}
-				self.show();
-				self.marvinLoaded = true;
-			},function (error) {
-				alert("Cannot retrieve registrationSearchMarvinSketch sketcher instance from iframe:"+error);
-			});
+					self.show();
+					self.sketcherLoaded = true;
+				}, function (error) {
+					alert("Cannot retrieve registrationSearchMarvinSketch sketcher instance from iframe:" + error);
+				});
+
+			} else if (this.useKetcher) {
+				this.$('#registrationSearchMarvinSketch').attr('src',"/lib/ketcher-2.0.0-alpha.3_custom/ketcher.html?api_path=/api/cmpdReg/ketcher/");
+				this.$('#registrationSearchMarvinSketch').on('load', function () {
+					self.ketcher = self.$('#registrationSearchMarvinSketch')[0].contentWindow.ketcher;
+				});
+			} else {
+				alert("No registration sketcher configured");
+			}
 
 			return this;
 		},
@@ -74,7 +89,11 @@ $(function() {
 		cancel: function() {
             this.hide();
             this.$('.corpName').val('');
-			this.marvinSketcherInstance.clear()
+			if (this.useMarvin) {
+				this.marvinSketcherInstance.clear()
+			} else if (this.useKetcher) {
+				mol = this.ketcher.setMolecule("");
+			}
 			if(appController) {appController.reset();}
 		},
 				
@@ -85,26 +104,44 @@ $(function() {
             var mol;
 
 			var self = this;
-			this.marvinSketcherInstance.exportStructure(this.exportFormat).then(function(molecule) {
-				if ( molecule.indexOf("0  0  0  0  0  0  0  0  0  0999")>-1)
-					mol = null;
-				else if ( molecule.indexOf("M  V30 COUNTS 0 0 0 0 0")>-1)
-					mol = null;
-				else
-					mol = molecule;
+
+			if (this.useMarvin) {
+				this.marvinSketcherInstance.exportStructure(this.exportFormat).then(function (molecule) {
+					if (molecule.indexOf("0  0  0  0  0  0  0  0  0  0999") > -1)
+						mol = null;
+					else if (molecule.indexOf("M  V30 COUNTS 0 0 0 0 0") > -1)
+						mol = null;
+					else
+						mol = molecule;
+					regSearch.set({
+						molStructure: mol,
+						corpName: jQuery.trim(self.$('.corpName').val())
+					});
+
+					if ( self.isValid() ) {
+						self.trigger('registrationSearchNext', regSearch);
+						self.hide();
+					}
+				}, function (error) {
+					alert("Molecule export failed from search sketcher:" + error);
+				});
+			} else if (this.useKetcher) {
+				mol = this.ketcher.getMolfile();
+				if (mol.indexOf("  0  0  0     1  0            999") > -1) mol = null;
 				regSearch.set({
 					molStructure: mol,
 					corpName: jQuery.trim(self.$('.corpName').val())
 				});
-
-				if ( self.isValid() ) {
-					self.trigger('registrationSearchNext', regSearch);
-					self.hide();
+				console.log(self.$('.corpName').val());
+				console.log(mol);
+				console.log(regSearch);
+				if ( this.isValid() ) {
+					this.trigger('registrationSearchNext', regSearch);
+					this.hide();
 				}
-			}, function(error) {
-				alert("Molecule export failed from search sketcher:"+error);
-			});
-
+			} else {
+				alert("No registration sketcher configured in search action");
+			}
 
 		},
         isValid: function() {

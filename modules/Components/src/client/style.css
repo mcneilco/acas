@@ -30,14 +30,28 @@
     margin-bottom: 10px;
 }
 
-.select2-container {
-  width: 350px !important;
-  /* base width matches edit prot and expt */
-}
-
 .select2-container .select2-selection--single {
   width: 350px;
   height: 30px;
   border-color: #bbbbbb;
   /* base width matches edit prot and expt */
+}
+
+.bv_stateDisplayUpdateTable .valueWasEdited {
+    color: red;
+}
+
+.bv_stateDisplayUpdateTable .valueNotEditable {
+    color: #9D9D9D;
+}
+
+.bv_stateDisplayUpdateTable .valueEditable {
+    cursor: pointer;
+}
+
+.bv_stateDisplayCurrentRow {
+    background-color: rgb(182, 182, 211) !important;
+}
+.bv_stateDisplayCurrentColumn {
+    background-color: rgb(182, 182, 211) !important;
 }

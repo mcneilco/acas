@@ -125,7 +125,7 @@ exports.runRFunctionOutsideRequest = (username, argumentsJSON, rScript, rFunctio
 		returnFunction.call @, JSON.stringify(runRFunctionServiceTestJSON.runRFunctionResponse)
 	else
 		request.post
-			timeout: 6000000
+			timeout: 86400000
 			url: serviceRapacheFullPath + "runfunction"
 			json: true
 			body: JSON.stringify(requestBody)
@@ -511,13 +511,15 @@ class Label extends Backbone.Model
 
 	handleLabelTextChanged: =>
 		unless @isNew()
+			newText = @get 'labelText'
 			@set
 				ignored: true
 				modifiedBy: AppLaunchParams.loginUser.username
 				modifiedDate: new Date().getTime()
 				isDirty: true
-			@set labelText: @previous 'labelText'
-			@trigger 'createNewLabel', @get('lsKind'), @get('labelText')
+				labelText: @previous 'labelText'
+			, silent: true
+			@trigger 'createNewLabel', @get('lsKind'), newText, @get('key')
 
 	changeLabelText: (options) ->
 		@set labelText: options
@@ -836,9 +838,20 @@ class Thing extends Backbone.Model
 		if @lsProperties.defaultLabels?
 			for dLabel in @lsProperties.defaultLabels
 				newLabel = @get('lsLabels').getOrCreateLabelByTypeAndKind dLabel.type, dLabel.kind
+				@listenTo newLabel, 'createNewLabel', @createNewLabel
 				@set dLabel.key, newLabel
 				#			if newLabel.get('preferred') is undefined
 				newLabel.set preferred: dLabel.preferred
+
+	createNewLabel: (lKind, newText) =>
+		dLabel = _.where(@lsProperties.defaultLabels, {key: lKind})[0]
+		oldLabel = @get(lKind)
+		@unset(lKind)
+		newLabel = @get('lsLabels').getOrCreateLabelByTypeAndKind dLabel.type, dLabel.kind
+		newLabel.set
+			labelText: newText
+			preferred: oldLabel.get 'preferred'
+		@set lKind, newLabel
 
 	createDefaultStates: =>
 		if @lsProperties.defaultValues?
@@ -1187,10 +1200,20 @@ class Container extends Backbone.Model
 		if @lsProperties.defaultLabels?
 			for dLabel in @lsProperties.defaultLabels
 				newLabel = @get('lsLabels').getOrCreateLabelByTypeAndKind dLabel.type, dLabel.kind
+				@listenTo newLabel, 'createNewLabel', @createNewLabel
 				@set dLabel.key, newLabel
 				#			if newLabel.get('preferred') is undefined
 				newLabel.set preferred: dLabel.preferred
 
+	createNewLabel: (lKind, newText) =>
+		dLabel = _.where(@lsProperties.defaultLabels, {key: lKind})[0]
+		oldLabel = @get(lKind)
+		@unset(lKind)
+		newLabel = @get('lsLabels').getOrCreateLabelByTypeAndKind dLabel.type, dLabel.kind
+		newLabel.set
+			labelText: newText
+			preferred: oldLabel.get 'preferred'
+		@set lKind, newLabel
 
 	createDefaultStates: =>
 		if @lsProperties.defaultValues?
@@ -1451,6 +1474,27 @@ class Container extends Backbone.Model
 				response.push responseObject
 		return response
 
+	getLocationHistory: ->
+		lsStates = @get('lsStates').getStatesByTypeAndKind 'metadata', 'location history'
+		response = []
+		if lsStates?
+			lsStates.forEach (lsState) =>
+				additionalValues = lsState.get('lsValues').filter (value) ->
+					(!value.get('ignored')) and
+					 !((value.get('lsType')=='stringValue') and (value.get('lsKind')=='location')) and
+					 !((value.get('lsType')=='codeValue') and (value.get('lsKind')=='moved by')) and
+					 !((value.get('lsType')=='dateValue') and (value.get('lsKind')=='moved date'))
+				responseObject =
+					codeName: @get('codeName')
+					recordedBy: lsState.get('recordedBy')
+					recordedDate: lsState.get('recordedDate')
+					location: lsState.getValuesByTypeAndKind('stringValue', 'location')[0].get('stringValue')
+					movedBy: lsState.getValuesByTypeAndKind('codeValue', 'moved by')[0]?.get('codeValue')
+					movedDate: lsState.getValuesByTypeAndKind('dateValue', 'moved date')[0]?.get('dateValue')
+					additionalValues: additionalValues
+				response.push responseObject
+		return response
+
 	addNewLogStates: (inputs) ->
 		for input in inputs
 			valueList = new ValueList
@@ -1604,10 +1648,20 @@ class Experiment extends Backbone.Model
 		if @lsProperties.defaultLabels?
 			for dLabel in @lsProperties.defaultLabels
 				newLabel = @get('lsLabels').getOrCreateLabelByTypeAndKind dLabel.type, dLabel.kind
+				@listenTo newLabel, 'createNewLabel', @createNewLabel
 				@set dLabel.key, newLabel
 				#			if newLabel.get('preferred') is undefined
 				newLabel.set preferred: dLabel.preferred
 
+	createNewLabel: (lKind, newText) =>
+		dLabel = _.where(@lsProperties.defaultLabels, {key: lKind})[0]
+		oldLabel = @get(lKind)
+		@unset(lKind)
+		newLabel = @get('lsLabels').getOrCreateLabelByTypeAndKind dLabel.type, dLabel.kind
+		newLabel.set
+			labelText: newText
+			preferred: oldLabel.get 'preferred'
+		@set lKind, newLabel
 
 	createDefaultStates: =>
 		if @lsProperties.defaultValues?
@@ -2028,11 +2082,11 @@ class DefinitionContainerPlate extends Container
 			type: 'numericValue'
 			kind: 'columns'
 		,
-			key: 'subContainerNamingConvention'
+			key: 'subcontainer naming convention'
 			stateType: 'constants'
 			stateKind: 'format'
 			type: 'codeValue'
-			kind: 'A1'
+			kind: 'subcontainer naming convention'
 		,
 			key: 'maxWellVolume'
 			stateType: 'constants'
@@ -2100,7 +2154,20 @@ class ContainerTube extends ContainerPlate
 			stateKind: 'information'
 			type: 'codeValue'
 			kind: 'type'
+		,
+			key: 'comments'
+			stateType: 'metadata'
+			stateKind: 'information'
+			type: 'stringValue'
+			kind: 'comments'
+		,
+			key: 'locationName'
+			stateType: 'metadata'
+			stateKind: 'information'
+			type: 'stringValue'
+			kind: 'locationName'
 		]
+
 class AnalysisGroup extends Backbone.Model
 	defaults:
 		kind: ""
@@ -2254,6 +2321,23 @@ class Vial extends Container
 			kind: 'amount'
 		]
 
+class LocationContainer extends Container
+	urlRoot: "/api/containers"
+
+	initialize: ->
+		@.set
+			lsType: "location"
+			lsKind: "default"
+		super()
+
+	lsProperties:
+		defaultLabels: []
+		defaultValues: []
+
+	defaultFirstLsThingItx: []
+
+	defaultSecondLsThingItx: []
+
 exports.Label = Label
 exports.LabelList = LabelList
 exports.Value = Value
@@ -2277,5 +2361,6 @@ exports.ContainerPlate = ContainerPlate
 exports.ContainerTube = ContainerTube
 exports.AnalysisGroup = AnalysisGroup
 exports.AnalysisGroupList = AnalysisGroupList
+exports.LocationContainer = LocationContainer
 
 AppLaunchParams = loginUser:username:"acas"

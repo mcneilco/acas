@@ -27,20 +27,22 @@ $(function() {
         },
         
         openLot: function() {
-	        window.open("#lot/"+this.options.corpName);
+            console.log("about to open new lot window");
+	        window.open("#lot/"+this.options.corpName, '_blank');
             this.closeLot();
 //	        appController.reset();
 //            if(appController) {appController.router.navigate('lot/'+this.options.corpName,true);}
         },
         
         newLot: function() {
-	        window.open("#register/"+this.options.corpName);
+	        window.open("#register/"+this.options.corpName, '_blank');
             this.closeLot();
-            if(appController) {appController.router.navigate('register/'+this.options.corpName,true);}
+            // if(appController) {appController.router.navigate('register/'+this.options.corpName,true);}
         },
         
         closeLot: function() {
 //            $(this.el).hide();
+	        console.log("about to reset the controller");
             appController.reset();
         }
     });

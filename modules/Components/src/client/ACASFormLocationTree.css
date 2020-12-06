@@ -1,0 +1,41 @@
+.gidFilterExperimentsInput {
+  margin-bottom: 15px;
+}
+
+.gidFilterExperimentsInput .bv_locationTreeFilterLabel {
+  margin-right: 10px;
+}
+
+.gidFilterExperimentsInput .bv_searchVal {
+  width: 500px;
+}
+
+.bv_locationTree .jstree-anchor {
+  font-weight: normal !important;
+  font-size: 14px !important;
+  padding: 0 5px 0 5px !important;
+  text-shadow: none !important;
+}
+
+.bv_locationTree .jstree-hovered {
+  background: #eeeeee !important;
+  border-radius: 3px !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+.bv_locationTree .jstree-clicked {
+  background: #2a4353 !important;
+  border-radius: 3px !important;
+  box-shadow: none !important;
+  color: #ffffff !important;
+  text-shadow: none !important;
+}
+
+.bv_locationTree .jstree-clicked .jstree-hovered {
+  background: #eeeeee !important;
+  border-radius: 3px !important;
+  box-shadow: none !important;
+  color: #000000 !important;
+  text-shadow: none !important;
+}

@@ -59,6 +59,9 @@ startApp = ->
 
 	http.createServer(app).listen(app.get('port'), ->
 		console.log("ACAS API server listening on port " + app.get('port'))
+		bootstrap = require "./src/javascripts/ServerAPI/Bootstrap.js"
+		if bootstrap.main?
+			bootstrap.main()
 	)
 
 	csUtilities.logUsage("ACAS API server started", "started", "")

@@ -92,6 +92,11 @@ data = require "#{ACAS_HOME}/public/javascripts/conf/confJSON/CompiledModuleConf
 config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 
 async.forEachSeries typeKinds, ((typeOrKind, callback) ->
+	if typeOrKind == 'labelsequences'
+		_.each data[typeOrKind], (labelSeq) ->
+			if labelSeq.latestNumber?
+				labelSeq.startingNumber = labelSeq.latestNumber
+			delete labelSeq.latestNumber
 	baseurl = config.all.client.service.persistence.fullpath+"setup/"+typeOrKind
 	if data[typeOrKind]?
 		console.log "trying to save " + typeOrKind

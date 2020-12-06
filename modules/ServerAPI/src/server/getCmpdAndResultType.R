@@ -13,9 +13,9 @@ tryCatch({
   qu <- paste0("SELECT DISTINCT parent.corp_name AS parent_corp_name FROM 
             api_analysis_group_results aagr
                JOIN api_experiment e ON e.id = aagr.experiment_id
-               JOIN compound.lot ON aagr.tested_lot = lot.corp_name
-               JOIN compound.salt_form ON lot.salt_form = salt_form.id
-               JOIN compound.parent ON parent.id = salt_form.parent
+               JOIN lot ON aagr.tested_lot = lot.corp_name
+               JOIN salt_form ON lot.salt_form = salt_form.id
+               JOIN parent ON parent.id = salt_form.parent
                WHERE e.code_name = '", GET$experiment, "'")
   testedLotDF <- query(qu)
   names(testedLotDF) <- tolower(names(testedLotDF))

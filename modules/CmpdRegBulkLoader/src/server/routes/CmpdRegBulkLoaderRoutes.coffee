@@ -1,8 +1,10 @@
 path = require 'path'
 
 exports.setupAPIRoutes = (app) ->
-	# app.post '/api/cmpdRegBulkLoader', exports.postAssignedProperties
+	app.post '/api/cmpdRegBulkLoader', exports.postAssignedProperties
 	app.post '/api/cmpdRegBulkLoader/registerCmpds', exports.registerCmpds
+	app.post '/api/cmpdRegBulkLoader/validateCmpds', exports.validateCmpds
+	app.post '/api/cmpdRegBulkLoader/validationProperties', exports.validationProperties
 	app.get '/api/cmpdRegBulkLoader/getFilesToPurge', exports.getFilesToPurge
 	app.post '/api/cmpdRegBulkLoader/purgeFile', exports.purgeFile
 
@@ -14,13 +16,15 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/cmpdRegBulkLoader/readSDF', loginRoutes.ensureAuthenticated, exports.cmpdRegBulkLoaderReadSdf
 	app.post '/api/cmpdRegBulkLoader/saveTemplate', loginRoutes.ensureAuthenticated, exports.saveTemplate
 	app.post '/api/cmpdRegBulkLoader/registerCmpds', loginRoutes.ensureAuthenticated, exports.registerCmpds
-	# app.post '/api/cmpdRegBulkLoader', loginRoutes.ensureAuthenticated, exports.postAssignedProperties
+	app.post '/api/cmpdRegBulkLoader/validateCmpds', loginRoutes.ensureAuthenticated, exports.validateCmpds
+	app.post '/api/cmpdRegBulkLoader', loginRoutes.ensureAuthenticated, exports.postAssignedProperties
 	app.post '/api/cmpdRegBulkLoader/checkFileDependencies', loginRoutes.ensureAuthenticated, exports.checkFileDependencies
 	app.post '/api/cmpdRegBulkLoader/purgeFile', loginRoutes.ensureAuthenticated, exports.purgeFile
 
 exports.cmpdRegBulkLoaderIndex = (req, res) ->
 	scriptPaths = require './RequiredClientScripts.js'
 	config = require '../conf/compiled/conf.js'
+	cmpdRegConfig = require '../public/CmpdReg/client/custom/configuration.json'
 
 	global.specRunnerTestmode = if global.stubsMode then true else false
 	scriptsToLoad = scriptPaths.requiredScripts.concat(scriptPaths.applicationScripts)
@@ -45,6 +49,7 @@ exports.cmpdRegBulkLoaderIndex = (req, res) ->
 			testMode: false
 			moduleLaunchParams: if moduleLaunchParams? then moduleLaunchParams else null
 			deployMode: global.deployMode
+			cmpdRegConfig: cmpdRegConfig
 
 exports.getCmpdRegBulkLoaderTemplates = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
@@ -124,12 +129,49 @@ exports.saveTemplate = (req, resp) ->
 				resp.end JSON.stringify "Error"
 		)
 
+exports.validationProperties = (req, resp) ->
+	req.connection.setTimeout 6000000
+	exports.validationPropertiesInternal req.body, (json) =>
+		resp.json json
+
+exports.validationPropertiesInternal = (reqObject, callback) ->
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"bulkload/validationProperties"
+	request = require 'request'
+	request(
+		method: 'POST'
+		url: baseurl
+		body: reqObject
+		json: true
+	, (error, response, json) =>
+		console.log json
+		if !error && response.statusCode == 200
+			callback json
+		else
+			console.error 'got ajax error trying to validate sdf properties'
+			console.error error
+			console.error json
+			console.error response
+			callback {error: json}
+	)
+
+exports.getScientistsInternal = (callback) ->
+	loginRoutes = require './loginRoutes.js'
+	config = require '../conf/compiled/conf.js'
+	roleName = null
+	if config.all.client.roles.cmpdreg.chemistRole? && config.all.client.roles.cmpdreg.chemistRole != ""
+		roleName = config.all.client.roles.cmpdreg.chemistRole
+	loginRoutes.getAuthorsInternal {additionalCodeType: 'compound', additionalCodeKind: 'scientist', roleName: roleName}, (statusCode, authors) =>
+		callback authors
+
+exports.validateCmpds = (req, resp) ->
+	req.body.validate = true
+	exports.registerCmpds(req, resp)
+
 exports.registerCmpds = (req, resp) ->
 	req.connection.setTimeout 6000000
 	createSummaryZip = (fileName, json) ->
 		#remove .sdf from fileName
-		console.log "fileName"
-		console.log fileName
 		fileName = fileName.substring(0, fileName.length-4)
 		zipFileName = fileName+".zip"
 		fs = require 'fs'
@@ -164,25 +206,53 @@ exports.registerCmpds = (req, resp) ->
 			else
 				fileName = req.body.fileName
 				delete req.body.fileName
-				config = require '../conf/compiled/conf.js'
-				baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"bulkload/registerSdf"
-				request = require 'request'
-				request(
-					method: 'POST'
-					url: baseurl
-					body: req.body
-					json: true
-				, (error, response, json) =>
-					console.log json
-					if !error && response.statusCode == 200
-						createSummaryZip fileName, json
-					else
-						console.log 'got ajax error trying to register compounds'
-						console.log error
-						console.log json
-						console.log response
-						resp.end JSON.stringify "Error"
-				)
+
+				# get a list of scientists that are allowed to be registered chemists
+				exports.getScientistsInternal (authors) =>
+					_ = require 'underscore'
+					authorCodes = _.pluck authors, "code"
+
+					# get a list of allowed projects for the user doing the registration
+					authorRoutes = require './AuthorRoutes.js'
+					authorRoutes.allowedProjectsInternal req.user, (statusCode, allowedUserProjects) ->
+						projectCodes = _.pluck allowedUserProjects, "code"
+
+						# get the list of chemists/projects in the SDF file/DB mappings
+						exports.validationPropertiesInternal req.body, (sdfProperties) =>
+						    # find chemists and projects that are invalid
+							missingAuthorCodes = _.difference sdfProperties.chemists, authorCodes
+							missingProjectCodes = _.difference sdfProperties.projects, projectCodes
+
+							# if any chemists are invalid then pass those invalid users to the registration
+							# service for automatic failure
+							if missingAuthorCodes.length > 0
+								_.extend(_.findWhere(req.body.mappings, { dbProperty: 'Lot Chemist' }), {invalidValues: missingAuthorCodes});
+							# if any chemists are invalid then pass those invalid users to the registration
+							# service for automatic failure
+							if missingProjectCodes.length > 0
+								_.extend(_.findWhere(req.body.mappings, { dbProperty: 'Project' }), {invalidValues: missingProjectCodes});
+
+							config = require '../conf/compiled/conf.js'
+							baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"bulkload/registerSdf"
+							request = require 'request'
+							request(
+								method: 'POST'
+								url: baseurl
+								body: req.body
+								json: true
+							, (error, response, json) =>
+								if !error && response.statusCode == 200 && json.reportFiles?
+									createSummaryZip fileName, json
+								else
+									console.log 'got ajax error trying to register compounds'
+									console.log error
+									console.log json
+									console.log response
+									if json.summary?
+										resp.json [json]
+									else
+										resp.end JSON.stringify "Error"
+							)
 
 	moveSdfFile = (req, resp, callback) ->
 		fileName = req.body.fileName
@@ -203,7 +273,17 @@ exports.registerCmpds = (req, resp) ->
 				console.log "Can't find or create bulkload folder: " + bulkLoadFolder
 				callback "error", resp
 			else
-				fs.rename oldPath, newPath, (err) ->
+				if req.body.validate
+					# new node has fs.copyFile but we don't currently:(
+					fsFuct = (oldPath, newPath, callback) ->
+						stream = fs.createReadStream(oldPath).pipe fs.createWriteStream(newPath)
+						stream.on 'error', (err) ->
+							callback err
+						stream.on 'close', ->
+							callback null
+				else
+					fsFuct = fs.rename
+				fsFuct oldPath, newPath, (err) ->
 					if err?
 						console.log err
 						callback "error", resp
@@ -242,6 +322,7 @@ exports.purgeFile = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
 		resp.end JSON.stringify "Successful purge in stubsMode."
 	else
+		req.setTimeout 86400000
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"bulkload/purge"
 		request = require 'request'

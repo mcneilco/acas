@@ -4,12 +4,19 @@
         <div class="navbar navbar-inverse navbar-fixed-top">
             <div class="navbar-inner">
                 <div class="container-fluid">
-                    <p class="navbar-text pull-right bv_userInfo" style="">
-                        Logged in as
-                        <a href="#" class="navbar-link bv_loginUserFirstName">First Name</a>
-                        <a href="#" class="navbar-link bv_loginUserLastName">Last Name</a>
-                        <a href="/logout" class="btn btn-small bv_logout" style="margin-top:0px;margin-left:5px;">Logout</a>
-                    </p>
+
+                    <div class="navbar-text pull-right bv_userInfo" style="">
+
+                        <span>Logged in as</span>
+                        <span class="bv_username">
+                            <a href="#" class="navbar-link bv_loginUserFirstName">First Name</a>
+                            <a href="#" class="navbar-link bv_loginUserLastName">Last Name</a>
+                            <select class="bv_fastUserSelect"></select>
+                        </span>
+                        <a href="/logout" class="btn btn-inverse bv_logout">Logout</a>
+                    </div>
+
+
                     <ul class="nav" >
                         <li class="bv_toggleModuleMenuControl">
                             <img src="/img/hamburgerwhite.png" style="width:20px;" />
@@ -57,5 +64,29 @@
         <footer>
             <p class="bv_copyrightMessage pull-right" style="padding-right:50px;">&copy; John McNeil & Company 2012-2015</p>
         </footer>
+    </div>
+
+    <div class="modal hide bv_serverUnavailable">
+        <div class="modal-header">
+            <h4><i class="icon-exclamation-sign" style="margin-top: 5px;"></i> Error</h4>
+        </div>
+        <div class="modal-body">
+            ACAS is currently unavailable.
+        </div>
+        <div class="modal-footer">
+            <a href="/login" class="btn hide bv_loginBtn">Login</a>
+        </div>
+    </div>
+
+    <div class="modal hide bv_changeUserName">
+        <div class="modal-header">
+            <h4>Change User Name</h4>
+        </div>
+        <div class="modal-body">
+            <input class="input bv_firstName" placeholder="first name" >
+        </div>
+        <div class="modal-footer">
+            <a class="btn bv_changeNameBtn">Change My Name</a>
+        </div>
     </div>
 </script>

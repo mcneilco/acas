@@ -4,7 +4,7 @@ class window.UtilityFunctions
 
 
 	testUserHasRole: (user, roleNames) ->
-		if not user.roles? then return true
+		if not user.roles? then return false
 		if not roleNames? || roleNames.length == 0 then return true
 		match = false
 		for roleName in roleNames
@@ -17,7 +17,7 @@ class window.UtilityFunctions
 
 	testUserHasRoleTypeKindName: (user, roleInfo) ->
 		#roleInfo = list of objects with role type, kind, and name
-		if not user.roles? then return true
+		if not user.roles? then return false
 		if not roleInfo? || roleInfo.length == 0 then return true
 		match = false
 		for role in roleInfo
@@ -52,6 +52,14 @@ class window.UtilityFunctions
 			text = $(textarea).val().replace(/\r?\n/g,'<br/>')
 			$(textarea).after '<div style="width:650px; border:1px solid #cccccc; padding:6px;margin-bottom:20px;">'+text+'</div>'
 			$(textarea).hide()
+		
+	setInputsWidthToValue: (controller) =>
+		# increase size of text boxes to fit data
+		for node in controller.$('input[type="text"]')
+			minWidth = parseInt(getComputedStyle(node).minWidth) or node.clientWidth
+			node.style.overflowX = 'auto'
+			node.style.width = minWidth + 'px'
+			node.style.width = node.scrollWidth + 'px'
 
 	showInactiveTabsInfoToPrint: (controller) =>
 		for tab in controller.$('.tab-pane')
@@ -67,7 +75,23 @@ class window.UtilityFunctions
 		controller.$('.nav.nav-tabs').hide()
 
 	roundTwoDecimalPlaces: (num) ->
+		if isNaN(num) or num is null
+			return null
+		else
+			return Math.round((num+0.00001)*100)/100
+
+	roundThreeDecimalPlaces: (num) ->
 		if isNaN(num)
 			return 0
 		else
-			return Math.round((num+0.00001)*100)/100
+			return Math.round((num+0.000001)*1000)/1000
+	
+	getNameForCode: (value, codeToLookup, pickLists) ->
+		if pickLists[value.get('lsKind')]?
+			code = pickLists[value.get('lsKind')].findWhere({code: codeToLookup})
+			name = if code? then code.get 'name' else "not found"
+			return name
+		else
+			console.log "can't find entry in pickLists hash for: "+value.get('lsKind')
+			console.dir pickLists
+			return "not found"

@@ -11,9 +11,9 @@ div#upload-app {
     /* ORIGINAL WIDTH width: 510px;*/
     width: 625px;
 
-    position: absolute;
-    bottom: 5px; important!
-left: 20px;
+    position: fixed;
+    bottom: 60px; important!
+    left: 20px;
 
 }
 

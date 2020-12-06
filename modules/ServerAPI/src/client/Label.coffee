@@ -105,6 +105,21 @@ class window.LabelList extends Backbone.Collection
 			(lab.get('preferred') is false) && (lab.get('lsType') == "name")
 		nonPreferredName[0]
 
+	getExtendedNameText: ->
+		corpNames = @filter (lab) ->
+			!lab.get('ignored') && (lab.get('labelText') != "") && lab.get('lsType').toLowerCase() == "corpname"
+		if corpNames.length > 0
+			bestCorpName = _.max corpNames, (lab) ->
+				rd = lab.get 'recordedDate'
+				(if (rd is "") then rd else -1)
+		names = @filter (lab) ->
+			!lab.get('ignored') && (lab.get('labelText') != "") && lab.get('lsType').toLowerCase() == "name"
+		if names.length > 0
+			bestName = _.max names, (lab) ->
+				rd = lab.get 'recordedDate'
+				(if (rd is "") then rd else -1)
+		return bestCorpName?.get('labelText')+" : "+bestName?.get('labelText')
+
 	setName: (label, currentName) ->
 		if currentName?
 			if currentName.isNew()
@@ -227,17 +242,25 @@ class window.State extends Backbone.Model
 		@get('lsValues').filter (value) ->
 			(value.get('lsType')==type) and (value.get('lsKind')==kind)
 
-	getOrCreateValueByTypeAndKind: (vType, vKind) ->
+	getFirstValueOfKind: (kind) ->
+		@get('lsValues').findWhere lsKind: kind
+
+	getOrCreateValueByTypeAndKind: (vType, vKind, vValue) ->
 		descVals = @getValuesByTypeAndKind vType, vKind
 		descVal = descVals[0] #TODO should do something smart if there are more than one
 		unless descVal?
-			descVal = @createValueByTypeAndKind(vType, vKind)
+			descVal = @createValueByTypeAndKind(vType, vKind, vValue)
 		return descVal
 
-	createValueByTypeAndKind: (vType, vKind) ->
+	createValueByTypeAndKind: (vType, vKind, vValue) ->
 		descVal = new Value
 			lsType: vType
 			lsKind: vKind
+		if vValue?
+			if !_.isFunction(vValue)
+				descVal.set 'value', vValue
+			else
+				descVal.set 'value', vValue()
 		@get('lsValues').add descVal
 		descVal.on 'change', =>
 			@trigger('change')
@@ -267,12 +290,12 @@ class window.StateList extends Backbone.Collection
 			mState = @createStateByTypeAndKind sType, sKind
 		return mState
 
-	getOrCreateValueByTypeAndKind: (sType, sKind, vType, vKind) ->
+	getOrCreateValueByTypeAndKind: (sType, sKind, vType, vKind, vValue) ->
 		metaState = @getOrCreateStateByTypeAndKind sType, sKind
 		descVals = metaState.getValuesByTypeAndKind vType, vKind
 		descVal = descVals[0] #TODO should do something smart if there are more than one
 		unless descVal?
-			descVal = @createValueByTypeAndKind(sType, sKind, vType, vKind)
+			descVal = @createValueByTypeAndKind(sType, sKind, vType, vKind, vValue)
 		return descVal
 
 	createStateByTypeAndKind: (sType, sKind) ->
@@ -285,10 +308,15 @@ class window.StateList extends Backbone.Collection
 
 		return mState
 
-	createValueByTypeAndKind: (sType, sKind, vType, vKind) ->
+	createValueByTypeAndKind: (sType, sKind, vType, vKind, vValue) ->
 		descVal = new Value
 			lsType: vType
 			lsKind: vKind
+		if vValue?
+			if !_.isFunction(vValue)
+				descVal.set 'value', vValue
+			else
+				descVal.set 'value', vValue()
 		metaState = @getOrCreateStateByTypeAndKind sType, sKind
 		metaState.get('lsValues').add descVal
 		descVal.on 'change', =>

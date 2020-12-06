@@ -94,7 +94,7 @@ startApp = ->
 	# index routes
 	indexRoutes = require './routes/index.js'
 	indexRoutes.setupRoutes(app, loginRoutes)
-	###TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES###
+
 
 	if not config.all.client.use.ssl
 		http.createServer(app).listen(app.get('port'), ->
@@ -150,7 +150,7 @@ startApp = ->
 	csUtilities.logUsage("ACAS Node server started", "started", "")
 
 	if config.all.server.systemTest?.runOnStart? && config.all.server.systemTest.runOnStart
-		systemTest.runSystemTestInternal false, (status, output) ->
+		systemTest.runSystemTestInternal true, [], (status, output) ->
 			console.log "system test completed"
 
 startApp()

@@ -5,6 +5,8 @@ $(function() {
 		getModelForSave: function() {
 			var mts = new Backbone.Model(this.attributes);
 			mts.set({fileList: this.get('fileList').getUploadedFiles()});
+			mts.set({chemist: this.get('chemist').get('code')});
+			mts.set({project: this.get('project').get('code')});
             mts.unset('json');
 			return mts;
 		
@@ -58,7 +60,13 @@ $(function() {
         setupCodeController: function(elClass, type, attribute) {
             var tcode = '';
             if(this.model.get(attribute)) {
-                tcode = this.model.get(attribute).get('code');
+				if(this.model.get(attribute).get("code")) {
+					tcode = this.model.get(attribute).get('code');
+				} else {
+					if(this.model.get(attribute).get("selectedCode")) {
+						tcode = this.model.get(attribute).get("selectedCode");
+					}
+				}
             }
 			return new PickListSelectController({
 				el: this.$('.'+elClass),

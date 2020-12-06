@@ -251,7 +251,7 @@ $(function () {
 					this.newSaltController.render();
 				});
 				waitsFor( function (){
-					return this.newSaltController.marvinLoaded;
+					return this.newSaltController.sketcherLoaded;
 				});
 			});
 			
@@ -289,7 +289,7 @@ $(function () {
                         this.newSaltController.$('.salt_abbrev').val('saltAbbrev1');
                     });
 					waitsFor( function (){
-						return this.newSaltController.marvinLoaded;
+						return this.newSaltController.sketcherLoaded;
 					});
 					runs(function() {
 						this.newSaltController.marvinSketcherInstance.importStructure("mrv", testMrv).catch(function(error) {
@@ -337,7 +337,7 @@ $(function () {
 						this.newSaltController.$('.salt_abbrev').val('saltAbbrev1');
 					});
 					waitsFor( function (){
-						return this.newSaltController.marvinLoaded;
+						return this.newSaltController.sketcherLoaded;
 					});
 					runs(function() {
 						this.newSaltController.marvinSketcherInstance.importStructure("mrv", testMrv).catch(function(error) {
@@ -395,7 +395,7 @@ $(function () {
                         this.newSaltController.$('.salt_abbrev').val(' saltAbbrev1 ');
 					});
 					waitsFor( function (){
-						return this.newSaltController.marvinLoaded;
+						return this.newSaltController.sketcherLoaded;
 					});
 					runs(function() {
 						this.newSaltController.marvinSketcherInstance.importStructure("mrv", testMrv).catch(function(error) {

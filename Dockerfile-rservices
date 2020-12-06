@@ -1,4 +1,4 @@
-FROM mcneilco/racas-oss:${ACAS_TAG}
+FROM mcneilco/racas-oss:develop
 
 # RSTUDIO INSTALL
 USER root

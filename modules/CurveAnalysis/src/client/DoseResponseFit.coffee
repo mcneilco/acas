@@ -50,6 +50,7 @@ class window.DoseResponseFitController extends Backbone.View
 			drapType = window[parametersClass]
 			controllerClass =  curveFitClasses.get 'parametersController'
 			drapcType = window[controllerClass]
+			parametersOptions = curveFitClasses.get 'parametersOptions'
 		else
 			drapType = 'unassigned'
 
@@ -59,9 +60,9 @@ class window.DoseResponseFitController extends Backbone.View
 		else
 			@$('.bv_fitModelButton').show()
 			if @options? && @options.initialAnalysisParameters?
-				drap = new drapType @options.initialAnalysisParameters
+				drap = new drapType @options.initialAnalysisParameters, parametersOptions
 			else
-				drap = new drapType()
+				drap = new drapType null, parametersOptions
 			@parameterController = new drapcType
 				el: @$('.bv_analysisParameterForm')
 				model: drap

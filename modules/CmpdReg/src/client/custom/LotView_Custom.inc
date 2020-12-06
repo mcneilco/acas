@@ -44,7 +44,11 @@
             </div>
             <div>
             	<label class="FormLabel">Vendor:</label>
-				<select class="FormInput vendorCode"></select><br />
+                <select class="FormInput vendorCode"></select><br />
+            </div>
+            <div>
+              <label class="FormLabel">Vendor ID:</label>
+              <input type="textfield" class="FormInput vendorID" value="<%= vendorID %>" /><br />
             </div>
             <div>
                 <label class="FormLabel">Retain:</label>
@@ -57,7 +61,8 @@
         <div>
 			<div>
 				<label class="FormLabel">Lot Number:</label>
-				<input type="textfield" class="FormInput lotNumber" disabled=true value="<%= lotNumber %>" />
+				<input type="textfield" class="FormInput lotNumber" <%= (saved | isVirtual | !allowManualLotNumber) ? 'disabled=true': '' %> value="<%= lotNumber %>"/>
+				<img class="insertNextAutoLotNumberButton" href="#" title="Fill with next lot number" src="/CmpdReg/client/images/edit.png" <%= (saved | isVirtual | !allowManualLotNumber) ? 'style="display:none;"': 'style="width: 15px;"' %>/>
 			</div>
 			<div>
 				<label class="FormLabel">*Project:</label>
@@ -77,11 +82,15 @@
                 <label class="FormLabel">Color:</label>
                 <input type="textfield" class="FormInput color" value="<%= color %>" />
             </div>
-            <div>
+            <div class="amountWrapper">
                 <label class="FormLabel">Amount:</label>
                 <input type="textfield" class="FormInput amount" value="<%= amount %>" />
                 <select class="FormInput amountUnitsCode"></select>
             </div>
+			<div class="barcodeWrapper">
+				<label class="FormLabel">Barcode:</label>
+				<input type="textfield" class="FormInput barcode" value="<%= supplierLot %>" /><br />
+			</div>
 			<div>
 				<label class="FormLabel">Supplier lot:</label>
 				<input type="textfield" class="FormInput supplierLot" value="<%= supplierLot %>" /><br />
@@ -100,7 +109,6 @@
                 <input type="textfield" class="FormInput solutionAmount" value="<%= solutionAmount %>" />
                 <select class="FormInput solutionAmountUnitsCode"></select>
             </div>
-
 
             <div class="bv_tareWeightContainer" >
                 <label class="FormLabel">Tare Weight:</label>

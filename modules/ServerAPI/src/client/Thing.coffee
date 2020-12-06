@@ -1,6 +1,8 @@
 class window.Thing extends Backbone.Model
 	lsProperties: {}
 	className: "Thing"
+	deleteEmptyLabelsValsItxsBeforeSave: true
+	noUpdateThingsInInteractions: false
 #	urlRoot: "/api/things"
 
 	defaults: () ->
@@ -68,51 +70,52 @@ class window.Thing extends Backbone.Model
 
 	toJSON: (options) ->
 		attsToSave = super(options)
+		if @deleteEmptyLabelsValsItxsBeforeSave
+			toDel = attsToSave.lsLabels.filter (lab) ->
+				(lab.get('ignored') || lab.get('labelText')=="") && lab.isNew()
+			for lab in toDel
+				attsToSave.lsLabels.remove lab
 
-		toDel = attsToSave.lsLabels.filter (lab) ->
-			(lab.get('ignored') || lab.get('labelText')=="") && lab.isNew()
-		for lab in toDel
-			attsToSave.lsLabels.remove lab
+			if attsToSave.firstLsThings?
+				toDel = attsToSave.firstLsThings.filter (itx) ->
+					!itx.getItxThing().id?
+				for itx in toDel
+					attsToSave.firstLsThings.remove itx
+				if attsToSave.firstLsThings.length == 0
+					delete attsToSave.firstLsThings
 
-		if attsToSave.firstLsThings?
-			toDel = attsToSave.firstLsThings.filter (itx) ->
-				!itx.getItxThing().id?
-			for itx in toDel
-				attsToSave.firstLsThings.remove itx
-			if attsToSave.firstLsThings.length == 0
-				delete attsToSave.firstLsThings
+			if attsToSave.secondLsThings?
+				toDel = attsToSave.secondLsThings.filter (itx) ->
+					!itx.getItxThing().id?
+				for itx in toDel
+					attsToSave.secondLsThings.remove itx
+				if attsToSave.secondLsThings.length == 0
+					delete attsToSave.secondLsThings
 
-		if attsToSave.secondLsThings?
-			toDel = attsToSave.secondLsThings.filter (itx) ->
-				!itx.getItxThing().id?
-			for itx in toDel
-				attsToSave.secondLsThings.remove itx
-			if attsToSave.secondLsThings.length == 0
-				delete attsToSave.secondLsThings
+			if @lsProperties.defaultLabels? and @lsProperties.defaultLabels.length > 0
+				for dLabel in @lsProperties.defaultLabels
+					delete attsToSave[dLabel.key]
 
-		if @lsProperties.defaultLabels?
-			for dLabel in @lsProperties.defaultLabels
-				delete attsToSave[dLabel.key]
+			if @lsProperties.defaultFirstLsThingItx? and @lsProperties.defaultFirstLsThingItx.length > 0
+				for itx in @lsProperties.defaultFirstLsThingItx
+					delete attsToSave[itx.key]
 
-		if @lsProperties.defaultFirstLsThingItx?
-			for itx in @lsProperties.defaultFirstLsThingItx
-				delete attsToSave[itx.key]
+			if @lsProperties.defaultSecondLsThingItx? and @lsProperties.defaultSecondLsThingItx.length > 0
+				console.log "deleting empty 2nd ls thing itxs"
+				for itx in @lsProperties.defaultSecondLsThingItx
+					delete attsToSave[itx.key]
 
-		if @lsProperties.defaultSecondLsThingItx?
-			for itx in @lsProperties.defaultSecondLsThingItx
-				delete attsToSave[itx.key]
-
-		if @lsProperties.defaultValues?
-			for dValue in @lsProperties.defaultValues
-				if attsToSave[dValue.key]?
-					val = attsToSave[dValue.key].get('value')
-					if val is undefined or val is "" or val is null
-						lsStates = attsToSave.lsStates.getStatesByTypeAndKind dValue.stateType, dValue.stateKind
-						values = lsStates[0].getValuesByTypeAndKind dValue.type, dValue.kind
-						if values[0]?
-							if values[0].isNew()
-								lsStates[0].get('lsValues').remove values[0]
-					delete attsToSave[dValue.key]
+			if @lsProperties.defaultValues? and @lsProperties.defaultValues.length > 0
+				for dValue in @lsProperties.defaultValues
+					if attsToSave[dValue.key]?
+						val = attsToSave[dValue.key].get('value')
+						if val is undefined or val is "" or val is null
+							lsStates = attsToSave.lsStates.getStatesByTypeAndKind dValue.stateType, dValue.stateKind
+							values = lsStates[0].getValuesByTypeAndKind dValue.type, dValue.kind
+							if values[0]?
+								if values[0].isNew()
+									lsStates[0].get('lsValues').remove values[0]
+						delete attsToSave[dValue.key]
 
 		if attsToSave.attributes?
 			delete attsToSave.attributes
@@ -163,9 +166,10 @@ class window.Thing extends Backbone.Model
 			else
 				thing = itx.get 'secondLsThing'
 #			delete thing['version']
-			delete thing['lsLabels']
-			delete thing['lsStates']
-			delete thing['lsTransaction']
+			if thing?
+				delete thing['lsLabels']
+				delete thing['lsStates']
+				delete thing['lsTransaction']
 
 
 	setRByAndRDate: (data) ->
@@ -187,22 +191,55 @@ class window.Thing extends Backbone.Model
 		# add key as attribute of model
 		if @lsProperties.defaultLabels?
 			for dLabel in @lsProperties.defaultLabels
-				newLabel = @get('lsLabels').getOrCreateLabelByTypeAndKind dLabel.type, dLabel.kind
-				@listenTo newLabel, 'createNewLabel', @createNewLabel
-				@set dLabel.key, newLabel
-				#			if newLabel.get('preferred') is undefined
-				newLabel.set key: dLabel.key
-				newLabel.set preferred: dLabel.preferred
+				if dLabel.multiple? and dLabel.multiple
+					labels = @get('lsLabels').getLabelByTypeAndKind dLabel.type, dLabel.kind
+					if labels.length > 0
+						counter = 0
+						_.each labels, (label) =>
+							if !label.has('key')
+								labelKey = dLabel.key + counter
+								counter++
+								@set labelKey, label
+								label.set key: labelKey
+								@stopListening label, 'createNewLabel'
+								@listenTo label, 'createNewLabel', @createNewLabel
+					else
+						newLabel = @get('lsLabels').getOrCreateLabelByTypeAndKind dLabel.type, dLabel.kind
+						newKey = dLabel.key + 0
+						@set newKey, newLabel
+						newLabel.set key: newKey
+				else
+					newLabel = @get('lsLabels').getOrCreateLabelByTypeAndKind dLabel.type, dLabel.kind
+					@stopListening newLabel, 'createNewLabel'
+					@listenTo newLabel, 'createNewLabel', @createNewLabel
+					@set dLabel.key, newLabel
+					#			if newLabel.get('preferred') is undefined
+					newLabel.set key: dLabel.key
+					newLabel.set preferred: dLabel.preferred
+
+					newLabel.set unique: dLabel.unique
+					newLabel.set thingType: @get("lsType")
+					newLabel.set thingKind: @get("lsKind")
+
+					newLabel.set validationRegex: dLabel.validationRegex
+
 
 	createNewLabel: (lKind, newText, key) =>
-		dLabel = _.where(@lsProperties.defaultLabels, {key: key})[0]
 		oldLabel = @get(key)
 		@unset(key)
-		newLabel = @get('lsLabels').getOrCreateLabelByTypeAndKind dLabel.type, dLabel.kind
-		newLabel.set
+		newLabel = new Label
+			lsType: oldLabel.get 'lsType'
+			lsKind: oldLabel.get 'lsKind'
 			key: key
 			labelText: newText
 			preferred: oldLabel.get 'preferred'
+			thingType: oldLabel.get 'thingType'
+			thingKind: oldLabel.get 'thingKind'
+			unique: oldLabel.get 'unique'
+			validationRegex: oldLabel.get 'validationRegex'
+		newLabel.on 'change', =>
+			@trigger('change')
+		@get('lsLabels').add newLabel
 		@set key, newLabel
 
 	createDefaultStates: =>
@@ -252,16 +289,56 @@ class window.Thing extends Backbone.Model
 		# add key as attribute of model
 		if @lsProperties.defaultFirstLsThingItx?
 			for itx in @lsProperties.defaultFirstLsThingItx
-				thingItx = @get('firstLsThings').getOrCreateItxByTypeAndKind itx.itxType, itx.itxKind
-				@set itx.key, thingItx
+				if itx.multiple? and itx.multiple
+					thingItxs = @get('firstLsThings').getItxByTypeAndKind itx.itxType, itx.itxKind
+					if thingItxs.length > 0
+						counter = 0
+						_.each thingItxs, (thingItx) =>
+							if !thingItx.has('key')
+								thingItxKey = itx.key + counter
+								counter++
+								@set thingItxKey, thingItx
+								thingItx.set key: thingItxKey
+								#@listenTo thingItx, 'createNewLabel', @createNewLabel
+					else
+						thingItx = @get('firstLsThings').getOrCreateItxByTypeAndKind itx.itxType, itx.itxKind
+						newKey = itx.key + 0
+						@set newKey, thingItx
+						thingItx.set key: newKey
+				else
+					thingItx = @get('firstLsThings').getOrCreateItxByTypeAndKind itx.itxType, itx.itxKind
+					#@listenTo newLabel, 'createNewLabel', @createNewLabel
+					@set itx.key, thingItx
+					#			if newLabel.get('preferred') is undefined
+					thingItx.set key: itx.key
 
 	createDefaultSecondLsThingItx: =>
 		# loop over defaultSecondLsThingItx
 		# add key as attribute of model
 		if @lsProperties.defaultSecondLsThingItx?
 			for itx in @lsProperties.defaultSecondLsThingItx
-				thingItx = @get('secondLsThings').getOrCreateItxByTypeAndKind itx.itxType, itx.itxKind
-				@set itx.key, thingItx
+				if itx.multiple? and itx.multiple
+					thingItxs = @get('secondLsThings').getItxByTypeAndKind itx.itxType, itx.itxKind
+					if thingItxs.length > 0
+						counter = 0
+						_.each thingItxs, (thingItx) =>
+							if !thingItx.has('key')
+								thingItxKey = itx.key + counter
+								counter++
+								@set thingItxKey, thingItx
+								thingItx.set key: thingItxKey
+								#@listenTo thingItx, 'createNewLabel', @createNewLabel
+					else
+						thingItx = @get('secondLsThings').getOrCreateItxByTypeAndKind itx.itxType, itx.itxKind
+						newKey = itx.key + 0
+						@set newKey, thingItx
+						thingItx.set key: newKey
+				else
+					thingItx = @get('secondLsThings').getOrCreateItxByTypeAndKind itx.itxType, itx.itxKind
+					#@listenTo newLabel, 'createNewLabel', @createNewLabel
+					@set itx.key, thingItx
+					#			if newLabel.get('preferred') is undefined
+					thingItx.set key: itx.key
 
 	getAnalyticalFiles: (fileTypes) => #TODO: rename from analytical files to attachFiles or something more generic
 		#get list of possible kinds of analytical files
@@ -284,10 +361,11 @@ class window.Thing extends Backbone.Model
 		attachFileList
 
 	reformatBeforeSaving: =>
-		if @get('firstLsThings')? and @get('firstLsThings') instanceof FirstLsThingItxList
-			@get('firstLsThings').reformatBeforeSaving()
-		if @get('secondLsThings')? and @get('secondLsThings') instanceof SecondLsThingItxList
-			@get('secondLsThings').reformatBeforeSaving()
+		if @noUpdateThingsInInteractions? && @noUpdateThingsInInteractions
+			if @get('firstLsThings')? and @get('firstLsThings') instanceof FirstLsThingItxList
+				@get('firstLsThings').reformatBeforeSaving()
+			if @get('secondLsThings')? and @get('secondLsThings') instanceof SecondLsThingItxList
+				@get('secondLsThings').reformatBeforeSaving()
 
 
 	deleteInteractions : =>
@@ -305,9 +383,9 @@ class window.Thing extends Backbone.Model
 		copiedThing.set
 			version: 0
 		@resetClonedAttrs(copiedThing)
-		copiedThing.get('notebook').set value: ""
-		copiedThing.get('scientist').set value: "unassigned"
-		copiedThing.get('completion date').set value: null
+		copiedThing.get('notebook')?.set value: ""
+		copiedThing.get('scientist')?.set value: "unassigned"
+		copiedThing.get('completion date')?.set value: null
 
 		delete copiedThing.attributes.firstLsThings
 

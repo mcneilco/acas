@@ -115,7 +115,7 @@ $(function() {
 	    initialize: function () {
 		    //TODO the template load be in render(), but saltFormController won't work that way, unless I new it in the render'
 		    $(this.el).html(this.template());
-		    _.bindAll(this, 'save', 'back', 'newLot', 'newLotSaved', 'lotUpdated', 'editParentRequest');
+		    _.bindAll(this, 'save', 'back', 'newLot', 'newLotSaved', 'lotUpdated', 'editParentRequest', 'handleLotControllerReadyForRender');
 
 		    var eNoti = this.options.errorNotifList;
 
@@ -160,7 +160,6 @@ $(function() {
 
 		    this.saveInProgress = false;
 	    },
-
 	    render: function () {
 		    this.setupButtonsAndTitles();
 
@@ -168,8 +167,15 @@ $(function() {
 		    this.saltFormController.render();
 		    if (this.model.get('lot').get('isVirtual')) {
 			    this.saltFormController.hide();
-		    }
-		    this.lotController.render();
+			}
+			if(typeof(this.lotController.triggerReadyForRender) == 'function') {
+				this.lotController.bind('readyForRender', this.handleLotControllerReadyForRender);
+				if(this.lotController.readyForRender == true) {
+					this.lotController.render()
+				}
+			} else {
+				this.lotController.render();
+			}
 		    if (!this.allowedToUpdate()) {
 			    this.lotController.disableAll();
 			    this.parentController.setAliasToReadOnly();
@@ -184,7 +190,9 @@ $(function() {
 
 		    return this;
 	    },
-
+		handleLotControllerReadyForRender: function() {
+			this.lotController.render();
+		},
 	    setupButtonsAndTitles: function () {
 		    var lisb = window.configuration.metaLot.lotCalledBatch;
 		    if (this.model.get('lot').isNew()) {
@@ -229,6 +237,11 @@ $(function() {
 			    if (!this.allowedToUpdate()) {
 				    this.$('.saveButton').hide();
 			    }
+			    console.log("about to load inventory");
+			    console.log(window.configuration.metaLot.showLotInventory);
+			    if (window.configuration.metaLot.showLotInventory) {
+				    this.$('.bv_lotInventory').append("<iframe src=\"/lotInventory/index/"+this.model.get('lot').get('corpName')+"\" frameBorder=\"0\"></iframe>")
+			    }
 
 		    }
 
@@ -245,7 +258,7 @@ $(function() {
 		    this.saltFormController.updateModel(function () {
 			    if (mlself.saltFormController.model.isNew()) {
 				    mlself.saltFormController.model.set({
-					    'chemist': mlself.lotController.model.get('chemist')
+					    'chemist': mlself.lotController.model.get('chemist').get("code")
 				    });
 			    }
 
@@ -275,7 +288,6 @@ $(function() {
 				    message: 'Saving ' + (lisb ? 'batch' : 'lot') + '...'
 			    });
 			    mlself.delegateEvents({}); // stop listening to buttons
-
 			    $.ajax({
 				    type: "POST",
 				    url: url,
@@ -367,13 +379,13 @@ $(function() {
 		    this.lotController.updateModel();
 		    if (this.lotController.model.isNew() && this.user != null) {
 			    this.lotController.model.set({
-				    'registeredBy': this.user
+				    'registeredBy': this.user.get("code")
 			    });
 		    }
 		    this.parentController.updateModel();
 		    if (this.parentController.model.isNew()) {
 			    this.parentController.model.set({
-				    'chemist': this.lotController.model.get('chemist')
+				    'chemist': this.lotController.model.get('chemist').get("code")
 			    });
 		    }
 	    },
@@ -402,13 +414,16 @@ $(function() {
 	    },
 
 	    allowedToUpdate: function () {
-		    var chemist = this.model.get('lot').get('chemist');
+				var chemist = this.model.get('lot').get('chemist').get('selectedCode');
+				var registeredBy = this.model.get('lot').get('registeredBy');
 
 		    if (this.user == null || chemist == null || this.model.get('lot').isNew()) return true; // test mode or new
 
-		    if (this.user.get('isAdmin') || this.user.get('code') == chemist.get('code')) {
+		    if (this.user.get('isAdmin')) {
 			    return true;
-		    } else {
+		    }else if (!window.configuration.metaLot.disableEditMyLots && (this.user.get('code') == chemist || (registeredBy != null && this.user.get('code') == registeredBy))) {
+				return true;
+			} else {
 			    return false;
 		    }
 	    },
@@ -425,13 +440,22 @@ $(function() {
 	    },
 
 	    parentAllowedToUpdate: function () {
-		    if (!this.allowedToUpdate()) return false;
+			// Check if disableEditMyParents is defined and true.  If its true and the user is not an admin, then we disable the allowed to update feature
+			if(typeof(window.configuration.metaLot.disableEditMyParents) != "undefined" && window.configuration.metaLot.disableEditMyParents != null && window.configuration.metaLot.disableEditMyParents) {
+				if (!this.user.get('isAdmin')) return false;
+			}
+			// Further check to see if the parent is editable by checking the metalot allowedToUpdate function
+			if (!this.allowedToUpdate()) return false;
 
-		    if (this.model.get('lot').isNew() ) {
+			// If we get here, then just check if the lot is new or not
+		    if (this.model.get('lot').isNew()) {
 			    return false;
 		    } else {
 			    return true;
-		    }
+			}
+
+			// We shouldn't get here but lets disable edit parent by default to be safe
+			return false
 	    }
     });
 });

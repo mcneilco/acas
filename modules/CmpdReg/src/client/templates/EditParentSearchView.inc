@@ -3,7 +3,7 @@
 	<h2 class="form_title">Edit Parent Step 1: Draw Structure</h2>
 
 	<div class="marvinWrapper"> <!--dependent? change name...-->
-		<iframe src="/CmpdReg/marvinjs/editorws.html" id="editParentMarvinSketch" class="sketcher-frame"></iframe>
+		<iframe id="editParentMarvinSketch" class="sketcher-frame"></iframe>
 	</div>
 
 	<div class="buttons">

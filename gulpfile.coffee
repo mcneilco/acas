@@ -1,19 +1,21 @@
 # ---------------------------------------------- Requires
 
 gulp = require('gulp')
-gutil = require('gutil')
 coffee = require('gulp-coffee')
-del = require('del')
 flatten = require('gulp-flatten')
 rename = require('gulp-rename')
 plumber = require('gulp-plumber')
 jeditor = require('gulp-json-editor')
 argv = require('yargs').argv
 path = require('path')
-run = require('gulp-run')
 gulpif = require('gulp-if')
 _ = require('underscore')
+notify = require("gulp-notify")
+coffeeify = require('gulp-coffeeify')
+through = require('through2')
+
 node = undefined
+os = require('os');
 
 # ---------------------------------------------- Functions
 getGlob = (paths) ->
@@ -41,10 +43,10 @@ getRPath = (path) ->
   return path
 
 getLegacyRPath = (path) ->
-  console.warn  "Warning: All R code in modules path 'modules/**/src/server/**/*.{R,r}' should be moved to 'modules/**/src/server/r/*.{R,r}'"
+  # console.warn  "Warning: All R code in modules path 'modules/**/src/server/**/*.{R,r}' should be moved to 'modules/**/src/server/r/*.{R,r}'"
   module = path.dirname.split('/')[0]
   additionalPath =  path.dirname.replace(module + '/src/server/', '')
-  console.log "Warning: Please move '#{path.dirname}/#{path.basename}#{path.extname}' to '#{module}/src/server/r/#{additionalPath}/#{path.basename}#{path.extname}'"
+  # console.log "Warning: Please move '#{path.dirname}/#{path.basename}#{path.extname}' to '#{module}/src/server/r/#{additionalPath}/#{path.basename}#{path.extname}'"
   if path.basename == 'r' and path.extname == ''
     path.basename = ''
     path.dirname = ''
@@ -77,6 +79,35 @@ getPythonPath = (path) ->
   outputDirname = module + '/' + path.dirname.replace(module + '/src/server/python', '')
   path.dirname = outputDirname
   return
+
+getAssetsPath = (path) ->
+  module = path.dirname.split('/')[0]
+  if path.basename == 'assets' and path.extname == ''
+    path.basename = ''
+    path.dirname = ''
+  outputDirname = module + '/' + path.dirname.replace(module + '/src/server/assets', '')
+  path.dirname = outputDirname
+  return
+
+addREnvironmentCleanUp = (file,contents) ->
+  # file contents are handed 
+  # over as buffers 
+  if path.extname(file.path) in [".R",".r"] && contents.match('# ROUTE:.*') && !contents.match('# MEMORY_LIMIT_EXEMPT')
+    cleanFunction = "DONE;racas::checkMemoryLimitAndKillSelf();racas::cleanEnvironment();"
+    contents = "#{contents}\r\n#{cleanFunction}\r\n"
+  return contents
+
+modify = (options = {}) ->
+  through.obj (file, enc, next) ->
+    error = null
+    if file.isBuffer()
+      if fileModifier = options.fileModifier
+        try
+          content = fileModifier file, file.contents.toString 'utf8'
+          file.contents = new Buffer content
+        catch _error
+          console.log _error
+    next error, file
 
 # ------------------------------------------------- Read Inputs
 
@@ -187,6 +218,9 @@ taskConfigs =
         command: 'npm'
         args: [ 'install' ]
         options: _.extend _.clone(globalExecuteOptions), cwd: build
+        src: [
+          build + '/package.json'
+        ]
       ,
         taskName: "prepare_config_files"
         command: 'node'
@@ -241,6 +275,12 @@ taskConfigs =
       dest: build + '/conf'
       options: _.extend _.clone(globalCopyOptions), {}
     ,
+      taskName: "moduleConf"
+      src: getGlob('modules/**/conf/**', '!modules/**/conf/*.coffee')
+      dest: build + '/public/conf'
+      options: _.extend _.clone(globalCopyOptions), {}
+      renameFunction: getFirstFolderName
+    ,
       taskName: "nodeModulesCustomized"
       src: getGlob('node_modules_customized/**')
       dest: build+"/node_modules_customized"
@@ -259,7 +299,7 @@ taskConfigs =
       renameFunction: getRPath
     ,
       taskName: "python"
-      src: getGlob('modules/**/src/server/python/**')
+      src: getGlob('modules/**/src/server/python/**', '!modules/**/src/server/python/**/venv/**')
       dest: build + '/src/python'
       options: _.extend _.clone(globalCopyOptions), {}
       renameFunction: getPythonPath
@@ -269,6 +309,7 @@ taskConfigs =
       dest: build + '/src/r'
       options: _.extend _.clone(globalCopyOptions), {}
       renameFunction: getFirstFolderName
+      modifyFunction: addREnvironmentCleanUp
     ,
       taskName: "legacyServerR"
       src: getGlob('modules/**/src/server/**/*.{R,r}', '!modules/**/src/server/*.{R,r}','!modules/**/src/server/r/*.{R,r}')
@@ -304,6 +345,24 @@ taskConfigs =
       src: getGlob('modules/CmpdReg/src/**')
       dest: build + '/public/CmpdReg'
       options: _.extend _.clone(globalCopyOptions), {}
+    ,
+      taskName: "spec"
+      src: getGlob("modules/**/spec/**", "!modules/**/spec/**/*.coffee", "!modules/**/spec/testFixtures/*.coffee")
+      dest: build + '/src/spec'
+      options: _.extend _.clone(globalCopyOptions), {}
+      renameFunction: getTestFixuresPath
+    ,
+      taskName: "serverAssets"
+      src: getGlob('modules/**/src/server/assets/**')
+      dest: build + '/src/assets'
+      options: _.extend _.clone(globalCopyOptions), {}
+      renameFunction: getAssetsPath
+    ,
+      taskName: "clientAssets"
+      src: getGlob('modules/**/src/client/assets/**')
+      dest: build + '/public/assets'
+      options: _.extend _.clone(globalCopyOptions), {}
+      renameFunction: getFirstFolderName
   ],
   others:
     packageJSON:
@@ -341,7 +400,7 @@ createExecuteTask = (options) =>
       return
     command.on 'exit', (code) ->
       cb code
-  unless watch == false
+  unless watch == false || !options.src?
     watchTaskName = "watch:#{taskName}"
     watchOptions = watch?.options ? {}
     gulp.task watchTaskName, ->
@@ -352,6 +411,23 @@ createExecuteTask = (options) =>
     watchTasks.push watchTaskName
   return taskName
 
+
+onError = (err) ->
+  @emit 'end'
+  process.stdout.write '\x07'
+  if os.platform() == 'darwin'
+    notify.onError(
+      title: '<%= error.message %>'
+      # subtitle: 'Failure!'
+      message: 'Error: <%= error.stack %>'
+      sound: false) err
+  else
+    notify.onError((options, callback) ->
+      console.log "\x1b[34m[#{options.message}]\x1b[0m \x1b[31mError: #{options.stack}\x1b[0m"
+      return
+    ) err
+
+
 createTask = (options, type) ->
   taskName = "#{type}:#{options.taskName}"
   taskOptions = options.options
@@ -360,12 +436,25 @@ createTask = (options, type) ->
   watch = options.watch
   shouldFlatten = options.flatten ? false
   renameFunction = options.renameFunction
+  modifyFunction = options.modifyFunction
+  shouldCoffeify = (file) ->
+    if type=="coffee" && (file.path.indexOf("client/ExcelApp") > -1)
+       return true
+    else
+      return false
+  shouldCoffee = (file) ->
+    if type=="coffee" && !(file.path.indexOf("client/ExcelApp") > -1)
+       return true
+    else
+      return false
   gulp.task taskName, ->
     gulp.src(src, _.extend(taskOptions, {since: gulp.lastRun(taskName)}))
-    .pipe(plumber())
+    .pipe(plumber({errorHandler: onError}))
     .pipe(gulpif(shouldFlatten,flatten()))
+    .pipe(gulpif(modifyFunction?, modify(fileModifier: modifyFunction)))
+    .pipe(gulpif(shouldCoffeify, coffeeify({options:{paths:[build+ '/node_modules']}})))
+    .pipe(gulpif(shouldCoffee,coffee(bare: true)))
     .pipe(gulpif(renameFunction?,rename(renameFunction)))
-    .pipe(gulpif(type=="coffee",coffee(bare: true)))
     .pipe gulp.dest(dest)
   unless watch == false
     watchTaskName = "watch:#{taskName}"

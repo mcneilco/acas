@@ -52,8 +52,8 @@ $(function() {
             this.collection = new PickListList();
 			this.collection.setType(this.options.type);
 			this.collection.bind('add', this.addOne);
-			this.collection.bind('reset', this.handleListReset);
-			this.collection.fetch();
+			//this.collection.bind('reset', this.handleListReset);
+			this.collection.fetch({success: this.handleListReset});
             if (this.options.selectedCode !='') {
                 this.selectedCode = this.options.selectedCode;
             } else {
@@ -64,18 +64,52 @@ $(function() {
             } else {
                 this.insertFirstOption = null;
             }
+            if (this.options.insertSecondOption !=null) {
+                this.insertSecondOption = this.options.insertSecondOption;
+            } else {
+                this.insertSecondOption = null;
+            }
+            if (this.options.insertThirdOption !=null) {
+                this.insertThirdOption = this.options.insertThirdOption;
+            } else {
+                this.insertThirdOption = null;
+            }
             if (this.options.showIgnored !=null) {
                 this.showIgnored = this.options.showIgnored;
             } else {
                 this.showIgnored = false;
             }
+
+            if (this.options.insertSelectedCode !=null) {
+                      this.insertSelectedCode = this.options.insertSelectedCode;
+            } else {
+                      this.insertSelectedCode = true;
+            }
 		},
 		
 		handleListReset: function() {
+			if (this.insertThirdOption) {
+	            this.collection.add(this.insertThirdOption, {at: 0, silent: true});
+            }
+			if (this.insertSecondOption) {
+	            this.collection.add(this.insertSecondOption, {at: 0, silent: true});
+            }
 			if (this.insertFirstOption) {
 	            this.collection.add(this.insertFirstOption, {at: 0, silent: true});
-            }
-            this.render();
+			}
+
+			//If insert selected code is set to true (it is by default) then
+			// check if the selectedCode is null or undefined and also if it is in the list
+			// if it is not in the list then we artificially insert the selected code as to not change
+			// the value stored in the db.
+			if (this.insertSelectedCode && this.selectedCode != null && typeof(this.selectedCode) != "undefined" && (typeof(this.collection.getModelWithCode(this.selectedCode)) == "undefined")) {
+				newOption = new PickList({
+					code: this.selectedCode,
+					name: this.selectedCode
+				});
+				this.collection.add(newOption, {at: 0, silent: true});
+			}
+			this.render();
 		},
 		
 		render: function() {
@@ -104,7 +138,8 @@ $(function() {
         	$(this.el).hide();
         	$(this.el).show();
             this.rendered = true;
-            
+			var selectedText = this.getSelectedModel().get('name');
+			$(this.el).prop('title', selectedText);
             return this;
 		},
 		

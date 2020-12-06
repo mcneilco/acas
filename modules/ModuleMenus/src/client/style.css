@@ -64,3 +64,76 @@ body {
 .bv_BulkLoadSampleTransfersController {
     background-color: green;
 }*/
+
+.bv_fastUserSelect {
+  width: 150px;
+  height: 30px;
+  border-color: #999999;
+  background-color: transparent;
+  margin-bottom: 2px;
+}
+
+.bv_userInfo select2-hidden-accessible {
+  display: none;
+}
+
+.bv_userInfo .select2-container {
+  width: 175px !important;
+}
+
+.bv_userInfo .select2-container .select2-selection--single {
+  width: 175px;
+  height: 30px;
+  border-color: #999999;
+  background-color: transparent;
+}
+
+.bv_userInfo .select2-container--default .select2-selection--single .select2-selection__rendered {
+  color: #999999;
+}
+
+.bv_userInfo .select2-container--default .select2-selection--single .select2-selection__clear {
+  display: none;
+}
+
+.bv_userInfo .select2-container {
+  margin-bottom: 2px;
+}
+
+.bv_userInfo .bv_logout {
+  margin-top:0px;
+  margin-bottom: 2px;
+}
+
+.bv_collapsibleHeaderController .bv_caret {
+    margin-left: 5px;
+    /*border-bottom-color: #999999;*/
+}
+
+.bv_collapsibleHeaderController .bv_modules {
+    list-style-type: none;
+    margin-left: 15px;
+}
+.bv_collapsibleHeaderController .bv_moduleCategory {
+    cursor: pointer;
+}
+
+.bv_modLaunchMenuWrapper {
+    width: 267px;
+}
+.bv_modLaunchMenuWrapper .bv_menuItem {
+    margin-top: 3px;
+
+    /*margin-bottom: 5px;*/
+}
+
+.bv_notTopHeader {
+    margin-top: 5px;
+}
+
+.bv_expandAll, .bv_collapseAll {
+    width: 12px;
+    position: absolute;
+    top: 75px;
+    left: 265px;
+}

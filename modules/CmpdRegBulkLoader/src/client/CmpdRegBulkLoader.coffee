@@ -18,17 +18,7 @@ class window.AssignedProperty extends Backbone.Model
 		dbProperty: "none"
 		defaultVal: ""
 		required: false
-
-#	validate: (attrs) =>
-#		errors = []
-#		if attrs.required and attrs.dbProperty != "corporate id" and attrs.dbProperty != "Project" and attrs.defaultVal == ""
-#			errors.push
-#				attribute: 'defaultVal'
-#				message: 'A default value must be assigned'
-#		if errors.length > 0
-#			return errors
-#		else
-#			return null
+		ignored: false
 
 	validateProject: ->
 		projectError = []
@@ -161,17 +151,30 @@ class window.DetectSdfPropertiesController extends Backbone.View
 			dataType: 'json'
 
 	handlePropertiesDetected: (response) ->
+		hasError = false
 		if response is "Error"
+			hasError = true
+		if response.errors? && response.errors.length > 0
+			for err in response.errors
+				if err.level == 'error'
+					hasError = true
+					break
+		if hasError
 			@handleReadError(response)
 		else
 			@trigger 'propsDetected', response
 
 	handleReadError: (err) ->
 		@$('.bv_detectedSdfPropertiesList').addClass 'readError'
-		@$('.bv_detectedSdfPropertiesList').html "An error occurred reading the SD file. Please retry upload or contact an administrator."
+		if err? && typeof(err) == 'object' && err.errors? && err.errors.length > 0
+			errorList = []
+			for error in err.errors
+				errorList.push(error.message)
+			err = errorList.join("\n")
+		@$('.bv_detectedSdfPropertiesList').html "An error occurred reading the SD file. Please retry upload or contact an administrator.\n\n#{err}"
 
 	handleFileRemoved: =>
-		@disableInputs()
+		@disableInputs()	
 		@$('.bv_detectedSdfPropertiesList').html ""
 		@fileName = null
 		@numRecords = 100
@@ -262,17 +265,18 @@ class window.AssignedPropertyController extends AbstractFormController
 	formatDbSelectOptions: ->
 		formattedOptions = new PickListList()
 		@dbPropertiesList.each (dbProp) ->
-			code = dbProp.get('name')
-			if dbProp.get('required')
-				name = code+"*"
-			else
-				name = code
-			if code.toLowerCase().indexOf("date") > -1
-				name += " (YYYY-MM-DD or MM-DD-YYYY)"
-			newOption = new PickList
-				code: code
-				name: name
-			formattedOptions.add newOption
+			if !dbProp.get("ignored")? || dbProp.get("ignored") != true
+				code = dbProp.get('name')
+				if dbProp.get('required')
+					name = code+"*"
+				else
+					name = code
+				if code.toLowerCase().indexOf("date") > -1
+					name += " (YYYY-MM-DD or MM-DD-YYYY)"
+				newOption = new PickList
+					code: code
+					name: name
+				formattedOptions.add newOption
 		formattedOptions
 
 	handleDbPropertyChanged: ->
@@ -340,6 +344,7 @@ class window.AssignSdfPropertiesController extends Backbone.View
 
 	events:
 		"change .bv_dbProject": "handleDbProjectChanged"
+		"change .bv_labelPrefix": "handleLabelPrefixChanged"
 		"keyup .bv_fileDate": "handleFileDateChanged"
 		"change .bv_fileDate": "handleFileDateChanged" #have this here too for when you set date using date icon
 		"click .bv_fileDateIcon": "handleFileDateIconClicked"
@@ -348,6 +353,7 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		"keyup .bv_templateName": "handleNameTemplateChanged"
 		"change .bv_overwrite": "handleOverwriteRadioSelectChanged"
 		"click .bv_regCmpds": "handleRegCmpdsClicked"
+		"click .bv_valCmpds": "handleValCmpdsClicked"
 
 	initialize: ->
 		@fileName = null
@@ -364,9 +370,21 @@ class window.AssignSdfPropertiesController extends Backbone.View
 			@$('.bv_group_fileDate').hide()
 		if window.conf.cmpdReg.showProjectSelect
 			@setupProjectSelect()
-			@isValid()
 		else
 			@$('.bv_group_dbProject').hide()
+		if window.AppLaunchParams.cmpdRegConfig.serverSettings.corpParentFormat? and window.AppLaunchParams.cmpdRegConfig.serverSettings.corpParentFormat == 'ACASLabelSequence'
+			@setupPrefixSelect()
+		else
+			@$('.bv_group_labelPrefix').hide()
+		if window.conf.cmpdRegBulkLoader.validationMode.enable
+			@$('.bv_regCmpdsContainer').hide()
+			@$('.bv_valCmpdsContainer').show()
+		else 
+			@$('.bv_regCmpdsContainer').show()
+			@$('.bv_valCmpdsContainer').hide()
+			
+		@isValid()
+
 		@setupAssignedPropertiesListController()
 
 	getAndFormatTemplateOptions: ->
@@ -413,6 +431,17 @@ class window.AssignSdfPropertiesController extends Backbone.View
 				name: "Select Project"
 			selectedCode: "unassigned"
 
+	setupPrefixSelect: ->
+		@prefixList = new PickListList()
+		@prefixList.url = "/cmpdreg/labelPrefixes"
+		@prefixListController = new PickListSelectController
+			el: @$('.bv_labelPrefix')
+			collection: @prefixList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Prefix"
+			selectedCode: "unassigned"
+
 	setupAssignedPropertiesListController: ->
 		@assignedPropertiesListController= new AssignedPropertiesListController
 			el: @$('.bv_assignedPropertiesList')
@@ -443,6 +472,7 @@ class window.AssignSdfPropertiesController extends Backbone.View
 					dbProperty: "none"
 					required: false
 					sdfProperty: sdfProperty
+					ignored: false
 				@assignedPropertiesList.add newAssignedProp
 
 	handleFileChanged: (newFileName) ->
@@ -454,6 +484,12 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		@project = project # set the selected
 		@isValid()
 		@trigger 'projectChanged', project
+
+	handleLabelPrefixChanged: ->
+		labelPrefix = @prefixListController.getSelectedModel()
+		@labelPrefix = labelPrefix.attributes
+		@labelPrefix.labelPrefix = labelPrefix.get('name')
+		@isValid()
 
 	handleFileDateChanged: ->
 		if UtilityFunctions::getTrimmedInput(@$('.bv_fileDate')) is ""
@@ -533,6 +569,8 @@ class window.AssignSdfPropertiesController extends Backbone.View
 			otherErrors.push @getProjectErrors()...
 		if window.conf.cmpdReg.showFileDate
 			otherErrors.push @getFileDateErrors()...
+		if window.AppLaunchParams.cmpdRegConfig.serverSettings.corpParentFormat? and window.AppLaunchParams.cmpdRegConfig.serverSettings.corpParentFormat == 'ACASLabelSequence'
+			otherErrors.push @getPrefixErrors()...
 		if @assignedPropertiesList?
 			otherErrors.push @assignedPropertiesList.checkDuplicates()...
 			otherErrors.push @assignedPropertiesList.checkSaltProperties()...
@@ -542,10 +580,11 @@ class window.AssignSdfPropertiesController extends Backbone.View
 			validCheck = false
 		if otherErrors.length > 0
 			validCheck = false
-
 		if validCheck
+			@$('.bv_valCmpds').removeAttr('disabled')
 			@$('.bv_regCmpds').removeAttr('disabled')
 		else
+			@$('.bv_valCmpds').attr 'disabled','disabled'
 			@$('.bv_regCmpds').attr 'disabled','disabled'
 
 		validCheck
@@ -557,6 +596,14 @@ class window.AssignSdfPropertiesController extends Backbone.View
 				attribute: 'dbProject'
 				message: 'Project must be selected'
 		projectError
+
+	getPrefixErrors: ->
+		prefixError = []
+		if @prefixListController.getSelectedCode() is "unassigned" or @prefixListController.getSelectedCode() is null
+			prefixError.push
+				attribute: 'labelPrefix'
+				message: 'Prefix must be selected'
+		prefixError
 
 	validateAssignedProperties: ->
 		validCheck = true
@@ -616,6 +663,9 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		@$("[data-toggle=tooltip]").tooltip();
 
 	handleRegCmpdsClicked: ->
+		@register()
+
+	register: ->
 		@$('.bv_regCmpds').attr 'disabled', 'disabled'
 		@$('.bv_registering').show()
 		saveTemplateChecked = @$('.bv_saveTemplate').is(":checked")
@@ -623,6 +673,11 @@ class window.AssignSdfPropertiesController extends Backbone.View
 			@saveTemplate()
 		else
 			@registerCompounds()
+
+	handleValCmpdsClicked: ->
+		@$('.bv_valCmpds').attr 'disabled', 'disabled'
+		@$('.bv_validating').show()
+		@validateCompounds()
 
 	saveTemplate: ->
 		templateName = UtilityFunctions::getTrimmedInput(@$('.bv_templateName'))
@@ -649,23 +704,27 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		@$('.bv_registering').hide()
 		@$('.bv_saveErrorModal').modal('show')
 		@$('.bv_saveErrorTitle').html "Error: Template Not Saved"
-		@$('.bv_errorMessage').html "An error occurred while trying to save the template. The compounds have not been registered yet. Please try again or contact an administrator."
+		@$('.bv_errorMessage').html "An error occurred while trying to save the template. The compounds have not been registered yet.<br>Please try again or contact an administrator."
 
 	addProjectToMappingsPayLoad: ->
-		if @project?
-			dbProjectProperty = new AssignedProperty
-				dbProperty: "Project"
-				required: true
-				sdfProperty: null
-				defaultVal: @project
-			@assignedPropertiesListController.collection.add dbProjectProperty
+		@assignedPropertiesList.remove(@assignedPropertiesListController.collection.findWhere({dbProperty: "Project"}))
+		dbProjectProperty = new AssignedProperty
+			dbProperty: "Project"
+			required: true
+			sdfProperty: null
+			defaultVal: @project
+			ignored: false
+		@assignedPropertiesListController.collection.add dbProjectProperty
 
 	registerCompounds: ->
-		@addProjectToMappingsPayLoad()
+		if window.conf.cmpdReg.showProjectSelect
+			@addProjectToMappingsPayLoad()
 		dataToPost =
 			fileName: @fileName
 			mappings: JSON.parse(JSON.stringify(@assignedPropertiesListController.collection.models))
 			userName: window.AppLaunchParams.loginUser.username
+		if window.AppLaunchParams.cmpdRegConfig.serverSettings.corpParentFormat? and window.AppLaunchParams.cmpdRegConfig.serverSettings.corpParentFormat == 'ACASLabelSequence'
+			dataToPost.labelPrefix = @labelPrefix
 		if window.conf.cmpdReg.showFileDate
 			dataToPost.fileDate = @fileDate
 		$.ajax
@@ -684,11 +743,44 @@ class window.AssignSdfPropertiesController extends Backbone.View
 				@handleRegisterCmpdsError()
 			dataType: 'json'
 
+	validateCompounds: ->
+		if window.conf.cmpdReg.showProjectSelect
+			@addProjectToMappingsPayLoad()
+		dataToPost =
+			fileName: @fileName
+			mappings: JSON.parse(JSON.stringify(@assignedPropertiesListController.collection.models))
+			userName: window.AppLaunchParams.loginUser.username
+		if window.AppLaunchParams.cmpdRegConfig.serverSettings.corpParentFormat? and window.AppLaunchParams.cmpdRegConfig.serverSettings.corpParentFormat == 'ACASLabelSequence'
+			dataToPost.labelPrefix = @labelPrefix
+		if window.conf.cmpdReg.showFileDate
+			dataToPost.fileDate = @fileDate
+		$.ajax
+			type: 'POST'
+			url: "/api/cmpdRegBulkLoader/validateCmpds"
+			data: dataToPost
+			timeout: 6000000
+			success: (response) =>
+				@$('.bv_validating').hide()
+				if response is "Error"
+					@handleValidateCmpdsError()
+				else
+					@trigger 'validateComplete', response
+			error: (err) =>
+				@serviceReturn = null
+				@handleValidateCmpdsError()
+			dataType: 'json'
+
+	handleValidateCmpdsError: ->
+		@$('.bv_validating').hide()
+		@$('.bv_saveErrorModal').modal('show')
+		@$('.bv_saveErrorTitle').html "Error: Compounds Not Validated"
+		@$('.bv_errorMessage').html "An error occurred while trying to validate the compounds. Please try again or contact an administrator."
+
 	handleRegisterCmpdsError: ->
 		@$('.bv_registering').hide()
 		@$('.bv_saveErrorModal').modal('show')
 		@$('.bv_saveErrorTitle').html "Error: Compounds Not Registered"
-		@$('.bv_errorMessage').html "An error occurred while trying to register the compounds. Please try again or contact an administrator."
+		@$('.bv_errorMessage').html "An error occurred while trying to register the compounds.<br>Please try again or contact an administrator."
 
 class window.BulkRegCmpdsController extends Backbone.View
 	template: _.template($("#BulkRegCmpdsView").html())
@@ -699,6 +791,13 @@ class window.BulkRegCmpdsController extends Backbone.View
 		@disableAllInputs()
 		@setupDetectSdfPropertiesController()
 		@setupAssignSdfPropertiesController()
+
+	validate: ->
+		@assignSdfPropertiesController.isValid()
+
+	register: ->
+		@assignSdfPropertiesController.register()
+
 
 	setupDetectSdfPropertiesController: ->
 		@detectSdfPropertiesController = new DetectSdfPropertiesController
@@ -720,6 +819,8 @@ class window.BulkRegCmpdsController extends Backbone.View
 			@detectSdfPropertiesController.handleTemplateChanged(templateName, mappings)
 		@assignSdfPropertiesController.on 'saveComplete', (saveSummary) =>
 			@trigger 'saveComplete', saveSummary
+		@assignSdfPropertiesController.on 'validateComplete', (saveSummary) =>
+			@trigger 'validateComplete', saveSummary
 
 	handleSdfPropertiesDetected: (properties) =>
 		@$('.bv_templateWarning').hide()
@@ -760,6 +861,33 @@ class window.BulkRegCmpdsSummaryController extends Backbone.View
 
 	handleLoadAnotherSDF: ->
 		@trigger 'loadAnother'
+
+class window.BulkValCmpdsSummaryController extends Backbone.View
+	template: _.template($("#BulkValCmpdsSummaryView").html())
+
+	events:
+		"click .bv_register": "handleRegister"
+		"click .bv_back": "handleBack"
+
+	initialize: ->
+		$(@el).empty()
+		$(@el).html @template()
+		if @options.summaryHTML?
+			@summaryHTML = @options.summaryHTML
+		else
+			@summaryHTML = ""
+
+	render: ->
+		@$('.bv_valSummaryHTML').html @summaryHTML
+
+	handleRegister: ->
+		@$('.bv_regCmpds').attr 'disabled', 'disabled'
+		@$('.bv_back').attr 'disabled', 'disabled'
+		@$('.bv_registering').show()
+		@trigger 'register'
+
+	handleBack: ->
+		@trigger 'back'
 
 class window.FileRowSummaryController extends Backbone.View
 	tagName: 'tr'
@@ -855,7 +983,7 @@ class window.PurgeFilesController extends Backbone.View
 
 	handleGetFilesError: ->
 		$('.bv_fileTableController').addClass "well"
-		$('.bv_fileTableController').html "An error occurred when getting files to purge. Please try refreshing the page or contact an administrator."
+		$('.bv_fileTableController').html "An error occurred when getting files to purge.<br>Please try refreshing the page or contact an administrator."
 		$('.bv_purgeFileBtn').hide()
 
 	selectedFileUpdated: (file) =>
@@ -899,7 +1027,7 @@ class window.PurgeFilesController extends Backbone.View
 				@$('.bv_dependencyCheckModal').modal "hide"
 				@$('.bv_dependenciesCheckErrorModal').modal 'show'
 #					backdrop: 'static'
-				@$('.bv_dependenciesCheckError').html "There has been an error checking the dependencies. Please try again or contact an administrator."
+				@$('.bv_dependenciesCheckError').html "There has been an error checking the dependencies.<br>Please try again or contact an administrator."
 
 	handleCancelBtnClicked: ->
 		@$('.bv_showDependenciesModal').modal "hide"
@@ -914,6 +1042,7 @@ class window.PurgeFilesController extends Backbone.View
 			url: "/api/cmpdRegBulkLoader/purgeFile"
 			data: fileInfo
 			dataType: 'json'
+			timeout: 30000
 			success: (response) =>
 				@$('.bv_purging').hide()
 				if response.success
@@ -934,13 +1063,16 @@ class window.PurgeFilesController extends Backbone.View
 		downloadUrl = window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" + response.fileName
 		@$('.bv_purgedFileName').attr "href", downloadUrl
 		@$('.bv_purgedFileName').html response.fileName
+		@$('.bv_purgeSummaryWrapper .bv_downloadPurgedFile').show()
 		@$('.bv_purgeSummaryWrapper').show()
 		@fileInfoToPurge = null
 		@fileNameToPurge = null
 		@getFiles()
 
 	handlePurgeError: ->
-		@$('.bv_purgeSummary').html "An error occurred purging the file: "+ @fileNameToPurge + " .Please try again or contact an administrator."
+		@$('.bv_showDependenciesModal').modal "hide"
+		@$('.bv_purgeSummaryWrapper .bv_downloadPurgedFile').hide()
+		@$('.bv_purgeSummary').html "An error occurred purging the file: "+ @fileNameToPurge + ".<br>Please try again or contact an administrator."
 		@$('.bv_purgeSummaryWrapper').show()
 		@fileInfoToPurge = null
 		@fileNameToPurge = null
@@ -990,6 +1122,7 @@ class window.CmpdRegBulkLoaderAppController extends Backbone.View
 		unless @$('.bv_purgeFiles').is(':visible')
 			@$('.bv_bulkReg').hide()
 			@$('.bv_bulkRegSummary').hide()
+			@$('.bv_bulkValSummary').hide()
 			@$('.bv_purgeFiles').show()
 			@setupPurgeFilesController()
 		@$('.bv_adminDropdown').dropdown('toggle')
@@ -999,8 +1132,15 @@ class window.CmpdRegBulkLoaderAppController extends Backbone.View
 			el: @$('.bv_bulkReg')
 		@regCmpdsController.on 'saveComplete', (summary) =>
 			@$('.bv_bulkReg').hide()
+			@$('.bv_bulkValSummary').hide()
 			@$('.bv_bulkRegSummary').show()
 			@setupBulkRegCmpdsSummaryController(summary[0])
+			downloadUrl = window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" +summary[1]
+			@$('.bv_downloadSummary').attr "href", downloadUrl
+		@regCmpdsController.on 'validateComplete', (summary) =>
+			@$('.bv_bulkReg').hide()
+			@$('.bv_bulkValSummary').show()
+			@setupBulkValCmpdsSummaryController(summary[0])
 			downloadUrl = window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" +summary[1]
 			@$('.bv_downloadSummary').attr "href", downloadUrl
 
@@ -1017,6 +1157,24 @@ class window.CmpdRegBulkLoaderAppController extends Backbone.View
 			@setupBulkRegCmpdsController()
 			@$('.bv_bulkRegSummary').hide()
 			@$('.bv_bulkReg').show()
+
+	setupBulkValCmpdsSummaryController: (summary) ->
+		if @valCmpdsSummaryController?
+			@valCmpdsSummaryController.undelegateEvents()
+		@valCmpdsSummaryController = new BulkValCmpdsSummaryController
+			el: @$('.bv_bulkValSummary')
+			summaryHTML: summary['summary']
+		if window.conf.cmpdRegBulkLoader.validationMode.allowRegistrationOnError || ! _.where(summary.results, {"level": "error"}).length > 0
+			@$('.bv_register').removeAttr('disabled')
+		else
+			@$('.bv_register').attr 'disabled','disabled'
+		@valCmpdsSummaryController.render()
+		@valCmpdsSummaryController.on 'back', =>
+			@$('.bv_bulkValSummary').hide()
+			@$('.bv_bulkReg').show()
+			@regCmpdsController.validate();
+		@valCmpdsSummaryController.on 'register', =>
+			@regCmpdsController.register();
 
 	setupPurgeFilesController: ->
 		if @purgeFilesController?

@@ -11,6 +11,7 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.post '/api/validateName', exports.validateName
 	app.get '/api/getAssembliesFromComponent/:lsType/:lsKind/:componentCode', exports.getAssemblies
 	app.get '/api/genericSearch/things/:searchTerm', exports.genericThingSearch
+	app.post '/api/advancedSearch/things/:lsType/:lsKind', exports.advancedThingSearch
 	app.get '/api/getThingThingItxsByFirstThing/:firstThingId', exports.getThingThingItxsByFirstThing
 	app.get '/api/getThingThingItxsBySecondThing/:secondThingId', exports.getThingThingItxsBySecondThing
 	app.get '/api/getThingThingItxsByFirstThing/:lsType/:lsKind/:firstThingId', exports.getThingThingItxsByFirstThingAndItxTypeKind
@@ -20,6 +21,13 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.get '/api/getThingCodeTablesByLabelText/:lsType/:lsKind/:labelText', exports.getThingsByTypeAndKindAndLabelTypeAndLabelText
 	app.post '/api/things/:lsType/:lsKind/codeNames/jsonArray', exports.getThingsByCodeNames
 	app.get '/api/thingKinds', exports.getThingKinds
+	app.post '/api/things/jsonArray', exports.postThings
+	app.post '/api/bulkPostThings', exports.bulkPostThings
+	app.put '/api/bulkPutThings', exports.bulkPutThings
+	app.post '/api/bulkPostThingsSaveFile', exports.bulkPostThingsSaveFile
+	app.put '/api/bulkPutThingsSaveFile', exports.bulkPutThingsSaveFile
+	app.delete '/api/things/:lsType/:lsKind/:idOrCodeName', exports.deleteThing
+
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/things/:lsType/:lsKind', loginRoutes.ensureAuthenticated, exports.thingsByTypeKind
@@ -34,6 +42,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/validateName', loginRoutes.ensureAuthenticated, exports.validateName
 	app.get '/api/getAssembliesFromComponent/:lsType/:lsKind/:componentCode', loginRoutes.ensureAuthenticated, exports.getAssemblies
 	app.get '/api/genericSearch/things/:searchTerm', loginRoutes.ensureAuthenticated, exports.genericThingSearch
+	app.post '/api/advancedSearch/things/:lsType/:lsKind', loginRoutes.ensureAuthenticated, exports.advancedThingSearch
 	app.get '/api/getThingThingItxsByFirstThing/:firstThingId', loginRoutes.ensureAuthenticated, exports.getThingThingItxsByFirstThing
 	app.get '/api/getThingThingItxsBySecondThing/:secondThingId', loginRoutes.ensureAuthenticated, exports.getThingThingItxsBySecondThing
 	app.get '/api/getThingThingItxsByFirstThing/:lsType/:lsKind/:firstThingId', loginRoutes.ensureAuthenticated, exports.getThingThingItxsByFirstThingAndItxTypeKind
@@ -43,14 +52,22 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/getThingCodeTablesByLabelText/:lsType/:lsKind/:labelText', loginRoutes.ensureAuthenticated, exports.getThingsByTypeAndKindAndLabelTypeAndLabelText
 	app.post '/api/things/:lsType/:lsKind/codeNames/jsonArray', loginRoutes.ensureAuthenticated, exports.getThingsByCodeNames
 	app.get '/api/thingKinds', loginRoutes.ensureAuthenticated, exports.getThingKinds
+	app.get '/api/transaction/:id', loginRoutes.ensureAuthenticated, exports.getTransaction
+	app.post '/api/things/jsonArray', loginRoutes.ensureAuthenticated, exports.postThings
+	app.post '/api/bulkPostThings', loginRoutes.ensureAuthenticated, exports.bulkPostThings
+	app.put '/api/bulkPutThings', loginRoutes.ensureAuthenticated, exports.bulkPutThings
+	app.post '/api/bulkPostThingsSaveFile', loginRoutes.ensureAuthenticated, exports.bulkPostThingsSaveFile
+	app.put '/api/bulkPutThingsSaveFile', loginRoutes.ensureAuthenticated, exports.bulkPutThingsSaveFile
+	app.delete '/api/things/:lsType/:lsKind/:idOrCodeName', loginRoutes.ensureAuthenticated, exports.deleteThing
 
+request = require 'request'
+config = require '../conf/compiled/conf.js'
 
 exports.thingsByTypeKind = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
 		thingServiceTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
 		resp.end JSON.stringify thingServiceTestJSON.batchList
 	else
-		config = require '../conf/compiled/conf.js'
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind
 		stubFlag = "with=stub"
@@ -83,7 +100,6 @@ exports.getThingsByTypeAndKindAndLabelTypeAndLabelTextInternal = (thingType, thi
 	searchJSON.labels.push
 		labelType: if labelType? then labelType else null
 		labelText: labelText
-	config = require '../conf/compiled/conf.js'
 	baseurl = config.all.client.service.persistence.fullpath+'lsthings/genericInteractionSearch'
 	console.log baseurl
 	request = require 'request'
@@ -108,7 +124,6 @@ exports.getThingsByTypeAndKindAndLabelTypeAndLabelTextInternal = (thingType, thi
 	)
 
 getThingByTypeAndKind = (lsType, lsKind, stub, callback) =>
-	config = require '../conf/compiled/conf.js'
 	baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+lsType+"/"+lsKind
 	console.log "in getThingByTypeAndKind"
 	if stub
@@ -136,7 +151,6 @@ exports.thingsByTypeAndKinds = (req, resp) ->
 		thingServiceTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
 		resp.end JSON.stringify thingServiceTestJSON.batchList
 	else
-		config = require '../conf/compiled/conf.js'
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		kinds = req.params.lsKindsList.split(";") #lsKindsList = semi-colon delimited list
 		index = 0
@@ -187,12 +201,36 @@ exports.thingByCodeName = (req, resp) ->
 #			baseurl += "?#{stub}"
 #		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
+exports.getThingInternal = (lsType, lsKind, format, testMode, codeName, callback) ->
+	if testMode or global.specRunnerTestmode
+		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
+		callback thingTestJSON.thingParent
+	else
+		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+lsType+"/"+lsKind+"/"+ encodeURIComponent codeName
+		if format?
+			baseurl += "?with=#{format}"
+		request = require 'request'
+		request(
+			method: 'GET'
+			url: baseurl
+			json: true
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				callback json
+			else
+				console.log 'got ajax error trying to get lsThing after get'
+				console.log error
+				console.log json
+				console.log response
+				callback "getting lsThing by codeName failed"
+		)
+
+
 getThing = (req, codeName, callback) ->
 	if req.query.testMode or global.specRunnerTestmode
 		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
 		callback thingTestJSON.thingParent
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind+"/"+ encodeURIComponent codeName
 		if req.query.nestedstub
 			nestedstub = "with=nestedstub"
@@ -229,7 +267,6 @@ updateThing = (thing, testMode, callback) ->
 	if testMode or global.specRunnerTestmode
 		callback thing
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+thing.lsType+"/"+thing.lsKind+"/"+thing.codeName+ "?with=nestedfull"
 		request = require 'request'
 		request(
@@ -248,9 +285,69 @@ updateThing = (thing, testMode, callback) ->
 		)
 
 
+exports.bulkPostThingsSaveFile = (req, resp) ->
+
+	# First save all the ls things that come in
+	exports.bulkPostThingsInternal req.body, (response) =>
+
+		# Local function checkFilesAndUpdate
+		checkFilesAndUpdate = (thing, callback) ->
+
+			# Check if there are any files to save
+			fileVals = serverUtilityFunctions.getFileValuesFromEntity thing, false
+			filesToSave = fileVals.length
+
+			# Function called after final file is saved
+			completeThingUpdate = (thingToUpdate)->
+				updateThing thingToUpdate, false, (updatedThing) ->
+					callback updatedThing, 200
+
+			# Function to call after a file is saved
+			fileSaveCompleted = (passed) ->
+				if !passed
+					callback "file move failed", 500
+				# Decrement one from the filesToSave and if this is the final file that was saved call 
+				# completeThingUpdate
+				if --filesToSave == 0 then completeThingUpdate(thing)
+
+			# If there are any files to save, call the customer specific server function which should handle
+			# saving the file to the correct location and update the thing file value with the correct path
+			if filesToSave > 0
+				prefix = serverUtilityFunctions.getPrefixFromEntityCode thing.codeName
+				for fv in fileVals
+
+					# Send just the file value "fv" to the relocateEntityFile function
+					# relocate entity file is responsible for moving the file and updating the 
+					# file value of thing in memory and later completeThingUpdate will handle persisting
+					# the change to the db.
+					csUtilities.relocateEntityFile fv, prefix, thing.codeName, fileSaveCompleted
+			else
+				callback thing, 200
+
+		# If we failed to bulk save the things then just respond
+		if response.indexOf("saveFailed") > -1
+			resp.json response
+		else
+			# Loop through the saved ls things and call the checkFilesAndUpdate function
+			# which should handle doing the correct thing with the files.
+			lengthThingsToCheck = response.length
+			i = 0
+			resps = []
+			for t in response
+				checkFilesAndUpdate t, (response, statusCode) ->
+					resps.push response
+					i++
+					if i == lengthThingsToCheck
+						resp.json resps
+
 postThing = (isBatch, req, resp) ->
 	console.log "post thing parent"
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+	if config.all.client.solr?.updateSolrForThings?
+		updateSolr = config.all.client.solr.updateSolrForThings
+	else
+		updateSolr = false
+	console.log "updateSolr: " + updateSolr
 	thingToSave = req.body
 	if thingToSave.transactionOptions?
 		transactionOptions = thingToSave.transactionOptions
@@ -259,10 +356,10 @@ postThing = (isBatch, req, resp) ->
 		transactionOptions = {
 			comments: "new experiment"
 		}
-	transactionOptions.recordedBy = req.session.passport.user.username
+	transactionOptions.recordedBy = if req.session?.passport?.user?.username? then req.session.passport.user.username else "acas"
 	transactionOptions.status = "PENDING"
 	transactionOptions.type = "NEW"
-	serverUtilityFunctions.createLSTransaction2 thingToSave.recordedDate, transactionOptions, (transaction) ->
+	serverUtilityFunctions.createLSTransaction2 thingToSave.recordedDate, transactionOptions, (transaction) =>
 		thingToSave = serverUtilityFunctions.insertTransactionIntoEntity transaction.id, thingToSave
 		if req.query.testMode or global.specRunnerTestmode
 			unless thingToSave.codeName?
@@ -271,17 +368,23 @@ postThing = (isBatch, req, resp) ->
 				else
 					thingToSave.codeName = "PT00002-1"
 
-		checkFilesAndUpdate = (thing) ->
+		checkFilesAndUpdate = (thing) =>
 			fileVals = serverUtilityFunctions.getFileValuesFromEntity thing, false
 			filesToSave = fileVals.length
 
-			completeThingUpdate = (thingToUpdate)->
-				updateThing thingToUpdate, req.query.testMode, (updatedThing) ->
+			completeThingUpdate = (thingToUpdate)=>
+				updateThing thingToUpdate, req.query.testMode, (updatedThing) =>
 					transaction.status = 'COMPLETED'
-					serverUtilityFunctions.updateLSTransaction transaction, (transaction) ->
-						resp.json updatedThing
+					serverUtilityFunctions.updateLSTransaction transaction, (transaction) =>
+						if updatedThing is "update lsThing failed"
+							resp.json updatedThing
+						else if updateSolr
+							csUtilities.updateSolrIndex (updateMessage) =>
+								resp.json updatedThing
+						else
+							resp.json updatedThing
 
-			fileSaveCompleted = (passed) ->
+			fileSaveCompleted = (passed) =>
 				if !passed
 					resp.statusCode = 500
 					return resp.end "file move failed"
@@ -294,14 +397,17 @@ postThing = (isBatch, req, resp) ->
 					csUtilities.relocateEntityFile fv, prefix, thing.codeName, fileSaveCompleted
 			else
 					transaction.status = 'COMPLETED'
-					serverUtilityFunctions.updateLSTransaction transaction, (transaction) ->
+					serverUtilityFunctions.updateLSTransaction transaction, (transaction) =>
 						console.log transaction
-						resp.json thing
+						if thing.codeName? and updateSolr
+							csUtilities.updateSolrIndex (updateMessage) =>
+								resp.json thing
+						else
+							resp.json thing
 
 		if req.query.testMode or global.specRunnerTestmode
 			checkFilesAndUpdate thingToSave
 		else
-			config = require '../conf/compiled/conf.js'
 			baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind
 			if isBatch
 				baseurl += "/?parentIdOrCodeName="+req.params.parentCode
@@ -316,7 +422,7 @@ postThing = (isBatch, req, resp) ->
 			, (error, response, json) =>
 				if !error && response.statusCode == 201
 					req.query.nestedfull=true
-					getThing req, json.codeName, (thing) ->
+					getThing req, json.codeName, (thing) =>
 						checkFilesAndUpdate thing
 				else
 					console.log 'got ajax error trying to save lsThing'
@@ -331,6 +437,106 @@ exports.postThingParent = (req, resp) ->
 exports.postThingBatch = (req, resp) ->
 	postThing true, req, resp
 
+exports.bulkPutThingsSaveFile = (req, resp) ->
+
+	# First save all the ls things that come in
+	exports.bulkPutThingsInternal req.body, (response) =>
+
+		# Local function checkFilesAndUpdate
+		checkFilesAndUpdate = (thing, callback) ->
+
+			# Check if there are any files to save
+			fileVals = serverUtilityFunctions.getFileValuesFromEntity thing, false
+			filesToSave = fileVals.length
+			console.log("got #{filesToSave} file values to check for updates")
+
+			# Function called after final file is saved
+			completeThingUpdate = (thingToUpdate)->
+				updateThing thingToUpdate, false, (updatedThing) ->
+					callback updatedThing, 200
+
+			# Function to call after a file is saved
+			fileSaveCompleted = (passed) ->
+				if !passed
+					callback "file move failed", 500
+				# Decrement one from the filesToSave and if this is the final file that was saved call 
+				# completeThingUpdate
+				if --filesToSave == 0 then completeThingUpdate(thing)
+
+			# If there are any files to save, call the customer specific server function which should handle
+			# saving the file to the correct location and update the thing file value with the correct path
+			if filesToSave > 0
+				prefix = serverUtilityFunctions.getPrefixFromEntityCode thing.codeName
+				for fv in fileVals
+
+					# Only update new files
+					if !fv.id?
+						console.log("file value was updated #{JSON.stringify(fv)}")
+						# Send just the file value "fv" to the relocateEntityFile function
+						# relocate entity file is responsible for moving the file and updating the 
+						# file value of thing in memory and later completeThingUpdate will handle persisting
+						# the change to the db.
+						csUtilities.relocateEntityFile fv, prefix, thing.codeName, fileSaveCompleted
+					else
+						fileSaveCompleted(true)
+			else
+				callback thing, 200
+
+		# If we failed to bulk save the things then just respond
+		if response.indexOf("saveFailed") > -1
+			resp.json response
+		else
+			# Loop through the saved ls things and call the checkFilesAndUpdate function
+			# which should handle doing the correct thing with the files.
+			lengthThingsToCheck = response.length
+			i = 0
+			resps = []
+			for t in response
+				console.log("running check on files for thing #{JSON.stringify(t)}")
+				checkFilesAndUpdate t, (response, statusCode) ->
+					console.log("got response from check files #{statusCode} #{JSON.stringify(response)}")
+					resps.push response
+					i++
+					if i == lengthThingsToCheck
+						resp.json resps
+
+exports.putThingInternal = (thing, lsType, lsKind, testMode, callback) ->
+	thingToSave = thing
+	fileVals = serverUtilityFunctions.getFileValuesFromEntity thingToSave, true
+	filesToSave = fileVals.length
+
+	if thingToSave.transactionOptions?
+		thingToSave.transactionOptions.recordedBy = recordedBy
+	completeThingUpdate = ->
+		if thingToSave.transactionOptions?
+			transactionOptions = thingToSave.transactionOptions
+			delete thingToSave.transactionOptions
+		else
+			transactionOptions = {
+				comments: "updated thing"
+			}
+		transactionOptions.status = "COMPLETED"
+		transactionOptions.type = "CHANGE"
+		serverUtilityFunctions.createLSTransaction2 thingToSave.recordedDate, transactionOptions, (transaction) ->
+			thingToSave = serverUtilityFunctions.insertTransactionIntoEntity transaction.id, thingToSave
+			updateThing thingToSave, testMode, (updatedThing) ->
+				format = "nestedfull"
+				exports.getThingInternal lsType, lsKind, format, testMode, updatedThing.codeName, (thing) ->
+					callback thing
+
+	fileSaveCompleted = (passed) ->
+		if !passed
+			callback "put thing internal saveFailed: file move failed"
+		if --filesToSave == 0 then completeThingUpdate()
+
+	if filesToSave > 0
+		prefix = serverUtilityFunctions.getPrefixFromEntityCode thingToSave.codeName
+		for fv in fileVals
+			if !fv.id?
+				csUtilities.relocateEntityFile fv, prefix, thingToSave.codeName, fileSaveCompleted
+	else
+		completeThingUpdate()
+
 exports.putThing = (req, resp) ->
 #	if req.query.testMode or global.specRunnerTestmode
 #		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
@@ -339,26 +545,37 @@ exports.putThing = (req, resp) ->
 	thingToSave = req.body
 	fileVals = serverUtilityFunctions.getFileValuesFromEntity thingToSave, true
 	filesToSave = fileVals.length
+	if config.all.client.solr?.updateSolrForThings?
+		updateSolr = config.all.client.solr.updateSolrForThings
+	else
+		updateSolr = false
 	if thingToSave.transactionOptions?
 		thingToSave.transactionOptions.recordedBy = req.session.passport.user.username
-	completeThingUpdate = ->
+	completeThingUpdate = =>
 		if thingToSave.transactionOptions?
 			transactionOptions = thingToSave.transactionOptions
 			delete thingToSave.transactionOptions
 		else
 			transactionOptions = {
-				comments: "updated experiment"
+				comments: "updated thing"
 			}
 		transactionOptions.status = "COMPLETED"
 		transactionOptions.type = "CHANGE"
-		serverUtilityFunctions.createLSTransaction2 thingToSave.recordedDate, transactionOptions, (transaction) ->
+		serverUtilityFunctions.createLSTransaction2 thingToSave.recordedDate, transactionOptions, (transaction) =>
 			thingToSave = serverUtilityFunctions.insertTransactionIntoEntity transaction.id, thingToSave
-			updateThing thingToSave, req.query.testMode, (updatedThing) ->
+			updateThing thingToSave, req.query.testMode, (updatedThing) =>
 				req.query.nestedfull = true
-				getThing req, updatedThing.codeName, (thing) ->
-					resp.json thing
+				if updatedThing is "update lsThing failed"
+					resp.json updatedThing
+				else if updateSolr
+					csUtilities.updateSolrIndex (updateMessage) =>
+						getThing req, updatedThing.codeName, (thing) =>
+							resp.json thing
+				else
+					getThing req, updatedThing.codeName, (thing) =>
+						resp.json thing
 
-	fileSaveCompleted = (passed) ->
+	fileSaveCompleted = (passed) =>
 		if !passed
 			resp.statusCode = 500
 			return resp.end "file move failed"
@@ -372,6 +589,14 @@ exports.putThing = (req, resp) ->
 	else
 		completeThingUpdate()
 
+#TODO replace putThing with call to putThingInternal
+#exports.putThing = (req, resp) ->
+#	exports.putThingInternal req.body, req.params.lsType, req.params.lsKind, req.req.query.testMode, (putThingResp) =>
+#		if putThingResp.indexOf("saveFailed") > -1
+#			resp.statusCode = 500
+#			resp.json putThingResp
+#		else
+#			resp.json putThingResp
 
 exports.batchesByParentCodeName = (req, resp) ->
 	console.log "get batches by parent codeName"
@@ -382,7 +607,6 @@ exports.batchesByParentCodeName = (req, resp) ->
 		if req.params.parentCode is "undefined"
 			resp.json []
 		else
-			config = require '../conf/compiled/conf.js'
 			baseurl = config.all.client.service.persistence.fullpath+"lsthings/batch/"+req.params.lsKind+"/getbatches/"+req.params.parentCode
 			if req.query.nestedstub
 				nestedstub = "with=nestedstub"
@@ -403,7 +627,6 @@ exports.validateName = (req, resp) ->
 		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
 		resp.json true
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"lsthings/validate"
 		request = require 'request'
 		request(
@@ -430,7 +653,6 @@ exports.getAssemblies = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
 		resp.json []
 	else
-		config = require '../conf/compiled/conf.js'
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind+"/getcomposites/"+req.params.componentCode
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
@@ -469,7 +691,6 @@ exports.getThingCodesFromNamesOrCodes = (codeRequest, callback) ->
 
 		callback response
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"lsthings/getCodeNameFromNameRequest?"
 		url = baseurl+"thingType=#{codeRequest.thingType}&thingKind=#{codeRequest.thingKind}"
 		postBody = requests: codeRequest.requests
@@ -504,13 +725,14 @@ exports.genericThingSearch = (req, resp) ->
 	if req.query.testMode is true or global.specRunnerTestmode is true
 		resp.end JSON.stringify "Stubs mode not implemented yet"
 	else
-		config = require '../conf/compiled/conf.js'
 		console.log "search req"
 		console.log req
 		if req.query.lsType?
 			typeFilter = "lsType=" + req.query.lsType
 		if req.query.lsKind?
 			kindFilter = "lsKind=" + req.query.lsKind
+		if req.query.with?
+			format = "with=#{req.query.with}"
 		searchTerm = "q=" + req.params.searchTerm
 
 		searchParams = ""
@@ -518,6 +740,8 @@ exports.genericThingSearch = (req, resp) ->
 			searchParams += typeFilter + "&"
 		if kindFilter?
 			searchParams += kindFilter + "&"
+		if format?
+			searchParams += format + "&"
 		searchParams += searchTerm
 
 		baseurl = config.all.client.service.persistence.fullpath+"lsthings/search?"+searchParams
@@ -526,6 +750,47 @@ exports.genericThingSearch = (req, resp) ->
 		console.log baseurl
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
+
+exports.advancedThingSearch = (req, resp) ->
+	console.log "advanced thing search"
+	console.log req.query.testMode
+	console.log global.specRunnerTestmode
+	if req.query.testMode is true or global.specRunnerTestmode is true
+		resp.end JSON.stringify "Stubs mode not implemented yet"
+	else
+		console.log "search req body"
+		console.log req.body
+		exports.advancedThingSearchInternal req.body, req.query.format, (results) =>
+			if typeof response is "string" and results.indexOf("error") > -1
+				resp.statusCode = 500
+				resp.end results
+			else 
+				resp.json results
+
+exports.advancedThingSearchInternal = (input, format, callback) ->
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"lsthings/genericBrowserSearch"
+		if format?
+			baseurl += "?with=#{format}"
+		console.log "advanced thing search baseurl"
+		console.log baseurl
+		requestOptions = 
+			method: 'POST'
+			url: baseurl
+			body: input
+			json: true
+		request requestOptions, (error, response, object) ->
+			if !error 
+				if response.statusCode == 500
+					callback object, response
+				else 
+					callback object, null
+			else
+				console.log 'got ajax error trying to run advancedThingSearch'
+				console.log error
+				console.log json
+				console.log response
+				callback object, error
 
 exports.getProjectCodesFromNamesOrCodes = (codeRequest, callback) ->
 	#TODO: real implementation
@@ -554,7 +819,6 @@ exports.getThingThingItxsByFirstThing = (req, resp) ->
 		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
 		resp.json thingTestJSON.thingParent
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"/itxLsThingLsThings/byfirstthing?firstthing="+req.params.firstThingId
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
@@ -563,7 +827,6 @@ exports.getThingThingItxsBySecondThing = (req, resp) ->
 		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
 		resp.json thingTestJSON.thingParent
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"/itxLsThingLsThings/bysecondthing?secondthing="+req.params.secondThingId
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
@@ -572,25 +835,32 @@ exports.getThingThingItxsByFirstThingAndItxTypeKind = (req, resp) ->
 		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
 		resp.json thingTestJSON.thingParent
 	else
-		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"/itxLsThingLsThings/byfirstthing/#{req.params.lsType}/#{req.params.lsKind}?firstthing=#{req.params.firstThingId}"
-		serverUtilityFunctions.getFromACASServer(baseurl, resp)
+		exports.getThingThingItxsByFirstThingAndItxTypeKindInternal req.params.lsType, req.params.lsKind, req.params.firstThingId, req.query.with, (statusCode, itxs) ->
+			resp.statusCode = statusCode
+			resp.json itxs
+
+exports.getThingThingItxsByFirstThingAndItxTypeKindInternal = (itxType, itxKind, firstThingId, withFlag, callback)	->
+	baseurl = config.all.client.service.persistence.fullpath+"/itxLsThingLsThings/byfirstthing/#{itxType}/#{itxKind}?firstthing=#{firstThingId}&with=#{withFlag}"
+	serverUtilityFunctions.getFromACASServerInternal(baseurl, callback)
 
 exports.getThingThingItxsBySecondThingAndItxTypeKind = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
 		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
 		resp.json thingTestJSON.thingParent
 	else
-		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"/itxLsThingLsThings/bysecondthing/#{req.params.lsType}/#{req.params.lsKind}?secondthing=#{req.params.secondThingId}"
-		serverUtilityFunctions.getFromACASServer(baseurl, resp)
+		exports.getThingThingItxsBySecondThingAndItxTypeKindInternal req.params.lsType, req.params.lsKind, req.params.secondThingId, req.query.with, (statusCode, itxs) ->
+			resp.statusCode = statusCode
+			resp.json itxs
+
+exports.getThingThingItxsBySecondThingAndItxTypeKindInternal = (itxType, itxKind, secondThingId, withFlag, callback)	->
+	baseurl = config.all.client.service.persistence.fullpath+"/itxLsThingLsThings/bysecondthing/#{itxType}/#{itxKind}?secondthing=#{secondThingId}&with=#{withFlag}"
+	serverUtilityFunctions.getFromACASServerInternal(baseurl, callback)
 
 exports.getThingThingItxsByFirstThingAndExcludeItxTypeKind = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
 		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
 		resp.json thingTestJSON.thingParent
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"/itxLsThingLsThings/byfirstthing/exclude/#{req.params.lsType}/#{req.params.lsKind}?firstthing=#{req.params.firstThingId}"
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
@@ -599,33 +869,36 @@ exports.getThingThingItxsBySecondThingAndExcludeItxTypeKind = (req, resp) ->
 		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
 		resp.json thingTestJSON.thingParent
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"/itxLsThingLsThings/bysecondthing/exclude/#{req.params.lsType}/#{req.params.lsKind}?secondthing=#{req.params.secondThingId}"
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 exports.getThingsByCodeNames = (req, resp) ->
-	if req.query.testMode or global.specRunnerTestmode
+	exports.getThingsByCodeNamesInternal req.body, req.params.lsType, req.params.lsKind, req.query, (returnedThings) ->
+		if returnedThings.indexOf("Failed") > -1
+			resp.statusCode = 500
+		resp.json returnedThings
+
+exports.getThingsByCodeNamesInternal = (reqBody, lsType, lsKind, query, callback) ->
+	if (query?.testMode and query.testMode) or global.specRunnerTestmode
 		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
-		resp.json thingTestJSON.thingParent
+		callback thingTestJSON.thingParent
 	else
-		config = require '../conf/compiled/conf.js'
 		request = require 'request'
 		options =
 			method: 'POST'
-			url: config.all.client.service.persistence.fullpath+"/lsthings/#{req.params.lsType}/#{req.params.lsKind}/codeNames/jsonArray"
-			qs: req.query
+			url: config.all.client.service.persistence.fullpath+"/lsthings/#{lsType}/#{lsKind}/codeNames/jsonArray"
+			qs: query
 			headers:
 				'content-type': 'application/json'
-			body: req.body
+			body: reqBody
 			json: true
 		request options, (error, response, body) ->
 			if error
-				throw new Error(error)
-			resp.json body
-			return
+				callback "Failed: got error in bulk get of things: " + JSON.stringify error
+			else
+				callback body
 
 exports.getThingKinds = (req, resp) ->
-	config = require '../conf/compiled/conf.js'
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	baseurl = config.all.client.service.persistence.fullpath+"thingkinds"
 	serverUtilityFunctions.getFromACASServerInternal baseurl, (statusCode, kinds) ->
@@ -637,3 +910,114 @@ exports.getThingKinds = (req, resp) ->
 				name: kind.kindName
 			codeTables.push codeTable
 		resp.json codeTables
+
+exports.getTransaction = (req, resp) ->
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+	baseurl = config.all.client.service.persistence.fullpath+"lstransactions/"+req.params.id
+	serverUtilityFunctions.getFromACASServer baseurl, resp
+
+exports.postThings = (req, resp) ->
+	exports.postThingsInternal {things: req.body.things}, (output, err) ->
+			if err?
+				resp.statusCode = 500
+				resp.json err
+				
+exports.postThingsInternal = (input, callback) ->
+	request = require 'request'
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+	baseurl = config.all.client.service.persistence.fullpath+"lsthings/jsonArray"
+	requestOptions = 
+		method: 'POST'
+		url: baseurl
+		body: input.things
+		json: true
+	request requestOptions, (error, response, object) ->
+			if !error 
+				if response.statusCode == 500
+					callback object, response
+				else 
+					callback object, null
+			else
+				console.log 'got ajax error trying to save validate thing name'
+				console.log error
+				console.log json
+				console.log response
+				callback object, error
+
+	
+	
+		
+
+	
+	
+
+exports.bulkPostThings = (req, resp) ->
+	exports.bulkPostThingsInternal req.body, (response) =>
+		resp.json response
+
+exports.bulkPostThingsInternal = (thingArray, callback) ->
+	console.log "bulkPostThings"
+	console.log JSON.stringify thingArray
+	baseurl = config.all.client.service.persistence.fullpath+"lsthings/jsonArray"
+	request(
+		method: 'POST'
+		url: baseurl
+		body: thingArray
+		json: true
+	, (error, response, json) =>
+		if !error && response.statusCode == 201
+			callback json
+		else
+			console.log "got error bulk posting things"
+			callback JSON.stringify "bulk post things saveFailed: " + JSON.stringify error
+	)
+
+exports.bulkPutThings = (req, resp) ->
+	exports.bulkPutThingsInternal req.body, (response) =>
+		resp.json response
+
+exports.bulkPutThingsInternal = (thingArray, callback) ->
+	console.log "bulkPutThings"
+	baseurl = config.all.client.service.persistence.fullpath+"lsthings/jsonArray"
+	console.log "bulkPutThingsInternal"
+	console.log baseurl
+	console.log thingArray
+	request(
+		method: 'PUT'
+		url: baseurl
+		body: thingArray
+		json: true
+	, (error, response, json) =>
+		console.log "bulkPutThingsInternal complete"
+		console.log response.statusCode
+		if !error && response.statusCode == 200
+			callback json
+		else
+			console.log "got error bulk updating things"
+			console.log error
+			callback JSON.stringify "bulk update things saveFailed: " + JSON.stringify error
+	)		
+
+exports.deleteThing = (req, resp) ->
+	exports.deleteThingInternal req.params.lsType, req.params.lsKind, req.params.idOrCodeName, (status, response) =>
+		resp.statusCode = status
+		resp.json response
+
+exports.deleteThingInternal = (lsType, lsKind, idOrCodeName, callback) ->
+	console.log "deleteThing #{idOrCodeName}"
+	baseurl = config.all.client.service.persistence.fullpath+"lsthings/#{lsType}/#{lsKind}/#{idOrCodeName}"
+	console.log baseurl
+	request(
+		method: 'DELETE'
+		url: baseurl
+		json: true
+	, (error, response, json) =>
+		console.log "deleteThingInternal complete"
+		console.log response.statusCode
+		if !error && response.statusCode == 200
+			callback 200, json
+		else
+			console.log "got error deleting thing"
+			console.log error
+			callback 500, JSON.stringify "delete thing: " + JSON.stringify error
+	)

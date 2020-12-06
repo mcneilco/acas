@@ -32,8 +32,8 @@ def clean_diff(diffObject):
 				from_list = from_value.split('\n')
 				to_list = to_value.split('\n')
 				
-				from_list = map(lambda x: clean_units(x), from_list)
-				to_list = map(lambda x: clean_units(x), to_list)
+				from_list = [clean_units(x) for x in from_list]
+				to_list = [clean_units(x) for x in to_list]
 				if compare(from_list, to_list):
 					changed['fields'][fieldkey] = {}
 			if 'onschrodinger.com' in from_value and 'onschrodinger.com' in to_value:
@@ -81,7 +81,7 @@ def main():
 			if lr_key not in diffResult: diffResult[lr_key]={}
 			if 'removed' not in diffResult[lr_key]: diffResult[lr_key]['removed']={}
 			diffResult[lr_key]['removed'][row_key] = row
-	print(json.dumps(diffResult, sort_keys=True, indent=4))
+	print((json.dumps(diffResult, sort_keys=True, indent=4)))
 
 if __name__ == '__main__':
     main()

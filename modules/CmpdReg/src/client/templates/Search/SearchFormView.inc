@@ -3,12 +3,16 @@
     <div class="StructureMain">
 		<h2><label class="QueryStructure">Query Structure:</label></h2>
 		<div class="marvinContainer">
-			<iframe src="/CmpdReg/marvinjs/editorws.html" id="searchMarvinSketch" class="sketcher-frame" data-toolbars="search"></iframe>
+			<iframe  id="searchMarvinSketch" class="sketcher-frame" data-toolbars="search"></iframe>
 		</div>
 	    <div class="registrationSearchMarvinSize"></div>
 	</div>
 
 	<div class="CSfields">
+		<div>
+			<label class="FormLabel corpNameListLabel">Corporate Name List</label>
+			<textarea class="FormInput corpNameList" rows="5" placeholder="Enter one or more IDs seperated by commas, spaces, or line breaks"></textarea>
+		</div>
 		<div>
 			<label class="FormLabel corpNameLabel">Corporate Name</label>
 			<input type="text" class="FormInput corpNameFrom"/>

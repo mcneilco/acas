@@ -149,6 +149,8 @@ server.ssl.cert.passphrase=selfCertForACASServer
 
 client.service.rapache.port=1080
 server.rapache.listen=*
+server.rapache.forceAllToStdErrOnly=true
+
 #todo not in codebase 6/2015
 client.service.rapache.use.ssl=${client.use.ssl}
 client.service.rapache.host=rservices
@@ -174,10 +176,34 @@ server.sar.csvLabel=bestLabel
 client.sar.sorting = includeOperators
 
 # url to fetch structure images from
-client.service.external.structure.url=http://tomcat:8080/cmpdreg/structureimage/lot/
+client.service.external.structure.url=/cmpdreg/structureimage/lot/
 
 # url to lot details
 client.service.external.lotDetails.url=/cmpdreg/#lot/
+
+################################
+# Module Menus ACAS Home Page Options
+################################
+# If module is customized and the ACAS header name needs to be replaced, you can set the following options
+client.moduleMenus.logoText=ACAS
+client.moduleMenus.logoImageFilePath=
+client.moduleMenus.logoTextLink=/
+client.moduleMenus.homePageMessage=Welcome to ACAS
+client.moduleMenus.copyrightMessage=&copy; John McNeil & Company 2012-2017
+# client.moduleMenus.menuConfigurationSettings=ModuleMenusConfiguration
+# If summary statistics is an included feature, set the following to true
+client.moduleMenus.summaryStats=false
+# For navigation to external ACAS modules from ACAS homepage
+client.moduleMenus.modules.external=[{"displayName": "Compound Registration", "href": "/cmpdreg/"},\
+                                     {"displayName": "Compound Registration Bulk Loader", "href":"/CmpdRegBulkLoader"}]
+client.moduleMenus.dataViewerDeepLink=/dataViewer
+# For auto-starting a module when opening up ACAS
+client.moduleMenus.moduleAutoLaunchName=
+
+#Add user roles that represent groups allowed to fast user switch
+#client.moduleMenus.fastUserSwitchingRoles=[{"lsKind":"PROJ-00000001","lsType":"Project","roleName":"User"},{"lsKind":"PROJ-00000002","lsType":"Project","roleName":"User"}]
+client.moduleMenus.fastUserSwitchingRoles=[]
+client.moduleMenus.fastUserSwitchingChangeUserRoles=false
 
 ################################
 # Uncategorized
@@ -243,12 +269,12 @@ client.include.project=FALSE
 # config for whether project attribute is saved as part of an experiment
 client.save.project=TRUE
 client.protocol.save.project=true
-client.path=
+client.path=http://localhost:3000
 client.fullpath=http://${client.host}:${client.port}
 
 # Query tool settings
 client.service.result.viewer.displayName=Data Viewer
-client.service.result.viewer.configuredViewers=DataViewer
+client.service.result.viewer.configuredViewers=DataViewer,CurveCurator
 client.service.result.viewer.defaultViewer=DataViewer
 client.service.result.viewer.dataViewer.exptTree.showOnlyMatches=false
 client.service.result.viewer.liveDesign.baseUrl=
@@ -259,6 +285,8 @@ client.service.result.viewer.liveDesign.database.username=
 client.service.result.viewer.liveDesign.database.password=
 client.service.result.viewer.liveDesign.database.hostname=
 client.service.result.viewer.liveDesign.database.port=
+server.liveDesign.installClientOnStart=false
+client.service.result.viewer.liveDesign.makeReportReadonly=true
 client.service.result.viewer.simpleSAR.baseUrl=
 client.service.result.viewer.seurat.protocolPrefix=http://${client.service.persistence.host}:9080/seurat/runseurat?cmd=newjob&AssayName=
 client.service.result.viewer.seurat.experimentPrefix=&AssayProtocol=
@@ -296,7 +324,7 @@ server.service.external.file.service.url=
 
 # options for preferred batchid type are: NewLineSepBulkPost, SeuratCmpdReg, GeneCodeCheckByR, AcasCmpdReg, LabSynchCmpdReg, SingleBatchNameQueryString, AllPass
 client.service.external.preferred.batchid.type=NewLineSepBulkPost
-server.service.external.preferred.batchid.url=http://tomcat:8080/cmpdreg/api/v1/getPreferredName
+server.service.external.preferred.batchid.url=http://tomcat:8080/acas/api/v1/getPreferredName
 server.service.external.preferred.batchid.separator=-
 server.service.external.project.url=
 server.service.external.report.registration.url=
@@ -318,41 +346,36 @@ server.service.external.inventory.database.password=
 ## options for auth. strategy are: properties, database, ldap
 server.security.authstrategy=database
 #server.security.properties.path=/opt/seurat/SeuratServer/users.txt
+#to make authstrategy config accessible to the client
+client.security.authstrategy=${server.security.authstrategy}
 
-
-## ACAS Home Page Options
-# If module is customized and the ACAS header name needs to be replaced, you can set the following options
-client.moduleMenus.logoText=ACAS
-client.moduleMenus.logoImageFilePath=
-client.moduleMenus.homePageMessage=Welcome to ACAS
-client.moduleMenus.copyrightMessage=&copy; John McNeil & Company 2012-2017
-# If summary statistics is an included feature, set the following to true
-client.moduleMenus.summaryStats=false
-# For navigation to external ACAS modules from ACAS homepage
-client.moduleMenus.modules.external=[{"displayName": "Compound Registration", "href": "/cmpdreg/"},\
-                                     {"displayName": "Compound Registration Bulk Loader", "href":"/CmpdRegBulkLoader"}]
-
-client.leaveACASMessage=There are no unsaved changes.
+#Controls whether Roo syncs the AuthorRole table with authorities granted in LDAP
+server.security.syncLdapAuthRoles=false
+#to make syncLdapAuthRoles config accessible to the client
+client.security.syncLdapAuthRoles=${server.security.syncLdapAuthRoles}
 client.scientistCodeOrigin=ACAS authors
 client.molecularTargetCodeOrigin=ACAS DDICT
 
-#client.roles.loginRole=ROLE_ACAS-USERS,ROLE_CMPDREG-USERS
-#client.roles.cmpdreg.chemistRole=ROLE_CMPDREG-USERS
-#client.roles.cmpdreg.adminRole=ROLE_CMPDREG-ADMINS
-#client.roles.acas.userRole=ROLE_ACAS-USERS
-#client.roles.acas.adminRole=ROLE_ACAS-ADMINS
-client.roles.loginRole=
-client.roles.cmpdreg.chemistRole=
-client.roles.cmpdreg.adminRole=
-client.roles.acas.userRole=
-client.roles.acas.adminRole=
+client.roles.loginRole=ROLE_ACAS-USERS,ROLE_CMPDREG-USERS
+client.roles.cmpdreg.chemistRole=ROLE_CMPDREG-USERS
+client.roles.cmpdreg.adminRole=ROLE_CMPDREG-ADMINS
+client.roles.acas.userRole=ROLE_ACAS-USERS
+client.roles.acas.adminRole=ROLE_ACAS-ADMINS
+
+# To remove roles set the roles configs to nothing.  You may also need to edit module menus configuration to not require these roles
+#client.roles.loginRole=
+#client.roles.cmpdreg.chemistRole=
+#client.roles.cmpdreg.adminRole=
+#client.roles.acas.userRole=
+#client.roles.acas.adminRole=
+
 client.browser.enableSearchAll=true
 
 ## Cmpd Reg Bulk Loader Options
 client.service.cmpdReg.persistence.host=tomcat
-client.service.cmpdReg.persistence.path=cmpdreg/api/v1
+client.service.cmpdReg.persistence.path=acas/api/v1
 client.service.cmpdReg.persistence.fullpath=http://${client.service.cmpdReg.persistence.host}:${client.service.persistence.port}/${client.service.cmpdReg.persistence.path}/
-client.service.cmpdReg.persistence.basepath=http://${client.service.cmpdReg.persistence.host}:${client.service.persistence.port}/cmpdreg
+client.service.cmpdReg.persistence.basepath=http://${client.service.cmpdReg.persistence.host}:${client.service.persistence.port}/acas
 
 # If project select is shown separately in the Configuration part of the GUI
 client.cmpdReg.showProjectSelect=true
@@ -377,12 +400,17 @@ client.cmpdReg.showFileDate=true
 # Example: client.curvefit.modelfitparameter.classes=[{"code":"4 parameter D-R", "parametersController":"DoseResponseAnalysisParametersController", "parametersClass": "DoseResponseAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveLL4", "RSource":"public/src/modules/CurveAnalysis/src/server/ll4.R"}, \
 #                                                     {"code":"Ki Fit", "parametersController":"DoseResponseKiAnalysisParametersController", "parametersClass": "DoseResponseKiAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveKi", "RSource":"public/src/modules/CurveAnalysis/src/server/ki.R"}]
 #
-client.curvefit.modelfitparameter.classes=[{"code":"4 parameter D-R", "parametersController":"DoseResponseAnalysisParametersController", "parametersClass": "DoseResponseAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveLL4", "RSource":"src/r/CurveAnalysis/ll4.R"}, \
-                                            {"code":"Ki Fit", "parametersController":"DoseResponseKiAnalysisParametersController", "parametersClass": "DoseResponseKiAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveKi", "RSource":"src/r/CurveAnalysis/ki.R"}, \
-                                            {"code":"4 parameter D-R IC50", "parametersController":"DoseResponseAnalysisParametersController", "parametersClass": "DoseResponseIC50AnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveLL4IC50", "RSource":"src/r/CurveAnalysis/ll4IC50.R"},\
-                                            {"code":"4 parameter D-R IC50/DMax", "parametersController":"DoseResponseAnalysisParametersController", "parametersClass": "DoseResponseIC50AnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveLL4IC50", "RSource":"src/r/CurveAnalysis/ll4IC50DMax.R"},\
-                                            {"code":"Michaelis-Menten", "parametersController":"DoseResponseKmAnalysisParametersController", "parametersClass": "DoseResponseKmAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveKm", "RSource":"src/r/CurveAnalysis/mm2.R"},\
-                                            {"code":"Substrate Inhibition", "parametersController":"DoseResponseSubstrateInhibitionAnalysisParametersController", "parametersClass": "DoseResponseSubstrateInhibitionAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveSubstrateInhibition", "RSource":"src/r/CurveAnalysis/substrateInhibition.R"}]
+client.curvefit.modelfitparameter.classes=[{"code":"4 parameter D-R", "parametersController":"DoseResponseAnalysisParametersController", "parametersClass": "DoseResponseAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveLL4", "RSource":"src/r/CurveAnalysis/ll4.R", "parametersOptions":{"defaultBaseline":0}}, \
+                                            {"code":"Ki Fit", "parametersController":"DoseResponseKiAnalysisParametersController", "parametersClass": "DoseResponseKiAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveKi", "RSource":"src/r/CurveAnalysis/ki.R", "parametersOptions":{"defaultBaseline":0}}, \
+                                            {"code":"4 parameter D-R IC50", "parametersController":"DoseResponseAnalysisParametersController", "parametersClass": "DoseResponseIC50AnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveLL4IC50", "RSource":"src/r/CurveAnalysis/ll4IC50.R", "parametersOptions":{"defaultBaseline":0}},\
+                                            {"code":"4 parameter D-R IC50/DMax", "parametersController":"DoseResponseAnalysisParametersController", "parametersClass": "DoseResponseIC50AnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveLL4IC50", "RSource":"src/r/CurveAnalysis/ll4IC50DMax.R", "parametersOptions":{"defaultBaseline":0}},\
+                                            {"code":"Michaelis-Menten", "parametersController":"DoseResponseKmAnalysisParametersController", "parametersClass": "DoseResponseKmAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveKm", "RSource":"src/r/CurveAnalysis/mm2.R", "parametersOptions":{"defaultBaseline":0}},\
+                                            {"code":"Substrate Inhibition", "parametersController":"DoseResponseSubstrateInhibitionAnalysisParametersController", "parametersClass": "DoseResponseSubstrateInhibitionAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveSubstrateInhibition", "RSource":"src/r/CurveAnalysis/substrateInhibition.R", "parametersOptions":{"defaultBaseline":0}},\
+                                            {"code":"Scatter", "RSource":"src/r/CurveAnalysis/scatter.R", "renderOptions": {"connectPoints": false}},\
+                                            {"code":"Scatter Log-x", "RSource":"src/r/CurveAnalysis/scatter.R", "renderOptions": {"connectPoints": false}},\
+                                            {"code":"Scatter Log-y", "RSource":"src/r/CurveAnalysis/scatter.R", "renderOptions": {"connectPoints": false}},\
+                                            {"code":"Scatter Log-x,y", "RSource":"src/r/CurveAnalysis/scatter.R", "renderOptions": {"connectPoints": false}}]
+
 
 # Lock when approved filter
 #
@@ -391,6 +419,19 @@ client.curvefit.modelfitparameter.classes=[{"code":"4 parameter D-R", "parameter
 # Example: client.experiment.lockwhenapproved.filter=[{"lsType": "Bio Activity"}]
 #
 client.experiment.lockwhenapproved.filter=[{"lsType": "Bio Activity"}]
+
+#Configs for whether notebook attributes for protocols and experiments should be visible and/or required
+#Note that notebook page can't be visible if notebook is not visible and page can't be required if notebook is not required
+client.entity.notebook.save=true
+client.entity.notebook.require=true
+client.entity.notebookPage.save=true
+client.entity.notebookPage.require=false
+
+#Config for whether scientist is editable for protocols and experiments
+client.entity.scientist.editable=true
+
+#Config for default protocol/experiment status
+client.entity.status.default=created
 
 # Protocols and experiments which should be hidden (to non-admin users) in the protocol/expt browser when the status is in the config below
 client.entity.hideStatuses=["deleted"]
@@ -409,8 +450,9 @@ client.protocol.showAssayTreeRule=false
 client.protocol.showCurveDisplayParams=true
 client.experiment.uneditableFileTypes=["source file", "annotation file"]
 
-# If project select is shown separately in the Configuration part of the GUI
-client.cmpdReg.showProjectSelect=true
+#Controls privileges for who can create/edit and delete authors
+client.author.editingRoles=ROLE_ACAS-ADMINS
+client.author.deletingRoles=ROLE_ACAS-ADMINS
 
 # Default status for experiments loaded thorugh experiment loader
 server.sel.experimentStatus=approved
@@ -457,6 +499,13 @@ server.rapache.conf.serversignature=On
 server.rapache.conf.logformat='"%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined'
 server.rapache.conf.rewriteengine=On
 
+# Limit Rapache thread Limit
+# Units are in MB
+# If a thread finishes a request and has used more than this limit, it will kill itself
+# R routes that have the following string "# MEMORY_LIMIT_EXEMPT" are exempt from this checking as they
+# are routes that are expected to return as fast as possible and checking memory takes about 1/4 of a second
+server.rapache.child.memory.limit=1000
+
 #################### SUPPORT EMAIL ####################
 
 #
@@ -482,16 +531,45 @@ server.support.smtp.password=null
 server.support.smtp.auth=false
 server.support.smtp.tls=false
 server.support.smtp.ssl=false
+server.support.smtp.from=
 
 client.basePath=/
 
 server.curveCurator.onRejectMakeReportedValuesNonPublic=false
 server.curveRender.drawPointsForRejectedCurve=true
 
+### Plot colors
+# Colors of curves to be cycled through when coloring curves.  Black is usually the first color as the first color is used for single, non overlayed curves.
+# If supplied, the config server.curveRender.mostRecentCurveColor will override the first color in this list for the most recent
+# Valid colors can be found here:
+#  http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf
+# Some examples of other color schemes:
+# server.curveRender.plotColors=black,red,blue,orange,purple,cyan,darkolivegreen4,firebrick4,aquamarine4,chocolate3,dodgerblue4,coral2,darkorchid3,cadetblue4,darkgoldenrod3,lightcyan4,seagreen4,mediumvioletred
+# server.curveRender.plotColors=black,#a6cee3,#1f78b4,#b2df8a,#33a02c,#fb9a99,#e31a1c,#fdbf6f,#ff7f00,#cab2d6,#6a3d9a,#ffff99,#b15928
+# server.curveRender.plotColors=black
+server.curveRender.plotColors=black,#0C5BB0FF,#EE0011FF,#15983DFF,#EC579AFF,#FA6B09FF,#149BEDFF,#A1C720FF,#FEC10BFF,#16A08CFF,#9A703EFF
+
+### Most recent curve color
+## Color curves by default according to the plot colors.  The list of plot colors is recycled if there are more curves in the plot than colors
+server.curveRender.usePlotColorsByDefault=true
+
+### Most recent curve color
+## If supplied the most recent uploaded curve will get the supplied color
+server.curveRender.mostRecentCurveColor=green
+
+### Curve line width
+# Default: 1
+# If supplied, a with 0.5, the line widths of curves will be 1/2 the thickness of the default of 1.  Converseley, a value of 2 will produce curves with twice the thickeness.
+server.curveRender.curveLwd=1.5
+
+### Plot points on overlay
+# If true, curves that are overlayed will show points for all the curves in the plot.  If false, no points will be shown on overlayed curves.
+# This does not affect single/non overlayed curves
+server.curveRender.plotPointsOnOverlay=false
+
 # Restrict experiment search by project
 server.service.projects.restrictExperiments=false
 
-flyway.location=db/migration/postgres,com.labsynch.labseer.db.migration.postgres
 flyway.schema=acas
 flyway.database.username=${server.database.username}
 flyway.database.password=${server.database.password}
@@ -499,6 +577,7 @@ flyway.database.password=${server.database.password}
 server.acas.license=/home/runner/build/conf/acas.lic
 
 server.systemTest.runOnStart=${env.RUN_SYSTEM_TEST}
+server.systemTest.runDestructive=false
 
 
 # Required configs for which base entity to use
@@ -515,3 +594,43 @@ client.projectEditor.restrictedCheckbox.show=true
 client.projectEditor.isRestricted.default=false
 
 client.roles.crossProjectLoaderRole=ROLE_ACAS-CROSS-PROJECT-LOADER
+
+# List of project codes to filter out and hide from ACAS
+# e.g. server.projects.filterList = ["SomeProject"]
+server.projects.filterList = []
+
+# For whether protocols and experiments should have sequential user defined corpName labels
+client.entity.saveInitialsCorpName=false
+
+# For which protocol clobValues from protocol metadata state are copied over to experiments
+client.experiment.copiedProtocolMetadataAttrs=
+# Whether to show the Required Entity Type GUI picklist
+client.protocol.requiredEntityType.save=false
+# Whether the required entity type is a required field
+client.protocol.requiredEntityType.allowEmpty=true
+
+#Compound Inventory configs
+client.compoundInventory.enforceUppercaseBarcodes=false
+#Default location tree labels
+client.compoundInventory.rootLocationLabel=COMPANY
+client.compoundInventory.trashLocationLabel=trash
+client.compoundInventory.benchesLocationLabel=Benches
+#Disallow loading daughter vials with different physical state than the parent vial
+client.compoundInventory.daughterVials.strictMatchPhysicalState=false
+
+# Whether to save location as a codeValue or as a full location interaction
+client.compoundInventory.saveLocationAsCodeValue=true
+
+# Allows the override of the words "Experiment" and "Protocol" throughout the ACAS UI
+# These configs should NOT be set to the same value as this would break some functionality
+# of data loaders.
+# The values are often pluralized by putting an "s" at the end, so whatever values are used
+# should be able to be pluralized with an "s" appended to them.
+client.protocol.label=Protocol
+client.experiment.label=Experiment
+
+client.cmpdRegBulkLoader.validationMode.enable=true
+client.cmpdRegBulkLoader.validationMode.allowRegistrationOnError=false
+
+#config for whether SOLR should be updated when things are saved/updated
+client.solr.updateSolrForThings=false
