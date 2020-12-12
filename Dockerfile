@@ -27,8 +27,7 @@ ENV     ACAS_CUSTOM /home/runner/acas_custom
 ENV     ACAS_SHARED /home/runner/acas_shared
 ENV     APACHE Redhat
 RUN     npm install -g gulp@4.0.2 forever@3.0.4 coffeescript@2.5.1
-COPY    package.json $ACAS_BASE/package.json
-RUN     chown -R runner:runner $ACAS_BASE
+COPY    --chown=runner:runner package.json $ACAS_BASE/package.json
 USER    runner
 WORKDIR $ACAS_BASE
 # This installs the modules but not acas, doing this makes subsequent builds much faster so that the container isn't invalidated on a small code change
