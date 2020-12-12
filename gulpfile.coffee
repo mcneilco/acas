@@ -519,6 +519,9 @@ unless argv._[0] == "dev"
   executeTasks = _.filter executeTasks, (item) -> item != "execute:prepareModuleConfJSON"
 
 # --------- Copy Task
+gulp.task 'copy-execute-configs', gulp.series('copy:conf', 'execute:prepare_config_files')
+
+# --------- Copy Task
 gulp.task 'copy', gulp.parallel copyTasks
 
 # --------- Execute Task
@@ -528,7 +531,7 @@ gulp.task 'execute', gulp.series executeTasks
 gulp.task 'watch', gulp.parallel watchTasks
 
 # --------- Build Task
-gulp.task('build', gulp.series(gulp.parallel('copy','coffee'), 'coffee:publicConf', 'execute'));
+gulp.task('build', gulp.series('copy-execute-configs', gulp.parallel('copy','coffee'), 'coffee:publicConf', 'execute'));
 
 # --------- Dev Task
 gulp.task('dev', gulp.series(gulp.series('build'), gulp.parallel('watch', 'watch:app', 'app')));

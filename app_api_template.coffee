@@ -33,7 +33,7 @@ startApp = ->
 	global.app = express()
 	app.set 'port', config.all.server.nodeapi.port
 	app.set 'views', __dirname + '/views'
-	app.set 'view engine', 'pug'
+	app.set 'view engine', 'jade'
 	# app.use(favicon(path.join(__dirname, '/public/favicon.ico')))
 	app.use(logger('dev'))
 	app.use(methodOverride())
