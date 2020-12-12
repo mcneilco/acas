@@ -33,10 +33,8 @@ WORKDIR $ACAS_BASE
 # This installs the modules but not acas, doing this makes subsequent builds much faster so that the container isn't invalidated on a small code change
 RUN     npm install --ignore-scripts --loglevel warn
 COPY --chown=runner:runner . $ACAS_BASE
-USER    root
-RUN     chown -R runner:runner $ACAS_BASE
-USER    runner
 RUN     mkdir -p $BUILD_PATH/node_modules && \
+        mkdir -p $BUILD_PATH/public && \
         cp -r node_modules $BUILD_PATH && \
         npm install --no-configs && \
         mkdir $BUILD_PATH/privateUploads && \

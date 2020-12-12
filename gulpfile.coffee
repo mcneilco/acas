@@ -166,6 +166,24 @@ taskConfigs =
       dest: build + '/src/javascripts/ServerAPI'
       options: _.extend _.clone(globalCoffeeOptions), {}
     ,
+      taskName: "buildUtilities"
+      src: getGlob('modules/BuildUtilities/src/server/*.coffee')
+      dest: build + '/src/javascripts/BuildUtilities'
+      options: _.extend _.clone(globalCoffeeOptions), {}
+      renameFunction: getFirstFolderName
+    ,
+      taskName: "serverAPI"
+      src: getGlob('modules/ServerAPI/src/server/*.coffee')
+      dest: build + '/src/javascripts/ServerAPI'
+      options: _.extend _.clone(globalCoffeeOptions), {}
+      renameFunction: getFirstFolderName
+    ,
+      taskName: "serverUtilityFunctions"
+      src: getGlob('modules/**/src/server/routes/ServerUtilityFunctions.coffee')
+      dest: build + '/routes'
+      options: _.extend _.clone(globalCoffeeOptions), {}
+      flatten: true
+    ,
       taskName: "rootConf"
       src: getGlob('conf/*.coffee')
       dest: build + '/conf'
@@ -519,7 +537,7 @@ unless argv._[0] == "dev"
   executeTasks = _.filter executeTasks, (item) -> item != "execute:prepareModuleConfJSON"
 
 # --------- Copy Task
-gulp.task 'copy-execute-configs', gulp.series('copy:conf', 'execute:prepare_config_files')
+gulp.task 'copy-execute-configs', gulp.series(gulp.parallel('coffee:serverUtilityFunctions','coffee:buildUtilities','coffee:serverAPI', 'copy:conf'), 'execute:prepare_config_files')
 
 # --------- Copy Task
 gulp.task 'copy', gulp.parallel copyTasks
