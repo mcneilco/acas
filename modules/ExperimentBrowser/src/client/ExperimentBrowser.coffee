@@ -1,9 +1,9 @@
-class window.ExperimentSearch extends Backbone.Model
+class ExperimentSearch extends Backbone.Model
 	defaults:
 		protocolCode: null
 		experimentCode: null
 
-class window.ExperimentSearchController extends AbstractFormController
+class ExperimentSearchController extends AbstractFormController
 	template: _.template($("#ExperimentSearchView").html())
 
 	events:
@@ -130,12 +130,12 @@ class window.ExperimentSearchController extends AbstractFormController
 
 		@experimentSummaryTable.render()
 
-class window.ExperimentSearch extends Backbone.Model
+class ExperimentSearch extends Backbone.Model
 	defaults:
 		protocolCode: null
 		experimentCode: null
 
-class window.ExperimentSimpleSearchController extends AbstractFormController
+class ExperimentSimpleSearchController extends AbstractFormController
 	template: _.template($("#ExperimentSimpleSearchView").html())
 	genericSearchUrl: "/api/experiments/genericSearch/"
 	codeNameSearchUrl: "/api/experiments/codename/"
@@ -213,7 +213,7 @@ class window.ExperimentSimpleSearchController extends AbstractFormController
 
 
 
-class window.ExperimentRowSummaryController extends Backbone.View
+class ExperimentRowSummaryController extends Backbone.View
 	tagName: 'tr'
 	className: 'dataTableRow'
 	events:
@@ -274,7 +274,7 @@ class window.ExperimentRowSummaryController extends Backbone.View
 			@$('.bv_protocolName').after "<td class='bv_project'>"+project+"</td>"
 		@
 
-class window.ExperimentSummaryTableController extends Backbone.View
+class ExperimentSummaryTableController extends Backbone.View
 	initialize: ->
 		if @options.domSuffix?
 			@domSuffix = @options.domSuffix
@@ -336,7 +336,7 @@ class window.ExperimentSummaryTableController extends Backbone.View
 				return true
 		return false
 
-class window.ExperimentBrowserController extends Backbone.View
+class ExperimentBrowserController extends Backbone.View
 	#template: _.template($("#ExperimentBrowserView").html())
 	includeDuplicateAndEdit: true
 	events:
@@ -674,7 +674,7 @@ class window.ExperimentBrowserController extends Backbone.View
 
 		@
 
-class window.ExperimentDetailController extends Backbone.View
+class ExperimentDetailController extends Backbone.View
 	template: _.template($("#ExperimentDetailsView").html())
 
 	initialize: ->

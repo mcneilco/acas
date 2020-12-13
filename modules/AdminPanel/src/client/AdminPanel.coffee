@@ -1,7 +1,7 @@
-class window.AdminPanel extends Backbone.Model
+class AdminPanel extends Backbone.Model
 
 
-class window.AdminPanelController extends AbstractFormController
+class AdminPanelController extends AbstractFormController
 	template: _.template($("#AdminPanelView").html())
 
 	initialize: ->

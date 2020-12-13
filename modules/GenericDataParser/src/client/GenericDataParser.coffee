@@ -1,5 +1,5 @@
 
-class window.GenericDataParserController extends BasicFileValidateAndSaveController
+class GenericDataParserController extends BasicFileValidateAndSaveController
 
 	initialize: ->
 		@fileProcessorURL = "/api/genericDataParser"

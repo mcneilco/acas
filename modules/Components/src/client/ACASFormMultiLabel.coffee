@@ -1,4 +1,4 @@
-class window.ACASFormMultiLabelController extends Backbone.View
+class ACASFormMultiLabelController extends Backbone.View
 	###
 		Launched by ACASFormMultiLabelListController to control one element/row in the list
 	###
@@ -33,7 +33,7 @@ class window.ACASFormMultiLabelController extends Backbone.View
 		$(@el).hide()
 
 
-class window.ACASFormMultiLabelListController extends ACASFormAbstractFieldController
+class ACASFormMultiLabelListController extends ACASFormAbstractFieldController
 	###
   	Launching controller must instantiate with the full field conf including modelDefaults, not just the fieldDefinition.
   	Controls a flexible-length list of LSLabel input fields within ACASFormMultiLabelControllers with an add button.

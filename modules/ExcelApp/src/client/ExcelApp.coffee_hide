@@ -5,7 +5,7 @@ window.onload = ->
 		el: $('.bv_excelAppView')
 	excelAppController.render()
 
-class window.ExcelAppController extends Backbone.View
+class ExcelAppController extends Backbone.View
 	initialize: ->
 		@template = _.template($("#ExcelAppView").html())
 

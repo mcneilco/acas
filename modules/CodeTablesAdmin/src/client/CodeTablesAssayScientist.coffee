@@ -1,7 +1,7 @@
 ############################################################################
 # models
 ############################################################################
-class window.AssayScientist extends Backbone.Model
+class AssayScientist extends Backbone.Model
 	urlRoot: "/api/codeTablesAdmin/assay/scientist"
 	defaults:
 		name: null
@@ -34,7 +34,7 @@ class window.AssayScientist extends Backbone.Model
 # controllers
 ############################################################################
 
-class window.AssayScientistController extends AbstractCodeTablesAdminController
+class AssayScientistController extends AbstractCodeTablesAdminController
 	wrapperTemplate: _.template($("#AssayScientistView").html())
 	moduleLaunchName: "scientist"
 	codeType: "assay"
@@ -55,7 +55,7 @@ class window.AssayScientistController extends AbstractCodeTablesAdminController
 		@$('.bv_assayAssayScientistControllerDiv').html super()
 
 
-class window.AssayScientistBrowserController extends AbstractCodeTablesAdminBrowserController
+class AssayScientistBrowserController extends AbstractCodeTablesAdminBrowserController
 	wrapperTemplate: _.template($("#AssayScientistBrowserView").html())
 	codeType: "assay"
 	codeKind: "scientist"

@@ -1,4 +1,4 @@
-class window.Thing extends Backbone.Model
+class Thing extends Backbone.Model
 	lsProperties: {}
 	className: "Thing"
 	deleteEmptyLabelsValsItxsBeforeSave: true

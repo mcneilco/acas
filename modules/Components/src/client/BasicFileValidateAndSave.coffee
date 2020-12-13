@@ -1,4 +1,4 @@
-class window.BasicFileValidateAndSaveController extends Backbone.View
+class BasicFileValidateAndSaveController extends Backbone.View
 	notificationController: null
 	parseFileController: null
 	parseFileNameOnServer: ""

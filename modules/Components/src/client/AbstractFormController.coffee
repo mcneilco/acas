@@ -1,4 +1,4 @@
-class window.AbstractFormController extends Backbone.View
+class AbstractFormController extends Backbone.View
 # Your initialization function needs at least these lines:
 # 	initialize: ->
 # 		@errorOwnerName = 'MyControllerName'
@@ -115,7 +115,7 @@ class window.AbstractFormController extends Backbone.View
 		@trigger 'editUnLocked'
 		#you should extend this
 
-class window.AbstractThingFormController extends AbstractFormController
+class AbstractThingFormController extends AbstractFormController
 
 	setupFormFields: (fieldDefs, useDirectRef) ->
 		unless @formFields?

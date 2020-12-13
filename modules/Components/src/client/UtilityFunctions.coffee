@@ -1,4 +1,4 @@
-class window.UtilityFunctions
+class UtilityFunctions
 	getFileServiceURL: ->
 		"/uploads"
 

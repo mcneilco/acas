@@ -1,4 +1,4 @@
-class window.Label extends Backbone.Model
+class Label extends Backbone.Model
 	defaults:
 		lsType: "name"
 		lsKind: ''
@@ -28,7 +28,7 @@ class window.Label extends Backbone.Model
 	changeLabelText: (options) ->
 		@set labelText: options
 
-class window.LabelList extends Backbone.Collection
+class LabelList extends Backbone.Collection
 	model: Label
 
 	getCurrent: ->
@@ -172,7 +172,7 @@ class window.LabelList extends Backbone.Collection
 		_.filter preferred, (lab) ->
 			lab.get('lsKind') == preferredKind
 
-class window.Value extends Backbone.Model
+class Value extends Backbone.Model
 	defaults:
 		ignored: false
 		recordedDate: null
@@ -195,10 +195,10 @@ class window.Value extends Backbone.Model
 					isDirty: true
 				@trigger 'createNewValue', @get('lsKind'), newVal, @get('key')
 
-class window.ValueList extends Backbone.Collection
+class ValueList extends Backbone.Collection
 	model: Value
 
-class window.State extends Backbone.Model
+class State extends Backbone.Model
 	defaults: ->
 		lsValues: new ValueList()
 		ignored: false
@@ -266,7 +266,7 @@ class window.State extends Backbone.Model
 			@trigger('change')
 		descVal
 
-class window.StateList extends Backbone.Collection
+class StateList extends Backbone.Collection
 	model: State
 
 	getStatesByTypeAndKind: (type, kind) ->

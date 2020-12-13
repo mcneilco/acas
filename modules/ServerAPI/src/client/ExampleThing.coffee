@@ -172,7 +172,7 @@ ExampleThingConf =
 		firstLsThingItxs: []
 		secondLsThingItxs: []
 
-class window.ExampleThingParent extends Thing
+class ExampleThingParent extends Thing
 	urlRoot: "/api/things/parent/example thing"
 	url: ->
 		if @isNew() and !@has('codeName')
@@ -226,7 +226,7 @@ class window.ExampleThingParent extends Thing
 		copiedThing = super()
 		copiedThing
 
-class window.ExampleThingController extends AbstractThingFormController
+class ExampleThingController extends AbstractThingFormController
 	template: _.template($("#ExampleThingView").html())
 	moduleLaunchName: "example_thing"
 
@@ -428,7 +428,7 @@ ExampleTableAuditConf =
 		secondLsThingItxs: []
 
 
-class window.ExampleTableAuditController extends AbstractThingFormController
+class ExampleTableAuditController extends AbstractThingFormController
 	template: _.template($("#ExampleTableAuditView").html())
 
 	events: ->

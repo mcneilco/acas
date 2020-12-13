@@ -1,14 +1,14 @@
-class window.AuthorSearch extends Backbone.Model
+class AuthorSearch extends Backbone.Model
 	defaults:
 		protocolCode: null
 		authorCode: null
 
-class window.AuthorSearch extends Backbone.Model
+class AuthorSearch extends Backbone.Model
 	defaults:
 		protocolCode: null
 		authorCode: null
 
-class window.AuthorSimpleSearchController extends AbstractFormController
+class AuthorSimpleSearchController extends AbstractFormController
 	template: _.template($("#AuthorSimpleSearchView").html())
 	genericSearchUrl: "/api/genericSearch/authors"
 
@@ -73,7 +73,7 @@ class window.AuthorSimpleSearchController extends AbstractFormController
 
 
 
-class window.AuthorRowSummaryController extends Backbone.View
+class AuthorRowSummaryController extends Backbone.View
 	tagName: 'tr'
 	className: 'dataTableRow'
 	events:
@@ -97,7 +97,7 @@ class window.AuthorRowSummaryController extends Backbone.View
 
 		@
 
-class window.AuthorSummaryTableController extends Backbone.View
+class AuthorSummaryTableController extends Backbone.View
 	initialize: ->
 
 	selectedRowChanged: (row) =>
@@ -123,7 +123,7 @@ class window.AuthorSummaryTableController extends Backbone.View
 		@
 
 
-class window.AuthorBrowserController extends Backbone.View
+class AuthorBrowserController extends Backbone.View
 	events:
 		"click .bv_deleteAuthor": "handleDeleteAuthorClicked"
 		"click .bv_editAuthor": "handleEditAuthorClicked"

@@ -1,4 +1,4 @@
-class window.DoseResponseAnalysisParameters extends Backbone.Model
+class DoseResponseAnalysisParameters extends Backbone.Model
 	defaults:
 		smartMode: true
 		inactiveThresholdMode: true
@@ -110,7 +110,7 @@ class window.DoseResponseAnalysisParameters extends Backbone.Model
 		else
 			return null
 
-class window.DoseResponseAnalysisParametersController extends AbstractFormController
+class DoseResponseAnalysisParametersController extends AbstractFormController
 	template: _.template($("#DoseResponseAnalysisParametersView").html())
 	autofillTemplate: _.template($("#DoseResponseAnalysisParametersAutofillView").html())
 
@@ -227,7 +227,7 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 		else
 			@formTitle = @$(".bv_formTitle").html()
 
-class window.ModelFitTypeController extends Backbone.View
+class ModelFitTypeController extends Backbone.View
 	template: _.template($("#ModelFitTypeView").html())
 
 	events:
@@ -428,7 +428,7 @@ class window.ModelFitTypeController extends Backbone.View
 			$(ee).removeAttr('data-original-title')
 			$(ee).removeClass 'input_error error'
 
-class window.DoseResponseAnalysisController extends Backbone.View
+class DoseResponseAnalysisController extends Backbone.View
 	template: _.template($("#DoseResponseAnalysisView").html())
 	events:
 		"click .bv_fitModelButton": "launchFit"
@@ -588,7 +588,7 @@ class window.DoseResponseAnalysisController extends Backbone.View
 		@$('.bv_resultsContainer').show()
 		@$('.bv_fitStatusDropDown').modal("hide")
 
-class window.DoseResponsePlotCurveLL4 extends Backbone.Model
+class DoseResponsePlotCurveLL4 extends Backbone.Model
 
 	log10: (val) ->
 		Math.log(val) / Math.LN10

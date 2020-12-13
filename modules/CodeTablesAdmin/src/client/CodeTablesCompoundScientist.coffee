@@ -1,7 +1,7 @@
 ############################################################################
 # models
 ############################################################################
-class window.CompoundScientist extends Backbone.Model
+class CompoundScientist extends Backbone.Model
 	urlRoot: "/api/codeTablesAdmin/compound/scientist"
 	defaults:
 		name: null
@@ -34,7 +34,7 @@ class window.CompoundScientist extends Backbone.Model
 # controllers
 ############################################################################
 
-class window.CompoundScientistController extends AbstractCodeTablesAdminController
+class CompoundScientistController extends AbstractCodeTablesAdminController
 	wrapperTemplate: _.template($("#CompoundScientistView").html())
 	moduleLaunchName: "scientist"
 	codeType: "compound"
@@ -55,7 +55,7 @@ class window.CompoundScientistController extends AbstractCodeTablesAdminControll
 		@$('.bv_compoundCompoundScientistControllerDiv').html super()
 
 
-class window.CompoundScientistBrowserController extends AbstractCodeTablesAdminBrowserController
+class CompoundScientistBrowserController extends AbstractCodeTablesAdminBrowserController
 	wrapperTemplate: _.template($("#CompoundScientistBrowserView").html())
 	codeType: "compound"
 	codeKind: "scientist"

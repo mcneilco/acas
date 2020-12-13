@@ -1,4 +1,4 @@
-class window.DoseResponseKnockoutPanelController extends Backbone.View
+class DoseResponseKnockoutPanelController extends Backbone.View
 	template: _.template($("#DoseResponseKnockoutPanelView").html())
 
 	render: =>
@@ -33,7 +33,7 @@ class window.DoseResponseKnockoutPanelController extends Backbone.View
 		comment = @knockoutObservationListController.getSelectedModel().get 'name'
 		@trigger 'observationSelected', status, observation, cause, comment
 
-class window.DoseResponsePlotController extends AbstractFormController
+class DoseResponsePlotController extends AbstractFormController
 	template: _.template($("#DoseResponsePlotView").html())
 	initialize: ->
 		@pointList = []
@@ -337,7 +337,7 @@ class window.DoseResponsePlotController extends AbstractFormController
 		brd.on "down", createSelection
 		return
 
-class window.CurveDetail extends Backbone.Model
+class CurveDetail extends Backbone.Model
 	url: ->
 		return "/api/curve/detail/" + @id
 	initialize: ->
@@ -359,7 +359,7 @@ class window.CurveDetail extends Backbone.Model
 				resp.fitSettings = new drapType(resp.fitSettings)
 		return resp
 
-class window.CurveEditorController extends Backbone.View
+class CurveEditorController extends Backbone.View
 	template: _.template($("#CurveEditorView").html())
 	defaults:
 		locked: false
@@ -510,10 +510,10 @@ class window.CurveEditorController extends Backbone.View
 	deleteRsession: =>
 		@model.save({action: 'deleteSession', user: window.AppLaunchParams.loginUserName})
 
-class window.Curve extends Backbone.Model
+class Curve extends Backbone.Model
 
 
-class window.CurveList extends Backbone.Collection
+class CurveList extends Backbone.Collection
 	model: Curve
 
 	getCategories: ->
@@ -554,7 +554,7 @@ class window.CurveList extends Backbone.Collection
 			userFlagStatus: userFlagStatus
 
 
-class window.CurveCurationSet extends Backbone.Model
+class CurveCurationSet extends Backbone.Model
 	defaults:
 		sortOptions: new Backbone.Collection()
 		curves: new CurveList()
@@ -575,7 +575,7 @@ class window.CurveCurationSet extends Backbone.Model
 		resp
 
 
-class window.CurveEditorDirtyPanelController extends Backbone.View
+class CurveEditorDirtyPanelController extends Backbone.View
 	template: _.template($("#CurveEditorDirtyPanelView").html())
 
 	render: =>
@@ -595,7 +595,7 @@ class window.CurveEditorDirtyPanelController extends Backbone.View
 			backdrop: "static"
 		@$('.bv_curveEditorDirtyPanel').modal "show"
 
-class window.CurveSummaryController extends Backbone.View
+class CurveSummaryController extends Backbone.View
 	template: _.template($("#CurveSummaryView").html())
 	tagName: 'div'
 	className: 'bv_curveSummary'
@@ -732,7 +732,7 @@ class window.CurveSummaryController extends Backbone.View
 				return
 		@$el.removeClass 'selected'
 
-class window.CurveSummaryListController extends Backbone.View
+class CurveSummaryListController extends Backbone.View
 	template: _.template($("#CurveSummaryListView").html())
 	defaults:
 		locked: false
@@ -831,7 +831,7 @@ class window.CurveSummaryListController extends Backbone.View
 		@sortAscending = ascending
 		@render()
 
-class window.CurveCuratorController extends Backbone.View
+class CurveCuratorController extends Backbone.View
 	template: _.template($("#CurveCuratorView").html())
 	defaults:
 		locked: false

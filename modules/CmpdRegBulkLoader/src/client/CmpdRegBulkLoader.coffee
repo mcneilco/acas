@@ -1,18 +1,18 @@
-class window.SdfProperty extends Backbone.Model
+class SdfProperty extends Backbone.Model
 
-class window.SdfPropertiesList extends Backbone.Collection
+class SdfPropertiesList extends Backbone.Collection
 	model: SdfProperty
 
-class window.DbProperty extends Backbone.Model
+class DbProperty extends Backbone.Model
 
-class window.DbPropertiesList extends Backbone.Collection
+class DbPropertiesList extends Backbone.Collection
 	model: DbProperty
 
 	getRequired: ->
 		@filter (prop) ->
 			prop.get('required')
 
-class window.AssignedProperty extends Backbone.Model
+class AssignedProperty extends Backbone.Model
 	defaults:
 		sdfProperty: null
 		dbProperty: "none"
@@ -28,7 +28,7 @@ class window.AssignedProperty extends Backbone.Model
 				message: 'Project must be selected'
 		projectError
 
-class window.AssignedPropertiesList extends Backbone.Collection
+class AssignedPropertiesList extends Backbone.Collection
 	model: AssignedProperty
 
 	checkDuplicates: =>
@@ -74,12 +74,12 @@ class window.AssignedPropertiesList extends Backbone.Collection
 						message: "Salt equivalent requires default value for salt type/id property"
 		errors
 
-class window.BulkLoadFile extends Backbone.Model
+class BulkLoadFile extends Backbone.Model
 
-class window.BulkLoadFileList extends Backbone.Collection
+class BulkLoadFileList extends Backbone.Collection
 	model: BulkLoadFile
 
-class window.DetectSdfPropertiesController extends Backbone.View
+class DetectSdfPropertiesController extends Backbone.View
 	template: _.template($("#DetectSdfPropertiesView").html())
 
 	events: ->
@@ -220,7 +220,7 @@ class window.DetectSdfPropertiesController extends Backbone.View
 		if @fileName? and @fileName != null
 			@getProperties()
 
-class window.AssignedPropertyController extends AbstractFormController
+class AssignedPropertyController extends AbstractFormController
 	template: _.template($("#AssignedPropertyView").html())
 	className: "form-inline"
 
@@ -304,7 +304,7 @@ class window.AssignedPropertyController extends AbstractFormController
 		@model.destroy()
 		@trigger 'modelRemoved'
 
-class window.AssignedPropertiesListController extends AbstractFormController
+class AssignedPropertiesListController extends AbstractFormController
 	template: _.template($("#AssignedPropertiesListView").html())
 
 	events:
@@ -339,7 +339,7 @@ class window.AssignedPropertiesListController extends AbstractFormController
 
 
 
-class window.AssignSdfPropertiesController extends Backbone.View
+class AssignSdfPropertiesController extends Backbone.View
 	template: _.template($("#AssignSdfPropertiesView").html())
 
 	events:
@@ -782,7 +782,7 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		@$('.bv_saveErrorTitle').html "Error: Compounds Not Registered"
 		@$('.bv_errorMessage').html "An error occurred while trying to register the compounds.<br>Please try again or contact an administrator."
 
-class window.BulkRegCmpdsController extends Backbone.View
+class BulkRegCmpdsController extends Backbone.View
 	template: _.template($("#BulkRegCmpdsView").html())
 
 	initialize: ->
@@ -842,7 +842,7 @@ class window.BulkRegCmpdsController extends Backbone.View
 		@$('select').attr 'disabled', 'disabled'
 		@$("textarea").attr 'disabled', 'disabled'
 
-class window.BulkRegCmpdsSummaryController extends Backbone.View
+class BulkRegCmpdsSummaryController extends Backbone.View
 	template: _.template($("#BulkRegCmpdsSummaryView").html())
 
 	events:
@@ -862,7 +862,7 @@ class window.BulkRegCmpdsSummaryController extends Backbone.View
 	handleLoadAnotherSDF: ->
 		@trigger 'loadAnother'
 
-class window.BulkValCmpdsSummaryController extends Backbone.View
+class BulkValCmpdsSummaryController extends Backbone.View
 	template: _.template($("#BulkValCmpdsSummaryView").html())
 
 	events:
@@ -889,7 +889,7 @@ class window.BulkValCmpdsSummaryController extends Backbone.View
 	handleBack: ->
 		@trigger 'back'
 
-class window.FileRowSummaryController extends Backbone.View
+class FileRowSummaryController extends Backbone.View
 	tagName: 'tr'
 	className: 'dataTableRow'
 	events:
@@ -917,7 +917,7 @@ class window.FileRowSummaryController extends Backbone.View
 
 		@
 
-class window.FileSummaryTableController extends Backbone.View
+class FileSummaryTableController extends Backbone.View
 	selectedRowChanged: (row) =>
 		@trigger "selectedRowUpdated", row
 
@@ -941,7 +941,7 @@ class window.FileSummaryTableController extends Backbone.View
 		@
 
 
-class window.PurgeFilesController extends Backbone.View
+class PurgeFilesController extends Backbone.View
 	template: _.template($("#PurgeFilesView").html())
 
 	events:
@@ -1078,7 +1078,7 @@ class window.PurgeFilesController extends Backbone.View
 		@fileNameToPurge = null
 		@getFiles()
 
-class window.CmpdRegBulkLoaderAppController extends Backbone.View
+class CmpdRegBulkLoaderAppController extends Backbone.View
 	template: _.template($("#CmpdRegBulkLoaderAppView").html())
 
 	events:

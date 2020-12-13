@@ -1,4 +1,4 @@
-class window.ACASFormMultiInteractionController extends Backbone.View
+class ACASFormMultiInteractionController extends Backbone.View
 	###
 		Launched by ACASFormMultiInteractionListController to control one element/row in the list
 	###
@@ -36,7 +36,7 @@ class window.ACASFormMultiInteractionController extends Backbone.View
 		$(@el).hide()
 
 
-class window.ACASFormMultiInteractionListController extends ACASFormAbstractFieldController
+class ACASFormMultiInteractionListController extends ACASFormAbstractFieldController
 	###
   	Launching controller must instantiate with the full field conf including modelDefaults, not just the fieldDefinition.
   	Controls a flexible-length list of LsThingInteraction input fields within ACASFormLSThingInteractionFieldControllers with an add button.

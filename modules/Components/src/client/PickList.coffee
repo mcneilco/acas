@@ -1,6 +1,6 @@
-class window.PickList extends Backbone.Model
+class PickList extends Backbone.Model
 
-class window.PickListList extends Backbone.Collection
+class PickListList extends Backbone.Collection
 	model: PickList
 
 	setType: (type) ->
@@ -18,7 +18,7 @@ class window.PickListList extends Backbone.Collection
 		@filter (pl) ->
 			!(pl.get 'ignored')
 
-class window.PickListOptionController extends Backbone.View
+class PickListOptionController extends Backbone.View
 	tagName: "option"
 	initialize: ->
 
@@ -26,7 +26,7 @@ class window.PickListOptionController extends Backbone.View
 		$(@el).attr("value", @model.get("code")).text @model.get("name")
 		@
 
-class window.PickListOptionControllerForLsThing extends Backbone.View
+class PickListOptionControllerForLsThing extends Backbone.View
 	tagName: "option"
 	initialize: ->
 		if @options.insertFirstOption?
@@ -89,7 +89,7 @@ class window.PickListOptionControllerForLsThing extends Backbone.View
 		@
 
 
-class window.PickListSelectController extends Backbone.View
+class PickListSelectController extends Backbone.View
 	initialize: (options) ->
 		@rendered = false
 		@collection.bind "add", @addOne.bind(@)
@@ -202,7 +202,7 @@ class window.PickListSelectController extends Backbone.View
 	checkOptionInCollection: (code) => #checks to see if option already exists in the picklist list
 		return @collection.findWhere({code: code})
 
-class window.PickListForLsThingsSelectController extends PickListSelectController
+class PickListForLsThingsSelectController extends PickListSelectController
 
 	initialize: (options) ->
 		super(options)
@@ -239,7 +239,7 @@ class window.PickListForLsThingsSelectController extends PickListSelectControlle
 	getSelectedModel: ->
 		@collection.getModelWithId parseInt(@getSelectedCode())
 
-class window.ComboBoxController extends PickListSelectController
+class ComboBoxController extends PickListSelectController
 
 	handleListReset: =>
 		super()
@@ -247,7 +247,7 @@ class window.ComboBoxController extends PickListSelectController
 			bsVersion: '2'
 
 
-class window.PickListSelect2Controller extends PickListSelectController
+class PickListSelect2Controller extends PickListSelectController
 
 	# maps the 'code' property to the select2 required 'id' property and
 	# the 'name' property to the select2 required 'text' property
@@ -329,7 +329,7 @@ class window.PickListSelect2Controller extends PickListSelectController
 			$(@el).val(@selectedCode).trigger("change.select2")
 
 
-class window.AddParameterOptionPanel extends Backbone.Model
+class AddParameterOptionPanel extends Backbone.Model
 	defaults:
 		parameter: null
 		codeType: null
@@ -353,7 +353,7 @@ class window.AddParameterOptionPanel extends Backbone.Model
 
 
 
-class window.AddParameterOptionPanelController extends AbstractFormController
+class AddParameterOptionPanelController extends AbstractFormController
 	template: _.template($("#AddParameterOptionPanelView").html())
 
 	events:
@@ -407,7 +407,7 @@ class window.AddParameterOptionPanelController extends AbstractFormController
 
 
 
-class window.EditablePickListSelectController extends Backbone.View
+class EditablePickListSelectController extends Backbone.View
 	template: _.template($("#EditablePickListView").html())
 
 	#when creating new controller, need to provide el, collection, selectedCode, parameter, and roles
@@ -589,7 +589,7 @@ class window.EditablePickListSelectController extends Backbone.View
 #				msg = "You selected the menu item '" + selectedMenu.text() + "' on the value '" + invokedOn.text() + "'"
 #				alert msg
 
-class window.EditablePickListSelect2Controller extends EditablePickListSelectController
+class EditablePickListSelect2Controller extends EditablePickListSelectController
 	setupEditablePickList: ->
 		parameterNameWithSpaces = @options.parameter.replace /([A-Z])/g,' $1'
 		pascalCaseParameterName = (parameterNameWithSpaces).charAt(0).toUpperCase() + (parameterNameWithSpaces).slice(1)
@@ -601,7 +601,7 @@ class window.EditablePickListSelect2Controller extends EditablePickListSelectCon
 				name: "Select "+pascalCaseParameterName
 			selectedCode: @options.selectedCode
 
-class window.ThingLabelComboBoxController extends PickListSelect2Controller
+class ThingLabelComboBoxController extends PickListSelect2Controller
 
 	initialize: ->
 		@thingType = @options.thingType

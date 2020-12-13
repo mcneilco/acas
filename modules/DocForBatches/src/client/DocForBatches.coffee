@@ -1,4 +1,4 @@
-class window.DocForBatches extends Backbone.Model
+class DocForBatches extends Backbone.Model
 	protocol: null
 	experiment: null
 
@@ -153,7 +153,7 @@ class window.DocForBatches extends Backbone.Model
 
 
 
-class window.DocForBatchesController extends Backbone.View
+class DocForBatchesController extends Backbone.View
 	template: _.template($("#DocForBatchesView").html())
 
 	events:

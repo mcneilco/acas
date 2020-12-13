@@ -1,4 +1,4 @@
-class window.Protocol extends BaseEntity
+class window.window.Protocol extends BaseEntity
 	urlRoot: "/api/protocols"
 
 	initialize: ->

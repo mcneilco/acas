@@ -1,4 +1,4 @@
-class window.LSFileInputController extends Backbone.View
+class LSFileInputController extends Backbone.View
 	
 	fieldIsRequired: true
 	inputTitle: "A title should go here"

@@ -1,4 +1,4 @@
-class window.AbstractCodeTablesAdminController extends AbstractFormController
+class AbstractCodeTablesAdminController extends AbstractFormController
 	###
 		Instances of this controller must supply "moduleLaunchName", "codeType", and "modelClass"
 	e.g. other required fields

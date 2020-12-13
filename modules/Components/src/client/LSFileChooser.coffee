@@ -1,4 +1,4 @@
-class window.LSFileChooserModel extends Backbone.Model
+class LSFileChooserModel extends Backbone.Model
 	defaults:
 		fileName: ''
 		fileNameOnServer: ''
@@ -12,11 +12,11 @@ class window.LSFileChooserModel extends Backbone.Model
 	isDirty: ->
 		return @.get('fileNameOnServer') == ''
 
-class window.LSFileModelCollection extends Backbone.Collection
+class LSFileModelCollection extends Backbone.Collection
 	model: LSFileChooserModel
 
 
-class window.LSFileChooserController extends Backbone.View
+class LSFileChooserController extends Backbone.View
 	allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf']
 	dropZoneClassId: "fileupload"
 	allowMultipleFiles: false

@@ -4,7 +4,7 @@
 # This ignores ignored states, and neither shows them, nor allows them to be edited
 
 
-class window.ACASFormStateDisplayUpdateHeaderRowController extends Backbone.View
+class ACASFormStateDisplayUpdateHeaderRowController extends Backbone.View
 	tagName: 'tr'
 
 	initialize: (options) ->
@@ -20,7 +20,7 @@ class window.ACASFormStateDisplayUpdateHeaderRowController extends Backbone.View
 
 		@
 
-class window.ACASFormStateDisplayUpdateCellController extends Backbone.View
+class ACASFormStateDisplayUpdateCellController extends Backbone.View
 	tagName: 'td'
 
 	events: ->
@@ -55,7 +55,7 @@ class window.ACASFormStateDisplayUpdateCellController extends Backbone.View
 	handleCellClicked: =>
 		@trigger 'cellClicked', @collection
 
-class window.ACASFormStateDisplayUpdateRowController extends Backbone.View
+class ACASFormStateDisplayUpdateRowController extends Backbone.View
 	tagName: 'tr'
 
 	initialize: (options) ->
@@ -74,7 +74,7 @@ class window.ACASFormStateDisplayUpdateRowController extends Backbone.View
 
 		@
 
-class window.ACASFormStateDisplayUpdateController extends Backbone.View
+class ACASFormStateDisplayUpdateController extends Backbone.View
 	rowNumberKind: 'row number'
 	template: _.template($("#ACASFormStateDisplayUpdateView").html())
 
@@ -224,7 +224,7 @@ class window.ACASFormStateDisplayUpdateController extends Backbone.View
 			updatedStates = valInfo.valueDef.autoUpdate valInfo, @
 		@trigger 'thingSaveRequested', valInfo.comment
 
-class window.ACASFormStateDisplayOldValueController extends Backbone.View
+class ACASFormStateDisplayOldValueController extends Backbone.View
 	tagName: 'tr'
 	template: _.template($("#ACASFormStateDisplayOldValueView").html())
 
@@ -263,7 +263,7 @@ class window.ACASFormStateDisplayOldValueController extends Backbone.View
 
 		@
 
-class window.ACASFormStateDisplayValueEditController extends Backbone.View
+class ACASFormStateDisplayValueEditController extends Backbone.View
 	template: _.template($("#ACASFormStateDisplayValueEditView").html())
 
 	events: ->

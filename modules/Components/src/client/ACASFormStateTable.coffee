@@ -1,4 +1,4 @@
-class window.ACASFormStateTableController extends Backbone.View
+class ACASFormStateTableController extends Backbone.View
 	###
 		Launching controller must:
 		- Initialize the model the correct object type
@@ -659,7 +659,7 @@ class window.ACASFormStateTableController extends Backbone.View
 		@hot.render()
 
 
-class window.ACASFormStateTableFormController extends Backbone.View
+class ACASFormStateTableFormController extends Backbone.View
 
 
 	initialize: (options) ->

@@ -1,4 +1,4 @@
-class window.CustomMetadataValueController extends Backbone.View
+class CustomMetadataValueController extends Backbone.View
 	template: _.template($("#CustomExperimentMetaDataValueView").html())
 	events: ->
 		"change .bv_value": "handleValueInputChanged"
@@ -30,10 +30,10 @@ class window.CustomMetadataValueController extends Backbone.View
 		@model = currentVal
 		@
 
-class window.CustomMetadataClobValueController extends CustomMetadataValueController
+class CustomMetadataClobValueController extends CustomMetadataValueController
 	template: _.template($("#CustomExperimentMetaDataClobValueView").html())
 
-class window.CustomMetadataCodeValueController extends CustomMetadataValueController
+class CustomMetadataCodeValueController extends CustomMetadataValueController
 	template: _.template($("#CustomExperimentMetaDataCodeValueView").html())
 
 	render: ->
@@ -50,17 +50,17 @@ class window.CustomMetadataCodeValueController extends CustomMetadataValueContro
 			selectedCode: @model.get 'codeValue'
 		@
 
-class window.CustomMetadataNumericValueController extends CustomMetadataValueController
+class CustomMetadataNumericValueController extends CustomMetadataValueController
 	template: _.template($("#CustomExperimentMetaDataNumericValueView").html())
 	events: ->
 		"keyup .bv_value": "handleValueInputChanged"
 
-class window.CustomMetadataStringValueController extends CustomMetadataValueController
+class CustomMetadataStringValueController extends CustomMetadataValueController
 	template: _.template($("#CustomExperimentMetaDataStringValueView").html())
 	events: ->
 		"keyup .bv_value": "handleValueInputChanged"
 
-class window.CustomMetadataURLValueController extends CustomMetadataValueController
+class CustomMetadataURLValueController extends CustomMetadataValueController
 	template: _.template($("#CustomExperimentMetaDataURLValueView").html())
 	events: ->
 		"keyup .bv_value": "handleValueInputChanged"
@@ -71,7 +71,7 @@ class window.CustomMetadataURLValueController extends CustomMetadataValueControl
 		window.open(url);
 
 
-class window.CustomExperimentMetadataListController extends Backbone.View
+class CustomExperimentMetadataListController extends Backbone.View
 	template: _.template($("#CustomExperimentMetaDataListView").html())
 
 	initialize: ->

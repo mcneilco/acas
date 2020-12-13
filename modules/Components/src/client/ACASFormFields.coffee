@@ -1,4 +1,4 @@
-class window.ACASFormAbstractFieldController extends Backbone.View
+class ACASFormAbstractFieldController extends Backbone.View
 	###
 		Launching controller must:
 		- Initialize the model the correct object type
@@ -169,7 +169,7 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 	setTabIndex: (index) ->
 		@$('input, select').attr  'tabindex', index
 
-class window.ACASFormLSLabelFieldController extends ACASFormAbstractFieldController
+class ACASFormLSLabelFieldController extends ACASFormAbstractFieldController
 	###
 		Launching controller must:
 		- Initialize the model with an LSLabel
@@ -259,7 +259,7 @@ class window.ACASFormLSLabelFieldController extends ACASFormAbstractFieldControl
 		@$('input').val @getModel().get('labelText')
 		super()
 
-class window.ACASFormLSNumericValueFieldController extends ACASFormAbstractFieldController
+class ACASFormLSNumericValueFieldController extends ACASFormAbstractFieldController
 	###
 		Launching controller must:
 		- Initialize the model with an LSValue
@@ -325,7 +325,7 @@ class window.ACASFormLSNumericValueFieldController extends ACASFormAbstractField
 			@$('.bv_units').html @getModel().get('unitKind')
 		super()
 
-class window.ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldController
+class ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldController
 	###
 		Launching controller must:
 		- Initialize the model with an LSValue
@@ -431,7 +431,7 @@ class window.ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldCon
 	clearDescription: ->
 		@$('.desc-inline').addClass 'hide'
 
-class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractFieldController
+class ACASFormLSThingInteractionFieldController extends ACASFormAbstractFieldController
 	###
 		Launching controller must:
 		- Initialize the model with an LSInteraction
@@ -525,7 +525,7 @@ class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractF
 		@$('select').removeAttr 'disabled'
 
 
-class window.ACASFormLSHTMLClobValueFieldController extends ACASFormAbstractFieldController
+class ACASFormLSHTMLClobValueFieldController extends ACASFormAbstractFieldController
 	###
 		Launching controller must:
 		- Initialize the model with an LSValue
@@ -601,7 +601,7 @@ class window.ACASFormLSHTMLClobValueFieldController extends ACASFormAbstractFiel
 		else
 			@disableEditor = false
 
-class window.ACASFormLSStringValueFieldController extends ACASFormAbstractFieldController
+class ACASFormLSStringValueFieldController extends ACASFormAbstractFieldController
 	###
 		Launching controller must:
 		- Initialize the model with an LSValue
@@ -636,7 +636,7 @@ class window.ACASFormLSStringValueFieldController extends ACASFormAbstractFieldC
 		super()
 
 
-class window.ACASFormLSDateValueFieldController extends ACASFormAbstractFieldController
+class ACASFormLSDateValueFieldController extends ACASFormAbstractFieldController
 	###
 		Launching controller must:
 		- Initialize the model with an LSValue
@@ -686,7 +686,7 @@ class window.ACASFormLSDateValueFieldController extends ACASFormAbstractFieldCon
 	disableInput: =>
 		$(@el).off('click', '.bv_dateIcon');
 
-class window.ACASFormLSFileValueFieldController extends ACASFormAbstractFieldController
+class ACASFormLSFileValueFieldController extends ACASFormAbstractFieldController
 	###
 		Launching controller must:
 		- Initialize the model with an LSValue
@@ -777,7 +777,7 @@ class window.ACASFormLSFileValueFieldController extends ACASFormAbstractFieldCon
 		@$('.bv_deleteSavedFile').hide()
 		@createNewFileChooser()
 
-class window.ACASFormLSBooleanFieldController extends ACASFormAbstractFieldController
+class ACASFormLSBooleanFieldController extends ACASFormAbstractFieldController
 	###
 		Launching controller must:
 		- Initialize the model with an LSValue
@@ -818,7 +818,7 @@ class window.ACASFormLSBooleanFieldController extends ACASFormAbstractFieldContr
 
 
 
-class window.ACASFormLSURLValueFieldController extends ACASFormAbstractFieldController
+class ACASFormLSURLValueFieldController extends ACASFormAbstractFieldController
 	###
 		Launching controller must:
 		- Initialize the model with an LSValue

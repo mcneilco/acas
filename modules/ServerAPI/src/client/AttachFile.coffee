@@ -1,14 +1,14 @@
-class window.BasicFile extends Backbone.Model
+class BasicFile extends Backbone.Model
 	#model created from uploading file or entering external url
 	defaults: ->
 		id: null
 		comments: null
 		required: false
 
-class window.BasicFileList extends Backbone.Collection
+class BasicFileList extends Backbone.Collection
 	model: BasicFile
 
-class window.AttachFile extends BasicFile
+class AttachFile extends BasicFile
 	defaults: ->
 		_(super()).extend(
 			fileType: "unassigned"
@@ -35,10 +35,10 @@ class window.AttachFile extends BasicFile
 		else
 			return null
 
-class window.AttachFileList extends BasicFileList
+class AttachFileList extends BasicFileList
 	model: AttachFile
 
-class window.ExperimentAttachFileList extends AttachFileList
+class ExperimentAttachFileList extends AttachFileList
 
 	validateCollection: =>
 		modelErrors = []
@@ -70,7 +70,7 @@ class window.ExperimentAttachFileList extends AttachFileList
 
 
 
-class window.BasicFileController extends AbstractFormController
+class BasicFileController extends AbstractFormController
 	template: _.template($("#BasicFileView").html())
 	tagName: "div"
 
@@ -144,7 +144,7 @@ class window.BasicFileController extends AbstractFormController
 		@trigger 'removeFile'
 		@trigger 'amDirty'
 
-class window.BasicFileListController extends Backbone.View
+class BasicFileListController extends Backbone.View
 	template: _.template($("#BasicFileListView").html())
 
 	initialize: ->
@@ -222,7 +222,7 @@ class window.BasicFileListController extends Backbone.View
 				validCheck = false
 		validCheck
 
-class window.AttachFileController extends BasicFileController
+class AttachFileController extends BasicFileController
 	template: _.template($("#AttachFileView").html())
 	tagName: "div"
 
@@ -284,7 +284,7 @@ class window.AttachFileController extends BasicFileController
 			@trigger 'addNewModel', newModel
 
 
-class window.AttachFileListController extends BasicFileListController
+class AttachFileListController extends BasicFileListController
 	template: _.template($("#AttachFileListView").html())
 
 	events:
@@ -338,7 +338,7 @@ class window.AttachFileListController extends BasicFileListController
 			@trigger 'amDirty'
 		@$('.bv_attachFileInfo').append afc.render().el
 
-class window.ExperimentAttachFileListController extends AttachFileListController
+class ExperimentAttachFileListController extends AttachFileListController
 
 	initialize: ->
 		unless @collection?

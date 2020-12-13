@@ -1,4 +1,4 @@
-class window.BaseEntity extends Backbone.Model
+class BaseEntity extends Backbone.Model
 	urlRoot: "/api/experiments" # should be set the proper value in subclasses
 
 	defaults: ->
@@ -253,10 +253,10 @@ class window.BaseEntity extends Backbone.Model
 
 		copiedEntity
 
-class window.BaseEntityList extends Backbone.Collection
+class BaseEntityList extends Backbone.Collection
 	model: BaseEntity
 
-class window.BaseEntityController extends AbstractThingFormController #TODO: check to see if this is ok
+class BaseEntityController extends AbstractThingFormController #TODO: check to see if this is ok
 	template: _.template($("#BaseEntityView").html())
 
 	events: ->

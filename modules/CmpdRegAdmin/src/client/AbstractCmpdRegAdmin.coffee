@@ -1,4 +1,4 @@
-class window.AbstractCmpdRegAdminController extends AbstractFormController
+class AbstractCmpdRegAdminController extends AbstractFormController
 	###
 		Instances of this controller must supply "moduleLaunchName", "entityType", and "modelClass"
   	entityTypePlural

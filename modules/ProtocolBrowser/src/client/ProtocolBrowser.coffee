@@ -1,8 +1,8 @@
-class window.ProtocolSearch extends Backbone.Model
+class ProtocolSearch extends Backbone.Model
 	defaults:
 		protocolCode: null
 
-class window.ProtocolSimpleSearchController extends AbstractFormController
+class ProtocolSimpleSearchController extends AbstractFormController
 	template: _.template($("#ProtocolSimpleSearchView").html())
 	genericSearchUrl: "/api/protocols/genericSearch/"
 	codeNameSearchUrl: "/api/protocols/codename/"
@@ -70,7 +70,7 @@ class window.ProtocolSimpleSearchController extends AbstractFormController
 					@$(".bv_doSearch").attr "disabled", false
 
 
-class window.ProtocolRowSummaryController extends Backbone.View
+class ProtocolRowSummaryController extends Backbone.View
 	tagName: 'tr'
 	className: 'dataTableRow'
 	events:
@@ -114,7 +114,7 @@ class window.ProtocolRowSummaryController extends Backbone.View
 
 		@
 
-class window.ProtocolSummaryTableController extends Backbone.View
+class ProtocolSummaryTableController extends Backbone.View
 	initialize: ->
 
 	selectedRowChanged: (row) =>
@@ -168,7 +168,7 @@ class window.ProtocolSummaryTableController extends Backbone.View
 				return true
 		return false
 
-class window.ProtocolBrowserController extends Backbone.View
+class ProtocolBrowserController extends Backbone.View
 	#template: _.template($("#ProtocolBrowserView").html())
 	events:
 		"click .bv_deleteProtocol": "handleDeleteProtocolClicked"

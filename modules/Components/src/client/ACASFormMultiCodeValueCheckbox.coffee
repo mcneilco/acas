@@ -1,4 +1,4 @@
-class window.ACASFormCodeValueCheckboxController extends ACASFormAbstractFieldController
+class ACASFormCodeValueCheckboxController extends ACASFormAbstractFieldController
     ###
         Launched by ACASFormMultiCodeValueCheckboxController to control one checkbox in the list
     ###
@@ -95,7 +95,7 @@ class window.ACASFormCodeValueCheckboxController extends ACASFormAbstractFieldCo
             return null
 
 
-class window.ACASFormMultiCodeValueCheckboxController extends ACASFormAbstractFieldController
+class ACASFormMultiCodeValueCheckboxController extends ACASFormAbstractFieldController
     ###
       Launching controller must instantiate with the full field conf including modelDefaults, not just the fieldDefinition.
     Specifying rowNumber and rowNumberKind are optional, and will make this controller act on a specific state.

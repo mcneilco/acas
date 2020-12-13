@@ -1,4 +1,4 @@
-class window.DocUpload extends Backbone.Model
+class DocUpload extends Backbone.Model
 	defaults:
 		url: ""
 		currentFileName: ""
@@ -30,7 +30,7 @@ class window.DocUpload extends Backbone.Model
 		else
 			return null
 
-class window.DocUploadController extends AbstractFormController
+class DocUploadController extends AbstractFormController
 	template: _.template($("#DocUploadView").html())
 
 	events:

@@ -1,4 +1,4 @@
-class window.AnalysisGroup extends Backbone.Model
+class AnalysisGroup extends Backbone.Model
 	defaults:
 		kind: ""
 		recordedBy: ""
@@ -17,5 +17,5 @@ class window.AnalysisGroup extends Backbone.Model
 			if @get('lsStates') not instanceof StateList
 				@set lsStates: new StateList(@get('lsStates'))
 
-class window.AnalysisGroupList extends Backbone.Collection
+class AnalysisGroupList extends Backbone.Collection
 	model: AnalysisGroup

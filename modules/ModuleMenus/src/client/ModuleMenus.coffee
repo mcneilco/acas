@@ -1,4 +1,4 @@
-class window.ModuleMenusController extends Backbone.View
+class ModuleMenusController extends Backbone.View
 
 	template: _.template($("#ModuleMenusView").html())
 

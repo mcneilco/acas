@@ -1,20 +1,20 @@
 ############################################################################
 # models
 ############################################################################
-class window.CmpdRegAdminSearch extends Backbone.Model
+class CmpdRegAdminSearch extends Backbone.Model
 	defaults:
 		name: null
 		code: null
 		id: null
 
 ############################################################################
-class window.CmpdRegAdminList extends Backbone.Collection
+class CmpdRegAdminList extends Backbone.Collection
 	model: CmpdRegAdminSearch
 
 ############################################################################
 # controllers
 ############################################################################
-class window.CmpdRegAdminSimpleSearchController extends AbstractFormController
+class CmpdRegAdminSimpleSearchController extends AbstractFormController
 	###
   	Instantiating controller must provide urlRoot and toDisplay in options
 	###
@@ -75,7 +75,7 @@ class window.CmpdRegAdminSimpleSearchController extends AbstractFormController
 		@trigger 'createNewCmpdRegAdmin'
 
 ############################################################################
-class window.CmpdRegAdminRowSummaryController extends Backbone.View
+class CmpdRegAdminRowSummaryController extends Backbone.View
 	tagName: 'tr'
 	className: 'dataTableRow'
 	events:
@@ -109,7 +109,7 @@ class window.CmpdRegAdminRowSummaryController extends Backbone.View
 		@
 
 ############################################################################
-class window.CmpdRegAdminSummaryTableController extends Backbone.View
+class CmpdRegAdminSummaryTableController extends Backbone.View
 	initialize: ->
 		if @options.showIgnore?
 			@showIgnore = @options.showIgnore
@@ -141,7 +141,7 @@ class window.CmpdRegAdminSummaryTableController extends Backbone.View
 		@
 
 ############################################################################
-class window.AbstractCmpdRegAdminBrowserController extends Backbone.View
+class AbstractCmpdRegAdminBrowserController extends Backbone.View
 	###
   	Instantiating controller must provide:
   		entityType
@@ -174,9 +174,9 @@ class window.AbstractCmpdRegAdminBrowserController extends Backbone.View
 			urlRoot: "/api/CmpdRegAdmin/#{@entityTypePlural}"
 			toDisplay: @toDisplay
 		@searchController.render()
-		@searchController.on "searchRequested", @handleSearchRequested
-		@searchController.on "searchReturned", @setupCmpdRegAdminSummaryTable
-		@searchController.on "createNewCmpdRegAdmin", @handleCreateNewCmpdRegAdminClicked
+		@searchController.on "searchRequested", @handleSearchRequested.bind(@)
+		@searchController.on "searchReturned", @setupCmpdRegAdminSummaryTable.bind(@)
+		@searchController.on "createNewCmpdRegAdmin", @handleCreateNewCmpdRegAdminClicked.bind(@)
 	#@searchController.on "resetSearch", @destroyCmpdRegAdminSummaryTable
 
 	setupCmpdRegAdminSummaryTable: (cmpdRegAdmins) =>

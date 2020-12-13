@@ -1,8 +1,8 @@
-class window.ProjectLeader extends Backbone.Model
+class ProjectLeader extends Backbone.Model
 	defaults: ->
 		scientist: "unassigned"
 
-class window.ProjectLeaderList extends Backbone.Collection
+class ProjectLeaderList extends Backbone.Collection
 	model: ProjectLeader
 
 	validateCollection: =>
@@ -23,12 +23,12 @@ class window.ProjectLeaderList extends Backbone.Collection
 					usedLeaders[currentLeader] = index
 		modelErrors
 
-class window.ProjectUser extends Backbone.Model
+class ProjectUser extends Backbone.Model
 	defaults: ->
 		user: "unassigned"
 		saved: false
 
-class window.ProjectUserList extends Backbone.Collection
+class ProjectUserList extends Backbone.Collection
 	model: ProjectUser
 
 	validateCollection: =>
@@ -49,12 +49,12 @@ class window.ProjectUserList extends Backbone.Collection
 					usedUsers[currentUser] = index
 		modelErrors
 
-class window.ProjectAdmin extends Backbone.Model
+class ProjectAdmin extends Backbone.Model
 	defaults: ->
 		admin: "unassigned"
 		saved: false
 
-class window.ProjectAdminList extends Backbone.Collection
+class ProjectAdminList extends Backbone.Collection
 	model: ProjectAdmin
 
 	validateCollection: =>
@@ -76,7 +76,7 @@ class window.ProjectAdminList extends Backbone.Collection
 		modelErrors
 
 
-class window.Project extends Thing
+class Project extends Thing
 	urlRoot: "/api/things/project/project"
 	className: "Project"
 
@@ -245,11 +245,11 @@ class window.Project extends Thing
 			when "active" then return true
 			when "inactive" then return false
 
-class window.ProjectList extends Backbone.Collection
+class ProjectList extends Backbone.Collection
 	model: Project
 
 
-class window.ProjectLeaderController extends AbstractFormController
+class ProjectLeaderController extends AbstractFormController
 	template: _.template($("#ProjectLeaderView").html())
 	tagName: "div"
 
@@ -301,7 +301,7 @@ class window.ProjectLeaderController extends AbstractFormController
 			@model.destroy()
 		@trigger 'amDirty'
 
-class window.ProjectLeaderListController extends Backbone.View
+class ProjectLeaderListController extends Backbone.View
 	template: _.template($("#ProjectLeaderListView").html())
 
 	events:
@@ -370,7 +370,7 @@ class window.ProjectLeaderListController extends Backbone.View
 			$(ee).removeAttr('data-original-title')
 			$(ee).removeClass 'input_error error'
 
-class window.ProjectUserController extends AbstractFormController
+class ProjectUserController extends AbstractFormController
 	template: _.template($("#ProjectUserView").html())
 	tagName: "div"
 
@@ -422,7 +422,7 @@ class window.ProjectUserController extends AbstractFormController
 			@model.destroy()
 		@trigger 'amDirty'
 
-class window.ProjectUserListController extends Backbone.View
+class ProjectUserListController extends Backbone.View
 	template: _.template($("#ProjectUserListView").html())
 
 	events:
@@ -491,7 +491,7 @@ class window.ProjectUserListController extends Backbone.View
 			$(ee).removeAttr('data-original-title')
 			$(ee).removeClass 'input_error error'
 
-class window.ProjectAdminController extends AbstractFormController
+class ProjectAdminController extends AbstractFormController
 	template: _.template($("#ProjectAdminView").html())
 	tagName: "div"
 
@@ -543,7 +543,7 @@ class window.ProjectAdminController extends AbstractFormController
 			@model.destroy()
 		@trigger 'amDirty'
 
-class window.ProjectAdminListController extends Backbone.View
+class ProjectAdminListController extends Backbone.View
 	template: _.template($("#ProjectAdminListView").html())
 
 	events:
@@ -612,7 +612,7 @@ class window.ProjectAdminListController extends Backbone.View
 			$(ee).removeAttr('data-original-title')
 			$(ee).removeClass 'input_error error'
 
-class window.ProjectController extends AbstractFormController
+class ProjectController extends AbstractFormController
 	template: _.template($("#ProjectView").html())
 	moduleLaunchName: "project"
 
