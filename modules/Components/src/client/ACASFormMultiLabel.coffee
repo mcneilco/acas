@@ -8,7 +8,8 @@ class window.ACASFormMultiLabelController extends Backbone.View
 	events: ->
 		"click .bv_removeLabelButton": "handleRemoveLabelButtonClicked"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		options =
 			modelKey: @options.labelKey
 			inputClass: @options.inputClass

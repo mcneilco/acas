@@ -138,7 +138,7 @@ class window.AuthorBrowserController extends Backbone.View
 			model: new AuthorSearch()
 			el: @$('.bv_authorSearchController')
 		@searchController.render()
-		@searchController.on "searchReturned", @setupAuthorSummaryTable
+		@searchController.on "searchReturned", @setupAuthorSummaryTable.bind(@)
 		@$('.bv_queryToolDisplayName').html window.conf.service.result.viewer.displayName
 
 	setupAuthorSummaryTable: (authors) =>

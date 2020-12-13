@@ -8,7 +8,7 @@ class window.ACASFormMultiInteractionController extends Backbone.View
 	events: ->
 		"click .bv_removeInteractionButton": "handleRemoveInteractionButtonClicked"
 
-	initialize: ->
+	initialize: (options)->
 		options =
 			modelKey: @options.interactionKey
 			thingType: @options.thingType
@@ -46,8 +46,9 @@ class window.ACASFormMultiInteractionListController extends ACASFormAbstractFiel
 	events: ->
 		"click .bv_addInteractionButton": "handleAddInteractionButtonClicked"
 
-	initialize: ->
-		super()
+	initialize: (options) ->
+		options = @options
+		super(options)
 		@opts = @options
 		if @opts.firstItx
 			@itxClass = FirstThingItx

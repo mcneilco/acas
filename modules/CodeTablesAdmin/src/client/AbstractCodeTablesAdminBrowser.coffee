@@ -177,9 +177,9 @@ class window.AbstractCodeTablesAdminBrowserController extends Backbone.View
 			urlRoot: "/api/codeTablesAdmin/#{@codeType}/#{@codeKind}"
 			toDisplay: @toDisplay
 		@searchController.render()
-		@searchController.on "searchRequested", @handleSearchRequested
-		@searchController.on "searchReturned", @setupCodeTablesAdminSummaryTable
-		@searchController.on "createNewCodeTablesAdmin", @handleCreateNewCodeTablesAdminClicked
+		@searchController.on "searchRequested", @handleSearchRequested.bind(@)
+		@searchController.on "searchReturned", @setupCodeTablesAdminSummaryTable.bind(@)
+		@searchController.on "createNewCodeTablesAdmin", @handleCreateNewCodeTablesAdminClicked.bind(@)
 	#@searchController.on "resetSearch", @destroyCodeTablesAdminSummaryTable
 
 	setupCodeTablesAdminSummaryTable: (codeTablesAdmins) =>

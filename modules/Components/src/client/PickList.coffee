@@ -92,8 +92,8 @@ class window.PickListOptionControllerForLsThing extends Backbone.View
 class window.PickListSelectController extends Backbone.View
 	initialize: (options) ->
 		@rendered = false
-		@collection.bind "add", @addOne
-		@collection.bind "reset", @handleListReset
+		@collection.bind "add", @addOne.bind(@)
+		@collection.bind "reset", @handleListReset.bind(@)
 		# NOTE: Backbone 1.1.0 no longer automatically attaches options passed
 		# to View constructors as this.options. So, in order to be compatible
 		# with Backbone 1.0.0 and versions greater or equal to 1.1.0, we'll
@@ -135,7 +135,7 @@ class window.PickListSelectController extends Backbone.View
 
 		if @autoFetch == true
 			@collection.fetch
-				success: @handleListReset
+				success: @handleListReset.bind(@)
 		else
 			@handleListReset()
 
@@ -473,7 +473,7 @@ class window.EditablePickListSelectController extends Backbone.View
 						codeType: @options.codeType
 						codeKind: @options.codeKind
 					el: @$('.bv_addOptionPanel')
-				@addPanelController.on 'addOptionRequested', @handleAddOptionRequested
+				@addPanelController.on 'addOptionRequested', @handleAddOptionRequested.bind(@)
 				@addPanelController.on 'showModal', =>
 					@trigger 'showModal'
 				@addPanelController.on 'hideModal', =>

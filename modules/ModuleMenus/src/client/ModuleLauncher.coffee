@@ -42,7 +42,7 @@ class window.ModuleLauncherMenuController extends Backbone.View
 		'click .bv_menuName': "handleSelect"
 
 	initialize: ->
-		@model.bind "change", @render
+		@model.bind "change", @render.bind(@)
 
 	render: =>
 		$(@el).empty()
@@ -219,8 +219,8 @@ class window.ModuleLauncherController extends Backbone.View
 	template: _.template($("#ModuleLauncherView").html())
 
 	initialize: ->
-		@model.bind 'activationRequested', @handleActivation
-		@model.bind 'deactivationRequested', @handleDeactivation
+		@model.bind 'activationRequested', @handleActivation.bind(@)
+		@model.bind 'deactivationRequested', @handleDeactivation.bind(@)
 
 	render: =>
 		$(@el).empty()

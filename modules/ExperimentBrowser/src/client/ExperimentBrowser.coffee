@@ -356,7 +356,7 @@ class window.ExperimentBrowserController extends Backbone.View
 			el: @$('.bv_experimentSearchController')
 			includeDuplicateAndEdit: @includeDuplicateAndEdit
 		@searchController.render()
-		@searchController.on "searchReturned", @setupExperimentSummaryTable
+		@searchController.on "searchReturned", @setupExperimentSummaryTable.bind(@)
 		#@searchController.on "resetSearch", @destroyExperimentSummaryTable
 #		@$('.bv_queryToolDisplayName').html window.conf.service.result.viewer.displayName
 

@@ -186,7 +186,7 @@ class window.ProtocolBrowserController extends Backbone.View
 			model: new ProtocolSearch()
 			el: @$('.bv_protocolSearchController')
 		@searchController.render()
-		@searchController.on "searchReturned", @setupProtocolSummaryTable
+		@searchController.on "searchReturned", @setupProtocolSummaryTable.bind(@)
 		#@searchController.on "resetSearch", @destroyProtocolSummaryTable
 
 	setupProtocolSummaryTable: (protocols) =>

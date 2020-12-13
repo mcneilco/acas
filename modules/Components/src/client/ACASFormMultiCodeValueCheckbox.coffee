@@ -104,7 +104,8 @@ class window.ACASFormMultiCodeValueCheckboxController extends ACASFormAbstractFi
     ###
     template: _.template($("#ACASFormMultiCodeValueCheckbox").html())
 
-    initialize: ->
+    initialize: (options) ->
+        @options = option
         @opts = @options
         @thingRef = @opts.thingRef
         mdl = @opts.modelDefaults

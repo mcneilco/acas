@@ -37,8 +37,8 @@ class window.AbstractFormController extends Backbone.View
 		@updateModel()
 
 	setBindings: ->
-		@model.on 'invalid', @validationError
-		@model.on 'change', @handleModelChange
+		@model.on 'invalid', @validationError.bind(@)
+		@model.on 'change', @handleModelChange.bind(@)
 
 	validationError: =>
 		errors = @model.validationError

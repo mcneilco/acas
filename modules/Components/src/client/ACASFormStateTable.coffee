@@ -644,7 +644,7 @@ class window.ACASFormStateTableController extends Backbone.View
 		_.each uniqueColumnIndices, (columnIndex) =>
 			column = @hot.getDataAtCol columnIndex
 			column.forEach (value, row) =>
-				data = extend [], column
+				data = _.extend [], column
 				idx = data.indexOf value
 				data.splice idx, 1
 				secondIdx = data.indexOf value
@@ -662,7 +662,8 @@ class window.ACASFormStateTableController extends Backbone.View
 class window.ACASFormStateTableFormController extends Backbone.View
 
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@hide()
 		@valueDefs = @options.valueDefs
 		@stateType = @options.stateType

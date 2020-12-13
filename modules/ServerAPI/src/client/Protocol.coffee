@@ -101,8 +101,10 @@ class window.Protocol extends BaseEntity
 		maxY
 
 	validate: (attrs) ->
-		errors = []
-		errors.push super(attrs)...
+		errors = super(attrs)
+		if !errors?
+			errors = []
+
 		if attrs.subclass?
 			cDate = @getCreationDate().get('dateValue')
 			if cDate is undefined or cDate is "" or cDate is null then cDate = "fred"

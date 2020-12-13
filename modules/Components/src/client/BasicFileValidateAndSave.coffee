@@ -42,8 +42,8 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 			allowedFileTypes: @allowedFileTypes
 			maxFileSize: @maxFileSize
 
-		@parseFileController.on('fileInput:uploadComplete', @handleParseFileUploaded)
-		@parseFileController.on('fileInput:removedFile', @handleParseFileRemoved)
+		@parseFileController.on('fileInput:uploadComplete', @handleParseFileUploaded.bind(@))
+		@parseFileController.on('fileInput:removedFile', @handleParseFileRemoved.bind(@))
 		@parseFileController.render()
 
 		if @loadReportFile

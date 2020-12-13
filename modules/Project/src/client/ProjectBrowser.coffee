@@ -172,7 +172,7 @@ class window.ProjectBrowserController extends Backbone.View
 			el: @$('.bv_projectSearchController')
 			includeDuplicateAndEdit: @includeDuplicateAndEdit
 		@searchController.render()
-		@searchController.on "searchReturned", @setupProjectSummaryTable
+		@searchController.on "searchReturned", @setupProjectSummaryTable.bind(@)
 		#@searchController.on "resetSearch", @destroyProjectSummaryTable
 		@$('.bv_queryToolDisplayName').html window.conf.service.result.viewer.displayName
 
