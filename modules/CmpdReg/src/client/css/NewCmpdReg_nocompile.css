@@ -1284,6 +1284,7 @@ div.MetaLotViewButtons.buttons {
     top: 575px;
     margin-left: 10px;
     height: 200px;
+    padding-bottom: 60px;
 }
 .SearchFormView .StructureMainOpt {
     position: absolute;
