@@ -164,7 +164,6 @@ start_apache() {
 
 run_apache() {
     cp $ACAS_HOME/conf/compiled/apache.conf /tmp/apache.conf
-    sed -i 's/^ErrorLog.*/ErrorLog "|cat"/' /tmp/apache.conf
     startCommand=" $apacheCMD -f /tmp/apache.conf -k start -DFOREGROUND"
     if [ $(whoami) != "$RAPACHE_START_ACAS_USER" ]; then
         startCommand="su -p - $RAPACHE_START_ACAS_USER $suAdd -c \"($startCommand)\""

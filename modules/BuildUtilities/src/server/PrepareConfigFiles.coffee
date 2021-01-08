@@ -209,6 +209,9 @@ getApacheSpecificConfString = (config, apacheCompileOptions, acasHome) ->
 		apacheSpecificConfs.push('Include conf.modules.d/*.conf')
 		apacheSpecificConfs.push('DefaultRuntimeDir ' + acasHome + '/bin')
 	if apacheVersion in ['Redhat', 'Darwin', 'SUSE', 'Redhat-2.4']
+		apacheSpecificConfs.push('LoadModule unixd_module ' + modulesDir + "mod_unixd.so")
+		apacheSpecificConfs.push("LoadModule authz_core_module " + modulesDir + "mod_authz_core.so")
+		apacheSpecificConfs.push('LoadModule mpm_prefork_module ' + modulesDir + "mod_mpm_prefork.so")
 		apacheSpecificConfs.push('LoadModule log_config_module ' + modulesDir + "mod_log_config.so")
 		apacheSpecificConfs.push('LoadModule logio_module ' + modulesDir + "mod_logio.so")
 	if apacheVersion == 'Darwin'
