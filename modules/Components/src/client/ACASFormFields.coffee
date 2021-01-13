@@ -443,6 +443,8 @@ class ACASFormLSThingInteractionFieldController extends ACASFormAbstractFieldCon
 
 	initialize: (options) ->
 		@options = options
+		super(@options)
+
 	template: _.template($("#ACASFormLSThingInteractionFieldView").html())
 
 	applyOptions: ->

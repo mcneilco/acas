@@ -43,8 +43,9 @@ class ACASFormMultiLabelListController extends ACASFormAbstractFieldController
 	events: ->
 		"click .bv_addLabelButton": "handleAddLabelButtonClicked"
 
-	initialize: ->
-		super()
+	initialize: (options)->
+		@options = options
+		super(options)
 		@opts = @options
 
 	render: =>
