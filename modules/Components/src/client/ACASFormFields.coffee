@@ -270,8 +270,9 @@ class ACASFormLSNumericValueFieldController extends ACASFormAbstractFieldControl
 
 	template: _.template($("#ACASFormLSNumericValueFieldView").html())
 
-	initialize: ->
-		super()
+	initialize: (options) ->
+		@options = options
+		super(@options)
 		@userInputEvent = false
 
 	applyOptions: ->

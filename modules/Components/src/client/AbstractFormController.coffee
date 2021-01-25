@@ -99,8 +99,8 @@ class AbstractFormController extends Backbone.View
 	openFormControllerSocket: ->
 		if @lockEditingForSessionKey?
 			@socket = io '/formController:connected'
-			@socket.on 'editLockRequestResult', @handleEditLockRequestResult
-			@socket.on 'editLockAvailable', @handleEditLockAvailable
+			@socket.on 'editLockRequestResult', @handleEditLockRequestResult.bind(@)
+			@socket.on 'editLockAvailable', @handleEditLockAvailable.bind(@)
 
 	handleEditLockRequestResult: (result) =>
 		if !result.okToEdit

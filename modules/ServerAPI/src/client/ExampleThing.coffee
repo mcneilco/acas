@@ -250,9 +250,9 @@ class ExampleThingController extends AbstractThingFormController
 			@modelSaveCallback()
 
 		if @model.isNew()
-			@socket.emit 'registerForSavingNewLockNotification', @errorOwnerName
-			@socket.on 'newEntitySaveActive', @handleNewEntitySaveActive
-			@socket.on 'newEntitySavingComplete', @handleNewEntitySavingComplete
+			@socket.emit 'registerForSavingNewLockNotification', @errorOwnerName.bind(@)
+			@socket.on 'newEntitySaveActive', @handleNewEntitySaveActive.bind(@)
+			@socket.on 'newEntitySavingComplete', @handleNewEntitySavingComplete.bind(@)
 
 		@setBindings()
 		if @options.readOnly?
