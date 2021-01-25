@@ -104,7 +104,7 @@ modify = (options = {}) ->
       if fileModifier = options.fileModifier
         try
           content = fileModifier file, file.contents.toString 'utf8'
-          file.contents = new Buffer content
+          file.contents = Buffer.from(content)
         catch _error
           console.log _error
     next error, file
