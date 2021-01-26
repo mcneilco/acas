@@ -468,8 +468,9 @@ class ACASFormLSThingInteractionFieldController extends ACASFormAbstractFieldCon
 		@clearError()
 		if @userInputEvent
 			thingID = @thingSelectController.getSelectedID()
+			thingCodeName = @thingSelectController.getSelectedCode()
 			if thingID?
-				@getModel().setItxThing id: thingID
+				@getModel().setItxThing id: thingID, codeName: thingCodeName
 				@getModel().set ignored: false
 			else
 				@setEmptyValue()
