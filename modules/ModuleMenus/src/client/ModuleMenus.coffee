@@ -3,12 +3,12 @@ class ModuleMenusController extends Backbone.View
 	template: _.template($("#ModuleMenusView").html())
 
 	events: ->
+		window.onbeforeunload = @handleBeforeUnload.bind(@)
+
 		'click .bv_headerName': "handleHome"
 		'click .bv_toggleModuleMenuControl': "handleToggleMenus"
 		'change .bv_fastUserSelect': 'handleLoginUserChange'
-#		'click .bv_showModuleMenuControl': "handleShowMenus"
 
-		window.onbeforeunload = @handleBeforeUnload
 	initialize: (options) ->
 		@options = options
 		$(@el).html @template()
@@ -105,12 +105,12 @@ class ModuleMenusController extends Backbone.View
 
 	setupFastUserSwitching: ->
 		@socket = io('/user:loggedin')
-		@socket.on('connect', @handleConnected)
-		@socket.on('connect_error', @handleConnectError)
-		@socket.on('loggedOn', @handleLoggedOn)
-		@socket.on('tabClosed', @handleOtherTabClosed)
-		@socket.on('loggedOff', @handleLoggedOff)
-		@socket.on('usernameUpdated', @handleUserChanged)
+		@socket.on('connect', @handleConnected.bind(@))
+		@socket.on('connect_error', @handleConnectError.bind(@))
+		@socket.on('loggedOn', @handleLoggedOn.bind(@))
+		@socket.on('tabClosed', @handleOtherTabClosed.bind(@))
+		@socket.on('loggedOff', @handleLoggedOff.bind(@))
+		@socket.on('usernameUpdated', @handleUserChanged.bind(@))
 		@disconnectedAfterLogin = false
 		@setupUserSwitchingSelect()
 
