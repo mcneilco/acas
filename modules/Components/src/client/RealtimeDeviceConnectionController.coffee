@@ -97,14 +97,14 @@ class RealtimeDeviceConnectionController extends Backbone.View
 
 	setupSocketEventHandlers: =>
 		@socket = io('/deviceChannel')
-		@socket.on('connect_error', @handleConnectError)
-		@socket.on('youShouldTryConnecting', @connectToDevice)
-		@socket.on('disconnectedFromDevice', @disconnectedFromDevice)
-		@socket.on('alertAllDisconnectedFromDevice', @alertAllDisconnectedFromDevice)
-		@socket.on('disconnectedByAnotherUser', @disconnectedByAnotherUser)
-		@socket.on('in_use', @displayUnavailableMessage)
-		@socket.on('balance_reserved', @balanceReserved)
-		@socket.on('device_server_offline', @displayServerOfflineMessage)
+		@socket.on('connect_error', @handleConnectError.bind(@))
+		@socket.on('youShouldTryConnecting', @connectToDevice.bind(@))
+		@socket.on('disconnectedFromDevice', @disconnectedFromDevice.bind(@))
+		@socket.on('alertAllDisconnectedFromDevice', @alertAllDisconnectedFromDevice.bind(@))
+		@socket.on('disconnectedByAnotherUser', @disconnectedByAnotherUser.bind(@))
+		@socket.on('in_use', @displayUnavailableMessage.bind(@))
+		@socket.on('balance_reserved', @balanceReserved.bind(@))
+		@socket.on('device_server_offline', @displayServerOfflineMessage.bind(@))
 		@socket.on('zeroingComplete', =>
 			if @isConnectedToDevice
 				@resetForm()
@@ -113,6 +113,7 @@ class RealtimeDeviceConnectionController extends Backbone.View
 				@$(".bv_zeroBalance").html "Zero Balance"
 			else
 				@displayInUseMessage()
+		.bind(@)
 		)
 
 	handleZeroBalanceClick: =>

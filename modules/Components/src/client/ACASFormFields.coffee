@@ -760,8 +760,8 @@ class ACASFormLSFileValueFieldController extends ACASFormAbstractFieldController
 			@fileController.on 'amClean', =>
 				@trigger 'amClean'
 			@fileController.render()
-			@fileController.on('fileUploader:uploadComplete', @handleFileUpload) #update model with filename
-			@fileController.on('fileDeleted', @handleFileRemoved) #update model with filename
+			@fileController.on('fileUploader:uploadComplete', @handleFileUpload.bind(@)) #update model with filename
+			@fileController.on('fileDeleted', @handleFileRemoved.bind(@)) #update model with filename
 
 	handleFileUpload: (nameOnServer) =>
 		@clearError()

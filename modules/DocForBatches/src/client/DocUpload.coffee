@@ -48,8 +48,8 @@ class DocUploadController extends AbstractFormController
 			fieldIsRequired: false
 			requiresValidation: false
 			maxNumberOfFiles: 1
-		@fileInputController.on('fileInput:uploadComplete', @setNewFileName)
-		@fileInputController.on('fileInput:removedFile', @clearNewFileName)
+		@fileInputController.on('fileInput:uploadComplete', @setNewFileName.bind(@))
+		@fileInputController.on('fileInput:removedFile', @clearNewFileName.bind(@))
 		@setBindings()
 		# do this here because we don't want to do this on re-render
 		unless @model.isNew()

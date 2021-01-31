@@ -171,16 +171,16 @@ class DocForBatchesController extends Backbone.View
 		@docUploadController = new DocUploadController
 			model: @model.get('docUpload')
 			el: @$('.bv_docUpload')
-		@docUploadController.on("invalid", @subFormIsInvalid)
-		@docUploadController.on("valid", @subFormIsValid)
+		@docUploadController.on("invalid", @subFormIsInvalid.bind(@))
+		@docUploadController.on("valid", @subFormIsValid.bind(@))
 		@docUploadController.on 'amDirty', =>
 			@trigger 'amDirty'
-
+		.bind(@)
 		@batchListValidator = new BatchListValidatorController
 			el: @$(".bv_batchListValidator")
 			collection: @model.get('batchNameList')
-		@batchListValidator.on("invalid", @subFormIsInvalid)
-		@batchListValidator.on("valid", @subFormIsValid)
+		@batchListValidator.on("invalid", @subFormIsInvalid.bind(@))
+		@batchListValidator.on("valid", @subFormIsValid.bind(@))
 		@batchListValidator.on 'amDirty', =>
 			@trigger 'amDirty'
 		@subFormIsInvalid()

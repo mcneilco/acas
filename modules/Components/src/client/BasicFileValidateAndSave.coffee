@@ -53,8 +53,8 @@ class BasicFileValidateAndSaveController extends Backbone.View
 				url: UtilityFunctions::getFileServiceURL()
 				fieldIsRequired: false
 				allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf']
-			@reportFileController.on('fileInput:uploadComplete', @handleReportFileUploaded)
-			@reportFileController.on('fileInput:removedFile', @handleReportFileRemoved)
+			@reportFileController.on('fileInput:uploadComplete', @handleReportFileUploaded.bind(@))
+			@reportFileController.on('fileInput:removedFile', @handleReportFileRemoved.bind(@))
 			@reportFileController.render()
 			@handleAttachReportFileChanged()
 		else
@@ -68,8 +68,8 @@ class BasicFileValidateAndSaveController extends Backbone.View
 				url: UtilityFunctions::getFileServiceURL()
 				fieldIsRequired: false
 				allowedFileTypes: ['zip']
-			@imagesFileController.on('fileInput:uploadComplete', @handleImagesFileUploaded)
-			@imagesFileController.on('fileInput:removedFile', @handleImagesFileRemoved)
+			@imagesFileController.on('fileInput:uploadComplete', @handleImagesFileUploaded.bind(@))
+			@imagesFileController.on('fileInput:removedFile', @handleImagesFileRemoved.bind(@))
 			@imagesFileController.render()
 			@handleAttachImagesFileChanged()
 		else

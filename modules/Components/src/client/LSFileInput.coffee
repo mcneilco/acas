@@ -67,8 +67,8 @@ class LSFileInputController extends Backbone.View
 			allowedFileTypes: @allowedFileTypes
 		});
 		@lsFileChooser.render()
-		@lsFileChooser.on('fileUploader:uploadComplete', @handleFileChooserUploadComplete)
-		@lsFileChooser.on('fileUploader:uploadFailed', @handleFileChooserUploadFailed)
-		@lsFileChooser.on('fileUploader:removedFile', @handleFileChooserRemovedFile)
+		@lsFileChooser.on('fileUploader:uploadComplete', @handleFileChooserUploadComplete.bind(@))
+		@lsFileChooser.on('fileUploader:uploadFailed', @handleFileChooserUploadFailed.bind(@))
+		@lsFileChooser.on('fileUploader:removedFile', @handleFileChooserRemovedFile.bind(@))
 		@
 

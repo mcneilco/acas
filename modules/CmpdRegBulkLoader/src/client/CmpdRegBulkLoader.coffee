@@ -111,8 +111,8 @@ class DetectSdfPropertiesController extends Backbone.View
 		@browseFileController.on 'amClean', =>
 			@trigger 'amClean'
 		@browseFileController.render()
-		@browseFileController.on('fileUploader:uploadComplete', @handleFileUploaded)
-		@browseFileController.on('fileDeleted', @handleFileRemoved)
+		@browseFileController.on('fileUploader:uploadComplete', @handleFileUploaded.bind(@))
+		@browseFileController.on('fileDeleted', @handleFileRemoved.bind(@))
 
 	handleFileUploaded: (fileName) =>
 		@fileName = fileName
