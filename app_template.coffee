@@ -17,7 +17,6 @@ startApp = ->
 	session = require('express-session')
 	MemoryStore = require('memorystore')(session)
 	bodyParser = require('body-parser')
-	# multer = require('multer')
 	errorHandler = require('errorhandler')
 	cookieParser = require('cookie-parser')
 
@@ -58,26 +57,12 @@ startApp = ->
 	else
 		passport.use new LocalStrategy csUtilities.loginStrategy
 
-	# passport.use new LocalStrategy csUtilities.loginStrategy
-#	passport.isAdmin = (req, resp, next) ->
-#		if req.isAuthenticated() and csUtilities.isUserAdmin(req.user)
-#			next()
-#		else
-#			next new handler.NotAuthorizedError "Sorry, you don't have the right!"
-#	passport.isAuthenticated = (req, resp, next) ->
-#		console.log "running passort.isAuthenticated"
-#		unless req.isAuthenticated()
-#			next new handler.NotAuthorizedError "Sorry, you don't have the right!"
-#		else
-#			next()
-
 	loginRoutes = require './routes/loginRoutes'
 	sessionStore = new MemoryStore();
 	global.app = express()
 	app.set 'port', config.all.client.port
 	app.set 'views', __dirname + '/views'
 	app.set 'view engine', 'jade'
-	# app.use favicon(path.join(__dirname, '/public/favicon.ico'))
 	app.use logger('dev')
 	app.use methodOverride()
 
@@ -91,10 +76,8 @@ startApp = ->
 	app.use flash()
 	app.use passport.initialize()
 	app.use passport.session pauseStream:  true
-	# app.use express.bodyParser()
 	app.use(bodyParser.json({limit: '100mb'}))
 	app.use(bodyParser.urlencoded({limit: '100mb', extended: true,parameterLimit: 1000000}))
-	# app.use(multer())
 	app.use(express.static(path.join(__dirname, 'public')))
 
 	loginRoutes.setupRoutes(app, passport)

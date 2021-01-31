@@ -15,7 +15,6 @@ startApp = ->
 	methodOverride = require('method-override')
 	session = require('express-session')
 	bodyParser = require('body-parser')
-	# multer = require('multer')
 	errorHandler = require('errorhandler')
 	cookieParser = require('cookie-parser')
 
@@ -34,13 +33,11 @@ startApp = ->
 	app.set 'port', config.all.server.nodeapi.port
 	app.set 'views', __dirname + '/views'
 	app.set 'view engine', 'jade'
-	# app.use(favicon(path.join(__dirname, '/public/favicon.ico')))
 	app.use(logger('dev'))
 	app.use(methodOverride())
 
 	app.use(bodyParser.json({limit: '100mb'}))
 	app.use(bodyParser.urlencoded({limit: '100mb', extended: true, parameterLimit: 1000000}))
-	# app.use(multer())
 	app.use express.static path.join(__dirname, 'public')
 
 
