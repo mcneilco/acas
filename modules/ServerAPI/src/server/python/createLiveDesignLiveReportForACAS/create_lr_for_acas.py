@@ -71,7 +71,8 @@ def make_acas_live_report(api, compound_ids, assays_to_add, experiment_code, log
     #Make the LR read-only
     if readonly:
         lr.update_policy = LiveReport.NEVER
-        api.update_live_report(lr.id, lr)
+    #Update LR
+    api.update_live_report(lr.id, lr)
     
     
     lr_id = int(lr.id)
