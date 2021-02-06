@@ -1,4 +1,4 @@
-class window.Thing extends Backbone.Model
+class Thing extends Backbone.Model
 	lsProperties: {}
 	className: "Thing"
 	deleteEmptyLabelsValsItxsBeforeSave: true
@@ -372,7 +372,7 @@ class window.Thing extends Backbone.Model
 		delete @attributes.firstLsThings
 		delete @attributes.secondLsThings
 
-	duplicate: =>
+	duplicate: (opts)=>
 		copiedThing = @.clone()
 		copiedThing.unset 'codeName'
 		labels = copiedThing.get('lsLabels')
@@ -387,13 +387,21 @@ class window.Thing extends Backbone.Model
 		copiedThing.get('scientist')?.set value: "unassigned"
 		copiedThing.get('completion date')?.set value: null
 
-		delete copiedThing.attributes.firstLsThings
-
 		secondItxs = copiedThing.get('secondLsThings')
 		secondItxs.each (itx) =>
 			@resetClonedAttrs(itx)
 			itxStates = itx.get('lsStates')
 			@resetStatesAndVals itxStates
+
+		if opts?.keepFirstInteractions? && opts.keepFirstInteractions
+			firstItxs = copiedThing.get('firstLsThings')
+			firstItxs.each (itx) =>
+				@resetClonedAttrs(itx)
+				itxStates = itx.get('lsStates')
+				@resetStatesAndVals itxStates
+		else
+			delete copiedThing.attributes.firstLsThings
+
 		copiedThing
 
 	resetStatesAndVals: (states) =>

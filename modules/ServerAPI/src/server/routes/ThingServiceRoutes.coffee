@@ -89,7 +89,7 @@ exports.getThingsByTypeAndKindAndLabelTypeAndLabelText = (req, resp) ->
 		thingServiceTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
 		resp.json thingServiceTestJSON.batchList
 	else
-		exports.getThingsByTypeAndKindAndLabelTypeAndLabelTextInternal req.params.lsType, req.params.lsKind, req.query.labelType, req.params.labelText, null, (codeTables) ->
+		exports.getThingsByTypeAndKindAndLabelTypeAndLabelTextInternal req.params.lsType, req.params.lsKind, req.query.labelType, req.params.labelText, req.query.with, (codeTables) ->
 			resp.json codeTables
 
 exports.getThingsByTypeAndKindAndLabelTypeAndLabelTextInternal = (thingType, thingKind, labelType, labelText, format, callback) ->

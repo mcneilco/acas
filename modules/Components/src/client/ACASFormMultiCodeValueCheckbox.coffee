@@ -1,4 +1,4 @@
-class window.ACASFormCodeValueCheckboxController extends ACASFormAbstractFieldController
+class ACASFormCodeValueCheckboxController extends ACASFormAbstractFieldController
     ###
         Launched by ACASFormMultiCodeValueCheckboxController to control one checkbox in the list
     ###
@@ -8,7 +8,8 @@ class window.ACASFormCodeValueCheckboxController extends ACASFormAbstractFieldCo
     events: ->
         "change input": "handleInputChanged"
 
-    initialize: ->
+    initialize: (options) ->
+        @options = options
         @stateRef = @options.stateRef
         @thingRef = @options.thingRef
         @keyBase = @options.keyBase
@@ -94,7 +95,7 @@ class window.ACASFormCodeValueCheckboxController extends ACASFormAbstractFieldCo
             return null
 
 
-class window.ACASFormMultiCodeValueCheckboxController extends ACASFormAbstractFieldController
+class ACASFormMultiCodeValueCheckboxController extends ACASFormAbstractFieldController
     ###
       Launching controller must instantiate with the full field conf including modelDefaults, not just the fieldDefinition.
     Specifying rowNumber and rowNumberKind are optional, and will make this controller act on a specific state.
@@ -103,7 +104,8 @@ class window.ACASFormMultiCodeValueCheckboxController extends ACASFormAbstractFi
     ###
     template: _.template($("#ACASFormMultiCodeValueCheckbox").html())
 
-    initialize: ->
+    initialize: (options) ->
+        @options = option
         @opts = @options
         @thingRef = @opts.thingRef
         mdl = @opts.modelDefaults

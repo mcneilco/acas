@@ -1,11 +1,11 @@
-class window.Tag extends Backbone.Model
+class Tag extends Backbone.Model
 	defaults:
 		tagText: ""
 
-class window.TagList extends Backbone.Collection
+class TagList extends Backbone.Collection
 	model: Tag
 
-class window.TagListController extends Backbone.View
+class TagListController extends Backbone.View
 	events:
 		#TODO this doesn't really work
 		'focusout': 'handleTagsChanged'

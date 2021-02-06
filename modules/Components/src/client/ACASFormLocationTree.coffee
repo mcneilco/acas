@@ -1,4 +1,4 @@
-class window.ACASFormLocationTreeController extends ACASFormAbstractFieldController
+class ACASFormLocationTreeController extends ACASFormAbstractFieldController
 	###
 		Launching controller must:
 		- Initialize the model with an LSValue

@@ -1,4 +1,4 @@
-class window.SystemTestController extends Backbone.View
+class SystemTestController extends Backbone.View
 	template: _.template($("#SystemTestView").html())
 	moduleLaunchName: "system_test"
 

@@ -197,6 +197,7 @@ class DeviceSocketController
 			socket.on('zeroBalance', (payload) =>
 				@handleZeroBalance(socket, payload)
 			)
+		.bind(@)
 		)
 
 	handleConnectToDevice: (socket, payload, callback) ->

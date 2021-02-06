@@ -104,7 +104,7 @@ modify = (options = {}) ->
       if fileModifier = options.fileModifier
         try
           content = fileModifier file, file.contents.toString 'utf8'
-          file.contents = new Buffer content
+          file.contents = Buffer.from(content)
         catch _error
           console.log _error
     next error, file
@@ -134,7 +134,7 @@ else
   sources.push acas_shared
 startupArgs = []
 if argv.debugbrk
-  startupArgs.push "--debug-brk=5858"
+  startupArgs.push "--inspect-brk=5858"
 startupArgs.push "app.js"
 if argv.stubsMode
   startupArgs.push "stubsMode"
@@ -165,6 +165,24 @@ taskConfigs =
       src: getGlob('public_conf/*.coffee')
       dest: build + '/src/javascripts/ServerAPI'
       options: _.extend _.clone(globalCoffeeOptions), {}
+    ,
+      taskName: "buildUtilities"
+      src: getGlob('modules/BuildUtilities/src/server/*.coffee')
+      dest: build + '/src/javascripts/BuildUtilities'
+      options: _.extend _.clone(globalCoffeeOptions), {}
+      renameFunction: getFirstFolderName
+    ,
+      taskName: "serverAPI"
+      src: getGlob('modules/ServerAPI/src/server/*.coffee')
+      dest: build + '/src/javascripts/ServerAPI'
+      options: _.extend _.clone(globalCoffeeOptions), {}
+      renameFunction: getFirstFolderName
+    ,
+      taskName: "serverUtilityFunctions"
+      src: getGlob('modules/**/src/server/routes/ServerUtilityFunctions.coffee')
+      dest: build + '/routes'
+      options: _.extend _.clone(globalCoffeeOptions), {}
+      flatten: true
     ,
       taskName: "rootConf"
       src: getGlob('conf/*.coffee')
@@ -503,7 +521,7 @@ gulp.task 'app', (done) =>
   if node?
     node.kill()
   spawn = require('child_process').spawn
-  node = spawn('node', [ 'app.js' ], stdio: 'inherit')
+  node = spawn('node', [ 'app.js' ], stdio: 'inherit', cwd: build)
   node.on 'close', (code) ->
     if code == 8
       gulp.log 'Error detected, waiting for changes...'
@@ -519,6 +537,9 @@ unless argv._[0] == "dev"
   executeTasks = _.filter executeTasks, (item) -> item != "execute:prepareModuleConfJSON"
 
 # --------- Copy Task
+gulp.task 'copy-execute-configs', gulp.series(gulp.parallel('coffee:serverUtilityFunctions','coffee:buildUtilities','coffee:serverAPI', 'copy:conf'), 'execute:prepare_config_files')
+
+# --------- Copy Task
 gulp.task 'copy', gulp.parallel copyTasks
 
 # --------- Execute Task
@@ -528,7 +549,7 @@ gulp.task 'execute', gulp.series executeTasks
 gulp.task 'watch', gulp.parallel watchTasks
 
 # --------- Build Task
-gulp.task('build', gulp.series(gulp.parallel('copy','coffee'), 'coffee:publicConf', 'execute'));
+gulp.task('build', gulp.series('copy-execute-configs', gulp.parallel('copy','coffee'), 'coffee:publicConf', 'execute'));
 
 # --------- Dev Task
 gulp.task('dev', gulp.series(gulp.series('build'), gulp.parallel('watch', 'watch:app', 'app')));

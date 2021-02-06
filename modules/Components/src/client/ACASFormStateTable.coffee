@@ -1,4 +1,4 @@
-class window.ACASFormStateTableController extends Backbone.View
+class ACASFormStateTableController extends Backbone.View
 	###
 		Launching controller must:
 		- Initialize the model the correct object type
@@ -223,7 +223,7 @@ class window.ACASFormStateTableController extends Backbone.View
 			columns: @colDefs
 			search: @tableDef.search
 			currentRowClassName: 'bv_stateDisplayCurrentRow',
-  			currentColClassName: 'bv_stateDisplayCurrentColumn'
+			currentColClassName: 'bv_stateDisplayCurrentColumn'
 			cells: (row, col, prop) =>
 				cellProperties = {}
 				if @tableReadOnly
@@ -644,7 +644,7 @@ class window.ACASFormStateTableController extends Backbone.View
 		_.each uniqueColumnIndices, (columnIndex) =>
 			column = @hot.getDataAtCol columnIndex
 			column.forEach (value, row) =>
-				data = extend [], column
+				data = _.extend [], column
 				idx = data.indexOf value
 				data.splice idx, 1
 				secondIdx = data.indexOf value
@@ -659,10 +659,11 @@ class window.ACASFormStateTableController extends Backbone.View
 		@hot.render()
 
 
-class window.ACASFormStateTableFormController extends Backbone.View
+class ACASFormStateTableFormController extends Backbone.View
 
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@hide()
 		@valueDefs = @options.valueDefs
 		@stateType = @options.stateType

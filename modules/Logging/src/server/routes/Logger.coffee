@@ -9,9 +9,9 @@ if config.all.logging.usemongo
 	db = require("mongojs").connect(config.all.logging.database, ["logs"])
 	db.createCollection("logs")
 	winstonLoggingOptions = {db: config.all.logging.database}
-	winston.add(winston.transports.MongoDB, winstonLoggingOptions)
+	winston.add(new winston.transports.MongoDB(winstonLoggingOptions))
 else
-	winston.add(winston.transports.File, { filename: 'acas.log', json: false } )
+	winston.add(new winston.transports.File({ filename: 'acas.log', json: false } ))
 
 
 exports.writeToLog = (logLevel, application, action, data, user, transactionId) ->

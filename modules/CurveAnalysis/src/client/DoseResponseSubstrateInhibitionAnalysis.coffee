@@ -1,4 +1,4 @@
-class window.DoseResponseSubstrateInhibitionAnalysisParameters extends Backbone.Model
+class DoseResponseSubstrateInhibitionAnalysisParameters extends Backbone.Model
 	defaults:
 		smartMode: true
 		inactiveThresholdMode: false
@@ -84,7 +84,7 @@ class window.DoseResponseSubstrateInhibitionAnalysisParameters extends Backbone.
 		else
 			return null
 
-class window.DoseResponseSubstrateInhibitionAnalysisParametersController extends AbstractFormController
+class DoseResponseSubstrateInhibitionAnalysisParametersController extends AbstractFormController
 	template: _.template($("#DoseResponseSubstrateInhibitionAnalysisParametersView").html())
 	autofillTemplate: _.template($("#DoseResponseSubstrateInhibitionAnalysisParametersAutofillView").html())
 
@@ -203,7 +203,7 @@ class window.DoseResponseSubstrateInhibitionAnalysisParametersController extends
 			@formTitle = @$(".bv_formTitle").html()
 
 
-class window.DoseResponsePlotCurveSubstrateInhibition extends Backbone.Model
+class DoseResponsePlotCurveSubstrateInhibition extends Backbone.Model
 
 	log10: (val) ->
 		if val != 0

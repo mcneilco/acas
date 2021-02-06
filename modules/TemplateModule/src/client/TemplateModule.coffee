@@ -1,4 +1,4 @@
-class window.Reagent extends Backbone.Model
+class Reagent extends Backbone.Model
 	defaults:
 		cas: null
 		barcode: null
@@ -21,7 +21,7 @@ class window.Reagent extends Backbone.Model
 
 
 
-class window.ReagentController extends AbstractFormController
+class ReagentController extends AbstractFormController
 	template: _.template($("#ReagentView").html())
 	events:
 		"change .bv_cas": "updateModel"

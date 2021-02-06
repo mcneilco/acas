@@ -1,4 +1,4 @@
-class window.AbstractFormController extends Backbone.View
+class AbstractFormController extends Backbone.View
 # Your initialization function needs at least these lines:
 # 	initialize: ->
 # 		@errorOwnerName = 'MyControllerName'
@@ -37,8 +37,8 @@ class window.AbstractFormController extends Backbone.View
 		@updateModel()
 
 	setBindings: ->
-		@model.on 'invalid', @validationError
-		@model.on 'change', @handleModelChange
+		@model.on 'invalid', @validationError.bind(@)
+		@model.on 'change', @handleModelChange.bind(@)
 
 	validationError: =>
 		errors = @model.validationError
@@ -99,8 +99,8 @@ class window.AbstractFormController extends Backbone.View
 	openFormControllerSocket: ->
 		if @lockEditingForSessionKey?
 			@socket = io '/formController:connected'
-			@socket.on 'editLockRequestResult', @handleEditLockRequestResult
-			@socket.on 'editLockAvailable', @handleEditLockAvailable
+			@socket.on 'editLockRequestResult', @handleEditLockRequestResult.bind(@)
+			@socket.on 'editLockAvailable', @handleEditLockAvailable.bind(@)
 
 	handleEditLockRequestResult: (result) =>
 		if !result.okToEdit
@@ -115,7 +115,7 @@ class window.AbstractFormController extends Backbone.View
 		@trigger 'editUnLocked'
 		#you should extend this
 
-class window.AbstractThingFormController extends AbstractFormController
+class AbstractThingFormController extends AbstractFormController
 
 	setupFormFields: (fieldDefs, useDirectRef) ->
 		unless @formFields?

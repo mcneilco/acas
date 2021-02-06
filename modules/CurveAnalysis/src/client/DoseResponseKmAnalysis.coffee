@@ -1,4 +1,4 @@
-class window.DoseResponseKmAnalysisParameters extends Backbone.Model
+class DoseResponseKmAnalysisParameters extends Backbone.Model
 	defaults:
 		smartMode: true
 		inactiveThresholdMode: true
@@ -68,7 +68,7 @@ class window.DoseResponseKmAnalysisParameters extends Backbone.Model
 		else
 			return null
 
-class window.DoseResponseKmAnalysisParametersController extends AbstractFormController
+class DoseResponseKmAnalysisParametersController extends AbstractFormController
 	template: _.template($("#DoseResponseKmAnalysisParametersView").html())
 	autofillTemplate: _.template($("#DoseResponseKmAnalysisParametersAutofillView").html())
 
@@ -157,7 +157,7 @@ class window.DoseResponseKmAnalysisParametersController extends AbstractFormCont
 			@formTitle = @$(".bv_formTitle").html()
 
 
-class window.DoseResponsePlotCurveKm extends Backbone.Model
+class DoseResponsePlotCurveKm extends Backbone.Model
 
 	log10: (val) ->
 		Math.log(val) / Math.LN10

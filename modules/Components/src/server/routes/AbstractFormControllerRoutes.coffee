@@ -38,7 +38,6 @@ exports.setupChannels = (io, sessionStore, loginRoutes) ->
 		socket.on('editLockEntity', (entityType, codeName) =>
 			console.log "got editLockEntity request #{entityType}, #{codeName}"
 
-			parsedCookie = JSON.parse(sessionStore.sessions[socket.request.sessionID])
 			lockKey = entityType+"_"+codeName
 			console.log "trying to lock #{lockKey} for session #{socket.id}"
 
@@ -59,7 +58,7 @@ exports.setupChannels = (io, sessionStore, loginRoutes) ->
 			else
 				now = new Date().getTime()
 				global.editLockedEntities[lockKey] =
-					currentEditor: parsedCookie.passport.user.username
+					currentEditor: socket.request.user.username
 					lastActivityDate: now
 					lockCreatedDate: now
 					socketID: socket.id
@@ -68,7 +67,7 @@ exports.setupChannels = (io, sessionStore, loginRoutes) ->
 					rejectedRequestSocketIDs: []
 				result =
 					okToEdit: true
-					currentEditor: parsedCookie.passport.user.username
+					currentEditor: socket.request.user.username
 					lastActivityDate: now
 					lockCreatedDate: now
 

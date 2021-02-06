@@ -1,7 +1,7 @@
 ############################################################################
 # models
 ############################################################################
-class window.CodeTablesAdminSearch extends Backbone.Model
+class CodeTablesAdminSearch extends Backbone.Model
 	defaults:
 		codeType: null
 		codeKind: null
@@ -10,18 +10,19 @@ class window.CodeTablesAdminSearch extends Backbone.Model
 		id: null
 
 ############################################################################
-class window.CodeTablesAdminList extends Backbone.Collection
+class CodeTablesAdminList extends Backbone.Collection
 	model: CodeTablesAdminSearch
 
 ############################################################################
 # controllers
 ############################################################################
-class window.CodeTablesAdminSimpleSearchController extends AbstractFormController
+class CodeTablesAdminSimpleSearchController extends AbstractFormController
 	###
   	Instantiating controller must provide urlRoot and toDisplay in options
 	###
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@searchUrl = ""
 		@searchUrl = @options.urlRoot + '/search/'
 
@@ -76,7 +77,7 @@ class window.CodeTablesAdminSimpleSearchController extends AbstractFormControlle
 		@trigger 'createNewCodeTablesAdmin'
 
 ############################################################################
-class window.CodeTablesAdminRowSummaryController extends Backbone.View
+class CodeTablesAdminRowSummaryController extends Backbone.View
 	tagName: 'tr'
 	className: 'dataTableRow'
 	events:
@@ -110,8 +111,9 @@ class window.CodeTablesAdminRowSummaryController extends Backbone.View
 		@
 
 ############################################################################
-class window.CodeTablesAdminSummaryTableController extends Backbone.View
-	initialize: ->
+class CodeTablesAdminSummaryTableController extends Backbone.View
+	initialize: (options) ->
+		@options = options
 		if @options.showIgnore?
 			@showIgnore = @options.showIgnore
 		else
@@ -142,7 +144,7 @@ class window.CodeTablesAdminSummaryTableController extends Backbone.View
 		@
 
 ############################################################################
-class window.AbstractCodeTablesAdminBrowserController extends Backbone.View
+class AbstractCodeTablesAdminBrowserController extends Backbone.View
 	###
   	Instantiating controller must provide:
   		codeType
@@ -175,9 +177,9 @@ class window.AbstractCodeTablesAdminBrowserController extends Backbone.View
 			urlRoot: "/api/codeTablesAdmin/#{@codeType}/#{@codeKind}"
 			toDisplay: @toDisplay
 		@searchController.render()
-		@searchController.on "searchRequested", @handleSearchRequested
-		@searchController.on "searchReturned", @setupCodeTablesAdminSummaryTable
-		@searchController.on "createNewCodeTablesAdmin", @handleCreateNewCodeTablesAdminClicked
+		@searchController.on "searchRequested", @handleSearchRequested.bind(@)
+		@searchController.on "searchReturned", @setupCodeTablesAdminSummaryTable.bind(@)
+		@searchController.on "createNewCodeTablesAdmin", @handleCreateNewCodeTablesAdminClicked.bind(@)
 	#@searchController.on "resetSearch", @destroyCodeTablesAdminSummaryTable
 
 	setupCodeTablesAdminSummaryTable: (codeTablesAdmins) =>

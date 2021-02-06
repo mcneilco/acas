@@ -1,4 +1,4 @@
-class window.AbstractParserFormController extends AbstractFormController
+class AbstractParserFormController extends AbstractFormController
 
 	initialize: ->
 		$(@el).html @template()

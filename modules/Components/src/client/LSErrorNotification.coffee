@@ -1,21 +1,22 @@
-class window.LSNotificationMessageModel extends Backbone.Model
+class LSNotificationMessageModel extends Backbone.Model
 	defaults:
 		content: ''
 		owner: 'system'
 		message: ''
 		errorLevel: 'error'
 
-class window.LSNotificatioMessageCollection extends Backbone.Collection
+class LSNotificatioMessageCollection extends Backbone.Collection
 	model: LSNotificationMessageModel
 
-class window.LSAbstractNotificationCounterController extends Backbone.View
+class LSAbstractNotificationCounterController extends Backbone.View
 	templateTypeId: null
 	tagName: 'span'
 	count: null
 	container: null
 	notificationsList: null
 	
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		_.bindAll(@,
 			'render')
 		@notificationsList = @.options.notificationsList
@@ -33,19 +34,19 @@ class window.LSAbstractNotificationCounterController extends Backbone.View
 		
 		@
 
-class window.LSErrorNotificationCounterController extends window.LSAbstractNotificationCounterController
+class LSErrorNotificationCounterController extends window.LSAbstractNotificationCounterController
 	templateTypeId: '#LSErrorNotificationCount'
 	messageString: 'error'
 	
-class window.LSWarningNotificationCounterController extends window.LSAbstractNotificationCounterController
+class LSWarningNotificationCounterController extends window.LSAbstractNotificationCounterController
 	templateTypeId: '#LSWarningNotificationCount'
 	messageString: 'warning'
 
-class window.LSInfoNotificationCounterController extends window.LSAbstractNotificationCounterController
+class LSInfoNotificationCounterController extends window.LSAbstractNotificationCounterController
 	templateTypeId: '#LSInfoNotificationCount'
 	messageString: 'status update'
 
-class window.LSMessageController extends Backbone.View
+class LSMessageController extends Backbone.View
 	message: null
 	alertType: null
 	tagName: 'div'
@@ -61,12 +62,13 @@ class window.LSMessageController extends Backbone.View
 		$(@el).html template
 		@
 
-class window.LSErrorController extends Backbone.View
+class LSErrorController extends Backbone.View
 	countController: null
 	notificationsList: null
 	badgeEl: null
 	
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		_.bindAll(@,
 			'render')
 		@notificationsList = @.options.notificationsList
@@ -83,12 +85,13 @@ class window.LSErrorController extends Backbone.View
 			$(self.el).append new LSMessageController({alertType: "#LSErrorNotificationMessage", message: notification.get('content')}).render().el
 		
 
-class window.LSWarningController extends Backbone.View
+class LSWarningController extends Backbone.View
 	countController: null
 	notificationsList: null
 	badgeEl: null
 	
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		_.bindAll(@,
 			'render')
 		@notificationsList = @.options.notificationsList
@@ -105,12 +108,13 @@ class window.LSWarningController extends Backbone.View
 			$(self.el).append new LSMessageController({alertType: "#LSWarningNotificationMessage", message: notification.get('content')}).render().el
 		
 
-class window.LSInfoController extends Backbone.View
+class LSInfoController extends Backbone.View
 	countController: null
 	notificationsList: null
 	badgeEl: null
 	
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		_.bindAll(@,
 			'render')
 		@notificationsList = @.options.notificationsList
@@ -127,7 +131,7 @@ class window.LSInfoController extends Backbone.View
 			$(self.el).append new LSMessageController({alertType: "#LSInfoNotificationMessage", message: notification.get('content')}).render().el
 		
 
-class window.LSNotificationController extends Backbone.View
+class LSNotificationController extends Backbone.View
 	errorController: null
 	warningController: null
 	infoController: null
@@ -139,7 +143,8 @@ class window.LSNotificationController extends Backbone.View
 	events:
 		'click .bv_notificationCountContainer': 'toggleShowNotificationMessages'
 	
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		_.bindAll(@, 
 			'render',
 			'addError',

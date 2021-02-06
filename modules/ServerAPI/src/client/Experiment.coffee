@@ -1,4 +1,4 @@
-class window.Experiment extends BaseEntity
+class Experiment extends BaseEntity
 	urlRoot: "/api/experiments"
 	defaults: ->
 		_(super()).extend(
@@ -348,10 +348,10 @@ class window.Experiment extends BaseEntity
 						expState.get('lsValues').remove value
 		super()
 
-class window.ExperimentList extends Backbone.Collection
+class ExperimentList extends Backbone.Collection
 	model: Experiment
 
-class window.ExperimentBaseController extends BaseEntityController
+class ExperimentBaseController extends BaseEntityController
 	template: _.template($("#ExperimentBaseView").html())
 	moduleLaunchName: "experiment_base"
 

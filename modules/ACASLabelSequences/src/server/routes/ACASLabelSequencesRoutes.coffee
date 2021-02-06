@@ -1,6 +1,5 @@
 exports.setupAPIRoutes = (app) ->
 	app.get '/api/labelSequences', exports.getAllLabelSequences
-	app.get '/api/labelSequences/reagents/codename', exports.getReagentByCodename
 	app.post '/api/labelSequences/jsonArray', exports.saveLabelSequenceArray
 
 exports.setupRoutes = (app, loginRoutes) ->

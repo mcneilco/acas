@@ -1,4 +1,4 @@
-class window.LotPropertyBulkLoader extends Backbone.Model
+class LotPropertyBulkLoader extends Backbone.Model
 	defaults:
 		overwriteExisting: false
 
@@ -7,7 +7,7 @@ class window.LotPropertyBulkLoader extends Backbone.Model
 		return null
 
 
-class window.LotPropertyBulkLoaderController extends AbstractParserFormController
+class LotPropertyBulkLoaderController extends AbstractParserFormController
 	template: _.template($("#LotPropertyBulkLoaderView").html())
 
 	events:
@@ -33,7 +33,7 @@ class window.LotPropertyBulkLoaderController extends AbstractParserFormControlle
 		@attributeChanged()
 
 
-class window.LotPropertyBulkLoaderParserController extends BasicFileValidateAndSaveController
+class LotPropertyBulkLoaderParserController extends BasicFileValidateAndSaveController
 	template: _.template($("#BasicFileValidateAndSaveViewLotPropertyBulkLoader").html())
 
 	initialize: ->

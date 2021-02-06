@@ -1,4 +1,4 @@
-class window.ACASFormAbstractFieldController extends Backbone.View
+class ACASFormAbstractFieldController extends Backbone.View
 	###
 		Launching controller must:
 		- Initialize the model the correct object type
@@ -28,7 +28,8 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 		"mouseover .label-tooltip": "handleToolTipMouseover"
 		"mouseoff .label-tooltip": "handleToolTipMouseoff"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@modelKey = @options.modelKey
 		@thingRef = @options.thingRef
 		@errorSet = false
@@ -168,7 +169,7 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 	setTabIndex: (index) ->
 		@$('input, select').attr  'tabindex', index
 
-class window.ACASFormLSLabelFieldController extends ACASFormAbstractFieldController
+class ACASFormLSLabelFieldController extends ACASFormAbstractFieldController
 	###
 		Launching controller must:
 		- Initialize the model with an LSLabel
@@ -258,7 +259,7 @@ class window.ACASFormLSLabelFieldController extends ACASFormAbstractFieldControl
 		@$('input').val @getModel().get('labelText')
 		super()
 
-class window.ACASFormLSNumericValueFieldController extends ACASFormAbstractFieldController
+class ACASFormLSNumericValueFieldController extends ACASFormAbstractFieldController
 	###
 		Launching controller must:
 		- Initialize the model with an LSValue
@@ -269,8 +270,9 @@ class window.ACASFormLSNumericValueFieldController extends ACASFormAbstractField
 
 	template: _.template($("#ACASFormLSNumericValueFieldView").html())
 
-	initialize: ->
-		super()
+	initialize: (options) ->
+		@options = options
+		super(@options)
 		@userInputEvent = false
 
 	applyOptions: ->
@@ -324,14 +326,14 @@ class window.ACASFormLSNumericValueFieldController extends ACASFormAbstractField
 			@$('.bv_units').html @getModel().get('unitKind')
 		super()
 
-class window.ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldController
+class ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldController
 	###
 		Launching controller must:
 		- Initialize the model with an LSValue
     Do whatever else is required or optional in ACASFormAbstractFieldController
 	###
 	events: ->
-		_.extend {}, super,
+		_.extend {}, super(),
 		"change select": "handleInputChanged"
 
 	template: _.template($("#ACASFormLSCodeValueFieldView").html())
@@ -430,15 +432,19 @@ class window.ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldCon
 	clearDescription: ->
 		@$('.desc-inline').addClass 'hide'
 
-class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractFieldController
+class ACASFormLSThingInteractionFieldController extends ACASFormAbstractFieldController
 	###
 		Launching controller must:
 		- Initialize the model with an LSInteraction
     Do whatever else is required or optional in ACASFormAbstractFieldController
 	###
 	events: ->
-		_.extend {}, super,
+		_.extend {}, super(),
 		"change select": "handleInputChanged"
+
+	initialize: (options) ->
+		@options = options
+		super(@options)
 
 	template: _.template($("#ACASFormLSThingInteractionFieldView").html())
 
@@ -462,8 +468,9 @@ class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractF
 		@clearError()
 		if @userInputEvent
 			thingID = @thingSelectController.getSelectedID()
+			thingCodeName = @thingSelectController.getSelectedCode()
 			if thingID?
-				@getModel().setItxThing id: thingID
+				@getModel().setItxThing id: thingID, codeName: thingCodeName
 				@getModel().set ignored: false
 			else
 				@setEmptyValue()
@@ -522,7 +529,7 @@ class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractF
 		@$('select').removeAttr 'disabled'
 
 
-class window.ACASFormLSHTMLClobValueFieldController extends ACASFormAbstractFieldController
+class ACASFormLSHTMLClobValueFieldController extends ACASFormAbstractFieldController
 	###
 		Launching controller must:
 		- Initialize the model with an LSValue
@@ -598,7 +605,7 @@ class window.ACASFormLSHTMLClobValueFieldController extends ACASFormAbstractFiel
 		else
 			@disableEditor = false
 
-class window.ACASFormLSStringValueFieldController extends ACASFormAbstractFieldController
+class ACASFormLSStringValueFieldController extends ACASFormAbstractFieldController
 	###
 		Launching controller must:
 		- Initialize the model with an LSValue
@@ -633,7 +640,7 @@ class window.ACASFormLSStringValueFieldController extends ACASFormAbstractFieldC
 		super()
 
 
-class window.ACASFormLSDateValueFieldController extends ACASFormAbstractFieldController
+class ACASFormLSDateValueFieldController extends ACASFormAbstractFieldController
 	###
 		Launching controller must:
 		- Initialize the model with an LSValue
@@ -642,7 +649,7 @@ class window.ACASFormLSDateValueFieldController extends ACASFormAbstractFieldCon
 
 	template: _.template($("#ACASFormLSDateValueFieldView").html())
 	events: ->
-		_.extend {}, super,
+		_.extend {}, super(),
 		"change input": "handleInputChanged"
 		"click .bv_dateIcon": "handleDateIconClicked"
 
@@ -683,7 +690,7 @@ class window.ACASFormLSDateValueFieldController extends ACASFormAbstractFieldCon
 	disableInput: =>
 		$(@el).off('click', '.bv_dateIcon');
 
-class window.ACASFormLSFileValueFieldController extends ACASFormAbstractFieldController
+class ACASFormLSFileValueFieldController extends ACASFormAbstractFieldController
 	###
 		Launching controller must:
 		- Initialize the model with an LSValue
@@ -693,7 +700,7 @@ class window.ACASFormLSFileValueFieldController extends ACASFormAbstractFieldCon
 
 	template: _.template($("#ACASFormLSFileValueFieldView").html())
 	events: ->
-		_.extend {}, super,
+		_.extend {}, super(),
 		"click .bv_deleteSavedFile": "handleDeleteSavedFile"
 
 	applyOptions: ->
@@ -753,8 +760,8 @@ class window.ACASFormLSFileValueFieldController extends ACASFormAbstractFieldCon
 			@fileController.on 'amClean', =>
 				@trigger 'amClean'
 			@fileController.render()
-			@fileController.on('fileUploader:uploadComplete', @handleFileUpload) #update model with filename
-			@fileController.on('fileDeleted', @handleFileRemoved) #update model with filename
+			@fileController.on('fileUploader:uploadComplete', @handleFileUpload.bind(@)) #update model with filename
+			@fileController.on('fileDeleted', @handleFileRemoved.bind(@)) #update model with filename
 
 	handleFileUpload: (nameOnServer) =>
 		@clearError()
@@ -774,7 +781,7 @@ class window.ACASFormLSFileValueFieldController extends ACASFormAbstractFieldCon
 		@$('.bv_deleteSavedFile').hide()
 		@createNewFileChooser()
 
-class window.ACASFormLSBooleanFieldController extends ACASFormAbstractFieldController
+class ACASFormLSBooleanFieldController extends ACASFormAbstractFieldController
 	###
 		Launching controller must:
 		- Initialize the model with an LSValue
@@ -784,7 +791,7 @@ class window.ACASFormLSBooleanFieldController extends ACASFormAbstractFieldContr
 
 	template: _.template($("#ACASFormLSBooleanFieldView").html())
 	events: ->
-		_.extend {}, super,
+		_.extend {}, super(),
 		"change input": "handleInputChanged"
 
 	render: ->
@@ -815,7 +822,7 @@ class window.ACASFormLSBooleanFieldController extends ACASFormAbstractFieldContr
 
 
 
-class window.ACASFormLSURLValueFieldController extends ACASFormAbstractFieldController
+class ACASFormLSURLValueFieldController extends ACASFormAbstractFieldController
 	###
 		Launching controller must:
 		- Initialize the model with an LSValue

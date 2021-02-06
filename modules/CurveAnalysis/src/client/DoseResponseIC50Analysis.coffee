@@ -1,4 +1,4 @@
-class window.DoseResponsePlotCurveLL4IC50 extends Backbone.Model
+class DoseResponsePlotCurveLL4IC50 extends Backbone.Model
 
 	log10: (val) ->
 		Math.log(val) / Math.LN10
@@ -19,5 +19,5 @@ class window.DoseResponsePlotCurveLL4IC50 extends Backbone.Model
 			#				Vertical Line
 			brd.create('line',[[log10(curve.curveAttributes.IC50),intersect],[log10(curve.curveAttributes.IC50),0]], {fixed: true, straightFirst:false, straightLast:false, strokeWidth:2, dash: 3, strokeColor: color});
 
-class window.DoseResponseIC50AnalysisParameters extends DoseResponseAnalysisParameters
+class DoseResponseIC50AnalysisParameters extends DoseResponseAnalysisParameters
 	defaults: _.extend {}, DoseResponseAnalysisParameters.prototype.defaults,{inactiveThresholdMode: false, inactiveThreshold: null, inverseAgonistMode: true}

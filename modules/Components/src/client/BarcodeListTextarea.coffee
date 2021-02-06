@@ -1,7 +1,7 @@
 LIST_OF_IDENTIFIER_DELIMITERS = [';', '\t', '\n']
 
 
-class window.BarcodeListTextarea extends Backbone.View
+class BarcodeListTextarea extends Backbone.View
   template: _.template($("#BarcodeListTextareaView").html())
 
   events: {

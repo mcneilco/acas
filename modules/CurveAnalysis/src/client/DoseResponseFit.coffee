@@ -1,4 +1,4 @@
-class window.DoseResponseDataParserController extends BasicFileValidateAndSaveController
+class DoseResponseDataParserController extends BasicFileValidateAndSaveController
 
 	initialize: ->
 		@loadReportFile = true
@@ -15,7 +15,7 @@ class window.DoseResponseDataParserController extends BasicFileValidateAndSaveCo
 
 
 
-class window.DoseResponseFitController extends Backbone.View
+class DoseResponseFitController extends Backbone.View
 	template: _.template($("#DoseResponseFitView").html())
 	events:
 		"click .bv_fitModelButton": "launchFit"
@@ -127,7 +127,7 @@ class window.DoseResponseFitController extends Backbone.View
 		@trigger 'amClean'
 
 
-class window.DoseResponseFitWorkflowController extends Backbone.View
+class DoseResponseFitWorkflowController extends Backbone.View
 	template: _.template($("#DoseResponseFitWorkflowView").html())
 	events:
 		"click .bv_loadAnother": "handleFitAnother"

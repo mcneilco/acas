@@ -1,4 +1,4 @@
-class window.BatchName extends Backbone.Model
+class BatchName extends Backbone.Model
 	defaults:
 		requestName: ""
 		preferredName: ""
@@ -42,7 +42,7 @@ class window.BatchName extends Backbone.Model
 		else
 			return null
 
-class window.BatchNameList extends Backbone.Collection
+class BatchNameList extends Backbone.Collection
 	model: BatchName
 	getValidBatchNames: ->
 		@filter (nm) ->
@@ -67,7 +67,7 @@ class window.BatchNameList extends Backbone.Collection
 
 
 
-class window.BatchNameController extends Backbone.View
+class BatchNameController extends Backbone.View
 	template: _.template($("#BatchNameView").html())
 	tagName: "tr"
 	className: "batchNameView control-group"
@@ -101,7 +101,7 @@ class window.BatchNameController extends Backbone.View
 	clear: ->
 		@model.clear()
 
-class window.BatchNameListController extends Backbone.View
+class BatchNameListController extends Backbone.View
 	initialize: ->
 		@collection.bind "add", @add, @
 
@@ -115,7 +115,7 @@ class window.BatchNameListController extends Backbone.View
 		@render()
 
 
-class window.BatchListValidatorController extends Backbone.View
+class BatchListValidatorController extends Backbone.View
 	template: _.template($("#BatchListValidatorView").html())
 	events:
 		"click .bv_addButton": "checkAndAddBatches"

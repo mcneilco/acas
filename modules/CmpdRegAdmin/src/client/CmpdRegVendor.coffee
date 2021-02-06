@@ -1,7 +1,7 @@
 ############################################################################
 # models
 ############################################################################
-class window.Vendor extends Backbone.Model
+class Vendor extends Backbone.Model
 	urlRoot: "/api/cmpdRegAdmin/vendors"
 	defaults:
 		name: null
@@ -26,7 +26,7 @@ class window.Vendor extends Backbone.Model
 			return null
 
 ############################################################################
-class window.Vendors extends Backbone.Collection
+class Vendors extends Backbone.Collection
 	model: Vendor
 ############################################################################
 
@@ -34,7 +34,7 @@ class window.Vendors extends Backbone.Collection
 # controllers
 ############################################################################
 
-class window.VendorController extends AbstractCmpdRegAdminController
+class VendorController extends AbstractCmpdRegAdminController
 	wrapperTemplate: _.template($("#VendorView").html())
 	moduleLaunchName: "vendor"
 	entityType: "vendor"
@@ -54,7 +54,7 @@ class window.VendorController extends AbstractCmpdRegAdminController
 		@$('.bv_vendorControllerDiv').html super()
 
 
-class window.VendorBrowserController extends AbstractCmpdRegAdminBrowserController
+class VendorBrowserController extends AbstractCmpdRegAdminBrowserController
 	wrapperTemplate: _.template($("#VendorBrowserView").html())
 	entityType: "vendor"
 	entityTypePlural: "vendors"

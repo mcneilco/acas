@@ -1,4 +1,4 @@
-class window.AbstractCodeTablesAdminController extends AbstractFormController
+class AbstractCodeTablesAdminController extends AbstractFormController
 	###
 		Instances of this controller must supply "moduleLaunchName", "codeType", and "modelClass"
 	e.g. other required fields
@@ -25,7 +25,8 @@ class window.AbstractCodeTablesAdminController extends AbstractFormController
 		"click .bv_cancelClear": "handleCancelClearClicked"
 		"click .bv_confirmClear": "handleConfirmClearClicked"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		console.log "initializing Abstract Controller"
 		if @model?
 			@completeInitialization()

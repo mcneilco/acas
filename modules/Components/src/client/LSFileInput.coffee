@@ -1,4 +1,4 @@
-class window.LSFileInputController extends Backbone.View
+class LSFileInputController extends Backbone.View
 	
 	fieldIsRequired: true
 	inputTitle: "A title should go here"
@@ -12,7 +12,8 @@ class window.LSFileInputController extends Backbone.View
 	allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg']
 
 	
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		_.bindAll(@,
 			'render',
 			'handleFileChooserUploadComplete',
@@ -66,8 +67,8 @@ class window.LSFileInputController extends Backbone.View
 			allowedFileTypes: @allowedFileTypes
 		});
 		@lsFileChooser.render()
-		@lsFileChooser.on('fileUploader:uploadComplete', @handleFileChooserUploadComplete)
-		@lsFileChooser.on('fileUploader:uploadFailed', @handleFileChooserUploadFailed)
-		@lsFileChooser.on('fileUploader:removedFile', @handleFileChooserRemovedFile)
+		@lsFileChooser.on('fileUploader:uploadComplete', @handleFileChooserUploadComplete.bind(@))
+		@lsFileChooser.on('fileUploader:uploadFailed', @handleFileChooserUploadFailed.bind(@))
+		@lsFileChooser.on('fileUploader:removedFile', @handleFileChooserRemovedFile.bind(@))
 		@
 
