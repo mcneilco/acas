@@ -71,6 +71,8 @@ startApp = ->
 	app.use session
 		secret: 'acas needs login'
 		cookie: maxAge: 365 * 24 * 60 * 60 * 1000
+		resave: true
+		saveUninitialized: true,
 		store: sessionStore # MemoryStore is used automatically if no "store" field is set, but we need a handle on the sessionStore object for Socket.IO, so we'll manually create the store so we have a handle on the object
 
 	app.use flash()
