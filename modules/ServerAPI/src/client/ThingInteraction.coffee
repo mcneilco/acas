@@ -113,3 +113,11 @@ class FirstLsThingItxList extends LsThingItxList
 
 class SecondLsThingItxList extends LsThingItxList
 	model: SecondThingItx
+
+if typeof(exports) != "undefined"
+	exports.ThingItx = ThingItx
+	exports.FirstThingItx = FirstThingItx
+	exports.SecondThingItx = SecondThingItx
+	exports.LsThingItxList = LsThingItxList 
+	exports.FirstLsThingItxList = FirstLsThingItxList
+	exports.SecondLsThingItxList = SecondLsThingItxList
