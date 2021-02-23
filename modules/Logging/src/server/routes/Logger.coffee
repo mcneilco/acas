@@ -1,11 +1,11 @@
 config = require('../conf/compiled/conf.js')
 winston = require('winston');
-require('winston-mongodb').MongoDB;
 
 exports.setupRoutes = (app) ->
 	return true
 
 if config.all.logging.usemongo
+	require('winston-mongodb').MongoDB;
 	db = require("mongojs").connect(config.all.logging.database, ["logs"])
 	db.createCollection("logs")
 	winstonLoggingOptions = {db: config.all.logging.database}
