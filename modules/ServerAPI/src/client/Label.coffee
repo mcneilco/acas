@@ -337,3 +337,11 @@ class StateList extends Backbone.Collection
 			if values.length > 0
 				valueHistory = values
 		valueHistory
+
+if typeof(exports) != "undefined"
+	exports.Label = Label
+	exports.LabelList = LabelList
+	exports.Value = Value
+	exports.ValueList = ValueList
+	exports.State = State
+	exports.StateList = StateList

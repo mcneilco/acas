@@ -430,6 +430,8 @@ class Thing extends Backbone.Model
 		valInfo = _.where(@lsProperties.defaultValues, {key: vKind})[0]
 		@get('lsStates').getStateValueHistory valInfo['stateType'], valInfo['stateKind'], valInfo['type'], valInfo['kind']
 
+if typeof(exports) != "undefined"
+	exports.Thing = Thing
 
 #class window.DocumentModel extends Thing
 #	urlRoot:"/api/things/legalDocument/MTA"

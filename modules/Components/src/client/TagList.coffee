@@ -28,3 +28,6 @@ class TagListController extends Backbone.View
 			tempTags.push tagText: t
 		@collection.set tempTags
 
+if typeof(exports) != "undefined"
+	exports.Tag = Tag
+	exports.TagList = TagList
