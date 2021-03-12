@@ -610,8 +610,14 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
         # columns of batchProjects must include "Project.Code" and "Requested.Name", both strings
         batchProjects <- getProjectForBatch(c(unique(calculatedResults$batchCode[batchesToCheck])), mainCode)
         batchProjectRestriced <- merge(batchProjects, projectDF, by.x="Project.Code", by.y="code")
+        
         # Compounds can only be added to the experiment if they are in an unrestricted project or belong to the project which this experiment belongs to
+        # Turn the data frame into a data table
+        # Loop through by Requested.Name
+        # Return the Requested.Name of any comopund where its projects are unrestricted or any of the projects = experimentProject
         rCompounds <- as.data.table(batchProjectRestriced)[ , any(.SD[ , !isRestricted | Project.Code == projectCode, by = Project.Code]$V1), by = Requested.Name][V1 == FALSE]$Requested.Name
+
+
         if (length(rCompounds) > 0) {
           addProjectError <- TRUE
           shouldCheckRole <- configList$server.project.roles.enable & !is.null(configList$client.roles.crossProjectLoaderRole)
