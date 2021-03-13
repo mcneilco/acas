@@ -610,8 +610,8 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
         # columns of batchProjects must include "Project.Code" and "Requested.Name", both strings
         batchProjects <- getProjectForBatch(c(unique(calculatedResults$batchCode[batchesToCheck])), mainCode)
 
-        # Check if project is allowed to be loaded to this experiment
-        # can only be added to the experiment if its an unrestricted project or belongs to the project which this experiment belongs to
+        # Check if each project is allowed to be loaded to this experiment
+        # A project can only be used in the experiment if it's an unrestricted project or belongs to the project which this experiment belongs to
         projectsDT <- data.table(projectDF)
 
         # Loop through by project code and create a projectAllowedForExperiment column
