@@ -609,14 +609,27 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
       if (currentProj$isRestricted) {
         # columns of batchProjects must include "Project.Code" and "Requested.Name", both strings
         batchProjects <- getProjectForBatch(c(unique(calculatedResults$batchCode[batchesToCheck])), mainCode)
-        batchProjectRestriced <- merge(batchProjects, projectDF, by.x="Project.Code", by.y="code")
-        
-        # Compounds can only be added to the experiment if they are in an unrestricted project or belong to the project which this experiment belongs to
-        # Turn the data frame into a data table
-        # Loop through by Requested.Name
-        # Return the Requested.Name of any comopund where its projects are unrestricted or any of the projects = experimentProject
-        rCompounds <- as.data.table(batchProjectRestriced)[ , any(.SD[ , !isRestricted | Project.Code == projectCode, by = Project.Code]$V1), by = Requested.Name][V1 == FALSE]$Requested.Name
 
+        # Check if project is allowed to be loaded to this experiment
+        # can only be added to the experiment if its an unrestricted project or belongs to the project which this experiment belongs to
+        projectsDT <- data.table(projectDF)
+
+        # Loop through by project code and create a projectAllowedForExperiment column
+        projectsDT[ , projectAllowedForExperiment := {
+          # Check if the project is unrestricted or if it equals the projectCode of the experiment
+          !isRestricted | code == projectCode
+        }, by = code]
+
+        # Merge batch projects to project restrition information
+        batchProjectWithRestrictionInfo <- as.data.table(merge(batchProjects, projectsDT, by.x="Project.Code", by.y="code"))
+
+        # Create a data table with one row per batch with a boolean column as to whether it can be used in the experiment
+        # if any of the projects the batch belongs to is allowed to be loaded to this experiment, then the batch can be loaded to the experiment
+        canUseBatchDT <- batchProjectWithRestrictionInfo[ , any(projectAllowedForExperiment), by = Requested.Name]
+        setnames(canUseBatchDT, "V1", "batchCanBeLoadedToExperimentProject")
+
+        # Get a list of batches which are restricted and cannot be used in this experiment's project
+        rCompounds <- canUseBatchDT[batchCanBeLoadedToExperimentProject == FALSE]$Requested.Name
 
         if (length(rCompounds) > 0) {
           addProjectError <- TRUE
