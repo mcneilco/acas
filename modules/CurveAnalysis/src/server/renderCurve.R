@@ -23,7 +23,6 @@ renderCurve <- function(getParams, postData) {
 
 
   # GET FIT DATA
-  #fitData <- racas::get_fit_data_curve_id(parsedParams$curveIds)
   fitData <- racas::get_curve_data(parsedParams$curveIds, raw_data = TRUE, globalConnect = TRUE)
   
   # Colors
@@ -45,7 +44,9 @@ renderCurve <- function(getParams, postData) {
     responseMean <- mean(points[[1]][userFlagStatus!="knocked out" & preprocessFlagStatus!="knocked out" & algorithmFlagStatus!="knocked out" & tempFlagStatus!="knocked out",]$response)
     list("fittedMax" = responseMean, "fittedMin" = responseMean)
   }, by = curveId]
-  
+
+  fitData[ , renderingOptions := list(list(get_rendering_hint_options(renderingHint))), by = renderingHint]
+
   data <- list(parameters = as.data.frame(fitData), points = as.data.frame(rbindlist(fitData$points)))
   
   #To be backwards compatable with hill slope example files
@@ -90,16 +91,11 @@ renderCurve <- function(getParams, postData) {
   if(is.na(coalesce(fitData[1]$renderingHint))) {
     fitData[ , renderingHint := get_model_fit_classes()[1]$code]
   }
-  renderingOptions <- racas::get_rendering_hint_options(fitData[1]$renderingHint)
-  if(!"connectPoints" %in% names(renderingOptions) || is.na(renderingOptions$connectPoints)) {
-    renderingOptions$connectPoints <- FALSE
-  }
-
+  
   setContentType("image/png")
   setHeader("Content-Disposition", paste0("filename=\"",strtrim(getParams$curveIds,200),".png\""))
   t <- tempfile()
-
-  racas::plotCurve(curveData = data$points, drawIntercept = renderingOptions$drawIntercept, params = data$parameters, fitFunction = renderingOptions$fct, paramNames = renderingOptions$paramNames, drawCurve = TRUE, logDose = logDose, logResponse = logResponse, outFile = t, ymin=parsedParams$yMin, ymax=parsedParams$yMax, xmin=parsedParams$xMin, xmax=parsedParams$xMax, height=parsedParams$height, width=parsedParams$width, showGrid = parsedParams$showGrid, showAxes = parsedParams$showAxes, labelAxes = parsedParams$labelAxes, showLegend=parsedParams$legend, mostRecentCurveColor = parsedParams$mostRecentCurveColor, axes = parsedParams$axes, plotColors = parsedParams$plotColors, curveLwd=parsedParams$curveLwd, plotPoints=parsedParams$plotPoints, connectPoints = renderingOptions$connectPoints, xlabel = parsedParams$xLab, ylabel = parsedParams$yLab)
+  racas::plotCurve(curveData = data$points, params = data$parameters, drawCurve = TRUE, logDose = logDose, logResponse = logResponse, outFile = t, ymin=parsedParams$yMin, ymax=parsedParams$yMax, xmin=parsedParams$xMin, xmax=parsedParams$xMax, height=parsedParams$height, width=parsedParams$width, showGrid = parsedParams$showGrid, showAxes = parsedParams$showAxes, labelAxes = parsedParams$labelAxes, showLegend=parsedParams$legend, mostRecentCurveColor = parsedParams$mostRecentCurveColor, axes = parsedParams$axes, plotColors = parsedParams$plotColors, curveLwd=parsedParams$curveLwd, plotPoints=parsedParams$plotPoints, xlabel = parsedParams$xLab, ylabel = parsedParams$yLab)
   sendBin(readBin(t,'raw',n=file.info(t)$size))
   unlink(t)
   DONE
