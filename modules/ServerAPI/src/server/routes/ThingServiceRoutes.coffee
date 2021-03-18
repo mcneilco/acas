@@ -3,6 +3,7 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.get '/api/things/getMultipleKinds/:lsType/:lsKindsList', exports.thingsByTypeAndKinds
 	app.get '/api/things/:lsType/:lsKind/codename/:code', exports.thingByCodeName
 	app.get '/api/things/:lsType/:lsKind/:code', exports.thingByCodeName
+	app.get '/api/things/:lsType/:lsKind/:labelType/:labelKind/:labelText', exports.getThingsByTypeKindAndLabelTypeKindText
 	app.post '/api/getThingCodeByLabel/:thingType/:thingKind', exports.getThingCodeByLabel
 	app.post '/api/things/:lsType/:lsKind', exports.postThingParent
 	app.post '/api/things/:lsType/:lsKind/:parentCode', exports.postThingBatch
@@ -18,7 +19,7 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.get '/api/getThingThingItxsBySecondThing/:lsType/:lsKind/:secondThingId', exports.getThingThingItxsBySecondThingAndItxTypeKind
 	app.get '/api/getThingThingItxsByFirstThing/exclude/:lsType/:lsKind/:firstThingId', exports.getThingThingItxsByFirstThingAndExcludeItxTypeKind
 	app.get '/api/getThingThingItxsBySecondThing/exclude/:lsType/:lsKind/:secondThingId', exports.getThingThingItxsBySecondThingAndExcludeItxTypeKind
-	app.get '/api/getThingCodeTablesByLabelText/:lsType/:lsKind/:labelText', exports.getThingsByTypeAndKindAndLabelTypeAndLabelText
+	app.get '/api/getThingCodeTablesByLabelText/:lsType/:lsKind/:labelText', exports.getThingsByTypeKindAndLabelTypeKindTextQuery
 	app.post '/api/things/:lsType/:lsKind/codeNames/jsonArray', exports.getThingsByCodeNames
 	app.get '/api/thingKinds', exports.getThingKinds
 	app.post '/api/things/jsonArray', exports.postThings
@@ -34,6 +35,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/things/getMultipleKinds/:lsType/:lsKindsList', loginRoutes.ensureAuthenticated, exports.thingsByTypeAndKinds
 	app.get '/api/things/:lsType/:lsKind/codename/:code', loginRoutes.ensureAuthenticated, exports.thingByCodeName
 	app.get '/api/things/:lsType/:lsKind/:code', loginRoutes.ensureAuthenticated, exports.thingByCodeName
+	app.get '/api/things/:lsType/:lsKind/:labelType/:labelKind/:labelText', exports.getThingsByTypeKindAndLabelTypeKindText
 	app.post '/api/getThingCodeByLabel/:thingType/:thingKind', loginRoutes.ensureAuthenticated, exports.getThingCodeByLabel
 	app.post '/api/things/:lsType/:lsKind', exports.postThingParent
 	app.post '/api/things/:lsType/:lsKind/:parentCode', exports.postThingBatch
@@ -49,7 +51,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/getThingThingItxsBySecondThing/:lsType/:lsKind/:secondThingId', loginRoutes.ensureAuthenticated, exports.getThingThingItxsBySecondThingAndItxTypeKind
 	app.get '/api/getThingThingItxsByFirstThing/exclude/:lsType/:lsKind/:firstThingId', loginRoutes.ensureAuthenticated, exports.getThingThingItxsByFirstThingAndExcludeItxTypeKind
 	app.get '/api/getThingThingItxsBySecondThing/exclude/:lsType/:lsKind/:secondThingId', loginRoutes.ensureAuthenticated, exports.getThingThingItxsBySecondThingAndExcludeItxTypeKind
-	app.get '/api/getThingCodeTablesByLabelText/:lsType/:lsKind/:labelText', loginRoutes.ensureAuthenticated, exports.getThingsByTypeAndKindAndLabelTypeAndLabelText
+	app.get '/api/getThingCodeTablesByLabelText/:lsType/:lsKind/:labelText', loginRoutes.ensureAuthenticated, exports.getThingsByTypeKindAndLabelTypeKindTextQuery
 	app.post '/api/things/:lsType/:lsKind/codeNames/jsonArray', loginRoutes.ensureAuthenticated, exports.getThingsByCodeNames
 	app.get '/api/thingKinds', loginRoutes.ensureAuthenticated, exports.getThingKinds
 	app.get '/api/transaction/:id', loginRoutes.ensureAuthenticated, exports.getTransaction
@@ -84,43 +86,88 @@ serverUtilityFunctions = require './ServerUtilityFunctions.js'
 csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
 _ = require 'underscore'
 
-exports.getThingsByTypeAndKindAndLabelTypeAndLabelText = (req, resp) ->
+exports.getThingsByTypeKindAndLabelTypeKindTextQuery = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
 		thingServiceTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
 		resp.json thingServiceTestJSON.batchList
 	else
-		exports.getThingsByTypeAndKindAndLabelTypeAndLabelTextInternal req.params.lsType, req.params.lsKind, req.query.labelType, req.params.labelText, req.query.with, (codeTables) ->
+		searchParams = {
+			thingType: req.params.lsType,
+			thingKind: req.params.lsKind,
+			labels: [
+				labelType: req.query.labelType,
+				labelKind: req.query.labelKind,
+				labelText: req.params.labelText
+			]
+		}
+		opts = {
+			returnOne: req.query.returnOne
+			format: req.query.with
+		}
+		exports.getThingsByTypeKindAndLabelTypeKindTextInternal searchParams, opts, (codeTables) ->
+			resp.json codeTables
+
+exports.getThingsByTypeKindAndLabelTypeKindText = (req, resp) ->
+	if req.query.testMode or global.specRunnerTestmode
+		thingServiceTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
+		resp.json thingServiceTestJSON.batchList
+	else
+		searchParams = {
+			thingType: req.params.lsType,
+			thingKind: req.params.lsKind,
+			labels: [
+				labelType: req.params.labelType,
+				labelKind: req.params.labelKind,
+				labelText: req.params.labelText
+			]
+		}
+		opts = {
+			returnOne: req.query.returnOne
+			format: req.query.with
+		}
+		exports.getThingsByTypeKindAndLabelTypeKindTextInternal searchParams, opts, (codeTables) ->
 			resp.json codeTables
 
 exports.getThingsByTypeAndKindAndLabelTypeAndLabelTextInternal = (thingType, thingKind, labelType, labelText, format, callback) ->
-	searchJSON =
-		lsType: thingType
-		lsKind: thingKind
-		labels: []
-	searchJSON.labels.push
-		labelType: if labelType? then labelType else null
-		labelText: labelText
+	searchParams = {
+		thingType: thingType,
+		thingKind: thingKind,
+		labels: [
+			labelType: labelType,
+			labelKind: labelKind,
+			labelText: labelText
+		]
+	}
+	opts = {
+		returnOne: false
+		format: format
+	}
+	exports.getThingsByTypeKindAndLabelTypeKindTextInternal search, opts, (codeTables) ->
+		callback codeTables
+		
+exports.getThingsByTypeKindAndLabelTypeKindTextInternal = (searchParams, opts, callback) ->
 	baseurl = config.all.client.service.persistence.fullpath+'lsthings/genericInteractionSearch'
 	console.log baseurl
 	request = require 'request'
-	if format?
+	if opts.format?
 		params =
-			with: format
+			with: opts.format
 	else
 		params =
 			with: 'codeTable'
-	if labelType?
-		params.labelType = labelType
 	request(
 		method: 'POST'
 		url: baseurl
 		qs: params
-		body: searchJSON
+		body: searchParams
 		json: true
 	, (error, response, json) =>
 		console.log response.statusCode
 		if !error && response.statusCode == 200
-			callback json.results
+			if opts.returnOne? && opts.returnOne && json.results.length > 0
+				callback json.results[0]
+			else
+				callback json.results
 	)
 
 getThingByTypeAndKind = (lsType, lsKind, stub, callback) =>

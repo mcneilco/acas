@@ -17,14 +17,14 @@ exports.setupChannels = (io, sessionStore, loginRoutes) ->
 			sessionLocks = _.where global.editLockedEntities, socketID: socket.id
 			for lockKey, lock of global.editLockedEntities
 				if lock.socketID==socket.id
-					console.log "clearing lock on #{lock}"
+					console.log "clearing lock on #{JSON.stringify(lock)}"
 					for quid in lock.rejectedRequestSocketIDs
 						socket.broadcast.to(quid).emit('editLockAvailable')
 					delete global.editLockedEntities[lockKey]
 
 			for lockKey, lock of global.newFormEntities
 				if lock.savingLockSocketID==socket.id
-					console.log "clearing save lock on #{lock}"
+					console.log "clearing save lock on #{JSON.stringify(lock)}}"
 					lock.savingLockSocketID = null
 					for quid in lock.savingNotificationRequestSocketIDs
 						socket.broadcast.to(quid).emit('newEntitySavingComplete')

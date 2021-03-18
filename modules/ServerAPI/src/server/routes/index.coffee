@@ -9,6 +9,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 		app.get '/toPrint/:code', loginRoutes.ensureAuthenticated, exports.toPrint
 		app.get '/', loginRoutes.ensureAuthenticated, exports.index
 		app.get '/:moduleName/codeName/:code', loginRoutes.ensureAuthenticated, exports.autoLaunchWithCode
+		app.get '/:moduleName/labelText/:labelType/:labelKind/:labelText', loginRoutes.ensureAuthenticated, exports.autoLaunchWithLabel
 		app.get '/entity/copy/:moduleName/:code', loginRoutes.ensureAuthenticated, exports.copyAndLaunchWithCode
 		app.get '/:moduleName/createFrom/:code', loginRoutes.ensureAuthenticated, exports.autoLaunchCreateFromOtherEntity
 	else
@@ -27,6 +28,18 @@ exports.autoLaunchWithCode = (req, res) ->
 	moduleLaunchParams =
 		moduleName: req.params.moduleName
 		code: req.params.code
+		copy: false
+		createFromOtherEntity: false
+	exports.index req, res, moduleLaunchParams
+
+exports.autoLaunchWithLabel = (req, res) ->
+	console.log "autoLaunchWithCode"
+	console.log req.params
+	moduleLaunchParams =
+		moduleName: req.params.moduleName
+		labelText: req.params.labelText
+		labelType: req.params.labelType
+		labelKind: req.params.labelKind
 		copy: false
 		createFromOtherEntity: false
 	exports.index req, res, moduleLaunchParams

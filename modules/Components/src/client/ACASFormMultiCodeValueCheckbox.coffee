@@ -105,7 +105,7 @@ class ACASFormMultiCodeValueCheckboxController extends ACASFormAbstractFieldCont
     template: _.template($("#ACASFormMultiCodeValueCheckbox").html())
 
     initialize: (options) ->
-        @options = option
+        @options = options
         @opts = @options
         @thingRef = @opts.thingRef
         mdl = @opts.modelDefaults
@@ -124,7 +124,7 @@ class ACASFormMultiCodeValueCheckboxController extends ACASFormAbstractFieldCont
         else
             @codeTableCollection.url = "/api/codetables/#{mdl.codeType}/#{mdl.codeKind}"
         @checkboxControllerList = []
-        super()
+        super(options)
         @
 
 
