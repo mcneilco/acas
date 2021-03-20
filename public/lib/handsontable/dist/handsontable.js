@@ -3360,7 +3360,7 @@ var WalkontableTable = function WalkontableTable(wotInstance, table) {
     return this.wot.wtViewport.columnsVisibleCalculator.endColumn;
   },
   isRowBeforeRenderedRows: function(row) {
-    return !this.rowFilter || (this.rowFilter.sourceToRendered(r) < 0 && r >= 0);
+    return (this.rowFilter.sourceToRendered(row) < 0 && row >= 0);
   },
   isRowAfterViewport: function(row) {
     return (this.rowFilter.sourceToRendered(row) > this.getLastVisibleRow());
