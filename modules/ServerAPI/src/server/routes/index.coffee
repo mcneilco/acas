@@ -30,6 +30,7 @@ exports.autoLaunchWithCode = (req, res) ->
 		code: req.params.code
 		copy: false
 		createFromOtherEntity: false
+		queryParams: req.query
 	exports.index req, res, moduleLaunchParams
 
 exports.autoLaunchWithLabel = (req, res) ->
@@ -42,6 +43,7 @@ exports.autoLaunchWithLabel = (req, res) ->
 		labelKind: req.params.labelKind
 		copy: false
 		createFromOtherEntity: false
+		queryParams: req.query
 	exports.index req, res, moduleLaunchParams
 
 exports.copyAndLaunchWithCode = (req, res) ->
@@ -50,6 +52,7 @@ exports.copyAndLaunchWithCode = (req, res) ->
 		code: req.params.code
 		copy: true
 		createFromOtherEntity: false
+		queryParams: req.query
 	exports.index req, res, moduleLaunchParams
 
 exports.autoLaunchCreateFromOtherEntity = (req, res) ->
@@ -58,6 +61,7 @@ exports.autoLaunchCreateFromOtherEntity = (req, res) ->
 		code: req.params.code
 		copy: false
 		createFromOtherEntity: true
+		queryParams: req.query
 	exports.index req, res, moduleLaunchParams
 
 exports.toPrint = (req, res, moduleLaunchParams) ->
@@ -76,6 +80,7 @@ exports.toPrint = (req, res, moduleLaunchParams) ->
 		createFromOtherEntity: false
 		print: true
 		unregistered: unregistered
+		queryParams: req.query
 
 	console.log "moduleLaunchParams"
 	console.log moduleLaunchParams

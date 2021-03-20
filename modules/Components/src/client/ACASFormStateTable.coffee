@@ -231,8 +231,8 @@ class ACASFormStateTableController extends Backbone.View
 				return cellProperties;
 
 		# Select the first row on start
-		# if @$('.bv_tableWrapper').is ":visible"
-		# 	@hot.selectCell(0,0,0,0)
+		if @$('.bv_tableWrapper').is ":visible"
+			@hot.selectCell(0,0,0,0)
 
 		@hot.addHook 'afterChange', @validateRequiredAndUniqueness
 
