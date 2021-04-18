@@ -236,6 +236,9 @@ class ACASFormStateTableController extends Backbone.View
 
 		@hot.addHook 'afterChange', @validateRequiredAndUniqueness
 
+	selectCell: (a, b, c, d) ->
+		@hot.selectCell(a, b, c, d)
+
 	addRow: (values, callback) ->
 		# when we update the handsontable cell data directly we don't know when the "afterChange" function
 		# will complete, so we lock the table, count the number of triggers to the number of completions of the
@@ -773,6 +776,7 @@ class ACASFormStateTableFormController extends Backbone.View
 
 			valueDiv = $(@el).find("."+field.fieldSettings.fieldWrapper)
 			valueDiv.append newField.render().el
+			newField.afterRender()
 			@formFields[newKey] = newField
 
 	getStateForRow: () ->
