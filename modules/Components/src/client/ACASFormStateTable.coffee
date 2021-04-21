@@ -584,25 +584,50 @@ class ACASFormStateTableController extends Backbone.View
 				cells: (row, col, prop) =>
 					cellProperties = {readOnly: true}
 					return cellProperties;
-
+		if @stateTableFormControllersCollection?
+			@stateTableFormControllersCollection.forEach (controller) ->
+				controller.disableInput()
 #Other options I decided not to use
 #			disableVisualSelection: true
 #			manualColumnResize: false
 #			manualRowResize: false
 
-	enableInput: ->
-		if @tableDef.contextMenu?
-			contextMenu = @tableDef.contextMenu
-		else
-			contextMenu = true
-		if @hot?
-			@hot.updateSettings
-				readOnly: false
-				contextMenu: contextMenu
-				comments: true
+	enableInput: (enableRowIndex) ->
+		# If row is defined we only want to enable input on a specific state row
+		if typeof(enableRowIndex) == "undefined" && enableRowIndex != null
+			if @tableDef.contextMenu?
+				contextMenu = @tableDef.contextMenu
+			else
+				contextMenu = true
+			if @hot?
+				@hot.updateSettings
+					readOnly: false
+					contextMenu: contextMenu
+					comments: true
 				cells: (row, col, prop) =>
 					cellProperties = {}
 					return cellProperties;
+			if @stateTableFormControllersCollection?
+				@stateTableFormControllersCollection.forEach (controller) ->
+					controller.enableInput()
+		else
+			if @tableDef.contextMenu?
+				contextMenu = @tableDef.contextMenu
+			else
+				contextMenu = true
+			if @hot?
+				@hot.updateSettings
+					readOnly: false
+					contextMenu: contextMenu
+					comments: true
+				cells: (row, col, cellProperties) =>
+					if row == enableRowIndex
+						cellProperties = {}
+					return cellProperties;
+			if @stateTableFormControllersCollection?
+				@stateTableFormControllersCollection.forEach (controller, index) ->
+					if index == enableRowIndex
+						controller.enableInput()
 
 #Other options I decided not to use
 #			disableVisualSelection: false
@@ -694,6 +719,15 @@ class ACASFormStateTableFormController extends Backbone.View
 	hide: ->
 		$(@el).hide()
 		
+	disableInput: ->
+		Object.keys(@formFields).forEach (key) =>
+			@formFields[key].disableInput()
+
+
+	enableInput: ->
+		Object.keys(@formFields).forEach (key) =>
+			@formFields[key].enableInput()
+
 	setupForm: ->
 		state = @getStateForRow()
 		
