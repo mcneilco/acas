@@ -72,7 +72,10 @@ class Thing extends Backbone.Model
 		attsToSave = super(options)
 		if @deleteEmptyLabelsValsItxsBeforeSave
 			toDel = attsToSave.lsLabels.filter (lab) ->
-				(lab.get('ignored') || lab.get('labelText')=="") && lab.isNew()
+				isAutoLabel = false
+				if typeof(lab.get("isAutoLabel")) != "undefined" && lab.get("isAutoLabel") == true
+					isAutoLabel = true
+				(lab.get('ignored') || (lab.get('labelText')=="" && !isAutoLabel)) && lab.isNew()
 			for lab in toDel
 				attsToSave.lsLabels.remove lab
 
@@ -216,6 +219,13 @@ class Thing extends Backbone.Model
 					#			if newLabel.get('preferred') is undefined
 					newLabel.set key: dLabel.key
 					newLabel.set preferred: dLabel.preferred
+
+					# If auto label is set then use it (evaluating only to true if set to true)
+					# Otherwise set the deafault to false
+					isAutoLabel = false
+					if typeof(dLabel.isAutoLabel) != "undefined" && dLabel.isAutoLabel==true
+						isAutoLabel = true
+					newLabel.set isAutoLabel: isAutoLabel
 
 					newLabel.set unique: dLabel.unique
 					newLabel.set thingType: @get("lsType")
