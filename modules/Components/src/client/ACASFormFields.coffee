@@ -188,7 +188,11 @@ class ACASFormLSLabelFieldController extends ACASFormAbstractFieldController
 		@isValid value, (isValid) =>
 			if isValid
 				@clearError()
-				if value != ""
+				# Behavior of persistance layer on save is to look up auto label sequences based on 
+				# thing lsTypeAndKind and label lsTypeAndKind
+				# If the label text is "" or null then it will set the next auto sequence value
+				# so in this case its ok to send "" and ignored = false
+				if value != "" || @getModel.get("isAutoLabel") 
 					@getModel().set
 						labelText: value
 						ignored: false
