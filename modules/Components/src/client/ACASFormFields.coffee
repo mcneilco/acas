@@ -192,7 +192,7 @@ class ACASFormLSLabelFieldController extends ACASFormAbstractFieldController
 				# thing lsTypeAndKind and label lsTypeAndKind
 				# If the label text is "" or null then it will set the next auto sequence value
 				# so in this case its ok to send "" and ignored = false
-				if value != "" || @getModel.get("isAutoLabel") 
+				if value != "" || @getModel().get("isAutoLabel") 
 					@getModel().set
 						labelText: value
 						ignored: false
@@ -707,6 +707,10 @@ class ACASFormLSFileValueFieldController extends ACASFormAbstractFieldController
 		_.extend {}, super(),
 		"click .bv_deleteSavedFile": "handleDeleteSavedFile"
 
+	initialize: (options)->
+		super(options)
+		@fileURL = UtilityFunctions::getFileServiceURL()
+
 	applyOptions: ->
 		super()
 		if @options.allowedFileTypes?
@@ -756,7 +760,7 @@ class ACASFormLSFileValueFieldController extends ACASFormAbstractFieldController
 				el: @$('.bv_file')
 				maxNumberOfFiles: 1
 				requiresValidation: false
-				url: UtilityFunctions::getFileServiceURL()
+				url: @fileURL
 				allowedFileTypes: @allowedFileTypes
 				hideDelete: false
 			@fileController.on 'amDirty', =>
@@ -767,10 +771,10 @@ class ACASFormLSFileValueFieldController extends ACASFormAbstractFieldController
 			@fileController.on('fileUploader:uploadComplete', @handleFileUpload.bind(@)) #update model with filename
 			@fileController.on('fileDeleted', @handleFileRemoved.bind(@)) #update model with filename
 
-	handleFileUpload: (nameOnServer) =>
+	handleFileUpload: (file) =>
 		@clearError()
 		@getModel().set
-			value: nameOnServer
+			value: file.name
 			ignored: false
 
 	disableInput: ->
@@ -784,6 +788,65 @@ class ACASFormLSFileValueFieldController extends ACASFormAbstractFieldController
 		@handleFileRemoved()
 		@$('.bv_deleteSavedFile').hide()
 		@createNewFileChooser()
+
+
+class ACASFormLSBlobValueFieldController extends ACASFormLSFileValueFieldController
+	###
+		Launching controller must:
+		- Initialize the model with an LSValue
+    - Provide allowedFileTypes
+    Do whatever else is required or optional in ACASFormAbstractFieldController
+	###
+
+	initialize: (options)->
+		super(options)
+		@fileURL = "/blobUploads"
+
+	arrayToBase64String: (a)->
+		btoa new Uint8Array(a).reduce(((data, byte) ->
+			data + String.fromCharCode(byte)
+		), '')
+
+	setupFileController: ->
+		fileValue = @getModel().get('value')
+		if @isEmpty()
+			@createNewFileChooser()
+			@$('.bv_deleteSavedFile').hide()
+		else
+			displayText = @getModel().get('comments')
+			if !displayText?
+				displayText = fileValue
+			if @displayInline
+				@$('.bv_file').html '<img src="data:image/png;base64,'+@arrayToBase64String(fileValue)+'" alt="'+ displayText+'">'
+			else
+				@$('.bv_file').html '<a href="data:image/png;base64,'+@arrayToBase64String(fileValue)+'">'+displayText+'</a>'
+			@$('.bv_deleteSavedFile').show()
+
+	createNewFileChooser: ->
+		if @fileController?
+			@fileController.render()
+		else
+			@fileController = new LSFileChooserController
+				el: @$('.bv_file')
+				maxNumberOfFiles: 1
+				requiresValidation: false
+				url: @fileURL
+				allowedFileTypes: @allowedFileTypes
+				hideDelete: false
+			@fileController.on 'amDirty', =>
+				@trigger 'amDirty'
+			@fileController.on 'amClean', =>
+				@trigger 'amClean'
+			@fileController.render()
+			@fileController.on('fileUploader:uploadComplete', @handleFileUpload.bind(@)) #update model with filename
+			@fileController.on('fileDeleted', @handleFileRemoved.bind(@)) #update model with filename
+
+	handleFileUpload: (file) =>
+		@clearError()
+		@getModel().set
+			value: file.binaryData
+			comments: file.name
+			ignored: false
 
 class ACASFormLSBooleanFieldController extends ACASFormAbstractFieldController
 	###

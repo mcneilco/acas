@@ -112,7 +112,7 @@ class LSFileChooserController extends Backbone.View
 		_.each(data.result.files, (result) ->
 			self.listOfFileModels.push(new LSFileChooserModel({fileNameOnServer: result.name}))
 		)
-		this.trigger('fileUploader:uploadComplete', data.result.files[0].name)
+		this.trigger('fileUploader:uploadComplete', data.result.files[0])
 		if (@requiresValidation)
 			@$('.dv_validatingProgressBar').show("slide")
 		@delegateEvents()

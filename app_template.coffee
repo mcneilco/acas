@@ -17,6 +17,7 @@ startApp = ->
 	session = require('express-session')
 	MemoryStore = require('memorystore')(session)
 	bodyParser = require('body-parser')
+	multer = require('multer')
 	errorHandler = require('errorhandler')
 	cookieParser = require('cookie-parser')
 
@@ -80,6 +81,8 @@ startApp = ->
 	app.use passport.session pauseStream:  true
 	app.use(bodyParser.json({limit: '100mb'}))
 	app.use(bodyParser.urlencoded({limit: '100mb', extended: true,parameterLimit: 1000000}))
+	console.log(multer)
+	app.use(multer({dest:__dirname+"/"+config.all.server.tempfiles.relative_path}).any());
 	app.use(express.static(path.join(__dirname, 'public')))
 
 	loginRoutes.setupRoutes(app, passport)
