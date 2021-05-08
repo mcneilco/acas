@@ -267,9 +267,9 @@ class window.ProtocolBaseController extends BaseEntityController
 			@setupProjectSelect()
 		@setupSelRequiredAttrs()
 		@render()
-		@listenTo @model, 'sync', @modelSyncCallback
-		@listenTo @model, 'change', @modelChangeCallback
-		@model.getStatus().on 'change', @updateEditable
+		@listenTo @model, 'sync', @modelSyncCallback.bind(@)
+		@listenTo @model, 'change', @modelChangeCallback.bind(@)
+		@model.getStatus().on 'change', @updateEditable.bind(@)
 #		@trigger 'amClean' #so that module starts off clean when initialized
 
 	render: =>

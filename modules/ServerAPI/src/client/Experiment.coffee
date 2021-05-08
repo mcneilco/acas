@@ -450,9 +450,9 @@ class ExperimentBaseController extends BaseEntityController
 		@setupAttachFileListController()
 		@setupCustomExperimentMetadataController()
 		@render()
-		@listenTo @model, 'sync', @modelSyncCallback
-		@listenTo @model, 'change', @modelChangeCallback
-		@model.getStatus().on 'change', @updateEditable
+		@listenTo @model, 'sync', @modelSyncCallback.bind(@)
+		@listenTo @model, 'change', @modelChangeCallback.bind(@)
+		@model.getStatus().on 'change', @updateEditable.bind(@)
 
 	render: =>
 		unless @model?

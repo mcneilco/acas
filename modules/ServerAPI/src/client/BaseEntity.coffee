@@ -291,7 +291,7 @@ class BaseEntityController extends AbstractThingFormController #TODO: check to s
 		@setupStatusSelect()
 		@setupScientistSelect()
 		@setupTagList()
-		@model.getStatus().on 'change', @updateEditable
+		@model.getStatus().on 'change', @updateEditable.bind(@)
 
 	render: =>
 		unless @model?
