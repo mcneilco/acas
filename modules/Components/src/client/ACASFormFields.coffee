@@ -815,12 +815,28 @@ class ACASFormLSBlobValueFieldController extends ACASFormLSFileValueFieldControl
 		else
 			displayText = @getModel().get('comments')
 			if !displayText?
-				displayText = fileValue
-			if @displayInline
-				@$('.bv_file').html '<img src="data:image/png;base64,'+@arrayToBase64String(fileValue)+'" alt="'+ displayText+'">'
+				displayText = "InternalErrorUnknownFileName"
+			id = @getModel().get('id')
+			# Display inline not supported right now because guessing mimetype from extension isn't available
+			# so always be falsey here but leaving this in place
+			if false and @displayInline and @mimeType?
+				@$('.bv_file').html '<img src="data:' + @mimeType + ';base64,'+@arrayToBase64String(fileValue)+'" alt="'+ displayText+'">'
+				@$('.bv_file').html '<img src="/api/thingvalues/downloadThingBlobValueByID/'+id+'" alt="'+ displayText+'">'
 			else
-				@$('.bv_file').html '<a href="data:image/png;base64,'+@arrayToBase64String(fileValue)+'">'+displayText+'</a>'
+				@$('.bv_file').html '<a href="/api/thingvalues/downloadThingBlobValueByID/'+id+'">'+displayText+'</a>'
 			@$('.bv_deleteSavedFile').show()
+
+	setEmptyValue: ->
+		@getModel().set
+			value: null 
+			ignored: true
+
+	isEmpty: ->
+		empty = false
+		mdl = @getModel()
+		if mdl.get('comments')=="" or !mdl.get('comments')? then empty = true
+		if mdl.get('ignored') then empty = true
+		return empty
 
 	createNewFileChooser: ->
 		if @fileController?
@@ -843,6 +859,7 @@ class ACASFormLSBlobValueFieldController extends ACASFormLSFileValueFieldControl
 
 	handleFileUpload: (file) =>
 		@clearError()
+		@mimeType = file.mimeType
 		@getModel().set
 			value: file.binaryData
 			comments: file.name

@@ -127,11 +127,11 @@ class BasicFileController extends AbstractFormController
 		#		@lsFileChooser.on('fileDeleted', @handleFileRemoved) #update model with filename
 		@
 
-	handleFileUpload: (nameOnServer) =>
+	handleFileUpload: (file) =>
 		if @autoAddAttachFileModel
 			@$('.bv_delete').show()
 			@$('td.delete').hide()
-		@model.set fileValue: nameOnServer
+		@model.set fileValue: file.name
 		@trigger 'fileUploaded'
 		@trigger 'amDirty'
 
