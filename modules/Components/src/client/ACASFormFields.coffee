@@ -821,7 +821,6 @@ class ACASFormLSBlobValueFieldController extends ACASFormLSFileValueFieldControl
 			# so always be falsey here but leaving this in place
 			if false and @displayInline and @mimeType?
 				@$('.bv_file').html '<img src="data:' + @mimeType + ';base64,'+@arrayToBase64String(fileValue)+'" alt="'+ displayText+'">'
-				@$('.bv_file').html '<img src="/api/thingvalues/downloadThingBlobValueByID/'+id+'" alt="'+ displayText+'">'
 			else
 				@$('.bv_file').html '<a href="/api/thingvalues/downloadThingBlobValueByID/'+id+'">'+displayText+'</a>'
 			@$('.bv_deleteSavedFile').show()

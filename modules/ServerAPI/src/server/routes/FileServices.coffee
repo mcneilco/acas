@@ -64,7 +64,6 @@ setupRoutes = (app, loginRoutes, requireLogin) ->
 						files.push(outfile)
 					resp.json {"files": files}
 				catch err
-					console.error("AAAAAND")
 					console.error(err)
 					resp.send(err)
 
