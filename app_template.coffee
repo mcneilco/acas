@@ -78,8 +78,8 @@ startApp = ->
 	app.use flash()
 	app.use passport.initialize()
 	app.use passport.session pauseStream:  true
-	app.use(bodyParser.json({limit: '100mb'}))
-	app.use(bodyParser.urlencoded({limit: '100mb', extended: true,parameterLimit: 1000000}))
+	app.use(bodyParser.json({limit: '1000mb', extended: true}))
+	app.use(bodyParser.urlencoded({limit: '1000mb', extended: true,parameterLimit: 1000000}))
 	app.use(express.static(path.join(__dirname, 'public')))
 
 	loginRoutes.setupRoutes(app, passport)

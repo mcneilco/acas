@@ -29,6 +29,8 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.post '/api/bulkPostThingsSaveFile', exports.bulkPostThingsSaveFile
 	app.put '/api/bulkPutThingsSaveFile', exports.bulkPutThingsSaveFile
 	app.delete '/api/things/:lsType/:lsKind/:idOrCodeName', exports.deleteThing
+	app.get '/api/thingvalues/getThingValueById/:id', exports.getThingValueById
+	app.get '/api/thingvalues/downloadThingBlobValueByID/:id', exports.downloadThingBlobValueByID
 
 
 exports.setupRoutes = (app, loginRoutes) ->
@@ -63,9 +65,54 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/bulkPostThingsSaveFile', loginRoutes.ensureAuthenticated, exports.bulkPostThingsSaveFile
 	app.put '/api/bulkPutThingsSaveFile', loginRoutes.ensureAuthenticated, exports.bulkPutThingsSaveFile
 	app.delete '/api/things/:lsType/:lsKind/:idOrCodeName', loginRoutes.ensureAuthenticated, exports.deleteThing
+	app.get '/api/thingvalues/getThingValueById/:id', loginRoutes.ensureAuthenticated, exports.getThingValueById
+	app.get '/api/thingvalues/downloadThingBlobValueByID/:id', loginRoutes.ensureAuthenticated, exports.downloadThingBlobValueByID
+
 
 request = require 'request'
 config = require '../conf/compiled/conf.js'
+
+exports.getThingValueById = (req, resp) ->
+	exports.getlsValuesByIdInternal req.params.id, req.query, (statusCode, value) ->
+		resp.statusCode = statusCode
+		resp.json value
+		
+exports.getlsValuesByIdInternal = (id, params, callback) ->
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+	baseurl = config.all.client.service.persistence.fullpath+"lsthingvalues/"+id
+	if params? && params.format?
+		baseurl += "?format=#{params.format}"
+	serverUtilityFunctions.getFromACASServerInternal baseurl, (statusCode, value) ->
+		callback(statusCode, value)
+
+exports.downloadThingBlobValueByID = (req, resp) ->
+	mime = require('mime');
+	fs = require('fs');
+	exports.getlsValuesInternal req.params.id, {format: "withblobvalue"}, (statusCode, value) ->
+		mimetype = mime.lookup(value.comments);
+		resp.setHeader('Content-disposition', 'attachment; filename=' + value.comments);
+		resp.setHeader('Content-type', mimetype);
+		buffer = new Buffer.from(Uint8Array.from(value.blobValue))
+		stream = exports.bufferToStream(buffer)
+		stream.on 'data', (chunk) ->
+			resp.send(chunk);
+		stream.on 'data', (chunk) ->
+			resp.status(200).send();
+
+exports.bufferToStream = (buffer) ->
+	Duplex = require('stream').Duplex
+	stream = new Duplex
+	stream.push buffer
+	stream.push null
+	stream
+
+exports.getlsValuesInternal = (id, params, callback) ->
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+	baseurl = config.all.client.service.persistence.fullpath+"lsthingvalues/"+id
+	if params? && params.format?
+		baseurl += "?format=#{params.format}"
+	serverUtilityFunctions.getFromACASServerInternal baseurl, (statusCode, value) ->
+		callback(statusCode, value)
 
 exports.thingsByTypeKind = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
@@ -469,6 +516,7 @@ postThing = (isBatch, req, resp) ->
 				body: thingToSave
 				json: true
 			, (error, response, json) =>
+				
 				if !error && response.statusCode == 201
 					req.query.nestedfull=true
 					getThing req, json.codeName, (thing) =>
@@ -478,6 +526,8 @@ postThing = (isBatch, req, resp) ->
 					console.log error
 					console.log json
 					console.log response
+					resp.statusCode = 500
+					resp.end "got ajax error trying to save lsThing"
 			)
 
 exports.postThingParent = (req, resp) ->

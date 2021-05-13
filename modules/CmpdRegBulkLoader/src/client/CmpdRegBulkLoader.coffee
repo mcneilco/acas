@@ -114,8 +114,8 @@ class DetectSdfPropertiesController extends Backbone.View
 		@browseFileController.on('fileUploader:uploadComplete', @handleFileUploaded.bind(@))
 		@browseFileController.on('fileDeleted', @handleFileRemoved.bind(@))
 
-	handleFileUploaded: (fileName) =>
-		@fileName = fileName
+	handleFileUploaded: (file) =>
+		@fileName = file.name
 		@trigger 'fileChanged', @fileName
 		@getProperties()
 
