@@ -141,8 +141,8 @@ exports.getThingsByTypeKindAndLabelTypeKindTextQuery = (req, resp) ->
 		resp.json thingServiceTestJSON.batchList
 	else
 		searchParams = {
-			thingType: req.params.lsType,
-			thingKind: req.params.lsKind,
+			lsType: req.params.lsType,
+			lsKind: req.params.lsKind,
 			labels: [
 				labelType: req.query.labelType,
 				labelKind: req.query.labelKind,
@@ -162,8 +162,8 @@ exports.getThingsByTypeKindAndLabelTypeKindText = (req, resp) ->
 		resp.json thingServiceTestJSON.batchList
 	else
 		searchParams = {
-			thingType: req.params.lsType,
-			thingKind: req.params.lsKind,
+			lsType: req.params.lsType,
+			lsKind: req.params.lsKind,
 			labels: [
 				labelType: req.params.labelType,
 				labelKind: req.params.labelKind,
@@ -179,8 +179,8 @@ exports.getThingsByTypeKindAndLabelTypeKindText = (req, resp) ->
 
 exports.getThingsByTypeAndKindAndLabelTypeAndLabelTextInternal = (thingType, thingKind, labelType, labelText, format, callback) ->
 	searchParams = {
-		thingType: thingType,
-		thingKind: thingKind,
+		lsType: thingType,
+		lsKind: thingKind,
 		labels: [
 			labelType: labelType,
 			labelKind: labelKind,
