@@ -407,7 +407,10 @@ exports.metaLots = (req, resp) ->
 	, (error, response, json) =>
 		if !error
 			console.log JSON.stringify json
-			resp.statusCode = response.statusCode
+			if JSON.stringify(json).indexOf("Duplicate") != -1
+				resp.statusCode = 409
+			else
+				resp.statusCode = response.statusCode
 			resp.setHeader('Content-Type', 'application/json')
 			resp.end JSON.stringify json
 		else
