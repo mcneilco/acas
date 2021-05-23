@@ -83,7 +83,7 @@ class ThingSimpleSearchController extends AbstractFormController
 									valueType: valDef.type
 									valueKind: valDef.kind
 									operator: queryValue.operator
-				if @@query.labels?
+				if @query.labels?
 					for queryValue in @query.labels
 						if queryValue.key?
 							labDef = @model.getLabelInfo(queryValue.key)
