@@ -223,8 +223,10 @@ class ACASThingBrowserController extends Backbone.View
 		else
 			@$(".bv_searchThingsStatusIndicator").addClass "hide"
 			@$(".bv_thingTableController").removeClass "hide"
+			thingCollection =  Backbone.Collection.extend 
+				model: @modelClass
 			@thingSummaryTable = new ThingSummaryTableController
-				collection: new @listClass things
+				collection: new thingCollection things
 				toDisplay: @toDisplay
 
 			@thingSummaryTable.on "selectedRowUpdated", @selectedThingUpdated
