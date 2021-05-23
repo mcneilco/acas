@@ -68,27 +68,33 @@ class ThingSimpleSearchController extends AbstractFormController
 					values: [
 
 					]
-			for queryValue in @query.values
-				valDef = @model.getValueInfo(queryValue.key)
-				operator = "~"
-				if queryValue.operator?
-					operator = queryValue.operator
-				query.queryDTO.values.push	
-					stateType: valDef.stateType
-					stateKind: valDef.stateKind
-					valueType: valDef.type
-					valueKind: valDef.kind
-					operator: queryValue.operator
-
-			for queryValue in @query.labels
-				labDef = @model.getLabelInfo(queryValue.key)
-				operator = "~"
-				if queryValue.operator?
-					operator = queryValue.operator
-				query.queryDTO.labels.push	
-					labelType: labDef.type
-					labelKind: labDef.kind
-					operator: queryValue.operator
+			if @query?
+				if @query.values?
+					for queryValue in @query.values
+						if queryValue.key?
+							valDef = @model.getValueInfo(queryValue.key)
+							if valDef?
+								operator = "~"
+								if queryValue.operator?
+									operator = queryValue.operator
+								query.queryDTO.values.push	
+									stateType: valDef.stateType
+									stateKind: valDef.stateKind
+									valueType: valDef.type
+									valueKind: valDef.kind
+									operator: queryValue.operator
+				if @@query.labels?
+					for queryValue in @query.labels
+						if queryValue.key?
+							labDef = @model.getLabelInfo(queryValue.key)
+							if labDef?
+								operator = "~"
+								if queryValue.operator?
+									operator = queryValue.operator
+								query.queryDTO.labels.push	
+									labelType: labDef.type
+									labelKind: labDef.kind
+									operator: queryValue.operator
 				
 			$.ajax
 				type: 'POST'
