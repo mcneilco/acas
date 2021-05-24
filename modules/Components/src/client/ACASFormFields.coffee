@@ -822,7 +822,11 @@ class ACASFormLSBlobValueFieldController extends ACASFormLSFileValueFieldControl
 			if false and @displayInline and @mimeType?
 				@$('.bv_file').html '<img src="data:' + @mimeType + ';base64,'+@arrayToBase64String(fileValue)+'" alt="'+ displayText+'">'
 			else
-				@$('.bv_file').html '<a href="/api/thingvalues/downloadThingBlobValueByID/'+id+'">'+displayText+'</a>'
+				# The value is filled but the id is empty so convert the blobValue to base64 and create link for download
+				if id?
+					@$('.bv_file').html '<a href="/api/thingvalues/downloadThingBlobValueByID/'+id+'">'+displayText+'</a>'
+				else
+					@$('.bv_file').html '<a href="data:application/octet-stream;base64,'+@arrayToBase64String(fileValue)+'" download="'+displayText+'">'+displayText+'</a>'
 			@$('.bv_deleteSavedFile').show()
 
 	setEmptyValue: ->
