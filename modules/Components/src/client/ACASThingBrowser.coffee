@@ -204,7 +204,7 @@ class ACASThingBrowserController extends Backbone.View
 		thingModel = new @modelClass
 		@toDisplay = @toDisplay
 		templateVariables = 
-			thingName: thingModel.getName()
+			thingName: thingModel.getThingKindDisplayName()
 		template = _.template($("#ThingBrowserView").html())
 		$(@el).empty()
 		$(@el).html template(templateVariables)

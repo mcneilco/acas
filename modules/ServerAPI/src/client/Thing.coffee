@@ -20,7 +20,7 @@ class Thing extends Backbone.Model
 		lsTags: new TagList()
 
 	initialize: ->
-		@setName()
+		@setThingKindDisplayName()
 		@.set @parse(@.attributes)
 
 	parse: (resp) =>
@@ -189,7 +189,7 @@ class Thing extends Backbone.Model
 			if !data.has ('recordedDate') || data.get('recordedDate') == null
 				data.set recordedDate: rDate
 
-	setName: =>
+	setThingKindDisplayName: =>
 		# This is a best guess as a pretty name using the ls type and kind
 		# it can be overriden by setting the name of the ls thing when
 		# instantiating the ls thing
@@ -198,7 +198,7 @@ class Thing extends Backbone.Model
 			kindName = @.get("lsKind").charAt(0).toUpperCase() + @.get("lsKind").slice(1).toLowerCase();
 			@name = "#{kindName} #{typeName}"
 
-	getName: =>
+	getThingKindDisplayName: =>
 		return @name
 
 	createDefaultLabels: =>
