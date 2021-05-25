@@ -254,7 +254,6 @@ class ACASThingBrowserController extends Backbone.View
 			if !UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, editingRoles)
 				@$('.bv_editThing').hide()
 
-        # Not allowing deleting Thing right now
 		if window.conf.thing?.deletingRoles?
 			deletingRoles= window.conf.thing.deletingRoles.split(",")
 			if !UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, deletingRoles)
