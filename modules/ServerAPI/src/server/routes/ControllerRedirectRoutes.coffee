@@ -62,11 +62,18 @@ exports.redirectToEditor = (req, resp) ->
 			url: config.all.server.nodeapi.path+"/api/"+controllerRedirectConf[queryPrefix]["entityName"]+"/codename/"+code
 		, (error, response, body) =>
 			console.log error
-			console.log response
 			console.log body
 			kind = response.body.lsKind
-			deepLink = controllerRedirectConf[queryPrefix][kind]["deepLink"]
-			resp.redirect "/"+deepLink+"/codeName/"+code
+			if controllerRedirectConf[queryPrefix]?
+				if controllerRedirectConf[queryPrefix][kind]?
+					deepLink = controllerRedirectConf[queryPrefix][kind]["deepLink"]
+					resp.redirect "/"+deepLink+"/codeName/"+code
+				else
+					resp.statusCode = 500
+					resp.end "Could not find #{queryPrefix}:#{kind} in controller redirect configuration"				
+			else 
+				resp.statusCode = 500
+				resp.end "Could not find #{queryPrefix} in controller redirect configuration"
 
 	if queryPrefix != null
 		console.log "url to get entity - in redirectToEditor"

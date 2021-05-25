@@ -6,6 +6,7 @@ class Thing extends Backbone.Model
 #	urlRoot: "/api/things"
 
 	defaults: () ->
+		name: null
 		lsType: "thing"
 		lsKind: "thing"
 #		corpName: ""
@@ -19,6 +20,7 @@ class Thing extends Backbone.Model
 		lsTags: new TagList()
 
 	initialize: ->
+		@setThingKindDisplayName()
 		@.set @parse(@.attributes)
 
 	parse: (resp) =>
@@ -187,6 +189,17 @@ class Thing extends Backbone.Model
 			if !data.has ('recordedDate') || data.get('recordedDate') == null
 				data.set recordedDate: rDate
 
+	setThingKindDisplayName: =>
+		# This is a best guess as a pretty name using the ls type and kind
+		# it can be overriden by setting the name of the ls thing when
+		# instantiating the ls thing
+		if !@thingKindDisplayName?
+			typeName = @.get("lsType").charAt(0).toUpperCase() + @.get("lsType").slice(1).toLowerCase();
+			kindName = @.get("lsKind").charAt(0).toUpperCase() + @.get("lsKind").slice(1).toLowerCase();
+			@thingKindDisplayName = "#{kindName} #{typeName}"
+
+	getThingKindDisplayName: =>
+		return @thingKindDisplayName
 
 	createDefaultLabels: =>
 		# loop over defaultLabels
@@ -280,8 +293,14 @@ class Thing extends Backbone.Model
 				# (ie set "value" to equal value in "stringValue")
 				@get(dValue.key).set("value", newValue.get(dValue.type))
 
+	getValueInfo: (key) ->
+		return _.where(@lsProperties.defaultValues, {key: key})[0]
+
+	getLabelInfo: (key) ->
+		return _.where(@lsProperties.defaultLabels, {key: key})[0]
+
 	createNewValue: (vKind, newVal, key) =>
-		valInfo = _.where(@lsProperties.defaultValues, {key: key})[0]
+		valInfo = @getValueInfo(key)
 		@unset(key)
 		newValue = @get('lsStates').getOrCreateValueByTypeAndKind valInfo['stateType'], valInfo['stateKind'], valInfo['type'], valInfo['kind']
 		newValue.set valInfo['type'], newVal
@@ -437,7 +456,7 @@ class Thing extends Backbone.Model
 			version: 0
 
 	getStateValueHistory: (vKind) =>
-		valInfo = _.where(@lsProperties.defaultValues, {key: vKind})[0]
+		valInfo = @getValueInfo(vKind)
 		@get('lsStates').getStateValueHistory valInfo['stateType'], valInfo['stateKind'], valInfo['type'], valInfo['kind']
 
 if typeof(exports) != "undefined"
