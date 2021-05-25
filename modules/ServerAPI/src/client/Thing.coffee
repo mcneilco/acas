@@ -193,13 +193,13 @@ class Thing extends Backbone.Model
 		# This is a best guess as a pretty name using the ls type and kind
 		# it can be overriden by setting the name of the ls thing when
 		# instantiating the ls thing
-		if !@name?
+		if !@thingKindDisplayName?
 			typeName = @.get("lsType").charAt(0).toUpperCase() + @.get("lsType").slice(1).toLowerCase();
 			kindName = @.get("lsKind").charAt(0).toUpperCase() + @.get("lsKind").slice(1).toLowerCase();
-			@name = "#{kindName} #{typeName}"
+			@thingKindDisplayName = "#{kindName} #{typeName}"
 
 	getThingKindDisplayName: =>
-		return @name
+		return @thingKindDisplayName
 
 	createDefaultLabels: =>
 		# loop over defaultLabels

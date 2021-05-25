@@ -17,7 +17,7 @@ class ThingSimpleSearchController extends AbstractFormController
 	render: =>
 		$(@el).empty()
 		templateVariables = 
-			thingName: @model.getName()
+			thingName: @model.getThingKindDisplayName()
 		$(@el).html @template(templateVariables)
 
 	updateThingSearchTerm: (e) =>
