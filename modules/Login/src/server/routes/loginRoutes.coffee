@@ -1,15 +1,31 @@
 
+config = require '../conf/compiled/conf.js'
+csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
+
 exports.setupAPIRoutes = (app) ->
 	app.get '/api/users/:username', exports.getUsers
 	app.get '/api/authors', exports.getAuthors
 
 exports.setupRoutes = (app, passport) ->
-	app.get '/login', exports.loginPage
+	if config.all.server.security.saml.use == true
+		app.get '/login', passport.authenticate('saml',
+			failureRedirect: '/'
+			failureFlash: true
+		), (req, res) ->
+			res.end()
+			return
+		app.post '/login/callback', passport.authenticate('saml',
+			failureRedirect: '/'
+			failureFlash: true
+		), (req, res) =>
+			res.redirect('/');
+	else
+		app.get '/login', exports.loginPage
+	app.get '/login/direct', exports.loginPage
 	app.post '/login',
 		passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }), exports.loginPost
 	app.get '/logout*', exports.logout
 	app.post '/api/userAuthentication', exports.authenticationService
-	app.get '/api/users/:username', exports.ensureAuthenticated, exports.getUsers
 	app.get '/passwordReset', exports.resetpage
 	app.post '/passwordReset',
 		exports.resetAuthenticationService,
@@ -21,9 +37,8 @@ exports.setupRoutes = (app, passport) ->
 		exports.changePost
 	app.post '/api/userChangeAuthentication', exports.changeAuthenticationService
 	app.get '/api/authors', exports.ensureAuthenticated, exports.getAuthors
+	app.get '/api/users/:username', exports.ensureAuthenticated, exports.getUsers
 
-csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
-config = require '../conf/compiled/conf.js'
 
 exports.loginPage = (req, res) ->
 	user = null
@@ -69,11 +84,14 @@ exports.changePost = (req, res) ->
 
 exports.logout = (req, res) ->
 	req.logout()
-	redirectMatch = req.originalUrl.match(/^\/logout\/(.*)\/?$/i)
-	if redirectMatch?
-		redirectMatch = redirectMatch[1]
-	else
-		redirectMatch = "/"
+	if config.all.server.security.saml.logoutRedirectURL?
+		redirectMatch = config.all.server.security.saml.logoutRedirectURL
+	else 
+		redirectMatch = req.originalUrl.match(/^\/logout\/(.*)\/?$/i)
+		if redirectMatch?
+			redirectMatch = redirectMatch[1]
+		else
+			redirectMatch = "/"
 	res.redirect redirectMatch
 
 exports.ensureAuthenticated = (req, res, next) ->

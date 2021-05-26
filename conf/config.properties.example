@@ -343,12 +343,24 @@ server.service.external.inventory.database.name=
 server.service.external.inventory.database.username=
 server.service.external.inventory.database.password=
 
-## options for auth. strategy are: properties, database, ldap
+## options for auth. strategy are: properties, database, ldap (sso is configured seperately)
 server.security.authstrategy=database
 #server.security.properties.path=/opt/seurat/SeuratServer/users.txt
 #to make authstrategy config accessible to the client
 client.security.authstrategy=${server.security.authstrategy}
 
+## SSO Configuration
+# Converts the main login page to SSO login
+# Direct login using other auth strategies available at /login/Direct
+# Examples configsusing okta but can use any SAML login IDP
+
+server.security.saml.use=false
+server.security.saml.entryPoint=https://<organization>.okta.com/app/<appName>/<issuerID>/sso/saml
+server.security.saml.issuer=http://www.okta.com/<issuerID>
+# Embedded cert needs \\n in string to escape properly
+server.security.saml.cert=-----BEGIN CERTIFICATE-----\\nABC\\nXYZ\\n-----END CERTIFICATE-----
+server.security.saml.userNameAttribute=nameID
+server.security.saml.logoutRedirectURL=https://<organization>.okta.com
 #Controls whether Roo syncs the AuthorRole table with authorities granted in LDAP
 server.security.syncLdapAuthRoles=false
 #to make syncLdapAuthRoles config accessible to the client

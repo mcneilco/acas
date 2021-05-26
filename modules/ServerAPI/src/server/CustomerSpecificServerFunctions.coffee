@@ -7,6 +7,7 @@ ACAS_HOME="../../.."
 serverUtilityFunctions = require "#{ACAS_HOME}/routes/ServerUtilityFunctions.js"
 fs = require 'fs'
 _ = require 'underscore'
+util = require 'util'
 
 exports.logUsage = (action, data, username) ->
 # no ACAS logging service yet
@@ -148,7 +149,142 @@ exports.isUserAdmin = (user) ->
 exports.findByUsername = (username, fn) ->
 	return exports.getUser username, fn
 
-exports.loginStrategy = (req, username, password, done) ->
+authorRoutes = require '../../../routes/AuthorRoutes.js'
+
+exports.promiseTwo = (promise) => 
+	return promise
+			.then (data) =>
+				return [null, data]
+			.catch (err) =>
+				return [err]
+
+getSystemRolesFromSSOProfile = (profile) =>
+	roles = []
+	for group in profile.group
+		roleName = group.toUpperCase()
+		lsKind = 'ACAS'
+		if roleName.indexOf("CMPDREG") > -1
+			lsKind = 'CmpdReg'
+		roles.push
+			lsType: 'System'
+			lsKind: lsKind
+			roleName: "ROLE_#{roleName}"
+	return roles
+
+exports.ssoLoginStrategy = (req, profile, callback) ->
+	config = require '../../../conf/compiled/conf.js'
+	userNameAttribute = config.all.server.security.saml.userNameAttribute
+	console.log("Incoming login #{JSON.stringify(profile)}")
+	# Check if author exists
+	getAuthorByUsernameInternal = util.promisify(authorRoutes.getAuthorByUsernameInternal)
+	# [savedAuthor, err] = await exports.promiseTwo(getAuthorByUsernameInternal("HAMBURGLER"))
+	console.log("Checking for ACAS Author by username provided by SSO '#{profile[userNameAttribute]}'")
+	[savedAuthor, err] = await exports.promiseTwo(getAuthorByUsernameInternal(profile[userNameAttribute]))
+	if err?
+		console.error("Got error checking for existing author #{err} during sso login strategy")
+		callback err, null
+		return
+
+	# If the author doesn't exist then create one
+	# Check login ability here FIRST
+	if savedAuthor? && savedAuthor.length != 0
+		console.log "Found existing Author '#{savedAuthor.userName}'"
+		updateAuthor = false
+		if profile.email != savedAuthor.emailAddress
+			console.log "SSO email address '#{profile.email}' has changed from existing author email address '#{savedAuthor.emailAddress}'"
+			checkEmailIsUnique = util.promisify(authorRoutes.checkEmailIsUnique)
+			[err, unique] = await exports.promiseTwo(checkEmailIsUnique(profile.email))
+			if err
+				console.error(err)
+				callback err, null
+				return
+			if !unique == true
+				console.error("New email address is not unique to the sytem so it belongs to another username")
+				callback "Error, email address already belongs to another user", null
+		
+		if profile.firstName != savedAuthor.firstName || profile.lastName != savedAuthor.lastName
+			updateAuthor = true
+		if updateAuthor == true
+			savedAuthor.firstName = profile.firstName
+			savedAuthor.lastName = profile.lastName
+			savedAuthor.email = profile.emailAddress
+
+			updateAuthorInternal = util.promisify(authorRoutes.updateAuthorInternal)
+			[updatedAuthor, statusCode] = await exports.promiseTwo(updateAuthorInternal(savedAuthor))
+			if typeof(updatedAuthor) == "string"
+				err = "Got error trying to update author using SSO user profile"
+				console.log("#{err} Author: #{JSON.stringify(savedAuthor)}")
+				callback err, null
+				return
+			else
+				console.log "Successfully synced user profile"
+				savedAuthor = updatedAuthor
+	else
+		author = 
+			firstName: profile.firstName
+			lastName: profile.lastName
+			emailAddress: profile.email
+			userName: profile[userNameAttribute]
+			version: 0
+			enabled: true
+			locked: false
+			password: 'saml managed password'
+			recordedBy: 'acas'
+			recordedDate: new Date().getTime()
+			lsType: 'default'
+			lsKind: 'default'
+		createNewAuthorInternal = util.promisify(authorRoutes.createNewAuthorInternal)
+		[err, savedAuthor] = await exports.promiseTwo(createNewAuthorInternal(author))
+		if err?
+			console.error("Got error saving new author during sso login strategy Error #{err}")
+			callback "Caught error trying to save author, please see logs", null
+			return
+		if !savedAuthor?
+			console.error("Got unknown error saving new author #{err} during sso login strategy Author json: #{JSON.stringify(author)}")
+			callback "Unknown error trying to save author, please see logs", null
+			return
+
+	console.log "Checking for roles to sync"
+	# Check the users ldap roles against the saved roles
+	ssoSystemRoles = getSystemRolesFromSSOProfile(profile)
+
+	# Get author system roles
+	savedAuthorSystemRoles = authorRoutes.getRolesByLsType(savedAuthor.authorRoles, "System")
+
+	# Diff system roles
+	diffSystemRolesWithSaved = util.promisify(authorRoutes.diffSystemRolesWithSaved)
+	[err, diffResult] = await exports.promiseTwo(diffSystemRolesWithSaved(savedAuthor.userName, ssoSystemRoles, savedAuthorSystemRoles, ["lsType", "lsKind", "roleName"]))
+	if err?
+		console.error("Caught error trying to diff current roles with new sso roles #{err}")
+		callback err, null
+		return
+
+	rolesToSync = false
+	if diffResult.rolesToAdd.length > 0
+		rolesToSync = true
+		console.log "Found #{diffResult.rolesToAdd.length} roles to add #{JSON.stringify(diffResult.rolesToAdd)}"
+	if diffResult.rolesToDelete.length > 0
+		rolesToSync = true
+		console.log "Found #{diffResult.rolesToDelete.length} roles to delete #{JSON.stringify(diffResult.rolesToDelete)}"
+
+	# Update author roles
+	if rolesToSync == true
+		console.log "Syncing roles"
+		syncRoles = util.promisify(authorRoutes.syncRoles)
+		[err, updatedAuthor] = await exports.promiseTwo(syncRoles(savedAuthor, diffResult.rolesToAdd, diffResult.rolesToDelete))
+		if err?
+			console.error("Caught error trying to sync roles for user #{err}")
+			callback err, null
+			return
+	else
+		console.log "No roles to sync"
+
+	# Get user doesn't format the user exactly like the updatedAuthor so we need to fetch the author one more time
+	# Easiest to just fetch the author fresh rather than transform
+	console.log "Passing callback to CustomerSpecificServerFunction getUser"
+	exports.getUser savedAuthor.userName, callback
+
+exports.localLoginStrategy = (req, username, password, done) ->
 	exports.logUsage "login attempt", JSON.stringify(ip: req.ip, referer: req.headers['referer'], agent: req.headers['user-agent']), username
 	exports.authCheck username, password, (results) ->
 		if results.indexOf("login_error")>=0

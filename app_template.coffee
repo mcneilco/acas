@@ -25,6 +25,7 @@ startApp = ->
 	passport = require 'passport'
 	util = require 'util'
 	LocalStrategy = require('passport-local').Strategy
+	SamlStrategy = require('passport-saml').Strategy;
 	global.deployMode = config.all.client.deployMode
 
 	console.log "log level set to '#{console.level}'"
@@ -52,10 +53,27 @@ startApp = ->
 	passport.deserializeUser (user, done) ->
 		done null, user
 
-	if csUtilities.loginStrategy.length > 3
-		passport.use new LocalStrategy {passReqToCallback: true}, csUtilities.loginStrategy
+	if csUtilities.localLoginStrategy?
+		localStrategy = csUtilities.localLoginStrategy
 	else
-		passport.use new LocalStrategy csUtilities.loginStrategy
+		console.warn "Please rename CustomerSpecificServerFunction 'exports.loginStrategy' to 'exports.localLoginStrategy' In a future version of ACAS, support for 'loginStrategy' will be replaced with 'localLoginStrategy' but is currently backwards compatable."
+		localStrategy = csUtilities.localStrategy
+	if localStrategy.length > 3
+		passport.use new LocalStrategy {passReqToCallback: true}, localStrategy
+	else
+		passport.use new LocalStrategy localStrategy
+
+	if config.all.server.security.saml.use == true
+		if csUtilities.ssoLoginStrategy?
+			passport.use new SamlStrategy({
+				passReqToCallback: true
+				path: '/login/callback'
+				entryPoint: config.all.server.security.saml.entryPoint
+				issuer: config.all.server.security.saml.issuer
+				cert: config.all.server.security.saml.cert
+			}, csUtilities.ssoLoginStrategy)
+		else
+			console.error("NOT USING SSO configs! config.all.server.security.saml.use is set true but CustomerSpecificServerFunction 'ssoLoginStrategy' is not defined.")
 
 	loginRoutes = require './routes/loginRoutes'
 	sessionStore = new MemoryStore();
