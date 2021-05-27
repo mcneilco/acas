@@ -244,40 +244,41 @@ exports.ssoLoginStrategy = (req, profile, callback) ->
 			callback "Unknown error trying to save author, please see logs", null
 			return
 
-	console.log "Checking for roles to sync"
-	# Check the users ldap roles against the saved roles
-	ssoSystemRoles = getSystemRolesFromSSOProfile(profile)
+	if config.all.server.security.saml.roles.sync
+		console.log "Checking for roles to sync"
+		# Check the users ldap roles against the saved roles
+		ssoSystemRoles = getSystemRolesFromSSOProfile(profile)
 
-	# Get author system roles
-	savedAuthorSystemRoles = authorRoutes.getRolesByLsType(savedAuthor.authorRoles, "System")
+		# Get author system roles
+		savedAuthorSystemRoles = authorRoutes.getRolesByLsType(savedAuthor.authorRoles, "System")
 
-	# Diff system roles
-	diffSystemRolesWithSaved = util.promisify(authorRoutes.diffSystemRolesWithSaved)
-	[err, diffResult] = await exports.promiseTwo(diffSystemRolesWithSaved(savedAuthor.userName, ssoSystemRoles, savedAuthorSystemRoles, ["lsType", "lsKind", "roleName"]))
-	if err?
-		console.error("Caught error trying to diff current roles with new sso roles #{err}")
-		callback err, null
-		return
-
-	rolesToSync = false
-	if diffResult.rolesToAdd.length > 0
-		rolesToSync = true
-		console.log "Found #{diffResult.rolesToAdd.length} roles to add #{JSON.stringify(diffResult.rolesToAdd)}"
-	if diffResult.rolesToDelete.length > 0
-		rolesToSync = true
-		console.log "Found #{diffResult.rolesToDelete.length} roles to delete #{JSON.stringify(diffResult.rolesToDelete)}"
-
-	# Update author roles
-	if rolesToSync == true
-		console.log "Syncing roles"
-		syncRoles = util.promisify(authorRoutes.syncRoles)
-		[err, updatedAuthor] = await exports.promiseTwo(syncRoles(savedAuthor, diffResult.rolesToAdd, diffResult.rolesToDelete))
+		# Diff system roles
+		diffSystemRolesWithSaved = util.promisify(authorRoutes.diffSystemRolesWithSaved)
+		[err, diffResult] = await exports.promiseTwo(diffSystemRolesWithSaved(savedAuthor.userName, ssoSystemRoles, savedAuthorSystemRoles, ["lsType", "lsKind", "roleName"]))
 		if err?
-			console.error("Caught error trying to sync roles for user #{err}")
+			console.error("Caught error trying to diff current roles with new sso roles #{err}")
 			callback err, null
 			return
-	else
-		console.log "No roles to sync"
+
+		rolesToSync = false
+		if diffResult.rolesToAdd.length > 0
+			rolesToSync = true
+			console.log "Found #{diffResult.rolesToAdd.length} roles to add #{JSON.stringify(diffResult.rolesToAdd)}"
+		if diffResult.rolesToDelete.length > 0
+			rolesToSync = true
+			console.log "Found #{diffResult.rolesToDelete.length} roles to delete #{JSON.stringify(diffResult.rolesToDelete)}"
+
+		# Update author roles
+		if rolesToSync == true
+			console.log "Syncing roles"
+			syncRoles = util.promisify(authorRoutes.syncRoles)
+			[err, updatedAuthor] = await exports.promiseTwo(syncRoles(savedAuthor, diffResult.rolesToAdd, diffResult.rolesToDelete))
+			if err?
+				console.error("Caught error trying to sync roles for user #{err}")
+				callback err, null
+				return
+		else
+			console.log "No roles to sync"
 
 	# Get user doesn't format the user exactly like the updatedAuthor so we need to fetch the author one more time
 	# Easiest to just fetch the author fresh rather than transform
