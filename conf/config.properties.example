@@ -361,6 +361,7 @@ server.security.saml.issuer=http://www.okta.com/<issuerID>
 server.security.saml.cert=-----BEGIN CERTIFICATE-----\\nABC\\nXYZ\\n-----END CERTIFICATE-----
 server.security.saml.userNameAttribute=nameID
 server.security.saml.logoutRedirectURL=https://<organization>.okta.com
+server.security.saml.roles.sync=false
 #Controls whether Roo syncs the AuthorRole table with authorities granted in LDAP
 server.security.syncLdapAuthRoles=false
 #to make syncLdapAuthRoles config accessible to the client

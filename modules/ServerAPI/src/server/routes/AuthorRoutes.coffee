@@ -669,7 +669,7 @@ exports.updateAuthorAndRolesInternal = (author, user, callback) ->
 																	if err?
 																		callback err
 																	else
-																		callback null, response
+																		callback null, updatedAuthor
 													else
 														#roles have not changed, just update the author
 														exports.updateAuthorInternal author, (updatedAuthor, statusCode) ->
@@ -835,38 +835,9 @@ exports.getRolesByLsType = (authorRoles, lsType) ->
 	return lsTypeRoles
 
 parseSystemRoles = (author, callback) ->
-	systemRoles = getRolesByLsType(author.authorRoles, "System")
+	systemRoles = exports.getRolesByLsType(author.authorRoles, "System")
 	delete author['authorRoles']
 	callback null, author, systemRoles
-
-
-
-diffSystemRolesWithSaved = (userName, newRoles, savedRoles, callback) ->
-	rolesToAdd = _.filter newRoles, (newRole) ->
-		!(_.findWhere savedRoles, (id: newRole.id))?
-	rolesToDelete = _.filter savedRoles, (savedRole) ->
-		!(_.findWhere newRoles, (id: savedRole.id))?
-	fetchSystemRoles rolesToAdd, (err, rolesToAdd) ->
-		if err?
-			callback err
-		else
-			flatAuthRolesToAdd = []
-			_.each rolesToAdd, (role) ->
-				flatAuthorRole =
-					roleType: role.lsType
-					roleKind: role.lsKind
-					roleName: role.roleName
-					userName: userName
-				flatAuthRolesToAdd.push flatAuthorRole
-			flatAuthRolesToDelete = []
-			_.each rolesToDelete, (role) ->
-				flatAuthorRole =
-					roleType: role.lsType
-					roleKind: role.lsKind
-					roleName: role.roleName
-					userName: userName
-				flatAuthRolesToDelete.push flatAuthorRole
-			callback null, flatAuthRolesToAdd, flatAuthRolesToDelete
 
 diffSystemRolesWithSaved = (userName, systemRoles, savedSystemRoles, matchKeys, callback) ->
 	rolesToAdd = _.filter systemRoles, (sysRole) =>
