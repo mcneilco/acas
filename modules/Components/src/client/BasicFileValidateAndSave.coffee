@@ -200,12 +200,7 @@ class BasicFileValidateAndSaveController extends Backbone.View
 		@showFileSelectPhase()
 
 	loadAnother: =>
-		#TODO This is bad style, but the LSFileInputController has no API for deleting and resetting
 		@showFileSelectPhase()
-		#TODO Why does this need a delay to work?
-		fn = -> @$('.bv_deleteFile').click()
-		setTimeout fn , 200
-
 
 	showFileSelectPhase: ->
 		@$('.bv_resultStatus').hide()
