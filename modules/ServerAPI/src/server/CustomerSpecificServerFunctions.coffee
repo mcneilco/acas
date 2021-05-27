@@ -177,9 +177,9 @@ exports.ssoLoginStrategy = (req, profile, callback) ->
 	console.log("Incoming login #{JSON.stringify(profile)}")
 	# Check if author exists
 	getAuthorByUsernameInternal = util.promisify(authorRoutes.getAuthorByUsernameInternal)
-	# [savedAuthor, err] = await exports.promiseTwo(getAuthorByUsernameInternal("HAMBURGLER"))
 	console.log("Checking for ACAS Author by username provided by SSO '#{profile[userNameAttribute]}'")
 	[savedAuthor, err] = await exports.promiseTwo(getAuthorByUsernameInternal(profile[userNameAttribute]))
+	console.log savedAuthor
 	if err?
 		console.error("Got error checking for existing author #{err} during sso login strategy")
 		callback err, null
@@ -201,7 +201,7 @@ exports.ssoLoginStrategy = (req, profile, callback) ->
 			if !unique == true
 				console.error("New email address is not unique to the sytem so it belongs to another username")
 				callback "Error, email address already belongs to another user", null
-		
+				return
 		if profile.firstName != savedAuthor.firstName || profile.lastName != savedAuthor.lastName
 			updateAuthor = true
 		if updateAuthor == true
