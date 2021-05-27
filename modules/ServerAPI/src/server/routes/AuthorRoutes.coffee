@@ -225,7 +225,6 @@ exports.genericAuthorSearch = (req, resp) ->
 	else
 		config = require '../conf/compiled/conf.js'
 		console.log "search req - generic author"
-		console.log req
 		unless req.body.queryDTO?
 			req.body.queryDTO = {}
 		# req.body needs queryString and queryDTO
