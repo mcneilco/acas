@@ -8,17 +8,22 @@ exports.setupAPIRoutes = (app) ->
 
 exports.setupRoutes = (app, passport) ->
 	if config.all.server.security.saml.use == true
-		app.get '/login', passport.authenticate('saml',
-			failureRedirect: '/'
-			failureFlash: true
-		), (req, res) ->
-			res.end()
-			return
+		app.get '/login', ((req, res, next) ->
+			# If the redirect_url is set, pass it to the passport request as a relay state query
+			# This will then be returned as part of the body on callback
+			req.query.RelayState = req.query.redirect_url
+			next()
+		), passport.authenticate('saml',{failureRedirect: '/', failureFlash: true})
 		app.post '/login/callback', passport.authenticate('saml',
 			failureRedirect: '/'
 			failureFlash: true
 		), (req, res) =>
-			res.redirect('/');
+			# If ready state is set, its because it the redirect_url set above
+			if req.body?.RelayState? && req.body.RelayState != ""
+				console.log "redirecting to #{req.body.RelayState}"
+				res.redirect(req.body.RelayState)
+			else
+				res.redirect('/');
 	else
 		app.get '/login', exports.loginPage
 	app.get '/login/direct', exports.loginPage
@@ -100,7 +105,8 @@ exports.ensureAuthenticated = (req, res, next) ->
 		return next()
 	if req.session?
 		req.session.returnTo = req.url
-	res.redirect '/login'
+	redirectURL = req.protocol + '://' + req.get('host') + req.originalUrl
+	res.redirect '/login?redirect_url='+redirectURL
 
 exports.ensureAuthenticatedAPI = (req, res, next) ->
 	console.log "checking for login for path: "+req.url
