@@ -5,7 +5,7 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.get '/api/things/:lsType/:lsKind/:code', exports.thingByCodeName
 	app.get '/api/things/:lsType/:lsKind/:labelType/:labelKind/:labelText', exports.getThingsByTypeKindAndLabelTypeKindText
 	app.put '/api/things/:lsType/:lsKind/:labelType/:labelKind/:labelText', exports.putThing
-	app.post '/api/getThingCodeByLabel/:thingType/:thingKind', exports.getThingCodeByLabel
+	app.post '/api/getThingCodeByLabel/:thingType?/:thingKind?', exports.getThingCodeByLabel
 	app.post '/api/things/:lsType/:lsKind', exports.postThingParent
 	app.post '/api/things/:lsType/:lsKind/:parentCode', exports.postThingBatch
 	app.put '/api/things/:lsType/:lsKind/:code', exports.putThing
@@ -40,7 +40,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/things/:lsType/:lsKind/:code', loginRoutes.ensureAuthenticated, exports.thingByCodeName
 	app.get '/api/things/:lsType/:lsKind/:labelType/:labelKind/:labelText', exports.getThingsByTypeKindAndLabelTypeKindText
 	app.put '/api/things/:lsType/:lsKind/:labelType/:labelKind/:labelText', exports.putThing
-	app.post '/api/getThingCodeByLabel/:thingType/:thingKind', loginRoutes.ensureAuthenticated, exports.getThingCodeByLabel
+	app.post '/api/getThingCodeByLabel/:thingType?/:thingKind?', loginRoutes.ensureAuthenticated, exports.getThingCodeByLabel
 	app.post '/api/things/:lsType/:lsKind', exports.postThingParent
 	app.post '/api/things/:lsType/:lsKind/:parentCode', exports.postThingBatch
 	app.put '/api/things/:lsType/:lsKind/:code', loginRoutes.ensureAuthenticated, exports.putThing
@@ -757,6 +757,17 @@ exports.getAssemblies = (req, resp) ->
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 exports.getThingCodeByLabel = (req, resp) ->
+	# Request body takes presidence 
+	if !req.body.thingType? && req.params.thingType?
+		req.body.thingType = req.params.thingType
+	if !req.body.thingKind? && req.params.thingKind?
+		req.body.thingKind = req.params.thingKind
+
+	#Thing type and kind are required so throw an error if they are not specified
+	if !req.body.thingType? || !req.body.thingKind?
+		resp.statusCode = 400
+		resp.end "Thing type and kind are required"
+		return
 	exports.getThingCodesFromNamesOrCodes req.body, (results) =>
 		if typeof response is "string" and results.indexOf("error") > -1
 			resp.statusCode = 500
@@ -790,16 +801,26 @@ exports.getThingCodesFromNamesOrCodes = (codeRequest, callback) ->
 
 		callback response
 	else
-		baseurl = config.all.client.service.persistence.fullpath+"lsthings/getCodeNameFromNameRequest?"
-		url = baseurl+"thingType=#{codeRequest.thingType}&thingKind=#{codeRequest.thingKind}"
+		url = config.all.client.service.persistence.fullpath+"lsthings/getCodeNameFromNameRequest"
+		queryParams = {}
+		if codeRequest.thingType?
+			queryParams["thingType"] = codeRequest.thingType
+		if codeRequest.thingKind?
+			queryParams["thingKind"] = codeRequest.thingKind
+		if codeRequest.labelType?
+			queryParams["labelType"] = codeRequest.labelType
+		if codeRequest.labelKind?
+			queryParams["labelKind"] = codeRequest.labelKind
 		postBody = requests: codeRequest.requests
 		console.log postBody
 		console.log url
+		console.log queryParams
 		request = require 'request'
 		request(
 			method: 'POST'
 			url: url
 			body: postBody
+			qs: queryParams
 			json: true
 		, (error, response, json) =>
 			console.log response.statusCode
