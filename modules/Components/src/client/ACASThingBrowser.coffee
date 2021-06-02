@@ -239,12 +239,14 @@ class ACASThingBrowserController extends Backbone.View
 			$(".bv_thingTableController").html @thingSummaryTable.render().el
 
 	selectedThingUpdated: (thing) =>
+		@$('.bv_thingControllerWrapper').append("<div class='bv_thingController'></div>")
 		@trigger "selectedThingUpdated"
 		@thingController = new @controllerClass
+			el: @$('.bv_thingController')
 			model: thing
 			readOnly: true
 
-		@$('.bv_thingController').html @thingController.render().el
+		@thingController.render()
 		@$(".bv_thingController").removeClass("hide")
 		@$(".bv_thingControllerContainer").removeClass("hide")
 
