@@ -116,10 +116,13 @@ class Thing extends Backbone.Model
 						val = attsToSave[dValue.key].get('value')
 						if val is undefined or val is "" or val is null
 							lsStates = attsToSave.lsStates.getStatesByTypeAndKind dValue.stateType, dValue.stateKind
-							values = lsStates[0].getValuesByTypeAndKind dValue.type, dValue.kind
-							if values[0]?
-								if values[0].isNew()
-									lsStates[0].get('lsValues').remove values[0]
+							# If a state is not found which is part the default values attributes, just skip setting
+							# the value to null on the state because it doesn't exist.
+							if lsStates.length > 0
+								values = lsStates[0].getValuesByTypeAndKind dValue.type, dValue.kind
+								if values[0]?
+									if values[0].isNew()
+										lsStates[0].get('lsValues').remove values[0]
 						delete attsToSave[dValue.key]
 
 		if attsToSave.attributes?
