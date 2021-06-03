@@ -352,7 +352,7 @@ client.security.authstrategy=${server.security.authstrategy}
 ## SSO Configuration
 # Converts the main login page to SSO login
 # Direct login using other auth strategies available at /login/Direct
-# Examples configsusing okta but can use any SAML login IDP
+# Examples configs using okta but can use any SAML login IDP
 
 server.security.saml.use=false
 server.security.saml.entryPoint=https://<organization>.okta.com/app/<appName>/<issuerID>/sso/saml
@@ -362,6 +362,7 @@ server.security.saml.cert=-----BEGIN CERTIFICATE-----\\nABC\\nXYZ\\n-----END CER
 server.security.saml.userNameAttribute=nameID
 server.security.saml.logoutRedirectURL=https://<organization>.okta.com
 server.security.saml.roles.sync=false
+
 #Controls whether Roo syncs the AuthorRole table with authorities granted in LDAP
 server.security.syncLdapAuthRoles=false
 #to make syncLdapAuthRoles config accessible to the client

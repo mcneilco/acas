@@ -149,15 +149,6 @@ exports.isUserAdmin = (user) ->
 exports.findByUsername = (username, fn) ->
 	return exports.getUser username, fn
 
-authorRoutes = require '../../../routes/AuthorRoutes.js'
-
-exports.promiseTwo = (promise) => 
-	return promise
-			.then (data) =>
-				return [null, data]
-			.catch (err) =>
-				return [err]
-
 getSystemRolesFromSSOProfile = (profile) =>
 	roles = []
 	for group in profile.group
@@ -173,13 +164,14 @@ getSystemRolesFromSSOProfile = (profile) =>
 
 exports.ssoLoginStrategy = (req, profile, callback) ->
 	config = require '../../../conf/compiled/conf.js'
+	serverUtilityFunctions = require "#{ACAS_HOME}/routes/ServerUtilityFunctions.js"
+	authorRoutes = require '../../../routes/AuthorRoutes.js'
+
 	userNameAttribute = config.all.server.security.saml.userNameAttribute
 	console.log("Incoming login #{JSON.stringify(profile)}")
+
 	# Check if author exists
-	getAuthorByUsernameInternal = util.promisify(authorRoutes.getAuthorByUsernameInternal)
-	console.log("Checking for ACAS Author by username provided by SSO '#{profile[userNameAttribute]}'")
-	[savedAuthor, err] = await exports.promiseTwo(getAuthorByUsernameInternal(profile[userNameAttribute]))
-	console.log savedAuthor
+	[err, savedAuthor] = await serverUtilityFunctions.promisifyRequestResponseStatus(authorRoutes.getAuthorByUsernameInternal, [profile[userNameAttribute]])
 	if err?
 		console.error("Got error checking for existing author #{err} during sso login strategy")
 		callback err, null
@@ -190,10 +182,10 @@ exports.ssoLoginStrategy = (req, profile, callback) ->
 	if savedAuthor? && savedAuthor.length != 0
 		console.log "Found existing Author '#{savedAuthor.userName}'"
 		updateAuthor = false
+
 		if profile.email != savedAuthor.emailAddress
 			console.log "SSO email address '#{profile.email}' has changed from existing author email address '#{savedAuthor.emailAddress}'"
-			checkEmailIsUnique = util.promisify(authorRoutes.checkEmailIsUnique)
-			[err, unique] = await exports.promiseTwo(checkEmailIsUnique(profile.email))
+			[err, unique] = await serverUtilityFunctions.promiseifyCatch(authorRoutes.checkEmailIsUnique, [profile.email])
 			if err
 				console.error(err)
 				callback err, null
@@ -202,16 +194,14 @@ exports.ssoLoginStrategy = (req, profile, callback) ->
 				console.error("New email address is not unique to the sytem so it belongs to another username")
 				callback "Error, email address already belongs to another user", null
 				return
-		if profile.firstName != savedAuthor.firstName || profile.lastName != savedAuthor.lastName
+		if profile.email != savedAuthor.emailAddress || profile.firstName != savedAuthor.firstName || profile.lastName != savedAuthor.lastName
 			updateAuthor = true
 		if updateAuthor == true
 			savedAuthor.firstName = profile.firstName
 			savedAuthor.lastName = profile.lastName
-			savedAuthor.email = profile.emailAddress
-
-			updateAuthorInternal = util.promisify(authorRoutes.updateAuthorInternal)
-			[updatedAuthor, statusCode] = await exports.promiseTwo(updateAuthorInternal(savedAuthor))
-			if typeof(updatedAuthor) == "string"
+			savedAuthor.emailAddress = profile.email
+			[err, updatedAuthor] = await serverUtilityFunctions.promisifyRequestResponseStatus(authorRoutes.updateAuthorInternal, [savedAuthor])
+			if err
 				err = "Got error trying to update author using SSO user profile"
 				console.log("#{err} Author: #{JSON.stringify(savedAuthor)}")
 				callback err, null
@@ -228,15 +218,14 @@ exports.ssoLoginStrategy = (req, profile, callback) ->
 			version: 0
 			enabled: true
 			locked: false
-			password: 'saml managed password'
+			password: null
 			recordedBy: 'acas'
 			recordedDate: new Date().getTime()
 			lsType: 'default'
 			lsKind: 'default'
-		createNewAuthorInternal = util.promisify(authorRoutes.createNewAuthorInternal)
-		[err, savedAuthor] = await exports.promiseTwo(createNewAuthorInternal(author))
+		[err, savedAuthor] = await serverUtilityFunctions.promiseifyCatch(authorRoutes.createNewAuthorInternal, [author])
 		if err?
-			console.error("Got error saving new author during sso login strategy Error #{err}")
+			console.error("Got error saving new author during sso login strategy Error #{JSON.stringify(err)}")
 			callback "Caught error trying to save author, please see logs", null
 			return
 		if !savedAuthor?
@@ -254,7 +243,7 @@ exports.ssoLoginStrategy = (req, profile, callback) ->
 
 		# Diff system roles
 		diffSystemRolesWithSaved = util.promisify(authorRoutes.diffSystemRolesWithSaved)
-		[err, diffResult] = await exports.promiseTwo(diffSystemRolesWithSaved(savedAuthor.userName, ssoSystemRoles, savedAuthorSystemRoles, ["lsType", "lsKind", "roleName"]))
+		[err, diffResult] = await exports.promiseCatch(diffSystemRolesWithSaved(savedAuthor.userName, ssoSystemRoles, savedAuthorSystemRoles, ["lsType", "lsKind", "roleName"]))
 		if err?
 			console.error("Caught error trying to diff current roles with new sso roles #{err}")
 			callback err, null
@@ -272,7 +261,7 @@ exports.ssoLoginStrategy = (req, profile, callback) ->
 		if rolesToSync == true
 			console.log "Syncing roles"
 			syncRoles = util.promisify(authorRoutes.syncRoles)
-			[err, updatedAuthor] = await exports.promiseTwo(syncRoles(savedAuthor, diffResult.rolesToAdd, diffResult.rolesToDelete))
+			[err, updatedAuthor] = await exports.promiseCatch(syncRoles(savedAuthor, diffResult.rolesToAdd, diffResult.rolesToDelete))
 			if err?
 				console.error("Caught error trying to sync roles for user #{err}")
 				callback err, null

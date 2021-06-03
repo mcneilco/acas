@@ -18,7 +18,8 @@ exports.setupRoutes = (app, passport) ->
 			failureRedirect: '/'
 			failureFlash: true
 		), (req, res) =>
-			# If ready state is set, its because it the redirect_url set above
+			# If relay state value is set, it's because we set it to the redirect_url above
+			# So if it's set then redirect the user to the RelayState value
 			if req.body?.RelayState? && req.body.RelayState != ""
 				console.log "redirecting to #{req.body.RelayState}"
 				res.redirect(req.body.RelayState)
@@ -89,7 +90,7 @@ exports.changePost = (req, res) ->
 
 exports.logout = (req, res) ->
 	req.logout()
-	if config.all.server.security.saml.logoutRedirectURL?
+	if config.all.server.security.saml.use == true && config.all.server.security.saml.logoutRedirectURL?
 		redirectMatch = config.all.server.security.saml.logoutRedirectURL
 	else 
 		redirectMatch = req.originalUrl.match(/^\/logout\/(.*)\/?$/i)

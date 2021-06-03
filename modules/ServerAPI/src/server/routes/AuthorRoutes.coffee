@@ -101,7 +101,7 @@ exports.getAuthorByUsernameInternal = (username, callback) ->
 			json: true
 		, (error, response, json) =>
 			if !error && response.statusCode == 200
-				callback json, 200
+				callback json, 500
 			else
 				console.error 'got ajax error trying to get getContainersInLocation'
 				console.error error
@@ -182,7 +182,8 @@ exports.updateAuthorInternal = (author, callback) ->
 		# 	authorToSave = serverUtilityFunctions.insertTransactionIntoBackboneModel transaction.id, author
 		baseurl = config.all.client.service.persistence.fullpath+"authors/"
 		request = require 'request'
-
+		console.log "Incoming author"
+		console.log author
 		request(
 			method: 'PUT'
 			url: baseurl
@@ -629,6 +630,7 @@ exports.saveAuthorInternal = (author, user, callback) ->
 															else
 																callback null, response
 
+
 exports.updateAuthorAndRolesInternal = (author, user, callback) ->
 	validateAuthorAttributes author, (authorValidationErrors) ->
 		if authorValidationErrors?
@@ -804,6 +806,7 @@ checkEmailIsUnique = (email, callback) ->
 	, (error, response, json) =>
 		if !error && response.statusCode == 200
 			if json.length < 1
+				console.log "calling back with null, true"
 				callback null, true
 			else
 				console.debug json
