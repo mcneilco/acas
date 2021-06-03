@@ -160,7 +160,7 @@ class AuthorRoleController extends AbstractFormController
 	updateModel: =>
 		roleId = @authorRoleListController.getSelectedCode()
 		@model.set
-			id: roleId
+			id: parseInt(roleId)
 		@trigger 'amDirty'
 
 	clear: =>

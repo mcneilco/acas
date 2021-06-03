@@ -2,6 +2,7 @@ _ = require 'underscore'
 Backbone = require 'backbone'
 $ = require 'jquery'
 path = require 'path'
+util = require 'util'
 
 basicRScriptPreValidation = (payload) ->
 	result =
@@ -19,6 +20,38 @@ basicRScriptPreValidation = (payload) ->
 			message: "Username is required"
 
 	return result
+
+exports.promiseCatch = (promise) =>
+	# Wraps promises in a simple try if error is passed
+	return promise
+			.then (data) =>
+				return [null, data]
+			.catch (err) =>
+				return [err]
+
+exports.promiseifyCatch = (fun, args) =>
+	# Can only be used by functions who's call back signature is "err, response"
+	# returns a promise that will catch any uncaught errors by the underlying function
+	funcPromise = util.promisify(fun)
+	returnArray = await exports.promiseCatch(funcPromise(...args))
+	return returnArray
+
+exports.promisifyRequestResponseStatus = (fun, args) ->
+	# Custom promisify function to convert "json, status" type callback
+	# functions where status > 400 is an error to a standard err, response
+	# promise return
+	fun[util.promisify.custom] = (args) =>
+		new Promise((resolve, reject) =>
+			fun args, (json, status) =>
+				if status >= 400
+					if json?
+						reject(json)
+					else
+						reject(err)
+				else
+					resolve(json)
+		)
+	return await exports.promiseifyCatch(fun, args)
 
 exports.runRFunction_HIDDEN = (request, rScript, rFunction, returnFunction, preValidationFunction) ->
 	config = require '../conf/compiled/conf.js'
