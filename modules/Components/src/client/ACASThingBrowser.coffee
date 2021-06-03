@@ -12,7 +12,7 @@ class ThingSimpleSearchController extends AbstractFormController
 		'click .bv_doSearch': 'handleDoSearchClicked'
 
 	initialize: (options) ->
-		@query = options.query
+		@configs = options.configs
 
 	render: =>
 		$(@el).empty()
@@ -54,11 +54,12 @@ class ThingSimpleSearchController extends AbstractFormController
 		@$(".bv_doSearch").attr "disabled", true
 		@trigger 'find'
 		unless thingSearchTerm is ""
-			query =
+			defaultQueryTerms =
 				queryString: "#{thingSearchTerm}"
 				queryDTO:
 					lsType: @model.get("lsType")
 					lsKind: @model.get("lsKind")
+					recordedBy: "#{thingSearchTerm}"
 					codeName: {
 						operator: "~"
 					},
@@ -68,40 +69,14 @@ class ThingSimpleSearchController extends AbstractFormController
 					values: [
 
 					]
-			if @query?
-				if @query.values?
-					for queryValue in @query.values
-						if queryValue.key?
-							valDef = @model.getValueInfo(queryValue.key)
-							if valDef?
-								operator = "~"
-								if queryValue.operator?
-									operator = queryValue.operator
-								query.queryDTO.values.push	
-									stateType: valDef.stateType
-									stateKind: valDef.stateKind
-									valueType: valDef.type
-									valueKind: valDef.kind
-									operator: queryValue.operator
-				if @query.labels?
-					for queryValue in @query.labels
-						if queryValue.key?
-							labDef = @model.getLabelInfo(queryValue.key)
-							if labDef?
-								operator = "~"
-								if queryValue.operator?
-									operator = queryValue.operator
-								query.queryDTO.labels.push	
-									labelType: labDef.type
-									labelKind: labDef.kind
-									operator: queryValue.operator
-				
+
+			queryTerms = @getQueryTerms(defaultQueryTerms, thingSearchTerm)
 			$.ajax
 				type: 'POST'
 				url: "#{@genericSearchUrl}#{@model.get("lsType")}/#{@model.get("lsKind")}?format=nestedfull"
 				dataType: 'json',
 				contentType: 'application/json'
-				data: JSON.stringify(query)
+				data: JSON.stringify(queryTerms)
 				success: (thing) =>
 					@trigger "searchReturned", thing.results
 				error: (result) =>
@@ -111,27 +86,92 @@ class ThingSimpleSearchController extends AbstractFormController
 					@$(".bv_thingSearchTerm").attr "disabled", false
 					@$(".bv_doSearch").attr "disabled", false
 
+	getQueryTerms: (queryTerms, searchTerm) ->
+		for queryValue in @configs
+			#Default is all display values are searchable
+			isSearchable = !queryValue.isSearchable? || queryValue.isSearchable != false
+			# Code Name is part of the default search so skip it here
+			if isSearchable && queryValue.key != "codeName"
+				if queryValue.key == "recordedDate"
+					@addRecordedDateToQuery(queryTerms, searchTerm)
+				else
+					#If the key is an ls value
+					valDef = @model.getValueInfo(queryValue.key)
+					if valDef?
+							searchOperator = "~"
+							if queryValue.searchOperator?
+								searchOperator = queryValue.searchOperator
+							queryTerms.queryDTO.values.push	
+								stateType: valDef.stateType
+								stateKind: valDef.stateKind
+								valueType: valDef.type
+								valueKind: valDef.kind
+								operator: searchOperator
+					else
+						# If the key is an ls label
+						labDef = @model.getLabelInfo(queryValue.key)
+						if labDef?
+							searchOperator = "~"
+							if queryValue.searchOperator?
+								operator = queryValue.searchOperator
+							queryTerms.queryDTO.labels.push	
+								labelType: labDef.type
+								labelKind: labDef.kind
+								operator: searchOperator
+		return queryTerms
+
+	addRecordedDateToQuery: (queryTerms, searchTerm) ->
+		# Default search for recordedDate is ISO without time
+		# e.g. 2021-06-02
+		dateParts = searchTerm .split('-')
+		# Offset the user entered date by one month to account for month = 0 in javascript
+		if typeof(dateParts[1]) != "undefined"
+			dateParts[1] = dateParts[1]-1
+		# Create a new date from the parts
+		recordedDateGreaterThan = new Date(Date.UTC(...dateParts))
+
+		# If the is a real date
+		if !isNaN(recordedDateGreaterThan)
+			# Offset a year month, or day depending on the parts the user entered for the less than date
+			recordedDateLessThan = new Date(recordedDateGreaterThan.getTime())
+			if dateParts.length == 1
+				recordedDateLessThan.setFullYear(recordedDateLessThan.getFullYear() + 1);
+			else if dateParts.length == 2
+				recordedDateLessThan.setMonth(recordedDateLessThan.getMonth() + 1);
+			else if dateParts.length == 3
+				recordedDateLessThan.setDate(recordedDateLessThan.getDate() + 1)
+
+			# Offset the UTC date by the current offset time
+			msUTCOffset = recordedDateGreaterThan.getTimezoneOffset() * 60000
+			recordedDateGreaterThan = recordedDateGreaterThan.getTime() + msUTCOffset
+			recordedDateLessThan = recordedDateLessThan.getTime() + msUTCOffset
+
+			# Add the recorded date query parameters
+			queryTerms.queryDTO.recordedDateGreaterThan=recordedDateGreaterThan
+			queryTerms.queryDTO.recordedDateLessThan=recordedDateLessThan
+
+				
 class ACASThingBrowserCellController extends Backbone.View
 	tagName: 'td'
 
 	initialize: (options) ->
-		@display = options.display
+		@configs = options.configs
 
 	render: =>
 		$(@el).empty()
 
-		value = @model.get(@display.key)
+		value = @model.get(@configs.key)
 		if value instanceof Value
 			content = value.get("value")
-			if value.get("lsType") == "dateValue"  && !@display.formatter?
+			if value.get("lsType") == "dateValue"  && !@configs.formatter?
 				content = UtilityFunctions::convertMSToYMDDate(content)
 		else if value instanceof Label
 			content = value.get("labelText")
 		else
 			content = value
 		
-		if @display.formatter?
-			content = @display.formatter content
+		if @configs.formatter?
+			content = @configs.formatter content
 
 		$(@el).html content
 		@
@@ -151,12 +191,12 @@ class ACASThingBrowserRowSummaryController extends Backbone.View
 		$(@el).addClass "info"
 
 	initialize: (options)->
-		@toDisplay = options.toDisplay
+		@configs = options.configs
 
 	render: =>
-		for display in @toDisplay
+		for config in @configs
 			cellController = new ACASThingBrowserCellController
-				display: display
+				configs: config
 				model: @model
 
 			$(@el).append cellController.render().el
@@ -164,7 +204,7 @@ class ACASThingBrowserRowSummaryController extends Backbone.View
 
 class ThingSummaryTableController extends Backbone.View
 	initialize: (options)->
-		@toDisplay = options.toDisplay
+		@configs = options.configs
 
 	selectedRowChanged: (row) =>
 		@trigger "selectedRowUpdated", row
@@ -172,8 +212,8 @@ class ThingSummaryTableController extends Backbone.View
 	render: =>
 		@template = _.template($('#ThingSummaryTableView').html())
 		$(@el).html @template
-		for display in @toDisplay
-			@$(".bv_firstRow").append("<th style=\"width: 125px;\">#{display.name}</th>")
+		for config in @configs
+			@$(".bv_firstRow").append("<th style=\"width: 125px;\">#{config.name}</th>")
 
 		if @collection.models.length is 0
 			@$(".bv_noMatchingThingsFoundMessage").removeClass "hide"
@@ -183,7 +223,7 @@ class ThingSummaryTableController extends Backbone.View
 			@collection.each (thing) =>
 				prsc = new ACASThingBrowserRowSummaryController
 					model: thing
-					toDisplay: @toDisplay
+					configs: @configs
 				prsc.on "gotClick", @selectedRowChanged
 				@$("tbody").append prsc.render().el
 
@@ -202,7 +242,7 @@ class ACASThingBrowserController extends Backbone.View
 
 	initialize: (options)->
 		thingModel = new @modelClass
-		@toDisplay = @toDisplay
+		@configs = @configs
 		templateVariables = 
 			thingName: thingModel.getThingKindDisplayName()
 		template = _.template($("#ThingBrowserView").html())
@@ -211,6 +251,7 @@ class ACASThingBrowserController extends Backbone.View
 		@searchController = new ThingSimpleSearchController
 			model: thingModel
 			query: @query
+			configs: @configs
 			el: @$('.bv_thingSearchController')
 		@searchController.render()
 		@searchController.on "searchReturned", @setupThingSummaryTable.bind(@)
@@ -233,7 +274,7 @@ class ACASThingBrowserController extends Backbone.View
 				model: @modelClass
 			@thingSummaryTable = new ThingSummaryTableController
 				collection: new thingCollection things
-				toDisplay: @toDisplay
+				configs: @configs
 
 			@thingSummaryTable.on "selectedRowUpdated", @selectedThingUpdated
 			$(".bv_thingTableController").html @thingSummaryTable.render().el
