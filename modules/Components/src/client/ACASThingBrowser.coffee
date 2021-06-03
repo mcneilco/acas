@@ -88,36 +88,39 @@ class ThingSimpleSearchController extends AbstractFormController
 
 	getQueryTerms: (queryTerms, searchTerm) ->
 		for queryValue in @configs
-			#Default is all display values are searchable
-			isSearchable = !queryValue.isSearchable? || queryValue.isSearchable != false
-			# Code Name is part of the default search so skip it here
-			if isSearchable && queryValue.key != "codeName"
-				if queryValue.key == "recordedDate"
-					@addRecordedDateToQuery(queryTerms, searchTerm)
+			# Code Name and Recorded By are part of the defaults set them as isSearchable false
+			if ["codeName", "recordedBy"].includes(queryValue.key)
+				queryValue.isSearchable = false
+	
+			# Default is all display values are searchable so if the attribute is missing or set to
+			# anything other than false, then it is searchable
+			isSearchable = (!queryValue.isSearchable? || queryValue.isSearchable != false)
+			if queryValue.key == "recordedDate"
+				@addRecordedDateToQuery(queryTerms, searchTerm)
+			else
+				#If the key is an ls value
+				valDef = @model.getValueInfo(queryValue.key)
+				if valDef?
+						searchOperator = "~"
+						if queryValue.searchOperator?
+							searchOperator = queryValue.searchOperator
+						queryTerms.queryDTO.values.push	
+							stateType: valDef.stateType
+							stateKind: valDef.stateKind
+							valueType: valDef.type
+							valueKind: valDef.kind
+							operator: searchOperator
 				else
-					#If the key is an ls value
-					valDef = @model.getValueInfo(queryValue.key)
-					if valDef?
-							searchOperator = "~"
-							if queryValue.searchOperator?
-								searchOperator = queryValue.searchOperator
-							queryTerms.queryDTO.values.push	
-								stateType: valDef.stateType
-								stateKind: valDef.stateKind
-								valueType: valDef.type
-								valueKind: valDef.kind
-								operator: searchOperator
-					else
-						# If the key is an ls label
-						labDef = @model.getLabelInfo(queryValue.key)
-						if labDef?
-							searchOperator = "~"
-							if queryValue.searchOperator?
-								operator = queryValue.searchOperator
-							queryTerms.queryDTO.labels.push	
-								labelType: labDef.type
-								labelKind: labDef.kind
-								operator: searchOperator
+					# If the key is an ls label
+					labDef = @model.getLabelInfo(queryValue.key)
+					if labDef?
+						searchOperator = "~"
+						if queryValue.searchOperator?
+							operator = queryValue.searchOperator
+						queryTerms.queryDTO.labels.push	
+							labelType: labDef.type
+							labelKind: labDef.kind
+							operator: searchOperator
 		return queryTerms
 
 	addRecordedDateToQuery: (queryTerms, searchTerm) ->
