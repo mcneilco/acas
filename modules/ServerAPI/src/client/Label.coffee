@@ -269,6 +269,10 @@ class State extends Backbone.Model
 class StateList extends Backbone.Collection
 	model: State
 
+	getAllStatesByTypeAndKind: (type, kind) ->
+		@filter (state) ->
+			state.get('lsType')==type and state.get('lsKind')==kind
+
 	getStatesByTypeAndKind: (type, kind) ->
 		@filter (state) ->
 			(not state.get('ignored')) and (state.get('lsType')==type) and (state.get('lsKind')==kind)
