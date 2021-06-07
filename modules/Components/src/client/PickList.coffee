@@ -105,6 +105,11 @@ class PickListSelectController extends Backbone.View
 		else
 			@selectedCode = null
 
+		if @options.filters?
+			@filters = @options.filters
+		else
+			@filters = []
+
 		if @options.showIgnored?
 			@showIgnored = @options.showIgnored
 		else
@@ -158,6 +163,8 @@ class PickListSelectController extends Backbone.View
 						code: @selectedCode
 						name: @selectedCode
 					@collection.add newOption
+		# Apply any filters on the collection
+		@applyFilters()
 		@render()
 
 	render: =>
@@ -166,8 +173,13 @@ class PickListSelectController extends Backbone.View
 		@collection.each (enm) =>
 			@addOne enm
 
-		$(@el).val @selectedCode  if @selectedCode
-
+		# If selected code is set and also not filtered then set the selected code
+		# otherwise set the selected code to the current value
+		if @selectedCode && @checkOptionInCollectionAndNotFiltered(@selectedCode)?
+			$(@el).val @selectedCode
+		else
+			@selectedCode = @getSelectedCode()
+		
 		# hack to fix IE bug where select doesn't work when dynamically inserted
 		$(@el).hide()
 		$(@el).show()
@@ -175,12 +187,18 @@ class PickListSelectController extends Backbone.View
 
 	addOne: (enm) =>
 		shouldRender = @showIgnored
-		if enm.get 'ignored'
-			if @selectedCode?
-				if @selectedCode is enm.get 'code'
-					shouldRender = true
+
+		# Only filter if filtered is set and true
+		# If filter is not set, this will be false
+		if enm.get('filtered') == true
+			shouldRender = false
 		else
-			shouldRender = true
+			if enm.get 'ignored'
+				if @selectedCode?
+					if @selectedCode is enm.get 'code'
+						shouldRender = true
+			else
+				shouldRender = true
 
 		if shouldRender
 			$(@el).append new PickListOptionController(model: enm).render().el
@@ -198,6 +216,30 @@ class PickListSelectController extends Backbone.View
 
 	getSelectedModel: ->
 		@collection.getModelWithCode @getSelectedCode()
+
+	removeFilters: () ->
+		# Remove all filters (needs a rerender to be applied)
+		@collection.map (pl) ->
+			pl.set('filtered', false)
+
+	addFilter: (filter) ->
+		@filters.push(filter)
+
+	applyFilters: ->
+		# Remove current filters
+		@removeFilters()
+
+		#Apply all current filters
+		@filters.forEach (filter) =>
+			@collection.map (pl) ->
+				if pl.get('name').toLowerCase().indexOf(filter.text) > -1
+					pl.set('filtered', true)
+				else
+					pl.set('filtered', false)
+
+	checkOptionInCollectionAndNotFiltered: (code) => #checks to see if option already exists in the picklist list
+		return @collection.filter (item) ->
+			return (item.code == code && item.ignored == false && (!item.filtered? || item.filtered == false))
 
 	checkOptionInCollection: (code) => #checks to see if option already exists in the picklist list
 		return @collection.findWhere({code: code})
@@ -235,6 +277,7 @@ class PickListForLsThingsSelectController extends PickListSelectController
 
 		if shouldRender
 			$(@el).append new PickListOptionControllerForLsThing(model: enm, insertFirstOption: @insertFirstOption, displayName: @displayName).render().el
+
 
 	getSelectedModel: ->
 		@collection.getModelWithId parseInt(@getSelectedCode())
