@@ -3,6 +3,7 @@ path = require 'path'
 exports.setupAPIRoutes = (app) ->
 	app.post '/api/cmpdRegBulkLoader', exports.postAssignedProperties
 	app.post '/api/cmpdRegBulkLoader/registerCmpds', exports.registerCmpds
+	app.post '/api/cmpdRegBulkLoader/validateCmpds', exports.validateCmpds
 	app.post '/api/cmpdRegBulkLoader/validationProperties', exports.validationProperties
 	app.get '/api/cmpdRegBulkLoader/getFilesToPurge', exports.getFilesToPurge
 	app.post '/api/cmpdRegBulkLoader/purgeFile', exports.purgeFile
@@ -15,6 +16,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/cmpdRegBulkLoader/readSDF', loginRoutes.ensureAuthenticated, exports.cmpdRegBulkLoaderReadSdf
 	app.post '/api/cmpdRegBulkLoader/saveTemplate', loginRoutes.ensureAuthenticated, exports.saveTemplate
 	app.post '/api/cmpdRegBulkLoader/registerCmpds', loginRoutes.ensureAuthenticated, exports.registerCmpds
+	app.post '/api/cmpdRegBulkLoader/validateCmpds', loginRoutes.ensureAuthenticated, exports.validateCmpds
 	app.post '/api/cmpdRegBulkLoader', loginRoutes.ensureAuthenticated, exports.postAssignedProperties
 	app.post '/api/cmpdRegBulkLoader/checkFileDependencies', loginRoutes.ensureAuthenticated, exports.checkFileDependencies
 	app.post '/api/cmpdRegBulkLoader/purgeFile', loginRoutes.ensureAuthenticated, exports.purgeFile
@@ -162,6 +164,10 @@ exports.getScientistsInternal = (callback) ->
 	loginRoutes.getAuthorsInternal {additionalCodeType: 'compound', additionalCodeKind: 'scientist', roleName: roleName}, (statusCode, authors) =>
 		callback authors
 
+exports.validateCmpds = (req, resp) ->
+	req.body.validate = true
+	exports.registerCmpds(req, resp)
+
 exports.registerCmpds = (req, resp) ->
 	req.connection.setTimeout 6000000
 	createSummaryZip = (fileName, json) ->
@@ -267,7 +273,17 @@ exports.registerCmpds = (req, resp) ->
 				console.log "Can't find or create bulkload folder: " + bulkLoadFolder
 				callback "error", resp
 			else
-				fs.rename oldPath, newPath, (err) ->
+				if req.body.validate
+					# new node has fs.copyFile but we don't currently:(
+					fsFuct = (oldPath, newPath, callback) ->
+						stream = fs.createReadStream(oldPath).pipe fs.createWriteStream(newPath)
+						stream.on 'error', (err) ->
+							callback err
+						stream.on 'close', ->
+							callback null
+				else
+					fsFuct = fs.rename
+				fsFuct oldPath, newPath, (err) ->
 					if err?
 						console.log err
 						callback "error", resp

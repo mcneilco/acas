@@ -629,5 +629,8 @@ client.compoundInventory.saveLocationAsCodeValue=true
 client.protocol.label=Protocol
 client.experiment.label=Experiment
 
+client.cmpdRegBulkLoader.validationMode.enable=true
+client.cmpdRegBulkLoader.validationMode.allowRegistrationOnError=false
+
 #config for whether SOLR should be updated when things are saved/updated
 client.solr.updateSolrForThings=false
