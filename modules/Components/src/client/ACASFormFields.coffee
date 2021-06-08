@@ -352,6 +352,12 @@ class ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldController
 	handleInputChanged: =>
 		@clearError()
 		value = @pickListController.getSelectedCode()
+
+		# Tell the picklist what the selected code should be
+		# incase it re-renders it needs to have an update to date
+		# value here.
+		@pickListController.setSelectedCode(value)
+		
 		if value == "" or value=="unassigned"
 			@setEmptyValue()
 		else
@@ -414,6 +420,34 @@ class ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldController
 		@setupSelect()
 
 		@
+
+	setSelectedCode: (code) =>
+		@pickListController.setSelectedCode(code)
+
+	applyFilter: (filter) =>
+		# Remove the current filters if any
+		@pickListController.removeFilters(false)
+
+		# Add the new filter
+		@addFilter(filter)
+
+		# Apply the filters actually updates the collection items
+		@pickListController.applyFilters()
+
+		# Re-render the picklist once operations are complete
+		@pickListController.render()
+
+	addFilter: (filter) =>
+		# Add a filter to the picklist
+		@pickListController.addFilter(filter)
+
+	removeFilters: (render) =>
+		# Remove all filters 
+		@pickListController.removeFilters()
+
+		# Render if render not false
+		if render != false
+			@pickListController.render()
 
 	disableInput: ->
 		@$('select').attr 'disabled', 'disabled'
