@@ -84,9 +84,9 @@ class BasicFileValidateAndSaveController extends Backbone.View
 
 		@
 
-	handleParseFileUploaded: (fileName) =>
+	handleParseFileUploaded: (file) =>
 		@parseFileUploaded = true
-		@parseFileNameOnServer = @filePath+fileName
+		@parseFileNameOnServer = @filePath+file.name
 		@handleFormValid()
 		@trigger 'amDirty'
 
@@ -96,16 +96,16 @@ class BasicFileValidateAndSaveController extends Backbone.View
 		@notificationController.clearAllNotificiations()
 		@handleFormInvalid()
 
-	handleReportFileUploaded: (fileName) =>
-		@reportFileNameOnServer = @filePath+fileName
+	handleReportFileUploaded: (file) =>
+		@reportFileNameOnServer = @filePath+file.name
 		@trigger 'amDirty'
 
 	handleReportFileRemoved: =>
 		@reportFileNameOnServer = null
 
 
-	handleImagesFileUploaded: (fileName) =>
-		@imagesFileNameOnServer = @filePath+fileName
+	handleImagesFileUploaded: (file) =>
+		@imagesFileNameOnServer = @filePath+file.name
 		@trigger 'amDirty'
 
 	handleImagesFileRemoved: =>

@@ -83,8 +83,8 @@ class DocUploadController extends AbstractFormController
 
 		@updateModel()
 
-	setNewFileName: (fileNameOnServer) =>
-		@model.set({currentFileName: fileNameOnServer})
+	setNewFileName: (file) =>
+		@model.set({currentFileName: file.name})
 		@updateModel()
 
 	clearNewFileName: =>
