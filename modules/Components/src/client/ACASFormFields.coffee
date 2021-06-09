@@ -507,8 +507,9 @@ class ACASFormLSThingInteractionFieldController extends ACASFormAbstractFieldCon
 		if @userInputEvent
 			thingID = @thingSelectController.getSelectedID()
 			thingCodeName = @thingSelectController.getSelectedCode()
+			thingLabel = @thingSelectController.getSelectedName()
 			if thingID?
-				@getModel().setItxThing id: thingID, codeName: thingCodeName
+				@getModel().setItxThing id: thingID, codeName: thingCodeName, label: thingLabel
 				@getModel().set ignored: false
 			else
 				@setEmptyValue()
@@ -529,15 +530,33 @@ class ACASFormLSThingInteractionFieldController extends ACASFormAbstractFieldCon
 
 	renderModelContent: =>
 		@userInputEvent = false
-		if  @getModel()? and @getModel().getItxThing().id?
-			labels = new LabelList @getModel().getItxThing().lsLabels
-			if @extendedLabel? and @extendedLabel
-				labelText = labels.getExtendedNameText()
+		model = @getModel()
+		if model? and model instanceof ThingItx and model.getItxThing()?.id?
+			labels = new LabelList model.getItxThing().lsLabels
+			if labels.length > 0
+				if @extendedLabel? and @extendedLabel
+					labelText = labels.getExtendedNameText()
+				else
+					labelText = labels.pickBestLabel().get('labelText')
 			else
-				labelText = labels.pickBestLabel().get('labelText')
+				# If the interacting thing has no labels, then use the code name as a the users text label
+				labelText = model.getItxThing().codeName
 			@thingSelectController.setSelectedCode
-				code: @getModel().getItxThing().codeName
+				code: model.getItxThing().codeName
 				label: labelText
+			super()
+		else
+			# If the interaction has a code name and display name just use that as its likely not saved yet
+			# and part of a picklist
+			if model.firstLsThing?
+				@thingSelectController.setSelectedCode
+					code: model.firstLsThing.codeName
+					label: model.firstLsThing.label
+			else if model.secondLsThing?
+				@thingSelectController.setSelectedCode
+					code: model.secondLsThing.codeName
+					label: model.secondLsThing.label
+					
 			super()
 		@userInputEvent = true
 
