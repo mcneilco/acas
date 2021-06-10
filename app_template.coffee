@@ -57,7 +57,7 @@ startApp = ->
 		localStrategy = csUtilities.localLoginStrategy
 	else
 		console.warn "Please rename CustomerSpecificServerFunction 'exports.loginStrategy' to 'exports.localLoginStrategy' In a future version of ACAS, support for 'loginStrategy' will be replaced with 'localLoginStrategy' but is currently backwards compatable."
-		localStrategy = csUtilities.localStrategy
+		localStrategy = csUtilities.loginStrategy
 	if localStrategy.length > 3
 		passport.use new LocalStrategy {passReqToCallback: true}, localStrategy
 	else
