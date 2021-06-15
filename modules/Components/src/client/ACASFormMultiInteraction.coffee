@@ -31,6 +31,14 @@ class ACASFormMultiInteractionController extends Backbone.View
 		@interactionController.renderModelContent()
 		@
 
+	disableInput: ->
+		@$('select').not('.dontdisable').attr 'disabled', 'disabled'
+		@$('button').not('.dontdisable').attr 'disabled', 'disabled'
+
+	enableInput: ->
+		@$('select').removeAttr 'disabled'
+		@$('button').removeAttr 'disabled'
+
 	handleRemoveInteractionButtonClicked: ->
 		@interactionController.setEmptyValue()
 		$(@el).hide()
@@ -56,6 +64,7 @@ class ACASFormMultiInteractionListController extends ACASFormAbstractFieldContro
 		else
 			@itxClass = SecondThingItx
 			@thingItxRef = 'secondLsThings'
+		@multiInteractionControllerList = []
 
 	render: =>
 		$(@el).empty()
@@ -67,6 +76,22 @@ class ACASFormMultiInteractionListController extends ACASFormAbstractFieldContro
 		multiInteractions = @thingRef.get(@thingItxRef).getItxByTypeAndKind(@opts.modelDefaults.itxType, @opts.modelDefaults.itxKind)
 		_.each multiInteractions, (interaction) =>
 			@addOneInteraction(interaction)
+		if @enabled
+			@enableInput()
+		else
+			@disableInput()
+
+	disableInput: ->
+		@enabled = false
+		@multiInteractionControllerList.forEach (controller) ->
+			controller.disableInput()   
+		@$('button').not('.dontdisable').attr 'disabled', 'disabled'
+
+	enableInput: ->
+		@enabled = true
+		@multiInteractionControllerList.forEach (controller) ->
+			controller.enableInput()   
+		@$('button').removeAttr 'disabled'
 
 	handleAddInteractionButtonClicked: =>
 		@addNewInteraction()
@@ -90,6 +115,7 @@ class ACASFormMultiInteractionListController extends ACASFormAbstractFieldContro
 		interactionOpts = @opts
 		interactionOpts.interactionKey = interaction.get('key')
 		multiInteractionController = new ACASFormMultiInteractionController interactionOpts
+		@multiInteractionControllerList.push multiInteractionController
 		@$('.bv_multiInteractions').append multiInteractionController.render().el
 		multiInteractionController.on 'updateState', =>
 			@trigger 'updateState'
