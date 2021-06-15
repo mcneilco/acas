@@ -45,7 +45,7 @@
     "jszip": "3.1.4",
     "less": "^2.6.0",
     "lodash": "^4.0.0",
-    "marked": "0.3.6",
+    "marked": "0.8.0",
     "mocha": "3.5.3",
     "mochawesome": "^2.0.2",
     "mongojs": "2.4.1",
