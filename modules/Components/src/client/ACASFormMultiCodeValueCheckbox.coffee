@@ -127,23 +127,43 @@ class ACASFormMultiCodeValueCheckboxController extends ACASFormAbstractFieldCont
         super(options)
         @
 
-
+    updateCollection: (collection) ->
+        @checkboxControllerList = []
+        @codeTableCollection = collection
+        @render()
+        @finishRender(collection)
+        @renderModelContent()
 
     render: ->
         $(@el).empty()
         $(@el).html @template()
-        @codeTableCollection.fetch
-            success: @finishRender
+        if @codeTableCollection.url?
+            @codeTableCollection.fetch
+                success: @finishRender
         @
     
     renderModelContent: ->
         @checkboxControllerList.forEach (controller) ->
             controller.renderModelContent()
 
+    disableInput: ->
+        @enabled = false
+        @checkboxControllerList.forEach (controller) ->
+            controller.disableInput()   
+
+    enableInput: ->
+        @enabled = true
+        @checkboxControllerList.forEach (controller) ->
+            controller.enableInput()   
+
     finishRender: (collection) =>
         # setup single controllers for each fetched codeTable
         collection.each (codeTable) =>
             @addOneCodeValueSelect codeTable
+        if @enabled
+            @enableInput()
+        else
+            @disableInput()
 
     addOneCodeValueSelect: (codeTable) ->
         # setup single controllers for each fetched codeTable, call renderModelContent on each
@@ -163,4 +183,5 @@ class ACASFormMultiCodeValueCheckboxController extends ACASFormAbstractFieldCont
         checkBoxEl = checkboxController.render().el
         checkBoxEl.style.float = "left"
         @$('.bv_multiCodeValueCheckboxWrapper').append checkBoxEl
+        @renderModelContent()
 
