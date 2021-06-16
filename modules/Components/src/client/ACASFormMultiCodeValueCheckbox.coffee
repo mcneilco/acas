@@ -109,6 +109,9 @@ class ACASFormMultiCodeValueCheckboxController extends ACASFormAbstractFieldCont
         @opts = @options
         @thingRef = @opts.thingRef
         mdl = @opts.modelDefaults
+        @enabled = true
+        if @opts.enabled?
+            @enabled = @opts.enabled
         if @opts.stateType?
             @stateType = @opts.stateType
         else
