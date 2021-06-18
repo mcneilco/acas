@@ -533,11 +533,12 @@ class ACASFormStateTableController extends Backbone.View
 		if @hasFormWrapper?
 			$(@el).find(".bv_moreDetails").show()
 			for cont, index in @stateTableFormControllersCollection
-				if index == row
-					$(@el).find(".bv_moreDetails").hide()
-					cont.show()
-				else 
-					cont.hide()
+				if cont?
+					if index == row
+						$(@el).find(".bv_moreDetails").hide()
+						cont.show()
+					else 
+						cont.hide()
 				  
 
 	setCodeForName: (value, nameToLookup) ->
