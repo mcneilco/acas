@@ -23,6 +23,8 @@ class ACASFormStateTableController extends Backbone.View
 		@tableSetupComplete = false
 		@callWhenSetupComplete = null
 		@stateTableFormControllersCollection = []
+		@enabled = true
+		@selectedCell = null
 
 	getCollection: ->
 		#TODO get states by type and kind
@@ -229,15 +231,25 @@ class ACASFormStateTableController extends Backbone.View
 				if @tableReadOnly
 					cellProperties.readOnly = true
 				return cellProperties;
+		# Check if it should be enabled or disabled
+		if @enabled
+			@enableInput()
+		else
+			@disableInput()
 
 		# Select the first row on start
 		if @$('.bv_tableWrapper').is ":visible"
-			@hot.selectCell(0,0,0,0)
+			if @selectedCell?
+				@selectCell = @hot.selectCell(...@selectedCell)
+			else
+				@hot.selectCell(0,0,0,0)
 
 		@hot.addHook 'afterChange', @validateRequiredAndUniqueness
+		
 
 	selectCell: (a, b, c, d) ->
-		@hot.selectCell(a, b, c, d)
+		@selectedCell = [a, b, c, d]
+		@hot.selectCell(...@selectedCell)
 
 	addRow: (values, callback) ->
 		# when we update the handsontable cell data directly we don't know when the "afterChange" function
@@ -529,7 +541,8 @@ class ACASFormStateTableController extends Backbone.View
 				if rowValues.length == 1
 					rowValues[0].set numericValue: rowNum - amount
 
-	handleSelection: (row, column, row2, column2, preventScrolling, selectionLayerLevel) => 
+	handleSelection: (row, column, row2, column2, preventScrolling, selectionLayerLevel) =>
+		@selectedCell = [row, column, row2, column2]
 		if @hasFormWrapper?
 			$(@el).find(".bv_moreDetails").show()
 			for cont, index in @stateTableFormControllersCollection
@@ -577,6 +590,7 @@ class ACASFormStateTableController extends Backbone.View
 		return newValue
 
 	disableInput: ->
+		@enabled = false
 		if @hot?
 			@hot.updateSettings
 				readOnly: true
@@ -594,6 +608,7 @@ class ACASFormStateTableController extends Backbone.View
 #			manualRowResize: false
 
 	enableInput: (enableRowIndex) ->
+		@enabled = true
 		# If row is defined we only want to enable input on a specific state row
 		if typeof(enableRowIndex) == "undefined" && enableRowIndex != null
 			if @tableDef.contextMenu?
@@ -640,7 +655,6 @@ class ACASFormStateTableController extends Backbone.View
 		@validateUniqueness changes, source
 
 	validateRequired: (changes, source) =>
-		console.log "validateRequired"
 		requiredColumnIndices = @tableDef.values.map (value, idx) ->
 			if value.fieldSettings.required? and value.fieldSettings.required
 				idx
