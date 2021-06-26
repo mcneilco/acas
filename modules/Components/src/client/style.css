@@ -49,9 +49,6 @@
     cursor: pointer;
 }
 
-.bv_stateDisplayCurrentRow {
-    background-color: rgb(182, 182, 211) !important;
-}
-.bv_stateDisplayCurrentColumn {
-    background-color: rgb(182, 182, 211) !important;
-}
+.handsontable .selectedRow {
+	background: #e1f0ff;
+  }

@@ -23,8 +23,12 @@ class ACASFormStateTableController extends Backbone.View
 		@tableSetupComplete = false
 		@callWhenSetupComplete = null
 		@stateTableFormControllersCollection = []
-		@enabled = true
+		@tableReadOnly = false
 		@selectedCell = null
+		# This might be referenced some day as textbook hacky code
+		# https://github.com/handsontable/handsontable/issues/2268
+		WalkontableTable.prototype.isRowBeforeRenderedRows = (r) -> 
+			return !this.rowFilter || (this.rowFilter.sourceToRendered(r) < 0 && r >= 0);
 
 	getCollection: ->
 		#TODO get states by type and kind
@@ -34,7 +38,8 @@ class ACASFormStateTableController extends Backbone.View
 		$(@el).html @template()
 		@applyOptions()
 		@defineColumnsAndSetupHOT()
-
+		if @selectedCell?
+			@selectCell(...@selectedCell)
 		@
 
 #Subclass to extend
@@ -53,6 +58,7 @@ class ACASFormStateTableController extends Backbone.View
 
 		for state in @getCurrentStates()
 			@renderState state
+
 
 	applyOptions: ->
 		if @tableDef?.tableLabel?
@@ -226,23 +232,19 @@ class ACASFormStateTableController extends Backbone.View
 			search: @tableDef.search
 			currentRowClassName: 'bv_stateDisplayCurrentRow',
 			currentColClassName: 'bv_stateDisplayCurrentColumn'
-			cells: (row, col, prop) =>
-				cellProperties = {}
-				if @tableReadOnly
-					cellProperties.readOnly = true
-				return cellProperties;
+			cells: @hotCells
 		# Check if it should be enabled or disabled
-		if @enabled
-			@enableInput()
-		else
+		if @tableReadOnly
 			@disableInput()
+		else
+			@enableInput()
 
-		# Select the first row on start
+		# Select the first row on start or select the previously selected row of set on start
 		if @$('.bv_tableWrapper').is ":visible"
 			if @selectedCell?
-				@selectCell = @hot.selectCell(...@selectedCell)
+				@selectCell(...@selectedCell)
 			else
-				@hot.selectCell(0,0,0,0)
+				@selectCell(0,0,0,0)
 
 		@hot.addHook 'afterChange', @validateRequiredAndUniqueness
 		
@@ -327,13 +329,15 @@ class ACASFormStateTableController extends Backbone.View
 				
 		if @hasFormWrapper
 			@setupFormForNewState newState
-		@hot.selectCell(row,0,row,0)
+		
 		return newState
 
 	show: =>
 		$(@el).show()
 		@hot.render()
-
+		if @selectedCell?
+			@selectCell(...@selectedCell)
+		
 	hide: ->
 		$(@el).hide()
 
@@ -391,11 +395,6 @@ class ACASFormStateTableController extends Backbone.View
 					unitCellInfo[1] = valDef.fieldSettings.unitColumnKey
 					unitCellInfo[2] = unitDisplayVal
 					cols.push unitCellInfo
-
-			# This might be referenced some day as textbook hacky code
-			# https://github.com/handsontable/handsontable/issues/2268
-			WalkontableTable.prototype.isRowBeforeRenderedRows = (r) -> 
-				return !this.rowFilter || (this.rowFilter.sourceToRendered(r) < 0 && r >= 0);
 
 			@hot.setDataAtRowProp cols, "autofill"
 			if @hasFormWrapper
@@ -524,12 +523,12 @@ class ACASFormStateTableController extends Backbone.View
 				# After controller removal we want to select the row that took its place if it exists
 				# which should be the conroller below it if it exists
 				if @stateTableFormControllersCollection[rowNum]?
-					@hot.selectCell(rowNum,0,rowNum,0)
+					@selectCell(row,0,row,0)
 				# If it doesn't exist then the row below it doesn't have a controller yet
 				# This means that we just deleted the last row in the table with a controller
 				# so we select the row above it if it exists
 				else if rowNum-1 > -1
-					@hot.selectCell(rowNum-1,0,rowNum-1,0)
+					@selectCell(rowNum-1,0,rowNum-1,0)
 
 
 		nextRow = index+amount
@@ -541,7 +540,9 @@ class ACASFormStateTableController extends Backbone.View
 				if rowValues.length == 1
 					rowValues[0].set numericValue: rowNum - amount
 
+	
 	handleSelection: (row, column, row2, column2, preventScrolling, selectionLayerLevel) =>
+		$(@el).find("td").removeClass("selectedRow")
 		@selectedCell = [row, column, row2, column2]
 		if @hasFormWrapper?
 			$(@el).find(".bv_moreDetails").show()
@@ -552,7 +553,6 @@ class ACASFormStateTableController extends Backbone.View
 						cont.show()
 					else 
 						cont.hide()
-				  
 
 	setCodeForName: (value, nameToLookup) ->
 		if @pickLists[value.get('lsKind')]?
@@ -589,16 +589,28 @@ class ACASFormStateTableController extends Backbone.View
 
 		return newValue
 
+	hotCells: (row, col, prop) =>
+		cellProperties = {}
+		if @tableReadOnly
+			cellProperties.readOnly = true
+		if @hot?
+			cell = $(@hot.getCell(row, col))
+			cell.removeClass('selectedRow')
+			if @selectedCell?
+				if row == @selectedCell[0]
+					cell.parent().find('td').addClass('selectedRow')
+		if @enableRowIndex? && @enableRowIndex == row
+			cellProperties = {}
+		return cellProperties
+
 	disableInput: ->
-		@enabled = false
+		@tableReadOnly = true
 		if @hot?
 			@hot.updateSettings
 				readOnly: true
 				contextMenu: false
 				comments: false
-				cells: (row, col, prop) =>
-					cellProperties = {readOnly: true}
-					return cellProperties;
+				cells: @hotCells
 		if @stateTableFormControllersCollection?
 			@stateTableFormControllersCollection.forEach (controller) ->
 				controller.disableInput()
@@ -608,9 +620,9 @@ class ACASFormStateTableController extends Backbone.View
 #			manualRowResize: false
 
 	enableInput: (enableRowIndex) ->
-		@enabled = true
 		# If row is defined we only want to enable input on a specific state row
 		if typeof(enableRowIndex) == "undefined" && enableRowIndex != null
+			@tableReadOnly = false
 			if @tableDef.contextMenu?
 				contextMenu = @tableDef.contextMenu
 			else
@@ -620,9 +632,7 @@ class ACASFormStateTableController extends Backbone.View
 					readOnly: false
 					contextMenu: contextMenu
 					comments: true
-				cells: (row, col, prop) =>
-					cellProperties = {}
-					return cellProperties;
+					cells: @hotCells
 			if @stateTableFormControllersCollection?
 				@stateTableFormControllersCollection.forEach (controller) ->
 					controller.enableInput()
@@ -632,19 +642,16 @@ class ACASFormStateTableController extends Backbone.View
 			else
 				contextMenu = true
 			if @hot?
+				@enableRowIndex = enableRowIndex
 				@hot.updateSettings
 					readOnly: false
 					contextMenu: contextMenu
 					comments: true
-				cells: (row, col, cellProperties) =>
-					if row == enableRowIndex
-						cellProperties = {}
-					return cellProperties;
+					cells: @hotCells
 			if @stateTableFormControllersCollection?
 				@stateTableFormControllersCollection.forEach (controller, index) ->
 					if index == enableRowIndex
 						controller.enableInput()
-
 #Other options I decided not to use
 #			disableVisualSelection: false
 #			manualColumnResize: true
@@ -680,6 +687,8 @@ class ACASFormStateTableController extends Backbone.View
 					cell.valid = true
 					cell.comment = ''
 				@hot.render()
+				if @selectedCell?
+					@selectCell(...@selectedCell)
 
 	validateUniqueness: (changes, source) =>
 		uniqueColumnIndices = @tableDef.values.map (value, idx) ->
@@ -705,7 +714,8 @@ class ACASFormStateTableController extends Backbone.View
 					cell.valid = true
 					cell.comment = ''
 		@hot.render()
-
+		if @selectedCell?
+			@selectCell(...@selectedCell)
 
 class ACASFormStateTableFormController extends Backbone.View
 
