@@ -72,8 +72,9 @@ class ACASFormStateTableController extends Backbone.View
 		if @formWrapper? and anyValuesHaveFieldWrapper
 			@hasFormWrapper = true
 		@tableReadOnly = if @tableDef.tableReadOnly? then @tableDef.tableReadOnly else false
-
-
+		@minSpareRows = 1
+		if @tableDef?.minSpareRows?
+			@minSpareRows = @tableDef.minSpareRows
 		if @tableDef?.showUnits? == true then @showUnits = true else @showUnits = false
 
 	setTableLabel: (value) ->
@@ -217,7 +218,7 @@ class ACASFormStateTableController extends Backbone.View
 			afterValidate: @handleAfterValidate
 			afterCreateRow: @handleRowCreated
 			afterSelection: @handleSelection
-			minSpareRows: 1,
+			minSpareRows: @minSpareRows,
 			allowInsertRow: true
 			contextMenu: contextMenu
 			comments: true
@@ -490,15 +491,16 @@ class ACASFormStateTableController extends Backbone.View
 
 	handleRowCreated: (index, amount) =>
 		#TODO: if update handsontable version, can add source input to only do something when row created via context menu
-		nRows = @hot.countRows()
-		#check row numbers for states
-		nextRow = index + amount
-		if nextRow < nRows
-			for rowNum in [index..nRows-amount-2]
-				state = @getStateForRow rowNum, false
-				rowValues = state.getValuesByTypeAndKind 'numericValue', @rowNumberKind
-				if rowValues.length == 1
-					rowValues[0].set numericValue: rowNum + amount
+		if @hot
+			nRows = @hot.countRows()
+			#check row numbers for states
+			nextRow = index + amount
+			if nextRow < nRows
+				for rowNum in [index..nRows-amount-2]
+					state = @getStateForRow rowNum, false
+					rowValues = state.getValuesByTypeAndKind 'numericValue', @rowNumberKind
+					if rowValues.length == 1
+						rowValues[0].set numericValue: rowNum + amount
 
 	handleRowRemoved: (index, amount) =>
 		for rowNum in [index..(index+amount-1)]
