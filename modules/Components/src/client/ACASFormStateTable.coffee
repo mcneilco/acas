@@ -486,6 +486,11 @@ class ACASFormStateTableController extends Backbone.View
 									@setCodeForName(value, cellContent)
 					rowNumValue = state.getOrCreateValueByTypeAndKind 'numericValue', @rowNumberKind
 					rowNumValue.set numericValue: changeRow
+
+					# If this state is new, we want to render it again because it could have default
+					# values which need to be displayed in the ui
+					if state.isNew()
+						@renderState state
 			@trigger 'cellChangeComplete', state
 
 
