@@ -375,7 +375,12 @@ class ACASFormStateTableController extends Backbone.View
 					if valDef.fieldSettings.fieldType == 'stringValue'
 						displayVal = value.get 'codeValue'
 					else
-						displayVal = @getNameForCode value, value.get 'codeValue'
+						# If the code value is not defined then we just display empty
+						# otherwise the getNameFromCode will render the cell with an error
+						if value.get('codeValue')?
+							displayVal = @getNameForCode value, value.get 'codeValue'
+						else
+							displayVal = null
 				else if valDef.modelDefaults.type == 'dateValue'
 					if value.get('dateValue')?
 						displayVal = new Date(value.get('dateValue')).toISOString().split('T')[0]
