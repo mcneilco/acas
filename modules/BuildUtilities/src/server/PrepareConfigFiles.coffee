@@ -39,6 +39,8 @@ writePropertiesFormat = (conf) ->
 	configOut = ""
 	for attr, value of flatConf
 		if value != null
+			if typeof(value) == "string"
+				value = value.split("\n").join("\\n")
 			configOut += attr+"="+value+"\n"
 		else
 			configOut += attr+"=\n"
