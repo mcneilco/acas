@@ -346,13 +346,15 @@ class ACASFormStateTableController extends Backbone.View
 		@thingRef.get('lsStates').getStatesByTypeAndKind @tableDef.stateType, @tableDef.stateKind
 
 	setupFormForNewState: (state) ->
-		if @stateTableFormControllersCollection[rowNumber]?
-			@stateTableFormControllersCollection[rowNumber].remove()
-			@stateTableFormControllersCollection[rowNumber].unbind()
 			
 		fDiv = @formWrapper.clone()
 		@$('.bv_formWrapper').append fDiv
 		rowNumber = @getRowNumberForState(state)
+
+		if @stateTableFormControllersCollection[rowNumber]?
+			@stateTableFormControllersCollection[rowNumber].remove()
+			@stateTableFormControllersCollection[rowNumber].unbind()
+
 		formController = new ACASFormStateTableFormController
 			el: fDiv
 			thingRef: @thingRef
