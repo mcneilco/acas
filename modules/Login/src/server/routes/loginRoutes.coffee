@@ -106,7 +106,12 @@ exports.ensureAuthenticated = (req, res, next) ->
 		return next()
 	if req.session?
 		req.session.returnTo = req.url
-	redirectURL = req.protocol + '://' + req.get('host') + req.originalUrl
+
+	basePath = req.protocol + '://' + req.get('host')
+	if req.originalUrl == "/" && config.all.client.basePath?
+		redirectURL = "#{basePath}#{config.all.client.basePath}"
+	else
+		redirectURL = "#{basePath}#{req.originalURL}"
 	res.redirect '/login?redirect_url='+redirectURL
 
 exports.ensureAuthenticatedAPI = (req, res, next) ->
