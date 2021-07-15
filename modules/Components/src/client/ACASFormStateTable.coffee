@@ -75,6 +75,9 @@ class ACASFormStateTableController extends Backbone.View
 		@minSpareRows = 1
 		if @tableDef?.minSpareRows?
 			@minSpareRows = @tableDef.minSpareRows
+		@startRows = 1
+		if @tableDef?.startRows?
+			@startRows = @tableDef.startRows
 		if @tableDef?.showUnits? == true then @showUnits = true else @showUnits = false
 
 	setTableLabel: (value) ->
@@ -222,7 +225,7 @@ class ACASFormStateTableController extends Backbone.View
 			allowInsertRow: true
 			contextMenu: contextMenu
 			comments: true
-			startRows: 1,
+			startRows: @startRows,
 			className: "htCenter",
 			colHeaders: _.pluck @colHeaders, 'displayName'
 			colWidths: _.pluck @colHeaders, 'width'
