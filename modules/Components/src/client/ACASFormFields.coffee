@@ -659,6 +659,7 @@ class ACASFormLSHTMLClobValueFieldController extends ACASFormAbstractFieldContro
 	enableInput: ->
 		if @editor?
 			@editor.getBody().setAttribute('contenteditable', true)
+			@editor.getBody().removeAttribute('disabled')
 		else
 			@disableEditor = false
 
@@ -830,7 +831,13 @@ class ACASFormLSFileValueFieldController extends ACASFormAbstractFieldController
 			value: file.name
 			ignored: false
 
+	enableInput: ->
+		super()
+		if !@isEmpty()
+			@$('.bv_deleteSavedFile').show()
+	
 	disableInput: ->
+		super()
 		@$('.bv_deleteSavedFile').hide()
 
 	handleFileRemoved: =>
