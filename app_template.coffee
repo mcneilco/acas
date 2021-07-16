@@ -67,7 +67,7 @@ startApp = ->
 		if csUtilities.ssoLoginStrategy?
 			passport.use new SamlStrategy({
 				passReqToCallback: true
-				path: "#{config.all.client.fullpath}/login/callback"
+				callbackUrl: "#{config.all.client.fullpath}/login/callback"
 				entryPoint: config.all.server.security.saml.entryPoint
 				issuer: config.all.server.security.saml.issuer
 				cert: config.all.server.security.saml.cert
