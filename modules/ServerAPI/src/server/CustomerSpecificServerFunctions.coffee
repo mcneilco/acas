@@ -174,8 +174,9 @@ exports.ssoLoginStrategy = (req, profile, callback) ->
 	expectedKeys = [config.all.server.security.saml.userNameAttribute, config.all.server.security.saml.firstNameAttribute, config.all.server.security.saml.lastNameAttribute, config.all.server.security.saml.emailAttribute]
 	missingFromProfile = expectedKeys.filter (value) -> !Object.keys(profile).includes(value)
 	if missingFromProfile.length > 0
-		console.error "Missing expected key(s) from returned user profile #{JSON.stringify(missingFromProfile)}"
-		return callback null, false, message: "Configured profile attributes are different than those configured on the IDP"
+		err = "Configured profile attributes are different than those configured on the IDP. Missing expected key(s) from returned user profile #{JSON.stringify(missingFromProfile)}"
+		console.error err
+		return callback null, false, message: err
 		
 	# Check if author exists
 	[err, savedAuthor] = await serverUtilityFunctions.promisifyRequestResponseStatus(authorRoutes.getAuthorByUsernameInternal, [profile[userNameAttribute]])
@@ -272,7 +273,6 @@ exports.ssoLoginStrategy = (req, profile, callback) ->
 
 	# Get user doesn't format the user exactly like the updatedAuthor so we need to fetch the author one more time
 	# Easiest to just fetch the author fresh rather than transform
-	console.log "Passing callback to CustomerSpecificServerFunction getUser"
 	exports.checkRoles savedAuthor.userName, (results) =>
 		exports.handleAuthCheckResponse(req, savedAuthor.userName, results, callback)
 
