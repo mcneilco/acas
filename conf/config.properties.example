@@ -360,6 +360,9 @@ server.security.saml.issuer=http://www.okta.com/<issuerID>
 # Embedded cert needs \\n in string to escape properly
 server.security.saml.cert=-----BEGIN CERTIFICATE-----\\nABC\\nXYZ\\n-----END CERTIFICATE-----
 server.security.saml.userNameAttribute=nameID
+server.security.saml.firstNameAttribute=firstName
+server.security.saml.lastNameAttribute=lastName
+server.security.saml.emailAttribute=email
 server.security.saml.logoutRedirectURL=https://<organization>.okta.com
 server.security.saml.roles.sync=false
 

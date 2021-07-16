@@ -15,7 +15,7 @@ exports.setupRoutes = (app, passport) ->
 			next()
 		), passport.authenticate('saml',{failureRedirect: '/', failureFlash: true})
 		app.post '/login/callback', passport.authenticate('saml',
-			failureRedirect: '/'
+			failureRedirect: '/login/ssoFailure'
 			failureFlash: true
 		), (req, res) =>
 			# If relay state value is set, it's because we set it to the redirect_url above
@@ -44,6 +44,7 @@ exports.setupRoutes = (app, passport) ->
 	app.post '/api/userChangeAuthentication', exports.changeAuthenticationService
 	app.get '/api/authors', exports.ensureAuthenticated, exports.getAuthors
 	app.get '/api/users/:username', exports.ensureAuthenticated, exports.getUsers
+	app.get '/login/ssoFailure', exports.ssoFailure
 
 
 exports.loginPage = (req, res) ->
@@ -99,6 +100,20 @@ exports.logout = (req, res) ->
 		else
 			redirectMatch = "/"
 	res.redirect redirectMatch
+
+exports.ssoFailure = (req, res, next) ->
+	errorMsg = ""
+	error = req.flash('error')
+	if error.length > 0
+		errorMsg = error[0]
+	console.error errorMsg
+	res.render 'PermissionDenied',
+		title: "Permission denied"
+		scripts: []
+		message: errorMsg
+		logoText: config.all.client.moduleMenus.logoText
+		logoLink: config.all.client.moduleMenus.logoTextLink
+		permissionDeniedText: "Single Sign-on failure: Permission Denied"
 
 exports.ensureAuthenticated = (req, res, next) ->
 	console.log "checking for login for path: "+req.url

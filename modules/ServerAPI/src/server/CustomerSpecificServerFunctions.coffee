@@ -163,19 +163,26 @@ getSystemRolesFromSSOProfile = (profile) =>
 	return roles
 
 exports.ssoLoginStrategy = (req, profile, callback) ->
+	exports.logUsage "login attempt", JSON.stringify(ip: req.ip, referer: req.headers['referer'], agent: req.headers['user-agent']), JSON.stringify(profile)
 	config = require '../../../conf/compiled/conf.js'
 	serverUtilityFunctions = require "#{ACAS_HOME}/routes/ServerUtilityFunctions.js"
 	authorRoutes = require '../../../routes/AuthorRoutes.js'
 
 	userNameAttribute = config.all.server.security.saml.userNameAttribute
-	console.log("Incoming login #{JSON.stringify(profile)}")
 
+	# Expected profile keys
+	expectedKeys = [config.all.server.security.saml.userNameAttribute, config.all.server.security.saml.firstNameAttribute, config.all.server.security.saml.lastNameAttribute, config.all.server.security.saml.emailAttribute]
+	missingFromProfile = expectedKeys.filter (value) -> !Object.keys(profile).includes(value)
+	if missingFromProfile.length > 0
+		err = "Configured profile attributes are different than those configured on the IDP. Missing expected key(s) from returned user profile #{JSON.stringify(missingFromProfile)}"
+		console.error err
+		return callback null, false, message: err
+		
 	# Check if author exists
 	[err, savedAuthor] = await serverUtilityFunctions.promisifyRequestResponseStatus(authorRoutes.getAuthorByUsernameInternal, [profile[userNameAttribute]])
 	if err?
 		console.error("Got error checking for existing author #{err} during sso login strategy")
-		callback err, null
-		return
+		return callback null, false, message: "Got error checking for existing author during sso login strategy"
 
 	# If the author doesn't exist then create one
 	# Check login ability here FIRST
@@ -188,12 +195,12 @@ exports.ssoLoginStrategy = (req, profile, callback) ->
 			[err, unique] = await serverUtilityFunctions.promiseifyCatch(authorRoutes.checkEmailIsUnique, [profile.email])
 			if err
 				console.error(err)
-				callback err, null
-				return
+				return callback null, false, message: "Got error checking for unique email addrress"
+
 			if !unique == true
 				console.error("New email address is not unique to the sytem so it belongs to another username")
-				callback "Error, email address already belongs to another user", null
-				return
+				return callback null, false, message: "Email address already belongs to another user"
+
 		if profile.email != savedAuthor.emailAddress || profile.firstName != savedAuthor.firstName || profile.lastName != savedAuthor.lastName
 			updateAuthor = true
 		if updateAuthor == true
@@ -204,8 +211,7 @@ exports.ssoLoginStrategy = (req, profile, callback) ->
 			if err
 				err = "Got error trying to update author using SSO user profile"
 				console.log("#{err} Author: #{JSON.stringify(savedAuthor)}")
-				callback err, null
-				return
+				return callback null, false, message: err
 			else
 				console.log "Successfully synced user profile"
 				savedAuthor = updatedAuthor
@@ -226,12 +232,10 @@ exports.ssoLoginStrategy = (req, profile, callback) ->
 		[err, savedAuthor] = await serverUtilityFunctions.promiseifyCatch(authorRoutes.createNewAuthorInternal, [author])
 		if err?
 			console.error("Got error saving new author during sso login strategy Error #{JSON.stringify(err)}")
-			callback "Caught error trying to save author, please see logs", null
-			return
+			return callback null, false, message: "Caught error trying to save author"
 		if !savedAuthor?
-			console.error("Got unknown error saving new author #{err} during sso login strategy Author json: #{JSON.stringify(author)}")
-			callback "Unknown error trying to save author, please see logs", null
-			return
+			console.error("Got error saving new author #{err} during sso login strategy Author json: #{JSON.stringify(author)}")
+			return callback null, false, message: "Got error trying to save author"
 
 	if config.all.server.security.saml.roles.sync
 		console.log "Checking for roles to sync"
@@ -245,9 +249,8 @@ exports.ssoLoginStrategy = (req, profile, callback) ->
 		diffSystemRolesWithSaved = util.promisify(authorRoutes.diffSystemRolesWithSaved)
 		[err, diffResult] = await exports.promiseCatch(diffSystemRolesWithSaved(savedAuthor.userName, ssoSystemRoles, savedAuthorSystemRoles, ["lsType", "lsKind", "roleName"]))
 		if err?
-			console.error("Caught error trying to diff current roles with new sso roles #{err}")
-			callback err, null
-			return
+			console.error("Got error trying to diff current roles with new sso roles #{err}")
+			return callback null, false, message: err
 
 		rolesToSync = false
 		if diffResult.rolesToAdd.length > 0
@@ -263,50 +266,52 @@ exports.ssoLoginStrategy = (req, profile, callback) ->
 			syncRoles = util.promisify(authorRoutes.syncRoles)
 			[err, updatedAuthor] = await exports.promiseCatch(syncRoles(savedAuthor, diffResult.rolesToAdd, diffResult.rolesToDelete))
 			if err?
-				console.error("Caught error trying to sync roles for user #{err}")
-				callback err, null
-				return
+				console.error("Got error trying to sync roles for user #{err}")
+				return callback null, false, message: err
 		else
 			console.log "No roles to sync"
 
 	# Get user doesn't format the user exactly like the updatedAuthor so we need to fetch the author one more time
 	# Easiest to just fetch the author fresh rather than transform
-	console.log "Passing callback to CustomerSpecificServerFunction getUser"
-	exports.getUser savedAuthor.userName, callback
+	exports.checkRoles savedAuthor.userName, (results) =>
+		exports.handleAuthCheckResponse(req, savedAuthor.userName, results, callback)
 
 exports.localLoginStrategy = (req, username, password, done) ->
 	exports.logUsage "login attempt", JSON.stringify(ip: req.ip, referer: req.headers['referer'], agent: req.headers['user-agent']), username
-	exports.authCheck username, password, (results) ->
-		if results.indexOf("login_error")>=0
-			try
-				exports.logUsage "User failed login: ", JSON.stringify(ip: req.ip, referer: req.headers['referer'], agent: req.headers['user-agent']), username
-			catch error
-				console.log "Exception trying to log:"+error
-			return done(null, false,
-				message: "Invalid credentials"
-			)
-		else if results.indexOf("role_check_error")>=0
-			try
-				exports.logUsage "User failed login: ", JSON.stringify(ip: req.ip, referer: req.headers['referer'], agent: req.headers['user-agent']), username
-			catch error
-				console.log "Exception trying to log:"+error
-			return done(null, false,
-				message: "Unauthorized user"
-			)
-		else if results.indexOf("connection_error")>=0
-			try
-				exports.logUsage "Connection to authentication service failed: ", JSON.stringify(ip: req.ip, referer: req.headers['referer'], agent: req.headers['user-agent']), username
-			catch error
-				console.log "Exception trying to log:"+error
-			return done(null, false,
-				message: "Cannot connect to authentication service. Please contact an administrator"
-			)
-		else
-			try
-				exports.logUsage "User logged in succesfully: ", JSON.stringify(ip: req.ip, referer: req.headers['referer'], agent: req.headers['user-agent']), username
-			catch error
-				console.log "Exception trying to log:"+error
-			exports.getUser username,done
+	exports.authCheck username, password, (results) =>
+		exports.handleAuthCheckResponse(req, username, results, done)
+
+exports.handleAuthCheckResponse = (req, username, results, done) ->
+	if results.indexOf("login_error")>=0
+		try
+			exports.logUsage "User failed login: ", JSON.stringify(ip: req.ip, referer: req.headers['referer'], agent: req.headers['user-agent']), username
+		catch error
+			console.log "Exception trying to log:"+error
+		return done(null, false,
+			message: "Invalid credentials"
+		)
+	else if results.indexOf("role_check_error")>=0
+		try
+			exports.logUsage "User failed login: ", JSON.stringify(ip: req.ip, referer: req.headers['referer'], agent: req.headers['user-agent']), username
+		catch error
+			console.log "Exception trying to log:"+error
+		return done(null, false,
+			message: "Unauthorized user"
+		)
+	else if results.indexOf("connection_error")>=0
+		try
+			exports.logUsage "Connection to authentication service failed: ", JSON.stringify(ip: req.ip, referer: req.headers['referer'], agent: req.headers['user-agent']), username
+		catch error
+			console.log "Exception trying to log:"+error
+		return done(null, false,
+			message: "Cannot connect to authentication service. Please contact an administrator"
+		)
+	else
+		try
+			exports.logUsage "User logged in succesfully: ", JSON.stringify(ip: req.ip, referer: req.headers['referer'], agent: req.headers['user-agent']), username
+		catch error
+			console.log "Exception trying to log:"+error
+		exports.getUser username,done
 
 exports.getProjects = (req, resp) ->
 	exports.getProjectsInternal req, (statusCode, response) =>
