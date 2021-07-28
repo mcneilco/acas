@@ -828,6 +828,7 @@ class ACASFormLSFileValueFieldController extends ACASFormAbstractFieldController
 	handleFileUpload: (file) =>
 		@clearError()
 		@getModel().set
+			comments: file.originalName
 			value: file.name
 			ignored: false
 
@@ -925,7 +926,7 @@ class ACASFormLSBlobValueFieldController extends ACASFormLSFileValueFieldControl
 		@mimeType = file.mimeType
 		@getModel().set
 			value: file.binaryData
-			comments: file.name
+			comments: file.originalName
 			ignored: false
 
 class ACASFormLSBooleanFieldController extends ACASFormAbstractFieldController
