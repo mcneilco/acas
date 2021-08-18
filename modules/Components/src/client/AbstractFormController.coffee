@@ -170,6 +170,9 @@ class AbstractThingFormController extends AbstractFormController
 						newField = new ACASFormMultiCodeValueCheckboxController opts
 					else
 						newField = new ACASFormLSCodeValueFieldController opts
+				when 'clobValue'
+					opts.rows = field.fieldSettings?.rows
+					newField = new ACASFormLSClobValueFieldController opts
 				when 'htmlClobValue'
 					opts.rows = field.fieldSettings?.rows
 					newField = new ACASFormLSHTMLClobValueFieldController opts
