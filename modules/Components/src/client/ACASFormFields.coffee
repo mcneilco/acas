@@ -25,6 +25,7 @@ class ACASFormAbstractFieldController extends Backbone.View
 
 	events: ->
 		"keyup input": "handleInputChanged"
+		"keyup textarea": "handleInputChanged"
 		"mouseover .label-tooltip": "handleToolTipMouseover"
 		"mouseoff .label-tooltip": "handleToolTipMouseoff"
 
@@ -662,6 +663,48 @@ class ACASFormLSHTMLClobValueFieldController extends ACASFormAbstractFieldContro
 			@editor.getBody().removeAttribute('disabled')
 		else
 			@disableEditor = false
+
+
+class ACASFormLSClobValueFieldController extends ACASFormAbstractFieldController
+	###
+		Launching controller must:
+		- Initialize the model with an LSValue
+    Do whatever else is required or optional in ACASFormAbstractFieldController
+	###
+
+	template: _.template($("#ACASFormLSClobValueFieldView").html())
+
+	applyOptions: ->
+		super()
+		if @options.rows?
+			@rows = @options.rows
+			@$('textarea').attr 'rows', @rows
+
+	handleInputChanged: =>
+		@clearError()
+		@userInputEvent = true
+		value = UtilityFunctions::getTrimmedInput(@$('textarea'))
+		if value == ""
+			@setEmptyValue()
+		else
+			@getModel().set
+				value: value
+				ignored: false
+		super()
+
+	setEmptyValue: ->
+		@getModel().set
+			value: null
+			ignored: true
+
+	setInputValue: (inputValue) ->
+		@$('textarea').val inputValue
+
+
+	renderModelContent: =>
+		@$('textarea').val @getModel().get('value')
+		super()
+
 
 class ACASFormLSStringValueFieldController extends ACASFormAbstractFieldController
 	###
