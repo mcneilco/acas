@@ -28,6 +28,7 @@ services:
      # - ./modules/BuildUtilities/:/home/runner/acas/modules/BuildUtilities
     env_file:
       - ./conf/docker/acas/environment/acas.env
+      - ./.env
 # Dev Command
     command: ["bin/acas.sh", "run", "acas", "dev"]
 # Start command
@@ -39,7 +40,7 @@ services:
      - "1080:1080"
     environment:
      - PREPARE_MODULE_CONF_JSON=false
-     - PREPARE_CONFIG_FILES=false
+     - PREPARE_CONFIG_FILES=true
     volumes_from:
      - acas
     volumes:
@@ -55,7 +56,6 @@ services:
       - ./conf/docker/postgres/environment/postgres.env
       - ./conf/docker/db/environment/db.env
       - ./conf/docker/acas/environment/acas.env
-      - ./conf/docker/cmpdreg/environment/cmpdreg.env
     ports:
      - "5432:5432"
   tomcat:
@@ -76,8 +76,6 @@ services:
      - acas
     env_file:
       - ./conf/docker/acas/environment/acas.env
-      - ./conf/docker/roo/environment/roo.env
-      - ./conf/docker/cmpdreg/environment/cmpdreg.env
     command: catalina.sh run
   roo:
     image: mcneilco/acas-roo-server-oss:${ACAS_TAG}

@@ -146,7 +146,7 @@ console.log 'setting source directories to: ' + JSON.stringify(sources)
 # ------------------------------------------------- Setup Configs
 
 globalCoffeeOptions = {sourcemaps:true}
-globalCopyOptions = {}
+globalCopyOptions = {allowEmpty:true}
 globalExecuteOptions = {cwd: build, env: process.env}
 globalWatchOptions =
   interval: 1000
@@ -280,6 +280,11 @@ taskConfigs =
   copy: [
       taskName: "bin"
       src: getGlob('bin/**')
+      dest: build + '/bin'
+      options: _.extend _.clone(globalCopyOptions), {}
+    ,
+      taskName: "rootEnvFiles"
+      src: getGlob('*.env', '.env')
       dest: build + '/bin'
       options: _.extend _.clone(globalCopyOptions), {}
     ,
@@ -537,7 +542,7 @@ unless argv._[0] == "dev"
   executeTasks = _.filter executeTasks, (item) -> item != "execute:prepareModuleConfJSON"
 
 # --------- Copy Task
-gulp.task 'copy-execute-configs', gulp.series(gulp.parallel('coffee:serverUtilityFunctions','coffee:buildUtilities','coffee:serverAPI', 'copy:conf'), 'execute:prepare_config_files')
+gulp.task 'copy-execute-configs', gulp.series(gulp.parallel('coffee:serverUtilityFunctions','coffee:buildUtilities','coffee:serverAPI', 'copy:conf', 'copy:rootEnvFiles'), 'execute:prepare_config_files')
 
 # --------- Copy Task
 gulp.task 'copy', gulp.parallel copyTasks
