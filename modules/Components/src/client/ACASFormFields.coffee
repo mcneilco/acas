@@ -25,6 +25,7 @@ class ACASFormAbstractFieldController extends Backbone.View
 
 	events: ->
 		"keyup input": "handleInputChanged"
+		"keyup textarea": "handleInputChanged"
 		"mouseover .label-tooltip": "handleToolTipMouseover"
 		"mouseoff .label-tooltip": "handleToolTipMouseoff"
 
@@ -701,7 +702,7 @@ class ACASFormLSClobValueFieldController extends ACASFormAbstractFieldController
 
 
 	renderModelContent: =>
-		@$('textarea').val @getModel().get('textarea')
+		@$('textarea').val @getModel().get('value')
 		super()
 
 
