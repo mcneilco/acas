@@ -183,16 +183,14 @@ getProperties = (configDir) =>
 
 	# add any conf/*.env files to the process environment
 	# envFiles = glob.sync("#{acasHome}/bin/.env")
-	envFiles = glob.sync("#{acasHome}/bin/*.env")
+	envFiles = glob.sync("#{acasHome}/conf/*.env")
 	envFiles = envFiles.reverse()
-	envFiles.push "#{acasHome}/bin/.env"
+	envFiles.push "#{acasHome}/conf/.env"
 	console.info "reading env files in this order (latter configs override former configs): #{envFiles}"
 	for envFile in envFiles
-		console.log(sysEnv)
 		console.info "reading env file: #{envFile}"
 		sysEnv =  _.extend propertiesParser.read(envFile), sysEnv
 		console.info "read env file: #{envFile}"
-	console.log(sysEnv)
 	configString = ""
 	for attr, value of allConf
 		if value != null

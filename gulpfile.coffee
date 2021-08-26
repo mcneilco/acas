@@ -283,9 +283,9 @@ taskConfigs =
       dest: build + '/bin'
       options: _.extend _.clone(globalCopyOptions), {}
     ,
-      taskName: "rootEnvFiles"
-      src: getGlob('*.env', '.env')
-      dest: build + '/bin'
+      taskName: "envFiles"
+      src: getGlob('*.env', '.env', 'conf/**.env')
+      dest: build + '/conf'
       options: _.extend _.clone(globalCopyOptions), {}
     ,
       taskName: "public"
@@ -542,7 +542,7 @@ unless argv._[0] == "dev"
   executeTasks = _.filter executeTasks, (item) -> item != "execute:prepareModuleConfJSON"
 
 # --------- Copy Task
-gulp.task 'copy-execute-configs', gulp.series(gulp.parallel('coffee:serverUtilityFunctions','coffee:buildUtilities','coffee:serverAPI', 'copy:conf', 'copy:rootEnvFiles'), 'execute:prepare_config_files')
+gulp.task 'copy-execute-configs', gulp.series(gulp.parallel('coffee:serverUtilityFunctions','coffee:buildUtilities','coffee:serverAPI', 'copy:conf', 'copy:envFiles'), 'execute:prepare_config_files')
 
 # --------- Copy Task
 gulp.task 'copy', gulp.parallel copyTasks
