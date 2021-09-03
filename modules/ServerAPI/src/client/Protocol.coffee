@@ -1,4 +1,4 @@
-class window.window.Protocol extends BaseEntity
+class Protocol extends BaseEntity
 	urlRoot: "/api/protocols"
 
 	initialize: ->
@@ -18,15 +18,18 @@ class window.window.Protocol extends BaseEntity
 					resp.lsLabels = new LabelList(resp.lsLabels)
 				resp.lsLabels.on 'change', =>
 					@trigger 'change'
+				.bind(@)
 			if resp.lsStates?
 				if resp.lsStates not instanceof StateList
 					resp.lsStates = new StateList(resp.lsStates)
 				resp.lsStates.on 'change', =>
 					@trigger 'change'
+				.bind(@)
 			if resp.lsTags not instanceof TagList
 				resp.lsTags = new TagList(resp.lsTags)
 				resp.lsTags.on 'change', =>
 					@trigger 'change'
+				.bind(@)
 			resp
 
 	getCreationDate: ->
@@ -168,10 +171,10 @@ class window.window.Protocol extends BaseEntity
 		copiedEntity.getCreationDate().set dateValue: null
 		copiedEntity
 
-class window.ProtocolList extends Backbone.Collection
+class ProtocolList extends Backbone.Collection
 	model: Protocol
 
-class window.ProtocolBaseController extends BaseEntityController
+class ProtocolBaseController extends BaseEntityController
 	template: _.template($("#ProtocolBaseView").html())
 	moduleLaunchName: "protocol_base"
 
@@ -254,8 +257,11 @@ class window.ProtocolBaseController extends BaseEntityController
 			#				@$('.bv_saveFailed').hide()
 			$('.bv_protocolSaveFailed').on 'hidden', =>
 				@$('.bv_saveFailed').hide()
+			.bind(@)
+		.bind(@)
 		@model.on 'saveFailed', =>
 			@$('.bv_saveFailed').show()
+		.bind(@)
 		@setupStatusSelect()
 		@setupScientistSelect()
 		@setupTagList()
@@ -370,12 +376,15 @@ class window.ProtocolBaseController extends BaseEntityController
 			required: false
 		@attachFileListController.on 'amClean', =>
 			@trigger 'amClean'
+		.bind(@)
 		@attachFileListController.on 'renderComplete', =>
 			@checkDisplayMode()
+		.bind(@)
 		@attachFileListController.render()
 		@attachFileListController.on 'amDirty', =>
 			@trigger 'amDirty' #need to put this after the first time @attachFileListController is rendered or else the module will always start off dirty
 			@model.trigger 'change'
+		.bind(@)
 
 	setupSelRequiredAttrs: =>
 		#get codetable values for required sel attrs
@@ -402,6 +411,7 @@ class window.ProtocolBaseController extends BaseEntityController
 			@$(".bv_#{camelCaseAttrCode}").removeAttr 'checked'
 		@$(".bv_#{camelCaseAttrCode}").on "click", =>
 			@handleSelRequiredAttrChkbxChanged attr.code, camelCaseAttrCode
+		.bind(@)
 
 	handleSelRequiredAttrChkbxChanged: (attrCode, camelCaseAttrCode) =>
 		currentVal = @model.getSelRequiredAttr attrCode
