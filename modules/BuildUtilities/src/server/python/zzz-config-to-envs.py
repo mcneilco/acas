@@ -10,6 +10,9 @@ import argparse
 dotenv_path = Path('./conf/docker/acas/environment/.env')
 load_dotenv(dotenv_path=dotenv_path)
 
+dotenv_path = Path('.env')
+load_dotenv(dotenv_path=dotenv_path)
+
 def get_text_file_lines(file_path):
     with open(file_path, 'r') as f:
         lines = f.readlines()
