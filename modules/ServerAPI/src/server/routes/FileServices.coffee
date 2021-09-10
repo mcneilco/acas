@@ -125,14 +125,6 @@ setupRoutes = (app, loginRoutes, requireLogin) ->
 
 	app.post '/blobUploads', getBlobByteArray
 
-	# upload.on "error", (e) ->
-	# 	console.log "fileUpload: ", e.message
-	# upload.on "end", (fileInfo) ->
-	# 	console.log fileInfo
-	# 	app.emit "file-uploaded", fileInfo
-
-		
-
 	serverUtilityFunctions.ensureExists dataFilesPath, 0o0744, (err) ->
 		if err?
 			console.log "Can't find or create data files dir: "+dataFilesPath
