@@ -55,9 +55,13 @@ startApp = ->
 
 	http.createServer(app).listen(app.get('port'), ->
 		console.log("ACAS API server listening on port " + app.get('port'))
+		console.log "Bootstrap being called"
 		bootstrap = require "./src/javascripts/ServerAPI/Bootstrap.js"
 		if bootstrap.main?
-			bootstrap.main()
+			bootstrap.main () ->
+				console.log "Bootstrap called successfully"
+		else
+			console.log "Bootstrap called successfully (no main found so script just required)"
 	)
 
 	csUtilities.logUsage("ACAS API server started", "started", "")
