@@ -51,7 +51,7 @@ WORKDIR $BUILD_PATH
 RUN     chmod u+x bin/*.sh
 ENV     PREPARE_MODULE_CONF_JSON=true
 ENV     PREPARE_CONFIG_FILES=true
-ENV     RUN_SYSTEM_TEST=true
+ENV     RUN_SYSTEM_TEST=false
 ENV     ACAS_HOME=$BUILD_PATH
 RUN     gulp execute:prepare_config_files
 
