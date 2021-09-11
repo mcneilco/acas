@@ -639,7 +639,7 @@ client.cmpdRegBulkLoader.validationMode.allowRegistrationOnError=${env.CLIENT_CM
 
 #config for whether SOLR should be updated when things are saved/updated
 client.solr.updateSolrForThings=${env.CLIENT_SOLR_UPDATESOLRFORTHINGS}
-client.cmpdreg.ketcher=${env.CLIENT_CMPDREG_KETCHER}
+client.cmpdreg.sketcher=${env.CLIENT_CMPDREG_SKETCHER}
 client.cmpdreg.serverConnection.connectToServer=${env.CLIENT_CMPDREG_SERVERCONNECTION_CONNECTTOSERVER}
 client.cmpdreg.serverConnection.baseServerURL=${env.CLIENT_CMPDREG_SERVERCONNECTION_BASESERVERURL}
 client.cmpdreg.serverConnection.logoutURL=${env.CLIENT_CMPDREG_SERVERCONNECTION_LOGOUTURL}
@@ -709,3 +709,7 @@ client.cmpdreg.serverSettings.orderSelectLists=${env.CLIENT_CMPDREG_SERVERSETTIN
 client.cmpdreg.serverSettings.registerNoStructureCompoundsAsUniqueParents=${env.CLIENT_CMPDREG_SERVERSETTINGS_REGISTERNOSTRUCTURECOMPOUNDSASUNIQUEPARENTS}
 client.cmpdreg.bulkLoadSettings.useProjectRoles=${env.CLIENT_CMPDREG_BULKLOADSETTINGS_USEPROJECTROLES}
 client.cmpdreg.bulkLoadSettings.dbProperties=${env.CLIENT_CMPDREG_BULKLOADSETTINGS_DBPROPERTIES}
+client.cmpdreg.marvin.marvinImplicitH=${env.CLIENT_CMPDREG_MARVIN_MARVINIMPLICITH}
+client.cmpdreg.marvin.sketchBondLength=${env.CLIENT_CMPDREG_MARVIN_SKETCHBONDLENGTH}
+client.cmpdreg.marvin.delayShowStep2Next=${env.CLIENT_CMPDREG_MARVIN_DELAYSHOWSTEP2NEXT}
+client.cmpdreg.marvin.exportFormat=${env.CLIENT_CMPDREG_MARVIN_EXPORTFORMAT}
