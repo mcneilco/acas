@@ -9,6 +9,8 @@ path = require 'path'
 acasHome =  path.resolve "#{__dirname}/../../.."
 os = require 'os'
 propertiesParser = require "properties-parser"
+dotenv = require "dotenv"
+dotenvexpand = require "dotenv-expand"
 configDir = "#{acasHome}/conf/"
 global.deployMode= "Dev" 
 sysEnv = process.env
@@ -113,6 +115,7 @@ getRApacheSpecificConfString = (config, apacheCompileOptions, acasHome) ->
 	confs.push('LogFormat ' + config.server.rapache.conf.logformat)
 	if config.server.rapache.forceAllToStdErrOnly? && config.server.rapache.forceAllToStdErrOnly
 		confs.push('ErrorLog ' + '/dev/stderr')
+		confs.push('TransferLog ' + '/dev/stdout')
 	else
 		confs.push('ErrorLog ' + config.server.log.path + '/racas.log')
 	confs.push('LogLevel ' + config.server.log.level.toLowerCase())
@@ -179,7 +182,9 @@ getProperties = (configDir) =>
 
 	allConf = []
 	for configFile in configFiles
+		console.info "reading conf file: #{configFile}"
 		allConf = _.extend allConf, propertiesParser.read(configFile)
+		console.info "read conf file: #{configFile}"
 
 	# add any conf/*.env files to the process environment
 	# envFiles = glob.sync("#{acasHome}/bin/.env")
@@ -189,7 +194,8 @@ getProperties = (configDir) =>
 	console.info "reading env files in this order (latter configs override former configs): #{envFiles}"
 	for envFile in envFiles
 		console.info "reading env file: #{envFile}"
-		sysEnv =  _.extend propertiesParser.read(envFile), sysEnv
+		sysEnv =  _.extend dotenv.config({ path: envFile} ), sysEnv
+		sysEnv = dotenvexpand(sysEnv).parsed
 		console.info "read env file: #{envFile}"
 	configString = ""
 	for attr, value of allConf
