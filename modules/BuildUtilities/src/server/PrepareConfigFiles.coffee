@@ -13,7 +13,6 @@ dotenv = require "dotenv"
 dotenvexpand = require "dotenv-expand"
 configDir = "#{acasHome}/conf/"
 global.deployMode= "Dev" 
-sysEnv = process.env
 
 mkdirSync = (path) ->
 	try
@@ -175,7 +174,7 @@ getProperties = (configDir) =>
 	configFiles = configFiles.sort()
 	configFiles.unshift "#{configDir}/config.properties.example"
 	console.info "reading configs in this order (latter configs override former configs): #{configFiles}"
-
+	
 	if configFiles.length == 0
 		console.warn "no config files found"
 		return
@@ -186,17 +185,7 @@ getProperties = (configDir) =>
 		allConf = _.extend allConf, propertiesParser.read(configFile)
 		console.info "read conf file: #{configFile}"
 
-	# add any conf/*.env files to the process environment
-	# envFiles = glob.sync("#{acasHome}/bin/.env")
-	envFiles = glob.sync("#{acasHome}/conf/*.env")
-	envFiles = envFiles.reverse()
-	envFiles.push "#{acasHome}/conf/.env"
-	console.info "reading env files in this order (latter configs override former configs): #{envFiles}"
-	for envFile in envFiles
-		console.info "reading env file: #{envFile}"
-		sysEnv =  _.extend dotenv.config({ path: envFile} ), sysEnv
-		sysEnv = dotenvexpand(sysEnv).parsed
-		console.info "read env file: #{envFile}"
+
 	configString = ""
 	for attr, value of allConf
 		if value != null
@@ -204,8 +193,18 @@ getProperties = (configDir) =>
 		else
 			configString += attr+"=\n"
 
+	envFiles = glob.sync("#{acasHome}/conf/*.env")
+	envFiles = envFiles.reverse()
+	envFiles.push "#{acasHome}/conf/.env"
+	console.info "started with process.env and now reading env files in this order (former envs take presidence over latter envs): #{envFiles}"
+	for envFile in envFiles
+		console.info "reading env file: #{envFile}"
+		fileEnv = dotenv.config({ path: envFile} )
+		dotenvexpand(fileEnv)
+		console.info "read env file: #{envFile}"
+
 	substitutions =
-		env: sysEnv
+		env: process.env
 		conf: {}
 	options =
 		path: false
