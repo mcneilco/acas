@@ -18,7 +18,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/cmpdReg/parentAnnotations', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
 	app.get '/cmpdReg/fileTypes', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
 	app.get '/cmpdReg/projects', loginRoutes.ensureAuthenticated, exports.getAuthorizedCmpdRegProjects
-	app.get '/cmpdReg/vendors', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
+	app.get '/cmpdReg/vendors', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
 	app.get '/cmpdReg/physicalStates', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
 	app.get '/cmpdReg/operators', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
 	app.get '/cmpdReg/purityMeasuredBys', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
