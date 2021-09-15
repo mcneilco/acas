@@ -575,10 +575,17 @@ server.curveRender.plotPointsOnOverlay=${env.SERVER_CURVERENDER_PLOTPOINTSONOVER
 # Restrict experiment search by project
 server.service.projects.restrictExperiments=${env.SERVER_SERVICE_PROJECTS_RESTRICTEXPERIMENTS}
 
-flyway.schema=${env.FLYWAY_SCHEMA}
-flyway.database.username=${env.FLYWAY_DATABASE_USERNAME}
-flyway.database.password=${env.FLYWAY_DATABASE_PASSWORD}
+server.flyway.location=${env.SERVER_FLYWAY_LOCATION}
 
+server.chemistry.package=${env.SERVER_CHEMISTRY_PACKAGE}
+
+server.acas.batchSize=${env.SERVER_ACAS_BATCHSIZE}
+server.acas.fetchSize=${env.SERVER_ACAS_FETCHSIZE}
+server.uniqueExperimentName=${env.SERVER_UNIQUEEXPERIMENTNAME}
+server.uniqueProtocolName=${env.SERVER_UNIQUEPROTOCOLNAME}
+server.autoCreateKinds=${env.SERVER_AUTOCREATEKINDS}
+server.enableSwagger=${env.SERVER_ENABLESWAGGER}
+server.uniqueLsThingName=${env.SERVER_UNIQUELSTHINGNAME}
 server.acas.license=${env.SERVER_ACAS_LICENSE}
 
 server.systemTest.runOnStart=${env.SERVER_SYSTEMTEST_RUNONSTART}
@@ -636,6 +643,9 @@ client.experiment.label=${env.CLIENT_EXPERIMENT_LABEL}
 
 client.cmpdRegBulkLoader.validationMode.enable=${env.CLIENT_CMPDREGBULKLOADER_VALIDATIONMODE_ENABLE}
 client.cmpdRegBulkLoader.validationMode.allowRegistrationOnError=${env.CLIENT_CMPDREGBULKLOADER_VALIDATIONMODE_ALLOWREGISTRATIONONERROR}
+
+
+client.containerInventory.search.maxResult=${env.CLIENT_CONTAINER_INVENTORY_SEARCH_MAXRESULT}
 
 #config for whether SOLR should be updated when things are saved/updated
 client.solr.updateSolrForThings=${env.CLIENT_SOLR_UPDATESOLRFORTHINGS}
