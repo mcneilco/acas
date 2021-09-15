@@ -20,7 +20,7 @@ services:
      - logs:/home/runner/logs
      - /home/runner/build/bin
      - /home/runner/build/src/r
-     - /home/runner/build/conf/compiled
+     - /home/runner/build/conf
     # Add chemaxon marvinjs here
     # - ./chemaxon/marvinjs:/home/runner/build/public/CmpdReg/marvinjs
      # Please add any dev volumes below this line
