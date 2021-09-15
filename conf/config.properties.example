@@ -257,6 +257,7 @@ logging.logtoconsole=${env.LOGGING_LOGTOCONSOLE}
 # printing out to console.log
 
 server.database.name=${env.SERVER_DATABASE_NAME}
+server.database.schema=${env.SERVER_DATABASE_SCHEMA}
 server.database.username=${env.SERVER_DATABASE_USERNAME}
 server.database.password=${env.SERVER_DATABASE_PASSWORD}
 server.log.level=${env.SERVER_LOG_LEVEL}
