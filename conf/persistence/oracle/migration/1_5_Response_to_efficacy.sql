@@ -1,1 +1,0 @@
-UPDATE subject_value SET ls_kind = 'efficacy', unit_kind = '%' WHERE ls_kind = 'Response';

@@ -386,7 +386,7 @@ cd $ACAS_HOME
 
 # Run Prepare config files as the compiled directory should be empty
 if [ "$PREPARE_CONFIG_FILES" = "true" ]; then
-    gulp execute:prepare_config_files
+    node $ACAS_HOME/src/javascripts/BuildUtilities/PrepareConfigFiles.js
 fi
 
 #Get ACAS config variables

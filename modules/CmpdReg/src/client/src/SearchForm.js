@@ -57,7 +57,7 @@ $(function() {
 					this.exportFormat = window.configuration.marvin.exportFormat;
 				}
 			//To use ketcher you must replace the marvin hash with 	"ketcher": true,
-			// in modules/CmpdReg/src/client/custom/configuration.json
+			// in client.cmpdReg.ketcher
 			} else if(window.configuration.ketcher) {
 				this.useKetcher = true;
 			}

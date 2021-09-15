@@ -58,7 +58,6 @@ config = require '../conf/compiled/conf.js'
 
 exports.cmpdRegIndex = (req, res) ->
 	scriptPaths = require './RequiredClientScripts.js'
-	cmpdRegConfig = require '../public/CmpdReg/client/custom/configuration.json'
 	grantedRoles = _.map req.user.roles, (role) ->
 		role.roleEntry.roleName
 	console.log grantedRoles
@@ -101,7 +100,7 @@ exports.cmpdRegIndex = (req, res) ->
 			testMode: false
 			moduleLaunchParams: if moduleLaunchParams? then moduleLaunchParams else null
 			deployMode: global.deployMode
-			cmpdRegConfig: cmpdRegConfig
+			cmpdRegConfig: config.all.client.cmpdreg
 
 syncCmpdRegUser = (req, cmpdRegUser) ->
 	exports.getScientistsInternal (scientistResponse) ->
@@ -307,7 +306,6 @@ exports.getMetaLot = (req, resp) ->
 	endOfUrl = (req.originalUrl).replace /\/cmpdreg\/metalots/, ""
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/metalots' + endOfUrl
 	console.log cmpdRegCall
-	cmpdRegConfig = require '../public/CmpdReg/client/custom/configuration.json'
 	request(
 		method: 'GET'
 		url: cmpdRegCall
@@ -326,7 +324,7 @@ exports.getMetaLot = (req, resp) ->
 
 			if json?.lot?.project?
 				projectCode = json.lot.project
-				if cmpdRegConfig.metaLot.useProjectRolesToRestrictLotDetails
+				if config.client.cmpdreg.metaLot.useProjectRolesToRestrictLotDetails
 					authorRoutes = require './AuthorRoutes.js'
 					authorRoutes.allowedProjectsInternal req.user, (statusCode, acasProjectsForUsers) =>
 						if statusCode != 200
@@ -341,7 +339,7 @@ exports.getMetaLot = (req, resp) ->
 				else
 					resp.json json
 			else #no project attr in lot
-				if cmpdRegConfig.metaLot.useProjectRolesToRestrictLotDetails
+				if config.client.cmpdreg.metaLot.useProjectRolesToRestrictLotDetails
 					resp.statusCode = 500
 					resp.end JSON.stringify "Could not find lot"
 				else
