@@ -223,7 +223,9 @@ class PickListSelectController extends Backbone.View
 		$(@el).val()
 
 	getSelectedModel: ->
-		@collection.getModelWithCode @getSelectedCode()
+		model = @collection.getModelWithCode @getSelectedCode()
+		model.unset('filtered')
+		return model
 
 	removeFilters: () ->
 		# Remove all filters (needs a rerender to be applied)
