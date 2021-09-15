@@ -127,7 +127,6 @@ exports.getBasicCmpdReg = (req, resp) ->
 	console.log 'in getBasicCmpdReg'
 	console.log req.originalUrl
 	endOfUrl = (req.originalUrl).replace /\/cmpdreg\//, ""
-	console.log "Config #{config.all.client.service.cmpdReg.persistence.basepath}"
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/" +endOfUrl
 	console.log cmpdRegCall
 	req.pipe(request(cmpdRegCall)).pipe(resp)
