@@ -157,8 +157,6 @@ class AbstractThingFormController extends AbstractFormController
 				toFixed: field.fieldSettings.toFixed
 				pickList: field.fieldSettings.pickList
 				showDescription: field.fieldSettings.showDescription
-				editablePicklist: field.fieldSettings.editablePicklist
-				editablePicklistRoles: field.fieldSettings.editablePicklistRoles
 
 			switch field.fieldSettings.fieldType
 				when 'label'

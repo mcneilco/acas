@@ -14,10 +14,6 @@ class PickListList extends Backbone.Collection
 		@detect (enu) ->
 			enu.get("code") is code
 
-	getNewModels: () ->
-		@filter (pl) ->
-			pl.isNew()
-
 	getCurrent: ->
 		@filter (pl) ->
 			!(pl.get 'ignored')
@@ -190,7 +186,7 @@ class PickListSelectController extends Backbone.View
 		@rendered = true
 
 	addOne: (enm) =>
-		shouldRender = true
+		shouldRender = @showIgnored
 
 		# Only filter if filtered is set and true
 		# If filter is not set, this will be false
@@ -198,13 +194,9 @@ class PickListSelectController extends Backbone.View
 			shouldRender = false
 		else
 			if enm.get 'ignored'
-				if @showIgnored
-					shouldRender = true
-				else
-					shouldRender = false
-					if @selectedCode?
-						if @selectedCode is enm.get 'code'
-							shouldRender = true
+				if @selectedCode?
+					if @selectedCode is enm.get 'code'
+						shouldRender = true
 			else
 				shouldRender = true
 
@@ -351,9 +343,9 @@ class PickListSelect2Controller extends PickListSelectController
 		@rendered = true
 		@
 
-# 	addOne: (enm) =>
-# # override to do nothing
-# 		return
+	addOne: (enm) =>
+# override to do nothing
+		return
 
 	getSelectedCode: ->
 		result = $(@el).val()
@@ -480,7 +472,7 @@ class EditablePickListSelectController extends Backbone.View
 		parameterNameWithSpaces = @options.parameter.replace /([A-Z])/g,' $1'
 		pascalCaseParameterName = (parameterNameWithSpaces).charAt(0).toUpperCase() + (parameterNameWithSpaces).slice(1)
 		@pickListController = new PickListSelectController
-			el: $(@el).find('.bv_parameterSelectList')
+			el: @$('.bv_parameterSelectList')
 			collection: @collection
 			insertFirstOption: new PickList
 				code: "unassigned"
@@ -488,30 +480,22 @@ class EditablePickListSelectController extends Backbone.View
 			selectedCode: @options.selectedCode
 
 	setupEditingPrivileges: =>
-		@editable = true
-		if @options.editable?
-			@editable = @options.editable
-		
-		if @editable
-			if @options.roles?
-				if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, @options.roles
-					@$('.bv_tooltipWrapper').removeAttr('data-toggle')
-					@$('.bv_tooltipWrapper').removeAttr('data-original-title')
-
-				else
-					@$('.bv_addOptionBtn').removeAttr('data-toggle')
-					@$('.bv_addOptionBtn').removeAttr('data-target')
-					@$('.bv_addOptionBtn').removeAttr('data-backdrop')
-					@$('.bv_addOptionBtn').css({'color':"#cccccc"})
-					@$('.bv_tooltipWrapper').tooltip()
-					@$("body").tooltip selector: '.bv_tooltipWrapper'
-
-			else
+		if @options.roles?
+			if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, @options.roles
 				@$('.bv_tooltipWrapper').removeAttr('data-toggle')
 				@$('.bv_tooltipWrapper').removeAttr('data-original-title')
+
+			else
+				@$('.bv_addOptionBtn').removeAttr('data-toggle')
+				@$('.bv_addOptionBtn').removeAttr('data-target')
+				@$('.bv_addOptionBtn').removeAttr('data-backdrop')
+				@$('.bv_addOptionBtn').css({'color':"#cccccc"})
+				@$('.bv_tooltipWrapper').tooltip()
+				@$("body").tooltip selector: '.bv_tooltipWrapper'
+
 		else
-			# This is set us not editable so remove the add option button
-			@$('.bv_addOptionBtn').hide()
+			@$('.bv_tooltipWrapper').removeAttr('data-toggle')
+			@$('.bv_tooltipWrapper').removeAttr('data-original-title')
 
 	getSelectedCode: ->
 		@pickListController.getSelectedCode()
@@ -565,10 +549,6 @@ class EditablePickListSelectController extends Backbone.View
 		else
 			@$('.bv_errorMessage').show()
 
-		if @options.autoSave? && @options.autoSave
-			@saveNewOption ()=>
-				
-
 	hideAddOptionButton: ->
 		@$('.bv_addOptionBtn').hide()
 
@@ -577,27 +557,27 @@ class EditablePickListSelectController extends Backbone.View
 
 	saveNewOption: (callback) =>
 		code = @pickListController.getSelectedCode()
-		unsavedModels = @pickListController.collection.getNewModels()
-		unsavedModels = unsavedModels.filter (model) =>
-			model.get('code') != "unassigned"
-		if unsavedModels.length > 0
-			modelToSave = unsavedModels[0]
-			unless modelToSave.get('codeType')?
-				modelToSave.set 'codeType', @options.codeType
-			unless modelToSave.get('codeKind')?
-				modelToSave.set 'codeKind', @options.codeKind
-			$.ajax
-				type: 'POST'
-				url: "/api/codetables"
-				data:
-					JSON.stringify(codeEntry:(modelToSave))
-				contentType: 'application/json'
-				dataType: 'json'
-				success: (response) =>
-					callback.call()
-				error: (err) =>
-					alert 'could not add option to code table'
-					@serviceReturn = null
+		selectedModel = @pickListController.collection.getModelWithCode(code)
+		if selectedModel != undefined and selectedModel.get('code') != "unassigned"
+			if selectedModel.get('id')?
+				callback.call()
+			else
+				unless selectedModel.get('codeType')?
+					selectedModel.set 'codeType', @options.codeType
+				unless selectedModel.get('codeKind')?
+					selectedModel.set 'codeKind', @options.codeKind
+				$.ajax
+					type: 'POST'
+					url: "/api/codetables"
+					data:
+						JSON.stringify(codeEntry:(selectedModel))
+					contentType: 'application/json'
+					dataType: 'json'
+					success: (response) =>
+						callback.call()
+					error: (err) =>
+						alert 'could not add option to code table'
+						@serviceReturn = null
 		else
 			callback.call()
 
@@ -665,7 +645,6 @@ class EditablePickListSelect2Controller extends EditablePickListSelectController
 				code: "unassigned"
 				name: "Select "+pascalCaseParameterName
 			selectedCode: @options.selectedCode
-			width: @options.width
 
 class ThingLabelComboBoxController extends PickListSelect2Controller
 
