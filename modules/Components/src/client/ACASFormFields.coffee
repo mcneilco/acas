@@ -382,7 +382,7 @@ class ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldController
 		mdl = @getModel()
 		if @pickList?
 			plOptions =
-				el: @$('select')
+				el: @$('.bv_editablePicklist')
 				collection: @pickList
 				selectedCode: mdl.get('value')
 				parameter: @options.modelKey
@@ -394,7 +394,7 @@ class ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldController
 			else
 				@pickList.url = "/api/codetables/#{mdl.get 'codeType'}/#{mdl.get 'codeKind'}"
 			plOptions =
-				el: @$('select')
+				el: @$('.bv_editablePicklist')
 				collection: @pickList
 				selectedCode: mdl.get('value')
 				parameter: @options.modelKey
@@ -412,7 +412,27 @@ class ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldController
 						code: "unassigned"
 						name: "Select Category"
 
-		@pickListController = new PickListSelectController plOptions
+		# Default is not editable picklist
+		if @options.editablePicklist? && @options.editablePicklist
+			plOptions.editable = true
+		else
+			plOptions.editable = false
+
+		# Default is no role required to edit picklist
+		if @options.editablePicklistRoles?
+			plOptions.roles = @options.editablePicklistRoles
+
+		# Default is to automatically save picklist items to the db
+		# Otherwise the controller will need to explicitly tell editable picklist controller
+		# to save the picklist items to the db.  This is because there is a use case to only save
+		# the picklist items to the db when the user clicks the save button on the thing.
+		plOptions.autoSave = true
+		if @options.autoSavePickListItem? && !@options.autoSavePickListItem
+			plOptions.autoSave = false
+
+		plOptions.width = "349px"
+		@pickListController = new EditablePickListSelect2Controller plOptions
+		@pickListController.on('change', @handleInputChanged).bind(@)
 		@pickListController.render()
 
 

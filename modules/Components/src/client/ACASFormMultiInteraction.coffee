@@ -57,6 +57,7 @@ class ACASFormMultiInteractionListController extends ACASFormAbstractFieldContro
 	initialize: (options) ->
 		options = @options
 		super(options)
+		@enabled = true
 		@opts = @options
 		if @opts.firstItx
 			@itxClass = FirstThingItx
