@@ -478,7 +478,7 @@ createTask = (options, type) ->
     .pipe(gulpif(shouldCoffeify, coffeeify({options:{paths:[build+ '/node_modules']}})))
     .pipe(gulpif(shouldCoffee,coffee(bare: true)))
     .pipe(gulpif(renameFunction?,rename(renameFunction)))
-    .pipe gulp.dest(dest)
+    .pipe gulp.dest(dest, {mode: 0o0777})
   unless watch == false
     watchTaskName = "watch:#{taskName}"
     watchOptions = watch?.options ? {}
