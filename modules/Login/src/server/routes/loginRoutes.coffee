@@ -98,6 +98,10 @@ exports.logout = (req, res) ->
 		if redirectMatch?
 			redirectMatch = redirectMatch[1]
 		else
+			if config.all.client.basePath?
+				redirectMatch = config.all.client.basePath
+			else
+				redirectMatch = '/'
 			redirectMatch = "/"
 	res.redirect redirectMatch
 
