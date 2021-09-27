@@ -401,6 +401,8 @@ ExampleTableAuditConf =
 					formLabel: "Category"
 					required: true
 					width:150
+					editablePicklist: true  # This adds a + button to the picklist to allow additions by the user
+					editablePicklistRoles: []  # + button only enabled if user has role matching one in the list. example role would be e.g. [window.conf.roles.acas.adminRole]
 			,
 				modelDefaults:
 					type: 'codeValue'
