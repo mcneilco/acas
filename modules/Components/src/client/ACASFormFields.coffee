@@ -430,7 +430,6 @@ class ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldController
 		if @options.autoSavePickListItem? && !@options.autoSavePickListItem
 			plOptions.autoSave = false
 
-		plOptions.width = "349px"
 		@pickListController = new EditablePickListSelect2Controller plOptions
 		@pickListController.on('change', @handleInputChanged).bind(@)
 		@pickListController.render()
