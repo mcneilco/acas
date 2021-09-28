@@ -14,6 +14,10 @@ class PickListList extends Backbone.Collection
 		@detect (enu) ->
 			enu.get("code") is code
 
+	getNewModels: () ->
+		@filter (pl) ->
+			pl.isNew()
+
 	getCurrent: ->
 		@filter (pl) ->
 			!(pl.get 'ignored')
@@ -186,7 +190,7 @@ class PickListSelectController extends Backbone.View
 		@rendered = true
 
 	addOne: (enm) =>
-		shouldRender = @showIgnored
+		shouldRender = true
 
 		# Only filter if filtered is set and true
 		# If filter is not set, this will be false
@@ -194,9 +198,13 @@ class PickListSelectController extends Backbone.View
 			shouldRender = false
 		else
 			if enm.get 'ignored'
-				if @selectedCode?
-					if @selectedCode is enm.get 'code'
-						shouldRender = true
+				if @showIgnored
+					shouldRender = true
+				else
+					shouldRender = false
+					if @selectedCode?
+						if @selectedCode is enm.get 'code'
+							shouldRender = true
 			else
 				shouldRender = true
 
@@ -309,7 +317,10 @@ class PickListSelect2Controller extends PickListSelectController
 		if @options?.width?
 			@width = @options.width
 		else
-			@width = "100%"
+			# Select2 https://select2.org/appearance#container-width
+			# Uses the style attribute value if available, falling back to the computed element width as necessary.
+			@width = "resolve"
+
 		@propertyMap = acasPropertyMap
 		if options.propertyMap?
 			if _.isObject(options.propertyMap) and options.propertyMap.id? and options.propertyMap.text?
@@ -321,10 +332,14 @@ class PickListSelect2Controller extends PickListSelectController
 		super(options)
 
 	render: =>
+		$(@el).empty()
+		@collection.each (enm) =>
+			@addOne enm
+
 		# convert model objects to array of json objects which have 'id' and 'text' properties if propertyMap specified
 		mappedData = []
 		for obj in @collection.toJSON()
-			if (not obj.ignored? or (obj.ignored is false) or (@showIgnored? and @showIgnored is true))
+			if (not obj.ignored? or (obj.ignored is false) or (@showIgnored? and @showIgnored is true)) && (!obj.filtered? || obj.filtered == false)
 				if @propertyMap?
 					obj.id = obj[@propertyMap.id]
 					obj.text = obj[@propertyMap.text]
@@ -332,6 +347,7 @@ class PickListSelect2Controller extends PickListSelectController
 		@placeholder = ""
 		if @options?.placeholder?
 			@placeholder = @options.placeholder
+
 		$(@el).select2
 			placeholder: @placeholder
 			data: mappedData
@@ -342,10 +358,6 @@ class PickListSelect2Controller extends PickListSelectController
 		@setSelectedCode @selectedCode
 		@rendered = true
 		@
-
-	addOne: (enm) =>
-# override to do nothing
-		return
 
 	getSelectedCode: ->
 		result = $(@el).val()
@@ -471,8 +483,12 @@ class EditablePickListSelectController extends Backbone.View
 	setupEditablePickList: ->
 		parameterNameWithSpaces = @options.parameter.replace /([A-Z])/g,' $1'
 		pascalCaseParameterName = (parameterNameWithSpaces).charAt(0).toUpperCase() + (parameterNameWithSpaces).slice(1)
+		if @pickListController?
+			filters = @picklistController.filters
+			@pickListController.remove()
+
 		@pickListController = new PickListSelectController
-			el: @$('.bv_parameterSelectList')
+			el: $(@el).find('.bv_parameterSelectList')
 			collection: @collection
 			insertFirstOption: new PickList
 				code: "unassigned"
@@ -480,22 +496,30 @@ class EditablePickListSelectController extends Backbone.View
 			selectedCode: @options.selectedCode
 
 	setupEditingPrivileges: =>
-		if @options.roles?
-			if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, @options.roles
-				@$('.bv_tooltipWrapper').removeAttr('data-toggle')
-				@$('.bv_tooltipWrapper').removeAttr('data-original-title')
+		@editable = true
+		if @options.editable?
+			@editable = @options.editable
+		
+		if @editable
+			if @options.roles?
+				if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, @options.roles
+					@$('.bv_tooltipWrapper').removeAttr('data-toggle')
+					@$('.bv_tooltipWrapper').removeAttr('data-original-title')
+
+				else
+					@$('.bv_addOptionBtn').removeAttr('data-toggle')
+					@$('.bv_addOptionBtn').removeAttr('data-target')
+					@$('.bv_addOptionBtn').removeAttr('data-backdrop')
+					@$('.bv_addOptionBtn').css({'color':"#cccccc"})
+					@$('.bv_tooltipWrapper').tooltip()
+					@$("body").tooltip selector: '.bv_tooltipWrapper'
 
 			else
-				@$('.bv_addOptionBtn').removeAttr('data-toggle')
-				@$('.bv_addOptionBtn').removeAttr('data-target')
-				@$('.bv_addOptionBtn').removeAttr('data-backdrop')
-				@$('.bv_addOptionBtn').css({'color':"#cccccc"})
-				@$('.bv_tooltipWrapper').tooltip()
-				@$("body").tooltip selector: '.bv_tooltipWrapper'
-
+				@$('.bv_tooltipWrapper').removeAttr('data-toggle')
+				@$('.bv_tooltipWrapper').removeAttr('data-original-title')
 		else
-			@$('.bv_tooltipWrapper').removeAttr('data-toggle')
-			@$('.bv_tooltipWrapper').removeAttr('data-original-title')
+			# This is set us not editable so remove the add option button
+			@$('.bv_addOptionBtn').hide()
 
 	getSelectedCode: ->
 		@pickListController.getSelectedCode()
@@ -549,6 +573,10 @@ class EditablePickListSelectController extends Backbone.View
 		else
 			@$('.bv_errorMessage').show()
 
+		if @options.autoSave? && @options.autoSave
+			@saveNewOption ()=>
+				
+
 	hideAddOptionButton: ->
 		@$('.bv_addOptionBtn').hide()
 
@@ -557,29 +585,38 @@ class EditablePickListSelectController extends Backbone.View
 
 	saveNewOption: (callback) =>
 		code = @pickListController.getSelectedCode()
-		selectedModel = @pickListController.collection.getModelWithCode(code)
-		if selectedModel != undefined and selectedModel.get('code') != "unassigned"
-			if selectedModel.get('id')?
-				callback.call()
-			else
-				unless selectedModel.get('codeType')?
-					selectedModel.set 'codeType', @options.codeType
-				unless selectedModel.get('codeKind')?
-					selectedModel.set 'codeKind', @options.codeKind
-				$.ajax
-					type: 'POST'
-					url: "/api/codetables"
-					data:
-						JSON.stringify(codeEntry:(selectedModel))
-					contentType: 'application/json'
-					dataType: 'json'
-					success: (response) =>
-						callback.call()
-					error: (err) =>
-						alert 'could not add option to code table'
-						@serviceReturn = null
+		unsavedModels = @pickListController.collection.getNewModels()
+		unsavedModels = unsavedModels.filter (model) =>
+			model.get('code') != "unassigned"
+		if unsavedModels.length > 0
+			modelToSave = unsavedModels[0]
+			unless modelToSave.get('codeType')?
+				modelToSave.set 'codeType', @options.codeType
+			unless modelToSave.get('codeKind')?
+				modelToSave.set 'codeKind', @options.codeKind
+			$.ajax
+				type: 'POST'
+				url: "/api/codetables"
+				data:
+					JSON.stringify(codeEntry:(modelToSave))
+				contentType: 'application/json'
+				dataType: 'json'
+				success: (response) =>
+					callback.call()
+				error: (err) =>
+					alert 'could not add option to code table'
+					@serviceReturn = null
 		else
 			callback.call()
+
+	removeFilters: () ->
+		@pickListController.removeFilters()
+
+	addFilter: (filter) ->
+		@pickListController.addFilter(filter)
+
+	applyFilters: () =>
+		@pickListController.applyFilters()
 
 #	setupContextMenu: ->
 #		$.fn.contextMenu = (settings) ->
@@ -638,13 +675,18 @@ class EditablePickListSelect2Controller extends EditablePickListSelectController
 	setupEditablePickList: ->
 		parameterNameWithSpaces = @options.parameter.replace /([A-Z])/g,' $1'
 		pascalCaseParameterName = (parameterNameWithSpaces).charAt(0).toUpperCase() + (parameterNameWithSpaces).slice(1)
-		@pickListController = new PickListSelect2Controller #TODO: need to fix addOne function to insert unassigned option as first option
+
+		if @pickListController?
+			filters = @pickListController.filters
+			@pickListController.remove()
+		@pickListController = new PickListSelect2Controller
 			el: @$('.bv_parameterSelectList')
 			collection: @collection
 			insertFirstOption: new PickList
 				code: "unassigned"
 				name: "Select "+pascalCaseParameterName
 			selectedCode: @options.selectedCode
+			filters: filters
 
 class ThingLabelComboBoxController extends PickListSelect2Controller
 
