@@ -28,6 +28,10 @@ window.ModuleMenusConfiguration =
 		autoLaunchName:"experiment_base"
 		requireUserRoles: [window.conf.roles.acas.userRole]
 	,
+		isHeader: false, menuName: "Example Thing"
+		mainControllerClassName: "ExampleThingController"
+		autoLaunchName:"example_thing"
+	,
 		isHeader: true
 		menuName: "Search and Edit"
 		collapsible: false

@@ -317,7 +317,10 @@ class PickListSelect2Controller extends PickListSelectController
 		if @options?.width?
 			@width = @options.width
 		else
-			@width = "100%"
+			# Select2 https://select2.org/appearance#container-width
+			# Uses the style attribute value if available, falling back to the computed element width as necessary.
+			@width = "resolve"
+
 		@propertyMap = acasPropertyMap
 		if options.propertyMap?
 			if _.isObject(options.propertyMap) and options.propertyMap.id? and options.propertyMap.text?
@@ -355,10 +358,6 @@ class PickListSelect2Controller extends PickListSelectController
 		@setSelectedCode @selectedCode
 		@rendered = true
 		@
-
-# 	addOne: (enm) =>
-# # override to do nothing
-# 		return
 
 	getSelectedCode: ->
 		result = $(@el).val()
@@ -687,7 +686,6 @@ class EditablePickListSelect2Controller extends EditablePickListSelectController
 				code: "unassigned"
 				name: "Select "+pascalCaseParameterName
 			selectedCode: @options.selectedCode
-			width: @options.width
 			filters: filters
 
 class ThingLabelComboBoxController extends PickListSelect2Controller

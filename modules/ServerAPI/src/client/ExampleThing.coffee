@@ -41,7 +41,7 @@ ExampleThingConf =
 				fieldType: 'codeValue'
 				required: true
 				formLabel: "*Scientist"
-				fieldWrapper: "bv_scientist_date"
+				fieldWrapper: "bv_scientist"
 				url: "/api/authors"
 		,
 			key: 'completion date'
@@ -54,7 +54,7 @@ ExampleThingConf =
 			fieldSettings:
 				fieldType: 'dateValue'
 				formLabel: "*Date"
-				fieldWrapper: "bv_scientist_date"
+				fieldWrapper: "bv_scientistDate"
 				placeholder: "yyyy-mm-dd"
 				required: true
 		,
@@ -72,7 +72,7 @@ ExampleThingConf =
 				fieldType: 'codeValue'
 				required: false
 				formLabel: "Color"
-				fieldWrapper: "bv_scientist_date"
+				fieldWrapper: "bv_color"
 		,
 			key: 'notebook'
 			modelDefaults:
@@ -98,7 +98,7 @@ ExampleThingConf =
 			fieldSettings:
 				fieldType: 'fileValue'
 				formLabel: "Example File"
-				fieldWrapper: "bv_notebook"
+				fieldWrapper: "bv_file"
 				required: false
 		]
 
@@ -119,7 +119,6 @@ ExampleThingConf =
 					formLabel: "Media Component"
 					required: true
 					unique: true
-					width: 215
 			,
 				modelDefaults:
 					type: 'numericValue'
@@ -145,7 +144,6 @@ ExampleThingConf =
 					required: false
 					formLabel: "Category"
 					required: true
-					width:150
 			,
 				modelDefaults:
 					type: 'codeValue'
@@ -155,7 +153,6 @@ ExampleThingConf =
 					fieldType: 'stringValue'
 					formLabel: "Performed By"
 					required: true
-					width: 150
 			,
 				modelDefaults:
 					type: 'dateValue'
@@ -166,7 +163,6 @@ ExampleThingConf =
 					fieldType: 'dateValue'
 					formLabel: "Added date"
 					required: true
-					width: 150
 			]
 		]
 		firstLsThingItxs: []
