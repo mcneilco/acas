@@ -317,7 +317,10 @@ class PickListSelect2Controller extends PickListSelectController
 		if @options?.width?
 			@width = @options.width
 		else
-			@width = "100%"
+			# Select2 https://select2.org/appearance#container-width
+			# Uses the style attribute value if available, falling back to the computed element width as necessary.
+			@width = "resolve"
+
 		@propertyMap = acasPropertyMap
 		if options.propertyMap?
 			if _.isObject(options.propertyMap) and options.propertyMap.id? and options.propertyMap.text?
@@ -329,10 +332,14 @@ class PickListSelect2Controller extends PickListSelectController
 		super(options)
 
 	render: =>
+		$(@el).empty()
+		@collection.each (enm) =>
+			@addOne enm
+
 		# convert model objects to array of json objects which have 'id' and 'text' properties if propertyMap specified
 		mappedData = []
 		for obj in @collection.toJSON()
-			if (not obj.ignored? or (obj.ignored is false) or (@showIgnored? and @showIgnored is true))
+			if (not obj.ignored? or (obj.ignored is false) or (@showIgnored? and @showIgnored is true)) && (!obj.filtered? || obj.filtered == false)
 				if @propertyMap?
 					obj.id = obj[@propertyMap.id]
 					obj.text = obj[@propertyMap.text]
@@ -340,6 +347,7 @@ class PickListSelect2Controller extends PickListSelectController
 		@placeholder = ""
 		if @options?.placeholder?
 			@placeholder = @options.placeholder
+
 		$(@el).select2
 			placeholder: @placeholder
 			data: mappedData
@@ -350,10 +358,6 @@ class PickListSelect2Controller extends PickListSelectController
 		@setSelectedCode @selectedCode
 		@rendered = true
 		@
-
-# 	addOne: (enm) =>
-# # override to do nothing
-# 		return
 
 	getSelectedCode: ->
 		result = $(@el).val()
@@ -479,6 +483,10 @@ class EditablePickListSelectController extends Backbone.View
 	setupEditablePickList: ->
 		parameterNameWithSpaces = @options.parameter.replace /([A-Z])/g,' $1'
 		pascalCaseParameterName = (parameterNameWithSpaces).charAt(0).toUpperCase() + (parameterNameWithSpaces).slice(1)
+		if @pickListController?
+			filters = @picklistController.filters
+			@pickListController.remove()
+
 		@pickListController = new PickListSelectController
 			el: $(@el).find('.bv_parameterSelectList')
 			collection: @collection
@@ -601,6 +609,15 @@ class EditablePickListSelectController extends Backbone.View
 		else
 			callback.call()
 
+	removeFilters: () ->
+		@pickListController.removeFilters()
+
+	addFilter: (filter) ->
+		@pickListController.addFilter(filter)
+
+	applyFilters: () =>
+		@pickListController.applyFilters()
+
 #	setupContextMenu: ->
 #		$.fn.contextMenu = (settings) ->
 #
@@ -658,14 +675,18 @@ class EditablePickListSelect2Controller extends EditablePickListSelectController
 	setupEditablePickList: ->
 		parameterNameWithSpaces = @options.parameter.replace /([A-Z])/g,' $1'
 		pascalCaseParameterName = (parameterNameWithSpaces).charAt(0).toUpperCase() + (parameterNameWithSpaces).slice(1)
-		@pickListController = new PickListSelect2Controller #TODO: need to fix addOne function to insert unassigned option as first option
+
+		if @pickListController?
+			filters = @pickListController.filters
+			@pickListController.remove()
+		@pickListController = new PickListSelect2Controller
 			el: @$('.bv_parameterSelectList')
 			collection: @collection
 			insertFirstOption: new PickList
 				code: "unassigned"
 				name: "Select "+pascalCaseParameterName
 			selectedCode: @options.selectedCode
-			width: @options.width
+			filters: filters
 
 class ThingLabelComboBoxController extends PickListSelect2Controller
 
