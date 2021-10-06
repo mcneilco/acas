@@ -247,6 +247,7 @@ taskConfigs =
         src: [
           build + '/conf/*.properties'
           build + '/conf/*.properties.example'
+          build + '/conf/*.env'
           build + '/src/r/*'
           build + '/src/javascripts/BuildUtilities/PrepareConfigFiles.js'
         ]
@@ -398,6 +399,7 @@ taskConfigs =
       args: startupArgs
       options: _.extend _.clone(globalExecuteOptions), cwd: build
       src: [
+        build + '/conf/*.env'
         build + '/conf/compiled/*'
         build + '/app.js'
         build + '/views/*'
