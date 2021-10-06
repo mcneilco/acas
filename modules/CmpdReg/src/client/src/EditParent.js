@@ -24,12 +24,12 @@ $(function () {
             this.valid = false;
             this.sketcherLoaded = false;
             this.exportFormat = "mol";
-	        if(window.configuration.marvin) {
+	        if(window.configuration.sketcher == 'marvin') {
 		        this.useMarvin = true;
 		        if (window.configuration.marvin.exportFormat) {
 			        this.exportFormat = window.configuration.marvin.exportFormat;
 		        }
-	        } else if(window.configuration.ketcher) {
+	        } else if(window.configuration.sketcher == 'ketcher') {
 		        this.useKetcher = true;
 	        }
             this.hide();
