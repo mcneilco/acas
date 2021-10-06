@@ -58,7 +58,9 @@ $(function() {
 				}
 			} else if(window.configuration.sketcher == 'ketcher') {
 				this.useKetcher = true;
-			}
+			} else if(window.configuration.sketcher == 'maestro') {
+				this.useKetcher = true;
+		}
 
 		},
 
@@ -105,6 +107,11 @@ $(function() {
 				});
 
 			} else if (this.useKetcher) {
+				this.$('#searchMarvinSketch').attr('src',"/lib/ketcher-2.0.0-alpha.3_custom/ketcher.html?api_path=/api/cmpdReg/ketcher/");
+				this.$('#searchMarvinSketch').on('load', function () {
+					self.ketcher = self.$('#searchMarvinSketch')[0].contentWindow.ketcher;
+				});
+			} else if (this.useMaestro) {
 				this.$('#searchMarvinSketch').attr('src',"/lib/ketcher-2.0.0-alpha.3_custom/ketcher.html?api_path=/api/cmpdReg/ketcher/");
 				this.$('#searchMarvinSketch').on('load', function () {
 					self.ketcher = self.$('#searchMarvinSketch')[0].contentWindow.ketcher;
@@ -157,6 +164,14 @@ $(function() {
 					alert("Molecule export failed from search sketcher:" + error);
 				});
 			} else if (this.useKetcher) {
+				mol = this.ketcher.getMolfile();
+				if (mol.indexOf("  0  0  0     1  0            999") > -1) mol = '';
+				var sf = this.makeSearchFormModel(mol);
+				if (this.isValid()) {
+					this.trigger('searchNext', sf);
+					this.hide();
+				}
+			} else if (this.useMaestro) {
 				mol = this.ketcher.getMolfile();
 				if (mol.indexOf("  0  0  0     1  0            999") > -1) mol = '';
 				var sf = this.makeSearchFormModel(mol);

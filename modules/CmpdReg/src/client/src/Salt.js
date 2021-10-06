@@ -161,6 +161,10 @@ $(function() {
 				}
 			} else if(window.configuration.sketcher == 'ketcher') {
 				this.useKetcher = true;
+			} else if(window.configuration.sketcher == 'maestro') {
+				this.useMaestro = true;
+			} else {
+				alert("No registration sketcher configured");
 			}
 
 			this.sketcherLoaded = false;
@@ -188,8 +192,14 @@ $(function() {
 					self.ketcher = self.$('#newSaltMarvinSketch')[0].contentWindow.ketcher;
 					self.sketcherLoaded = true;
 				});
+			} else if (this.useMaestro) {
+				this.$('#newSaltMarvinSketch').attr('src',"/CmpdReg/maestrosketcher/sketcher_app.html");
+				this.$('#newSaltMarvinSketch').on('load', function () {
+					self.maestro = self.$('#newSaltMarvinSketch')[0].contentWindow.Module;
+					self.sketcherLoaded = true;
+				});
 			} else {
-				alert("No search sketcher configured");
+				alert("No registration sketcher configured");
 			}
 
 			this.hide();
@@ -201,6 +211,8 @@ $(function() {
 				this.marvinSketcherInstance.clear()
 			} else if (this.useKetcher) {
 				mol = this.ketcher.setMolecule("");
+			} else if (this.useMaestro) {
+				mol = this.maestro.clearSketcher()
 			}
 			$(this.el).show();
 		},
@@ -227,8 +239,8 @@ $(function() {
 				self.exportStructComplete = false;
 
 				var gotMol = function (molecule) {
-
-					if (molecule.indexOf("0  0  0  0  0  0  0  0  0  0999") > -1)
+					//Maestro doesn't use the counts line so skip this check when useMaestro is true
+					if (!self.useMaestro && molecule.indexOf("0  0  0  0  0  0  0  0  0  0999") > -1)
 						mol = '';
 					else if (molecule.indexOf("M  V30 COUNTS 0 0 0 0 0") > -1)
 						mol = '';
@@ -283,6 +295,9 @@ $(function() {
 				} else if (this.useKetcher) {
 					mol = this.ketcher.getMolfile();
 					if (mol.indexOf("  0  0  0     1  0            999") > -1) mol = '';
+					gotMol(mol);
+				} else if (this.useMaestro) {
+					mol = this.maestro.getSketcherMolBlock();
 					gotMol(mol);
 				} else {
 					alert("No new salt sketcher configured");
