@@ -59,7 +59,7 @@ $(function() {
 			} else if(window.configuration.sketcher == 'ketcher') {
 				this.useKetcher = true;
 			} else if(window.configuration.sketcher == 'maestro') {
-				this.useKetcher = true;
+				this.useMaestro = true;
 		}
 
 		},
@@ -112,9 +112,9 @@ $(function() {
 					self.ketcher = self.$('#searchMarvinSketch')[0].contentWindow.ketcher;
 				});
 			} else if (this.useMaestro) {
-				this.$('#searchMarvinSketch').attr('src',"/lib/ketcher-2.0.0-alpha.3_custom/ketcher.html?api_path=/api/cmpdReg/ketcher/");
+				this.$('#searchMarvinSketch').attr('src',"/CmpdReg/maestrosketcher/sketcher_app.html");
 				this.$('#searchMarvinSketch').on('load', function () {
-					self.ketcher = self.$('#searchMarvinSketch')[0].contentWindow.ketcher;
+					self.maestro = self.$('#searchMarvinSketch')[0].contentWindow.Module;
 				});
 			} else {
 				alert("No search sketcher configured");
@@ -172,8 +172,8 @@ $(function() {
 					this.hide();
 				}
 			} else if (this.useMaestro) {
-				mol = this.ketcher.getMolfile();
-				if (mol.indexOf("  0  0  0     1  0            999") > -1) mol = '';
+				mol = this.maestro.getSketcherMolBlock();
+				if (mol.indexOf("M  V30 COUNTS 0 0 0 0 0") > -1) mol = '';
 				var sf = this.makeSearchFormModel(mol);
 				if (this.isValid()) {
 					this.trigger('searchNext', sf);
