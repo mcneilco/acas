@@ -23,6 +23,8 @@ services:
      - /home/runner/build/conf
     # Add chemaxon marvinjs here
     # - ./chemaxon/marvinjs:/home/runner/build/public/CmpdReg/marvinjs
+    # Add schrodinger maestro sketcher here
+    # - ./schrodinger/sketcher_wasm_mmshare_21-4_074:/home/runner/build/public/CmpdReg/maestrosketcher
      # Please add any dev volumes below this line
      - ./:/home/runner/acas
      # - ./modules/BuildUtilities/:/home/runner/acas/modules/BuildUtilities

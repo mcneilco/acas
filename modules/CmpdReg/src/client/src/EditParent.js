@@ -31,6 +31,8 @@ $(function () {
 		        }
 	        } else if(window.configuration.sketcher == 'ketcher') {
 		        this.useKetcher = true;
+	        } else if(window.configuration.sketcher == 'maestro') {
+		        this.useMaestro = true;
 	        }
             this.hide();
         },
@@ -70,7 +72,12 @@ $(function () {
 			        self.ketcher = self.$('#editParentMarvinSketch')[0].contentWindow.ketcher;
 					self.ketcher.setMolecule(self.options.parentModel.get('molStructure'));
 		        });
-	        } else {
+			} else if (this.useMaestro) {
+				this.$('#editParentMarvinSketch').attr('src',"/CmpdReg/maestrosketcher/sketcher_app.html");
+				this.$('#editParentMarvinSketch').on('load', function () {
+					self.maestro = self.$('#editParentMarvinSketch')[0].contentWindow.Module;
+				});
+			} else {
 		        alert("No edit parent sketcher configured");
 	        }
 
@@ -121,6 +128,14 @@ $(function () {
 	        } else if (this.useKetcher) {
 		        mol = this.ketcher.getMolfile();
 				if (mol.indexOf("  0  0  0     1  0            999") > -1) mol = null;
+		        editParentSearch.set({
+			        molStructure: mol,
+			        corpName: jQuery.trim(self.$('.corpName').val())
+		        });
+
+	        } else if (this.useMaestro) {
+				mol = this.maestro.getSketcherMolBlock();
+				if (mol.indexOf("M  V30 COUNTS 0 0 0 0 0") > -1) mol = null;
 		        editParentSearch.set({
 			        molStructure: mol,
 			        corpName: jQuery.trim(self.$('.corpName').val())
