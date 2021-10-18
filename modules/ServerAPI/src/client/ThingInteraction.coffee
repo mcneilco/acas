@@ -1,4 +1,4 @@
-class window.ThingItx extends Backbone.Model
+class ThingItx extends Backbone.Model
 	className: "ThingItx"
 
 	defaults: () ->
@@ -26,7 +26,7 @@ class window.ThingItx extends Backbone.Model
 	reformatBeforeSaving: =>
 		delete @getItxThing().version
 
-class window.FirstThingItx extends ThingItx
+class FirstThingItx extends ThingItx
 	className: "FirstThingItx"
 
 	defaults: ->
@@ -39,7 +39,7 @@ class window.FirstThingItx extends ThingItx
 	setItxThing: (thing) ->
 		@set firstLsThing: thing
 
-class window.SecondThingItx extends ThingItx
+class SecondThingItx extends ThingItx
 	className: "SecondThingItx"
 
 	defaults: ->
@@ -53,7 +53,7 @@ class window.SecondThingItx extends ThingItx
 	setItxThing: (thing) ->
 		@set secondLsThing: thing
 
-class window.LsThingItxList extends Backbone.Collection
+class LsThingItxList extends Backbone.Collection
 	model: "ThingItx"
 	getAllItxByTypeAndKind: (type, kind) -> #returns all itxs of given type/kind, including ignored itxs
 		@filter (itx) ->
@@ -108,8 +108,16 @@ class window.LsThingItxList extends Backbone.Collection
 			model.reformatBeforeSaving()
 		)
 
-class window.FirstLsThingItxList extends LsThingItxList
+class FirstLsThingItxList extends LsThingItxList
 	model: FirstThingItx
 
-class window.SecondLsThingItxList extends LsThingItxList
+class SecondLsThingItxList extends LsThingItxList
 	model: SecondThingItx
+
+if typeof(exports) != "undefined"
+	exports.ThingItx = ThingItx
+	exports.FirstThingItx = FirstThingItx
+	exports.SecondThingItx = SecondThingItx
+	exports.LsThingItxList = LsThingItxList 
+	exports.FirstLsThingItxList = FirstLsThingItxList
+	exports.SecondLsThingItxList = SecondLsThingItxList

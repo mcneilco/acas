@@ -1,4 +1,4 @@
-class window.BasicFileValidateReviewAndSaveController extends BasicFileValidateAndSaveController
+class BasicFileValidateReviewAndSaveController extends BasicFileValidateAndSaveController
 	template: _.template($("#BasicFileValidateReviewAndSaveView").html())
 
 

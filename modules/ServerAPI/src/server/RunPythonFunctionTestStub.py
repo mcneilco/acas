@@ -18,7 +18,7 @@ def main():
     request=args['input']
     response = {"results":request, "hasError":False,"hasWarning":False,"errorMessages":[]}
     
-    print json.dumps(response)
+    print(json.dumps(response))
 
 if __name__ == '__main__':
     main()

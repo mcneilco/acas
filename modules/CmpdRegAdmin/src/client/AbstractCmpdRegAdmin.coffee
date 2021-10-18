@@ -1,4 +1,4 @@
-class window.AbstractCmpdRegAdminController extends AbstractFormController
+class AbstractCmpdRegAdminController extends AbstractFormController
 	###
 		Instances of this controller must supply "moduleLaunchName", "entityType", and "modelClass"
   	entityTypePlural
@@ -18,7 +18,8 @@ class window.AbstractCmpdRegAdminController extends AbstractFormController
 		"click .bv_cancelClear": "handleCancelClearClicked"
 		"click .bv_confirmClear": "handleConfirmClearClicked"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		console.log "initializing Abstract Controller"
 		if @model?
 			@completeInitialization()

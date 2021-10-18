@@ -43,7 +43,7 @@ describe "Module Menu System Testing", ->
 					expect(@gotTrigger).toBeTruthy()
 
 	##########################################
- 	describe "Module Launcher List Testing", ->
+	describe "Module Launcher List Testing", ->
 		beforeEach ->
 			@modLauncherList = new ModuleLauncherList(window.moduleMenusTestJSON.testMenuItems)
 

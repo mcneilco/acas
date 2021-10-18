@@ -1,6 +1,6 @@
-class window.Logging extends Backbone.Model
+class Logging extends Backbone.Model
 
-class window.LoggingController1 extends Backbone.View
+class LoggingController1 extends Backbone.View
 	template: _.template($("#LoggingView").html())
 
 	initialize: ->
@@ -15,7 +15,7 @@ class window.LoggingController1 extends Backbone.View
 
 		@
 
-class window.LoggingController extends Backbone.View
+class LoggingController extends Backbone.View
 	initialize: ->
 		if AppLaunchParams.loggingToMongo
 			@loggingApp = new MongoLoggingController()
@@ -26,7 +26,7 @@ class window.LoggingController extends Backbone.View
 		$(@el).empty()
 		$(@el).html(@loggingApp.render().el)
 
-class window.FileLoggingController extends Backbone.View
+class FileLoggingController extends Backbone.View
 
 	render: =>
 		$(@el).empty()
@@ -41,7 +41,7 @@ class window.FileLoggingController extends Backbone.View
 		@logs.url = "/api/logger/" + filter
 		@logs.fetch()
 
-class window.MongoLoggingController extends Backbone.View
+class MongoLoggingController extends Backbone.View
 	template: $("#app-view").html()
 	initialize: ->
 		@logs = new LogList()
@@ -63,7 +63,7 @@ class window.MongoLoggingController extends Backbone.View
 		@logs.url = "/api/logger/" + filter
 		@logs.fetch()
 
-class window.LogEntry extends Backbone.Model
+class LogEntry extends Backbone.Model
 	url: "/api/logger/"
 
 	defaults:
@@ -81,7 +81,7 @@ class window.LogEntry extends Backbone.Model
 		@set "data", @attributes.meta.data
 
 
-class window.LogList extends Backbone.Collection
+class LogList extends Backbone.Collection
 	url: "/api/logger/"
 	model: LogEntry
 
@@ -96,7 +96,7 @@ class window.LogList extends Backbone.Collection
 		statsArray
 
 
-class window.LogListController extends Backbone.View
+class LogListController extends Backbone.View
 	template: $("#log-list-view").html()
 	initialize: ->
 		@collection.bind "fetch", @render
@@ -118,7 +118,7 @@ class window.LogListController extends Backbone.View
 		log = new LogEntryController model: item
 		@$('.bv_logListBody').append(log.render().el)
 
-class window.LogEntryController extends Backbone.View
+class LogEntryController extends Backbone.View
 	tagName: 'tr'
 	template: $("#log-entry-item").html()
 	render: =>
@@ -137,7 +137,7 @@ class window.LogEntryController extends Backbone.View
 		# always return @ (reference to this objects 'this') to allow method chaining
 		@
 
-class window.LogFilterMenu extends Backbone.View
+class LogFilterMenu extends Backbone.View
 	template: $("#log-filters-menu").html()
 
 	initialize: ->
@@ -167,13 +167,13 @@ class window.LogFilterMenu extends Backbone.View
 
 		@
 
-class window.ApplicationSourcesList extends Backbone.Collection
+class ApplicationSourcesList extends Backbone.Collection
 	url: '/api/logger/applicationSources'
 
-class window.UsersList extends Backbone.Collection
+class UsersList extends Backbone.Collection
 	url: '/api/logger/users'
 
-class window.GraphLogStats extends Backbone.View
+class GraphLogStats extends Backbone.View
 	template: $("#log-stats-view").html()
 	initialize: ->
 		@collection.bind "fetch", @render

@@ -1,7 +1,7 @@
 ############################################################################
 # models
 ############################################################################
-class window.StereoCategory extends Backbone.Model
+class StereoCategory extends Backbone.Model
 	urlRoot: "/api/cmpdRegAdmin/stereoCategories"
 	defaults:
 		name: null
@@ -26,7 +26,7 @@ class window.StereoCategory extends Backbone.Model
 			return null
 
 ############################################################################
-class window.StereoCategories extends Backbone.Collection
+class StereoCategories extends Backbone.Collection
 	model: StereoCategory
 ############################################################################
 
@@ -34,7 +34,7 @@ class window.StereoCategories extends Backbone.Collection
 # controllers
 ############################################################################
 
-class window.StereoCategoryController extends AbstractCmpdRegAdminController
+class StereoCategoryController extends AbstractCmpdRegAdminController
 	wrapperTemplate: _.template($("#StereoCategoryView").html())
 	moduleLaunchName: "stereo_category"
 	entityType: "stereoCategory"
@@ -53,7 +53,7 @@ class window.StereoCategoryController extends AbstractCmpdRegAdminController
 		@$('.bv_stereoCategoryControllerDiv').html super()
 
 
-class window.StereoCategoryBrowserController extends AbstractCmpdRegAdminBrowserController
+class StereoCategoryBrowserController extends AbstractCmpdRegAdminBrowserController
 	wrapperTemplate: _.template($("#StereoCategoryBrowserView").html())
 	entityType: "stereoCategory"
 	entityTypePlural: "stereoCategories"

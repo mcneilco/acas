@@ -24,6 +24,9 @@ Dockerfile*
 docker-compose*.yml
 build
 licenses
+venv
 #this is for the soft link in .dockerfile (git ignore .git by default)
 .git
 chemaxon
+.chemaxon
+.vscode

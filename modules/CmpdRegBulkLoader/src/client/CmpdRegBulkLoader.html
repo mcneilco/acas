@@ -50,6 +50,7 @@
     <div class="container" style="margin-left:15px;">
         <div class="bv_bulkReg"></div>
         <div class="bv_bulkRegSummary hide"></div>
+        <div class="bv_bulkValSummary hide"></div>
         <div class="bv_purgeFiles hide"></div>
     </div>
 
@@ -171,7 +172,9 @@
                     <input class="bv_templateName" style="width:286px;margin-left:7px;" type="text" placeholder="Template Name" disabled="disabled"/>
                 </span>
             </span>
-            <button type="button" class="btn btn-success bv_regCmpds pull-right" disabled="disabled">Register Compounds</button>
+            <span class = "bv_valCmpdsContainer"><button type="button" class="btn btn-success bv_valCmpds pull-right" disabled="disabled">Validate Compounds</button></span>
+            <div class="bv_validating pull-right hide" style="margin-right:5px; padding-top:5px;color:red;">Validating...</div>
+            <span class = "hide bv_regCmpdsContainer"><button type="button" class="btn btn-success bv_regCmpds pull-right" disabled="disabled">Register Compounds</button></span>
             <div class="bv_registering pull-right hide" style="margin-right:5px; padding-top:5px;color:red;">Registering...</div>
             <!--<div class="bv_errorMessage pull-right hide" style="margin-right:5px; padding-top:5px;color:red;"></div>-->
         </div>
@@ -196,7 +199,7 @@
                     <h4 class="modal-title bv_saveErrorTitle" style="color:red;"></h4>
                 </div>
                 <div class="modal-body" style="padding-left:0px;">
-                    <label class="bv_errorMessage" style="margin-left:30px;">The entered experiment name is already used by another experiment. Please enter in a new experiment name.</label>
+                    <label class="bv_errorMessage" style="margin-left:30px;">The entered <%= window.conf.experiment.label %> name is already used by another <%= window.conf.experiment.label %>. Please enter in a new <%= window.conf.experiment.label %> name.</label>
                 </div>
             </div>
         </div>
@@ -238,7 +241,22 @@
             </span>
         </div>
         <button type="button" class="btn btn-success bv_loadAnother pull-right" style="margin-left:10px;">Load Another</button>
-        <a button type="button" class="btn bv_downloadSummary pull-right">Download Summary Files</a>
+        <a button type="button" class="btn bv_downloadSummary pull-left">Download Summary Files</a>
+    </div>
+</script>
+
+<script type="text/template" id="BulkValCmpdsSummaryView" xmlns="http://www.w3.org/1999/html">
+    <div class="span9">
+        <h3>Validation Complete</h3>
+        <h4 style="font-size:16px;">Validation Summary:</h4>
+        <div class="well" style="background:#FFFFFF;margin-bottom:10px;">
+            <span class="bv_valSummaryHTML">
+            </span>
+        </div>
+        <button type="button" class="btn btn-success bv_back pull-right" style="margin-left:10px;">Back</button>
+        <button type="button" class="btn btn-success bv_register pull-right" disabled="disabled" style="margin-left:10px;">Register Compounds</button>
+        <div class="bv_registering pull-right hide" style="margin-right:5px; padding-top:5px;color:red;">Registering...</div>
+        <a button type="button" class="btn bv_downloadSummary pull-left">Download Summary Files</a>
     </div>
 </script>
 
@@ -311,7 +329,7 @@
                 <table width="100%"></table>
                 <tr>
                     <td style="text-align: center; width: 100%">
-                        <h4>Deleting Experiment</h4>
+                        <h4>Deleting <%= window.conf.experiment.label %></h4>
                         <div class="progress progress-striped active" style="width: 100%;">
                             <div class="bar" style="width: 100%;"></div>
                         </div>

@@ -1,4 +1,4 @@
-class window.AppRouter extends Backbone.Router
+class AppRouter extends Backbone.Router
 
 	routes:
 		":docId": "existingDoc"
@@ -14,7 +14,7 @@ class window.AppRouter extends Backbone.Router
 		@appController.existingDoc(docId)
 
 
-class window.AppController extends Backbone.View
+class AppController extends Backbone.View
 
 	template: _.template($('#DocForBatchesAppControllerView').html())
 

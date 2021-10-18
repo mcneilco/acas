@@ -104,7 +104,7 @@ modify = (options = {}) ->
       if fileModifier = options.fileModifier
         try
           content = fileModifier file, file.contents.toString 'utf8'
-          file.contents = new Buffer content
+          file.contents = Buffer.from(content)
         catch _error
           console.log _error
     next error, file
@@ -134,7 +134,7 @@ else
   sources.push acas_shared
 startupArgs = []
 if argv.debugbrk
-  startupArgs.push "--debug-brk=5858"
+  startupArgs.push "--inspect-brk=5858"
 startupArgs.push "app.js"
 if argv.stubsMode
   startupArgs.push "stubsMode"
@@ -146,7 +146,7 @@ console.log 'setting source directories to: ' + JSON.stringify(sources)
 # ------------------------------------------------- Setup Configs
 
 globalCoffeeOptions = {sourcemaps:true}
-globalCopyOptions = {}
+globalCopyOptions = {allowEmpty:true}
 globalExecuteOptions = {cwd: build, env: process.env}
 globalWatchOptions =
   interval: 1000
@@ -165,6 +165,24 @@ taskConfigs =
       src: getGlob('public_conf/*.coffee')
       dest: build + '/src/javascripts/ServerAPI'
       options: _.extend _.clone(globalCoffeeOptions), {}
+    ,
+      taskName: "buildUtilities"
+      src: getGlob('modules/BuildUtilities/src/server/*.coffee')
+      dest: build + '/src/javascripts/BuildUtilities'
+      options: _.extend _.clone(globalCoffeeOptions), {}
+      renameFunction: getFirstFolderName
+    ,
+      taskName: "serverAPI"
+      src: getGlob('modules/ServerAPI/src/server/*.coffee')
+      dest: build + '/src/javascripts/ServerAPI'
+      options: _.extend _.clone(globalCoffeeOptions), {}
+      renameFunction: getFirstFolderName
+    ,
+      taskName: "serverUtilityFunctions"
+      src: getGlob('modules/**/src/server/routes/ServerUtilityFunctions.coffee')
+      dest: build + '/routes'
+      options: _.extend _.clone(globalCoffeeOptions), {}
+      flatten: true
     ,
       taskName: "rootConf"
       src: getGlob('conf/*.coffee')
@@ -218,6 +236,9 @@ taskConfigs =
         command: 'npm'
         args: [ 'install' ]
         options: _.extend _.clone(globalExecuteOptions), cwd: build
+        src: [
+          build + '/package.json'
+        ]
       ,
         taskName: "prepare_config_files"
         command: 'node'
@@ -226,6 +247,7 @@ taskConfigs =
         src: [
           build + '/conf/*.properties'
           build + '/conf/*.properties.example'
+          build + '/conf/*.env'
           build + '/src/r/*'
           build + '/src/javascripts/BuildUtilities/PrepareConfigFiles.js'
         ]
@@ -262,6 +284,11 @@ taskConfigs =
       dest: build + '/bin'
       options: _.extend _.clone(globalCopyOptions), {}
     ,
+      taskName: "envFiles"
+      src: getGlob('*.env', '.env', 'conf/**.env')
+      dest: build + '/conf'
+      options: _.extend _.clone(globalCopyOptions), {}
+    ,
       taskName: "public"
       src: getGlob('public/**')
       dest: build + '/public'
@@ -296,7 +323,7 @@ taskConfigs =
       renameFunction: getRPath
     ,
       taskName: "python"
-      src: getGlob('modules/**/src/server/python/**')
+      src: getGlob('modules/**/src/server/python/**', '!modules/**/src/server/python/**/venv/**')
       dest: build + '/src/python'
       options: _.extend _.clone(globalCopyOptions), {}
       renameFunction: getPythonPath
@@ -372,6 +399,7 @@ taskConfigs =
       args: startupArgs
       options: _.extend _.clone(globalExecuteOptions), cwd: build
       src: [
+        build + '/conf/*.env'
         build + '/conf/compiled/*'
         build + '/app.js'
         build + '/views/*'
@@ -397,7 +425,7 @@ createExecuteTask = (options) =>
       return
     command.on 'exit', (code) ->
       cb code
-  unless watch == false
+  unless watch == false || !options.src?
     watchTaskName = "watch:#{taskName}"
     watchOptions = watch?.options ? {}
     gulp.task watchTaskName, ->
@@ -452,7 +480,7 @@ createTask = (options, type) ->
     .pipe(gulpif(shouldCoffeify, coffeeify({options:{paths:[build+ '/node_modules']}})))
     .pipe(gulpif(shouldCoffee,coffee(bare: true)))
     .pipe(gulpif(renameFunction?,rename(renameFunction)))
-    .pipe gulp.dest(dest)
+    .pipe gulp.dest(dest, {mode: 0o0777})
   unless watch == false
     watchTaskName = "watch:#{taskName}"
     watchOptions = watch?.options ? {}
@@ -500,7 +528,7 @@ gulp.task 'app', (done) =>
   if node?
     node.kill()
   spawn = require('child_process').spawn
-  node = spawn('node', [ 'app.js' ], stdio: 'inherit')
+  node = spawn('node', [ 'app.js' ], stdio: 'inherit', cwd: build)
   node.on 'close', (code) ->
     if code == 8
       gulp.log 'Error detected, waiting for changes...'
@@ -516,6 +544,9 @@ unless argv._[0] == "dev"
   executeTasks = _.filter executeTasks, (item) -> item != "execute:prepareModuleConfJSON"
 
 # --------- Copy Task
+gulp.task 'copy-execute-configs', gulp.series(gulp.parallel('coffee:serverUtilityFunctions','coffee:buildUtilities','coffee:serverAPI', 'copy:conf', 'copy:envFiles'), 'execute:prepare_config_files')
+
+# --------- Copy Task
 gulp.task 'copy', gulp.parallel copyTasks
 
 # --------- Execute Task
@@ -525,7 +556,7 @@ gulp.task 'execute', gulp.series executeTasks
 gulp.task 'watch', gulp.parallel watchTasks
 
 # --------- Build Task
-gulp.task('build', gulp.series(gulp.parallel('copy','coffee'), 'coffee:publicConf', 'execute'));
+gulp.task('build', gulp.series('copy-execute-configs', gulp.parallel('copy','coffee'), 'coffee:publicConf', 'execute'));
 
 # --------- Dev Task
 gulp.task('dev', gulp.series(gulp.series('build'), gulp.parallel('watch', 'watch:app', 'app')));

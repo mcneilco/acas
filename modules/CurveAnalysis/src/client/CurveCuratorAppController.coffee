@@ -1,4 +1,4 @@
-class window.CurveCuratorAppRouter extends Backbone.Router
+class CurveCuratorAppRouter extends Backbone.Router
 	routes:
 		":exptCode": "loadCurvesForExptCode"
 		":exptCode/:curveID": "loadCurvesForExptCode"
@@ -10,7 +10,7 @@ class window.CurveCuratorAppRouter extends Backbone.Router
 		@appController.loadCurvesForExptCode(exptCode, curveID)
 
 
-class window.CurveCuratorAppController extends Backbone.View
+class CurveCuratorAppController extends Backbone.View
 
 	template: _.template($('#CurveCuratorAppView').html())
 

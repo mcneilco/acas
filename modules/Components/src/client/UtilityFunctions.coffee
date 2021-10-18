@@ -1,4 +1,4 @@
-class window.UtilityFunctions
+class UtilityFunctions
 	getFileServiceURL: ->
 		"/uploads"
 
@@ -77,6 +77,14 @@ class window.UtilityFunctions
 			text = $(textarea).val().replace(/\r?\n/g,'<br/>')
 			$(textarea).after '<div style="width:650px; border:1px solid #cccccc; padding:6px;margin-bottom:20px;">'+text+'</div>'
 			$(textarea).hide()
+		
+	setInputsWidthToValue: (controller) =>
+		# increase size of text boxes to fit data
+		for node in controller.$('input[type="text"]')
+			minWidth = parseInt(getComputedStyle(node).minWidth) or node.clientWidth
+			node.style.overflowX = 'auto'
+			node.style.width = minWidth + 'px'
+			node.style.width = node.scrollWidth + 'px'
 
 	showInactiveTabsInfoToPrint: (controller) =>
 		for tab in controller.$('.tab-pane')
@@ -102,3 +110,13 @@ class window.UtilityFunctions
 			return 0
 		else
 			return Math.round((num+0.000001)*1000)/1000
+	
+	getNameForCode: (value, codeToLookup, pickLists) ->
+		if pickLists[value.get('lsKind')]?
+			code = pickLists[value.get('lsKind')].findWhere({code: codeToLookup})
+			name = if code? then code.get 'name' else "not found"
+			return name
+		else
+			console.log "can't find entry in pickLists hash for: "+value.get('lsKind')
+			console.dir pickLists
+			return "not found"

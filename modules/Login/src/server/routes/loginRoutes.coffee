@@ -1,15 +1,37 @@
 
+config = require '../conf/compiled/conf.js'
+csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
+
 exports.setupAPIRoutes = (app) ->
 	app.get '/api/users/:username', exports.getUsers
 	app.get '/api/authors', exports.getAuthors
 
 exports.setupRoutes = (app, passport) ->
-	app.get '/login', exports.loginPage
+	if config.all.server.security.saml.use == true
+		app.get '/login', ((req, res, next) ->
+			# If the redirect_url is set, pass it to the passport request as a relay state query
+			# This will then be returned as part of the body on callback
+			req.query.RelayState = req.query.redirect_url
+			next()
+		), passport.authenticate('saml',{failureRedirect: '/', failureFlash: true})
+		app.post '/login/callback', passport.authenticate('saml',
+			failureRedirect: '/login/ssoFailure'
+			failureFlash: true
+		), (req, res) =>
+			# If relay state value is set, it's because we set it to the redirect_url above
+			# So if it's set then redirect the user to the RelayState value
+			if req.body?.RelayState? && req.body.RelayState != ""
+				console.log "redirecting to #{req.body.RelayState}"
+				res.redirect(req.body.RelayState)
+			else
+				res.redirect('/');
+	else
+		app.get '/login', exports.loginPage
+	app.get '/login/direct', exports.loginPage
 	app.post '/login',
 		passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }), exports.loginPost
 	app.get '/logout*', exports.logout
 	app.post '/api/userAuthentication', exports.authenticationService
-	app.get '/api/users/:username', exports.ensureAuthenticated, exports.getUsers
 	app.get '/passwordReset', exports.resetpage
 	app.post '/passwordReset',
 		exports.resetAuthenticationService,
@@ -21,9 +43,9 @@ exports.setupRoutes = (app, passport) ->
 		exports.changePost
 	app.post '/api/userChangeAuthentication', exports.changeAuthenticationService
 	app.get '/api/authors', exports.ensureAuthenticated, exports.getAuthors
+	app.get '/api/users/:username', exports.ensureAuthenticated, exports.getUsers
+	app.get '/login/ssoFailure', exports.ssoFailure
 
-csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
-config = require '../conf/compiled/conf.js'
 
 exports.loginPage = (req, res) ->
 	user = null
@@ -69,12 +91,33 @@ exports.changePost = (req, res) ->
 
 exports.logout = (req, res) ->
 	req.logout()
-	redirectMatch = req.originalUrl.match(/^\/logout\/(.*)\/?$/i)
-	if redirectMatch?
-		redirectMatch = redirectMatch[1]
-	else
-		redirectMatch = "/"
+	if config.all.server.security.saml.use == true && config.all.server.security.saml.logoutRedirectURL?
+		redirectMatch = config.all.server.security.saml.logoutRedirectURL
+	else 
+		redirectMatch = req.originalUrl.match(/^\/logout\/(.*)\/?$/i)
+		if redirectMatch?
+			redirectMatch = redirectMatch[1]
+		else
+			if config.all.client.basePath?
+				redirectMatch = config.all.client.basePath
+			else
+				redirectMatch = '/'
+			redirectMatch = "/"
 	res.redirect redirectMatch
+
+exports.ssoFailure = (req, res, next) ->
+	errorMsg = ""
+	error = req.flash('error')
+	if error.length > 0
+		errorMsg = error[0]
+	console.error errorMsg
+	res.render 'PermissionDenied',
+		title: "Permission denied"
+		scripts: []
+		message: errorMsg
+		logoText: config.all.client.moduleMenus.logoText
+		logoLink: config.all.client.moduleMenus.logoTextLink
+		permissionDeniedText: "Single Sign-on failure: Permission Denied"
 
 exports.ensureAuthenticated = (req, res, next) ->
 	console.log "checking for login for path: "+req.url
@@ -82,7 +125,13 @@ exports.ensureAuthenticated = (req, res, next) ->
 		return next()
 	if req.session?
 		req.session.returnTo = req.url
-	res.redirect '/login'
+
+	basePath = req.protocol + '://' + req.get('host')
+	if req.originalUrl == "/" && config.all.client.basePath?
+		redirectURL = "#{basePath}#{config.all.client.basePath}"
+	else
+		redirectURL = "#{basePath}#{req.originalURL || req.url}"
+	res.redirect '/login?redirect_url='+redirectURL
 
 exports.ensureAuthenticatedAPI = (req, res, next) ->
 	console.log "checking for login for path: "+req.url
@@ -222,4 +271,14 @@ exports.getAuthors = (req, resp) ->
 		baseEntityServiceTestJSON = require '../src/javascripts/spec/testFixtures/BaseEntityServiceTestJSON.js'
 		resp.end JSON.stringify baseEntityServiceTestJSON.authorsList
 	else
-		csUtilities.getAuthors req, resp
+		if csUtilities.getAuthors?
+			csUtilities.getAuthors req, resp
+		else
+			opts = req.query
+			exports.getAuthorsInternal opts, (statusCode, response) =>
+				resp.json response
+
+exports.getAuthorsInternal = (opts, callback) ->
+	csUtilities.getAllAuthors(opts, (statusCode, response) ->
+		callback statusCode, response
+	)

@@ -1,4 +1,4 @@
-class window.Experiment extends BaseEntity
+class Experiment extends BaseEntity
 	urlRoot: "/api/experiments"
 	defaults: ->
 		_(super()).extend(
@@ -13,7 +13,7 @@ class window.Experiment extends BaseEntity
 			console.dir "config for client.include.project is not set"
 
 	parse: (resp) =>
-		if resp == "not unique experiment name" or resp == '"not unique experiment name"'
+		if resp == "not unique experiment name" or resp == '"not unique experiment name"' or resp == "saveFailed: not unique experiment name"
 			@trigger 'notUniqueName'
 			resp
 		else if resp == "saveFailed" or resp == '"saveFailed"'
@@ -199,7 +199,7 @@ class window.Experiment extends BaseEntity
 		if attrs.protocol == null
 			errors.push
 				attribute: 'protocolCode'
-				message: "Protocol must be set"
+				message: "#{window.conf.protocol.label} must be set"
 		if attrs.subclass?
 			unless window.conf.save?.project? and window.conf.save.project.toLowerCase() is "false"
 				reqProject = window.conf.include.project
@@ -348,10 +348,10 @@ class window.Experiment extends BaseEntity
 						expState.get('lsValues').remove value
 		super()
 
-class window.ExperimentList extends Backbone.Collection
+class ExperimentList extends Backbone.Collection
 	model: Experiment
 
-class window.ExperimentBaseController extends BaseEntityController
+class ExperimentBaseController extends BaseEntityController
 	template: _.template($("#ExperimentBaseView").html())
 	moduleLaunchName: "experiment_base"
 
@@ -450,9 +450,9 @@ class window.ExperimentBaseController extends BaseEntityController
 		@setupAttachFileListController()
 		@setupCustomExperimentMetadataController()
 		@render()
-		@listenTo @model, 'sync', @modelSyncCallback
-		@listenTo @model, 'change', @modelChangeCallback
-		@model.getStatus().on 'change', @updateEditable
+		@listenTo @model, 'sync', @modelSyncCallback.bind(@)
+		@listenTo @model, 'change', @modelChangeCallback.bind(@)
+		@model.getStatus().on 'change', @updateEditable.bind(@)
 
 	render: =>
 		unless @model?
@@ -546,7 +546,7 @@ class window.ExperimentBaseController extends BaseEntityController
 			collection: @protocolList
 			insertFirstOption: new PickList
 				code: "unassigned"
-				name: "Select Protocol"
+				name: "Select #{window.conf.protocol.label}"
 			selectedCode: protocolCode
 
 	setupProjectSelect: ->
@@ -577,6 +577,10 @@ class window.ExperimentBaseController extends BaseEntityController
 		@tagListController = new TagListController
 			el: @$('.bv_tags')
 			collection: @model.get 'lsTags'
+		@$('.bv_tags').on 'itemAdded', =>
+			@model.trigger 'change'
+		@$('.bv_tags').on 'itemRemoved', =>
+			@model.trigger 'change'
 		@tagListController.render()
 
 	setupCustomExperimentMetadataController: ->
@@ -692,13 +696,13 @@ class window.ExperimentBaseController extends BaseEntityController
 					@$('.bv_spinner').spin(false)
 					@$('.bv_protocolCode').removeAttr('disabled')
 					if json.length == 0
-						alert("Could not find selected protocol in database")
+						alert("Could not find selected #{window.conf.protocol.label} in database")
 					else
 						@model.set protocol: new Protocol(json)
 						if setAnalysisParams
 							@getFullProtocol() # this will fetch full protocol
 				error: (err) ->
-					alert 'got ajax error from getting protocol '+ code
+					alert 'got ajax error from getting #{window.conf.protocol.label} '+ code
 				dataType: 'json'
 
 	handleKeepOldParams: =>

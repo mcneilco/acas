@@ -1,14 +1,14 @@
-class window.ProjectSearch extends Backbone.Model
+class ProjectSearch extends Backbone.Model
 	defaults:
 		protocolCode: null
 		projectCode: null
 
-class window.ProjectSearch extends Backbone.Model
+class ProjectSearch extends Backbone.Model
 	defaults:
 		protocolCode: null
 		projectCode: null
 
-class window.ProjectSimpleSearchController extends AbstractFormController
+class ProjectSimpleSearchController extends AbstractFormController
 	template: _.template($("#ProjectSimpleSearchView").html())
 	genericSearchUrl: "/api/genericSearch/projects/"
 #	codeNameSearchUrl: "/api/projects/codename/"
@@ -85,7 +85,7 @@ class window.ProjectSimpleSearchController extends AbstractFormController
 
 
 
-class window.ProjectRowSummaryController extends Backbone.View
+class ProjectRowSummaryController extends Backbone.View
 	tagName: 'tr'
 	className: 'dataTableRow'
 	events:
@@ -127,7 +127,7 @@ class window.ProjectRowSummaryController extends Backbone.View
 
 		@
 
-class window.ProjectSummaryTableController extends Backbone.View
+class ProjectSummaryTableController extends Backbone.View
 	initialize: ->
 
 	selectedRowChanged: (row) =>
@@ -153,7 +153,7 @@ class window.ProjectSummaryTableController extends Backbone.View
 		@
 
 
-class window.ProjectBrowserController extends Backbone.View
+class ProjectBrowserController extends Backbone.View
 	#template: _.template($("#ProjectBrowserView").html())
 	includeDuplicateAndEdit: true
 	events:
@@ -172,7 +172,7 @@ class window.ProjectBrowserController extends Backbone.View
 			el: @$('.bv_projectSearchController')
 			includeDuplicateAndEdit: @includeDuplicateAndEdit
 		@searchController.render()
-		@searchController.on "searchReturned", @setupProjectSummaryTable
+		@searchController.on "searchReturned", @setupProjectSummaryTable.bind(@)
 		#@searchController.on "resetSearch", @destroyProjectSummaryTable
 		@$('.bv_queryToolDisplayName').html window.conf.service.result.viewer.displayName
 

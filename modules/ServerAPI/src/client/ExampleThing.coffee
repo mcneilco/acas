@@ -41,7 +41,7 @@ ExampleThingConf =
 				fieldType: 'codeValue'
 				required: true
 				formLabel: "*Scientist"
-				fieldWrapper: "bv_scientist_date"
+				fieldWrapper: "bv_scientist"
 				url: "/api/authors"
 		,
 			key: 'completion date'
@@ -54,7 +54,7 @@ ExampleThingConf =
 			fieldSettings:
 				fieldType: 'dateValue'
 				formLabel: "*Date"
-				fieldWrapper: "bv_scientist_date"
+				fieldWrapper: "bv_scientistDate"
 				placeholder: "yyyy-mm-dd"
 				required: true
 		,
@@ -72,7 +72,7 @@ ExampleThingConf =
 				fieldType: 'codeValue'
 				required: false
 				formLabel: "Color"
-				fieldWrapper: "bv_scientist_date"
+				fieldWrapper: "bv_color"
 		,
 			key: 'notebook'
 			modelDefaults:
@@ -98,7 +98,7 @@ ExampleThingConf =
 			fieldSettings:
 				fieldType: 'fileValue'
 				formLabel: "Example File"
-				fieldWrapper: "bv_notebook"
+				fieldWrapper: "bv_file"
 				required: false
 		]
 
@@ -119,7 +119,6 @@ ExampleThingConf =
 					formLabel: "Media Component"
 					required: true
 					unique: true
-					width: 215
 			,
 				modelDefaults:
 					type: 'numericValue'
@@ -145,7 +144,6 @@ ExampleThingConf =
 					required: false
 					formLabel: "Category"
 					required: true
-					width:150
 			,
 				modelDefaults:
 					type: 'codeValue'
@@ -155,7 +153,6 @@ ExampleThingConf =
 					fieldType: 'stringValue'
 					formLabel: "Performed By"
 					required: true
-					width: 150
 			,
 				modelDefaults:
 					type: 'dateValue'
@@ -166,13 +163,12 @@ ExampleThingConf =
 					fieldType: 'dateValue'
 					formLabel: "Added date"
 					required: true
-					width: 150
 			]
 		]
 		firstLsThingItxs: []
 		secondLsThingItxs: []
 
-class window.ExampleThingParent extends Thing
+class ExampleThingParent extends Thing
 	urlRoot: "/api/things/parent/example thing"
 	url: ->
 		if @isNew() and !@has('codeName')
@@ -226,7 +222,7 @@ class window.ExampleThingParent extends Thing
 		copiedThing = super()
 		copiedThing
 
-class window.ExampleThingController extends AbstractThingFormController
+class ExampleThingController extends AbstractThingFormController
 	template: _.template($("#ExampleThingView").html())
 	moduleLaunchName: "example_thing"
 
@@ -401,6 +397,8 @@ ExampleTableAuditConf =
 					formLabel: "Category"
 					required: true
 					width:150
+					editablePicklist: true  # This adds a + button to the picklist to allow additions by the user
+					editablePicklistRoles: []  # + button only enabled if user has role matching one in the list. example role would be e.g. [window.conf.roles.acas.adminRole]
 			,
 				modelDefaults:
 					type: 'codeValue'
@@ -428,7 +426,7 @@ ExampleTableAuditConf =
 		secondLsThingItxs: []
 
 
-class window.ExampleTableAuditController extends AbstractThingFormController
+class ExampleTableAuditController extends AbstractThingFormController
 	template: _.template($("#ExampleTableAuditView").html())
 
 	events: ->

@@ -55,7 +55,6 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/createTube', exports.createTube
 	app.post '/api/createTubes', exports.createTubes
 	app.post '/api/throwInTrash', exports.throwInTrash
-	app.post '/api/updateContainerHistoryLogs', exports.updateContainerHistoryLogs
 	app.post '/api/getContainerInfoFromBatchCode', exports.getContainerInfoFromBatchCode
 	app.post '/api/getContainerStatesByContainerValue', exports.getContainerStatesByContainerValue
 	app.post '/api/getContainerLogsByContainerCodes', exports.getContainerLogsByContainerCodes
@@ -119,7 +118,6 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/createTube', loginRoutes.ensureAuthenticated, exports.createTube
 	app.post '/api/createTubes', loginRoutes.ensureAuthenticated, exports.createTubes
 	app.post '/api/throwInTrash', loginRoutes.ensureAuthenticated, exports.throwInTrash
-	app.post '/api/updateContainerHistoryLogs', loginRoutes.ensureAuthenticated, exports.updateContainerHistoryLogs
 	app.post '/api/getTubesFromBatchCode', loginRoutes.ensureAuthenticated, exports.getTubesFromBatchCode
 	app.post '/api/loadParentVialsFromCSV', loginRoutes.ensureAuthenticated, exports.loadParentVialsFromCSV
 	app.post '/api/loadDaughterVialsFromCSV', loginRoutes.ensureAuthenticated, exports.loadDaughterVialsFromCSV
@@ -163,7 +161,7 @@ exports.getContainersInLocation = (req, resp) ->
 				console.error json
 				console.error response
 				resp.end JSON.stringify "getContainersInLocation failed"
-  		)
+		)
 
 exports.getContainersInLocationWithTypeAndKind = (req, resp) ->
 	req.setTimeout 86400000
@@ -428,7 +426,7 @@ exports.getWellCodesByPlateBarcodes = (req, resp) ->
 				console.error json
 				console.error response
 				resp.end JSON.stringify "getWellCodesByPlateBarcodes failed"
-  		)
+		)
 
 exports.getWellCodesByPlateBarcodesInternal = (plateBarcodes, callback) ->
 	if global.specRunnerTestmode
@@ -489,7 +487,7 @@ exports.getWellContentInternal = (wellCodeNames, callback) ->
 				console.error json
 				console.error response
 				callback JSON.stringify "getWellContent failed"
-  		)
+		)
 
 exports.getContainerAndDefinitionContainerByContainerLabel = (req, resp) ->
 	req.setTimeout 86400000
@@ -1977,9 +1975,8 @@ exports.getContainerLogsByContainerCodesInternal = (containerCodes, callback) =>
 			response = []
 			for getContainer in containersByCodeNamesResponse
 				lsLabels = getContainer.container.lsLabels
-				preferredLabelObject = _.filter(lsLabels, (label) ->
-  				label.preferred == true
-				)
+				preferredLabelObject = _.filter lsLabels, (label) ->
+					label.preferred == true
 				codeName = getContainer.container.codeName
 				responseObject =
 					label: preferredLabelObject[0].labelText
@@ -2576,37 +2573,27 @@ exports.getTubesFromBatchCodeInternal = (input, callback) =>
 
 	queryPayload =
 		{
-    "lsType": "container" ,
-    "lsKind": "tube",
-#    "values":[
-#        {
-#            "stateType":"metadata",
-#            "stateKind":"information",
-#            "valueType": "codeValue",
-#            "valueKind": "status",
-#            "operator": "!=",
-#            "value":"expired"
-#        }
-#        ],
-    "secondInteractions":[
-        {
-            "interactionType": "has member",
-            "interactionKind": "container_well",
-            "thingType": "well",
-            "thingKind": "default",
-            "thingValues":[
-                {
-                    "stateType":"status",
-                    "stateKind":"content",
-                    "valueType": "codeValue",
-                    "valueKind": "batch code",
-                    "operator": "=",
-                    "value":batchCode
-                }
-                ]
-        }
-        ]
-			}
+			"lsType": "container" ,
+			"lsKind": "tube",
+			"secondInteractions":[
+				{
+					"interactionType": "has member",
+					"interactionKind": "container_well",
+					"thingType": "well",
+					"thingKind": "default",
+					"thingValues":[
+						{
+							"stateType":"status",
+							"stateKind":"content",
+							"valueType": "codeValue",
+							"valueKind": "batch code",
+							"operator": "=",
+							"value":batchCode
+						}
+						]
+				}
+			]
+		}
 
 	config = require '../conf/compiled/conf.js'
 	baseurl = config.all.client.service.persistence.fullpath+"containers/advancedSearchContainers?with=codeTable&labelType=barcode"

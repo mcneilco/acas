@@ -1,4 +1,4 @@
-class window.Protocol extends BaseEntity
+class Protocol extends BaseEntity
 	urlRoot: "/api/protocols"
 
 	initialize: ->
@@ -18,15 +18,18 @@ class window.Protocol extends BaseEntity
 					resp.lsLabels = new LabelList(resp.lsLabels)
 				resp.lsLabels.on 'change', =>
 					@trigger 'change'
+				.bind(@)
 			if resp.lsStates?
 				if resp.lsStates not instanceof StateList
 					resp.lsStates = new StateList(resp.lsStates)
 				resp.lsStates.on 'change', =>
 					@trigger 'change'
+				.bind(@)
 			if resp.lsTags not instanceof TagList
 				resp.lsTags = new TagList(resp.lsTags)
 				resp.lsTags.on 'change', =>
 					@trigger 'change'
+				.bind(@)
 			resp
 
 	getCreationDate: ->
@@ -101,8 +104,10 @@ class window.Protocol extends BaseEntity
 		maxY
 
 	validate: (attrs) ->
-		errors = []
-		errors.push super(attrs)...
+		errors = super(attrs)
+		if !errors?
+			errors = []
+
 		if attrs.subclass?
 			cDate = @getCreationDate().get('dateValue')
 			if cDate is undefined or cDate is "" or cDate is null then cDate = "fred"
@@ -166,10 +171,10 @@ class window.Protocol extends BaseEntity
 		copiedEntity.getCreationDate().set dateValue: null
 		copiedEntity
 
-class window.ProtocolList extends Backbone.Collection
+class ProtocolList extends Backbone.Collection
 	model: Protocol
 
-class window.ProtocolBaseController extends BaseEntityController
+class ProtocolBaseController extends BaseEntityController
 	template: _.template($("#ProtocolBaseView").html())
 	moduleLaunchName: "protocol_base"
 
@@ -217,7 +222,7 @@ class window.ProtocolBaseController extends BaseEntityController
 									else
 										@model = prot
 								else
-									alert 'Could not get protocol for code in this URL. Creating new protocol'
+									alert 'Could not get #{window.conf.protocol.label} for code in this URL. Creating new #{window.conf.protocol.label}'
 							@completeInitialization()
 				else
 					@completeInitialization()
@@ -252,8 +257,11 @@ class window.ProtocolBaseController extends BaseEntityController
 			#				@$('.bv_saveFailed').hide()
 			$('.bv_protocolSaveFailed').on 'hidden', =>
 				@$('.bv_saveFailed').hide()
+			.bind(@)
+		.bind(@)
 		@model.on 'saveFailed', =>
 			@$('.bv_saveFailed').show()
+		.bind(@)
 		@setupStatusSelect()
 		@setupScientistSelect()
 		@setupTagList()
@@ -265,9 +273,9 @@ class window.ProtocolBaseController extends BaseEntityController
 			@setupProjectSelect()
 		@setupSelRequiredAttrs()
 		@render()
-		@listenTo @model, 'sync', @modelSyncCallback
-		@listenTo @model, 'change', @modelChangeCallback
-		@model.getStatus().on 'change', @updateEditable
+		@listenTo @model, 'sync', @modelSyncCallback.bind(@)
+		@listenTo @model, 'change', @modelChangeCallback.bind(@)
+		@model.getStatus().on 'change', @updateEditable.bind(@)
 #		@trigger 'amClean' #so that module starts off clean when initialized
 
 	render: =>
@@ -368,12 +376,15 @@ class window.ProtocolBaseController extends BaseEntityController
 			required: false
 		@attachFileListController.on 'amClean', =>
 			@trigger 'amClean'
+		.bind(@)
 		@attachFileListController.on 'renderComplete', =>
 			@checkDisplayMode()
+		.bind(@)
 		@attachFileListController.render()
 		@attachFileListController.on 'amDirty', =>
 			@trigger 'amDirty' #need to put this after the first time @attachFileListController is rendered or else the module will always start off dirty
 			@model.trigger 'change'
+		.bind(@)
 
 	setupSelRequiredAttrs: =>
 		#get codetable values for required sel attrs
@@ -400,6 +411,7 @@ class window.ProtocolBaseController extends BaseEntityController
 			@$(".bv_#{camelCaseAttrCode}").removeAttr 'checked'
 		@$(".bv_#{camelCaseAttrCode}").on "click", =>
 			@handleSelRequiredAttrChkbxChanged attr.code, camelCaseAttrCode
+		.bind(@)
 
 	handleSelRequiredAttrChkbxChanged: (attrCode, camelCaseAttrCode) =>
 		currentVal = @model.getSelRequiredAttr attrCode

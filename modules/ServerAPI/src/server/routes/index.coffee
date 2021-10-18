@@ -9,6 +9,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 		app.get '/toPrint/:code', loginRoutes.ensureAuthenticated, exports.toPrint
 		app.get '/', loginRoutes.ensureAuthenticated, exports.index
 		app.get '/:moduleName/codeName/:code', loginRoutes.ensureAuthenticated, exports.autoLaunchWithCode
+		app.get '/:moduleName/labelText/:labelType/:labelKind/:labelText', loginRoutes.ensureAuthenticated, exports.autoLaunchWithLabel
 		app.get '/entity/copy/:moduleName/:code', loginRoutes.ensureAuthenticated, exports.copyAndLaunchWithCode
 		app.get '/:moduleName/createFrom/:code', loginRoutes.ensureAuthenticated, exports.autoLaunchCreateFromOtherEntity
 	else
@@ -29,6 +30,20 @@ exports.autoLaunchWithCode = (req, res) ->
 		code: req.params.code
 		copy: false
 		createFromOtherEntity: false
+		queryParams: req.query
+	exports.index req, res, moduleLaunchParams
+
+exports.autoLaunchWithLabel = (req, res) ->
+	console.log "autoLaunchWithCode"
+	console.log req.params
+	moduleLaunchParams =
+		moduleName: req.params.moduleName
+		labelText: req.params.labelText
+		labelType: req.params.labelType
+		labelKind: req.params.labelKind
+		copy: false
+		createFromOtherEntity: false
+		queryParams: req.query
 	exports.index req, res, moduleLaunchParams
 
 exports.copyAndLaunchWithCode = (req, res) ->
@@ -37,6 +52,7 @@ exports.copyAndLaunchWithCode = (req, res) ->
 		code: req.params.code
 		copy: true
 		createFromOtherEntity: false
+		queryParams: req.query
 	exports.index req, res, moduleLaunchParams
 
 exports.autoLaunchCreateFromOtherEntity = (req, res) ->
@@ -45,6 +61,7 @@ exports.autoLaunchCreateFromOtherEntity = (req, res) ->
 		code: req.params.code
 		copy: false
 		createFromOtherEntity: true
+		queryParams: req.query
 	exports.index req, res, moduleLaunchParams
 
 exports.toPrint = (req, res, moduleLaunchParams) ->
@@ -63,6 +80,7 @@ exports.toPrint = (req, res, moduleLaunchParams) ->
 		createFromOtherEntity: false
 		print: true
 		unregistered: unregistered
+		queryParams: req.query
 
 	console.log "moduleLaunchParams"
 	console.log moduleLaunchParams

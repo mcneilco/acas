@@ -7,7 +7,7 @@ $(function() {
             _.each(attributes, function(att, key) {
                 if( (att != '' && att!=null) && key!='aliasContSelect' && key!='searchType' && key!='percentSimilarity' && key!='maxResults' && key!='loggedInUser' ) {
                     if( key=='chemist') {
-                        if( att.get('code')!='anyone') {
+                        if( att!='anyone') {
                             allEmpty = false;
                         }
                     } else {
@@ -51,16 +51,16 @@ $(function() {
             this.valid = false;
 			this.sketcherLoaded = false;
 			this.exportFormat = "mol";
-			if(window.configuration.marvin) {
+			if(window.configuration.sketcher == 'marvin') {
 				this.useMarvin = true;
 				if (window.configuration.marvin.exportFormat) {
 					this.exportFormat = window.configuration.marvin.exportFormat;
 				}
-			//To use ketcher you must replace the marvin hash with 	"ketcher": true,
-			// in modules/CmpdReg/src/client/custom/configuration.json
-			} else if(window.configuration.ketcher) {
+			} else if(window.configuration.sketcher == 'ketcher') {
 				this.useKetcher = true;
-			}
+			} else if(window.configuration.sketcher == 'maestro') {
+				this.useMaestro = true;
+		}
 
 		},
 
@@ -70,7 +70,8 @@ $(function() {
             }
 			this.hide();
 			if(window.configuration.clientUILabels.corpNameLabel) {
-                this.$('.corpNameLabel').html(window.configuration.clientUILabels.corpNameLabel);
+				this.$('.corpNameLabel').html(window.configuration.clientUILabels.corpNameLabel+" Range");
+				this.$('.corpNameListLabel').html(window.configuration.clientUILabels.corpNameLabel+" List");
             }
             this.$('.dateFrom').datepicker( );
             this.$('.dateFrom').datepicker( "option", "dateFormat", "mm/dd/yy" );
@@ -109,6 +110,11 @@ $(function() {
 				this.$('#searchMarvinSketch').attr('src',"/lib/ketcher-2.0.0-alpha.3_custom/ketcher.html?api_path=/api/cmpdReg/ketcher/");
 				this.$('#searchMarvinSketch').on('load', function () {
 					self.ketcher = self.$('#searchMarvinSketch')[0].contentWindow.ketcher;
+				});
+			} else if (this.useMaestro) {
+				this.$('#searchMarvinSketch').attr('src',"/CmpdReg/maestrosketcher/sketcher_app.html");
+				this.$('#searchMarvinSketch').on('load', function () {
+					self.maestro = self.$('#searchMarvinSketch')[0].contentWindow.Module;
 				});
 			} else {
 				alert("No search sketcher configured");
@@ -165,6 +171,14 @@ $(function() {
 					this.trigger('searchNext', sf);
 					this.hide();
 				}
+			} else if (this.useMaestro) {
+				mol = this.maestro.getSketcherMolBlock();
+				if (mol.indexOf("M  V30 COUNTS 0 0 0 0 0") > -1) mol = '';
+				var sf = this.makeSearchFormModel(mol);
+				if (this.isValid()) {
+					this.trigger('searchNext', sf);
+					this.hide();
+				}
 			} else {
 				alert("No search sketcher configured in search action");
 			}
@@ -175,6 +189,7 @@ $(function() {
             searchForm.bind('error',  this.validationError);
 
             searchForm.set({
+                corpNameList: jQuery.trim(this.$('.corpNameList').val()),
                 corpNameFrom: jQuery.trim(this.$('.corpNameFrom').val()),
                 corpNameTo: jQuery.trim(this.$('.corpNameTo').val()),
                 aliasContSelect: this.$('.aliasContSelect').val(),
@@ -185,7 +200,7 @@ $(function() {
                 percentSimilarity:
                     (jQuery.trim(this.$('.percentSimilarity').val())=='') ? null :
                     parseFloat(jQuery.trim(this.$('.percentSimilarity').val())),
-                chemist: this.chemistCodeController.getSelectedModel(),
+                chemist: this.chemistCodeController.getSelectedModel().get("code"),
                 maxResults:
                     (jQuery.trim(this.$('.maxResults').val())=='') ? null :
                     parseFloat(jQuery.trim(this.$('.maxResults').val())),
@@ -242,8 +257,7 @@ $(function() {
         },
 
 	    keyupHandler: function(e) {
-		    console.log( "got keyup");
-		    if(e.which === 13) {// enter key
+		    if(e.which === 13 && !this.$('.corpNameList').is(":focus")) {// enter key
 			    this.search();
 		    }
 	    }

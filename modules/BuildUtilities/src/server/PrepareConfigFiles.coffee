@@ -5,31 +5,29 @@ _.mixin({deepExtend: underscoreDeepExtend(_)})
 fs = require 'fs'
 flat = require 'flat'
 glob = require 'glob'
-shell = require 'shelljs'
 path = require 'path'
 acasHome =  path.resolve "#{__dirname}/../../.."
-csUtilities = require "#{acasHome}/src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js"
 os = require 'os'
 propertiesParser = require "properties-parser"
+dotenv = require "dotenv"
+dotenvexpand = require "dotenv-expand"
 configDir = "#{acasHome}/conf/"
-global.deployMode= "Dev" # This may be overridden in getConfServiceVars()
-
-sysEnv = process.env
+global.deployMode= "Dev" 
 
 mkdirSync = (path) ->
 	try
-		fs.mkdirSync path
+		fs.mkdirSync path,{ recursive: true }
 	catch e
 		if e.code != 'EEXIST'
 			throw e
 	return
 
 writeJSONFormat = (conf) ->
-	mkdirSync "#{configDir}/compiled"
+	mkdirSync "#{configDir}/compiled", { recursive: true }
 	fs.writeFileSync "#{configDir}/compiled/conf.js", "exports.all="+JSON.stringify(conf)+";"
 
 writeClientJSONFormat = (conf) ->
-	mkdirSync "#{acasHome}/public/conf"
+	mkdirSync "#{acasHome}/public/conf", { recursive: true }
 	fs.writeFileSync "#{acasHome}/public/conf/conf.js", "window.conf="+JSON.stringify(conf.client)+";"
 
 writePropertiesFormat = (conf) ->
@@ -39,6 +37,8 @@ writePropertiesFormat = (conf) ->
 	configOut = ""
 	for attr, value of flatConf
 		if value != null
+			if typeof(value) == "string"
+				value = value.split("\n").join("\\n")
 			configOut += attr+"="+value+"\n"
 		else
 			configOut += attr+"=\n"
@@ -76,73 +76,29 @@ getRFileHandlerString = (rFilesWithRoute, config, acasHome)->
 
 
 getApacheCompileOptions = ->
-	posssibleCommands = ['httpd', 'apachectl', '/usr/sbin/apachectl', '/usr/sbin/httpd2-prefork', '/usr/sbin/httpd2']
-	for possibleCommand in posssibleCommands
-		if shell.which(possibleCommand)
-			apacheCommand = possibleCommand
-			break;
-	if not apacheCommand? and not sysEnv.APACHE
-		console.log 'Could not find apache command in list: ' + posssibleCommands.join(', ') + 'skipping apache config'
-		return 'skip'
-	else
-		if sysEnv.APACHE
-			apacheVersion = sysEnv.APACHE
-			switch apacheVersion
-				when 'Redhat'
-					compileOptions = [ { option: 'ApacheVersion', value: 'Redhat' },
-						{ option: 'APACHE_MPM_DIR', value: '"server/mpm/prefork"' },
-						{ option: 'APR_HAS_SENDFILE', value: undefined },
-						{ option: 'APR_HAS_MMAP', value: undefined },
-						{ option: 'APR_HAVE_IPV6 (IPv4-mapped addresses enabled)'},
-						{ option: 'SINGLE_LISTEN_UNSERIALIZED_ACCEPT'},
-						{ option: 'DYNAMIC_MODULE_LIMIT', value: '128' },
-						{ option: 'HTTPD_ROOT', value: '"/etc/httpd"' },
-						{ option: 'SUEXEC_BIN', value: '"/usr/sbin/suexec"' },
-						{ option: 'DEFAULT_PIDLOG', value: '"run/httpd.pid"' },
-						{ option: 'DEFAULT_SCOREBOARD', value: '"logs/apache_runtime_status"' },
-						{ option: 'DEFAULT_LOCKFILE', value: '"logs/accept.lock"' },
-						{ option: 'DEFAULT_ERRORLOG', value: '"logs/error_log"' },
-						{ option: 'AP_TYPES_CONFIG_FILE', value: '"conf/mime.types"' },
-						{ option: 'SERVER_CONFIG_FILE', value: '"conf/httpd.conf"' } ]
-				when 'Ubuntu'
-					console.log 'no defaults for ubuntu apache, run without APACHE environment variable if Apache is installed'
-		else
-			compileString = shell.exec(apacheCommand + ' -V', {silent:true})
-			compileOptionStrings =  compileString.stdout.split("\n");
-			compileOptions = []
-			apacheVersion = ''
-			for option in compileOptionStrings
-				if option.match('Server version')
-					if option.match('Ubuntu')
-						apacheVersion = 'Ubuntu'
-					else
-						if option.match('SUSE')
-							apacheVersion = 'SUSE'
-						else
-							if option.match("2.4.*(CentOS)")
-								apacheVersion="Redhat-2.4"
-							else
-								if os.type() == "Darwin"
-									apacheVersion = 'Darwin'
-								else
-									apacheVersion = 'Redhat'
-				else
-					option = option.match(/^ -D .*/)
-					if option?
-						option = option[0].replace(' -D ','')
-						option = option.split('=')
-						option = {option: option[0], value: option[1]}
-						compileOptions.push(option)
-
-		console.log apacheVersion
-		compileOptions.push(option: 'ApacheVersion', value: apacheVersion)
-		compileOptions
+	compileOptions = [ { option: 'ApacheVersion', value: 'Redhat' },
+		{ option: 'APACHE_MPM_DIR', value: '"server/mpm/prefork"' },
+		{ option: 'APR_HAS_SENDFILE', value: undefined },
+		{ option: 'APR_HAS_MMAP', value: undefined },
+		{ option: 'APR_HAVE_IPV6 (IPv4-mapped addresses enabled)'},
+		{ option: 'SINGLE_LISTEN_UNSERIALIZED_ACCEPT'},
+		{ option: 'DYNAMIC_MODULE_LIMIT', value: '128' },
+		{ option: 'HTTPD_ROOT', value: '"/etc/httpd"' },
+		{ option: 'SUEXEC_BIN', value: '"/usr/sbin/suexec"' },
+		{ option: 'DEFAULT_PIDLOG', value: '"run/httpd.pid"' },
+		{ option: 'DEFAULT_SCOREBOARD', value: '"logs/apache_runtime_status"' },
+		{ option: 'DEFAULT_LOCKFILE', value: '"logs/accept.lock"' },
+		{ option: 'DEFAULT_ERRORLOG', value: '"logs/error_log"' },
+		{ option: 'AP_TYPES_CONFIG_FILE', value: '"conf/mime.types"' },
+		{ option: 'SERVER_CONFIG_FILE', value: '"conf/httpd.conf"' },
+		{ option: 'ApacheVersion', value: "RedHat" } ]
+	return compileOptions
 
 getRApacheSpecificConfString = (config, apacheCompileOptions, acasHome) ->
 	confs = []
 	runUser = config.server.run.user
 	confs.push('User ' + runUser)
-	confs.push('Group ' + shell.exec('id -g -n ' + runUser, {silent:true}).stdout.replace('\n','')  )
+	confs.push('Group ' + runUser)
 	confs.push('Listen ' + config.server.rapache.listen + ':' + config.client.service.rapache.port)
 	confs.push('PidFile ' + acasHome + '/bin/apache.pid')
 	confs.push('StartServers ' + config.server.rapache.conf.startservers)
@@ -156,7 +112,11 @@ getRApacheSpecificConfString = (config, apacheCompileOptions, acasHome) ->
 	confs.push('HostnameLookups ' + config.server.rapache.conf.hostnamelookups)
 	confs.push('ServerAdmin ' + config.server.rapache.conf.serveradmin)
 	confs.push('LogFormat ' + config.server.rapache.conf.logformat)
-	confs.push('ErrorLog ' + config.server.log.path + '/racas.log')
+	if config.server.rapache.forceAllToStdErrOnly? && config.server.rapache.forceAllToStdErrOnly
+		confs.push('ErrorLog ' + '/dev/stderr')
+		confs.push('TransferLog ' + '/dev/stdout')
+	else
+		confs.push('ErrorLog ' + config.server.log.path + '/racas.log')
 	confs.push('LogLevel ' + config.server.log.level.toLowerCase())
 	if Boolean(config.client.use.ssl)
 		urlPrefix = 'https'
@@ -176,49 +136,22 @@ getRApacheSpecificConfString = (config, apacheCompileOptions, acasHome) ->
 
 getApacheSpecificConfString = (config, apacheCompileOptions, acasHome) ->
 	apacheSpecificConfs = []
-	apacheVersion = _.findWhere(apacheCompileOptions, {option: 'ApacheVersion'}).value
-	switch apacheVersion
-		when 'Ubuntu'
-			serverRoot = '\"/usr/lib/apache2\"'
-			modulesDir = 'modules/'
-			typesConfig = '/etc/mime.types'
-		when 'Redhat'
-			serverRoot = '\"/etc/httpd\"'
-			modulesDir = 'modules/'
-			typesConfig = '/etc/mime.types'
-		when 'Redhat-2.4'
-			serverRoot = '\"/etc/httpd\"'
-			modulesDir = 'modules/'
-			typesConfig = '/etc/mime.types'
-		when 'SUSE'
-			serverRoot = '\"/usr\"'
-			modulesDir = 'lib64/apache2/'
-			typesConfig = '/etc/mime.types'
-		when 'Darwin'
-			serverRoot = '\"/usr\"'
-			modulesDir = 'libexec/apache2/'
-			typesConfig = '/private/etc/apache2/mime.types'
+	serverRoot = '\"/etc/httpd\"'
+	modulesDir = 'modules/'
+	typesConfig = '/etc/mime.types'
 
 	apacheSpecificConfs.push('ServerRoot ' + serverRoot)
 	apacheSpecificConfs.push('LoadModule mime_module ' + modulesDir + "mod_mime.so")
 	apacheSpecificConfs.push('TypesConfig ' + typesConfig)
-	if apacheVersion in ['Redhat-2.4']
-		apacheSpecificConfs.push('Include conf.modules.d/*.conf')
-		apacheSpecificConfs.push('DefaultRuntimeDir ' + acasHome + '/bin')
-	if apacheVersion in ['Redhat', 'Darwin', 'SUSE', 'Redhat-2.4']
-		apacheSpecificConfs.push('LoadModule log_config_module ' + modulesDir + "mod_log_config.so")
-		apacheSpecificConfs.push('LoadModule logio_module ' + modulesDir + "mod_logio.so")
-	if apacheVersion == 'Darwin'
-		apacheSpecificConfs.push('Mutex default:' + acasHome + '/bin')
-		apacheSpecificConfs.push("LoadModule unixd_module " + modulesDir + "mod_unixd.so")
-		apacheSpecificConfs.push("LoadModule authz_core_module " + modulesDir + "mod_authz_core.so")
-	if apacheVersion == 'Ubuntu'
-		apacheSpecificConfs.push('LoadModule mpm_prefork_module ' + modulesDir + "mod_mpm_prefork.so")
-		apacheSpecificConfs.push('LoadModule authz_core_module ' + modulesDir + "mod_authz_core.so")
+	apacheSpecificConfs.push('LoadModule unixd_module ' + modulesDir + "mod_unixd.so")
+	apacheSpecificConfs.push("LoadModule authz_core_module " + modulesDir + "mod_authz_core.so")
+	apacheSpecificConfs.push('LoadModule mpm_prefork_module ' + modulesDir + "mod_mpm_prefork.so")
+	apacheSpecificConfs.push('LoadModule log_config_module ' + modulesDir + "mod_log_config.so")
+	apacheSpecificConfs.push('LoadModule logio_module ' + modulesDir + "mod_logio.so")
+
 	apacheSpecificConfs.push('LoadModule dir_module ' + modulesDir + "mod_dir.so")
 	if Boolean(config.client.use.ssl)
 		apacheSpecificConfs.push('LoadModule ssl_module ' + modulesDir + "mod_ssl.so")
-	else
 	apacheSpecificConfs.push('LoadModule rewrite_module ' + modulesDir + "mod_rewrite.so")
 	apacheSpecificConfs.push('LoadModule R_module ' + modulesDir + "mod_R.so")
 	apacheSpecificConfs.push('LoadModule status_module ' + modulesDir + "mod_status.so")
@@ -228,96 +161,76 @@ getApacheSpecificConfString = (config, apacheCompileOptions, acasHome) ->
 writeApacheConfFile = (config)->
 	acasHome = path.resolve(__dirname,acasHome)
 	apacheCompileOptions = getApacheCompileOptions()
-	if apacheCompileOptions != 'skip'
-		apacheSpecificConfString = getApacheSpecificConfString(config, apacheCompileOptions, acasHome)
-	else
-		apacheSpecificConfString = ''
+	apacheSpecificConfString = getApacheSpecificConfString(config, apacheCompileOptions, acasHome)
 	rapacheConfString = getRApacheSpecificConfString(config, apacheCompileOptions, acasHome)
 	rFilesWithRoute = getRFilesWithRoute()
 	rFileHandlerString = getRFileHandlerString(rFilesWithRoute, config, acasHome)
 	fs.writeFileSync "#{acasHome}/conf/compiled/apache.conf", [apacheSpecificConfString,rapacheConfString,rFileHandlerString].join('\n')
 	fs.writeFileSync "#{acasHome}/conf/compiled/rapache.conf", [rapacheConfString,rFileHandlerString].join('\n')
 
-csUtilities.getConfServiceVars sysEnv, (confVars) ->
 
-	mkdirSync = (path) ->
-		try
-			fs.mkdirSync path
-		catch e
-			if e.code != 'EEXIST'
-				throw e
+getProperties = (configDir) =>
+	configFiles = glob.sync("#{configDir}/*.properties")
+	configFiles = configFiles.sort()
+	configFiles.unshift "#{configDir}/config.properties.example"
+	console.info "reading configs in this order (latter configs override former configs): #{configFiles}"
+	
+	if configFiles.length == 0
+		console.warn "no config files found"
 		return
 
-	mkdirSync(configDir)
+	allConf = []
+	for configFile in configFiles
+		console.info "reading conf file: #{configFile}"
+		allConf = _.extend allConf, propertiesParser.read(configFile)
+		console.info "read conf file: #{configFile}"
 
-	getProperties = (configDir) =>
-		configFiles = glob.sync("#{configDir}/*.properties")
-		configFiles = configFiles.sort()
-		configFiles.unshift "#{configDir}/config.properties.example"
-		console.info "reading configs in this order (latter configs override former configs): #{configFiles}"
 
-		if configFiles.length == 0
-			console.warn "no config files found"
-			return
+	configString = ""
+	for attr, value of allConf
+		if value != null
+			configString += attr+"="+value+"\n"
+		else
+			configString += attr+"=\n"
 
-		allConf = []
-		for configFile in configFiles
-			allConf = _.extend allConf, propertiesParser.read(configFile)
+	envFiles = glob.sync("#{acasHome}/conf/*.env")
+	envFiles = envFiles.reverse()
+	envFiles.push "#{acasHome}/conf/.env"
+	console.info "started with process.env and now reading env files in this order (former envs take presidence over latter envs): #{envFiles}"
+	for envFile in envFiles
+		console.info "reading env file: #{envFile}"
+		fileEnv = dotenv.config({ path: envFile} )
+		dotenvexpand(fileEnv)
+		console.info "read env file: #{envFile}"
 
-		# add any conf/*.env files to the process environment
-		envFiles = glob.sync("#{acasHome}/conf/**/*.env")
-		for envFile in envFiles
-			sysEnv =  _.extend propertiesParser.read(envFile), sysEnv
+	substitutions =
+		env: process.env
+		conf: {}
+	options =
+		path: false
+		namespaces: true
+		sections: true
+		variables: true
+		include: true
+		vars: substitutions
 
-		configString = ""
-		for attr, value of allConf
-			if value != null
-				configString += attr+"="+value+"\n"
+	properties.parse configString, options, (error, conf) =>
+		if error?
+			console.log "Problem parsing #{configFile}: "+error
+		else
+			if conf.client.deployMode == "Prod"
+				conf.server.enableSpecRunner = false
 			else
-				configString += attr+"=\n"
+				conf.server.enableSpecRunner = true
+			if !conf.server?.file?.server?.path?
+				conf = _.deepExtend conf, server:file:server:path:"#{path.resolve acasHome+"/"+conf.server.datafiles.relative_path}"
 
-		substitutions =
-			env: sysEnv
-			conf: confVars
-		options =
-			path: false
-			namespaces: true
-			sections: true
-			variables: true
-			include: true
-			vars: substitutions
+			conf.server.run = user: do =>
+				return os.userInfo().username
+		writeJSONFormat conf
+		writeClientJSONFormat conf
+		writePropertiesFormat conf
+		writeApacheConfFile conf
 
-		properties.parse configString, options, (error, conf) =>
-			if error?
-				console.log "Problem parsing #{configFile}: "+error
-			else
-				if conf.client.deployMode == "Prod"
-					conf.server.enableSpecRunner = false
-				else
-					conf.server.enableSpecRunner = true
-				if !conf.server?.file?.server?.path?
-					conf = _.deepExtend conf, server:file:server:path:"#{path.resolve acasHome+"/"+conf.server.datafiles.relative_path}"
-				conf.server.run = user: do =>
-					if !conf.server.run?
-						console.log "server.run.user is not set"
-						if sysEnv.USER
-							console.log "using process.env.USER #{sysEnv.USER}"
-							return sysEnv.USER
-						else
-							console.log "process.env.USER is not set"
-							if process.getuid()
-								user = shell.exec('whoami',{silent:true}).stdout.replace('\n','')
-								console.log "using whoami result #{user}"
-								return user
-							else
-								console.log "could not get run user exiting"
-								process.exit 1
-
-					return conf.server.run.user
-
-			writeJSONFormat conf
-			writeClientJSONFormat conf
-			writePropertiesFormat conf
-			writeApacheConfFile conf
-
-	getProperties(configDir)
+mkdirSync(configDir, { recursive: true })
+getProperties(configDir)

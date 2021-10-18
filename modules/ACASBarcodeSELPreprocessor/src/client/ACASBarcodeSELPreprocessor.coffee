@@ -1,4 +1,4 @@
-class window.ACASBarcodeSELPreprocessor extends BasicFileValidateAndSaveController
+class ACASBarcodeSELPreprocessor extends BasicFileValidateAndSaveController
 
 	initialize: ->
 		@fileProcessorURL = "/aCASBarcodeSELPreprocessor/parseSEL"

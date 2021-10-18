@@ -4,8 +4,11 @@
 # This ignores ignored states, and neither shows them, nor allows them to be edited
 
 
-class window.ACASFormStateDisplayUpdateHeaderRowController extends Backbone.View
+class ACASFormStateDisplayUpdateHeaderRowController extends Backbone.View
 	tagName: 'tr'
+
+	initialize: (options) ->
+		@options = options
 
 	render: =>
 		for val in @options.tableDef.values
@@ -17,11 +20,14 @@ class window.ACASFormStateDisplayUpdateHeaderRowController extends Backbone.View
 
 		@
 
-class window.ACASFormStateDisplayUpdateCellController extends Backbone.View
+class ACASFormStateDisplayUpdateCellController extends Backbone.View
 	tagName: 'td'
 
 	events: ->
 		"click": "handleCellClicked"
+
+	initialize: (options) ->
+		@options = options
 
 	render: =>
 		$(@el).empty()
@@ -34,6 +40,8 @@ class window.ACASFormStateDisplayUpdateCellController extends Backbone.View
 				content = @options.cellDef.displayOverride content
 			if val.get('lsType') == 'dateValue'
 				content = UtilityFunctions::convertMSToYMDDate val.get('dateValue')
+			else if val.get('lsType') == 'codeValue'
+				content = UtilityFunctions::getNameForCode val, content, @options.pickLists
 
 		$(@el).html content
 		$(@el).addClass if @collection.length > 1 then "valueWasEdited" else ""
@@ -47,8 +55,11 @@ class window.ACASFormStateDisplayUpdateCellController extends Backbone.View
 	handleCellClicked: =>
 		@trigger 'cellClicked', @collection
 
-class window.ACASFormStateDisplayUpdateRowController extends Backbone.View
+class ACASFormStateDisplayUpdateRowController extends Backbone.View
 	tagName: 'tr'
+
+	initialize: (options) ->
+		@options = options
 
 	render: =>
 		for valDef in @options.tableDef.values
@@ -56,17 +67,19 @@ class window.ACASFormStateDisplayUpdateRowController extends Backbone.View
 			cellController = new ACASFormStateDisplayUpdateCellController
 				collection: new ValueList vals
 				cellDef: valDef
+				pickLists: @options.pickLists
 			$(@el).append cellController.render().el
 			cellController.on 'cellClicked', (values) =>
 				@trigger 'cellClicked', values
 
 		@
 
-class window.ACASFormStateDisplayUpdateController extends Backbone.View
+class ACASFormStateDisplayUpdateController extends Backbone.View
 	rowNumberKind: 'row number'
 	template: _.template($("#ACASFormStateDisplayUpdateView").html())
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@thingRef = @options.thingRef
 		@tableDef = @options.tableDef
 		@tableSetupComplete = false
@@ -76,10 +89,44 @@ class window.ACASFormStateDisplayUpdateController extends Backbone.View
 		$(@el).empty()
 		$(@el).html @template()
 		@applyOptions()
-		@tableSetupComplete = true
+		@fetchPickLists =>
+			@tableSetupComplete = true
+			@
 
-		@
+	fetchPickLists: (callback) =>
+		@pickLists = {}
+		listCount = 0
 
+		for val in @tableDef.values
+			if val.modelDefaults.type == 'codeValue' and val.fieldSettings.fieldType == 'codeValue'
+				listCount++
+
+		doneYet = =>
+			listCount--
+			if listCount == 0
+				callback()
+
+		if listCount == 0
+			callback()
+
+		for val in @tableDef.values
+			if val.modelDefaults.type == 'codeValue' and val.fieldSettings.fieldType == "codeValue"
+				if val.fieldSettings.optionURL?
+					url = val.fieldSettings.optionURL
+				else
+					url = "/api/codetables/#{val.modelDefaults.codeType}/#{val.modelDefaults.codeKind}"
+				kind = val.modelDefaults.kind
+
+				$.ajax
+					type: 'GET'
+					url: url
+					json: true
+					self: @
+					kind: kind
+					success: (response) ->
+						this.self.pickLists[this.kind] = new PickListList response
+						doneYet()
+	
 	renderModelContent: =>
 		if @tableSetupComplete
 			@completeRenderModelContent()
@@ -98,6 +145,7 @@ class window.ACASFormStateDisplayUpdateController extends Backbone.View
 			rowController = new ACASFormStateDisplayUpdateRowController
 				collection: state.get 'lsValues'
 				tableDef: @options.tableDef
+				pickLists: @pickLists
 			@$("tbody").append rowController.render().el
 
 			rowController.on 'cellClicked', (values) =>
@@ -108,6 +156,7 @@ class window.ACASFormStateDisplayUpdateController extends Backbone.View
 					el: @$('.bv_valueEditor')
 					tableDef: @tableDef
 					stateID: state.id
+					pickLists: @pickLists
 				@currentCellEditor.render()
 				@currentCellEditor.on 'saveNewValue', @handleCellUpdate
 
@@ -175,9 +224,12 @@ class window.ACASFormStateDisplayUpdateController extends Backbone.View
 			updatedStates = valInfo.valueDef.autoUpdate valInfo, @
 		@trigger 'thingSaveRequested', valInfo.comment
 
-class window.ACASFormStateDisplayOldValueController extends Backbone.View
+class ACASFormStateDisplayOldValueController extends Backbone.View
 	tagName: 'tr'
 	template: _.template($("#ACASFormStateDisplayOldValueView").html())
+
+	initialize: (options) ->
+		@options = options
 
 	render: =>
 		value = @model.get(@model.get('lsType'))
@@ -185,7 +237,11 @@ class window.ACASFormStateDisplayOldValueController extends Backbone.View
 			value = @options.valueDef.displayOverride value
 		if @options.previousLsTransaction
 			prevLsTransaction = @options.previousLsTransaction
-
+		if @model.get('lsType') == 'dateValue'
+			value = UtilityFunctions::convertMSToYMDDate value
+		else if @model.get('lsType') == 'codeValue'
+			value = content = UtilityFunctions::getNameForCode @model, value, @options.pickLists
+		
 		attrs =
 			value: value
 		attrs.valueClass = if @model.get 'ignored' then "valueWasEdited" else ""
@@ -207,7 +263,7 @@ class window.ACASFormStateDisplayOldValueController extends Backbone.View
 
 		@
 
-class window.ACASFormStateDisplayValueEditController extends Backbone.View
+class ACASFormStateDisplayValueEditController extends Backbone.View
 	template: _.template($("#ACASFormStateDisplayValueEditView").html())
 
 	events: ->
@@ -215,7 +271,8 @@ class window.ACASFormStateDisplayValueEditController extends Backbone.View
 		"click .bv_cancelBtn": "handleCancelClicked"
 		"click .bv_saveBtn": "handleSaveClicked"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@tableDef = @options.tableDef
 		for valDef in @tableDef.values
 			if valDef.modelDefaults.kind == @collection.at(0).get('lsKind')
@@ -249,6 +306,7 @@ class window.ACASFormStateDisplayValueEditController extends Backbone.View
 					valueDef: @valueDef
 					initialVal: initialVal
 					previousLsTransaction: previousLsTransaction
+					pickLists: @options.pickLists
 				@$("tbody").append oldRow.render().el
 
 				index++
@@ -313,6 +371,7 @@ class window.ACASFormStateDisplayValueEditController extends Backbone.View
 				when 'numericValue' then @newField = new ACASFormLSNumericValueFieldController opts
 				when 'codeValue' then @newField = new ACASFormLSCodeValueFieldController opts
 				when 'stringValue' then @newField = new ACASFormLSStringValueFieldController opts
+				when 'urlValue' then @newField = new ACASFormLSURLValueFieldController opts
 				when 'dateValue' then @newField = new ACASFormLSDateValueFieldController opts
 
 			@$('.bv_valueField').append @newField.render().el
@@ -325,5 +384,3 @@ class window.ACASFormStateDisplayValueEditController extends Backbone.View
 #TODO value editor:
 # - maybe show transaction creator as modified by and date?
 # - add new value where none existed?
-# show human readable codevalue instead of code
-

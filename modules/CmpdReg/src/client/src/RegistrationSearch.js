@@ -28,13 +28,17 @@ $(function() {
             this.valid = false;
 			this.sketcherLoaded = false;
 			this.exportFormat = "mol";
-			if(window.configuration.marvin) {
+			if(window.configuration.sketcher == 'marvin') {
 				this.useMarvin = true;
 				if (window.configuration.marvin.exportFormat) {
 					this.exportFormat = window.configuration.marvin.exportFormat;
 				}
-			} else if(window.configuration.ketcher) {
+			} else if(window.configuration.sketcher == 'ketcher') {
 				this.useKetcher = true;
+			} else if(window.configuration.sketcher == 'maestro') {
+				this.useMaestro = true;
+			} else {
+				alert("No registration sketcher configured");
 			}
 			this.hide();
 		},
@@ -71,6 +75,11 @@ $(function() {
 				this.$('#registrationSearchMarvinSketch').on('load', function () {
 					self.ketcher = self.$('#registrationSearchMarvinSketch')[0].contentWindow.ketcher;
 				});
+			} else if (this.useMaestro) {
+				this.$('#registrationSearchMarvinSketch').attr('src',"/CmpdReg/maestrosketcher/sketcher_app.html");
+				this.$('#registrationSearchMarvinSketch').on('load', function () {
+					self.maestro = self.$('#registrationSearchMarvinSketch')[0].contentWindow.Module;
+				});
 			} else {
 				alert("No registration sketcher configured");
 			}
@@ -93,6 +102,8 @@ $(function() {
 				this.marvinSketcherInstance.clear()
 			} else if (this.useKetcher) {
 				mol = this.ketcher.setMolecule("");
+			} else if (this.useMaestro) {
+				mol = this.maestro.clearSketcher()
 			}
 			if(appController) {appController.reset();}
 		},
@@ -135,6 +146,18 @@ $(function() {
 				console.log(self.$('.corpName').val());
 				console.log(mol);
 				console.log(regSearch);
+				if ( this.isValid() ) {
+					this.trigger('registrationSearchNext', regSearch);
+					this.hide();
+				}
+			} else if (this.useMaestro) {
+				mol = this.maestro.getSketcherMolBlock();
+				if (mol.indexOf("M  V30 COUNTS 0 0 0 0 0") > -1)
+					mol = null;
+				regSearch.set({
+					molStructure: mol,
+					corpName: jQuery.trim(self.$('.corpName').val())
+				});
 				if ( this.isValid() ) {
 					this.trigger('registrationSearchNext', regSearch);
 					this.hide();

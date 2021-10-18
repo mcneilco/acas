@@ -1,4 +1,4 @@
-class window.BaseEntity extends Backbone.Model
+class BaseEntity extends Backbone.Model
 	urlRoot: "/api/experiments" # should be set the proper value in subclasses
 
 	defaults: ->
@@ -253,10 +253,10 @@ class window.BaseEntity extends Backbone.Model
 
 		copiedEntity
 
-class window.BaseEntityList extends Backbone.Collection
+class BaseEntityList extends Backbone.Collection
 	model: BaseEntity
 
-class window.BaseEntityController extends AbstractThingFormController #TODO: check to see if this is ok
+class BaseEntityController extends AbstractThingFormController #TODO: check to see if this is ok
 	template: _.template($("#BaseEntityView").html())
 
 	events: ->
@@ -291,7 +291,7 @@ class window.BaseEntityController extends AbstractThingFormController #TODO: che
 		@setupStatusSelect()
 		@setupScientistSelect()
 		@setupTagList()
-		@model.getStatus().on 'change', @updateEditable
+		@model.getStatus().on 'change', @updateEditable.bind(@)
 
 	render: =>
 		unless @model?
@@ -440,8 +440,10 @@ class window.BaseEntityController extends AbstractThingFormController #TODO: che
 			@$(".bv_status option[value='deleted']").attr 'disabled', 'disabled'
 
 	setupScientistSelect: ->
-		@scientistList = new PickListList()
-		@scientistList.url = "/api/authors"
+		@scientistList = new PickListList()		
+		@scientistList.url = "/api/authors?additionalCodeType=assay&additionalCodeKind=scientist"
+		if window.conf.roles.acas.userRole? && window.conf.roles.acas.userRole != ""
+			@scientistList.url = @scientistList.url + "&roleName=" + window.conf.roles.acas.userRole
 		@scientistListController = new PickListSelectController
 			el: @$('.bv_scientist')
 			collection: @scientistList
@@ -489,6 +491,10 @@ class window.BaseEntityController extends AbstractThingFormController #TODO: che
 		@tagListController = new TagListController
 			el: @$('.bv_tags')
 			collection: @model.get 'lsTags'
+		@$('.bv_tags').on 'itemAdded', =>
+			@model.trigger 'change'
+		@$('.bv_tags').on 'itemRemoved', =>
+			@model.trigger 'change'
 		@tagListController.render()
 
 

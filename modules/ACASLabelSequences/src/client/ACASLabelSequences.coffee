@@ -1,7 +1,7 @@
 #MODELS
-class window.ACASLabelSequenceRole extends Backbone.Model
+class ACASLabelSequenceRole extends Backbone.Model
 
-class window.ACASLabelSequenceRoleList extends Backbone.Collection
+class ACASLabelSequenceRoleList extends Backbone.Collection
 	model: ACASLabelSequenceRole
 
 	validateCollection: =>
@@ -25,7 +25,7 @@ class window.ACASLabelSequenceRoleList extends Backbone.Collection
 					usedRoles[currentRole] = index
 		modelErrors
 
-class window.ACASLabelSequence extends Backbone.Model
+class ACASLabelSequence extends Backbone.Model
 	url: "/api/labelsequences/"
 	defaults:
 		labelPrefix: ""
@@ -71,11 +71,11 @@ class window.ACASLabelSequence extends Backbone.Model
 	isEditable: ->
 		return false
 
-class window.ACASLabelSequenceList extends Backbone.Collection
+class ACASLabelSequenceList extends Backbone.Collection
 	model: ACASLabelSequence
 
 #CONTROLLERS
-class window.ACASLabelSequenceRoleController extends AbstractFormController
+class ACASLabelSequenceRoleController extends AbstractFormController
 	template: _.template($("#ACASLabelSequenceRoleView").html())
 	tagName: "div"
 
@@ -127,7 +127,7 @@ class window.ACASLabelSequenceRoleController extends AbstractFormController
 			@model.destroy()
 		@trigger 'amDirty'
 
-class window.ACASLabelSequenceRoleListController extends Backbone.View
+class ACASLabelSequenceRoleListController extends Backbone.View
 	template: _.template($("#ACASLabelSequenceRoleListView").html())
 
 	events:
@@ -196,7 +196,7 @@ class window.ACASLabelSequenceRoleListController extends Backbone.View
 			$(ee).removeAttr('data-original-title')
 			$(ee).removeClass 'input_error error'
 
-class window.ACASLabelSequenceController extends AbstractFormController
+class ACASLabelSequenceController extends AbstractFormController
 	template: _.template($("#ACASLabelSequenceView").html())
 	moduleLaunchName: "acasLabelSequence"
 
@@ -210,7 +210,8 @@ class window.ACASLabelSequenceController extends AbstractFormController
 		"click .bv_save": "handleSaveClicked"
 		"click .bv_cancel": "handleCancelClicked"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		if @model?
 			@completeInitialization()
 		else

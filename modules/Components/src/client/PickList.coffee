@@ -1,6 +1,6 @@
-class window.PickList extends Backbone.Model
+class PickList extends Backbone.Model
 
-class window.PickListList extends Backbone.Collection
+class PickListList extends Backbone.Collection
 	model: PickList
 
 	setType: (type) ->
@@ -14,11 +14,15 @@ class window.PickListList extends Backbone.Collection
 		@detect (enu) ->
 			enu.get("code") is code
 
+	getNewModels: () ->
+		@filter (pl) ->
+			pl.isNew()
+
 	getCurrent: ->
 		@filter (pl) ->
 			!(pl.get 'ignored')
 
-class window.PickListOptionController extends Backbone.View
+class PickListOptionController extends Backbone.View
 	tagName: "option"
 	initialize: ->
 
@@ -26,7 +30,7 @@ class window.PickListOptionController extends Backbone.View
 		$(@el).attr("value", @model.get("code")).text @model.get("name")
 		@
 
-class window.PickListOptionControllerForLsThing extends Backbone.View
+class PickListOptionControllerForLsThing extends Backbone.View
 	tagName: "option"
 	initialize: ->
 		if @options.insertFirstOption?
@@ -89,11 +93,11 @@ class window.PickListOptionControllerForLsThing extends Backbone.View
 		@
 
 
-class window.PickListSelectController extends Backbone.View
+class PickListSelectController extends Backbone.View
 	initialize: (options) ->
 		@rendered = false
-		@collection.bind "add", @addOne
-		@collection.bind "reset", @handleListReset
+		@collection.bind "add", @addOne.bind(@)
+		@collection.bind "reset", @handleListReset.bind(@)
 		# NOTE: Backbone 1.1.0 no longer automatically attaches options passed
 		# to View constructors as this.options. So, in order to be compatible
 		# with Backbone 1.0.0 and versions greater or equal to 1.1.0, we'll
@@ -104,6 +108,11 @@ class window.PickListSelectController extends Backbone.View
 			@selectedCode = @options.selectedCode
 		else
 			@selectedCode = null
+
+		if @options.filters?
+			@filters = @options.filters
+		else
+			@filters = []
 
 		if @options.showIgnored?
 			@showIgnored = @options.showIgnored
@@ -135,7 +144,7 @@ class window.PickListSelectController extends Backbone.View
 
 		if @autoFetch == true
 			@collection.fetch
-				success: @handleListReset
+				success: @handleListReset.bind(@)
 		else
 			@handleListReset()
 
@@ -158,6 +167,8 @@ class window.PickListSelectController extends Backbone.View
 						code: @selectedCode
 						name: @selectedCode
 					@collection.add newOption
+		# Apply any filters on the collection
+		@applyFilters()
 		@render()
 
 	render: =>
@@ -166,21 +177,36 @@ class window.PickListSelectController extends Backbone.View
 		@collection.each (enm) =>
 			@addOne enm
 
-		$(@el).val @selectedCode  if @selectedCode
-
+		# If selected code is set and also not filtered then set the selected code
+		# otherwise set the selected code to the current value
+		if @selectedCode && @checkOptionInCollectionAndNotFiltered(@selectedCode)?
+			$(@el).val @selectedCode
+		else
+			@selectedCode = @getSelectedCode()
+		
 		# hack to fix IE bug where select doesn't work when dynamically inserted
 		$(@el).hide()
 		$(@el).show()
 		@rendered = true
 
 	addOne: (enm) =>
-		shouldRender = @showIgnored
-		if enm.get 'ignored'
-			if @selectedCode?
-				if @selectedCode is enm.get 'code'
-					shouldRender = true
+		shouldRender = true
+
+		# Only filter if filtered is set and true
+		# If filter is not set, this will be false
+		if enm.get('filtered') == true
+			shouldRender = false
 		else
-			shouldRender = true
+			if enm.get 'ignored'
+				if @showIgnored
+					shouldRender = true
+				else
+					shouldRender = false
+					if @selectedCode?
+						if @selectedCode is enm.get 'code'
+							shouldRender = true
+			else
+				shouldRender = true
 
 		if shouldRender
 			$(@el).append new PickListOptionController(model: enm).render().el
@@ -197,12 +223,38 @@ class window.PickListSelectController extends Backbone.View
 		$(@el).val()
 
 	getSelectedModel: ->
-		@collection.getModelWithCode @getSelectedCode()
+		model = @collection.getModelWithCode @getSelectedCode()
+		model.unset('filtered')
+		return model
+
+	removeFilters: () ->
+		# Remove all filters (needs a rerender to be applied)
+		@collection.map (pl) ->
+			pl.set('filtered', false)
+
+	addFilter: (filter) ->
+		@filters.push(filter)
+
+	applyFilters: ->
+		# Remove current filters
+		@removeFilters()
+
+		#Apply all current filters
+		@filters.forEach (filter) =>
+			@collection.map (pl) ->
+				if pl.get('name').toLowerCase().indexOf(filter.text) > -1
+					pl.set('filtered', true)
+				else
+					pl.set('filtered', false)
+
+	checkOptionInCollectionAndNotFiltered: (code) => #checks to see if option already exists in the picklist list
+		return @collection.filter (item) ->
+			return (item.code == code && item.ignored == false && (!item.filtered? || item.filtered == false))
 
 	checkOptionInCollection: (code) => #checks to see if option already exists in the picklist list
 		return @collection.findWhere({code: code})
 
-class window.PickListForLsThingsSelectController extends PickListSelectController
+class PickListForLsThingsSelectController extends PickListSelectController
 
 	initialize: (options) ->
 		super(options)
@@ -236,10 +288,11 @@ class window.PickListForLsThingsSelectController extends PickListSelectControlle
 		if shouldRender
 			$(@el).append new PickListOptionControllerForLsThing(model: enm, insertFirstOption: @insertFirstOption, displayName: @displayName).render().el
 
+
 	getSelectedModel: ->
 		@collection.getModelWithId parseInt(@getSelectedCode())
 
-class window.ComboBoxController extends PickListSelectController
+class ComboBoxController extends PickListSelectController
 
 	handleListReset: =>
 		super()
@@ -247,7 +300,7 @@ class window.ComboBoxController extends PickListSelectController
 			bsVersion: '2'
 
 
-class window.PickListSelect2Controller extends PickListSelectController
+class PickListSelect2Controller extends PickListSelectController
 
 	# maps the 'code' property to the select2 required 'id' property and
 	# the 'name' property to the select2 required 'text' property
@@ -264,7 +317,10 @@ class window.PickListSelect2Controller extends PickListSelectController
 		if @options?.width?
 			@width = @options.width
 		else
-			@width = "100%"
+			# Select2 https://select2.org/appearance#container-width
+			# Uses the style attribute value if available, falling back to the computed element width as necessary.
+			@width = "resolve"
+
 		@propertyMap = acasPropertyMap
 		if options.propertyMap?
 			if _.isObject(options.propertyMap) and options.propertyMap.id? and options.propertyMap.text?
@@ -276,10 +332,14 @@ class window.PickListSelect2Controller extends PickListSelectController
 		super(options)
 
 	render: =>
+		$(@el).empty()
+		@collection.each (enm) =>
+			@addOne enm
+
 		# convert model objects to array of json objects which have 'id' and 'text' properties if propertyMap specified
 		mappedData = []
 		for obj in @collection.toJSON()
-			if (not obj.ignored? or (obj.ignored is false) or (@showIgnored? and @showIgnored is true))
+			if (not obj.ignored? or (obj.ignored is false) or (@showIgnored? and @showIgnored is true)) && (!obj.filtered? || obj.filtered == false)
 				if @propertyMap?
 					obj.id = obj[@propertyMap.id]
 					obj.text = obj[@propertyMap.text]
@@ -287,6 +347,7 @@ class window.PickListSelect2Controller extends PickListSelectController
 		@placeholder = ""
 		if @options?.placeholder?
 			@placeholder = @options.placeholder
+
 		$(@el).select2
 			placeholder: @placeholder
 			data: mappedData
@@ -297,10 +358,6 @@ class window.PickListSelect2Controller extends PickListSelectController
 		@setSelectedCode @selectedCode
 		@rendered = true
 		@
-
-	addOne: (enm) =>
-# override to do nothing
-		return
 
 	getSelectedCode: ->
 		result = $(@el).val()
@@ -329,7 +386,7 @@ class window.PickListSelect2Controller extends PickListSelectController
 			$(@el).val(@selectedCode).trigger("change.select2")
 
 
-class window.AddParameterOptionPanel extends Backbone.Model
+class AddParameterOptionPanel extends Backbone.Model
 	defaults:
 		parameter: null
 		codeType: null
@@ -353,7 +410,7 @@ class window.AddParameterOptionPanel extends Backbone.Model
 
 
 
-class window.AddParameterOptionPanelController extends AbstractFormController
+class AddParameterOptionPanelController extends AbstractFormController
 	template: _.template($("#AddParameterOptionPanelView").html())
 
 	events:
@@ -407,7 +464,7 @@ class window.AddParameterOptionPanelController extends AbstractFormController
 
 
 
-class window.EditablePickListSelectController extends Backbone.View
+class EditablePickListSelectController extends Backbone.View
 	template: _.template($("#EditablePickListView").html())
 
 	#when creating new controller, need to provide el, collection, selectedCode, parameter, and roles
@@ -426,8 +483,12 @@ class window.EditablePickListSelectController extends Backbone.View
 	setupEditablePickList: ->
 		parameterNameWithSpaces = @options.parameter.replace /([A-Z])/g,' $1'
 		pascalCaseParameterName = (parameterNameWithSpaces).charAt(0).toUpperCase() + (parameterNameWithSpaces).slice(1)
+		if @pickListController?
+			filters = @picklistController.filters
+			@pickListController.remove()
+
 		@pickListController = new PickListSelectController
-			el: @$('.bv_parameterSelectList')
+			el: $(@el).find('.bv_parameterSelectList')
 			collection: @collection
 			insertFirstOption: new PickList
 				code: "unassigned"
@@ -435,22 +496,30 @@ class window.EditablePickListSelectController extends Backbone.View
 			selectedCode: @options.selectedCode
 
 	setupEditingPrivileges: =>
-		if @options.roles?
-			if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, @options.roles
-				@$('.bv_tooltipWrapper').removeAttr('data-toggle')
-				@$('.bv_tooltipWrapper').removeAttr('data-original-title')
+		@editable = true
+		if @options.editable?
+			@editable = @options.editable
+		
+		if @editable
+			if @options.roles?
+				if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, @options.roles
+					@$('.bv_tooltipWrapper').removeAttr('data-toggle')
+					@$('.bv_tooltipWrapper').removeAttr('data-original-title')
+
+				else
+					@$('.bv_addOptionBtn').removeAttr('data-toggle')
+					@$('.bv_addOptionBtn').removeAttr('data-target')
+					@$('.bv_addOptionBtn').removeAttr('data-backdrop')
+					@$('.bv_addOptionBtn').css({'color':"#cccccc"})
+					@$('.bv_tooltipWrapper').tooltip()
+					@$("body").tooltip selector: '.bv_tooltipWrapper'
 
 			else
-				@$('.bv_addOptionBtn').removeAttr('data-toggle')
-				@$('.bv_addOptionBtn').removeAttr('data-target')
-				@$('.bv_addOptionBtn').removeAttr('data-backdrop')
-				@$('.bv_addOptionBtn').css({'color':"#cccccc"})
-				@$('.bv_tooltipWrapper').tooltip()
-				@$("body").tooltip selector: '.bv_tooltipWrapper'
-
+				@$('.bv_tooltipWrapper').removeAttr('data-toggle')
+				@$('.bv_tooltipWrapper').removeAttr('data-original-title')
 		else
-			@$('.bv_tooltipWrapper').removeAttr('data-toggle')
-			@$('.bv_tooltipWrapper').removeAttr('data-original-title')
+			# This is set us not editable so remove the add option button
+			@$('.bv_addOptionBtn').hide()
 
 	getSelectedCode: ->
 		@pickListController.getSelectedCode()
@@ -473,7 +542,7 @@ class window.EditablePickListSelectController extends Backbone.View
 						codeType: @options.codeType
 						codeKind: @options.codeKind
 					el: @$('.bv_addOptionPanel')
-				@addPanelController.on 'addOptionRequested', @handleAddOptionRequested
+				@addPanelController.on 'addOptionRequested', @handleAddOptionRequested.bind(@)
 				@addPanelController.on 'showModal', =>
 					@trigger 'showModal'
 				@addPanelController.on 'hideModal', =>
@@ -504,6 +573,10 @@ class window.EditablePickListSelectController extends Backbone.View
 		else
 			@$('.bv_errorMessage').show()
 
+		if @options.autoSave? && @options.autoSave
+			@saveNewOption ()=>
+				
+
 	hideAddOptionButton: ->
 		@$('.bv_addOptionBtn').hide()
 
@@ -512,29 +585,38 @@ class window.EditablePickListSelectController extends Backbone.View
 
 	saveNewOption: (callback) =>
 		code = @pickListController.getSelectedCode()
-		selectedModel = @pickListController.collection.getModelWithCode(code)
-		if selectedModel != undefined and selectedModel.get('code') != "unassigned"
-			if selectedModel.get('id')?
-				callback.call()
-			else
-				unless selectedModel.get('codeType')?
-					selectedModel.set 'codeType', @options.codeType
-				unless selectedModel.get('codeKind')?
-					selectedModel.set 'codeKind', @options.codeKind
-				$.ajax
-					type: 'POST'
-					url: "/api/codetables"
-					data:
-						JSON.stringify(codeEntry:(selectedModel))
-					contentType: 'application/json'
-					dataType: 'json'
-					success: (response) =>
-						callback.call()
-					error: (err) =>
-						alert 'could not add option to code table'
-						@serviceReturn = null
+		unsavedModels = @pickListController.collection.getNewModels()
+		unsavedModels = unsavedModels.filter (model) =>
+			model.get('code') != "unassigned"
+		if unsavedModels.length > 0
+			modelToSave = unsavedModels[0]
+			unless modelToSave.get('codeType')?
+				modelToSave.set 'codeType', @options.codeType
+			unless modelToSave.get('codeKind')?
+				modelToSave.set 'codeKind', @options.codeKind
+			$.ajax
+				type: 'POST'
+				url: "/api/codetables"
+				data:
+					JSON.stringify(codeEntry:(modelToSave))
+				contentType: 'application/json'
+				dataType: 'json'
+				success: (response) =>
+					callback.call()
+				error: (err) =>
+					alert 'could not add option to code table'
+					@serviceReturn = null
 		else
 			callback.call()
+
+	removeFilters: () ->
+		@pickListController.removeFilters()
+
+	addFilter: (filter) ->
+		@pickListController.addFilter(filter)
+
+	applyFilters: () =>
+		@pickListController.applyFilters()
 
 #	setupContextMenu: ->
 #		$.fn.contextMenu = (settings) ->
@@ -589,19 +671,24 @@ class window.EditablePickListSelectController extends Backbone.View
 #				msg = "You selected the menu item '" + selectedMenu.text() + "' on the value '" + invokedOn.text() + "'"
 #				alert msg
 
-class window.EditablePickListSelect2Controller extends EditablePickListSelectController
+class EditablePickListSelect2Controller extends EditablePickListSelectController
 	setupEditablePickList: ->
 		parameterNameWithSpaces = @options.parameter.replace /([A-Z])/g,' $1'
 		pascalCaseParameterName = (parameterNameWithSpaces).charAt(0).toUpperCase() + (parameterNameWithSpaces).slice(1)
-		@pickListController = new PickListSelect2Controller #TODO: need to fix addOne function to insert unassigned option as first option
+
+		if @pickListController?
+			filters = @pickListController.filters
+			@pickListController.remove()
+		@pickListController = new PickListSelect2Controller
 			el: @$('.bv_parameterSelectList')
 			collection: @collection
 			insertFirstOption: new PickList
 				code: "unassigned"
 				name: "Select "+pascalCaseParameterName
 			selectedCode: @options.selectedCode
+			filters: filters
 
-class window.ThingLabelComboBoxController extends PickListSelect2Controller
+class ThingLabelComboBoxController extends PickListSelect2Controller
 
 	initialize: ->
 		@thingType = @options.thingType
@@ -618,7 +705,6 @@ class window.ThingLabelComboBoxController extends PickListSelect2Controller
 			placeholder: @placeholder
 			openOnEnter: false
 			allowClear: true
-			width: "100%"
 			ajax:
 				url: (params) =>
 					if !params.term?

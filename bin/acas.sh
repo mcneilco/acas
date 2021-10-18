@@ -164,7 +164,6 @@ start_apache() {
 
 run_apache() {
     cp $ACAS_HOME/conf/compiled/apache.conf /tmp/apache.conf
-    sed -i 's/^ErrorLog.*/ErrorLog "|cat"/' /tmp/apache.conf
     startCommand=" $apacheCMD -f /tmp/apache.conf -k start -DFOREGROUND"
     if [ $(whoami) != "$RAPACHE_START_ACAS_USER" ]; then
         startCommand="su -p - $RAPACHE_START_ACAS_USER $suAdd -c \"($startCommand)\""
@@ -387,7 +386,7 @@ cd $ACAS_HOME
 
 # Run Prepare config files as the compiled directory should be empty
 if [ "$PREPARE_CONFIG_FILES" = "true" ]; then
-    gulp execute:prepare_config_files
+    node $ACAS_HOME/src/javascripts/BuildUtilities/PrepareConfigFiles.js
 fi
 
 #Get ACAS config variables

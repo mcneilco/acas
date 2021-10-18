@@ -1,4 +1,4 @@
-class window.ACASFormChemicalStructureExampleController extends Backbone.View
+class ACASFormChemicalStructureExampleController extends Backbone.View
 	template: _.template($("#ACASFormChemicalStructureExampleControllerView").html())
 
 	molToSet: "\n\n\n"+
@@ -64,9 +64,12 @@ class window.ACASFormChemicalStructureExampleController extends Backbone.View
 		mol = @sketcher.getChemDoodleJSON()
 		alert mol
 
-class window.ACASFormChemicalStructureController extends Backbone.View
+class ACASFormChemicalStructureController extends Backbone.View
 	tagName: "DIV"
 	template: _.template($("#ACASFormChemicalStructureControllerView").html())
+
+	initialize: (options) ->
+		@options = options
 
 	render: =>
 		$(@el).empty()
@@ -102,7 +105,7 @@ class window.ACASFormChemicalStructureController extends Backbone.View
 
 #TODO Why is it making a call to WebHQ outside our server, and make it stop
 
-class window.KetcherChemicalStructureController extends Backbone.View
+class KetcherChemicalStructureController extends Backbone.View
 	tagName: "DIV"
 	template: _.template($("#KetcherChemicalStructureControllerView").html())
 
@@ -132,7 +135,7 @@ class window.KetcherChemicalStructureController extends Backbone.View
 
 # To use This MarvinJS sketcher you must uncomment four lines in
 #
-class window.MarvinJSChemicalStructureController extends Backbone.View
+class MarvinJSChemicalStructureController extends Backbone.View
 	tagName: "DIV"
 	template: _.template($("#MarvinJSChemicalStructureControllerView").html())
 

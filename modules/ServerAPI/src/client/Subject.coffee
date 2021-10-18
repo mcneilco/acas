@@ -1,4 +1,4 @@
-class window.Subject extends Backbone.Model
+class Subject extends Backbone.Model
 	lsProperties: {}
 	className: "Subject"
 

@@ -1,4 +1,4 @@
-class window.Container extends Backbone.Model
+class Container extends Backbone.Model
 	lsProperties: {}
 	className: "Container"
 

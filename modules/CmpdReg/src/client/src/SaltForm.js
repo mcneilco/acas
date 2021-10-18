@@ -33,6 +33,7 @@ $(function() {
 					id: js.id,
 					corpName: js.corpName,
 					casNumber: js.casNumber,
+					chemist: js.chemist,
 					isosalts: isel,
 					molStructure: js.molStructure
 				});
@@ -85,12 +86,12 @@ $(function() {
 
 			this.sketcherLoaded = false; // load on demand, not default, to make testing more reliable and fast
 			this.exportFormat = "mol";
-			if(window.configuration.marvin) {
+			if(window.configuration.sketcher == 'marvin') {
 				this.useMarvin = true;
 				if (window.configuration.marvin.exportFormat) {
 					this.exportFormat = window.configuration.marvin.exportFormat;
 				}
-			} else if(window.configuration.ketcher) {
+			} else if(window.configuration.sketcher == 'ketcher') {
 				this.useKetcher = true;
 			}
 

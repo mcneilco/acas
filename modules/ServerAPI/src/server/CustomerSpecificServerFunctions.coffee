@@ -7,17 +7,13 @@ ACAS_HOME="../../.."
 serverUtilityFunctions = require "#{ACAS_HOME}/routes/ServerUtilityFunctions.js"
 fs = require 'fs'
 _ = require 'underscore'
+util = require 'util'
 
 exports.logUsage = (action, data, username) ->
 # no ACAS logging service yet
 	console.log "would have logged: "+action+" with data: "+data+" and user: "+username
 	# logger = require "../../../routes/Logger"
-	global.logger.writeToLog("info", "logUsage", action, data, username, null)
-
-
-exports.getConfServiceVars = (sysEnv, callback) ->
-	conf = {}
-	callback(conf)
+	# global.logger.writeToLog("info", "logUsage", action, data, username, null)
 
 exports.authCheck = (user, pass, retFun) ->
 	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
@@ -148,39 +144,169 @@ exports.isUserAdmin = (user) ->
 exports.findByUsername = (username, fn) ->
 	return exports.getUser username, fn
 
-exports.loginStrategy = (req, username, password, done) ->
-	exports.logUsage "login attempt", JSON.stringify(ip: req.ip, referer: req.headers['referer'], agent: req.headers['user-agent']), username
-	exports.authCheck username, password, (results) ->
-		if results.indexOf("login_error")>=0
-			try
-				exports.logUsage "User failed login: ", JSON.stringify(ip: req.ip, referer: req.headers['referer'], agent: req.headers['user-agent']), username
-			catch error
-				console.log "Exception trying to log:"+error
-			return done(null, false,
-				message: "Invalid credentials"
-			)
-		else if results.indexOf("role_check_error")>=0
-			try
-				exports.logUsage "User failed login: ", JSON.stringify(ip: req.ip, referer: req.headers['referer'], agent: req.headers['user-agent']), username
-			catch error
-				console.log "Exception trying to log:"+error
-			return done(null, false,
-				message: "Unauthorized user"
-			)
-		else if results.indexOf("connection_error")>=0
-			try
-				exports.logUsage "Connection to authentication service failed: ", JSON.stringify(ip: req.ip, referer: req.headers['referer'], agent: req.headers['user-agent']), username
-			catch error
-				console.log "Exception trying to log:"+error
-			return done(null, false,
-				message: "Cannot connect to authentication service. Please contact an administrator"
-			)
+getSystemRolesFromSSOProfile = (profile) =>
+	roles = []
+	for group in profile.group
+		roleName = group.toUpperCase()
+		lsKind = 'ACAS'
+		if roleName.indexOf("CMPDREG") > -1
+			lsKind = 'CmpdReg'
+		roles.push
+			lsType: 'System'
+			lsKind: lsKind
+			roleName: "ROLE_#{roleName}"
+	return roles
+
+exports.ssoLoginStrategy = (req, profile, callback) ->
+	exports.logUsage "login attempt", JSON.stringify(ip: req.ip, referer: req.headers['referer'], agent: req.headers['user-agent']), JSON.stringify(profile)
+	config = require '../../../conf/compiled/conf.js'
+	serverUtilityFunctions = require "#{ACAS_HOME}/routes/ServerUtilityFunctions.js"
+	authorRoutes = require '../../../routes/AuthorRoutes.js'
+
+	userNameAttribute = config.all.server.security.saml.userNameAttribute
+
+	# Expected profile keys
+	expectedKeys = [config.all.server.security.saml.userNameAttribute, config.all.server.security.saml.firstNameAttribute, config.all.server.security.saml.lastNameAttribute, config.all.server.security.saml.emailAttribute]
+	missingFromProfile = expectedKeys.filter (value) -> !Object.keys(profile).includes(value)
+	if missingFromProfile.length > 0
+		err = "Configured profile attributes are different than those configured on the IDP. Missing expected key(s) from returned user profile #{JSON.stringify(missingFromProfile)}"
+		console.error err
+		return callback null, false, message: err
+		
+	# Check if author exists
+	[err, savedAuthor] = await serverUtilityFunctions.promisifyRequestResponseStatus(authorRoutes.getAuthorByUsernameInternal, [profile[userNameAttribute]])
+	if err?
+		console.error("Got error checking for existing author #{err} during sso login strategy")
+		return callback null, false, message: "Got error checking for existing author during sso login strategy"
+
+	# If the author doesn't exist then create one
+	# Check login ability here FIRST
+	if savedAuthor? && savedAuthor.length != 0
+		console.log "Found existing Author '#{savedAuthor.userName}'"
+		updateAuthor = false
+
+		if profile.email != savedAuthor.emailAddress
+			console.log "SSO email address '#{profile.email}' has changed from existing author email address '#{savedAuthor.emailAddress}'"
+			[err, unique] = await serverUtilityFunctions.promiseifyCatch(authorRoutes.checkEmailIsUnique, [profile.email])
+			if err
+				console.error(err)
+				return callback null, false, message: "Got error checking for unique email addrress"
+
+			if !unique == true
+				console.error("New email address is not unique to the sytem so it belongs to another username")
+				return callback null, false, message: "Email address already belongs to another user"
+
+		if profile.email != savedAuthor.emailAddress || profile.firstName != savedAuthor.firstName || profile.lastName != savedAuthor.lastName
+			updateAuthor = true
+		if updateAuthor == true
+			savedAuthor.firstName = profile.firstName
+			savedAuthor.lastName = profile.lastName
+			savedAuthor.emailAddress = profile.email
+			[err, updatedAuthor] = await serverUtilityFunctions.promisifyRequestResponseStatus(authorRoutes.updateAuthorInternal, [savedAuthor])
+			if err
+				err = "Got error trying to update author using SSO user profile"
+				console.log("#{err} Author: #{JSON.stringify(savedAuthor)}")
+				return callback null, false, message: err
+			else
+				console.log "Successfully synced user profile"
+				savedAuthor = updatedAuthor
+	else
+		author = 
+			firstName: profile.firstName
+			lastName: profile.lastName
+			emailAddress: profile.email
+			userName: profile[userNameAttribute]
+			version: 0
+			enabled: true
+			locked: false
+			password: null
+			recordedBy: 'acas'
+			recordedDate: new Date().getTime()
+			lsType: 'default'
+			lsKind: 'default'
+		[err, savedAuthor] = await serverUtilityFunctions.promiseifyCatch(authorRoutes.createNewAuthorInternal, [author])
+		if err?
+			console.error("Got error saving new author during sso login strategy Error #{JSON.stringify(err)}")
+			return callback null, false, message: "Caught error trying to save author"
+		if !savedAuthor?
+			console.error("Got error saving new author #{err} during sso login strategy Author json: #{JSON.stringify(author)}")
+			return callback null, false, message: "Got error trying to save author"
+
+	if config.all.server.security.saml.roles.sync
+		console.log "Checking for roles to sync"
+		# Check the users ldap roles against the saved roles
+		ssoSystemRoles = getSystemRolesFromSSOProfile(profile)
+
+		# Get author system roles
+		savedAuthorSystemRoles = authorRoutes.getRolesByLsType(savedAuthor.authorRoles, "System")
+
+		# Diff system roles
+		diffSystemRolesWithSaved = util.promisify(authorRoutes.diffSystemRolesWithSaved)
+		[err, diffResult] = await exports.promiseCatch(diffSystemRolesWithSaved(savedAuthor.userName, ssoSystemRoles, savedAuthorSystemRoles, ["lsType", "lsKind", "roleName"]))
+		if err?
+			console.error("Got error trying to diff current roles with new sso roles #{err}")
+			return callback null, false, message: err
+
+		rolesToSync = false
+		if diffResult.rolesToAdd.length > 0
+			rolesToSync = true
+			console.log "Found #{diffResult.rolesToAdd.length} roles to add #{JSON.stringify(diffResult.rolesToAdd)}"
+		if diffResult.rolesToDelete.length > 0
+			rolesToSync = true
+			console.log "Found #{diffResult.rolesToDelete.length} roles to delete #{JSON.stringify(diffResult.rolesToDelete)}"
+
+		# Update author roles
+		if rolesToSync == true
+			console.log "Syncing roles"
+			syncRoles = util.promisify(authorRoutes.syncRoles)
+			[err, updatedAuthor] = await exports.promiseCatch(syncRoles(savedAuthor, diffResult.rolesToAdd, diffResult.rolesToDelete))
+			if err?
+				console.error("Got error trying to sync roles for user #{err}")
+				return callback null, false, message: err
 		else
-			try
-				exports.logUsage "User logged in succesfully: ", JSON.stringify(ip: req.ip, referer: req.headers['referer'], agent: req.headers['user-agent']), username
-			catch error
-				console.log "Exception trying to log:"+error
-			exports.getUser username,done
+			console.log "No roles to sync"
+
+	# Get user doesn't format the user exactly like the updatedAuthor so we need to fetch the author one more time
+	# Easiest to just fetch the author fresh rather than transform
+	exports.checkRoles savedAuthor.userName, (results) =>
+		exports.handleAuthCheckResponse(req, savedAuthor.userName, results, callback)
+
+exports.localLoginStrategy = (req, username, password, done) ->
+	exports.logUsage "login attempt", JSON.stringify(ip: req.ip, referer: req.headers['referer'], agent: req.headers['user-agent']), username
+	exports.authCheck username, password, (results) =>
+		exports.handleAuthCheckResponse(req, username, results, done)
+
+exports.handleAuthCheckResponse = (req, username, results, done) ->
+	if results.indexOf("login_error")>=0
+		try
+			exports.logUsage "User failed login: ", JSON.stringify(ip: req.ip, referer: req.headers['referer'], agent: req.headers['user-agent']), username
+		catch error
+			console.log "Exception trying to log:"+error
+		return done(null, false,
+			message: "Invalid credentials"
+		)
+	else if results.indexOf("role_check_error")>=0
+		try
+			exports.logUsage "User failed login: ", JSON.stringify(ip: req.ip, referer: req.headers['referer'], agent: req.headers['user-agent']), username
+		catch error
+			console.log "Exception trying to log:"+error
+		return done(null, false,
+			message: "Unauthorized user"
+		)
+	else if results.indexOf("connection_error")>=0
+		try
+			exports.logUsage "Connection to authentication service failed: ", JSON.stringify(ip: req.ip, referer: req.headers['referer'], agent: req.headers['user-agent']), username
+		catch error
+			console.log "Exception trying to log:"+error
+		return done(null, false,
+			message: "Cannot connect to authentication service. Please contact an administrator"
+		)
+	else
+		try
+			exports.logUsage "User logged in succesfully: ", JSON.stringify(ip: req.ip, referer: req.headers['referer'], agent: req.headers['user-agent']), username
+		catch error
+			console.log "Exception trying to log:"+error
+		exports.getUser username,done
 
 exports.getProjects = (req, resp) ->
 	exports.getProjectsInternal req, (statusCode, response) =>
@@ -240,16 +366,28 @@ exports.validateCloneAndGetTarget = (req, resp) ->
 	psProtocolServiceTestJSON = require "#{ACAS_HOME}/public/javascripts/spec/PrimaryScreen/testFixtures/PrimaryScreenProtocolServiceTestJSON.js"
 	resp.json psProtocolServiceTestJSON.successfulCloneValidation
 
-exports.getAuthors = (req, resp) -> #req passed in as input to be able to filter users by roles
+exports.getAllAuthors = (opts, callback) ->
 	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 	serverUtilityFunctions = require "#{ACAS_HOME}/routes/ServerUtilityFunctions.js"
 	baseurl = config.all.client.service.persistence.fullpath+"authors/codeTable"
-
-	if req.query.roleType? and req.query.roleKind? and req.query.roleName?
-		baseurl = config.all.client.service.persistence.fullpath+"authors/findByRoleTypeKindAndName"
-		baseurl += "?roleType=#{req.query.roleType}&roleKind=#{req.query.roleKind}&roleName=#{req.query.roleName}&format=codeTable"
-
-	serverUtilityFunctions.getFromACASServer(baseurl, resp)
+	if opts.roleName?
+		if opts.roleType? and opts.roleKind?
+			baseurl = config.all.client.service.persistence.fullpath+"authors/findByRoleTypeKindAndName"
+			baseurl += "?roleType=#{opts.roleType}&roleKind=#{opts.roleKind}&roleName=#{opts.roleName}&format=codeTable"
+		else
+			baseurl = config.all.client.service.persistence.fullpath+"authors/findByRoleName"
+			baseurl += "?authorRoleName=#{opts.roleName}&format=codeTable"
+	console.log "Calling baseurl in get all authors: #{baseurl}"
+	serverUtilityFunctions.getFromACASServerInternal baseurl, (statusCode, json) ->
+		# If additional codeType and codeKind parameters are supplied then append the code values for the additional authors
+		# This is was added for the purpose of allowing additional non-authors to show up in picklists throughout ACAS and Creg
+		if opts.additionalCodeType? and opts.additionalCodeKind?
+			codeTableServiceRoutes = require "#{ACAS_HOME}/routes/CodeTableServiceRoutes.js"
+			codeTableServiceRoutes.getCodeTableValuesInternal opts.additionalCodeType, opts.additionalCodeKind, (codes) ->
+				Array::push.apply json, codes
+				callback statusCode, json
+		else
+			callback statusCode, json
 
 exports.getAllAuthorObjectsInternal = (callback) ->
 	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
@@ -604,3 +742,8 @@ exports.moveToLocation = (request) ->
 exports.throwInTrash = (request, callback) ->
 	callback {"successful":true}, 200
 	console.debug "inside base customer specific server function throwInTrash"
+
+exports.updateSolrIndex = (callback) ->
+	answer = null
+	callback answer, 200
+	console.debug "inside base customer specific server function updateSolrIndex"

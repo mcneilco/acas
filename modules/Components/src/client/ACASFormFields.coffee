@@ -1,4 +1,4 @@
-class window.ACASFormAbstractFieldController extends Backbone.View
+class ACASFormAbstractFieldController extends Backbone.View
 	###
 		Launching controller must:
 		- Initialize the model the correct object type
@@ -25,12 +25,17 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 
 	events: ->
 		"keyup input": "handleInputChanged"
+		"keyup textarea": "handleInputChanged"
+		"mouseover .label-tooltip": "handleToolTipMouseover"
+		"mouseoff .label-tooltip": "handleToolTipMouseoff"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@modelKey = @options.modelKey
 		@thingRef = @options.thingRef
 		@errorSet = false
 		@userInputEvent = true
+		@$('.label-tooltip').tooltip()
 
 	getModel: ->
 		if @thingRef instanceof Thing
@@ -97,6 +102,9 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 			@addFormLabelClass @options.formLabelClass
 		if @options.formLabelOrientation?
 			@setupFormLabelOrientation @options.formLabelOrientation
+		if @options.formLabelTooltip?
+			@setFormLabelTooltip @options.formLabelTooltip
+			@showFormLabelTooltip()
 		if @options.inputClass?
 			@addInputClass @options.inputClass
 		if @options.controlGroupClass?
@@ -110,7 +118,10 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 		@required = if @options.required? then @options.required else false
 
 	setFormLabel: (value) ->
-		@$('label').html value
+		if @$('label .label-text').length
+			@$('label .label-text').html value
+		else
+			@$('label').html value
 
 	addFormLabelClass: (value) ->
 		@$('label').addClass value
@@ -119,6 +130,18 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 		if value is "top"
 			@$('label').removeClass 'control-label'
 		# else set label to left, this is already the default
+	
+	setFormLabelTooltip: (value) ->
+		@$('.label-tooltip').attr 'title', value
+	
+	showFormLabelTooltip: ->
+		@$('.label-tooltip').removeClass 'hide'
+
+	handleToolTipMouseover: ->
+		@$('.label-tooltip').tooltip('show')
+
+	handleToolTipMouseoff: ->
+		@$('.label-tooltip').tooltip('hide')
 
 	addInputClass: (value) ->
 		@$('input').addClass value
@@ -147,7 +170,7 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 	setTabIndex: (index) ->
 		@$('input, select').attr  'tabindex', index
 
-class window.ACASFormLSLabelFieldController extends ACASFormAbstractFieldController
+class ACASFormLSLabelFieldController extends ACASFormAbstractFieldController
 	###
 		Launching controller must:
 		- Initialize the model with an LSLabel
@@ -162,24 +185,76 @@ class window.ACASFormLSLabelFieldController extends ACASFormAbstractFieldControl
 		@userInputEvent = true
 		value = UtilityFunctions::getTrimmedInput(@$('input'))
 
-		if @isValid(value)
-			if value != ""
-				@getModel().set
-					labelText: value
-					ignored: false
-			else
-				@setEmptyValue()
-		super()
+		# check
+		@isValid value, (isValid) =>
+			if isValid
+				@clearError()
+				# Behavior of persistance layer on save is to look up auto label sequences based on 
+				# thing lsTypeAndKind and label lsTypeAndKind
+				# If the label text is "" or null then it will set the next auto sequence value
+				# so in this case its ok to send "" and ignored = false
+				if value != "" || @getModel().get("isAutoLabel") 
+					@getModel().set
+						labelText: value
+						ignored: false
+				else
+					@setEmptyValue()
+			super()
 
-	isValid: (value) ->
+	isValid: (value, callback) =>
+		# if the value is empty, don't check for uniqueness, the form field should evaluate if this is required
+		# so we don't need to do that here
+		if(value == "") 
+			callback true 
+			return
+		if @getModel().get("validationRegex")?
+			regex = new RegExp(@getModel().get("validationRegex"));
+			if !regex.test(value)
+				@setError("label does not meet format requirements")
+				callback false
+				return
 		if value.length > @maxLabelLength
-			@setError("label is too long")
-			@setEmptyValue()
-			return false
+				@setError("label is too long")
+				@setEmptyValue()
+				callback false
+				return
+		if @getModel().get("unique")? && @getModel().get("unique")
+			@checkUnique value, (isUnique) =>
+				callback isUnique
 		else
-			@clearError()
-			return true
+			callback true
 
+	checkUnique: (value, callback) ->
+		$.ajax
+			type: 'POST'
+			url: "/api/getThingCodeByLabel/#{@getModel().get("thingType")}/#{@getModel().get("thingKind")}"
+			data: 
+				thingType: @getModel().get("thingType")
+				thingKind: @getModel().get("thingKind")
+				labelType: @getModel().get("lsType")
+				labelKind: @getModel().get("lskind")
+				requests: [requestName: value]
+			dataType: 'json'
+			error: (err) =>
+				#codename is new
+				@setError("error checking for unique labels")
+				callback false 
+				# @model.set codeName: codeName
+			success: (json) =>
+				# the route currently returns an ambiguous error if there are duplicates so give an ambigous error to the user but with a hint
+				if typeof json is 'string'
+					@setError("error checking for unique labels, possibly duplicates already exist")
+					@setEmptyValue()
+					callback false 
+				else
+					if json.results? && json.results[0]? && json.results[0].referenceName == ""
+						@clearError()
+						callback true
+					else
+						@setError("label must be unique")
+						@setEmptyValue()
+						callback false 
+		
 	setEmptyValue: ->
 		@getModel().set
 			labelText: ""
@@ -189,7 +264,7 @@ class window.ACASFormLSLabelFieldController extends ACASFormAbstractFieldControl
 		@$('input').val @getModel().get('labelText')
 		super()
 
-class window.ACASFormLSNumericValueFieldController extends ACASFormAbstractFieldController
+class ACASFormLSNumericValueFieldController extends ACASFormAbstractFieldController
 	###
 		Launching controller must:
 		- Initialize the model with an LSValue
@@ -200,8 +275,9 @@ class window.ACASFormLSNumericValueFieldController extends ACASFormAbstractField
 
 	template: _.template($("#ACASFormLSNumericValueFieldView").html())
 
-	initialize: ->
-		super()
+	initialize: (options) ->
+		@options = options
+		super(@options)
 		@userInputEvent = false
 
 	applyOptions: ->
@@ -255,13 +331,14 @@ class window.ACASFormLSNumericValueFieldController extends ACASFormAbstractField
 			@$('.bv_units').html @getModel().get('unitKind')
 		super()
 
-class window.ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldController
+class ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldController
 	###
 		Launching controller must:
 		- Initialize the model with an LSValue
     Do whatever else is required or optional in ACASFormAbstractFieldController
 	###
 	events: ->
+		_.extend {}, super(),
 		"change select": "handleInputChanged"
 
 	template: _.template($("#ACASFormLSCodeValueFieldView").html())
@@ -276,12 +353,19 @@ class window.ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldCon
 	handleInputChanged: =>
 		@clearError()
 		value = @pickListController.getSelectedCode()
+
+		# Tell the picklist what the selected code should be
+		# incase it re-renders it needs to have an update to date
+		# value here.
+		@pickListController.setSelectedCode(value)
+		
 		if value == "" or value=="unassigned"
 			@setEmptyValue()
 		else
 			@getModel().set
 				value: value
 				ignored: false
+			@showDescription()
 		super()
 
 	setEmptyValue: ->
@@ -291,13 +375,14 @@ class window.ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldCon
 
 	renderModelContent: =>
 		@pickListController.setSelectedCode @getModel().get('value')
+		@showDescription()
 		super()
 
 	setupSelect: ->
 		mdl = @getModel()
 		if @pickList?
 			plOptions =
-				el: @$('select')
+				el: @$('.bv_editablePicklist')
 				collection: @pickList
 				selectedCode: mdl.get('value')
 				parameter: @options.modelKey
@@ -309,7 +394,7 @@ class window.ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldCon
 			else
 				@pickList.url = "/api/codetables/#{mdl.get 'codeType'}/#{mdl.get 'codeKind'}"
 			plOptions =
-				el: @$('select')
+				el: @$('.bv_editablePicklist')
 				collection: @pickList
 				selectedCode: mdl.get('value')
 				parameter: @options.modelKey
@@ -327,7 +412,26 @@ class window.ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldCon
 						code: "unassigned"
 						name: "Select Category"
 
-		@pickListController = new PickListSelectController plOptions
+		# Default is not editable picklist
+		if @options.editablePicklist? && @options.editablePicklist
+			plOptions.editable = true
+		else
+			plOptions.editable = false
+
+		# Default is no role required to edit picklist
+		if @options.editablePicklistRoles?
+			plOptions.roles = @options.editablePicklistRoles
+
+		# Default is to automatically save picklist items to the db
+		# Otherwise the controller will need to explicitly tell editable picklist controller
+		# to save the picklist items to the db.  This is because there is a use case to only save
+		# the picklist items to the db when the user clicks the save button on the thing.
+		plOptions.autoSave = true
+		if @options.autoSavePickListItem? && !@options.autoSavePickListItem
+			plOptions.autoSave = false
+
+		@pickListController = new EditablePickListSelect2Controller plOptions
+		@pickListController.on('change', @handleInputChanged).bind(@)
 		@pickListController.render()
 
 
@@ -337,20 +441,68 @@ class window.ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldCon
 
 		@
 
+	setSelectedCode: (code) =>
+		@pickListController.setSelectedCode(code)
+
+	applyFilter: (filter) =>
+		# Remove the current filters if any
+		@pickListController.removeFilters(false)
+
+		# Add the new filter
+		@addFilter(filter)
+
+		# Apply the filters actually updates the collection items
+		@pickListController.applyFilters()
+
+		# Re-render the picklist once operations are complete
+		@pickListController.render()
+
+	addFilter: (filter) =>
+		# Add a filter to the picklist
+		@pickListController.addFilter(filter)
+
+	removeFilters: (render) =>
+		# Remove all filters 
+		@pickListController.removeFilters()
+
+		# Render if render not false
+		if render != false
+			@pickListController.render()
+
 	disableInput: ->
 		@$('select').attr 'disabled', 'disabled'
 
 	enableInput: ->
 		@$('select').removeAttr 'disabled'
+	
+	showDescription: ->
+		if @options.showDescription? and @options.showDescription
+			@clearDescription()
+			if @pickListController.getSelectedModel()?
+				desc = @pickListController.getSelectedModel().get('description')
+				if desc?
+					@setDescription(desc)
+	
+	setDescription: (message) ->
+		@$('.desc-inline').removeClass 'hide'
+		@$('.desc-inline').html message
 
-class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractFieldController
+	clearDescription: ->
+		@$('.desc-inline').addClass 'hide'
+
+class ACASFormLSThingInteractionFieldController extends ACASFormAbstractFieldController
 	###
 		Launching controller must:
 		- Initialize the model with an LSInteraction
     Do whatever else is required or optional in ACASFormAbstractFieldController
 	###
 	events: ->
+		_.extend {}, super(),
 		"change select": "handleInputChanged"
+
+	initialize: (options) ->
+		@options = options
+		super(@options)
 
 	template: _.template($("#ACASFormLSThingInteractionFieldView").html())
 
@@ -374,8 +526,10 @@ class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractF
 		@clearError()
 		if @userInputEvent
 			thingID = @thingSelectController.getSelectedID()
+			thingCodeName = @thingSelectController.getSelectedCode()
+			thingLabel = @thingSelectController.getSelectedName()
 			if thingID?
-				@getModel().setItxThing id: thingID
+				@getModel().setItxThing id: thingID, codeName: thingCodeName, label: thingLabel
 				@getModel().set ignored: false
 			else
 				@setEmptyValue()
@@ -396,15 +550,33 @@ class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractF
 
 	renderModelContent: =>
 		@userInputEvent = false
-		if  @getModel()? and @getModel().getItxThing().id?
-			labels = new LabelList @getModel().getItxThing().lsLabels
-			if @extendedLabel? and @extendedLabel
-				labelText = labels.getExtendedNameText()
+		model = @getModel()
+		if model? and model instanceof ThingItx and model.getItxThing()?.id?
+			labels = new LabelList model.getItxThing().lsLabels
+			if labels.length > 0
+				if @extendedLabel? and @extendedLabel
+					labelText = labels.getExtendedNameText()
+				else
+					labelText = labels.pickBestLabel().get('labelText')
 			else
-				labelText = labels.pickBestNonEmptyLabel().get('labelText')
+				# If the interacting thing has no labels, then use the code name as a the users text label
+				labelText = model.getItxThing().codeName
 			@thingSelectController.setSelectedCode
-				code: @getModel().getItxThing().codeName
+				code: model.getItxThing().codeName
 				label: labelText
+			super()
+		else
+			# If the interaction has a code name and display name just use that as its likely not saved yet
+			# and part of a picklist
+			if model.firstLsThing?
+				@thingSelectController.setSelectedCode
+					code: model.firstLsThing.codeName
+					label: model.firstLsThing.label
+			else if model.secondLsThing?
+				@thingSelectController.setSelectedCode
+					code: model.secondLsThing.codeName
+					label: model.secondLsThing.label
+					
 			super()
 		@userInputEvent = true
 
@@ -434,7 +606,7 @@ class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractF
 		@$('select').removeAttr 'disabled'
 
 
-class window.ACASFormLSHTMLClobValueFieldController extends ACASFormAbstractFieldController
+class ACASFormLSHTMLClobValueFieldController extends ACASFormAbstractFieldController
 	###
 		Launching controller must:
 		- Initialize the model with an LSValue
@@ -477,7 +649,7 @@ class window.ACASFormLSHTMLClobValueFieldController extends ACASFormAbstractFiel
 
 	setupTinyMCE: ->
 		mdl = @getModel()
-		cname = mdl.get('lsKind').replace(" ","")+"_"+mdl.cid
+		cname = mdl.get('lsKind').split(' ').join('')+"_"+mdl.cid
 		selector = "."+cname
 		@$('.bv_wysiwygEditor').addClass cname
 		@wysiwygEditor = tinymce.init
@@ -489,23 +661,71 @@ class window.ACASFormLSHTMLClobValueFieldController extends ACASFormAbstractFiel
 					if @contentToLoad?
 						@editor.setContent @contentToLoad
 					if @disableEditor?
-						@editor.getBody().setAttribute('contenteditable', @disableEditor)
+						@editor.getBody().setAttribute('contenteditable', !@disableEditor)
+						if @disableEditor
+							@editor.getBody().setAttribute('disabled', true)
+						else
+							@editor.getBody().removeAttribute('disabled')
 				editor.on 'change', (e) =>
 					@textChanged editor.getContent()
 
 	disableInput: ->
 		if @editor?
 			@editor.getBody().setAttribute('contenteditable', false)
+			@editor.getBody().setAttribute('disabled', true)
 		else
 			@disableEditor = true
 
 	enableInput: ->
 		if @editor?
 			@editor.getBody().setAttribute('contenteditable', true)
+			@editor.getBody().removeAttribute('disabled')
 		else
 			@disableEditor = false
 
-class window.ACASFormLSStringValueFieldController extends ACASFormAbstractFieldController
+
+class ACASFormLSClobValueFieldController extends ACASFormAbstractFieldController
+	###
+		Launching controller must:
+		- Initialize the model with an LSValue
+    Do whatever else is required or optional in ACASFormAbstractFieldController
+	###
+
+	template: _.template($("#ACASFormLSClobValueFieldView").html())
+
+	applyOptions: ->
+		super()
+		if @options.rows?
+			@rows = @options.rows
+			@$('textarea').attr 'rows', @rows
+
+	handleInputChanged: =>
+		@clearError()
+		@userInputEvent = true
+		value = UtilityFunctions::getTrimmedInput(@$('textarea'))
+		if value == ""
+			@setEmptyValue()
+		else
+			@getModel().set
+				value: value
+				ignored: false
+		super()
+
+	setEmptyValue: ->
+		@getModel().set
+			value: null
+			ignored: true
+
+	setInputValue: (inputValue) ->
+		@$('textarea').val inputValue
+
+
+	renderModelContent: =>
+		@$('textarea').val @getModel().get('value')
+		super()
+
+
+class ACASFormLSStringValueFieldController extends ACASFormAbstractFieldController
 	###
 		Launching controller must:
 		- Initialize the model with an LSValue
@@ -540,7 +760,7 @@ class window.ACASFormLSStringValueFieldController extends ACASFormAbstractFieldC
 		super()
 
 
-class window.ACASFormLSDateValueFieldController extends ACASFormAbstractFieldController
+class ACASFormLSDateValueFieldController extends ACASFormAbstractFieldController
 	###
 		Launching controller must:
 		- Initialize the model with an LSValue
@@ -549,6 +769,7 @@ class window.ACASFormLSDateValueFieldController extends ACASFormAbstractFieldCon
 
 	template: _.template($("#ACASFormLSDateValueFieldView").html())
 	events: ->
+		_.extend {}, super(),
 		"change input": "handleInputChanged"
 		"click .bv_dateIcon": "handleDateIconClicked"
 
@@ -586,8 +807,10 @@ class window.ACASFormLSDateValueFieldController extends ACASFormAbstractFieldCon
 	handleDateIconClicked: =>
 		@$('input').datepicker( "show" )
 
+	disableInput: =>
+		$(@el).off('click', '.bv_dateIcon');
 
-class window.ACASFormLSFileValueFieldController extends ACASFormAbstractFieldController
+class ACASFormLSFileValueFieldController extends ACASFormAbstractFieldController
 	###
 		Launching controller must:
 		- Initialize the model with an LSValue
@@ -597,7 +820,12 @@ class window.ACASFormLSFileValueFieldController extends ACASFormAbstractFieldCon
 
 	template: _.template($("#ACASFormLSFileValueFieldView").html())
 	events: ->
+		_.extend {}, super(),
 		"click .bv_deleteSavedFile": "handleDeleteSavedFile"
+
+	initialize: (options)->
+		super(options)
+		@fileURL = UtilityFunctions::getFileServiceURL()
 
 	applyOptions: ->
 		super()
@@ -605,7 +833,11 @@ class window.ACASFormLSFileValueFieldController extends ACASFormAbstractFieldCon
 			@allowedFileTypes = @options.allowedFileTypes
 		else
 			@allowedFileTypes = ['csv','xlsx','xls','png','jpeg']
-
+		if @options.displayInline?
+			@displayInline = @options.displayInline
+		else
+			@displayInline = false
+		
 	render: ->
 		super()
 		@setupFileController()
@@ -630,7 +862,10 @@ class window.ACASFormLSFileValueFieldController extends ACASFormAbstractFieldCon
 			displayText = @getModel().get('comments')
 			if !displayText?
 				displayText = fileValue
-			@$('.bv_file').html '<a href="'+window.conf.datafiles.downloadurl.prefix+fileValue+'">'+displayText+'</a>'
+			if @displayInline
+				@$('.bv_file').html '<img src="'+window.conf.datafiles.downloadurl.prefix+fileValue+'" alt="'+ displayText+'">'
+			else
+				@$('.bv_file').html '<a href="'+window.conf.datafiles.downloadurl.prefix+fileValue+'">'+displayText+'</a>'
 			@$('.bv_deleteSavedFile').show()
 
 	createNewFileChooser: ->
@@ -641,7 +876,7 @@ class window.ACASFormLSFileValueFieldController extends ACASFormAbstractFieldCon
 				el: @$('.bv_file')
 				maxNumberOfFiles: 1
 				requiresValidation: false
-				url: UtilityFunctions::getFileServiceURL()
+				url: @fileURL
 				allowedFileTypes: @allowedFileTypes
 				hideDelete: false
 			@fileController.on 'amDirty', =>
@@ -649,14 +884,24 @@ class window.ACASFormLSFileValueFieldController extends ACASFormAbstractFieldCon
 			@fileController.on 'amClean', =>
 				@trigger 'amClean'
 			@fileController.render()
-			@fileController.on('fileUploader:uploadComplete', @handleFileUpload) #update model with filename
-			@fileController.on('fileDeleted', @handleFileRemoved) #update model with filename
+			@fileController.on('fileUploader:uploadComplete', @handleFileUpload.bind(@)) #update model with filename
+			@fileController.on('fileDeleted', @handleFileRemoved.bind(@)) #update model with filename
 
-	handleFileUpload: (nameOnServer) =>
+	handleFileUpload: (file) =>
 		@clearError()
 		@getModel().set
-			value: nameOnServer
+			comments: file.originalName
+			value: file.name
 			ignored: false
+
+	enableInput: ->
+		super()
+		if !@isEmpty()
+			@$('.bv_deleteSavedFile').show()
+	
+	disableInput: ->
+		super()
+		@$('.bv_deleteSavedFile').hide()
 
 	handleFileRemoved: =>
 		@setEmptyValue()
@@ -666,3 +911,164 @@ class window.ACASFormLSFileValueFieldController extends ACASFormAbstractFieldCon
 		@handleFileRemoved()
 		@$('.bv_deleteSavedFile').hide()
 		@createNewFileChooser()
+
+
+class ACASFormLSBlobValueFieldController extends ACASFormLSFileValueFieldController
+	###
+		Launching controller must:
+		- Initialize the model with an LSValue
+    - Provide allowedFileTypes
+    Do whatever else is required or optional in ACASFormAbstractFieldController
+	###
+
+	initialize: (options)->
+		super(options)
+		@fileURL = "/blobUploads"
+
+	arrayToBase64String: (a)->
+		btoa new Uint8Array(a).reduce(((data, byte) ->
+			data + String.fromCharCode(byte)
+		), '')
+
+	setupFileController: ->
+		fileValue = @getModel().get('value')
+		if @isEmpty()
+			@createNewFileChooser()
+			@$('.bv_deleteSavedFile').hide()
+		else
+			displayText = @getModel().get('comments')
+			if !displayText?
+				displayText = "InternalErrorUnknownFileName"
+			id = @getModel().get('id')
+			# Display inline not supported right now because guessing mimetype from extension isn't available
+			# so always be falsey here but leaving this in place
+			if false and @displayInline and @mimeType?
+				@$('.bv_file').html '<img src="data:' + @mimeType + ';base64,'+@arrayToBase64String(fileValue)+'" alt="'+ displayText+'">'
+			else
+				# The value is filled but the id is empty so convert the blobValue to base64 and create link for download
+				if id?
+					@$('.bv_file').html '<a href="/api/thingvalues/downloadThingBlobValueByID/'+id+'">'+displayText+'</a>'
+				else
+					@$('.bv_file').html '<a href="data:application/octet-stream;base64,'+@arrayToBase64String(fileValue)+'" download="'+displayText+'">'+displayText+'</a>'
+			@$('.bv_deleteSavedFile').show()
+
+	setEmptyValue: ->
+		@getModel().set
+			value: null 
+			ignored: true
+
+	isEmpty: ->
+		empty = false
+		mdl = @getModel()
+		if mdl.get('comments')=="" or !mdl.get('comments')? then empty = true
+		if mdl.get('ignored') then empty = true
+		return empty
+
+	createNewFileChooser: ->
+		if @fileController?
+			@fileController.render()
+		else
+			@fileController = new LSFileChooserController
+				el: @$('.bv_file')
+				maxNumberOfFiles: 1
+				requiresValidation: false
+				url: @fileURL
+				allowedFileTypes: @allowedFileTypes
+				hideDelete: false
+			@fileController.on 'amDirty', =>
+				@trigger 'amDirty'
+			@fileController.on 'amClean', =>
+				@trigger 'amClean'
+			@fileController.render()
+			@fileController.on('fileUploader:uploadComplete', @handleFileUpload.bind(@)) #update model with filename
+			@fileController.on('fileDeleted', @handleFileRemoved.bind(@)) #update model with filename
+
+	handleFileUpload: (file) =>
+		@clearError()
+		@mimeType = file.mimeType
+		@getModel().set
+			value: file.binaryData
+			comments: file.originalName
+			ignored: false
+
+class ACASFormLSBooleanFieldController extends ACASFormAbstractFieldController
+	###
+		Launching controller must:
+		- Initialize the model with an LSValue
+		- Strongly recommended to use a codeValue of codeType: "boolean", codeKind: "boolean"
+    Do whatever else is required or optional in ACASFormAbstractFieldController
+	###
+
+	template: _.template($("#ACASFormLSBooleanFieldView").html())
+	events: ->
+		_.extend {}, super(),
+		"change input": "handleInputChanged"
+
+	render: ->
+		super()
+		@
+
+	handleInputChanged: =>
+		@clearError()
+		@userInputEvent = true
+		isChecked = @$('input').is(":checked")
+		@getModel().set
+			value: isChecked.toString()
+			ignored: false
+		super()
+
+	setEmptyValue: ->
+		@getModel().set
+			value: null
+			ignored: true
+
+	renderModelContent: =>
+		# If value is anything other than true (i.e. null), then default to unchecked
+		if @getModel().get('value') is "true"
+			@$('input').attr 'checked', 'checked'
+		else
+			@$('input').removeAttr 'checked'
+		super()
+
+
+
+class ACASFormLSURLValueFieldController extends ACASFormAbstractFieldController
+	###
+		Launching controller must:
+		- Initialize the model with an LSValue
+    Do whatever else is required or optional in ACASFormAbstractFieldController
+	###
+
+	template: _.template($("#ACASFormLSURLValueFieldView").html())
+
+	events: ->
+		"click .bv_linkBtn": "handleLinkBtnClicked"
+
+	handleInputChanged: =>
+		@clearError()
+		@userInputEvent = true
+		value = UtilityFunctions::getTrimmedInput(@$('input'))
+		if value == ""
+			@setEmptyValue()
+		else
+			@getModel().set
+				value: value
+				ignored: false
+		super()
+
+	setEmptyValue: ->
+		@getModel().set
+			value: null
+			ignored: true
+
+	setInputValue: (inputValue) ->
+		@$('input').val inputValue
+
+	handleLinkBtnClicked: =>
+		url = UtilityFunctions::getTrimmedInput(@$('input'))
+		window.open(url);
+
+
+	renderModelContent: =>
+		@$('input').val @getModel().get('value')
+		super()

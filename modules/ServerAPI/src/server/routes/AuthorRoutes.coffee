@@ -16,6 +16,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/author', loginRoutes.ensureAuthenticated, exports.saveAuthor
 	app.put '/api/author/:id', loginRoutes.ensureAuthenticated, exports.updateAuthor
 	app.get '/activateUser', exports.activateUserAndRedirectToChangePassword
+	app.get '/api/allowedProjects', loginRoutes.ensureAuthenticated, exports.allowedProjects
 
 serverUtilityFunctions = require './ServerUtilityFunctions.js'
 _ = require 'underscore'
@@ -37,6 +38,48 @@ FirstThingItx = serverUtilityFunctions.FirstThingItx
 LsThingItxList = serverUtilityFunctions.LsThingItxList
 FirstLsThingItxList = serverUtilityFunctions.FirstLsThingItxList
 SecondLsThingItxList = serverUtilityFunctions.SecondLsThingItxList
+
+
+exports.allowedProjects = (req, resp) ->
+	exports.allowedProjectsInternal req.user, (statusCode, json) ->
+		resp.statusCode = statusCode
+		resp.json json
+
+exports.allowedProjectsInternal = (user, callback) ->
+	csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
+	csUtilities.getProjectStubsInternal (statusCode, allProjects) ->
+		config = require '../conf/compiled/conf.js'
+		_ = require 'underscore'
+
+		# Filter out any projects that exist in the config for filtering projects
+		projectFilterList = JSON.parse config.all.server.projects.filterList
+		allProjects = _.filter allProjects, (project, index) ->
+			! _.contains projectFilterList, project.code
+
+		if (config.all.server.project.roles.enable)
+			filteredProjects = []
+			isAdmin = false;
+			roles = user.roles
+			allowedProjectCodes = []
+			user.roles.forEach (role) ->
+				if role.roleEntry.lsType != null && role.roleEntry.lsType == "Project"
+					allowedProjectCodes.push role.roleEntry.lsKind
+				else if role.roleEntry.roleName == config.all.client.roles.acas.adminRole
+					isAdmin = true
+			if isAdmin
+				filteredProjects = allProjects
+			else
+				allProjects.forEach (project) ->
+					isRestricted = project.isRestricted
+					if isRestricted
+						if _.contains(allowedProjectCodes, project.code)
+							filteredProjects.push(project)
+					else 
+						filteredProjects.push(project)
+			projects = filteredProjects
+		else
+			projects = allProjects
+		callback 200, projects
 
 
 exports.getAuthorByUsername = (req, resp) ->
@@ -182,7 +225,6 @@ exports.genericAuthorSearch = (req, resp) ->
 	else
 		config = require '../conf/compiled/conf.js'
 		console.log "search req - generic author"
-		console.log req
 		unless req.body.queryDTO?
 			req.body.queryDTO = {}
 		# req.body needs queryString and queryDTO
@@ -568,7 +610,7 @@ exports.saveAuthorInternal = (author, user, callback) ->
 										if err?
 											callback err
 										else
-											fetchSystemRoles systemRoles, (err, systemRoles) ->
+											fetchSystemRoles systemRoles, ["id"], (err, systemRoles) ->
 												flatAuthorRoles = []
 												_.each systemRoles, (role) ->
 													flatAuthorRole =
@@ -586,6 +628,7 @@ exports.saveAuthorInternal = (author, user, callback) ->
 																callback err
 															else
 																callback null, response
+
 
 exports.updateAuthorAndRolesInternal = (author, user, callback) ->
 	validateAuthorAttributes author, (authorValidationErrors) ->
@@ -612,7 +655,9 @@ exports.updateAuthorAndRolesInternal = (author, user, callback) ->
 											callback err
 										else
 											parseSystemRoles savedAuthor, (err, savedAuthor, savedSystemRoles) ->
-												diffSystemRolesWithSaved author.userName, systemRoles, savedSystemRoles, (err, rolesToAdd, rolesToDelete) ->
+												diffSystemRolesWithSaved author.userName, systemRoles, savedSystemRoles, ["id"], (err, roleDiff) ->
+													rolesToAdd = roleDiff.rolesToAdd
+													rolesToDelete = roleDiff.rolesToDelete
 													if rolesToAdd.length > 0 or rolesToDelete.length > 0
 														checkUserCanEditSystemRoles user, (err, userCanEditRoles) ->
 															if err?
@@ -621,24 +666,11 @@ exports.updateAuthorAndRolesInternal = (author, user, callback) ->
 																console.error "ALERT: User #{user.username} attempted to edit system roles without having the proper authorities."
 																callback 'You do not have permissions to edit system roles! This incident will be reported to your system administrator.'
 															else
-																exports.updateAuthorInternal author, (updatedAuthor, statusCode) ->
-																	if statusCode != 200
-																		callback updatedAuthor
+																exports.syncRoles author, rolesToAdd, rolesToDelete, (err, updatedAuthor) ->
+																	if err?
+																		callback err
 																	else
-																		saveAuthorRoles rolesToAdd, (err, savedRoles) ->
-																			if err?
-																				callback err
-																			else
-																				deleteAuthorRoles rolesToDelete, (err, deletedRoles) ->
-																					if err?
-																						callback err
-																					else
-																						#save successful. Fetch the new author and return.
-																						exports.getAuthorByUsernameInternal author.userName, (response, statusCode) ->
-																							if statusCode != 200
-																								callback err
-																							else
-																								callback null, response
+																		callback null, updatedAuthor
 													else
 														#roles have not changed, just update the author
 														exports.updateAuthorInternal author, (updatedAuthor, statusCode) ->
@@ -651,6 +683,28 @@ exports.updateAuthorAndRolesInternal = (author, user, callback) ->
 																		callback err
 																	else
 																		callback null, response
+
+exports.syncRoles = (author, rolesToAdd, rolesToDelete, callback) =>
+	exports.updateAuthorInternal author, (errorOrUpdatedAuthor, statusCode) =>
+		if statusCode != 200
+			callback errorOrUpdatedAuthor
+		else
+			saveAuthorRoles rolesToAdd, (err, savedRoles) ->
+				console.log err
+				console.log savedRoles
+				if err?
+					callback err
+				else
+					deleteAuthorRoles rolesToDelete, (err, deletedRoles) ->
+						if err?
+							callback err
+						else
+							#save successful. Fetch the new author and return.
+							exports.getAuthorByUsernameInternal author.userName, (response, statusCode) ->
+								if statusCode != 200
+									callback err
+								else
+									callback null, response
 
 validateAuthorAttributes = (author, callback) ->
 	requiredAttrs = ['firstName', 'lastName', 'userName', 'emailAddress']
@@ -708,7 +762,7 @@ checkUserNameAndEmailAreUnique = (author, callback) ->
 		if err?
 			callback err
 		else
-			checkEmailIsUnique author, (err, emailIsUnique) ->
+			checkEmailIsUnique author.emailAddress, (err, emailIsUnique) ->
 				if err?
 					callback err
 				else
@@ -742,8 +796,8 @@ checkUserNameIsUnique = (author, callback) ->
 			callback JSON.stringify("failed checking author username")
 	)
 
-checkEmailIsUnique = (author, callback) ->
-	baseurl = config.all.client.service.persistence.fullpath+"authors?find=ByEmailAddress&emailAddress="+author.emailAddress
+checkEmailIsUnique = (email, callback) ->
+	baseurl = config.all.client.service.persistence.fullpath+"authors?find=ByEmailAddress&emailAddress="+email
 	request(
 		method: 'GET'
 		url: baseurl
@@ -762,12 +816,13 @@ checkEmailIsUnique = (author, callback) ->
 			console.error response
 			callback JSON.stringify("failed checking author emailAddress")
 	)
+exports.checkEmailIsUnique = checkEmailIsUnique
 
 checkIfEmailHasChangedAndIsUnique = (author, savedAuthor, callback) ->
 	if author.emailAddress == savedAuthor.emailAddress
 		callback null
 	else
-		checkEmailIsUnique author, (err, isUnique) ->
+		checkEmailIsUnique author.emailAddress, (err, isUnique) ->
 			if err?
 				callback err
 			else if isUnique
@@ -775,19 +830,22 @@ checkIfEmailHasChangedAndIsUnique = (author, savedAuthor, callback) ->
 			else
 				callback 'That email address is already in use.'
 
+exports.getRolesByLsType = (authorRoles, lsType) ->
+	roleEntries = _.pluck authorRoles, 'roleEntry'
+	lsTypeRoles = _.where roleEntries, {lsType: lsType}
+	return lsTypeRoles
+
 parseSystemRoles = (author, callback) ->
-	roleEntries = _.pluck author.authorRoles, 'roleEntry'
-	systemRoles = _.where roleEntries, {lsType: 'System'}
+	systemRoles = exports.getRolesByLsType(author.authorRoles, "System")
 	delete author['authorRoles']
 	callback null, author, systemRoles
 
-
-diffSystemRolesWithSaved = (userName, systemRoles, savedSystemRoles, callback) ->
-	rolesToAdd = _.filter systemRoles, (sysRole) ->
-		!(_.findWhere savedSystemRoles, (id: sysRole.id))?
-	rolesToDelete = _.filter savedSystemRoles, (savedSysRole) ->
-		!(_.findWhere systemRoles, (id: savedSysRole.id))?
-	fetchSystemRoles rolesToAdd, (err, rolesToAdd) ->
+diffSystemRolesWithSaved = (userName, systemRoles, savedSystemRoles, matchKeys, callback) ->
+	rolesToAdd = _.filter systemRoles, (sysRole) =>
+		!(_.findWhere savedSystemRoles, (_.pick sysRole, matchKeys))?
+	rolesToDelete = _.filter savedSystemRoles, (savedSysRole) =>
+		!(_.findWhere systemRoles, (_.pick savedSysRole, matchKeys))?
+	fetchSystemRoles rolesToAdd, matchKeys, (err, rolesToAdd) ->
 		if err?
 			callback err
 		else
@@ -807,7 +865,9 @@ diffSystemRolesWithSaved = (userName, systemRoles, savedSystemRoles, callback) -
 					roleName: role.roleName
 					userName: userName
 				flatAuthRolesToDelete.push flatAuthorRole
-			callback null, flatAuthRolesToAdd, flatAuthRolesToDelete
+			callback null, {rolesToAdd: flatAuthRolesToAdd, rolesToDelete: flatAuthRolesToDelete}
+
+exports.diffSystemRolesWithSaved = diffSystemRolesWithSaved
 
 saveAuthorRoles = (rolesToCreate, cb) ->
 	request(
@@ -823,6 +883,8 @@ saveAuthorRoles = (rolesToCreate, cb) ->
 			cb null, json
 	)
 
+exports.saveAuthorRoles = saveAuthorRoles
+
 deleteAuthorRoles = (rolesToDelete, cb) ->
 	request(
 		method: 'POST'
@@ -836,20 +898,17 @@ deleteAuthorRoles = (rolesToDelete, cb) ->
 		else
 			cb null, json
 	)
+exports.deleteAuthorRoles = deleteAuthorRoles
 
-fetchSystemRoles = (incompleteSystemRoles, callback) ->
+fetchSystemRoles = (incompleteSystemRoles, matchKeys, callback) ->
 	request(
 		method: 'GET'
 		url: config.all.client.service.persistence.fullpath + 'lsRoles?lsType=System'
 		json: true
-	, (error, response, json) =>
+	, (error, response, allSystemRoles) =>
 		if !error && response.statusCode == 200
-			allSystemRoles = json
-			ids = {}
-			_.each incompleteSystemRoles, (partialRole) ->
-				ids[partialRole.id] = true
-			filteredSystemRoles = _.filter allSystemRoles, (val) ->
-				return ids[val.id]
+			filteredSystemRoles = _.filter allSystemRoles, (sysRole) =>
+				(_.findWhere incompleteSystemRoles, (_.pick sysRole, matchKeys))?
 			callback null, filteredSystemRoles
 		else
 			console.error 'got error trying to get fetch system roles'

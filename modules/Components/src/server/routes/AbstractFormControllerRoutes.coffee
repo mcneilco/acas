@@ -17,14 +17,14 @@ exports.setupChannels = (io, sessionStore, loginRoutes) ->
 			sessionLocks = _.where global.editLockedEntities, socketID: socket.id
 			for lockKey, lock of global.editLockedEntities
 				if lock.socketID==socket.id
-					console.log "clearing lock on #{lock}"
+					console.log "clearing lock on #{JSON.stringify(lock)}"
 					for quid in lock.rejectedRequestSocketIDs
 						socket.broadcast.to(quid).emit('editLockAvailable')
 					delete global.editLockedEntities[lockKey]
 
 			for lockKey, lock of global.newFormEntities
 				if lock.savingLockSocketID==socket.id
-					console.log "clearing save lock on #{lock}"
+					console.log "clearing save lock on #{JSON.stringify(lock)}}"
 					lock.savingLockSocketID = null
 					for quid in lock.savingNotificationRequestSocketIDs
 						socket.broadcast.to(quid).emit('newEntitySavingComplete')
@@ -38,7 +38,6 @@ exports.setupChannels = (io, sessionStore, loginRoutes) ->
 		socket.on('editLockEntity', (entityType, codeName) =>
 			console.log "got editLockEntity request #{entityType}, #{codeName}"
 
-			parsedCookie = JSON.parse(sessionStore.sessions[socket.request.sessionID])
 			lockKey = entityType+"_"+codeName
 			console.log "trying to lock #{lockKey} for session #{socket.id}"
 
@@ -59,7 +58,7 @@ exports.setupChannels = (io, sessionStore, loginRoutes) ->
 			else
 				now = new Date().getTime()
 				global.editLockedEntities[lockKey] =
-					currentEditor: parsedCookie.passport.user.username
+					currentEditor: socket.request.user.username
 					lastActivityDate: now
 					lockCreatedDate: now
 					socketID: socket.id
@@ -68,7 +67,7 @@ exports.setupChannels = (io, sessionStore, loginRoutes) ->
 					rejectedRequestSocketIDs: []
 				result =
 					okToEdit: true
-					currentEditor: parsedCookie.passport.user.username
+					currentEditor: socket.request.user.username
 					lastActivityDate: now
 					lockCreatedDate: now
 

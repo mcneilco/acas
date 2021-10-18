@@ -1,4 +1,4 @@
-class window.DocForBatches extends Backbone.Model
+class DocForBatches extends Backbone.Model
 	protocol: null
 	experiment: null
 
@@ -44,7 +44,7 @@ class window.DocForBatches extends Backbone.Model
 			url: "api/protocols/codename/"+docForBatchesProtocolCode
 			success: (json) =>
 				if json.length == 0
-					alert "Could not find required protocol with code: "+docForBatchesProtocolCode+". Please seek help from an administrator"
+					alert "Could not find required #{window.conf.protocol.label} with code: "+docForBatchesProtocolCode+". Please seek help from an administrator"
 				else
 					@.protocol = new Protocol(json)
 			error: (err) ->
@@ -153,7 +153,7 @@ class window.DocForBatches extends Backbone.Model
 
 
 
-class window.DocForBatchesController extends Backbone.View
+class DocForBatchesController extends Backbone.View
 	template: _.template($("#DocForBatchesView").html())
 
 	events:
@@ -171,16 +171,16 @@ class window.DocForBatchesController extends Backbone.View
 		@docUploadController = new DocUploadController
 			model: @model.get('docUpload')
 			el: @$('.bv_docUpload')
-		@docUploadController.on("invalid", @subFormIsInvalid)
-		@docUploadController.on("valid", @subFormIsValid)
+		@docUploadController.on("invalid", @subFormIsInvalid.bind(@))
+		@docUploadController.on("valid", @subFormIsValid.bind(@))
 		@docUploadController.on 'amDirty', =>
 			@trigger 'amDirty'
-
+		.bind(@)
 		@batchListValidator = new BatchListValidatorController
 			el: @$(".bv_batchListValidator")
 			collection: @model.get('batchNameList')
-		@batchListValidator.on("invalid", @subFormIsInvalid)
-		@batchListValidator.on("valid", @subFormIsValid)
+		@batchListValidator.on("invalid", @subFormIsInvalid.bind(@))
+		@batchListValidator.on("valid", @subFormIsValid.bind(@))
 		@batchListValidator.on 'amDirty', =>
 			@trigger 'amDirty'
 		@subFormIsInvalid()

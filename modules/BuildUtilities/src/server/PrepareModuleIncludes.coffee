@@ -121,6 +121,6 @@ prepRouteIncludes = (apiMode) ->
 	routeLines
 
 routeLines = prepRouteIncludes(false)
-insertToLayoutTemplate "  /*TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES */", routeLines, "#{ACAS_HOME}/app_template.js", "#{ACAS_HOME}/app.js"
+insertToLayoutTemplate "//TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES", routeLines, "#{ACAS_HOME}/app_template.js", "#{ACAS_HOME}/app.js"
 routeLines = prepRouteIncludes(true)
-insertToLayoutTemplate "  /*TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES */", routeLines, "#{ACAS_HOME}/app_api_template.js", "#{ACAS_HOME}/app_api.js"
+insertToLayoutTemplate "//TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES", routeLines, "#{ACAS_HOME}/app_api_template.js", "#{ACAS_HOME}/app_api.js"

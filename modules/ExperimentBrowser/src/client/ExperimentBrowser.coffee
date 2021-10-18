@@ -1,9 +1,9 @@
-class window.ExperimentSearch extends Backbone.Model
+class ExperimentSearch extends Backbone.Model
 	defaults:
 		protocolCode: null
 		experimentCode: null
 
-class window.ExperimentSearchController extends AbstractFormController
+class ExperimentSearchController extends AbstractFormController
 	template: _.template($("#ExperimentSearchView").html())
 
 	events:
@@ -130,12 +130,12 @@ class window.ExperimentSearchController extends AbstractFormController
 
 		@experimentSummaryTable.render()
 
-class window.ExperimentSearch extends Backbone.Model
+class ExperimentSearch extends Backbone.Model
 	defaults:
 		protocolCode: null
 		experimentCode: null
 
-class window.ExperimentSimpleSearchController extends AbstractFormController
+class ExperimentSimpleSearchController extends AbstractFormController
 	template: _.template($("#ExperimentSimpleSearchView").html())
 	genericSearchUrl: "/api/experiments/genericSearch/"
 	codeNameSearchUrl: "/api/experiments/codename/"
@@ -213,7 +213,7 @@ class window.ExperimentSimpleSearchController extends AbstractFormController
 
 
 
-class window.ExperimentRowSummaryController extends Backbone.View
+class ExperimentRowSummaryController extends Backbone.View
 	tagName: 'tr'
 	className: 'dataTableRow'
 	events:
@@ -274,7 +274,7 @@ class window.ExperimentRowSummaryController extends Backbone.View
 			@$('.bv_protocolName').after "<td class='bv_project'>"+project+"</td>"
 		@
 
-class window.ExperimentSummaryTableController extends Backbone.View
+class ExperimentSummaryTableController extends Backbone.View
 	initialize: ->
 		if @options.domSuffix?
 			@domSuffix = @options.domSuffix
@@ -336,7 +336,7 @@ class window.ExperimentSummaryTableController extends Backbone.View
 				return true
 		return false
 
-class window.ExperimentBrowserController extends Backbone.View
+class ExperimentBrowserController extends Backbone.View
 	#template: _.template($("#ExperimentBrowserView").html())
 	includeDuplicateAndEdit: true
 	events:
@@ -356,7 +356,7 @@ class window.ExperimentBrowserController extends Backbone.View
 			el: @$('.bv_experimentSearchController')
 			includeDuplicateAndEdit: @includeDuplicateAndEdit
 		@searchController.render()
-		@searchController.on "searchReturned", @setupExperimentSummaryTable
+		@searchController.on "searchReturned", @setupExperimentSummaryTable.bind(@)
 		#@searchController.on "resetSearch", @destroyExperimentSummaryTable
 #		@$('.bv_queryToolDisplayName').html window.conf.service.result.viewer.displayName
 
@@ -447,9 +447,16 @@ class window.ExperimentBrowserController extends Backbone.View
 		if @experimentController.model.getScientist().get('codeValue') is "unassigned"
 			return true
 		else
-			if window.conf.entity?.editingRoles?
+			if @experimentController.model.get('lsKind') is 'study'
+				if window.conf.entity?.study?.editingRoles?
+					editingRoles = window.conf.entity.study.editingRoles
+				else
+					editingRoles = null
+			else if window.conf.entity?.editingRoles?
+				editingRoles = window.conf.entity.editingRoles
+			if editingRoles?
 				rolesToTest = []
-				for role in window.conf.entity.editingRoles.split(",")
+				for role in editingRoles.split(",")
 					role = $.trim(role)
 					if role is 'entityScientist'
 						if (window.AppLaunchParams.loginUserName is @experimentController.model.getScientist().get('codeValue'))
@@ -667,7 +674,7 @@ class window.ExperimentBrowserController extends Backbone.View
 
 		@
 
-class window.ExperimentDetailController extends Backbone.View
+class ExperimentDetailController extends Backbone.View
 	template: _.template($("#ExperimentDetailsView").html())
 
 	initialize: ->

@@ -1,6 +1,6 @@
-class window.AuthorRole extends Backbone.Model
+class AuthorRole extends Backbone.Model
 
-class window.AuthorRoleList extends Backbone.Collection
+class AuthorRoleList extends Backbone.Collection
 	model: AuthorRole
 
 	validateCollection: =>
@@ -21,7 +21,7 @@ class window.AuthorRoleList extends Backbone.Collection
 					usedRoles[currentRole] = index
 		modelErrors
 
-class window.Author extends Backbone.Model
+class Author extends Backbone.Model
 	urlRoot: '/api/author'
 
 	defaults: ->
@@ -90,10 +90,10 @@ class window.Author extends Backbone.Model
 		trimmedProjectRoles = _.pluck sortedProjectRoles, 'roleEntry'
 		return new AuthorRoleList trimmedProjectRoles
 
-class window.AuthorList extends Backbone.Collection
+class AuthorList extends Backbone.Collection
 	model: Author
 
-class window.AuthorRoleController extends AbstractFormController
+class AuthorRoleController extends AbstractFormController
 	template: _.template($("#AuthorRoleView").html())
 
 	events: ->
@@ -160,7 +160,7 @@ class window.AuthorRoleController extends AbstractFormController
 	updateModel: =>
 		roleId = @authorRoleListController.getSelectedCode()
 		@model.set
-			id: roleId
+			id: parseInt(roleId)
 		@trigger 'amDirty'
 
 	clear: =>
@@ -170,7 +170,7 @@ class window.AuthorRoleController extends AbstractFormController
 		@model.destroy()
 		@trigger 'amDirty'
 
-class window.AuthorRoleListController extends Backbone.View
+class AuthorRoleListController extends Backbone.View
 	template: _.template($("#AuthorRoleListView").html())
 
 	events:
@@ -277,7 +277,7 @@ class window.AuthorRoleListController extends Backbone.View
 		@$("span.tag.label.label-info span").not('.dontdisable').attr "data-role", ""
 
 
-class window.AuthorEditorController extends AbstractFormController
+class AuthorEditorController extends AbstractFormController
 	template: _.template($("#AuthorEditorView").html())
 	moduleLaunchName: "author"
 

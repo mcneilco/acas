@@ -1,4 +1,4 @@
-class window.DocUpload extends Backbone.Model
+class DocUpload extends Backbone.Model
 	defaults:
 		url: ""
 		currentFileName: ""
@@ -30,7 +30,7 @@ class window.DocUpload extends Backbone.Model
 		else
 			return null
 
-class window.DocUploadController extends AbstractFormController
+class DocUploadController extends AbstractFormController
 	template: _.template($("#DocUploadView").html())
 
 	events:
@@ -48,8 +48,8 @@ class window.DocUploadController extends AbstractFormController
 			fieldIsRequired: false
 			requiresValidation: false
 			maxNumberOfFiles: 1
-		@fileInputController.on('fileInput:uploadComplete', @setNewFileName)
-		@fileInputController.on('fileInput:removedFile', @clearNewFileName)
+		@fileInputController.on('fileInput:uploadComplete', @setNewFileName.bind(@))
+		@fileInputController.on('fileInput:removedFile', @clearNewFileName.bind(@))
 		@setBindings()
 		# do this here because we don't want to do this on re-render
 		unless @model.isNew()
@@ -83,8 +83,8 @@ class window.DocUploadController extends AbstractFormController
 
 		@updateModel()
 
-	setNewFileName: (fileNameOnServer) =>
-		@model.set({currentFileName: fileNameOnServer})
+	setNewFileName: (file) =>
+		@model.set({currentFileName: file.name})
 		@updateModel()
 
 	clearNewFileName: =>

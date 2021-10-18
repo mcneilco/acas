@@ -1,4 +1,4 @@
-class window.AbstractFormController extends Backbone.View
+class AbstractFormController extends Backbone.View
 # Your initialization function needs at least these lines:
 # 	initialize: ->
 # 		@errorOwnerName = 'MyControllerName'
@@ -37,8 +37,8 @@ class window.AbstractFormController extends Backbone.View
 		@updateModel()
 
 	setBindings: ->
-		@model.on 'invalid', @validationError
-		@model.on 'change', @handleModelChange
+		@model.on 'invalid', @validationError.bind(@)
+		@model.on 'change', @handleModelChange.bind(@)
 
 	validationError: =>
 		errors = @model.validationError
@@ -99,8 +99,8 @@ class window.AbstractFormController extends Backbone.View
 	openFormControllerSocket: ->
 		if @lockEditingForSessionKey?
 			@socket = io '/formController:connected'
-			@socket.on 'editLockRequestResult', @handleEditLockRequestResult
-			@socket.on 'editLockAvailable', @handleEditLockAvailable
+			@socket.on 'editLockRequestResult', @handleEditLockRequestResult.bind(@)
+			@socket.on 'editLockAvailable', @handleEditLockAvailable.bind(@)
 
 	handleEditLockRequestResult: (result) =>
 		if !result.okToEdit
@@ -115,7 +115,7 @@ class window.AbstractFormController extends Backbone.View
 		@trigger 'editUnLocked'
 		#you should extend this
 
-class window.AbstractThingFormController extends AbstractFormController
+class AbstractThingFormController extends AbstractFormController
 
 	setupFormFields: (fieldDefs, useDirectRef) ->
 		unless @formFields?
@@ -124,7 +124,12 @@ class window.AbstractThingFormController extends AbstractFormController
 		fDefs = []
 		if fieldDefs.labels? then fDefs = fDefs.concat fieldDefs.labels
 		if fieldDefs.values? then fDefs = fDefs.concat fieldDefs.values
-		if fieldDefs.firstLsThingItxs? then fDefs = fDefs.concat fieldDefs.firstLsThingItxs
+		if fieldDefs.firstLsThingItxs?
+			# Tag any firstItx fieldDefinitions with "firstItx" so the controllers know which direction of interaction to create
+			firstDefs = _.map(fieldDefs.firstLsThingItxs, (fdef) =>
+				fdef.fieldSettings.firstItx = true
+				return fdef)
+			fDefs = fDefs.concat firstDefs
 		if fieldDefs.secondLsThingItxs? then fDefs = fDefs.concat fieldDefs.secondLsThingItxs
 
 		for field in fDefs
@@ -137,6 +142,7 @@ class window.AbstractThingFormController extends AbstractFormController
 				inputClass: field.fieldSettings.inputClass
 				formLabel: field.fieldSettings.formLabel
 				formLabelOrientation: field.fieldSettings.formLabelOrientation
+				formLabelTooltip: field.fieldSettings.formLabelTooltip
 				placeholder: field.fieldSettings.placeholder
 				required: field.fieldSettings.required
 				url: field.fieldSettings.url
@@ -145,10 +151,14 @@ class window.AbstractThingFormController extends AbstractFormController
 				firstSelectText: field.fieldSettings.firstSelectText
 				modelDefaults: field.modelDefaults
 				allowedFileTypes: field.fieldSettings.allowedFileTypes
+				displayInline: field.fieldSettings.displayInline
 				extendedLabel: field.fieldSettings.extendedLabel
 				tabIndex: field.fieldSettings.tabIndex
 				toFixed: field.fieldSettings.toFixed
 				pickList: field.fieldSettings.pickList
+				showDescription: field.fieldSettings.showDescription
+				editablePicklist: field.fieldSettings.editablePicklist
+				editablePicklistRoles: field.fieldSettings.editablePicklistRoles
 
 			switch field.fieldSettings.fieldType
 				when 'label'
@@ -157,7 +167,14 @@ class window.AbstractThingFormController extends AbstractFormController
 					else
 						newField = new ACASFormLSLabelFieldController opts
 				when 'numericValue' then newField = new ACASFormLSNumericValueFieldController opts
-				when 'codeValue' then newField = new ACASFormLSCodeValueFieldController opts
+				when 'codeValue'
+					if field.multiple? and field.multiple
+						newField = new ACASFormMultiCodeValueCheckboxController opts
+					else
+						newField = new ACASFormLSCodeValueFieldController opts
+				when 'clobValue'
+					opts.rows = field.fieldSettings?.rows
+					newField = new ACASFormLSClobValueFieldController opts
 				when 'htmlClobValue'
 					opts.rows = field.fieldSettings?.rows
 					newField = new ACASFormLSHTMLClobValueFieldController opts
@@ -166,10 +183,17 @@ class window.AbstractThingFormController extends AbstractFormController
 					opts.thingKind = field.fieldSettings.thingKind
 					opts.queryUrl = field.fieldSettings.queryUrl
 					opts.labelType = field.fieldSettings.labelType
-					newField = new ACASFormLSThingInteractionFieldController opts
+					opts.firstItx = field.fieldSettings.firstItx
+					if field.multiple? and field.multiple
+						newField = new ACASFormMultiInteractionListController opts
+					else
+						newField = new ACASFormLSThingInteractionFieldController opts
 				when 'stringValue' then newField = new ACASFormLSStringValueFieldController opts
+				when 'urlValue' then newField = new ACASFormLSURLValueFieldController opts
 				when 'dateValue' then newField = new ACASFormLSDateValueFieldController opts
 				when 'fileValue' then newField = new ACASFormLSFileValueFieldController opts
+				when 'blobValue' then newField = new ACASFormLSBlobValueFieldController opts
+				when 'booleanValue' then newField = new ACASFormLSBooleanFieldController opts
 				when 'locationTree'
 					opts.tubeCode = @model.get('tubeCode')
 					newField = new ACASFormLocationTreeController opts
@@ -195,9 +219,15 @@ class window.AbstractThingFormController extends AbstractFormController
 			@formTables = {}
 		for tDef in tableDefs
 			tdiv = $("<div>")
+
 			@$("."+tDef.tableWrapper).append tdiv
+
+			formWrapper = null
+			if tDef.formWrapper?
+				formWrapper = @$("."+tDef.formWrapper)
 			fTable = new ACASFormStateTableController
 				el: tdiv
+				formWrapper: formWrapper
 				tableDef: tDef
 				thingRef: @model
 			fTable.render()

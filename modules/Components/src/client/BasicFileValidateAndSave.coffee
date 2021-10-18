@@ -1,4 +1,4 @@
-class window.BasicFileValidateAndSaveController extends Backbone.View
+class BasicFileValidateAndSaveController extends Backbone.View
 	notificationController: null
 	parseFileController: null
 	parseFileNameOnServer: ""
@@ -42,8 +42,8 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 			allowedFileTypes: @allowedFileTypes
 			maxFileSize: @maxFileSize
 
-		@parseFileController.on('fileInput:uploadComplete', @handleParseFileUploaded)
-		@parseFileController.on('fileInput:removedFile', @handleParseFileRemoved)
+		@parseFileController.on('fileInput:uploadComplete', @handleParseFileUploaded.bind(@))
+		@parseFileController.on('fileInput:removedFile', @handleParseFileRemoved.bind(@))
 		@parseFileController.render()
 
 		if @loadReportFile
@@ -53,8 +53,8 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 				url: UtilityFunctions::getFileServiceURL()
 				fieldIsRequired: false
 				allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf']
-			@reportFileController.on('fileInput:uploadComplete', @handleReportFileUploaded)
-			@reportFileController.on('fileInput:removedFile', @handleReportFileRemoved)
+			@reportFileController.on('fileInput:uploadComplete', @handleReportFileUploaded.bind(@))
+			@reportFileController.on('fileInput:removedFile', @handleReportFileRemoved.bind(@))
 			@reportFileController.render()
 			@handleAttachReportFileChanged()
 		else
@@ -68,8 +68,8 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 				url: UtilityFunctions::getFileServiceURL()
 				fieldIsRequired: false
 				allowedFileTypes: ['zip']
-			@imagesFileController.on('fileInput:uploadComplete', @handleImagesFileUploaded)
-			@imagesFileController.on('fileInput:removedFile', @handleImagesFileRemoved)
+			@imagesFileController.on('fileInput:uploadComplete', @handleImagesFileUploaded.bind(@))
+			@imagesFileController.on('fileInput:removedFile', @handleImagesFileRemoved.bind(@))
 			@imagesFileController.render()
 			@handleAttachImagesFileChanged()
 		else
@@ -84,9 +84,9 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 
 		@
 
-	handleParseFileUploaded: (fileName) =>
+	handleParseFileUploaded: (file) =>
 		@parseFileUploaded = true
-		@parseFileNameOnServer = @filePath+fileName
+		@parseFileNameOnServer = @filePath+file.name
 		@handleFormValid()
 		@trigger 'amDirty'
 
@@ -96,16 +96,16 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 		@notificationController.clearAllNotificiations()
 		@handleFormInvalid()
 
-	handleReportFileUploaded: (fileName) =>
-		@reportFileNameOnServer = @filePath+fileName
+	handleReportFileUploaded: (file) =>
+		@reportFileNameOnServer = @filePath+file.name
 		@trigger 'amDirty'
 
 	handleReportFileRemoved: =>
 		@reportFileNameOnServer = null
 
 
-	handleImagesFileUploaded: (fileName) =>
-		@imagesFileNameOnServer = @filePath+fileName
+	handleImagesFileUploaded: (file) =>
+		@imagesFileNameOnServer = @filePath+file.name
 		@trigger 'amDirty'
 
 	handleImagesFileRemoved: =>
@@ -200,12 +200,7 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 		@showFileSelectPhase()
 
 	loadAnother: =>
-		#TODO This is bad style, but the LSFileInputController has no API for deleting and resetting
 		@showFileSelectPhase()
-		#TODO Why does this need a delay to work?
-		fn = -> @$('.bv_deleteFile').click()
-		setTimeout fn , 200
-
 
 	showFileSelectPhase: ->
 		@$('.bv_resultStatus').hide()

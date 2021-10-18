@@ -1,4 +1,4 @@
-class window.ModuleLauncher extends Backbone.Model
+class ModuleLauncher extends Backbone.Model
 
 	defaults:
 		isHeader: false
@@ -29,11 +29,11 @@ class window.ModuleLauncher extends Backbone.Model
 		@trigger 'deactivationRequested', @
 		@set isActive: false
 
-class window.ModuleLauncherList extends Backbone.Collection
+class ModuleLauncherList extends Backbone.Collection
 	model: ModuleLauncher
 
 
-class window.ModuleLauncherMenuController extends Backbone.View
+class ModuleLauncherMenuController extends Backbone.View
 	template: _.template($("#ModuleLauncherMenuView").html())
 	tagName: 'li'
 	className: 'bv_menuItem'
@@ -42,7 +42,7 @@ class window.ModuleLauncherMenuController extends Backbone.View
 		'click .bv_menuName': "handleSelect"
 
 	initialize: ->
-		@model.bind "change", @render
+		@model.bind "change", @render.bind(@)
 
 	render: =>
 		$(@el).empty()
@@ -93,7 +93,7 @@ class window.ModuleLauncherMenuController extends Backbone.View
 		unless who?.model?.get("menuName") == @model.get("menuName")
 			@model.requestDeactivation()
 
-class window.ModuleLauncherMenuHeaderController extends Backbone.View
+class ModuleLauncherMenuHeaderController extends Backbone.View
 	tagName: 'li'
 	className: "nav-header bv_notTopHeader"
 
@@ -108,7 +108,7 @@ class window.ModuleLauncherMenuHeaderController extends Backbone.View
 
 		@
 
-class window.ModuleLauncherMenuCollapsibleHeaderController extends Backbone.View
+class ModuleLauncherMenuCollapsibleHeaderController extends Backbone.View
 	template: _.template($("#ModuleLauncherMenuCollapsibleHeaderView").html())
 	tagName: 'div'
 	className: 'bv_collapsibleHeaderController bv_notTopHeader'
@@ -143,7 +143,7 @@ class window.ModuleLauncherMenuCollapsibleHeaderController extends Backbone.View
 		@$('.bv_caret_expand').hide()
 		@$('.bv_caret_collapse').show()
 
-class window.ModuleLauncherMenuListController extends Backbone.View
+class ModuleLauncherMenuListController extends Backbone.View
 	events:
 		'click .bv_expandAll': "handleExpandAll"
 		'click .bv_collapseAll': "handleCollapseAll"
@@ -214,13 +214,13 @@ class window.ModuleLauncherMenuListController extends Backbone.View
 		@$('.bv_collapseAll').hide()
 		@$('.bv_expandAll').show()
 
-class window.ModuleLauncherController extends Backbone.View
+class ModuleLauncherController extends Backbone.View
 	tagName: 'div'
 	template: _.template($("#ModuleLauncherView").html())
 
 	initialize: ->
-		@model.bind 'activationRequested', @handleActivation
-		@model.bind 'deactivationRequested', @handleDeactivation
+		@model.bind 'activationRequested', @handleActivation.bind(@)
+		@model.bind 'deactivationRequested', @handleDeactivation.bind(@)
 
 	render: =>
 		$(@el).empty()
@@ -254,7 +254,7 @@ class window.ModuleLauncherController extends Backbone.View
 	handleDeactivation:  =>
 		$(@el).hide()
 
-class window.ModuleLauncherListController extends Backbone.View
+class ModuleLauncherListController extends Backbone.View
 
 	template: _.template($("#ModuleLauncherListView").html())
 

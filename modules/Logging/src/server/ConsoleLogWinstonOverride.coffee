@@ -1,15 +1,18 @@
+path = require('path')
+fs = require('fs-extra')
+{ createLogger, format, transports, config: windstonconfig } = require('winston')
+{ combine, timestamp, label, printf, colorize, errors } = format
+packageJsonPath = path.join(process.cwd(), 'package.json')
+packageObj = fs.readJsonSync(packageJsonPath)
+name = packageObj.name || 'app'
+
 ACAS_HOME="../../.."
-util = require('util')
-winston = require('winston')
-logger = new (winston.Logger)
 config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 
 shouldWarn = false
-warningMessage = ""
-
 if config.all.server.log?.level?
 	logLevel = config.all.server.log.level.toLowerCase()
-	allowedLevels = Object.keys(winston.levels)
+	allowedLevels = Object.keys(windstonconfig.syslog.levels)
 	if logLevel not in allowedLevels
 		shouldWarn = true
 		warningMessage = "log level '#{logLevel}' not in #{"'"+allowedLevels.join("','")+"'"}, setting to 'info'"
@@ -19,36 +22,27 @@ else
 	warningMessage = "server.log.level not set, setting to 'info'"
 	logLevel = "info"
 
-# Override the built-in console methods with winston hooks
-formatArgs = (args) ->
-	[ util.format.apply(util.format, Array::slice.call(args)) ]
+## Custom format of the logs
+myFormat = printf((info) ->
+  indent = undefined
+  if process.env.ENVIRONMENT and process.env.ENVIRONMENT != 'production'
+    indent = 2
+  message = JSON.stringify(info.message, false, indent)
+  return "[#{info.label}] #{info.timestamp} #{info.level}: #{message}"
+)
 
-logger.add winston.transports.Console,
-	colorize: true
-	timestamp: true
-	level: logLevel
-
+## Custom logging handler
+logger = createLogger({
+  format: combine(errors({ stack: true }), colorize(), label({ label: name }), timestamp(), myFormat),
+  transports: [new transports.Console()],
+})
 console.level = logLevel
 
-console.log = ->
-	logger.info.apply logger, formatArgs(arguments)
-	return
 
-console.info = ->
-	logger.info.apply logger, formatArgs(arguments)
-	return
-
-console.warn = ->
-	logger.warn.apply logger, formatArgs(arguments)
-	return
-
+console.log = (...args) => logger.info.call(logger, ...args);
+console.info = (...args) => logger.info.call(logger, ...args);
+console.warn = (...args) => logger.warn.call(logger, ...args);
 if shouldWarn
 	console.warn warningMessage
-
-console.error = ->
-	logger.error.apply logger, formatArgs(arguments)
-	return
-
-console.debug = ->
-	logger.debug.apply logger, formatArgs(arguments)
-	return
+console.error = (...args) => logger.error.call(logger, ...args);
+console.debug = (...args) => logger.debug.call(logger, ...args);

@@ -33,7 +33,7 @@ def main():
 #     except:
 #     	projectId = 0
     csv_dump = api.export_live_report(live_report_id, 'csv')
-    print csv_dump
+    print(csv_dump)
 
 if __name__ == '__main__':
     main()

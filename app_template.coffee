@@ -11,11 +11,21 @@ startApp = ->
 	http = require 'http'
 	path = require 'path'
 
+	favicon = require('serve-favicon')
+	logger = require('morgan')
+	methodOverride = require('method-override')
+	session = require('express-session')
+	MemoryStore = require('memorystore')(session)
+	bodyParser = require('body-parser')
+	errorHandler = require('errorhandler')
+	cookieParser = require('cookie-parser')
+
 	# Added for logging support
 	flash = require 'connect-flash'
 	passport = require 'passport'
 	util = require 'util'
 	LocalStrategy = require('passport-local').Strategy
+	SamlStrategy = require('passport-saml').Strategy;
 	global.deployMode = config.all.client.deployMode
 
 	console.log "log level set to '#{console.level}'"
@@ -43,50 +53,52 @@ startApp = ->
 	passport.deserializeUser (user, done) ->
 		done null, user
 
-	if csUtilities.loginStrategy.length > 3
-		passport.use new LocalStrategy {passReqToCallback: true}, csUtilities.loginStrategy
+	if csUtilities.localLoginStrategy?
+		localStrategy = csUtilities.localLoginStrategy
 	else
-		passport.use new LocalStrategy csUtilities.loginStrategy
+		console.warn "Please rename CustomerSpecificServerFunction 'exports.loginStrategy' to 'exports.localLoginStrategy' In a future version of ACAS, support for 'loginStrategy' will be replaced with 'localLoginStrategy' but is currently backwards compatable."
+		localStrategy = csUtilities.loginStrategy
+	if localStrategy.length > 3
+		passport.use new LocalStrategy {passReqToCallback: true}, localStrategy
+	else
+		passport.use new LocalStrategy localStrategy
 
-#	passport.isAdmin = (req, resp, next) ->
-#		if req.isAuthenticated() and csUtilities.isUserAdmin(req.user)
-#			next()
-#		else
-#			next new handler.NotAuthorizedError "Sorry, you don't have the right!"
-#	passport.isAuthenticated = (req, resp, next) ->
-#		console.log "running passort.isAuthenticated"
-#		unless req.isAuthenticated()
-#			next new handler.NotAuthorizedError "Sorry, you don't have the right!"
-#		else
-#			next()
+	if config.all.server.security.saml.use == true
+		if csUtilities.ssoLoginStrategy?
+			passport.use new SamlStrategy({
+				passReqToCallback: true
+				callbackUrl: "#{config.all.client.fullpath}/login/callback"
+				entryPoint: config.all.server.security.saml.entryPoint
+				issuer: config.all.server.security.saml.issuer
+				cert: config.all.server.security.saml.cert
+			}, csUtilities.ssoLoginStrategy)
+		else
+			console.error("NOT USING SSO configs! config.all.server.security.saml.use is set true but CustomerSpecificServerFunction 'ssoLoginStrategy' is not defined.")
 
 	loginRoutes = require './routes/loginRoutes'
-	MemoryStore = express.session.MemoryStore;
 	sessionStore = new MemoryStore();
 	global.app = express()
-	app.configure ->
-		app.set 'port', config.all.client.port
-		app.set 'views', __dirname + '/views'
-		app.set 'view engine', 'jade'
-		app.set 'trust proxy', true
-		app.use express.favicon()
-		app.use express.logger('dev')
-		# added for login support
-		app.use express.cookieParser()
-		app.use express.session
-			secret: 'acas needs login'
-			cookie: maxAge: 365 * 24 * 60 * 60 * 1000
-			store: sessionStore # MemoryStore is used automatically if no "store" field is set, but we need a handle on the sessionStore object for Socket.IO, so we'll manually create the store so we have a handle on the object
-		app.use flash()
-		app.use passport.initialize()
-		app.use passport.session pauseStream:  true
-#		app.use express.bodyParser()
-		app.use express.json()
-		app.use express.urlencoded()
-		app.use express.methodOverride()
-		app.use express.static path.join(__dirname, 'public')
-		# It's important to start the router after everything else is configured
-		app.use app.router
+	app.set 'port', config.all.client.port
+	app.set 'views', __dirname + '/views'
+	app.set 'view engine', 'jade'
+	app.use logger('dev')
+	app.use methodOverride()
+
+	# added for login support
+	app.use cookieParser()
+	app.use session
+		secret: 'acas needs login'
+		cookie: maxAge: 365 * 24 * 60 * 60 * 1000
+		resave: true
+		saveUninitialized: true,
+		store: sessionStore # MemoryStore is used automatically if no "store" field is set, but we need a handle on the sessionStore object for Socket.IO, so we'll manually create the store so we have a handle on the object
+
+	app.use flash()
+	app.use passport.initialize()
+	app.use passport.session pauseStream:  true
+	app.use(bodyParser.json({limit: '1000mb', extended: true}))
+	app.use(bodyParser.urlencoded({limit: '1000mb', extended: true,parameterLimit: 1000000}))
+	app.use(express.static(path.join(__dirname, 'public')))
 
 	loginRoutes.setupRoutes(app, passport)
 
@@ -97,7 +109,7 @@ startApp = ->
 
 	if not config.all.client.use.ssl
 		httpServer = http.createServer(app).listen(app.get('port'), ->
-			console.log("ACAS API server listening on port " + app.get('port'))
+			console.log("ACAS server listening on port " + app.get('port'))
 		)
 	else
 		console.log "------ Starting in SSL Mode"
@@ -108,11 +120,12 @@ startApp = ->
 			cert: fs.readFileSync config.all.server.ssl.cert.file.path
 			ca: fs.readFileSync config.all.server.ssl.cert.authority.file.path
 			passphrase: config.all.server.ssl.cert.passphrase
-		httpServer = https.createServer(sslOptions, app).listen(app.get('port'), ->
-			console.log("Express server listening on port " + app.get('port'))
+		https.createServer(sslOptions, app).listen(app.get('port'), ->
+			console.log("ACAS server listening on port " + app.get('port'))
 		)
 		#TODO hack to prevent bug: https://github.com/mikeal/request/issues/418
 		process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
+
 	io = require('socket.io')(httpServer)
 	passportSocketIo = require('passport.socketio')
 	cookieParser = require('cookie-parser')
@@ -124,7 +137,7 @@ startApp = ->
 		passport: passport,
 		cookieParser: cookieParser
 	}))
-	###TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES###
+	#TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES
 
 	options = if stubsMode then ["stubsMode"] else []
 	options.push ['--color']
@@ -132,7 +145,6 @@ startApp = ->
 	child = new (forever.Monitor)("app_api.js",
 		max: 3
 		silent: false
-		options: options
 		args: options
 	)
 

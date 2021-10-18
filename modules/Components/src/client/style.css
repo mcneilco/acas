@@ -48,3 +48,7 @@
 .bv_stateDisplayUpdateTable .valueEditable {
     cursor: pointer;
 }
+
+.handsontable .selectedRow {
+	background: #e1f0ff;
+  }
