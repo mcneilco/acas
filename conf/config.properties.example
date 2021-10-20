@@ -365,6 +365,7 @@ server.security.saml.lastNameAttribute=lastName
 server.security.saml.emailAttribute=email
 server.security.saml.logoutRedirectURL=https://<organization>.okta.com
 server.security.saml.roles.sync=false
+server.security.saml.disableRequestedAuthnContext=true
 
 #Controls whether Roo syncs the AuthorRole table with authorities granted in LDAP
 server.security.syncLdapAuthRoles=false

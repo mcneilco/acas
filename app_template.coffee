@@ -71,7 +71,7 @@ startApp = ->
 				entryPoint: config.all.server.security.saml.entryPoint
 				issuer: config.all.server.security.saml.issuer
 				cert: config.all.server.security.saml.cert
-				disableRequestedAuthnContext: true
+				disableRequestedAuthnContext: config.all.server.security.saml.disableRequestedAuthnContext
 			}, csUtilities.ssoLoginStrategy)
 		else
 			console.error("NOT USING SSO configs! config.all.server.security.saml.use is set true but CustomerSpecificServerFunction 'ssoLoginStrategy' is not defined.")
