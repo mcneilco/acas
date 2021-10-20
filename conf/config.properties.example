@@ -365,6 +365,7 @@ server.security.saml.lastNameAttribute=${env.SERVER_SECURITY_SAML_LASTNAMEATTRIB
 server.security.saml.emailAttribute=${env.SERVER_SECURITY_SAML_EMAILATTRIBUTE}
 server.security.saml.logoutRedirectURL=${env.SERVER_SECURITY_SAML_LOGOUTREDIRECTURL}
 server.security.saml.roles.sync=${env.SERVER_SECURITY_SAML_ROLES_SYNC}
+server.security.saml.disableRequestedAuthnContext=${env.SERVER_SECURITY_SAML_DISABLEREQUESTEDAUTHNCONTEXT}
 
 #Controls whether Roo syncs the AuthorRole table with authorities granted in LDAP
 server.security.syncLdapAuthRoles=${env.SERVER_SECURITY_SYNCLDAPAUTHROLES}
