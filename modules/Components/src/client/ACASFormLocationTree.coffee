@@ -13,8 +13,8 @@ class ACASFormLocationTreeController extends ACASFormAbstractFieldController
 
 	template: _.template($("#ACASFormLocationTreeView").html())
 
-	initialize: ->
-		super()
+	initialize: (options) ->
+		super(options)
 		if !@getModel().get('value')?
 			@tubeCode = @options.tubeCode
 			if @tubeCode?
