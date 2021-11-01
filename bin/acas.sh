@@ -405,7 +405,7 @@ if [ "$PREPARE_MODULE_CONF_JSON" = "true" ]; then
     cd src/javascripts/BuildUtilities
     if [ $? -eq 0 ];then
         counter=0
-        wait=100
+        wait=1000
         until $(curl --output /dev/null --silent --head --fail http://${client_service_persistence_host}:${client_service_persistence_port}) || [ $counter == $wait ]; do
             sleep 1
             counter=$((counter+1))
