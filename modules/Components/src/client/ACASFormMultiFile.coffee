@@ -1,3 +1,31 @@
+class ThingAttachFileList extends AttachFileList
+
+	validate: =>
+		modelErrors = []
+		usedFileTypes={}
+		if @.length != 0
+			for index in [0..@.length-1]
+				model = @.at(index)
+				indivModelErrors = model.validate(model.attributes)
+				if indivModelErrors != null
+					for error in indivModelErrors
+						modelErrors.push
+							attribute: error.attribute+':eq('+index+')'
+							message: error.message
+				currentFileType = model.get('fileType')
+				if currentFileType != "unassigned" && currentFileType of usedFileTypes
+					modelErrors.push
+						attribute: 'fileType:eq('+index+')'
+						message: "This file type can not be chosen more than once"
+					modelErrors.push
+						attribute: 'fileType:eq('+usedFileTypes[currentFileType]+')'
+						message: "This file type can not be chosen more than once"
+				else
+					usedFileTypes[currentFileType] = index
+		modelErrors
+
+
+
 class ACASFormMultiFileListController extends ACASFormAbstractFieldController
 	###
   	Launching controller must instantiate with the full field conf including modelDefaults, not just the fieldDefinition.
@@ -11,6 +39,24 @@ class ACASFormMultiFileListController extends ACASFormAbstractFieldController
 		if !@options.allowedFileTypes?
 			@options.allowedFileTypes = ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf', 'mol', 'cdx', 'cdxml', 'afr6', 'afe6', 'afs6']
 
+	validate: =>
+		@clearError()
+		isValid = true
+
+		# This calls validate on each model to find out if they are valid or not
+		# It doesn't return a list of errors but it tells us if they are saveable or not
+		isValid = @attachFileListController.isValid()
+		if !isValid
+			@setError("Please select a file attachment or remove the file in error")
+			return isValid
+		
+		# This will return a set of errors
+		errors = @attachFileListController.collection.validate()
+		if errors.length > 0
+			isValid = false
+			@setError(errors[0].message)
+		return isValid
+
 	render: =>
 		$(@el).empty()
 		$(@el).html @template()
@@ -21,7 +67,7 @@ class ACASFormMultiFileListController extends ACASFormAbstractFieldController
 
 	updateAttachFileList: () =>
 #get list of possible kinds of  files
-		attachFileList = new AttachFileList()
+		attachFileList = new ThingAttachFileList()
 		for type in @fileTypeList
 			analyticalFileState = @getMyState()
 			analyticalFileValues = analyticalFileState.getValuesByTypeAndKind "fileValue", type.code
@@ -38,6 +84,7 @@ class ACASFormMultiFileListController extends ACASFormAbstractFieldController
 						attachFileList.add afm
 		@attachFileList = attachFileList
 		
+		
 	setupAttachFileListController: =>
 		$.ajax
 			type: 'GET'
@@ -51,14 +98,6 @@ class ACASFormMultiFileListController extends ACASFormAbstractFieldController
 				else
 					@fileTypeList = json
 					@renderModelContent()
-
-	isValid: =>
-		validCheck = true
-		errors = @collection.validateCollection()
-		if errors.length > 0
-			validCheck = false
-		@validationError(errors)
-		validCheck
 
 	updateModel: () ->
 		currentFiles = @attachFileListController.collection.each (file) =>
@@ -92,7 +131,7 @@ class ACASFormMultiFileListController extends ACASFormAbstractFieldController
 		@attachFileListController.render()
 		@attachFileListController.on 'amDirty', =>
 			@updateModel()
-			# @checkFormValid()
+			@validate()
 
 	checkDisplayMode: =>
 		if @readOnly is true
