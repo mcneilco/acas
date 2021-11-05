@@ -6,14 +6,19 @@ class ThingAttachFileList extends AttachFileList
 		if @.length != 0
 			for index in [0..@.length-1]
 				model = @.at(index)
+				currentFileType = model.get('fileType')
+				# If the model is unassigned or ignored we can ignore it from validation
+				if (currentFileType == "unassigned" || model.get('ignored'))
+					continue
+
 				indivModelErrors = model.validate(model.attributes)
 				if indivModelErrors != null
 					for error in indivModelErrors
 						modelErrors.push
 							attribute: error.attribute+':eq('+index+')'
 							message: error.message
-				currentFileType = model.get('fileType')
-				if currentFileType != "unassigned" && currentFileType of usedFileTypes
+
+				if currentFileType of usedFileTypes
 					modelErrors.push
 						attribute: 'fileType:eq('+index+')'
 						message: "This file type can not be chosen more than once"

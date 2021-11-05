@@ -116,7 +116,7 @@ ExampleThingConf =
 				fieldType: 'fileValue'
 				formLabel: "Attached File"
 				fieldWrapper: "bv_multiFileWrapper"
-				allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf', 'mol', 'cdx', 'cdxml', 'afr6', 'afe6', 'afs6']
+				allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'jpeg', 'bmp', 'ppt', 'pptx', 'pzf', 'mol', 'cdx', 'cdxml', 'afr6', 'afe6', 'afs6', 'zip', 'html']
 				url: "/api/codetables/project metadata/file type"
 				required: false
 		]
