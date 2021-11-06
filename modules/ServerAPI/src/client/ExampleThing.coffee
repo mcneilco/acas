@@ -104,9 +104,6 @@ ExampleThingConf =
 			key: 'exampleMultiFile_'
 			multiple: true
 			modelDefaults:
-			# Note, the stateType/stateKind combination used here should be different from all other fileValue states
-			# This is because the valueKind of the file is changeable by the user and can't be used to keep track of 
-			# the value kind like other values.
 				stateType: 'file attachments' 
 				stateKind: 'example thing parent'
 				type: 'fileValue'

@@ -18,15 +18,17 @@ class ThingAttachFileList extends AttachFileList
 							attribute: error.attribute+':eq('+index+')'
 							message: error.message
 
-				if currentFileType of usedFileTypes
-					modelErrors.push
-						attribute: 'fileType:eq('+index+')'
-						message: "This file type can not be chosen more than once"
-					modelErrors.push
-						attribute: 'fileType:eq('+usedFileTypes[currentFileType]+')'
-						message: "This file type can not be chosen more than once"
-				else
-					usedFileTypes[currentFileType] = index
+				# Leaving this here in case we want to turn on uniqueness by file type
+				if false
+					if currentFileType of usedFileTypes
+						modelErrors.push
+							attribute: 'fileType:eq('+index+')'
+							message: "This file type can not be chosen more than once"
+						modelErrors.push
+							attribute: 'fileType:eq('+usedFileTypes[currentFileType]+')'
+							message: "This file type can not be chosen more than once"
+					else
+						usedFileTypes[currentFileType] = index
 		modelErrors
 
 
@@ -70,24 +72,41 @@ class ACASFormMultiFileListController extends ACASFormAbstractFieldController
 	getMyState: =>
 		@options.thingRef.get('lsStates').getOrCreateStateByTypeAndKind @options.modelDefaults.stateType, @options.modelDefaults.stateKind
 
-	updateAttachFileList: () =>
-#get list of possible kinds of  files
-		attachFileList = new ThingAttachFileList()
+	updateCurrentManagedThingFileValues: () =>
+		# Goal here is to get a list of all of the managed thing values
+		# which are those thing values in the state type and kind which are file values
+		# that have an lsKind which matches that of one of the file types managed by the service
+
+		attachFileList = new ThingAttachFileList
+
+		# Get the state that is managed
+		myManagedState = @getMyState()
+
+		# Loop through all of the file types that are managed
 		for type in @fileTypeList
-			analyticalFileState = @getMyState()
-			analyticalFileValues = analyticalFileState.getValuesByTypeAndKind "fileValue", type.code
-			if analyticalFileValues.length > 0 and type.code != "unassigned"
-#create new attach file model with fileType set to lsKind and fileValue set to fileValue
-#add new afm to attach file list
-				for file in analyticalFileValues
-					if file.get('ignored') is false
-						afm = new AttachFile
-							fileType: type.code
-							fileValue: file.get('fileValue')
-							id: file.get('id')
-							comments: file.get('comments')
-						attachFileList.add afm
-		@attachFileList = attachFileList
+
+			# Fetch all file values from the state which match the managed file ls kind
+			managedFileValues = myManagedState.getValuesByTypeAndKind "fileValue", type.code
+
+			# Don't need to worry about the special "unassigned" file type are unassigned 
+			# or if there are no managed file values
+			if managedFileValues.length > 0 and type.code != "unassigned"
+				# create new attach file model with fileType set to lsKind and fileValue set to fileValue
+				# add new afm to attach file list
+				for file in managedFileValues
+					afm = new AttachFile
+						fileType: type.code
+						fileValue: file.get('fileValue')
+						id: file.get('id')
+						comments: file.get('comments')
+					attachFileList.add afm
+
+		# Keep ordered by id so this is order is displayed in the GUI nicely
+		attachFileList.comparator = (value) =>
+			value.get("id")
+		attachFileList.sort()
+
+		@currentManagedThingFileValues = attachFileList
 		
 		
 	setupAttachFileListController: =>
@@ -104,25 +123,50 @@ class ACASFormMultiFileListController extends ACASFormAbstractFieldController
 					@fileTypeList = json
 					@renderModelContent()
 
-	updateModel: () ->
-		currentFiles = @attachFileListController.collection.each (file) =>
-			unless file.get('fileType') is "unassigned"
-				if file.get('id') is null
-					newFile = @getMyState().getOrCreateValueByTypeAndKind("fileValue", file.get('fileType'))
-					newFile.set "fileValue", file.get("fileValue")
-				else
-					if file.get('ignored') is true
-						value = @options.thingRef.get('lsStates').getValueById @options.modelDefaults.stateType, @options.modelDefaults.stateKind, file.get('id')
-						value[0].set "ignored", true
+	updateThingFromFileListController: () ->
+		# Goals here is to keep the thing up to date with any
+		# changes made to the attachment file list managed by 
+		# @attachFileListController
+
+		# Remove on managed file values that have not been saved
+		# we will be adding them back below if they are still
+		# in the attachFileListController
+		myManagedState = @getMyState()
+		for type in @fileTypeList
+			managedFileValues = myManagedState.getValuesByTypeAndKind "fileValue", type.code
+			for managedFileValue in managedFileValues
+				if managedFileValue.isNew()
+					myManagedState.get("lsValues").remove(managedFileValue)
+
+		# Now that the thing no longer has any unsaved values
+		# Create any new models that have been added
+		# or ignore any that have been removed
+		@attachFileListController.collection.each (file) =>
+			if file.isNew() #file.get('id') is null
+				unless (file.get('ignored') is true or file.get('fileType') is "unassigned")
+					newFile = @options.thingRef.get('lsStates').createValueByTypeAndKind @options.modelDefaults.stateType, @options.modelDefaults.stateKind, "fileValue", file.get('fileType')
+					newFile.set
+						fileValue: file.get('fileValue')
+						comments: file.get('comments')
+			else
+				if file.get('ignored') is true
+					value = @options.thingRef.get('lsStates').getValueById @options.modelDefaults.stateType, @options.modelDefaults.stateKind, file.get('id')
+					value[0].set "ignored", true
+	
+
 
 	finishSetupAttachFileListController: () ->
-		@updateAttachFileList()
+		# Updates @currentManagedThingFileValues from the thing
+		# @currentManagedThingFileValues is a collection which will be managed
+		# by attachFileListController and synced to the thing when the collection
+		# changes
+		@updateCurrentManagedThingFileValues()
 		if @attachFileListController?
 			@attachFileListController.undelegateEvents()
 		@attachFileListController= new AttachFileListController
 			autoAddAttachFileModel: false
 			el: @$('.bv_multiFiles')
-			collection: @attachFileList
+			collection: @currentManagedThingFileValues
 			firstOptionName: "Select File Type"
 			allowedFileTypes: @options.allowedFileTypes
 			fileTypeList: @fileTypeList
@@ -135,7 +179,7 @@ class ACASFormMultiFileListController extends ACASFormAbstractFieldController
 			@checkDisplayMode()
 		@attachFileListController.render()
 		@attachFileListController.on 'amDirty', =>
-			@updateModel()
+			@updateThingFromFileListController()
 			@validate()
 
 	checkDisplayMode: =>
@@ -143,5 +187,8 @@ class ACASFormMultiFileListController extends ACASFormAbstractFieldController
 			@displayInReadOnlyMode()
 
 	renderModelContent: ->
-		@finishSetupAttachFileListController()
+		# Only render if our file type list has been fetched
+		# otherwise its not ready yet
+		if @fileTypeList?
+			@finishSetupAttachFileListController()
 		
