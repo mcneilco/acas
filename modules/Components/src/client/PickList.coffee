@@ -142,7 +142,7 @@ class PickListSelectController extends Backbone.View
 		else
 			@autoFetch = true
 
-		if @autoFetch == true
+		if @autoFetch == true && @collection.url?
 			@collection.fetch
 				success: @handleListReset.bind(@)
 		else

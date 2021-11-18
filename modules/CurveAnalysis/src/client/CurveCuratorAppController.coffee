@@ -20,7 +20,7 @@ class CurveCuratorAppController extends Backbone.View
 		#		@user = this.options.user;
 		@ccc = new CurveCuratorController
 			el: @$('.bv_curveCurator')
-		@ccc.on 'getCurvesSuccessful', @hideLoadCurvesModal
+		@ccc.on 'getCurvesSuccessful', @hideLoadCurvesModal.bind(@)
 
 		@render()
 
