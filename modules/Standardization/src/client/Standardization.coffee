@@ -453,18 +453,3 @@ class window.StandardizationReasonPanelController extends Backbone.View
 		console.log 'hiasdf'
 		@$('.bv_standardizationReasonPanel').modal "hide"
 		@trigger 'executionCancelled'
-		
-	setupKnockoutPicklist: =>
-		@knockoutObservationList = new PickListList()
-		@knockoutObservationList.url = "/api/codetables/user well flags/flag observation"
-		@knockoutObservationListController = new PickListSelectController
-			el: @$('.bv_dataDictPicklist')
-			collection: @knockoutObservationList
-
-	handleDoseResponseKnockoutPanelHidden: =>
-		status = "knocked out"
-		observation = @knockoutObservationListController.getSelectedCode()
-		cause = "curvefit ko"
-		comment = @knockoutObservationListController.getSelectedModel().get 'name'
-		@trigger 'observationSelected', status, observation, cause, comment
-
