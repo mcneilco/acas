@@ -7,8 +7,8 @@
 					<input type="file" name="files[]" multiple>
 				</span>
 			</div>
-			<div class="span7 well <%= dropZoneClassId %>" style="display: none; text-align: center">
-				<h4 class='bv_dragOverMessage'><%= dragOverMessage %></h4>
+			<div class="span7 well <%- dropZoneClassId %>" style="display: none; text-align: center">
+				<h4 class='bv_dragOverMessage'><%- dragOverMessage %></h4>
 			</div>
 			<% if (allowMultipleFiles) { %>
 			<table role="presentation" class="table bv_fileInfo"><tbody class="files" data-toggle="modal-gallery" data-target="#modal-gallery"></tbody></table>

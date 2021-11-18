@@ -26,7 +26,7 @@
                         <input type="radio" name="bv_max_limitType" class="bv_max_limitType_limit" value="limit" style="margin-right:5px;margin-bottom:5px;" <%if (max.limitType=="limit"){%>checked="checked"<%}%>  />
                         <label class="control-label" style="margin-right:15px;">Limit</label>
                         <span class="control-group bv_group_max_value">
-                            <input type="text" class=" bv_max_value" style="width:50px;" value="<%= max.value%>" <% if (max.limitType=="none"){ %> disabled="disabled"<% }%> />
+                            <input type="text" class=" bv_max_value" style="width:50px;" value="<%- max.value%>" <% if (max.limitType=="none"){ %> disabled="disabled"<% }%> />
                         </span>
                     </div>
                 </div>
@@ -42,17 +42,17 @@
                         <input type="radio" name="bv_min_limitType" class="bv_min_limitType_limit" value="limit" style="margin-right:5px;margin-bottom:5px;" <%if (min.limitType=="limit"){%>checked="checked"<%}%>  />
                         <label class="control-label" style="margin-right:15px;">Limit</label>
                         <span class="control-group bv_group_min_value">
-                            <input type="text" class="bv_min_value" style="width:50px;" value="<%= min.value%>" <% if (min.limitType=="none"){ %> disabled="disabled"<% }%> />
+                            <input type="text" class="bv_min_value" style="width:50px;" value="<%- min.value%>" <% if (min.limitType=="none"){ %> disabled="disabled"<% }%> />
                         </span>
                     </div>
                 </div>
 
                 <div class="form form-inline">
                     <span class="control-group bv_group_kd_value">
-                        <strong style="margin-left:0;">*Kd (nM)</strong><input type="text" class="bv_kd_value" style="width:50px;margin-left:5px;margin-bottom:0;" value="<%= kd.value%>" />
+                        <strong style="margin-left:0;">*Kd (nM)</strong><input type="text" class="bv_kd_value" style="width:50px;margin-left:5px;margin-bottom:0;" value="<%- kd.value%>" />
                     </span>
                     <span class="control-group bv_group_ligandConc_value">
-                        <strong style="margin-left:5px;">*Ligand Conc. (nM)</strong><input type="text" class="bv_ligandConc_value" style="width:50px;margin-left:5px;margin-bottom:0;" value="<%= ligandConc.value%>" />
+                        <strong style="margin-left:5px;">*Ligand Conc. (nM)</strong><input type="text" class="bv_ligandConc_value" style="width:50px;margin-left:5px;margin-bottom:0;" value="<%- ligandConc.value%>" />
                     </span>
 
                 </div>

@@ -1077,7 +1077,6 @@ exports.bulkPostThings = (req, resp) ->
 
 exports.bulkPostThingsInternal = (thingArray, callback) ->
 	console.log "bulkPostThings"
-	console.log JSON.stringify thingArray
 	baseurl = config.all.client.service.persistence.fullpath+"lsthings/jsonArray"
 	request(
 		method: 'POST'
