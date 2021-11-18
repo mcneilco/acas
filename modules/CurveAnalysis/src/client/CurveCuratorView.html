@@ -1,6 +1,6 @@
 <script type="text/template" id="CurveSummaryView" xmlns="http://www.w3.org/1999/html">
     <div class="bv_group_thumbnail">
-        <img class="bv_thumbnail" src="<%= curveUrl %>" />
+        <img class="bv_thumbnail" src="<%- curveUrl %>" />
     </div>
 <div style="margin-top:7px;">
     <span class="btn-group bv_group_flagUser">
@@ -249,7 +249,7 @@
                 <h3>Error</h3>
             </div>
             <div class="modal-body">
-                Can not find <%= window.conf.experiment.label %> code supplied in URL
+                Can not find <%- window.conf.experiment.label %> code supplied in URL
                 <div>
                     <br />
                  </div>
@@ -263,7 +263,7 @@
                 </h3>
             </div>
             <div class="modal-body">
-                This <%= window.conf.experiment.label %> is locked for editing. You can can look around and adjust settings but you cannot save curations until the <%= window.conf.experiment.label %> is unlocked.
+                This <%- window.conf.experiment.label %> is locked for editing. You can can look around and adjust settings but you cannot save curations until the <%- window.conf.experiment.label %> is unlocked.
                 <div>
                     <br />
                  </div>

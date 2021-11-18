@@ -36,17 +36,17 @@
 </script>
 <script type="text/template" id="log-entry-item">
 	<td>
-		<%= level %>
+		<%- level %>
 	</td><td>
-		<%= sourceApp %>
+		<%- sourceApp %>
 	</td><td>
-		<%= action %>
+		<%- action %>
 	</td><td>
-		<%= data %>
+		<%- data %>
 	</td><td>
-		<%= user %>
+		<%- user %>
 	</td><td>
-		<%= new Date(timestamp).toLocaleString() %>
+		<%- new Date(timestamp).toLocaleString() %>
 	</td>
 </script>
 
@@ -76,7 +76,7 @@
 	<select class="form-control bv_pickList " style="width: 10em;">
 		<option value="all">all</option>
 		<% collection.each(function(item) { %>
-		<option value="<%= item.get('value') %>"><%= item.get('value') %></option>
+		<option value="<%- item.get('value') %>"><%- item.get('value') %></option>
 		<% }); %>
 	</select>
 </script>
