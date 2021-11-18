@@ -100,6 +100,22 @@ ExampleThingConf =
 				formLabel: "Example File"
 				fieldWrapper: "bv_file"
 				required: false
+		,
+			key: 'exampleMultiFile_'
+			multiple: true
+			modelDefaults:
+				stateType: 'file attachments' 
+				stateKind: 'example thing parent'
+				type: 'fileValue'
+				kind: 'example multi file'
+				value: null
+			fieldSettings:
+				fieldType: 'fileValue'
+				formLabel: "Attached File"
+				fieldWrapper: "bv_multiFileWrapper"
+				allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'jpeg', 'bmp', 'ppt', 'pptx', 'pzf', 'mol', 'cdx', 'cdxml', 'afr6', 'afe6', 'afs6', 'zip', 'html']
+				url: "/api/codetables/project metadata/file type"
+				required: false
 		]
 
 

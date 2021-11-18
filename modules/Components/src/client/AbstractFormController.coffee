@@ -191,7 +191,11 @@ class AbstractThingFormController extends AbstractFormController
 				when 'stringValue' then newField = new ACASFormLSStringValueFieldController opts
 				when 'urlValue' then newField = new ACASFormLSURLValueFieldController opts
 				when 'dateValue' then newField = new ACASFormLSDateValueFieldController opts
-				when 'fileValue' then newField = new ACASFormLSFileValueFieldController opts
+				when 'fileValue'
+					if field.multiple? and field.multiple
+						newField = new ACASFormMultiFileListController opts
+					else
+						newField = new ACASFormLSFileValueFieldController opts
 				when 'blobValue' then newField = new ACASFormLSBlobValueFieldController opts
 				when 'booleanValue' then newField = new ACASFormLSBooleanFieldController opts
 				when 'locationTree'
