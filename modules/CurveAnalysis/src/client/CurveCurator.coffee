@@ -441,7 +441,7 @@ class CurveEditorController extends Backbone.View
 		@model = model
 
 		UtilityFunctions::showProgressModal @$('.bv_statusDropDown')
-		@model.on 'sync', @handleModelSync
+		@model.on 'sync', @handleModelSync.bind(@)
 
 	handleModelSync: =>
 		UtilityFunctions::hideProgressModal @$('.bv_statusDropDown')
@@ -567,11 +567,13 @@ class CurveCurationSet extends Backbone.Model
 				resp.curves = new CurveList(resp.curves)
 				resp.curves.on 'change', =>
 					@trigger 'change'
+				.bind(@)
 		if resp.sortOptions?
 			if resp.sortOptions not instanceof Backbone.Collection
 				resp.sortOptions = new Backbone.Collection(resp.sortOptions)
 				resp.sortOptions.on 'change', =>
 					@trigger 'change'
+				.bind(@)
 		resp
 
 
@@ -617,7 +619,7 @@ class CurveSummaryController extends Backbone.View
 			@renderCurvePath = renderCurvePath
 		else
 			@renderCurvePath = 'dr'
-		@model.on 'change', @render
+		@model.on 'change', @render.bind(@)
 		if @options.locked
 			@locked = @options.locked
 
@@ -779,8 +781,8 @@ class CurveSummaryListController extends Backbone.View
 			csController.on "approveUncurated", csController.approveUncurated
 			@csControllers.push csController
 			@$('.bv_curveSummaries').append(csController.render().el)
-			csController.on 'selected', @selectionUpdated
-			csController.on 'showCurveEditorDirtyPanel', @showCurveEditorDirtyPanel
+			csController.on 'selected', @selectionUpdated.bind(@)
+			csController.on 'showCurveEditorDirtyPanel', @showCurveEditorDirtyPanel.bind(@)
 			@on 'clearSelected', csController.clearSelected
 			if @firstRun && @initiallySelectedCurveID?
 				if @initiallySelectedCurveID == cs.get 'curveid'
@@ -855,16 +857,16 @@ class CurveCuratorController extends Backbone.View
 				collection: @model.get 'curves'
 				selectedCurve: @initiallySelectedCurveID
 				locked: @locked
-			@curveListController.on 'selectionUpdated', @curveSelectionUpdated
+			@curveListController.on 'selectionUpdated', @curveSelectionUpdated.bind(@)
 			if @curveEditorController?
 				@curveEditorController.undelegateEvents()
 			@curveEditorController = new CurveEditorController
 				el: @$('.bv_curveEditor')
 				locked: @locked
 
-			@curveEditorController.on 'curveDetailSaved', @handleCurveDetailSaved
-			@curveEditorController.on 'curveDetailUpdated', @handleCurveDetailUpdated
-			@curveEditorController.on 'curveUpdateError', @handleCurveUpdateError
+			@curveEditorController.on 'curveDetailSaved', @handleCurveDetailSaved.bind(@)
+			@curveEditorController.on 'curveDetailUpdated', @handleCurveDetailUpdated.bind(@)
+			@curveEditorController.on 'curveUpdateError', @handleCurveUpdateError.bind(@)
 
 			if @model.get('sortOptions').length > 0
 				@sortBySelect = new PickListSelectController

@@ -31,10 +31,8 @@
 }
 
 .select2-container .select2-selection--single {
-  width: 350px;
   height: 30px;
   border-color: #bbbbbb;
-  /* base width matches edit prot and expt */
 }
 
 .bv_stateDisplayUpdateTable .valueWasEdited {
