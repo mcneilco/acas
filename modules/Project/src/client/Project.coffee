@@ -706,7 +706,7 @@ class ProjectController extends AbstractFormController
 	render: =>
 		unless @model?
 			@model = new Project()
-		codeName = @model.get('codeName')
+		codeName = @model.escape('codeName')
 		@$('.bv_projectCode').val(codeName)
 		@$('.bv_projectCode').html(codeName)
 		if @model.isNew()

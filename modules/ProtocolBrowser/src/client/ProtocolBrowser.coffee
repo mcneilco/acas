@@ -42,7 +42,7 @@ class ProtocolSimpleSearchController extends AbstractFormController
 				$(".bv_moreSpecificProtocolSearchNeeded").removeClass "hide"
 			else
 				$(".bv_searchingProtocolsMessage").removeClass "hide"
-				$(".bv_protSearchTerm").html protocolSearchTerm
+				$(".bv_protSearchTerm").html _.escape(protocolSearchTerm)
 				$(".bv_moreSpecificProtocolSearchNeeded").addClass "hide"
 				@doSearch protocolSearchTerm
 
@@ -335,11 +335,11 @@ class ProtocolBrowserController extends Backbone.View
 		subclass = @protocolController.model.get('subclass')
 		if window.conf.entity?.saveInitialsCorpName? and window.conf.entity.saveInitialsCorpName is true
 			if @protocolController.model.get('lsLabels').getLabelByTypeAndKind("corpName", subclass + ' corpName').length > 0
-				code = @protocolController.model.get('lsLabels').getLabelByTypeAndKind('corpName', subclass + ' corpName')[0].get('labelText')
+				code = @protocolController.model.get('lsLabels').getLabelByTypeAndKind('corpName', subclass + ' corpName')[0].escape('labelText')
 			else
-				code = @protocolController.model.get("codeName")
+				code = @protocolController.model.escape("codeName")
 		else
-			code = @protocolController.model.get('codeName')
+			code = @protocolController.model.escape('codeName')
 		@$(".bv_protocolCodeName").html code
 		@$(".bv_deleteButtons").removeClass "hide"
 		@$(".bv_okayButton").addClass "hide"

@@ -298,15 +298,15 @@ class BaseEntityController extends AbstractThingFormController #TODO: check to s
 			@model = new BaseEntity()
 		subclass = @model.get('subclass')
 		unless @model.get('shortDescription') is " "
-			@$('.bv_shortDescription').html @model.get('shortDescription')
+			@$('.bv_shortDescription').html @model.escape('shortDescription')
 		bestName = @model.get('lsLabels').pickBestName()
 		if bestName?
 			@$('.bv_'+subclass+'Name').val bestName.get('labelText')
-		@$('.bv_scientist').val(@model.getScientist().get('codeValue'))
-		@$('.bv_'+subclass+'Code').html(@model.get('codeName'))
-		@$('.bv_'+subclass+'Kind').html(@model.get('lsKind')) #should get value from protocol create form
-		@$('.bv_details').val(@model.getDetails().get('clobValue'))
-		@$('.bv_comments').val(@model.getComments().get('clobValue'))
+		@$('.bv_scientist').val(@model.getScientist().escape('codeValue'))
+		@$('.bv_'+subclass+'Code').html(@model.escape('codeName'))
+		@$('.bv_'+subclass+'Kind').html(@model.escape('lsKind')) #should get value from protocol create form
+		@$('.bv_details').val(@model.getDetails().escape('clobValue'))
+		@$('.bv_comments').val(@model.getComments().escape('clobValue'))
 		saveNotebook = true #default
 		if window.conf.entity?.notebook?.save?
 			saveNotebook= window.conf.entity.notebook.save

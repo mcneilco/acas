@@ -35,7 +35,7 @@ class ACASFormStateDisplayUpdateCellController extends Backbone.View
 			content = "NA"
 		else
 			val = @collection.findWhere ignored: false
-			content = val.get(val.get('lsType'))
+			content = val.escape(val.get('lsType'))
 			if @options.cellDef.displayOverride?
 				content = @options.cellDef.displayOverride content
 			if val.get('lsType') == 'dateValue'
@@ -259,7 +259,7 @@ class ACASFormStateDisplayOldValueController extends Backbone.View
 				url: "/api/transaction/"+prevLsTransaction
 				json: true
 				success: (response) =>
-					@$('.bv_reason').html response.comments
+					@$('.bv_reason').html _.escape(response.comments)
 
 		@
 

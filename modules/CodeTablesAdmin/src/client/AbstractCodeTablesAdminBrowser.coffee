@@ -229,12 +229,12 @@ class AbstractCodeTablesAdminBrowserController extends Backbone.View
 				@$(".bv_moreSpecificCodeTablesAdminSearchNeeded").removeClass "hide"
 			else
 				@$(".bv_searchingCodeTablesAdminsMessage").removeClass "hide"
-				@$(".bv_codeTablesAdminSearchTerm").html codeTablesAdminSearchTerm
+				@$(".bv_codeTablesAdminSearchTerm").html _.escape(codeTablesAdminSearchTerm)
 				@$(".bv_moreSpecificCodeTablesAdminSearchNeeded").addClass "hide"
 				@searchController.doSearch codeTablesAdminSearchTerm
 		
 	handleDeleteCodeTablesAdminClicked: =>
-		@$(".bv_codeTablesAdminCodeName").html @codeTablesAdminController.model.get("code")
+		@$(".bv_codeTablesAdminCodeName").html @codeTablesAdminController.model.escape("code")
 		@$(".bv_deleteButtons").removeClass "hide"
 		@$(".bv_okayButton").addClass "hide"
 		@$(".bv_errorDeletingCodeTablesAdminMessage").addClass "hide"

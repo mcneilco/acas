@@ -54,7 +54,7 @@ class ProjectSimpleSearchController extends AbstractFormController
 				$(".bv_moreSpecificProjectSearchNeeded").removeClass "hide"
 			else
 				$(".bv_searchingProjectsMessage").removeClass "hide"
-				$(".bv_exptSearchTerm").html projectSearchTerm
+				$(".bv_exptSearchTerm").html _.escape(projectSearchTerm)
 				$(".bv_moreSpecificProjectSearchNeeded").addClass "hide"
 				@doSearch projectSearchTerm
 
@@ -174,7 +174,7 @@ class ProjectBrowserController extends Backbone.View
 		@searchController.render()
 		@searchController.on "searchReturned", @setupProjectSummaryTable.bind(@)
 		#@searchController.on "resetSearch", @destroyProjectSummaryTable
-		@$('.bv_queryToolDisplayName').html window.conf.service.result.viewer.displayName
+		@$('.bv_queryToolDisplayName').html _.escape(window.conf.service.result.viewer.displayName)
 
 	setupProjectSummaryTable: (projects) =>
 		@destroyProjectSummaryTable()
@@ -219,7 +219,7 @@ class ProjectBrowserController extends Backbone.View
 #				@$('.bv_deleteProject').hide()
 
 	handleDeleteProjectClicked: =>
-		@$(".bv_projectCodeName").html @projectController.model.get("codeName")
+		@$(".bv_projectCodeName").html @projectController.model.escape("codeName")
 		@$(".bv_deleteButtons").removeClass "hide"
 		@$(".bv_okayButton").addClass "hide"
 		@$(".bv_errorDeletingProjectMessage").addClass "hide"

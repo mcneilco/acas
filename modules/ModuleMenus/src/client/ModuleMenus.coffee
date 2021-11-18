@@ -67,15 +67,15 @@ class ModuleMenusController extends Backbone.View
 				@setupFastUserSwitching()
 			else
 				@$('.bv_fastUserSelect').hide()
-				@$('.bv_loginUserFirstName').html window.AppLaunchParams.loginUser.firstName
-				@$('.bv_loginUserLastName').html window.AppLaunchParams.loginUser.lastName
+				@$('.bv_loginUserFirstName').html _.escape(window.AppLaunchParams.loginUser.firstName)
+				@$('.bv_loginUserLastName').html _.escape(window.AppLaunchParams.loginUser.lastName)
 		else
 			@$('.bv_userInfo').hide()
 
 	render: =>
 		if window.AppLaunchParams.deployMode?
 			unless window.AppLaunchParams.deployMode.toUpperCase() =="PROD"
-				@$('.bv_deployMode h1').html(window.AppLaunchParams.deployMode.toUpperCase())
+				@$('.bv_deployMode h1').html(_.escape(window.AppLaunchParams.deployMode.toUpperCase()))
 
 		@
 

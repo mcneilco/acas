@@ -81,7 +81,7 @@ class BatchNameController extends Backbone.View
 
 	render: =>
 		$(@el).html @template()
-		@$(".bv_preferredName").html @model.getDisplayName()
+		@$(".bv_preferredName").html _.escape(@model.getDisplayName())
 		@$(".bv_comment").val @model.get "comment"
 		unless @model.hasValidName()
 			@$('.bv_preferredName').addClass "error"

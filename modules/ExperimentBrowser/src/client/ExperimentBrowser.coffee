@@ -185,7 +185,7 @@ class ExperimentSimpleSearchController extends AbstractFormController
 				$(".bv_moreSpecificExperimentSearchNeeded").removeClass "hide"
 			else
 				$(".bv_searchingExperimentsMessage").removeClass "hide"
-				$(".bv_exptSearchTerm").html experimentSearchTerm
+				$(".bv_exptSearchTerm").html _.escape(experimentSearchTerm)
 				$(".bv_moreSpecificExperimentSearchNeeded").addClass "hide"
 				@doSearch experimentSearchTerm
 
@@ -505,15 +505,15 @@ class ExperimentBrowserController extends Backbone.View
 		subclass = @experimentController.model.get('subclass')
 		if window.conf.entity?.saveInitialsCorpName? and window.conf.entity.saveInitialsCorpName is true
 			if @experimentController.model.get('lsLabels').getLabelByTypeAndKind("corpName", subclass + ' corpName').length > 0
-				code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('corpName', subclass + ' corpName')[0].get('labelText')
+				code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('corpName', subclass + ' corpName')[0].escape('labelText')
 			else if @model.get('lsKind') is "study" and @model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
-				code = @model.get('lsLabels').getLabelByTypeAndKind('id', 'study id')[0].get('labelText')
+				code = @model.get('lsLabels').getLabelByTypeAndKind('id', 'study id')[0].escape('labelText')
 			else
 				code = @experimentController.model.get("codeName")
 		else if @experimentController.model.get('lsKind') is "study" and @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
-			code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id')[0].get('labelText')
+			code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id')[0].escape('labelText')
 		else
-			code = @experimentController.model.get('codeName')
+			code = @experimentController.model.escape('codeName')
 
 		@$(".bv_experimentCodeName").html code
 		@$(".bv_deleteButtons").removeClass "hide"

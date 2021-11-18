@@ -81,7 +81,7 @@ class AbstractCodeTablesAdminController extends AbstractFormController
 	render: =>
 		unless @model?
 			@model = new window[@modelClass]()
-		code = @model.get('code')
+		code = @model.escape('code')
 		@$('.bv_codeTablesAdminCode').val(code)
 		@$('.bv_codeTablesAdminCode').html(code)
 		if @showIgnore

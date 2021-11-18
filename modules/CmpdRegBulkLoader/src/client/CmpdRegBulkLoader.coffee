@@ -200,7 +200,7 @@ class DetectSdfPropertiesController extends Backbone.View
 				props += newLine + prop.get('name')
 		if props == ""
 			props = "No SDF Properties Detected"
-		@$('.bv_detectedSdfPropertiesList').html props
+		@$('.bv_detectedSdfPropertiesList').html _.escape(props)
 
 	disableInputs: ->
 		@$('.bv_readMore').attr 'disabled', 'disabled'
@@ -243,7 +243,7 @@ class AssignedPropertyController extends AbstractFormController
 	render: =>
 		$(@el).empty()
 		$(@el).html @template(@model.attributes)
-		@$('.bv_sdfProperty').html(@model.get('sdfProperty'))
+		@$('.bv_sdfProperty').html(@model.escape('sdfProperty'))
 		@setupDbPropertiesSelect()
 		@$('.bv_defaultVal').val @model.get('defaultVal')
 		if @model.get('dbProperty') is "none"
@@ -527,7 +527,7 @@ class AssignSdfPropertiesController extends Backbone.View
 	handleNameTemplateChanged: ->
 		tempName = UtilityFunctions::getTrimmedInput @$('.bv_templateName')
 		if @templateList.findWhere({name: tempName})? #and tempName.toLowerCase() != "none"
-			@$('.bv_overwriteMessage').html tempName+" already exists. Overwrite?"
+			@$('.bv_overwriteMessage').html _.escape(tempName)+" already exists. Overwrite?"
 			@$('.bv_overwriteWarning').show()
 			@$('input[name="bv_overwrite"][value="no"]').prop('checked',true)
 			@$('.bv_overwrite').change()
@@ -555,7 +555,7 @@ class AssignSdfPropertiesController extends Backbone.View
 		if @assignedPropertiesList.findWhere({dbProperty: 'salt equivalents'})?
 			unless (@assignedPropertiesList.findWhere({dbProperty: 'salt id'})? or @assignedPropertiesList.findWhere({dbProperty: 'salt type'})?)
 				unassignedDbProps += newLine + 'salt id/type (required for salt equivalents)'
-		@$('.bv_unassignedProperties').html unassignedDbProps
+		@$('.bv_unassignedProperties').html _.escape(unassignedDbProps)
 		@isValid()
 
 	isValid: =>
@@ -1095,8 +1095,8 @@ class CmpdRegBulkLoaderAppController extends Backbone.View
 		else
 			@$('.bv_headerName').html "BULK COMPOUND REGISTRATION"
 
-		@$('.bv_loginUserFirstName').html window.AppLaunchParams.loginUser.firstName
-		@$('.bv_loginUserLastName').html window.AppLaunchParams.loginUser.lastName
+		@$('.bv_loginUserFirstName').html _.escape(window.AppLaunchParams.loginUser.firstName)
+		@$('.bv_loginUserLastName').html _.escape(window.AppLaunchParams.loginUser.lastName)
 		if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, [window.conf.roles.cmpdreg.adminRole]
 			@$('.bv_adminDropdownWrapper').show()
 		else

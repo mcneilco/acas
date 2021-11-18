@@ -267,7 +267,7 @@ class ExampleThingController extends AbstractThingFormController
 		@
 
 	renderModelContent: ->
-		codeName = @model.get('codeName')
+		codeName = @model.escape('codeName')
 		@$('.bv_thingCode').val(codeName)
 		@$('.bv_thingCode').html(codeName)
 		if @readOnly is true
@@ -451,7 +451,7 @@ class ExampleTableAuditController extends AbstractThingFormController
 		@
 
 	renderModelContent: ->
-		codeName = @model.get('codeName')
+		codeName = @model.escape('codeName')
 		@$('.bv_thingCode').html(codeName)
 
 	modelSaveCallback: (method, model) =>

@@ -406,7 +406,7 @@ class CurveEditorController extends Backbone.View
 			@stopListening @drpc.model, 'change'
 			@listenTo @drpc.model, 'change', @handlePointsChanged
 
-			@$('.bv_compoundCode').html @model.get('compoundCode')
+			@$('.bv_compoundCode').html @model.escape('compoundCode')
 			@$('.bv_reportedValues').html @model.get('reportedValues')
 			@$('.bv_fitSummary').html @model.get('fitSummary')
 			@$('.bv_parameterStdErrors').html @model.get('parameterStdErrors')
@@ -672,7 +672,7 @@ class CurveSummaryController extends Backbone.View
 		else
 			@$('.bv_dirty').hide()
 
-		@$('.bv_compoundCode').html @model.get('curveAttributes').compoundCode
+		@$('.bv_compoundCode').html _.escape(@model.get('curveAttributes').compoundCode)
 #		@model.on 'change', @render
 		@
 

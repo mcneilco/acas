@@ -44,7 +44,7 @@ class AuthorSimpleSearchController extends AbstractFormController
 				$(".bv_moreSpecificAuthorSearchNeeded").removeClass "hide"
 			else
 				$(".bv_searchingAuthorsMessage").removeClass "hide"
-				$(".bv_exptSearchTerm").html authorSearchTerm
+				$(".bv_exptSearchTerm").html _.escape(authorSearchTerm)
 				$(".bv_moreSpecificAuthorSearchNeeded").addClass "hide"
 				@doSearch authorSearchTerm
 
@@ -183,7 +183,7 @@ class AuthorBrowserController extends Backbone.View
 				@$('.bv_deleteAuthor').hide()
 
 	handleDeleteAuthorClicked: =>
-		@$(".bv_authorUserName").html @authorController.model.get("userName")
+		@$(".bv_authorUserName").html @authorController.model.escape("userName")
 		@$(".bv_deleteButtons").removeClass "hide"
 		@$(".bv_okayButton").addClass "hide"
 		@$(".bv_errorDeletingAuthorMessage").addClass "hide"
