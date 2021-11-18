@@ -8,7 +8,7 @@
 							padding-right: 14px;
 							border-top-left-radius: 15px;
 							border-bottom-left-radius: 15px;
-							" type="text" placeholder="Search for <%=pluralDisplayName%>">
+							" type="text" placeholder="Search for <%-pluralDisplayName%>">
                     <button class="btn bv_doSearch add-on" style="
 							border-top-right-radius: 15px;
 							border-bottom-right-radius: 15px;
@@ -25,7 +25,7 @@
                         <i class="icon-remove bv_clearSearchIcon hide"></i>
                     </button>
                 </div>
-                <button type="button" class="btn bv_createNewCodeTablesAdminBtn pull-right" style="margin-top:0px;">Create New <%=upperDisplayName%></button>
+                <button type="button" class="btn bv_createNewCodeTablesAdminBtn pull-right" style="margin-top:0px;">Create New <%-upperDisplayName%></button>
             </div>
             <!-- </form> -->
         </div>
@@ -34,8 +34,8 @@
 </script>
 
 <script type="text/template" id="CodeTablesAdminRowSummaryView" xmlns="http://www.w3.org/1999/html">
-    <td class='bv_codeTablesAdminCode'><%=code%></td>
-    <td class='bv_codeTablesAdminName'><%=name%></td>
+    <td class='bv_codeTablesAdminCode'><%-code%></td>
+    <td class='bv_codeTablesAdminName'><%-name%></td>
     <td class='bv_codeTablesAdminIgnore'></td>
 </script>
 
@@ -43,8 +43,8 @@
     <table class="table table-bordered table-striped table-hover" style="margin: 0px; padding: 0px; border: 0px; width: 100%; ">
         <thead style="">
         <tr>
-            <th style="width: 125px;"><%=upperDisplayName%> Code</th>
-            <th style="width: 200px;"><%=upperDisplayName%> Name</th>
+            <th style="width: 125px;"><%-upperDisplayName%> Code</th>
+            <th style="width: 200px;"><%-upperDisplayName%> Name</th>
             <th class="bv_ignoredHeader" style="width: 125px;">Ignored</th>
         </tr>
         </thead>
@@ -68,16 +68,16 @@
                     <tbody>
                     <tr>
                         <td style="text-align: center; width: 100%; align-content: center; height: 250px;">
-                            <h5 class="bv_noMatchingCodeTablesAdminsFoundMessage hide">No Matching <%=upperPluralDisplayName%> Found</h5>
+                            <h5 class="bv_noMatchingCodeTablesAdminsFoundMessage hide">No Matching <%-upperPluralDisplayName%> Found</h5>
                             <h5 class="bv_moreSpecificCodeTablesAdminSearchNeeded hide">A more specific search term is required.</h5>
-                            <h5 class="bv_errorOccurredPerformingSearch hide">An error occurred while searching for the <%=displayName%>.</h5>
+                            <h5 class="bv_errorOccurredPerformingSearch hide">An error occurred while searching for the <%-displayName%>.</h5>
 
                             <div class="bv_codeTablesAdminBrowserSearchInstructions">
                                 <i class="icon-search bv_doSearchIcon"></i>
-                                <%=upperDisplayName%> Browser
+                                <%-upperDisplayName%> Browser
                             </div>
                             <div class="hide bv_searchingCodeTablesAdminsMessage" style="margin: auto;">
-                                <h5>Searching for <%=upperPluralDisplayName%> containing text "<i class="bv_codeTablesAdminSearchTerm"></i>"</h5>
+                                <h5>Searching for <%-upperPluralDisplayName%> containing text "<i class="bv_codeTablesAdminSearchTerm"></i>"</h5>
                                 <div class="progress progress-striped active " style="width: 90%; margin: auto;">
                                     <div class="bar" style="width: 100%; margin: auto;"></div>
                                 </div>
@@ -106,17 +106,17 @@
         <div class="modal hide bv_confirmDeleteCodeTablesAdmin">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>Delete <%=upperDisplayName%></h3>
+                <h3>Delete <%-upperDisplayName%></h3>
             </div>
             <div class="modal-body">
                 <div class="bv_deleteWarningMessage">
-                    <p>Are you sure you would like to delete <%=displayName%>: <span class="bv_codeTablesAdminCodeName"></span>?</p>
+                    <p>Are you sure you would like to delete <%-displayName%>: <span class="bv_codeTablesAdminCodeName"></span>?</p>
                 </div>
                 <div class="bv_deletingStatusIndicator hide">
                     <table width="100%"></table>
                     <tr>
                         <td style="text-align: center; width: 100%">
-                            <h4>Deleting <%=upperDisplayName%></h4>
+                            <h4>Deleting <%-upperDisplayName%></h4>
                             <div class="progress progress-striped active" style="width: 100%;">
                                 <div class="bar" style="width: 100%;"></div>
                             </div>
@@ -124,16 +124,16 @@
                     </tr>
                 </div>
                 <div class="bv_codeTablesAdminDeletedSuccessfullyMessage hide">
-                    <p><%=upperDisplayName%> <span class="bv_codeTablesAdminCodeName"></span> has successfully been deleted</p>
+                    <p><%-upperDisplayName%> <span class="bv_codeTablesAdminCodeName"></span> has successfully been deleted</p>
                 </div>
                 <div class="bv_errorDeletingCodeTablesAdminMessage hide">
-                    <p>An error occured deleting <%=upperDisplayName%> <span class="bv_codeTablesAdminCodeName"></span>.  Please contact support for additional help.</p>
+                    <p>An error occured deleting <%-upperDisplayName%> <span class="bv_codeTablesAdminCodeName"></span>.  Please contact support for additional help.</p>
                 </div>
             </div>
             <div class="modal-footer">
                 <span class="bv_deleteButtons">
                   <a href="#" class="btn btn-primary bv_cancelDelete">Cancel</a>
-                  <a href="#" class="btn btn-danger bv_confirmDeleteCodeTablesAdminButton">Delete <%=upperDisplayName%></a>
+                  <a href="#" class="btn btn-danger bv_confirmDeleteCodeTablesAdminButton">Delete <%-upperDisplayName%></a>
                   </span>
                 <span class="bv_okayButton hide">
                     <a href="#" class="btn btn-primary bv_cancelDelete">Okay</a>
