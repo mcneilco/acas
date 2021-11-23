@@ -35,7 +35,7 @@ class ACASFormStateDisplayUpdateCellController extends Backbone.View
 			content = "NA"
 		else
 			val = @collection.findWhere ignored: false
-			content = val.escape(val.get('lsType'))
+			content = val.get(val.get('lsType'))
 			if @options.cellDef.displayOverride?
 				content = @options.cellDef.displayOverride content
 			if val.get('lsType') == 'dateValue'
@@ -43,7 +43,7 @@ class ACASFormStateDisplayUpdateCellController extends Backbone.View
 			else if val.get('lsType') == 'codeValue'
 				content = UtilityFunctions::getNameForCode val, content, @options.pickLists
 
-		$(@el).html content
+		$(@el).html _.escape content
 		$(@el).addClass if @collection.length > 1 then "valueWasEdited" else ""
 		if @options.cellDef.editable? and !@options.cellDef.editable
 			$(@el).addClass 'valueNotEditable'

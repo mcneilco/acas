@@ -479,13 +479,13 @@ class ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldController
 		if @options.showDescription? and @options.showDescription
 			@clearDescription()
 			if @pickListController.getSelectedModel()?
-				desc = @pickListController.getSelectedModel().escape('description')
+				desc = @pickListController.getSelectedModel().get('description')
 				if desc?
 					@setDescription(desc)
 	
 	setDescription: (message) ->
 		@$('.desc-inline').removeClass 'hide'
-		@$('.desc-inline').html message
+		@$('.desc-inline').html _.escape message
 
 	clearDescription: ->
 		@$('.desc-inline').addClass 'hide'
