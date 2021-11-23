@@ -19,6 +19,7 @@ startApp = ->
 	bodyParser = require('body-parser')
 	errorHandler = require('errorhandler')
 	cookieParser = require('cookie-parser')
+	helmet = require("helmet");
 
 	# Added for logging support
 	flash = require 'connect-flash'
@@ -84,6 +85,33 @@ startApp = ->
 	app.set 'view engine', 'jade'
 	app.use logger('dev')
 	app.use methodOverride()
+
+	# Helmet security middleware
+	# Our use of _.template breaks strict content security policy
+	# https://github.com/jashkenas/underscore/issues?q=Content+Security+Policy
+	# This is probably the most informative ticket: https://github.com/jashkenas/underscore/issues/2273
+	# app.use(helmet.contentSecurityPolicy());
+# 	// Set Content Security Policies
+	app.use(
+		helmet(
+			contentSecurityPolicy:
+				directives:
+					defaultSrc: ["'self'", "'unsafe-eval'"],
+					scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+					styleSrc: ["'self'", "'unsafe-inline'"],
+					frameSrc: ["'self'"]
+		)
+	)
+	app.use(helmet.dnsPrefetchControl());
+	app.use(helmet.expectCt());
+	app.use(helmet.frameguard());
+	app.use(helmet.hidePoweredBy());
+	app.use(helmet.hsts());
+	app.use(helmet.ieNoOpen());
+	app.use(helmet.noSniff());
+	app.use(helmet.permittedCrossDomainPolicies());
+	app.use(helmet.referrerPolicy());
+	app.use(helmet.xssFilter());
 
 	# added for login support
 	app.use cookieParser()
