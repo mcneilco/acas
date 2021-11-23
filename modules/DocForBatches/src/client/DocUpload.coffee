@@ -56,7 +56,7 @@ class DocUploadController extends AbstractFormController
 			@$('.bv_fileInput').hide()
 			if @model.get('docType') is 'file'
 				$('.bv_currentFileRadio').attr('checked', true)
-				@$('.bv_currentFileName').html(@model.get('currentFileName'))
+				@$('.bv_currentFileName').html(@model.escape('currentFileName'))
 			else
 				@.$('.bv_currentDocContainer').hide()
 				$('.bv_urlRadio').attr('checked', true)

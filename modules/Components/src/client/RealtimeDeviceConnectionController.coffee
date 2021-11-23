@@ -189,7 +189,7 @@ class RealtimeDeviceConnectionController extends Backbone.View
 	displayInUseMessage: =>
 		@resetStatusMessages()
 		@displayStatusMessage(".bv_deviceServerInUseButIdle")
-		@$(".bv_deviceUsedBy").html @userNameOfConnectedUser
+		@$(".bv_deviceUsedBy").html _.escape(@userNameOfConnectedUser)
 
 	handleDeviceSelectChange: =>
 		@disableElement(".bv_deviceSelectContainer")
@@ -221,7 +221,7 @@ class RealtimeDeviceConnectionController extends Backbone.View
 		@$(".bv_disconnectedByAUserMessage").hide()
 
 	displayInUseModal: =>
-		@$(".bv_alreadyConnectedUserName").html @userNameOfConnectedUser
+		@$(".bv_alreadyConnectedUserName").html _.escape(@userNameOfConnectedUser)
 		@$(".bv_deviceInUse").modal "show"
 
 	handleConnectError: =>
@@ -277,7 +277,7 @@ class RealtimeDeviceConnectionController extends Backbone.View
 			@connectToDeviceCallback(msg, null)
 
 	displayDisconnectedModal: (disconnectingUserName) =>
-		@$(".bv_disconnectingUserName").html disconnectingUserName
+		@$(".bv_disconnectingUserName").html _.escape(disconnectingUserName)
 		@$(".bv_disconnectedByAUserMessage").show "slide", {direction: "right"}
 
 	dismissDeviceInUse: =>

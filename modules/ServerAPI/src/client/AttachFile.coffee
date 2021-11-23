@@ -99,16 +99,16 @@ class BasicFileController extends AbstractFormController
 	render: =>
 		$(@el).empty()
 		$(@el).html @template(@model.attributes)
-		fileValue = @model.get('fileValue')
-		urlValue = @model.get('urlValue')
+		fileValue = @model.escape('fileValue')
+		urlValue = @model.excape('urlValue')
 		if ((fileValue is null or fileValue is "" or fileValue is undefined) and (urlValue is null or urlValue is "" or urlValue is undefined))
 			@createNewFileChooser()
 		else
 			if urlValue?
-				@$('.bv_uploadFile').html '<div style="margin-top:5px;margin-left:4px;"> <a href="'+ @model.get('urlValue')+'">'+@model.get('urlValue')+'</a></div>'
+				@$('.bv_uploadFile').html '<div style="margin-top:5px;margin-left:4px;"> <a href="'+ urlValue+'">'+urlValue+'</a></div>'
 			else
-				@$('.bv_uploadFile').html '<div style="margin-top:5px;margin-left:4px;"> <a href="'+window.conf.datafiles.downloadurl.prefix+fileValue+'">'+@model.get('comments')+'</a></div>'
-			@$('.bv_recordedBy').html @model.get("recordedBy")
+				@$('.bv_uploadFile').html '<div style="margin-top:5px;margin-left:4px;"> <a href="'+window.conf.datafiles.downloadurl.prefix+fileValue+'">'+@model.escape('comments')+'</a></div>'
+			@$('.bv_recordedBy').html @model.escape("recordedBy")
 			@$('.bv_recordedDate').html UtilityFunctions::convertMSToYMDDate @model.get("recordedDate")
 		@
 

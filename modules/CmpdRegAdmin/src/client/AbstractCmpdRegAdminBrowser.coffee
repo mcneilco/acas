@@ -226,12 +226,12 @@ class AbstractCmpdRegAdminBrowserController extends Backbone.View
 				@$(".bv_moreSpecificCmpdRegAdminSearchNeeded").removeClass "hide"
 			else
 				@$(".bv_searchingCmpdRegAdminsMessage").removeClass "hide"
-				@$(".bv_cmpdRegAdminSearchTerm").html cmpdRegAdminSearchTerm
+				@$(".bv_cmpdRegAdminSearchTerm").html _.escape(cmpdRegAdminSearchTerm)
 				@$(".bv_moreSpecificCmpdRegAdminSearchNeeded").addClass "hide"
 				@searchController.doSearch cmpdRegAdminSearchTerm
 		
 	handleDeleteCmpdRegAdminClicked: =>
-		@$(".bv_cmpdRegAdminCodeName").html @cmpdRegAdminController.model.get("code")
+		@$(".bv_cmpdRegAdminCodeName").html @cmpdRegAdminController.model.escape("code")
 		@$(".bv_deleteButtons").removeClass "hide"
 		@$(".bv_okayButton").addClass "hide"
 		@$(".bv_errorDeletingCmpdRegAdminMessage").addClass "hide"

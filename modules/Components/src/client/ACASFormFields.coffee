@@ -288,7 +288,7 @@ class ACASFormLSNumericValueFieldController extends ACASFormAbstractFieldControl
 	render: =>
 		super()
 		if @getModel()? and @getModel().has('unitKind')
-			@$('.bv_units').html @getModel().get('unitKind')
+			@$('.bv_units').html @getModel().escape('unitKind')
 		@
 
 	handleInputChanged: =>
@@ -328,7 +328,7 @@ class ACASFormLSNumericValueFieldController extends ACASFormAbstractFieldControl
 				@$('.bv_number').val @getModel().get('value')
 
 		if @getModel().has 'unitKind'
-			@$('.bv_units').html @getModel().get('unitKind')
+			@$('.bv_units').html @getModel().escape('unitKind')
 		super()
 
 class ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldController
@@ -485,7 +485,7 @@ class ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldController
 	
 	setDescription: (message) ->
 		@$('.desc-inline').removeClass 'hide'
-		@$('.desc-inline').html message
+		@$('.desc-inline').html _.escape message
 
 	clearDescription: ->
 		@$('.desc-inline').addClass 'hide'
@@ -854,12 +854,12 @@ class ACASFormLSFileValueFieldController extends ACASFormAbstractFieldController
 		super()
 
 	setupFileController: ->
-		fileValue = @getModel().get('value')
+		fileValue = @getModel().escape('value')
 		if @isEmpty()
 			@createNewFileChooser()
 			@$('.bv_deleteSavedFile').hide()
 		else
-			displayText = @getModel().get('comments')
+			displayText = @getModel().escape('comments')
 			if !displayText?
 				displayText = fileValue
 			if @displayInline
@@ -931,12 +931,12 @@ class ACASFormLSBlobValueFieldController extends ACASFormLSFileValueFieldControl
 		), '')
 
 	setupFileController: ->
-		fileValue = @getModel().get('value')
+		fileValue = @getModel().escape('value')
 		if @isEmpty()
 			@createNewFileChooser()
 			@$('.bv_deleteSavedFile').hide()
 		else
-			displayText = @getModel().get('comments')
+			displayText = @getModel().escape('comments')
 			if !displayText?
 				displayText = "InternalErrorUnknownFileName"
 			id = @getModel().get('id')
