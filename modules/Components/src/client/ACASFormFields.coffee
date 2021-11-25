@@ -520,7 +520,8 @@ class ACASFormLSThingInteractionFieldController extends ACASFormAbstractFieldCon
 			@placeholder = @options.placeholder
 		if @options.extendedLabel?
 			@extendedLabel = @options.extendedLabel
-
+		if @options.sorter?
+			@sorter = @options.sorter
 
 	handleInputChanged: =>
 		@clearError()
@@ -585,6 +586,7 @@ class ACASFormLSThingInteractionFieldController extends ACASFormAbstractFieldCon
 			el: @$('select')
 			placeholder: @placeholder
 			labelType: @labelType
+			sorter: @sorter
 		if @queryUrl?
 			opts.queryUrl = @queryUrl
 		else

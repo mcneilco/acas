@@ -181,8 +181,40 @@ ExampleThingConf =
 					required: true
 			]
 		]
-		firstLsThingItxs: []
-		secondLsThingItxs: []
+# Interactions in ACAS are directional relationships between two LsThings,
+#  the "first" LsThing and the "second" LsThing.
+#  The convention is for the interaction lsType to be a directional verb.
+#  This helps indicate which LsThing should be the "first" and "second".
+#  i.e. If we have an LsThing "rock" and an LsThing "scissors",
+#  we'd use the Interaction "beats" to indicate "rock beats scissors".
+		firstLsThingItxs: [
+			key: 'associated_projects'
+			multiple: true
+			modelDefaults:
+				itxType: 'references'
+				itxKind: 'something'
+				thingType: 'project'
+				thingKind: 'project'
+			fieldSettings:
+				fieldType: 'thingInteractionSelect'
+				thingType: 'project'
+				thingKind: 'project'
+				labelType: 'name'
+				formLabel: "Project"
+				fieldWrapper: "bv_associatedProjects"
+				sorter: (data) ->  ## Customized sort function (reverse order), if not passed in, the default sort function is used (sort by asc order of the label) 
+					data.sort( (a, b) ->
+						if a.text.toUpperCase() > b.text.toUpperCase()
+							return -1
+						if a.text.toUpperCase() < b.text.toUpperCase()
+							return 1
+						return 0
+					)
+		]
+		secondLsThingItxs: [
+
+		]
+
 
 class ExampleThingParent extends Thing
 	urlRoot: "/api/things/parent/example thing"

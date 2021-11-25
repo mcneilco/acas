@@ -696,6 +696,18 @@ class ThingLabelComboBoxController extends PickListSelect2Controller
 		@labelType = if @options.labelType? then @options.labelType else null
 		@placeholder = if @options.placeholder? then @options.placeholder else null
 		@queryUrl = if @options.queryUrl? then @options.queryUrl else null
+		if @options.sorter?
+			@sorter = @options.sorter
+		else
+			@sorter = (data) ->
+				data.sort( (a, b) ->
+					if a.text.toUpperCase() > b.text.toUpperCase()
+						return 1
+					if a.text.toUpperCase() < b.text.toUpperCase()
+						return -1
+					return 0
+				)
+
 		unless @queryUrl? or (@thingType? and @thingKind?)
 			alert("ThingLabelComboBoxController URL misconfigured - crash to follow")
 		@$el.append('<option></option>')
@@ -724,14 +736,7 @@ class ThingLabelComboBoxController extends PickListSelect2Controller
 					results = for option in data
 						{id: option.code, text: option.name}
 					return {results: results}
-			sorter: (data) ->
-				data.sort( (a, b) ->
-					if a.text.toUpperCase() > b.text.toUpperCase()
-						return 1
-					if a.text.toUpperCase() < b.text.toUpperCase()
-						return -1
-					return 0
-				)
+			sorter: @sorter
 		@
 
 	getSelectedCode: ->
