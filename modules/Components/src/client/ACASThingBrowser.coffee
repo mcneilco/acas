@@ -163,7 +163,7 @@ class ACASThingBrowserCellController extends Backbone.View
 	render: =>
 		$(@el).empty()
 
-		value = @model.escape(@configs.key)
+		value = @model.get(@configs.key)
 		if value instanceof Value
 			content = value.escape("value")
 			if value.get("lsType") == "dateValue"  && !@configs.formatter?
