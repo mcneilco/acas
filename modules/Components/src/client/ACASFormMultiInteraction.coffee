@@ -17,6 +17,7 @@ class ACASFormMultiInteractionController extends Backbone.View
 			queryUrl: @options.queryUrl
 			placeholder: @options.placeholder
 			extendedLabel: @options.extendedLabel
+			sorter: @options.sorter
 			inputClass: @options.inputClass
 			formLabel: @options.formLabel
 			required: @options.required

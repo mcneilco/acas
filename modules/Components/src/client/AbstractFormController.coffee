@@ -153,6 +153,7 @@ class AbstractThingFormController extends AbstractFormController
 				allowedFileTypes: field.fieldSettings.allowedFileTypes
 				displayInline: field.fieldSettings.displayInline
 				extendedLabel: field.fieldSettings.extendedLabel
+				sorter: field.fieldSettings.sorter
 				tabIndex: field.fieldSettings.tabIndex
 				toFixed: field.fieldSettings.toFixed
 				pickList: field.fieldSettings.pickList

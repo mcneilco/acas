@@ -810,6 +810,7 @@ class ACASFormStateTableFormController extends Backbone.View
 				modelDefaults: field.modelDefaults
 				allowedFileTypes: field.fieldSettings.allowedFileTypes
 				extendedLabel: field.fieldSettings.extendedLabel
+				sorter: field.fieldSettings.sorter
 				tabIndex: field.fieldSettings.tabIndex
 				toFixed: field.fieldSettings.toFixed
 				pickList: field.fieldSettings.pickList
