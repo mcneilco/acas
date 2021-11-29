@@ -788,9 +788,26 @@ class BulkRegCmpdsController extends Backbone.View
 	initialize: ->
 		$(@el).empty()
 		$(@el).html @template()
-		@disableAllInputs()
-		@setupDetectSdfPropertiesController()
-		@setupAssignSdfPropertiesController()
+		@checkAllowCmpdRegistration()
+
+	checkAllowCmpdRegistration: ->
+		$.ajax
+			type: 'GET'
+			url: "/cmpdReg/allowCmpdRegistration"
+			success: (allowRegResp) =>
+				console.log "got allow cmpd registration"
+				console.log allowRegResp
+				if allowRegResp.allowCmpdRegistration
+					@disableAllInputs()
+					@setupDetectSdfPropertiesController()
+					@setupAssignSdfPropertiesController()
+				else
+					@$('.bv_disableCmpdRegistrationMessage').show()
+					@$('.bv_disableCmpdRegistrationMessage').html allowRegResp.message
+			error: (err) =>
+				console.log "error allow cmpd registration"
+				@$('.bv_disableCmpdRegistrationMessage').show()
+				@$('.bv_disableCmpdRegistrationMessage').html JSON.parse(err.responseText).message
 
 	validate: ->
 		@assignSdfPropertiesController.isValid()

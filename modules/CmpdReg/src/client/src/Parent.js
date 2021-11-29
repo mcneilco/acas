@@ -232,6 +232,38 @@ $(function() {
 				this.$('.isMixture').attr('disabled', true);
                 //this.$('.commonName').attr('disabled', true);
             }
+
+			$.ajax({
+				type: 'GET',
+				url: "/cmpdReg/allowCmpdRegistration",
+				success: (function (_this) {
+					return function (allowRegResp) {
+						console.log("got allow cmpd registration");
+						console.log(allowRegResp);
+						if (allowRegResp.allowCmpdRegistration) {
+							_this.$('.editParentButtonDisabled').hide();
+						} else {
+							_this.$('.disableCmpdRegistrationMessage').show();
+							_this.$('.editParentButton').hide();
+							_this.$('.editParentButtonDisabled').show();
+							_this.$('.disableCmpdRegistrationMessage').html(allowRegResp.message);
+						}
+						return _this.finishRenderParentController();
+					};
+				})(this),
+				error: (function (_this) {
+					return function (err) {
+						console.log("error allow cmpd registration");
+						_this.$('.disableCmpdRegistrationMessage').show();
+						_this.$('.editParentButton').hide();
+						_this.$('.editParentButtonDisabled').show();
+						return _this.$('.disableCmpdRegistrationMessage').html(JSON.parse(err.responseText).message);
+					};
+				})(this)
+			});
+		},
+
+		finishRenderParentController: function() {
 			if ( this.options.isEditable ) {
 				this.$('.editParentButtonWrapper').show();
 			} else {
@@ -422,7 +454,7 @@ $(function() {
 					errorsMsg += "<li>"+err.message+"</li>";
 				});
 				this.$('.parentErrors').html(errorsMsg);
-				
+
 			}
 			else {
 				this.$('.ConfirmEditParentPanel').show();
@@ -447,7 +479,7 @@ $(function() {
 			this.$('.ValidateParentErrorsPanel').html($('#ValidateParentErrorsPanel_template').html());
 			this.$('.validateParentErrorsMsg').html("There was an error validating the parent. Please try again or contact an administrator.");
 		},
-		
+
 		updateParentConfirmed: function(){
 			$.ajax({
 				type: "POST",
