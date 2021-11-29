@@ -39,6 +39,7 @@
     "flat": "5.0.2",
     "forever-monitor": "3.0.3",
     "glob": "7.1.6",
+    "helmet": "^4.6.0",
     "jade": "0.35.0",
     "jasmine-core": "^3.6.0",
     "jasmine-jquery": "^2.1.1",

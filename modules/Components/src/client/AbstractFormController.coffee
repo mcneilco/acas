@@ -153,6 +153,7 @@ class AbstractThingFormController extends AbstractFormController
 				allowedFileTypes: field.fieldSettings.allowedFileTypes
 				displayInline: field.fieldSettings.displayInline
 				extendedLabel: field.fieldSettings.extendedLabel
+				sorter: field.fieldSettings.sorter
 				tabIndex: field.fieldSettings.tabIndex
 				toFixed: field.fieldSettings.toFixed
 				pickList: field.fieldSettings.pickList
@@ -191,7 +192,11 @@ class AbstractThingFormController extends AbstractFormController
 				when 'stringValue' then newField = new ACASFormLSStringValueFieldController opts
 				when 'urlValue' then newField = new ACASFormLSURLValueFieldController opts
 				when 'dateValue' then newField = new ACASFormLSDateValueFieldController opts
-				when 'fileValue' then newField = new ACASFormLSFileValueFieldController opts
+				when 'fileValue'
+					if field.multiple? and field.multiple
+						newField = new ACASFormMultiFileListController opts
+					else
+						newField = new ACASFormLSFileValueFieldController opts
 				when 'blobValue' then newField = new ACASFormLSBlobValueFieldController opts
 				when 'booleanValue' then newField = new ACASFormLSBooleanFieldController opts
 				when 'locationTree'

@@ -93,7 +93,7 @@ class DoseResponseKiAnalysisParametersController extends AbstractFormController
 		@
 
 	updateThresholdDisplay: (val)->
-		@$('.bv_inactiveThresholdDisplay').html val
+		@$('.bv_inactiveThresholdDisplay').html _.escape(val)
 
 	setThresholdModeEnabledState: ->
 		if @model.get 'smartMode'

@@ -439,7 +439,7 @@ class ProtocolBaseController extends BaseEntityController
 		@$(".bv_deleteWarningMessage").addClass "hide"
 		@$(".bv_deletingStatusIndicator").removeClass "hide"
 		@$(".bv_deleteButtons").addClass "hide"
-		@$(".bv_protocolCodeName").html @model.get('codeName')
+		@$(".bv_protocolCodeName").html @model.escape('codeName')
 		$.ajax(
 			url: "/api/protocols/browser/#{@model.get("id")}",
 			type: 'DELETE',

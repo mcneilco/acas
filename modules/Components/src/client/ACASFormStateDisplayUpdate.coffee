@@ -43,7 +43,7 @@ class ACASFormStateDisplayUpdateCellController extends Backbone.View
 			else if val.get('lsType') == 'codeValue'
 				content = UtilityFunctions::getNameForCode val, content, @options.pickLists
 
-		$(@el).html content
+		$(@el).html _.escape content
 		$(@el).addClass if @collection.length > 1 then "valueWasEdited" else ""
 		if @options.cellDef.editable? and !@options.cellDef.editable
 			$(@el).addClass 'valueNotEditable'
@@ -259,7 +259,7 @@ class ACASFormStateDisplayOldValueController extends Backbone.View
 				url: "/api/transaction/"+prevLsTransaction
 				json: true
 				success: (response) =>
-					@$('.bv_reason').html response.comments
+					@$('.bv_reason').html _.escape(response.comments)
 
 		@
 

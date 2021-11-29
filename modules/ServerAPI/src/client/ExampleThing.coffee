@@ -100,6 +100,22 @@ ExampleThingConf =
 				formLabel: "Example File"
 				fieldWrapper: "bv_file"
 				required: false
+		,
+			key: 'exampleMultiFile_'
+			multiple: true
+			modelDefaults:
+				stateType: 'file attachments' 
+				stateKind: 'example thing parent'
+				type: 'fileValue'
+				kind: 'example multi file'
+				value: null
+			fieldSettings:
+				fieldType: 'fileValue'
+				formLabel: "Attached File"
+				fieldWrapper: "bv_multiFileWrapper"
+				allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'jpeg', 'bmp', 'ppt', 'pptx', 'pzf', 'mol', 'cdx', 'cdxml', 'afr6', 'afe6', 'afs6', 'zip', 'html']
+				url: "/api/codetables/project metadata/file type"
+				required: false
 		]
 
 
@@ -165,8 +181,40 @@ ExampleThingConf =
 					required: true
 			]
 		]
-		firstLsThingItxs: []
-		secondLsThingItxs: []
+# Interactions in ACAS are directional relationships between two LsThings,
+#  the "first" LsThing and the "second" LsThing.
+#  The convention is for the interaction lsType to be a directional verb.
+#  This helps indicate which LsThing should be the "first" and "second".
+#  i.e. If we have an LsThing "rock" and an LsThing "scissors",
+#  we'd use the Interaction "beats" to indicate "rock beats scissors".
+		firstLsThingItxs: [
+			key: 'associated_projects'
+			multiple: true
+			modelDefaults:
+				itxType: 'references'
+				itxKind: 'something'
+				thingType: 'project'
+				thingKind: 'project'
+			fieldSettings:
+				fieldType: 'thingInteractionSelect'
+				thingType: 'project'
+				thingKind: 'project'
+				labelType: 'name'
+				formLabel: "Project"
+				fieldWrapper: "bv_associatedProjects"
+				sorter: (data) ->  ## Customized sort function (reverse order), if not passed in, the default sort function is used (sort by asc order of the label) 
+					data.sort( (a, b) ->
+						if a.text.toUpperCase() > b.text.toUpperCase()
+							return -1
+						if a.text.toUpperCase() < b.text.toUpperCase()
+							return 1
+						return 0
+					)
+		]
+		secondLsThingItxs: [
+
+		]
+
 
 class ExampleThingParent extends Thing
 	urlRoot: "/api/things/parent/example thing"
@@ -267,7 +315,7 @@ class ExampleThingController extends AbstractThingFormController
 		@
 
 	renderModelContent: ->
-		codeName = @model.get('codeName')
+		codeName = @model.escape('codeName')
 		@$('.bv_thingCode').val(codeName)
 		@$('.bv_thingCode').html(codeName)
 		if @readOnly is true
@@ -451,7 +499,7 @@ class ExampleTableAuditController extends AbstractThingFormController
 		@
 
 	renderModelContent: ->
-		codeName = @model.get('codeName')
+		codeName = @model.escape('codeName')
 		@$('.bv_thingCode').html(codeName)
 
 	modelSaveCallback: (method, model) =>

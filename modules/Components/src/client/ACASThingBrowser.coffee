@@ -44,7 +44,7 @@ class ThingSimpleSearchController extends AbstractFormController
 				@$(".bv_moreSpecificThingSearchNeeded").removeClass "hide"
 			else
 				@$(".bv_searchingThingsMessage").removeClass "hide"
-				@$(".bv_exptSearchTerm").html thingSearchTerm
+				@$(".bv_exptSearchTerm").html _.escape(thingSearchTerm)
 				@$(".bv_moreSpecificThingSearchNeeded").addClass "hide"
 				@doSearch thingSearchTerm
 
@@ -165,11 +165,11 @@ class ACASThingBrowserCellController extends Backbone.View
 
 		value = @model.get(@configs.key)
 		if value instanceof Value
-			content = value.get("value")
+			content = value.escape("value")
 			if value.get("lsType") == "dateValue"  && !@configs.formatter?
 				content = UtilityFunctions::convertMSToYMDDate(content)
 		else if value instanceof Label
-			content = value.get("labelText")
+			content = value.escape("labelText")
 		else
 			content = value
 		

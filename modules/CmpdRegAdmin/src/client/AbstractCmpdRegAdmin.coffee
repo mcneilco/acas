@@ -74,7 +74,7 @@ class AbstractCmpdRegAdminController extends AbstractFormController
 	render: =>
 		unless @model?
 			@model = new window[@modelClass]()
-		code = @model.get('code')
+		code = @model.escape('code')
 		@$('.bv_cmpdRegAdminCode').val(code)
 		@$('.bv_cmpdRegAdminCode').html(code)
 		if @showIgnore

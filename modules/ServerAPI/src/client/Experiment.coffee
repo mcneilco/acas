@@ -476,7 +476,7 @@ class ExperimentBaseController extends BaseEntityController
 				@$('.bv_openInQueryToolWrapper').hide()
 			else
 				@$('.bv_openInQueryToolWrapper').show()
-			@$('.bv_queryToolDisplayName').html window.conf.service.result.viewer.displayName
+			@$('.bv_queryToolDisplayName').html _.escape(window.conf.service.result.viewer.displayName)
 			@$('.bv_openInQueryToolLink').attr 'href', "/openExptInQueryTool?experiment="+@model.get('codeName')
 		@
 
@@ -617,7 +617,7 @@ class ExperimentBaseController extends BaseEntityController
 		@$(".bv_deleteWarningMessage").addClass "hide"
 		@$(".bv_deletingStatusIndicator").removeClass "hide"
 		@$(".bv_deleteButtons").addClass "hide"
-		@$(".bv_experimentCodeName").html @model.get('codeName')
+		@$(".bv_experimentCodeName").html @model.escape('codeName')
 		$.ajax(
 			url: "/api/experiments/#{@model.get("id")}",
 			type: 'DELETE',
