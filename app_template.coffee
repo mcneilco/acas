@@ -96,6 +96,7 @@ startApp = ->
 		helmet(
 			contentSecurityPolicy:
 				directives:
+					imgSrc: ["'self'", "data:"]
 					defaultSrc: ["'self'", "'unsafe-eval'"],
 					scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
 					styleSrc: ["'self'", "'unsafe-inline'"],
