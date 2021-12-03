@@ -1,4 +1,4 @@
-exports.setupRoutes = (app) ->
+exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/logger/', loginRoutes.ensureAuthenticated, exports.getAllLogStatements
 	app.get '/api/logger/:level/:application/:user', loginRoutes.ensureAuthenticated, exports.getAllLogStatementOfLevel
 	app.get '/api/logger/applicationSources', loginRoutes.ensureAuthenticated, exports.getApplicationSources
