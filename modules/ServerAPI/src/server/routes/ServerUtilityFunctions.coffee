@@ -221,9 +221,9 @@ exports.runRScript = (rScript) ->
 	serverUtilityFunctions.setupRoutes(app)
 
 ###
-exports.setupRoutes = (app) ->
-	app.post '/api/runRFunctionTest', exports.runRFunctionTest
-	app.post '/api/runRApacheFunctionTest', exports.runRApacheFunctionTest
+exports.setupRoutes = (app, loginRoutes) ->
+	app.post '/api/runRFunctionTest', loginRoutes.ensureAuthenticated, exports.runRFunctionTest
+	app.post '/api/runRApacheFunctionTest', loginRoutes.ensureAuthenticated, exports.runRApacheFunctionTest
 
 exports.runRFunctionTest = (request, response)  ->
 
