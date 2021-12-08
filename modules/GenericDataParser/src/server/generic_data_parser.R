@@ -610,6 +610,13 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
         # columns of batchProjects must include "Project.Code" and "Requested.Name", both strings
         batchProjects <- getProjectForBatch(c(unique(calculatedResults$batchCode[batchesToCheck])), mainCode)
 
+        # Make sure every batch has a project
+        batchProjectsMissingProject <- batchProjects[is.na(batchProjects$Project.Code) | batchProjects$Project.Code == "",]
+        if(nrow(batchProjectsMissingProject) > 0) {
+          stopUser(paste0("The following ", mainCode, "s do not have a project assigned: ", paste(batchProjectsMissingProject$Requested.Name, collapse=", "),
+                          ". Please assign a project to these ", mainCode, "s before proceeding."))
+        }
+
         # Check if each project is allowed to be loaded to this experiment
         # A project can only be used in the experiment if it's an unrestricted project or belongs to the project which this experiment belongs to
         projectsDT <- data.table(projectDF)
@@ -622,7 +629,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
 
         # Merge batch projects to project restrition information
         batchProjectWithRestrictionInfo <- as.data.table(merge(batchProjects, projectsDT, by.x="Project.Code", by.y="code"))
-
+        
         # Create a data table with one row per batch with a boolean column as to whether it can be used in the experiment
         # if any of the projects the batch belongs to is allowed to be loaded to this experiment, then the batch can be loaded to the experiment
         canUseBatchDT <- batchProjectWithRestrictionInfo[ , any(projectAllowedForExperiment), by = Requested.Name]
@@ -643,7 +650,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
               userRoles <- unlist(lapply(recordedByUser$roles, function(role) role$roleEntry$roleName))
               if(configList$client.roles.crossProjectLoaderRole %in% userRoles) {
                 addProjectError <- FALSE
-                warnUser(paste0("This assay data will be associated with project '",currentProj$name,"' but will reference compounds that are associated with project(s): ",paste0("'",unique(rCompoundsDF$name),"'", collapse = ", ")))
+                warnUser(paste0("This assay data will be associated with project '",currentProj$name,"' but will reference compounds that are associated with project(s): ",paste0("'",unique(batchProjectWithRestrictionInfo[Requested.Name %in% rCompounds]$name),"'", collapse = ", ")))
               }
             }
           }
