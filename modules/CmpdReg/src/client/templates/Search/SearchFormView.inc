@@ -47,22 +47,24 @@
 	</div>
 	
 	<div class="StructureMainOpt">
-		<div>
+		<div class="bv_substructureSearchGroup">
 			<input type="radio" class="searchType" name="searchType" value="substructure"  checked="checked"/>
 			<label class="FormLabel2">Substructure</label>
 		</div>
-		<div>
+		<div class="bv_exactSearchGroup">
 			<input type="radio" class="searchType" name="searchType" value="exact" />
 			<label class="FormLabel2">Exact</label>
 		</div>
-		<div>
-			<input type="radio" class="searchType" name="searchType" value="similarity" />
-			<label class="FormLabel2">Similarity</label>
-		</div>
-		<div>
-			<input type="text" class="FormInput percentSimilarity" value="90"/>
-			<label class="FormLabel2">% Similarity</label>
-		</div>
+		<span class="bv_similaritySearchGroup">
+			<div>
+				<input type="radio" class="searchType" name="searchType" value="similarity" />
+				<label class="FormLabel2">Similarity</label>
+			</div>
+			<div>
+				<input type="text" class="FormInput percentSimilarity" value="90"/>
+				<label class="FormLabel2">% Similarity</label>
+			</div>
+		</span>
 	</div>
 
 	<div class="buttons">
