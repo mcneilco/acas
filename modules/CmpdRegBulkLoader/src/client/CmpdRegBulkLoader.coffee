@@ -195,12 +195,12 @@ class DetectSdfPropertiesController extends Backbone.View
 		props = ""
 		sdfPropsList.each (prop) ->
 			if props == ""
-				props = prop.get('name')
+				props = prop.escape('name')
 			else
-				props += newLine + prop.get('name')
+				props += newLine + prop.escape('name')
 		if props == ""
 			props = "No SDF Properties Detected"
-		@$('.bv_detectedSdfPropertiesList').html _.escape(props)
+		@$('.bv_detectedSdfPropertiesList').html props
 
 	disableInputs: ->
 		@$('.bv_readMore').attr 'disabled', 'disabled'
@@ -243,7 +243,7 @@ class AssignedPropertyController extends AbstractFormController
 	render: =>
 		$(@el).empty()
 		$(@el).html @template(@model.attributes)
-		@$('.bv_sdfProperty').html(@model.escape('sdfProperty'))
+		@$('.bv_sdfProperty').html(@model.get('sdfProperty'))
 		@setupDbPropertiesSelect()
 		@$('.bv_defaultVal').val @model.get('defaultVal')
 		if @model.get('dbProperty') is "none"
@@ -543,7 +543,7 @@ class AssignSdfPropertiesController extends Backbone.View
 		unassignedDbProps = ""
 		newLine = "&#13;&#10;"
 		for prop in reqDbProp
-			name = prop.get('name')
+			name = prop.escape('name')
 			unless @assignedPropertiesList.findWhere({dbProperty: name})?
 				if unassignedDbProps == ""
 					unassignedDbProps = name
@@ -555,7 +555,7 @@ class AssignSdfPropertiesController extends Backbone.View
 		if @assignedPropertiesList.findWhere({dbProperty: 'salt equivalents'})?
 			unless (@assignedPropertiesList.findWhere({dbProperty: 'salt id'})? or @assignedPropertiesList.findWhere({dbProperty: 'salt type'})?)
 				unassignedDbProps += newLine + 'salt id/type (required for salt equivalents)'
-		@$('.bv_unassignedProperties').html _.escape(unassignedDbProps)
+		@$('.bv_unassignedProperties').html unassignedDbProps
 		@isValid()
 
 	isValid: =>
