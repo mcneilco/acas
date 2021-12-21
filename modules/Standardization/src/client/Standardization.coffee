@@ -219,6 +219,7 @@ class window.StandardizationDryRunReportSummaryTableController extends Backbone.
 			@$(".bv_standardizationDryRunReportSummaryTable").dataTable
 					bAutoWidth: false
 					bLengthChange: true
+					aLengthMenu: [ [10, 15, 25, 50, 100, -1], [10, 15, 25, 50, 100, "All"] ],
 					iDisplayLength: 20
 					sPaginationType: "full_numbers"
 					fnRowCallback: (row, data, index) =>
