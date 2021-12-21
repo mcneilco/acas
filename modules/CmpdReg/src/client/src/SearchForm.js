@@ -60,7 +60,7 @@ $(function() {
 				this.useKetcher = true;
 			} else if(window.configuration.sketcher == 'maestro') {
 				this.useMaestro = true;
-		}
+			}
 
 		},
 
@@ -112,6 +112,9 @@ $(function() {
 					self.ketcher = self.$('#searchMarvinSketch')[0].contentWindow.ketcher;
 				});
 			} else if (this.useMaestro) {
+				// Maestro deployments don't support similarity search currently so hide the option
+				$('.bv_similaritySearchGroup').hide();
+				
 				this.$('#searchMarvinSketch').attr('src',"/CmpdReg/maestrosketcher/sketcher_app.html");
 				this.$('#searchMarvinSketch').on('load', function () {
 					self.maestro = self.$('#searchMarvinSketch')[0].contentWindow.Module;
