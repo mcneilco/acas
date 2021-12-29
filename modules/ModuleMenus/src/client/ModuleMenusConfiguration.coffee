@@ -32,6 +32,10 @@ window.ModuleMenusConfiguration =
 		mainControllerClassName: "ExampleThingController"
 		autoLaunchName:"example_thing"
 	,
+		isHeader: false, menuName: "Example Thing Browser"
+		mainControllerClassName: "ExampleThingBrowserController"
+		autoLaunchName:"example_thing_browser"
+	,
 		isHeader: true
 		menuName: "Search and Edit"
 		collapsible: false

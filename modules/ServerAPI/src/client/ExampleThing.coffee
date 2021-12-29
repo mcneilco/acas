@@ -523,3 +523,27 @@ class ExampleTableAuditController extends AbstractThingFormController
 		@model.prepareToSave()
 		@model.reformatBeforeSaving()
 		@model.save()
+
+
+class ExampleThingBrowserController extends ACASThingBrowserController
+	controllerClass: ExampleThingController
+	modelClass: ExampleThingParent
+	columnFilters: true
+	configs: [
+			name: "Code Name"
+			key: "codeName"
+		,
+			name: "Name"
+			key: "example thing name"
+		,
+			name: "Scientist"
+			key: "scientist"
+		,
+			name: "Recorded By"
+			key: "recordedBy"
+		,
+			name: "Recorded Date"
+			key: "recordedDate"
+			formatter: UtilityFunctions::convertMSToYMDDate
+	]
+

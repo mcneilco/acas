@@ -208,6 +208,7 @@ class ACASThingBrowserRowSummaryController extends Backbone.View
 class ThingSummaryTableController extends Backbone.View
 	initialize: (options)->
 		@configs = options.configs
+		@columnFilters = options.columnFilters
 
 	selectedRowChanged: (row) =>
 		@trigger "selectedRowUpdated", row
@@ -218,6 +219,13 @@ class ThingSummaryTableController extends Backbone.View
 		for config in @configs
 			@$(".bv_firstRow").append("<th style=\"width: 125px;\">#{config.name}</th>")
 
+		# Add empty tr in thead for filter use
+		if @columnFilters? && @columnFilters
+			for config in @configs
+			 	# Remove space from key name
+				filterClass = "bv_filter_" + config.key.replace(/\s/g, '')
+				@$(".bv_colFilters").append("<th style=\"width: 125px;\" class=\"bv_thingBrowserFilter "+filterClass+"\"></th>")
+		
 		if @collection.models.length is 0
 			@$(".bv_noMatchingThingsFoundMessage").removeClass "hide"
 			# display message indicating no results were found
@@ -230,8 +238,67 @@ class ThingSummaryTableController extends Backbone.View
 				prsc.on "gotClick", @selectedRowChanged
 				@$("tbody").append prsc.render().el
 
-			@$("table").dataTable oLanguage:
+			$.fn.dataTableExt.oApi.fnGetColumnData = (oSettings, iColumn, bUnique, bFiltered, bIgnoreEmpty) ->
+				# check that we have a column id
+				if typeof iColumn == 'undefined'
+					return new Array
+				# by default we only want unique data
+				if typeof bUnique == 'undefined'
+					bUnique = true
+				# by default we do want to only look at filtered data
+				if typeof bFiltered == 'undefined'
+					bFiltered = true
+				# by default we do not want to include empty values
+				if typeof bIgnoreEmpty == 'undefined'
+					bIgnoreEmpty = true
+				# list of rows which we're going to loop through
+				aiRows = undefined
+				# use only filtered rows
+				if bFiltered == true
+					aiRows = oSettings.aiDisplay
+				else
+					aiRows = oSettings.aiDisplayMaster
+				# all row numbers
+				# set up data array   
+				asResultData = new Array
+				i = 0
+				c = aiRows.length
+				while i < c
+					iRow = aiRows[i]
+					aData = @fnGetData(iRow)
+					sValue = aData[iColumn]
+					# ignore empty values?
+					if bIgnoreEmpty == true and sValue.length == 0
+						i++
+						continue
+					else if bUnique == true and jQuery.inArray(sValue, asResultData) > -1
+						i++
+						continue
+					else
+						asResultData.push sValue
+					i++
+				asResultData
+			
+			fnCreateSelect = (aData) ->
+				r = '<select><option value=""></option>'
+				i = undefined
+				iLen = aData.length
+				i = 0
+				while i < iLen
+					r += '<option value="' + aData[i] + '">' + aData[i] + '</option>'
+					i++
+				r + '</select>'
+				
+			oTable = @$("table").dataTable oLanguage:
 				sSearch: "Filter results: " #rename summary table's search bar
+
+			if @columnFilters? && @columnFilters
+				this.$('thead tr.bv_colFilters th').each (i) ->
+					@innerHTML = fnCreateSelect(oTable.fnGetColumnData(i))
+					$('select', this).change ->
+						oTable.fnFilter $(this).val(), i
+						return
+					return
 
 		@
 
@@ -246,6 +313,7 @@ class ACASThingBrowserController extends Backbone.View
 	initialize: (options)->
 		thingModel = new @modelClass
 		@configs = @configs
+		@columnFilters = @columnFilters
 		templateVariables = 
 			thingName: thingModel.getThingKindDisplayName()
 		template = _.template($("#ThingBrowserView").html())
@@ -278,6 +346,7 @@ class ACASThingBrowserController extends Backbone.View
 			@thingSummaryTable = new ThingSummaryTableController
 				collection: new thingCollection things
 				configs: @configs
+				columnFilters: @columnFilters
 
 			@thingSummaryTable.on "selectedRowUpdated", @selectedThingUpdated
 			$(".bv_thingTableController").html @thingSummaryTable.render().el
