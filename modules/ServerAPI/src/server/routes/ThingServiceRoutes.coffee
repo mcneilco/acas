@@ -719,6 +719,11 @@ exports.batchesByParentCodeName = (req, resp) ->
 			else if req.query.stub
 				stub = "with=stub"
 				baseurl += "?#{stub}"
+			else if req.query.codetable
+				codeTable = "with=codetable"
+				baseurl += "?#{codeTable}"
+				if req.query.labelType?
+					baseurl += "&labelType=#{req.query.labelType}"
 			serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 exports.validateName = (req, resp) ->
