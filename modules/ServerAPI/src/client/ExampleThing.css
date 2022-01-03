@@ -1,0 +1,12 @@
+.bv_thingTableController .bv_thingBrowserFilter select {
+    width: 100px;
+}
+.bv_thingTableController .bv_filter_codeName select {
+    width: 300px !important;
+}
+.bv_thingTableController .bv_filter_recordedBy select {
+    width: 80px !important;
+}
+.bv_thingTableController .bv_filter_recordedDate select {
+    width: 80px !important;
+}
