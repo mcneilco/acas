@@ -2,10 +2,10 @@
   margin-bottom: 30px;
 }
 
-.standardizerControlsWrapper {
+.bv_standardizerControlsWrapper {
   margin-top: 30px;
   margin-bottom: 30px;
-  margin-left: 0px;
+  margin-left: 0px !important;
 }
 
 .standardizerControlsWrapper .bv_refresh, .standardizerControlsWrapper .bv_executeStandardization {
@@ -14,6 +14,8 @@
 
 .bv_standardizationHistory select, .bv_standardizationDryRunReport select {
   height: 30px;
+  width: auto;
+  font-size: 90%;
 }
 
 .bv_standardizationDryRunReportStats {

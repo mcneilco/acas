@@ -108,7 +108,7 @@ class window.StandardizationHistorySummaryTableController extends Backbone.View
 					model: run
 				@$("tbody").append shrsc.render().el
 
-			@$(".bv_standardizationHistorySummaryTable").dataTable
+			oTable = @$(".bv_standardizationHistorySummaryTable").dataTable
 				iDisplayLength: 3
 				aaSorting: [[ 0, "desc" ]]
 				oLanguage:
@@ -216,7 +216,58 @@ class window.StandardizationDryRunReportSummaryTableController extends Backbone.
 					model: result
 				@$("tbody").append sdrrrsc.render().el
 
-			@$(".bv_standardizationDryRunReportSummaryTable").dataTable
+			$.fn.dataTableExt.oApi.fnGetColumnData = (oSettings, iColumn, bUnique, bFiltered, bIgnoreEmpty) ->
+				# check that we have a column id
+				if typeof iColumn == 'undefined'
+					return new Array
+				# by default we only want unique data
+				if typeof bUnique == 'undefined'
+					bUnique = true
+				# by default we do want to only look at filtered data
+				if typeof bFiltered == 'undefined'
+					bFiltered = true
+				# by default we do not want to include empty values
+				if typeof bIgnoreEmpty == 'undefined'
+					bIgnoreEmpty = true
+				# list of rows which we're going to loop through
+				aiRows = undefined
+				# use only filtered rows
+				if bFiltered == true
+					aiRows = oSettings.aiDisplay
+				else
+					aiRows = oSettings.aiDisplayMaster
+				# all row numbers
+				# set up data array   
+				asResultData = new Array
+				i = 0
+				c = aiRows.length
+				while i < c
+					iRow = aiRows[i]
+					aData = @fnGetData(iRow)
+					sValue = aData[iColumn]
+					# ignore empty values?
+					if bIgnoreEmpty == true and sValue.length == 0
+						i++
+						continue
+					else if bUnique == true and jQuery.inArray(sValue, asResultData) > -1
+						i++
+						continue
+					else
+						asResultData.push sValue
+					i++
+				asResultData.sort()
+
+			fnCreateSelect = (aData) ->
+				r = '<select><option value=""></option>'
+				i = undefined
+				iLen = aData.length
+				i = 0
+				while i < iLen
+					r += '<option value="' + aData[i] + '">' + aData[i] + '</option>'
+					i++
+				r + '</select>'
+
+			oTable = @$(".bv_standardizationDryRunReportSummaryTable").dataTable
 					bAutoWidth: false
 					bLengthChange: true
 					aLengthMenu: [ [10, 15, 25, 50, 100, -1], [10, 15, 25, 50, 100, "All"] ],
@@ -237,7 +288,17 @@ class window.StandardizationDryRunReportSummaryTableController extends Backbone.
 						{ "sWidth": "20%", "aTargets": [2] },
 						{ "sWidth": "20%", "aTargets": [3] }
 					]
-
+			
+			filters = ['Corporate ID', 'Structure Change', 'Display Change', 'New Duplicates', 'Existing Duplicates', 'Delta Mol. Weight', 'New Mol. Weight', 'Old Mol. Weight', 'As Drawn Display Change']
+			@.$('thead tr.bv_colFilters th').each (i) ->
+				if @innerHTML in filters
+					@innerHTML = fnCreateSelect(oTable.fnGetColumnData(i))
+					$('select', this).change ->
+						oTable.fnFilter $(this).val(), i
+						return
+					return
+				else
+					@innerHTML = ""
 		@
 
 class window.StandardizationController extends Backbone.View
