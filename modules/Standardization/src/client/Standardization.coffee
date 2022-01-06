@@ -282,12 +282,6 @@ class window.StandardizationDryRunReportSummaryTableController extends Backbone.
 						data[3] = "<img src='/cmpdreg/structureimage/originallydrawnas/"+data[0]+"?hSize=300&wSize=300'>"
 					oLanguage:
 						sSearch: "Filter results: " #rename summary table's search bar
-					"aoColumnDefs": [
-						{ "sWidth": "10%", "aTargets": [0] },
-						{ "sWidth": "20%", "aTargets": [1] },
-						{ "sWidth": "20%", "aTargets": [2] },
-						{ "sWidth": "20%", "aTargets": [3] }
-					]
 			
 			filters = ['Corporate ID', 'Structure Change', 'Display Change', 'New Duplicates', 'Existing Duplicates', 'Delta Mol. Weight', 'New Mol. Weight', 'Old Mol. Weight', 'As Drawn Display Change']
 			@.$('thead tr.bv_colFilters th').each (i) ->
