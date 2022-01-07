@@ -36,7 +36,7 @@ renderCurve <- function(getParams, postData) {
                 "batch" = "batch_code"
     )
     uniqueKeys <- setkeyv(unique(fitData[ , key, with = FALSE]), key)
-    colorCategories <- suppressWarnings(uniqueKeys[, color:=plotColors][ , name:=get(key)])
+    colorCategories <- uniqueKeys[, color:=rep(plotColors, length.out = .N)][ , name:=get(key)]
     fitData <- merge(fitData, colorCategories, by = key)
   }
   
