@@ -472,6 +472,8 @@ class window.StandardizationController extends Backbone.View
 		#Execute Standardization Disabled when most recent history dryRunStatus != "complete" or standardizationStatus == "running" or standardization == "complete"
 		if dryRunStatus != 'complete' or standardizationStatus is 'running' or standardizationStatus is 'complete'
 			@$('.bv_executeStandardization').attr 'disabled', 'disabled'
+		if mostRecentHistory.dryRunStandardizationChangesCount < 1
+			@$('.bv_executeStandardization').attr 'disabled', 'disabled'
 
 	setupLastDryRunReportSummaryTable: (mostRecentHistory)->
 		maxDisplayCount = window.conf.cmpdreg.serverSettings.maxStandardizationDisplay
