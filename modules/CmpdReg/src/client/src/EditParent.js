@@ -133,6 +133,12 @@ $(function () {
 			        corpName: jQuery.trim(self.$('.corpName').val())
 		        });
 
+
+                if ( self.isValid() ) {
+                    self.trigger('editParentSearchNext', editParentSearch);
+                    self.hide();
+                }
+
 	        } else if (this.useMaestro) {
 				mol = this.maestro.getSketcherMolBlock();
 				if (mol.indexOf("M  V30 COUNTS 0 0 0 0 0") > -1) mol = null;
