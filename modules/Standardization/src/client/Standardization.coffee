@@ -33,6 +33,55 @@ class window.StandardizationCurrentSettingsController extends Backbone.View
 			bPaginate: false
 			bSort: false
 
+class window.DownloadDryResultsController extends Backbone.View
+	template: _.template($("#DownloadDryRunResultsView").html())
+
+
+	events: ->
+		"click .bv_download": "handleDownloadClicked"
+		
+	initialize: ->
+		$(@el).empty()
+		$(@el).html @template()
+		if @options.mostRecentHistory.standardizationStatus == null && @options.mostRecentHistory.dryRunStatus == "complete" && @options.mostRecentHistory.dryRunStandardizationChangesCount > 0 && @options.mostRecentHistory.dryRunStandardizationChangesCount? > 0
+			@$('.bv_download').prop('disabled', false);
+		else
+			@$('.bv_download').prop("disabled",true);
+			
+
+	getFileNameFromHeader: (header) ->
+		return header.split(';')[1].split('=')[1]
+
+	handleDownloadClicked: (event) =>
+		@$('.bv_running').show()
+		@$('.bv_download').addClass("disabled")
+		url = "/cmpdReg/standardizationDryRunFiles"
+		fileName = "download.sdf"
+		fetch(url)
+		.then((resp) =>
+			fileName = @getFileNameFromHeader(resp.headers.get('Content-Disposition'));
+			resp.blob()
+		)
+		.then((blob) =>
+			url = window.URL.createObjectURL(blob);
+			a = document.createElement('a');
+			a.style.display = 'none';
+			a.href = url;
+			a.download = fileName;
+			document.body.appendChild(a);
+			a.click();
+			window.URL.revokeObjectURL(url);
+			@$('.bv_running').hide()
+			@$('.bv_download').removeClass("disabled")
+		)
+		.catch(() => 
+			@$('.bv_running').hide()
+			@$('.bv_download').removeClass("disabled")
+			alert('Failed to fetch Dry Run results.sdf')
+		);
+
+
+
 class window.StandardizationHistoryRowSummaryController extends Backbone.View
 	tagName: 'tr'
 	className: 'dataTableRow'
@@ -365,6 +414,7 @@ class window.StandardizationController extends Backbone.View
 					@$('.bv_executeStandardizationError').show()
 				@$('.bv_standardizationDryRunReportStats').hide()
 				@$('.bv_standardizationDryRunReport').hide()
+				@$('.bv_downloadStandardizationDryRunFiles').hide()
 				@$('.bv_standardizerControlsWrapper').hide()
 
 	setupCurrentSettingsController: ->
@@ -386,7 +436,7 @@ class window.StandardizationController extends Backbone.View
 				unless runningDryRunOrStandardization
 					@setupStandardizationHistorySummaryTable history
 					@setupExecuteButtons mostRecentHistoryEntry
-					@setupLastDryRunReportSummaryTable()
+					@setupLastDryRunReportSummaryTable(mostRecentHistoryEntry)
 			error: (err) =>
 				@$('.bv_getStandardizationHistoryError').show()
 
@@ -423,27 +473,40 @@ class window.StandardizationController extends Backbone.View
 		if dryRunStatus != 'complete' or standardizationStatus is 'running' or standardizationStatus is 'complete'
 			@$('.bv_executeStandardization').attr 'disabled', 'disabled'
 
-	setupLastDryRunReportSummaryTable: ->
-		$.ajax
-			type: 'GET'
-			url: "/cmpdReg/standardizationDryRun?reportOnly=true"
-			success: (dryRunReport) =>
-				if @standardizationDryRunReportSummaryTableController?
-					@standardizationDryRunReportSummaryTableController.undelegateEvents()
-				if dryRunReport.length > 0
-					@setupLastDryRunReportStatsSummaryTable()
-					@$(".bv_standardizationDryRunReport").show()
-					@$(".bv_standardizationDryRunReportStats").show()
-					@standardizationDryRunReportSummaryTableController = new StandardizationDryRunReportSummaryTableController
-						collection: new Backbone.Collection dryRunReport
-					@$(".bv_standardizationDryRunReport").html @standardizationDryRunReportSummaryTableController.render().el
-				else
-					@$(".bv_standardizationDryRunReport").hide()
-					@$(".bv_standardizationDryRunReportStats").hide()
-			error: (err) =>
-				@$('.bv_getStandardizationDryRunReportError').show()
-				@$('.bv_standardizerControlsWrapper').hide()
-
+	setupLastDryRunReportSummaryTable: (mostRecentHistory)->
+		maxDisplayCount = window.conf.cmpdreg.serverSettings.maxStandardizationDisplay
+		@downloadDryRunResultsController = new DownloadDryResultsController
+			mostRecentHistory: mostRecentHistory
+		@$(".bv_downloadStandardizationDryRunFiles").html @downloadDryRunResultsController.render().el
+		@$('.bv_exceededMaxDisplayLimit').hide()
+		# Only show dry run table if dry run execution
+		dryRunStatus = mostRecentHistory.dryRunStatus
+		standardizationStatus = mostRecentHistory.standardizationStatus
+		dryRunStandardizationChangesCount = mostRecentHistory.dryRunStandardizationChangesCount
+		if dryRunStatus == "complete" and standardizationStatus != "complete"
+			if dryRunStandardizationChangesCount < maxDisplayCount
+				$.ajax
+					type: 'GET'
+					url: "/cmpdReg/standardizationDryRun?reportOnly=true"
+					success: (dryRunReport) =>
+						if @standardizationDryRunReportSummaryTableController?
+							@standardizationDryRunReportSummaryTableController.undelegateEvents()
+						if dryRunReport.length > 0
+							@setupLastDryRunReportStatsSummaryTable()
+							@$(".bv_standardizationDryRunReport").show()
+							@$(".bv_standardizationDryRunReportStats").show()
+							@standardizationDryRunReportSummaryTableController = new StandardizationDryRunReportSummaryTableController
+								collection: new Backbone.Collection dryRunReport
+							@$(".bv_standardizationDryRunReport").html @standardizationDryRunReportSummaryTableController.render().el
+						else
+							@$(".bv_standardizationDryRunReport").hide()
+							@$(".bv_standardizationDryRunReportStats").hide()
+					error: (err) =>
+						@$('.bv_getStandardizationDryRunReportError').show()
+						@$('.bv_standardizerControlsWrapper').hide()
+			else
+				@$('.bv_exceededMaxDisplayLimit').show()
+		
 	setupLastDryRunReportStatsSummaryTable: ->
 		if @standardizationDryRunReportStatsController?
 			@standardizationDryRunReportStatsController.undelegateEvents()

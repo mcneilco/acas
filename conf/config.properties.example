@@ -726,3 +726,4 @@ client.cmpdreg.marvin.sketchBondLength=${env.CLIENT_CMPDREG_MARVIN_SKETCHBONDLEN
 client.cmpdreg.marvin.delayShowStep2Next=${env.CLIENT_CMPDREG_MARVIN_DELAYSHOWSTEP2NEXT}
 client.cmpdreg.marvin.exportFormat=${env.CLIENT_CMPDREG_MARVIN_EXPORTFORMAT}
 client.cmpdreg.serverSettings.liveDesign.preprocessorSettings=
+client.cmpdreg.serverSettings.maxStandardizationDisplay=${env.CLIENT_CMPDREG_SERVERSETTINGS_MAXSTANDARDIZATIONDISPLAY}
