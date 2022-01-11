@@ -215,9 +215,9 @@
 
 <script type="text/template" id="StandardizationDryRunReportRowSummaryView" xmlns="http://www.w3.org/1999/html" >
     <td class='bv_corpName'><%-corpName%></td>
+    <td class='bv_asDrawnStructure' style="height:300px;"></td>
     <td class='bv_parentStructure' style="height:300px;"></td>
     <td class='bv_standardizedStructure' style="height:300px;"></td>
-    <td class='bv_asDrawnStructure' style="height:300px;"></td>
     <td class='bv_changedStructure' style="width:30px;"><%-changedStructure%></td>
     <td class='bv_displayChange' style="width:30px;"><%-displayChange%></td>
     <td class='bv_newDuplicates' style="width:30px;"><%-newDuplicates%></td>
@@ -233,9 +233,9 @@
         <thead style="">
             <tr class="bv_colFilters">
                 <th style="width: 10%;">Corporate ID</th>
-                <th style="width: 20%;" >Parent Structure</th>
-                <th style="width: 20%;">Standardized Structure</th>
-                <th style="width: 20%;">As Drawn Structure</th>
+                <th style="width: 20%;">Original Structure</th>
+                <th style="width: 20%;" >Previous Standardized Structure</th>
+                <th style="width: 20%;">New Standardized Structure</th>
                 <th>Structure Change</th>
                 <th>Display Change</th>
                 <th>New Duplicates</th>
@@ -247,9 +247,9 @@
             </tr>
             <tr>
                 <th>Corporate ID</th>
-                <th>Parent Structure</th>
-                <th>Standardized Structure</th>
-                <th>As Drawn Structure</th>
+                <th>Original Structure</th>
+                <th>Previous Standardized Structure</th>
+                <th>New Standardized Structure</th>
                 <th>Structure Change</th>
                 <th>Display Change</th>
                 <th>New Duplicates</th>
