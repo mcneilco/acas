@@ -244,7 +244,7 @@ class window.StandardizationDryRunReportRowSummaryController extends Backbone.Vi
 			displayChange: @model.get('displayChange')
 			newDuplicates: @model.get('newDuplicates')
 			existingDuplicates: @model.get('existingDuplicates')
-			deltaMolWeight: @model.get('newMolWeight')- @model.get('oldMolWeight')
+			deltaMolWeight: @roundToTwo(@model.get('newMolWeight')- @model.get('oldMolWeight'))
 			newMolWeight: @model.get('newMolWeight')
 			oldMolWeight: @model.get('oldMolWeight')
 			asDrawnDisplayChange: @model.get('asDrawnDisplayChange')
@@ -252,6 +252,9 @@ class window.StandardizationDryRunReportRowSummaryController extends Backbone.Vi
 		$(@el).html(@template(toDisplay))
 
 		@
+
+	roundToTwo: (num) ->
+		+(Math.round(num + 'e+2') + 'e-2')
 
 class window.StandardizationDryRunReportSummaryTableController extends Backbone.View
 
@@ -487,10 +490,13 @@ class window.StandardizationController extends Backbone.View
 		dryRunStandardizationChangesCount = mostRecentHistory.dryRunStandardizationChangesCount
 		if dryRunStatus == "complete" and standardizationStatus != "complete"
 			if dryRunStandardizationChangesCount < maxDisplayCount
+				@$('.bv_loadingStandardizationDryRunReportText').text("Please wait, loading #{dryRunStandardizationChangesCount} standardization changes")
+				@$('.bv_loadingStandardizationDryRunReport').show()
 				$.ajax
 					type: 'GET'
 					url: "/cmpdReg/standardizationDryRun?reportOnly=true"
 					success: (dryRunReport) =>
+						@$('.bv_loadingStandardizationDryRunReport').hide()
 						if @standardizationDryRunReportSummaryTableController?
 							@standardizationDryRunReportSummaryTableController.undelegateEvents()
 						if dryRunReport.length > 0
@@ -504,6 +510,7 @@ class window.StandardizationController extends Backbone.View
 							@$(".bv_standardizationDryRunReport").hide()
 							@$(".bv_standardizationDryRunReportStats").hide()
 					error: (err) =>
+						@$('.bv_loadingStandardizationDryRunReport').hide()
 						@$('.bv_getStandardizationDryRunReportError').show()
 						@$('.bv_standardizerControlsWrapper').hide()
 			else
