@@ -194,8 +194,8 @@ $(function() {
 				});
 			} else if (this.useMaestro) {
 				this.$('#newSaltMarvinSketch').attr('src',"/CmpdReg/maestrosketcher/wasm_shell.html");
-				this.$('#newSaltMarvinSketch').on('load', function () {
-					self.maestro = self.$('#newSaltMarvinSketch')[0].contentWindow.Module;
+                MaestroJSUtil.getSketcher('#newSaltMarvinSketch').then(function (maestro) {
+					self.maestro = maestro;
 					self.sketcherLoaded = true;
 				});
 			} else {

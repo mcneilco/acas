@@ -77,8 +77,10 @@ $(function() {
 				});
 			} else if (this.useMaestro) {
 				this.$('#registrationSearchMarvinSketch').attr('src',"/CmpdReg/maestrosketcher/wasm_shell.html");
-				this.$('#registrationSearchMarvinSketch').on('load', function () {
-					self.maestro = self.$('#registrationSearchMarvinSketch')[0].contentWindow.Module;
+                MaestroJSUtil.getSketcher('#registrationSearchMarvinSketch').then(function (maestro) {
+					self.maestro = maestro;
+					self.show();
+					self.sketcherLoaded = true;
 				});
 			} else {
 				alert("No registration sketcher configured");

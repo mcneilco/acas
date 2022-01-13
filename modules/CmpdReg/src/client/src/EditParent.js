@@ -74,8 +74,13 @@ $(function () {
 		        });
 			} else if (this.useMaestro) {
 				this.$('#editParentMarvinSketch').attr('src',"/CmpdReg/maestrosketcher/wasm_shell.html");
-				this.$('#editParentMarvinSketch').on('load', function () {
-					self.maestro = self.$('#editParentMarvinSketch')[0].contentWindow.Module;
+                MaestroJSUtil.getSketcher('#editParentMarvinSketch').then(function (maestro) {
+					self.maestro = maestro;
+                    if(self.options.parentModel.get('molStructure') != null && self.options.parentModel.get('molStructure') != "") {
+						self.maestro.setSketcherMolBlock(self.options.parentModel.get('molStructure'));
+                    }
+			        self.show();
+			        self.sketcherLoaded = true;
 				});
 			} else {
 		        alert("No edit parent sketcher configured");

@@ -116,9 +116,11 @@ $(function() {
 				$('.bv_similaritySearchGroup').hide();
 				
 				this.$('#searchMarvinSketch').attr('src',"/CmpdReg/maestrosketcher/wasm_shell.html");
-				this.$('#searchMarvinSketch').on('load', function () {
-					self.maestro = self.$('#searchMarvinSketch')[0].contentWindow.Module;
-				});
+				MaestroJSUtil.getSketcher('#searchMarvinSketch').then(function (maestro) {
+					self.maestro = maestro;
+					self.show();
+					self.sketcherLoaded = true;
+				})
 			} else {
 				alert("No search sketcher configured");
 			}
