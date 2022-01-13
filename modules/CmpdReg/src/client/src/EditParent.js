@@ -73,7 +73,7 @@ $(function () {
 					self.ketcher.setMolecule(self.options.parentModel.get('molStructure'));
 		        });
 			} else if (this.useMaestro) {
-				this.$('#editParentMarvinSketch').attr('src',"/CmpdReg/maestrosketcher/sketcher_app.html");
+				this.$('#editParentMarvinSketch').attr('src',"/CmpdReg/maestrosketcher/wasm_shell.html");
 				this.$('#editParentMarvinSketch').on('load', function () {
 					self.maestro = self.$('#editParentMarvinSketch')[0].contentWindow.Module;
 				});

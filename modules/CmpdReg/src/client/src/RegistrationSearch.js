@@ -76,7 +76,7 @@ $(function() {
 					self.ketcher = self.$('#registrationSearchMarvinSketch')[0].contentWindow.ketcher;
 				});
 			} else if (this.useMaestro) {
-				this.$('#registrationSearchMarvinSketch').attr('src',"/CmpdReg/maestrosketcher/sketcher_app.html");
+				this.$('#registrationSearchMarvinSketch').attr('src',"/CmpdReg/maestrosketcher/wasm_shell.html");
 				this.$('#registrationSearchMarvinSketch').on('load', function () {
 					self.maestro = self.$('#registrationSearchMarvinSketch')[0].contentWindow.Module;
 				});

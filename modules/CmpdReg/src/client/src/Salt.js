@@ -193,7 +193,7 @@ $(function() {
 					self.sketcherLoaded = true;
 				});
 			} else if (this.useMaestro) {
-				this.$('#newSaltMarvinSketch').attr('src',"/CmpdReg/maestrosketcher/sketcher_app.html");
+				this.$('#newSaltMarvinSketch').attr('src',"/CmpdReg/maestrosketcher/wasm_shell.html");
 				this.$('#newSaltMarvinSketch').on('load', function () {
 					self.maestro = self.$('#newSaltMarvinSketch')[0].contentWindow.Module;
 					self.sketcherLoaded = true;

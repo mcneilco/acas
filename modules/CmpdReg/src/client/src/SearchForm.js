@@ -115,7 +115,7 @@ $(function() {
 				// Maestro deployments don't support similarity search currently so hide the option
 				$('.bv_similaritySearchGroup').hide();
 				
-				this.$('#searchMarvinSketch').attr('src',"/CmpdReg/maestrosketcher/sketcher_app.html");
+				this.$('#searchMarvinSketch').attr('src',"/CmpdReg/maestrosketcher/wasm_shell.html");
 				this.$('#searchMarvinSketch').on('load', function () {
 					self.maestro = self.$('#searchMarvinSketch')[0].contentWindow.Module;
 				});
