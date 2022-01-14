@@ -258,10 +258,43 @@ class window.StandardizationDryRunReportRowSummaryController extends Backbone.Vi
 
 class window.StandardizationDryRunReportSummaryTableController extends Backbone.View
 
+	events: ->
+		"click .selectBox": "handleDropDownClicked"
+		"change .bv_dryRunReportColumnCheckBoxes ": "handleHideShowCheckboxChanged"
+
+	initialize: ->
+		@expanded = false
+
+	updateColumnVisibility: =>
+		checkboxes = @$(".bv_dryRunReportColumnCheckBoxes").find("input");
+		checkboxes.each (i, checkbox) =>
+			@setColumnVisibility(checkbox.id, checkbox.checked)
+
+	handleDropDownClicked: ->
+		checkboxes = @$(".bv_dryRunReportColumnCheckBoxes")
+		if !@expanded
+			checkboxes.css("display","inline-block");
+			@expanded = true
+		else
+			checkboxes.css("display","none");
+
+			@expanded = false
+		return
+
+	handleHideShowCheckboxChanged: (el) ->
+		iCol = el.target.id
+		checked = $(el.target).is(':checked')
+		visible = false
+		if checked? && checked
+			visible = true
+		@setColumnVisibility(iCol, visible)
+	
+	setColumnVisibility: (iCol, visible) ->
+		@oTable.fnSetColumnVis iCol, visible
+
 	render: =>
 		@template = _.template($("#StandardizationDryRunReportSummaryTableView").html())
 		$(@el).html @template
-		console.dir @collection
 		if @collection.models.length > 0
 			@collection.each (result) =>
 				sdrrrsc = new StandardizationDryRunReportRowSummaryController
@@ -334,7 +367,7 @@ class window.StandardizationDryRunReportSummaryTableController extends Backbone.
 						data[3] = "<img src='/cmpdreg/structureimage/originallydrawnas/"+data[0]+"?hSize=300&wSize=300'>"
 					oLanguage:
 						sSearch: "Filter results: " #rename summary table's search bar
-			
+
 			filters = ['Corporate ID', 'Structure Change', 'Display Change', 'New Duplicates', 'Existing Duplicates', 'Delta Mol. Weight', 'New Mol. Weight', 'Old Mol. Weight', 'As Drawn Display Change']
 			@.$('thead tr.bv_colFilters th').each (i) ->
 				if @innerHTML in filters
@@ -345,6 +378,9 @@ class window.StandardizationDryRunReportSummaryTableController extends Backbone.
 					return
 				else
 					@innerHTML = ""
+
+			@oTable = oTable
+			@updateColumnVisibility()
 		@
 
 class window.StandardizationController extends Backbone.View
