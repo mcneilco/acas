@@ -235,6 +235,30 @@
 </script>
 
 <script type="text/template" id="StandardizationDryRunReportSummaryTableView" xmlns="http://www.w3.org/1999/html">
+    <form>
+        <div class="multiselect pull-right">
+            <div class="selectBox">
+            <select>
+                <option>Hide/Show columns</option>
+            </select>
+            <div class="overSelect"></div>
+            </div>
+            <div class="bv_dryRunReportColumnCheckBoxes">
+                <label for="0"><input type="checkbox" id="0" checked/>Corporate ID</label>
+                <label for="1"><input type="checkbox" id="1" checked/>Original Structure</label>
+                <label for="2"><input type="checkbox" id="2" />Previous Standardized Structure</label>
+                <label for="3"><input type="checkbox" id="3" checked/>New Standardized Structure</label>
+                <label for="4"><input type="checkbox" id="4" checked/>Structure Change</label>
+                <label for="5"><input type="checkbox" id="5" checked/>Display Change</label>
+                <label for="6"><input type="checkbox" id="6" checked/>New Duplicates</label>
+                <label for="7"><input type="checkbox" id="7" checked/>Existing Duplicates</label>
+                <label for="8"><input type="checkbox" id="8" checked/>Delta Mol. Weight</label>
+                <label for="9"><input type="checkbox" id="9" checked/>New Mol. Weight</label>
+                <label for="10"><input type="checkbox" id="10" checked/>Old Mol. Weight</label>
+                <label for="11"><input type="checkbox" id="11" checked/>As Drawn Display Change</label>
+            </div>
+        </div>
+    </form>
     <table class="table table-bordered table-striped table-hover bv_standardizationDryRunReportSummaryTable" style="margin: 0px; width: 100%; font-size:70%;">
         <thead style="">
             <tr class="bv_colFilters">
