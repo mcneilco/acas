@@ -404,8 +404,8 @@ class window.StandardizationDryRunReportSummaryController extends Backbone.View
 		.then((count) =>
 			@$('.bv_searchRunning').show()
 			@$('.bv_search').addClass("disabled")
-			# if dryRunStandardizationChangesCount < @maxDisplayCount
-			@$('.bv_loadingStandardizationDryRunReportText').text("Please wait, fetching #{count} results")
+			maxResults = @standardizationDryRunReportSearchController.model.get("maxResults")
+			@$('.bv_loadingStandardizationDryRunReportText').text("Please wait, fetching #{Math.min(count, if maxResults == null then Infinity else maxResults)} results")
 			@$('.bv_loadingStandardizationDryRunReport').show()
 			requestData = @standardizationDryRunReportSearchController.model.toJSON()
 			@standardizationDryRunReportSearchController.getDryRunSearch(false)
