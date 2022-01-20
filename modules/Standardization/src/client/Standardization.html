@@ -14,20 +14,7 @@
 
 
     <div class="bv_standardizationDryRunReportStats"></div>
-    <div class="bv_downloadStandardizationDryRunFiles" style="maring-top:20px;"></div>
-    <div class="bv_loadingStandardizationDryRunReport alert hide" style="margin-top:20px;">
-        <span class="bv_loadingStandardizationDryRunReportText">
-        Please wait, loading dry run report.
-        </span>
-         <i class="fa fa-spinner fa-pulse fa-fw"></i>
-     </div>
     <div class="bv_standardizationDryRunReport"></div>
-    <p class="bv_exceededMaxDisplayLimit alert hide">
-        The number of changes exceeded the max display limit. Please download the dry run results sdf for review.
-    </p>
-    <div class="alert bv_getStandardizationDryRunReportError">
-        There was an error getting the results of the latest standardization dry run. Please contact an administrator.
-    </div>
     <div class="alert bv_executeDryRunError hide">
         There was an error executing the dry run. Please contact an administrator.
     </div>
@@ -184,7 +171,7 @@
 </script>
 
 <script type="text/template" id="StandardizationDryRunReportStatsView" xmlns="http://www.w3.org/1999/html">
-    <h4>Latest Standardization Dry Run Results
+    <h4>Latest Standardization Dry Run Results Summary
         <a class="bv_dryRunResultsInfo">
             <i class="icon-question-sign"></i>
         </a>
@@ -232,6 +219,186 @@
     <td class='bv_newMolWeight' style="width:30px;"><%-newMolWeight%></td>
     <td class='bv_oldMolWeight' style="width:30px;"><%-oldMolWeight%></td>
     <td class='bv_asDrawnDisplayChange' style="width:30px;"><%-asDrawnDisplayChange%></td>
+</script>
+
+<script type="text/template" id="StandardizationDryRunReportSearchView" xmlns="http://www.w3.org/1999/html">
+    <form class = "form-horizontal">
+        <fieldset>
+            <legend>Dry Run Report</legend>
+            <div class="control-group bv_group_changedStructure">
+                <label class="control-label">Structure Change</label>
+                <div class="controls">
+                    <label class="radio inline">
+                        <input type="radio" name="changedStructure" value="true">
+                            True
+                    </label>
+                    <label class="radio inline">
+                        <input type="radio" name="changedStructure" value="false">
+                            False
+                    </label>
+                    <label class="radio inline">
+                        <input type="radio" name="changedStructure" value="blank" checked>
+                            No filter
+                    </label>
+                </div>
+            </div>
+            <div class="control-group bv_group_asDrawnDisplayChange">
+                <label class="control-label">As Drawn Display Change</label>
+                <div class="controls">
+                    <label class="radio inline">
+                        <input type="radio" name="asDrawnDisplayChange" value="true">
+                            True
+                    </label>
+                    <label class="radio inline">
+                        <input type="radio" name="asDrawnDisplayChange" value="false">
+                            False
+                    </label>
+                    <label class="radio inline">
+                        <input type="radio" name="asDrawnDisplayChange" value="blank" checked>
+                            No filter
+                    </label>
+                </div>
+            </div>
+            <div class="control-group bv_group_displayChange">
+                <label class="control-label">Display Change</label>
+                <div class="controls">
+                    <label class="radio inline">
+                        <input type="radio" name="displayChange" value="true">
+                            True
+                    </label>
+                    <label class="radio inline">
+                        <input type="radio" name="displayChange" value="false">
+                            False
+                    </label>
+                    <label class="radio inline">
+                        <input type="radio" name="displayChange" value="blank" checked>
+                            No filter
+                    </label>
+                </div>
+            </div>
+            <div class="control-group bv_group_hasNewDuplicates">
+                <label class="control-label">Has New Duplicates</label>
+                <div class="controls">
+                    <label class="radio inline">
+                        <input type="radio" name="hasNewDuplicates" value="true">
+                            True
+                    </label>
+                    <label class="radio inline">
+                        <input type="radio" name="hasNewDuplicates" value="false">
+                            False
+                    </label>
+                    <label class="radio inline">
+                        <input type="radio" name="hasNewDuplicates" value="blank" checked>
+                            No filter
+                    </label>
+                </div>
+            </div>
+            <div class="control-group bv_group_hasExistingDuplicates">
+                <label class="control-label">Has Existing Duplicates</label>
+                <div class="controls">
+                    <label class="radio inline">
+                        <input type="radio" name="hasExistingDuplicates" value="true">
+                            True
+                    </label>
+                    <label class="radio inline">
+                        <input type="radio" name="hasExistingDuplicates" value="false">
+                            False
+                    </label>
+                    <label class="radio inline">
+                        <input type="radio" name="hasExistingDuplicates" value="blank" checked>
+                            No filter
+                    </label>
+                </div>
+            </div>
+            <div class="control-group bv_group_newMolWeight">
+                <label class="control-label">New Mol Weight</label>
+                <div class="controls">
+                    <div class="input-prepend newMolWeight">
+                        <!-- <span class="add-on"></span> -->
+                        <select class="add-on" style="height:30px;">
+                            <option>></option>
+                            <option><</option>
+                            <option>=</option>
+                          </select>
+                        <input class="span5" type="number">
+                    </div>
+                </div>
+            </div>
+            <div class="control-group bv_group_oldMolWeight">
+                <label class="control-label">Old Mol Weight</label>
+                <div class="controls">
+                    <div class="input-prepend oldMolWeight">
+                        <!-- <span class="add-on"></span> -->
+                        <select class="add-on" style="height:30px;">
+                            <option>></option>
+                            <option><</option>
+                            <option>=</option>
+                          </select>
+                        <input class="span5" type="number">
+                    </div>
+                </div>
+            </div>
+            <div class="control-group bv_group_deltaMolWeight">
+                <label class="control-label">Delta Mol Weight</label>
+                <div class="controls">
+                    <div class="input-prepend deltaMolWeight">
+                        <!-- <span class="add-on"></span> -->
+                        <select class="add-on" style="height:30px;">
+                            <option>></option>
+                            <option><</option>
+                            <option>=</option>
+                          </select>
+                        <input class="span5" type="number">
+                    </div>
+                </div>
+            </div>    
+            <div class="control-group bv_group_corpNames">
+                <label class="control-label">Corp Names</label>
+                <div class="controls">
+                    <label class="radio inline">
+                        <input type="radio" name="includeCorpNames" value="true">
+                            Include
+                    </label>
+                    <label class="radio inline">
+                        <input type="radio" name="includeCorpNames" value="false">
+                            Exclude
+                    </label>
+                    <label class="radio inline">
+                        <input type="radio" name="includeCorpNames" value="blank" checked>
+                            No filter
+                    </label>
+                </div>
+                <div class="controls">
+                    <textarea rows="3" class="corpNames" style="padding-top:5px;"></textarea>
+                </div>
+            </div>
+            <div class="input-prepend maxResults">
+                <button class="btn btn-success bv_search" type="button">
+                    <span class="bv_searchRunning hide"><i class="fa fa-spinner fa-pulse fa-fw"></i></span>
+                    <span class = "bv_searchText">Fetch sample</span>
+                </button>
+                <input class="span6" placeholder="Max results" type="number" step="1" value=100>
+                <span class="add-on bv_searchResultCount"></span>
+            </div>
+        </fieldset>
+      </form>
+      <div class="bv_downloadStandardizationDryRunFiles" style="margin-top:20px;"></div>
+      <div class="alert bv_getStandardizationDryRunReportError">
+        There was an error getting the results of the latest standardization dry run. Please contact an administrator.
+     </div>
+</script>
+
+
+
+<script type="text/template" id="StandardizationDryRunReportSummaryView" xmlns="http://www.w3.org/1999/html">
+    <div class="bv_dryRunSearchController"></div>
+    <div class="bv_loadingStandardizationDryRunReport alert hide" style="margin-top:20px;">
+        <span class="bv_loadingStandardizationDryRunReportText">
+        Please wait, loading dry run report.
+        </span>
+         <i class="fa fa-spinner fa-pulse fa-fw"></i>
+    </div>
+    <div class="bv_standardizationDryRunReportTable"></div>
 </script>
 
 <script type="text/template" id="StandardizationDryRunReportSummaryTableView" xmlns="http://www.w3.org/1999/html">
@@ -297,7 +464,7 @@
 <script type="text/template" id="DownloadDryRunResultsView" xmlns="http://www.w3.org/1999/html">
     <button type="button" class="btn btn-primary bv_download">
         <span class="bv_running hide"><i class="fa fa-spinner fa-pulse fa-fw"></i></span>
-        <span class = "bv_runAllText">Download Dry Run Results SDF</span>
+        <span class = "bv_runAllText">Download search results as SDF</span>
     </button>
 </script>
 

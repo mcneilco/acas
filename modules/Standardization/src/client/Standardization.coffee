@@ -43,10 +43,6 @@ class window.DownloadDryResultsController extends Backbone.View
 	initialize: ->
 		$(@el).empty()
 		$(@el).html @template()
-		if @options.mostRecentHistory.standardizationStatus == null && @options.mostRecentHistory.dryRunStatus == "complete" && @options.mostRecentHistory.dryRunStandardizationChangesCount > 0 && @options.mostRecentHistory.dryRunStandardizationChangesCount? > 0
-			@$('.bv_download').prop('disabled', false);
-		else
-			@$('.bv_download').prop("disabled",true);
 			
 
 	getFileNameFromHeader: (header) ->
@@ -55,9 +51,16 @@ class window.DownloadDryResultsController extends Backbone.View
 	handleDownloadClicked: (event) =>
 		@$('.bv_running').show()
 		@$('.bv_download').addClass("disabled")
-		url = "/cmpdReg/standardizationDryRunFiles"
+		url = "/cmpdReg/standardizationDryRunSearchExport"
+		modelData = @options.searchModel.toJSON()
+		delete modelData.maxResults
 		fileName = "download.sdf"
-		fetch(url)
+		fetch(url, {
+			method: 'POST'
+			headers:
+				'Content-Type': 'application/json'
+			body: JSON.stringify(modelData)
+		})
 		.then((resp) =>
 			fileName = @getFileNameFromHeader(resp.headers.get('Content-Disposition'));
 			resp.blob()
@@ -256,6 +259,177 @@ class window.StandardizationDryRunReportRowSummaryController extends Backbone.Vi
 	roundToTwo: (num) ->
 		+(Math.round(num + 'e+2') + 'e-2')
 
+class StandardizationDryRunReportSearch extends Backbone.Model
+	defaults:
+		maxResults: null
+		changedStructure: true
+		displayChange: false
+		hasNewDuplicates: true
+		hasExistingDuplicates: true
+		deltaMolWeight: 
+			operator: ">"
+			value: null
+		newMolWeight: 
+			operator: ">"
+			value: null
+		oldMolWeight: 
+			operator: ">"
+			value: null
+		asDrawnDisplayChange: null
+		includeCorpNames: null
+		corpNames: []
+
+class StandardizationDryRunReportSearchController extends Backbone.View
+	template: _.template($("#StandardizationDryRunReportSearchView").html())
+
+	events: ->
+		"input input": "updateModel"
+		"change select": "updateModel"
+		"input textarea": "updateModel"
+
+	initialize: () ->
+		@downloadDryRunResultsController = new DownloadDryResultsController
+			mostRecentHistory: @mostRecentHistory
+			searchModel: @model
+		
+
+	render: ->
+		$(@el).empty()
+		$(@el).html @template()
+		@updateModel()
+		@$(".bv_downloadStandardizationDryRunFiles").html @downloadDryRunResultsController.render().el
+
+		@
+
+	getBooleanRadioOption: (name) ->
+		radioValue = @$("input[name='#{name}']:checked").val()
+		# Switch to translate string value to boolean options
+		if(radioValue == "blank")
+			return null
+		else
+			return radioValue == "true"
+
+	getNumberValue: (claz) ->
+		value = @$(claz).find("input").get()[0].valueAsNumber
+		# Check if NaN return null
+		if(isNaN(value))
+			return null
+		else
+			return value
+		
+
+	updateModel: ->
+		@.model.set "changedStructure", @getBooleanRadioOption('changedStructure')
+		@.model.set "asDrawnDisplayChange",  @getBooleanRadioOption('asDrawnDisplayChange')
+		@.model.set "displayChange",  @getBooleanRadioOption('displayChange')
+		@.model.set "hasNewDuplicates",  @getBooleanRadioOption('hasNewDuplicates')
+		@.model.set "hasExistingDuplicates",  @getBooleanRadioOption('hasExistingDuplicates')
+		@.model.set "includeCorpNames",  @getBooleanRadioOption('includeCorpNames')
+		@.model.get("deltaMolWeight").value = @getNumberValue('.deltaMolWeight')
+		@.model.get("deltaMolWeight").operator = @$(".deltaMolWeight").find("select").first().val()
+		@.model.get("oldMolWeight").value = @getNumberValue('.oldMolWeight')
+		@.model.get("oldMolWeight").operator = @$(".oldMolWeight").find("select").first().val()
+		@.model.get("newMolWeight").value = @getNumberValue('.newMolWeight')
+		@.model.get("newMolWeight").operator = @$(".newMolWeight").find("select").first().val()
+		@.model.set("maxResults", @getNumberValue('.maxResults'))
+
+		if @.model.get("includeCorpNames")?
+			@$(".corpNames").removeAttr 'disabled'
+		else
+			@$(".corpNames").attr 'disabled', 'disabled'
+
+		corpNameList = []
+		corpNamesText = @$(".corpNames").val().split(/\n|;|,|\s/)
+		## Remove blanks from list
+		corpNamesText.forEach (corpName) ->
+			corpName = corpName.trim()
+			if(corpName.length > 0)
+				corpNameList.push(corpName)
+		@.model.set("corpNames", corpNameList)
+
+		@trigger "modelUpdated"
+
+		@updateSearchCount()
+
+	getDryRunSearch: (countOnly) ->
+		requestData = @model.toJSON()
+		url = "/cmpdReg/standardizationDryRunSearch"
+		if countOnly? && countOnly
+			url = url + "?countOnly=true"
+				
+		return fetch(url, {
+			method: 'POST'
+			headers:
+				'Content-Type': 'application/json'
+			body: JSON.stringify(requestData)
+		})
+		.then((resp) =>
+			resp.json()
+		)
+
+	updateSearchCount: () ->
+		@getDryRunSearch(true)
+		.then((json) =>
+			@searchCount = json.count
+			@$('.bv_searchResultCount').text("out of #{@searchCount} query results")
+			return @searchCount
+		)
+	
+class window.StandardizationDryRunReportSummaryController extends Backbone.View
+	template: _.template($("#StandardizationDryRunReportSummaryView").html())
+
+	events: ->
+		"click .bv_search": "handleSearchClicked"
+
+	initialize: ->
+		@model = new StandardizationDryRunReportSearch()
+		@mostRecentHistory = @options.mostRecentHistory
+		@maxDisplayCount = window.conf.cmpdreg.serverSettings.maxStandardizationDisplay
+		searchModel = new StandardizationDryRunReportSearch()
+		@standardizationDryRunReportSearchController = new StandardizationDryRunReportSearchController
+			model: searchModel
+		# @listenTo(@standardizationDryRunReportSearchController, 'countUpdated', @searchCountUpdated)
+		
+	render: ->
+		$(@el).empty()
+		$(@el).html @template()
+		@$(".bv_dryRunSearchController").html @standardizationDryRunReportSearchController.render().el
+		@$('.bv_exceededMaxDisplayLimit').hide()
+		@$('.bv_getStandardizationDryRunReportError').hide()
+		@
+	@
+
+	handleSearchClicked: ->
+		@standardizationDryRunReportSearchController.updateSearchCount()
+		.then((count) =>
+			@$('.bv_searchRunning').show()
+			@$('.bv_search').addClass("disabled")
+			maxResults = @standardizationDryRunReportSearchController.model.get("maxResults")
+			@$('.bv_loadingStandardizationDryRunReportText').text("Please wait, fetching #{Math.min(count, if maxResults == null then Infinity else maxResults)} results")
+			@$('.bv_loadingStandardizationDryRunReport').show()
+			requestData = @standardizationDryRunReportSearchController.model.toJSON()
+			@standardizationDryRunReportSearchController.getDryRunSearch(false)
+			.then((json) =>
+				@$('.bv_searchRunning').hide()
+				@$('.bv_search').removeClass("disabled")
+				@$('.bv_loadingStandardizationDryRunReport').hide()
+				if @standardizationDryRunReportSummaryTableController?
+					@standardizationDryRunReportSummaryTableController.undelegateEvents()
+				@$(".bv_standardizationDryRunReportTable").show()
+				@standardizationDryRunReportSummaryTableController = new StandardizationDryRunReportSummaryTableController
+					collection: new Backbone.Collection json
+				@$(".bv_standardizationDryRunReportTable").html @standardizationDryRunReportSummaryTableController.render().el
+			)
+			.catch((error) => 
+				@$('.bv_searchRunning').hide()
+				@$('.bv_search').removeClass("disabled")
+				@$('.bv_loadingStandardizationDryRunReport').hide()
+				@$('.bv_getStandardizationDryRunReportError').show()
+				@$('.bv_standardizerControlsWrapper').hide()
+			)
+		)
+		
+
 class window.StandardizationDryRunReportSummaryTableController extends Backbone.View
 
 	events: ->
@@ -264,6 +438,7 @@ class window.StandardizationDryRunReportSummaryTableController extends Backbone.
 
 	initialize: ->
 		@expanded = false
+
 
 	updateColumnVisibility: =>
 		checkboxes = @$(".bv_dryRunReportColumnCheckBoxes").find("input");
@@ -301,86 +476,86 @@ class window.StandardizationDryRunReportSummaryTableController extends Backbone.
 					model: result
 				@$("tbody").append sdrrrsc.render().el
 
-			$.fn.dataTableExt.oApi.fnGetColumnData = (oSettings, iColumn, bUnique, bFiltered, bIgnoreEmpty) ->
-				# check that we have a column id
-				if typeof iColumn == 'undefined'
-					return new Array
-				# by default we only want unique data
-				if typeof bUnique == 'undefined'
-					bUnique = true
-				# by default we do want to only look at filtered data
-				if typeof bFiltered == 'undefined'
-					bFiltered = true
-				# by default we do not want to include empty values
-				if typeof bIgnoreEmpty == 'undefined'
-					bIgnoreEmpty = true
-				# list of rows which we're going to loop through
-				aiRows = undefined
-				# use only filtered rows
-				if bFiltered == true
-					aiRows = oSettings.aiDisplay
+		$.fn.dataTableExt.oApi.fnGetColumnData = (oSettings, iColumn, bUnique, bFiltered, bIgnoreEmpty) ->
+			# check that we have a column id
+			if typeof iColumn == 'undefined'
+				return new Array
+			# by default we only want unique data
+			if typeof bUnique == 'undefined'
+				bUnique = true
+			# by default we do want to only look at filtered data
+			if typeof bFiltered == 'undefined'
+				bFiltered = true
+			# by default we do not want to include empty values
+			if typeof bIgnoreEmpty == 'undefined'
+				bIgnoreEmpty = true
+			# list of rows which we're going to loop through
+			aiRows = undefined
+			# use only filtered rows
+			if bFiltered == true
+				aiRows = oSettings.aiDisplay
+			else
+				aiRows = oSettings.aiDisplayMaster
+			# all row numbers
+			# set up data array   
+			asResultData = new Array
+			i = 0
+			c = aiRows.length
+			while i < c
+				iRow = aiRows[i]
+				aData = @fnGetData(iRow)
+				sValue = aData[iColumn]
+				# ignore empty values?
+				if bIgnoreEmpty == true and sValue.length == 0
+					i++
+					continue
+				else if bUnique == true and jQuery.inArray(sValue, asResultData) > -1
+					i++
+					continue
 				else
-					aiRows = oSettings.aiDisplayMaster
-				# all row numbers
-				# set up data array   
-				asResultData = new Array
-				i = 0
-				c = aiRows.length
-				while i < c
-					iRow = aiRows[i]
-					aData = @fnGetData(iRow)
-					sValue = aData[iColumn]
-					# ignore empty values?
-					if bIgnoreEmpty == true and sValue.length == 0
-						i++
-						continue
-					else if bUnique == true and jQuery.inArray(sValue, asResultData) > -1
-						i++
-						continue
-					else
-						asResultData.push sValue
-					i++
-				asResultData.sort()
+					asResultData.push sValue
+				i++
+			asResultData.sort()
 
-			fnCreateSelect = (aData) ->
-				r = '<select><option value=""></option>'
-				i = undefined
-				iLen = aData.length
-				i = 0
-				while i < iLen
-					r += '<option value="' + aData[i] + '">' + aData[i] + '</option>'
-					i++
-				r + '</select>'
+		fnCreateSelect = (aData) ->
+			r = '<select><option value=""></option>'
+			i = undefined
+			iLen = aData.length
+			i = 0
+			while i < iLen
+				r += '<option value="' + aData[i] + '">' + aData[i] + '</option>'
+				i++
+			r + '</select>'
 
-			oTable = @$(".bv_standardizationDryRunReportSummaryTable").dataTable
-					bAutoWidth: false
-					bLengthChange: true
-					aLengthMenu: [ [10, 15, 25, 50, 100, -1], [10, 15, 25, 50, 100, "All"] ],
-					iDisplayLength: 20
-					sPaginationType: "full_numbers"
-					fnRowCallback: (row, data, index) =>
-						$('.bv_parentStructure', row).html "<img src='/cmpdreg/structureimage/parent/"+data[0]+"?hSize=300&wSize=300'>"
-						data[1] = "<img src='/cmpdreg/structureimage/parent/"+data[0]+"?hSize=300&wSize=300'>"
-						$('.bv_standardizedStructure', row).html "<img src='/cmpdreg/structureimage/standardization/"+data[0]+"?hSize=300&wSize=300'>"
-						data[2] = "<img src='/cmpdreg/structureimage/standardization/"+data[0]+"?hSize=300&wSize=300'>"
-						$('.bv_asDrawnStructure', row).html "<img src='/cmpdreg/structureimage/originallydrawnas/"+data[0]+"?hSize=300&wSize=300'>"
-						data[3] = "<img src='/cmpdreg/structureimage/originallydrawnas/"+data[0]+"?hSize=300&wSize=300'>"
-					oLanguage:
-						sSearch: "Filter results: " #rename summary table's search bar
+		oTable = @$(".bv_standardizationDryRunReportSummaryTable").dataTable
+				bAutoWidth: false
+				bLengthChange: true
+				aLengthMenu: [ [10, 15, 25, 50, 100, -1], [10, 15, 25, 50, 100, "All"] ],
+				iDisplayLength: 20
+				sPaginationType: "full_numbers"
+				fnRowCallback: (row, data, index) =>
+					$('.bv_parentStructure', row).html "<img src='/cmpdreg/structureimage/parent/"+data[0]+"?hSize=300&wSize=300'>"
+					data[1] = "<img src='/cmpdreg/structureimage/parent/"+data[0]+"?hSize=300&wSize=300'>"
+					$('.bv_standardizedStructure', row).html "<img src='/cmpdreg/structureimage/standardization/"+data[0]+"?hSize=300&wSize=300'>"
+					data[2] = "<img src='/cmpdreg/structureimage/standardization/"+data[0]+"?hSize=300&wSize=300'>"
+					$('.bv_asDrawnStructure', row).html "<img src='/cmpdreg/structureimage/originallydrawnas/"+data[0]+"?hSize=300&wSize=300'>"
+					data[3] = "<img src='/cmpdreg/structureimage/originallydrawnas/"+data[0]+"?hSize=300&wSize=300'>"
+				oLanguage:
+					sSearch: "Filter results: " #rename summary table's search bar
 
-			filters = ['Corporate ID', 'Structure Change', 'Display Change', 'New Duplicates', 'Existing Duplicates', 'Delta Mol. Weight', 'New Mol. Weight', 'Old Mol. Weight', 'As Drawn Display Change']
-			@.$('thead tr.bv_colFilters th').each (i) ->
-				if @innerHTML in filters
-					@innerHTML = fnCreateSelect(oTable.fnGetColumnData(i))
-					$('select', this).change ->
-						oTable.fnFilter $(this).val(), i
-						return
+		filters = ['Corporate ID', 'Structure Change', 'Display Change', 'New Duplicates', 'Existing Duplicates', 'Delta Mol. Weight', 'New Mol. Weight', 'Old Mol. Weight', 'As Drawn Display Change']
+		@.$('thead tr.bv_colFilters th').each (i) ->
+			if @innerHTML in filters
+				@innerHTML = fnCreateSelect(oTable.fnGetColumnData(i))
+				$('select', this).change ->
+					oTable.fnFilter "^"+$(this).val()+"$", i, true
 					return
-				else
-					@innerHTML = ""
+				return
+			else
+				@innerHTML = ""
 
-			@oTable = oTable
-			@updateColumnVisibility()
+		@oTable = oTable
+		@updateColumnVisibility()
 		@
 
 class window.StandardizationController extends Backbone.View
@@ -399,7 +574,6 @@ class window.StandardizationController extends Backbone.View
 		$(@el).html @template()
 		@$('.bv_standardizerControlsWrapper').hide()
 		@$('.bv_getStandardizationHistoryError').hide()
-		@$('.bv_getStandardizationDryRunReportError').hide()
 		@$('.bv_executeDryRunError').hide()
 		@$('.bv_executeStandardizationError').hide()
 		@standardizationReasonPanel = new StandardizationReasonPanelController
@@ -451,9 +625,9 @@ class window.StandardizationController extends Backbone.View
 				else if runType is 'standardization'
 					@$('.bv_executingStandardizationModal').modal 'hide'
 					@$('.bv_executeStandardizationError').show()
-				@$('.bv_standardizationDryRunReportStats').hide()
-				@$('.bv_standardizationDryRunReport').hide()
-				@$('.bv_downloadStandardizationDryRunFiles').hide()
+				# @$('.bv_standardizationDryRunReportStats').hide()
+				# @$('.bv_standardizationDryRunReport').hide()
+				# @$('.bv_downloadStandardizationDryRunFiles').hide()
 				@$('.bv_standardizerControlsWrapper').hide()
 
 	setupCurrentSettingsController: ->
@@ -475,7 +649,7 @@ class window.StandardizationController extends Backbone.View
 				unless runningDryRunOrStandardization
 					@setupStandardizationHistorySummaryTable history
 					@setupExecuteButtons mostRecentHistoryEntry
-					@setupLastDryRunReportSummaryTable(mostRecentHistoryEntry)
+					@setupLastDryRunReportSummary(mostRecentHistoryEntry)
 			error: (err) =>
 				@$('.bv_getStandardizationHistoryError').show()
 
@@ -514,43 +688,19 @@ class window.StandardizationController extends Backbone.View
 		if mostRecentHistory.dryRunStandardizationChangesCount < 1
 			@$('.bv_executeStandardization').attr 'disabled', 'disabled'
 
-	setupLastDryRunReportSummaryTable: (mostRecentHistory)->
-		maxDisplayCount = window.conf.cmpdreg.serverSettings.maxStandardizationDisplay
-		@downloadDryRunResultsController = new DownloadDryResultsController
-			mostRecentHistory: mostRecentHistory
-		@$(".bv_downloadStandardizationDryRunFiles").html @downloadDryRunResultsController.render().el
-		@$('.bv_exceededMaxDisplayLimit').hide()
-		# Only show dry run table if dry run execution
-		dryRunStatus = mostRecentHistory.dryRunStatus
+	setupLastDryRunReportSummary: (mostRecentHistory)->		
 		standardizationStatus = mostRecentHistory.standardizationStatus
-		dryRunStandardizationChangesCount = mostRecentHistory.dryRunStandardizationChangesCount
+		dryRunStatus = mostRecentHistory.dryRunStatus
 		if dryRunStatus == "complete" and standardizationStatus != "complete"
-			if dryRunStandardizationChangesCount < maxDisplayCount
-				@$('.bv_loadingStandardizationDryRunReportText').text("Please wait, loading #{dryRunStandardizationChangesCount} standardization changes")
-				@$('.bv_loadingStandardizationDryRunReport').show()
-				$.ajax
-					type: 'GET'
-					url: "/cmpdReg/standardizationDryRun?reportOnly=true"
-					success: (dryRunReport) =>
-						@$('.bv_loadingStandardizationDryRunReport').hide()
-						if @standardizationDryRunReportSummaryTableController?
-							@standardizationDryRunReportSummaryTableController.undelegateEvents()
-						if dryRunReport.length > 0
-							@setupLastDryRunReportStatsSummaryTable()
-							@$(".bv_standardizationDryRunReport").show()
-							@$(".bv_standardizationDryRunReportStats").show()
-							@standardizationDryRunReportSummaryTableController = new StandardizationDryRunReportSummaryTableController
-								collection: new Backbone.Collection dryRunReport
-							@$(".bv_standardizationDryRunReport").html @standardizationDryRunReportSummaryTableController.render().el
-						else
-							@$(".bv_standardizationDryRunReport").hide()
-							@$(".bv_standardizationDryRunReportStats").hide()
-					error: (err) =>
-						@$('.bv_loadingStandardizationDryRunReport').hide()
-						@$('.bv_getStandardizationDryRunReportError').show()
-						@$('.bv_standardizerControlsWrapper').hide()
-			else
-				@$('.bv_exceededMaxDisplayLimit').show()
+			@setupLastDryRunReportStatsSummaryTable()
+			@$(".bv_standardizationDryRunReportStats").show()
+			@standardizationDryRunReportSummaryController = new StandardizationDryRunReportSummaryController
+				mostRecentHistory: mostRecentHistory
+			@$(".bv_standardizationDryRunReport").html @standardizationDryRunReportSummaryController.render().el
+			@$(".bv_standardizationDryRunReport").show()
+		else
+			@$(".bv_standardizationDryRunReportStats").hide()
+
 		
 	setupLastDryRunReportStatsSummaryTable: ->
 		if @standardizationDryRunReportStatsController?
@@ -617,3 +767,4 @@ class window.StandardizationReasonPanelController extends Backbone.View
 		console.log 'hiasdf'
 		@$('.bv_standardizationReasonPanel').modal "hide"
 		@trigger 'executionCancelled'
+
