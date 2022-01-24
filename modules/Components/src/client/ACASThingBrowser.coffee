@@ -277,7 +277,11 @@ class ThingSummaryTableController extends Backbone.View
 					else
 						asResultData.push sValue
 					i++
-				asResultData
+
+				# Sort lexicographically before returning
+				asResultData.sort (a, b)->
+					return a.toLowerCase().localeCompare(b.toLowerCase());
+				
 			
 			fnCreateSelect = (aData) ->
 				r = '<select><option value=""></option>'
@@ -293,12 +297,16 @@ class ThingSummaryTableController extends Backbone.View
 				sSearch: "Filter results: " #rename summary table's search bar
 
 			if @columnFilters? && @columnFilters
+				configs = @configs
 				this.$('thead tr.bv_colFilters th').each (i) ->
-					@innerHTML = fnCreateSelect(oTable.fnGetColumnData(i))
-					$('select', this).change ->
-						oTable.fnFilter $(this).val(), i
+					# Default is to add a filter to each column
+					# So only skip filtering if filter is false
+					if !configs[i].filter? || configs[i].filter
+						@innerHTML = fnCreateSelect(oTable.fnGetColumnData(i))
+						$('select', this).change ->
+							oTable.fnFilter "^"+$(this).val()+"$", i, true
+							return
 						return
-					return
 
 		@
 

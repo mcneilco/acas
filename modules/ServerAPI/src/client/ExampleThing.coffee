@@ -532,6 +532,7 @@ class ExampleThingBrowserController extends ACASThingBrowserController
 	configs: [
 			name: "Code Name"
 			key: "codeName"
+			filter: true
 		,
 			name: "Name"
 			key: "example thing name"
@@ -541,6 +542,7 @@ class ExampleThingBrowserController extends ACASThingBrowserController
 		,
 			name: "Recorded By"
 			key: "recordedBy"
+			filter: false
 		,
 			name: "Recorded Date"
 			key: "recordedDate"
