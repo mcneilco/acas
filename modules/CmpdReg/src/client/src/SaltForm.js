@@ -86,13 +86,17 @@ $(function() {
 
 			this.sketcherLoaded = false; // load on demand, not default, to make testing more reliable and fast
 			this.exportFormat = "mol";
-			if(window.configuration.marvin) {
+			if(window.configuration.sketcher == 'marvin') {
 				this.useMarvin = true;
 				if (window.configuration.marvin.exportFormat) {
 					this.exportFormat = window.configuration.marvin.exportFormat;
 				}
-			} else if(window.configuration.ketcher) {
+			} else if(window.configuration.sketcher == 'ketcher') {
 				this.useKetcher = true;
+			} else if(window.configuration.sketcher == 'maestro') {
+				this.useMaestro = true;
+			} else {
+				alert("No registration sketcher configured");
 			}
 
 			if ( this.isEditable ) {
@@ -180,6 +184,11 @@ $(function() {
 					}else if (this.useKetcher) {
 						mol = this.ketcher.getMolfile();
 						if (mol.indexOf("  0  0  0     1  0            999") > -1) mol = '';
+						this.model.set({molStructure: mol});
+						callback();
+					}else if (this.useMaestro) {
+						mol = this.maestro.getSketcherMolBlock();
+						if (mol.indexOf("M  V30 COUNTS 0 0 0 0 0") > -1) mol = '';
 						this.model.set({molStructure: mol});
 						callback();
 					}
@@ -325,6 +334,21 @@ $(function() {
 					  $(this).slideDown(100);
 				  });
 			  });
+		} else if (this.useMaestro) {
+			this.$('#saltFormMarvinSketch').attr('src',"/CmpdReg/maestrosketcher/wasm_shell.html");
+			MaestroJSUtil.getSketcher('#saltFormMarvinSketch').then(function (maestro) {
+				self.maestro = maestro;
+				if (!self.sketcherLoaded) {
+					if( self.model.get('molStructure')!=null && self.model.get('molStructure')!='') {
+						self.maestro.setSketcherMolBlock(self.model.get('molStructure'));
+					}
+				}
+				self.sketcherLoaded = true;
+				$('.structureWrapper').animate({opacity: 100}, 100, function () {
+					$(this).slideDown(100);
+				});
+			})
+
 		  } else {
 			  alert("No search sketcher configured");
 		  }

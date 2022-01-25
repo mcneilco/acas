@@ -1,0 +1,92 @@
+.bv_StandardizationController .bv_currentSettings {
+  margin-bottom: 30px;
+}
+
+.bv_standardizerControlsWrapper {
+  margin-top: 30px;
+  margin-bottom: 30px;
+  margin-left: 0px !important;
+}
+
+.standardizerControlsWrapper .bv_refresh, .standardizerControlsWrapper .bv_executeStandardization {
+  margin-left: 10px;
+}
+
+.bv_standardizationHistory select, .bv_standardizationDryRunReport select {
+  height: 30px;
+  width: auto;
+  font-size: 90%;
+}
+
+.bv_standardizationDryRunReportStats {
+  margin-top: 20px;
+  margin-left: 0px;
+}
+
+.bv_standardizationDryRunReport {
+  margin-top: 20px;
+  margin-left: 0px;
+}
+
+.bv_executingStandardizationDryRunModal .modal-body, .bv_executingStandardizationModal .modal-body {
+  padding-top: 0px;
+}
+
+.bv_standardizationDryRunReportSummaryTable {
+  margin: 0px;
+  position: relative;
+
+}
+
+.bv_standardizationDryRunReport .dataTables_filter {
+  margin-top: 10px;
+}
+.bv_getStandardizationHistoryError, .bv_getStandardizationDryRunReportError, .bv_executeDryRunError, .bv_executeStandardizationError, .bv_getCurrentSettingsError, .bv_getDryRunReportStatsError {
+  margin-top: 40px;
+}
+
+
+.multiselect {
+  width: 226px;
+}
+
+.selectBox {
+  position: relative;
+  height:30px;
+}
+
+.selectBox select {
+  width: 100%;
+}
+
+.overSelect {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+}
+
+.bv_dryRunReportColumnCheckBoxes {
+  display: none;
+  border: 1px #dadada solid;
+  background-color: #fff;
+  z-index: 1000;
+  width: 226px;
+  position: absolute;
+}
+
+.bv_dryRunReportColumnCheckBoxes label {
+  display: block;
+  font-size: 80%;
+  padding-left: 10px;
+}
+
+.bv_dryRunReportColumnCheckBoxes label:hover {
+  background-color: #1e90ff;
+}
+
+.bv_dryRunReportColumnCheckBoxes input {
+  margin-top: 0px;
+  margin-right: 3px;
+}

@@ -9,8 +9,14 @@ RUN \
   dnf install -y fontconfig urw-fonts && \
   dnf clean all
 
-# node
+#Install python dependencies
+RUN   dnf install -y python36 python3-pip
+RUN   alternatives --set python /usr/bin/python3
+RUN   alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
+RUN		pip install argparse requests psycopg2-binary==2.8.6
+RUN   dnf install -y initscripts
 
+# node
 ENV NPM_CONFIG_LOGLEVEL warn
 ENV NODE_VERSION 14.15.1
 
@@ -45,17 +51,9 @@ WORKDIR $BUILD_PATH
 RUN     chmod u+x bin/*.sh
 ENV     PREPARE_MODULE_CONF_JSON=true
 ENV     PREPARE_CONFIG_FILES=true
-ENV     RUN_SYSTEM_TEST=true
+ENV     RUN_SYSTEM_TEST=false
 ENV     ACAS_HOME=$BUILD_PATH
 RUN     gulp execute:prepare_config_files
-
-#Install python dependencies
-USER	root
-RUN   dnf install -y python36 python3-pip
-RUN   alternatives --set python /usr/bin/python3
-RUN   alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
-RUN		pip install argparse requests psycopg2-binary==2.8.6
-RUN   dnf install -y initscripts
 
 USER	runner
 

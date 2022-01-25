@@ -52,6 +52,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/cmpdReg/labelPrefixes', loginRoutes.ensureAuthenticated, exports.getAuthorizedPrefixes
 	app.get '/cmpdReg/parentLot/getLotsByParent', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
 	app.get '/cmpdReg/parentLot/getAllAuthorizedLots', loginRoutes.ensureAuthenticated, exports.getAllAuthorizedLots
+	app.get '/cmpdReg/allowCmpdRegistration', loginRoutes.ensureAuthenticated, exports.allowCmpdRegistration
 
 _ = require 'underscore'
 request = require 'request'
@@ -59,7 +60,6 @@ config = require '../conf/compiled/conf.js'
 
 exports.cmpdRegIndex = (req, res) ->
 	scriptPaths = require './RequiredClientScripts.js'
-	cmpdRegConfig = require '../public/CmpdReg/client/custom/configuration.json'
 	grantedRoles = _.map req.user.roles, (role) ->
 		role.roleEntry.roleName
 	console.log grantedRoles
@@ -102,7 +102,7 @@ exports.cmpdRegIndex = (req, res) ->
 			testMode: false
 			moduleLaunchParams: if moduleLaunchParams? then moduleLaunchParams else null
 			deployMode: global.deployMode
-			cmpdRegConfig: cmpdRegConfig
+			cmpdRegConfig: config.all.client.cmpdreg
 
 syncCmpdRegUser = (req, cmpdRegUser) ->
 	exports.getScientistsInternal (scientistResponse) ->
@@ -320,7 +320,6 @@ exports.getMetaLot = (req, resp) ->
 	endOfUrl = (req.originalUrl).replace /\/cmpdreg\/metalots/, ""
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/metalots' + endOfUrl
 	console.log cmpdRegCall
-	cmpdRegConfig = require '../public/CmpdReg/client/custom/configuration.json'
 	request(
 		method: 'GET'
 		url: cmpdRegCall
@@ -339,7 +338,7 @@ exports.getMetaLot = (req, resp) ->
 
 			if json?.lot?.project?
 				projectCode = json.lot.project
-				if cmpdRegConfig.metaLot.useProjectRolesToRestrictLotDetails
+				if config.all.client.cmpdreg.metaLot.useProjectRolesToRestrictLotDetails
 					authorRoutes = require './AuthorRoutes.js'
 					authorRoutes.allowedProjectsInternal req.user, (statusCode, acasProjectsForUsers) =>
 						if statusCode != 200
@@ -354,7 +353,7 @@ exports.getMetaLot = (req, resp) ->
 				else
 					resp.json json
 			else #no project attr in lot
-				if cmpdRegConfig.metaLot.useProjectRolesToRestrictLotDetails
+				if config.all.client.cmpdreg.metaLot.useProjectRolesToRestrictLotDetails
 					resp.statusCode = 500
 					resp.end JSON.stringify "Could not find lot"
 				else
@@ -884,3 +883,39 @@ exports.getAuthorizedPrefixes = (req, resp) ->
 				thingTypeAndKind: labelSeq.thingTypeAndKind
 			codeTables.push codeTable
 		resp.json codeTables
+
+exports.allowCmpdRegistration = (req, resp) ->
+	#for checking if standardization needed or if user wants to enable/disable cmpd registration
+	if req.query.userOverride?
+		#if req.query.userOverride = true, then always allow cmpd reg
+		#if req.query.userOverride = false, then always disable cmpd reg
+		allowCmpdRegistration = req.query.userOverride == "true"
+		if allowCmpdRegistration
+			message = "Compounds can be registerd"
+		else
+			message = "Compounds can not be registered at this time. Please contact an administrator for help."
+		response =
+			allowCmpdRegistration: allowCmpdRegistration
+			message: message
+		resp.json response
+	else
+		#check if needs standardization
+		standardizationRoutes = require './StandardizationRoutes.js'
+		standardizationRoutes.getStandardizationSettingsInternal (getStandardizationSettingsResp, statusCode) =>
+			if statusCode is 500
+				console.log "error getting current standardization settings"
+				resp.statusCode = statusCode
+				response =
+					allowCmpdRegistration: false
+					message: "Compounds can not be registered at this time due to an error getting current standardization settings. Please contact an administrator for help."
+				resp.json response
+			else
+				allowCmpdRegistration = !getStandardizationSettingsResp.needsStandardization
+				if allowCmpdRegistration
+					message = "Compounds can be registered"
+				else
+					message = "Compounds can not be registered at this time because the registered compounds require standardization."
+				response =
+					allowCmpdRegistration: allowCmpdRegistration
+					message: message
+				resp.json response

@@ -55,7 +55,8 @@ exports.applicationScripts = [
 	'/javascripts/src/ServerAPI/AnalysisGroup.js',
 	'/javascripts/src/ServerAPI/AttachFile.js',
 	'/javascripts/src/ServerAPI/Experiment.js',
-	'/javascripts/src/ServerAPI/Protocol.js'//APPLICATIONSCRIPTS_TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES
+	'/javascripts/src/ServerAPI/Protocol.js',
+	'/javascripts/src/Standardization/Standardization.js'//APPLICATIONSCRIPTS_TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES
 ];
 
 exports.jasmineScripts = [

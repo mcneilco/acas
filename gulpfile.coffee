@@ -146,7 +146,7 @@ console.log 'setting source directories to: ' + JSON.stringify(sources)
 # ------------------------------------------------- Setup Configs
 
 globalCoffeeOptions = {sourcemaps:true}
-globalCopyOptions = {}
+globalCopyOptions = {allowEmpty:true}
 globalExecuteOptions = {cwd: build, env: process.env}
 globalWatchOptions =
   interval: 1000
@@ -247,6 +247,7 @@ taskConfigs =
         src: [
           build + '/conf/*.properties'
           build + '/conf/*.properties.example'
+          build + '/conf/*.env'
           build + '/src/r/*'
           build + '/src/javascripts/BuildUtilities/PrepareConfigFiles.js'
         ]
@@ -281,6 +282,11 @@ taskConfigs =
       taskName: "bin"
       src: getGlob('bin/**')
       dest: build + '/bin'
+      options: _.extend _.clone(globalCopyOptions), {}
+    ,
+      taskName: "envFiles"
+      src: getGlob('*.env', '.env', 'conf/**.env')
+      dest: build + '/conf'
       options: _.extend _.clone(globalCopyOptions), {}
     ,
       taskName: "public"
@@ -393,6 +399,7 @@ taskConfigs =
       args: startupArgs
       options: _.extend _.clone(globalExecuteOptions), cwd: build
       src: [
+        build + '/conf/*.env'
         build + '/conf/compiled/*'
         build + '/app.js'
         build + '/views/*'
@@ -473,7 +480,7 @@ createTask = (options, type) ->
     .pipe(gulpif(shouldCoffeify, coffeeify({options:{paths:[build+ '/node_modules']}})))
     .pipe(gulpif(shouldCoffee,coffee(bare: true)))
     .pipe(gulpif(renameFunction?,rename(renameFunction)))
-    .pipe gulp.dest(dest)
+    .pipe gulp.dest(dest, {mode: 0o0777})
   unless watch == false
     watchTaskName = "watch:#{taskName}"
     watchOptions = watch?.options ? {}
@@ -537,7 +544,7 @@ unless argv._[0] == "dev"
   executeTasks = _.filter executeTasks, (item) -> item != "execute:prepareModuleConfJSON"
 
 # --------- Copy Task
-gulp.task 'copy-execute-configs', gulp.series(gulp.parallel('coffee:serverUtilityFunctions','coffee:buildUtilities','coffee:serverAPI', 'copy:conf'), 'execute:prepare_config_files')
+gulp.task 'copy-execute-configs', gulp.series(gulp.parallel('coffee:serverUtilityFunctions','coffee:buildUtilities','coffee:serverAPI', 'copy:conf', 'copy:envFiles'), 'execute:prepare_config_files')
 
 # --------- Copy Task
 gulp.task 'copy', gulp.parallel copyTasks

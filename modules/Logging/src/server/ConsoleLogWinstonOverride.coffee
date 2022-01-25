@@ -1,5 +1,6 @@
 path = require('path')
 fs = require('fs-extra')
+util = require('util')
 { createLogger, format, transports, config: windstonconfig } = require('winston')
 { combine, timestamp, label, printf, colorize, errors } = format
 packageJsonPath = path.join(process.cwd(), 'package.json')
@@ -27,7 +28,7 @@ myFormat = printf((info) ->
   indent = undefined
   if process.env.ENVIRONMENT and process.env.ENVIRONMENT != 'production'
     indent = 2
-  message = JSON.stringify(info.message, false, indent)
+  message = util.inspect(info.message, {depth: null, colors: true, compact: false, indent: indent})
   return "[#{info.label}] #{info.timestamp} #{info.level}: #{message}"
 )
 

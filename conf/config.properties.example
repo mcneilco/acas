@@ -79,7 +79,7 @@
 #
 # Example: client.host=host5.labsynch.com
 #
-client.host=acas
+client.host=${env.CLIENT_HOST}
 
 # Port that the client is running on.
 #
@@ -90,7 +90,7 @@ client.host=acas
 #
 # Example: client.port=3000
 #
-client.port=3000
+client.port=${env.CLIENT_PORT}
 
 
 ###########################################################################
@@ -107,13 +107,13 @@ client.port=3000
 # EXAMPLE:     nodeapi.port=3001
 # NOTE:        nodeapi.port must be different than client.port. It should be blocked by the server's firewall
 #
-server.nodeapi.port=3001
-server.nodeapi.path=http://${client.host}:${server.nodeapi.port}
+server.nodeapi.port=${env.SERVER_NODEAPI_PORT}
+server.nodeapi.path=${env.SERVER_NODEAPI_PATH}
 
-client.service.persistence.path=acas/api/v1
-client.service.persistence.host=tomcat
-client.service.persistence.port=8080
-client.service.persistence.fullpath=http://${client.service.persistence.host}:${client.service.persistence.port}/${client.service.persistence.path}/
+client.service.persistence.path=${env.CLIENT_SERVICE_PERSISTENCE_PATH}
+client.service.persistence.host=${env.CLIENT_SERVICE_PERSISTENCE_HOST}
+client.service.persistence.port=${env.CLIENT_SERVICE_PERSISTENCE_PORT}
+client.service.persistence.fullpath=${env.CLIENT_SERVICE_PERSISTENCE_FULLPATH}
 
 
 ###########################################################################
@@ -121,41 +121,41 @@ client.service.persistence.fullpath=http://${client.service.persistence.host}:${
 ###########################################################################
 
 # If customer needs to download from /dataFiles without login, set the following option to true
-server.datafiles.without.login=false
+server.datafiles.without.login=${env.SERVER_DATAFILES_WITHOUT_LOGIN}
 
 # Required file path options
 # specify relative to ACAS_HOME without leading slash
-server.datafiles.relative_path=privateUploads
-server.tempfiles.relative_path=privateTempFiles
+server.datafiles.relative_path=${env.SERVER_DATAFILES_RELATIVE_PATH}
+server.tempfiles.relative_path=${env.SERVER_TEMPFILES_RELATIVE_PATH}
 
 # prefix for the client to prepend the fileValues to allow a user to download
-client.datafiles.downloadurl.prefix=/dataFiles/
+client.datafiles.downloadurl.prefix=${env.CLIENT_DATAFILES_DOWNLOADURL_PREFIX}
 
 # Is used to know location on server when sending from R to tomcat on separate server
 # Normally {$ACAS_HOME}/${server.datafiles.relative_path}
-server.service.persistence.filePath=/home/runner/build/privateUploads
-server.service.persistence.fileUrl=http://${client.host}:${server.nodeapi.port}/uploads
+server.service.persistence.filePath=${env.SERVER_SERVICE_PERSISTENCE_FILEPATH}
+server.service.persistence.fileUrl=${env.SERVER_SERVICE_PERSISTENCE_FILEURL}
 
 
 ###########################################################################
 # E. Communication with rApache
 ###########################################################################
 
-client.use.ssl=false
-server.ssl.key.file.path=../certs/server.key
-server.ssl.cert.file.path=../certs/server.crt
-server.ssl.cert.authority.file.path=../certs/ca.crt
-server.ssl.cert.passphrase=selfCertForACASServer
+client.use.ssl=${env.CLIENT_USE_SSL}
+server.ssl.key.file.path=${env.SERVER_SSL_KEY_FILE_PATH}
+server.ssl.cert.file.path=${env.SERVER_SSL_CERT_FILE_PATH}
+server.ssl.cert.authority.file.path=${env.SERVER_SSL_CERT_AUTHORITY_FILE_PATH}
+server.ssl.cert.passphrase=${env.SERVER_SSL_CERT_PASSPHRASE}
 
-client.service.rapache.port=1080
-server.rapache.listen=*
-server.rapache.forceAllToStdErrOnly=true
+client.service.rapache.port=${env.CLIENT_SERVICE_RAPACHE_PORT}
+server.rapache.listen=${env.SERVER_RAPACHE_LISTEN}
+server.rapache.forceAllToStdErrOnly=${env.SERVER_RAPACHE_FORCEALLTOSTDERRONLY}
 
 #todo not in codebase 6/2015
-client.service.rapache.use.ssl=${client.use.ssl}
-client.service.rapache.host=rservices
-client.service.rapache.path=r-services-api
-client.service.rapache.fullpath=http://${client.service.rapache.host}:${client.service.rapache.port}/${client.service.rapache.path}/
+client.service.rapache.use.ssl=${env.CLIENT_SERVICE_RAPACHE_USE_SSL}
+client.service.rapache.host=${env.CLIENT_SERVICE_RAPACHE_HOST}
+client.service.rapache.path=${env.CLIENT_SERVICE_RAPACHE_PATH}
+client.service.rapache.fullpath=${env.CLIENT_SERVICE_RAPACHE_FULLPATH}
 
 
 ###########################################################################
@@ -163,47 +163,46 @@ client.service.rapache.fullpath=http://${client.service.rapache.host}:${client.s
 ###########################################################################
 
 # Properties requiring aggregation on geometric mean
-server.sar.geomMean=[Ki,Kd,pH]
+server.sar.geomMean=${env.SERVER_SAR_GEOMMEAN}
 
 # Title of leftmost column when no search string is entered
 # e.g. for Chanda should be "Gene ID"
-server.sar.defaultTitle ="Tested Entity Information"
+server.sar.defaultTitle=${env.SERVER_SAR_DEFAULTTITLE}
 
 #options are bestLabel and ReferenceCode
-server.sar.csvLabel=bestLabel
+server.sar.csvLabel=${env.SERVER_SAR_CSVLABEL}
 
 # options are ignoreOperators or includeOperators
-client.sar.sorting = includeOperators
+client.sar.sorting=${env.CLIENT_SAR_SORTING}
 
 # url to fetch structure images from
-client.service.external.structure.url=/cmpdreg/structureimage/lot/
+client.service.external.structure.url=${env.CLIENT_SERVICE_EXTERNAL_STRUCTURE_URL}
 
 # url to lot details
-client.service.external.lotDetails.url=/cmpdreg/#lot/
+client.service.external.lotDetails.url=${env.CLIENT_SERVICE_EXTERNAL_LOTDETAILS_URL}
 
 ################################
 # Module Menus ACAS Home Page Options
 ################################
 # If module is customized and the ACAS header name needs to be replaced, you can set the following options
-client.moduleMenus.logoText=ACAS
-client.moduleMenus.logoImageFilePath=
-client.moduleMenus.logoTextLink=/
-client.moduleMenus.homePageMessage=Welcome to ACAS
-client.moduleMenus.copyrightMessage=&copy; John McNeil & Company 2012-2017
+client.moduleMenus.logoText=${env.CLIENT_MODULEMENUS_LOGOTEXT}
+client.moduleMenus.logoImageFilePath=${env.CLIENT_MODULEMENUS_LOGOIMAGEFILEPATH}
+client.moduleMenus.logoTextLink=${env.CLIENT_MODULEMENUS_LOGOTEXTLINK}
+client.moduleMenus.homePageMessage=${env.CLIENT_MODULEMENUS_HOMEPAGEMESSAGE}
+client.moduleMenus.copyrightMessage=${env.CLIENT_MODULEMENUS_COPYRIGHTMESSAGE}
 # client.moduleMenus.menuConfigurationSettings=ModuleMenusConfiguration
 # If summary statistics is an included feature, set the following to true
-client.moduleMenus.summaryStats=false
+client.moduleMenus.summaryStats=${env.CLIENT_MODULEMENUS_SUMMARYSTATS}
 # For navigation to external ACAS modules from ACAS homepage
-client.moduleMenus.modules.external=[{"displayName": "Compound Registration", "href": "/cmpdreg/"},\
-                                     {"displayName": "Compound Registration Bulk Loader", "href":"/CmpdRegBulkLoader"}]
-client.moduleMenus.dataViewerDeepLink=/dataViewer
+client.moduleMenus.modules.external=${env.CLIENT_MODULEMENUS_MODULES_EXTERNAL}
+client.moduleMenus.dataViewerDeepLink=${env.CLIENT_MODULEMENUS_DATAVIEWERDEEPLINK}
 # For auto-starting a module when opening up ACAS
-client.moduleMenus.moduleAutoLaunchName=
+client.moduleMenus.moduleAutoLaunchName=${env.CLIENT_MODULEMENUS_MODULEAUTOLAUNCHNAME}
 
 #Add user roles that represent groups allowed to fast user switch
 #client.moduleMenus.fastUserSwitchingRoles=[{"lsKind":"PROJ-00000001","lsType":"Project","roleName":"User"},{"lsKind":"PROJ-00000002","lsType":"Project","roleName":"User"}]
-client.moduleMenus.fastUserSwitchingRoles=[]
-client.moduleMenus.fastUserSwitchingChangeUserRoles=false
+client.moduleMenus.fastUserSwitchingRoles=${env.CLIENT_MODULEMENUS_FASTUSERSWITCHINGROLES}
+client.moduleMenus.fastUserSwitchingChangeUserRoles=${env.CLIENT_MODULEMENUS_FASTUSERSWITCHINGCHANGEUSERROLES}
 
 ################################
 # Uncategorized
@@ -219,7 +218,7 @@ client.moduleMenus.fastUserSwitchingChangeUserRoles=false
 #
 # Example: client.deployMode=Dev
 #
-client.deployMode=${env.APP_NAME}
+client.deployMode=${env.CLIENT_DEPLOYMODE}
 
 # Settings for the logging service
 #
@@ -230,7 +229,7 @@ client.deployMode=${env.APP_NAME}
 #
 # Example: server.logging.database=acas_logging_Dev
 #
-logging.database=acas_logging_${client.deployMode}
+logging.database=${env.LOGGING_DATABASE}
 
 # Settings for the logging service
 # Specify if the winston logger should use mongodb to store logs.
@@ -241,7 +240,7 @@ logging.database=acas_logging_${client.deployMode}
 # DEFAULT:		NA
 #
 #
-logging.usemongo=false
+logging.usemongo=${env.LOGGING_USEMONGO}
 
 # Settings for the logging service
 # Specify if the winston logger should use mongodb to store logs.
@@ -252,133 +251,134 @@ logging.usemongo=false
 # DEFAULT:		NA
 #
 #
-logging.logtoconsole=true
+logging.logtoconsole=${env.LOGGING_LOGTOCONSOLE}
 
 # todo add options for using flat file instead of mongo
 # printing out to console.log
 
-server.database.name=${env.ACAS_DB_NAME}
-server.database.username=${env.ACAS_USERNAME}
-server.database.password=${env.ACAS_PASSWORD}
-server.log.level=DEBUG
+server.database.name=${env.SERVER_DATABASE_NAME}
+server.database.schema=${env.SERVER_DATABASE_SCHEMA}
+server.database.username=${env.SERVER_DATABASE_USERNAME}
+server.database.password=${env.SERVER_DATABASE_PASSWORD}
+server.log.level=${env.SERVER_LOG_LEVEL}
 
-server.log.path=/home/runner/logs
+server.log.path=${env.SERVER_LOG_PATH}
 
 #config for whether project is required
-client.include.project=FALSE
+client.include.project=${env.CLIENT_INCLUDE_PROJECT}
 # config for whether project attribute is saved as part of an experiment
-client.save.project=TRUE
-client.protocol.save.project=true
-client.path=http://localhost:3000
-client.fullpath=http://${client.host}:${client.port}
+client.save.project=${env.CLIENT_SAVE_PROJECT}
+client.protocol.save.project=${env.CLIENT_PROTOCOL_SAVE_PROJECT}
+client.path=${env.CLIENT_PATH}
+client.fullpath=${env.CLIENT_FULLPATH}
 
 # Query tool settings
-client.service.result.viewer.displayName=Data Viewer
-client.service.result.viewer.configuredViewers=DataViewer,CurveCurator
-client.service.result.viewer.defaultViewer=DataViewer
-client.service.result.viewer.dataViewer.exptTree.showOnlyMatches=false
-client.service.result.viewer.liveDesign.baseUrl=
-client.service.result.viewer.liveDesign.username=
-client.service.result.viewer.liveDesign.password=
-client.service.result.viewer.liveDesign.database.name=
-client.service.result.viewer.liveDesign.database.username=
-client.service.result.viewer.liveDesign.database.password=
-client.service.result.viewer.liveDesign.database.hostname=
-client.service.result.viewer.liveDesign.database.port=
-server.liveDesign.installClientOnStart=false
-client.service.result.viewer.liveDesign.makeReportReadonly=true
-client.service.result.viewer.simpleSAR.baseUrl=
-client.service.result.viewer.seurat.protocolPrefix=http://${client.service.persistence.host}:9080/seurat/runseurat?cmd=newjob&AssayName=
-client.service.result.viewer.seurat.experimentPrefix=&AssayProtocol=
-client.service.result.viewer.protocolPrefix=http://${client.service.persistence.host}:9080/seurat/runseurat?cmd=newjob&AssayName=
-client.service.result.viewer.experimentPrefix=&AssayProtocol=
+client.service.result.viewer.displayName=${env.CLIENT_SERVICE_RESULT_VIEWER_DISPLAYNAME}
+client.service.result.viewer.configuredViewers=${env.CLIENT_SERVICE_RESULT_VIEWER_CONFIGUREDVIEWERS}
+client.service.result.viewer.defaultViewer=${env.CLIENT_SERVICE_RESULT_VIEWER_DEFAULTVIEWER}
+client.service.result.viewer.dataViewer.exptTree.showOnlyMatches=${env.CLIENT_SERVICE_RESULT_VIEWER_DATAVIEWER_EXPTTREE_SHOWONLYMATCHES}
+client.service.result.viewer.liveDesign.baseUrl=${env.CLIENT_SERVICE_RESULT_VIEWER_LIVEDESIGN_BASEURL}
+client.service.result.viewer.liveDesign.username=${env.CLIENT_SERVICE_RESULT_VIEWER_LIVEDESIGN_USERNAME}
+client.service.result.viewer.liveDesign.password=${env.CLIENT_SERVICE_RESULT_VIEWER_LIVEDESIGN_PASSWORD}
+client.service.result.viewer.liveDesign.database.name=${env.CLIENT_SERVICE_RESULT_VIEWER_LIVEDESIGN_DATABASE_NAME}
+client.service.result.viewer.liveDesign.database.username=${env.CLIENT_SERVICE_RESULT_VIEWER_LIVEDESIGN_DATABASE_USERNAME}
+client.service.result.viewer.liveDesign.database.password=${env.CLIENT_SERVICE_RESULT_VIEWER_LIVEDESIGN_DATABASE_PASSWORD}
+client.service.result.viewer.liveDesign.database.hostname=${env.CLIENT_SERVICE_RESULT_VIEWER_LIVEDESIGN_DATABASE_HOSTNAME}
+client.service.result.viewer.liveDesign.database.port=${env.CLIENT_SERVICE_RESULT_VIEWER_LIVEDESIGN_DATABASE_PORT}
+server.liveDesign.installClientOnStart=${env.SERVER_LIVEDESIGN_INSTALLCLIENTONSTART}
+client.service.result.viewer.liveDesign.makeReportReadonly=${env.CLIENT_SERVICE_RESULT_VIEWER_LIVEDESIGN_MAKEREPORTREADONLY}
+client.service.result.viewer.simpleSAR.baseUrl=${env.CLIENT_SERVICE_RESULT_VIEWER_SIMPLESAR_BASEURL}
+client.service.result.viewer.seurat.protocolPrefix=${env.CLIENT_SERVICE_RESULT_VIEWER_SEURAT_PROTOCOLPREFIX}
+client.service.result.viewer.seurat.experimentPrefix=${env.CLIENT_SERVICE_RESULT_VIEWER_SEURAT_EXPERIMENTPREFIX}
+client.service.result.viewer.protocolPrefix=${env.CLIENT_SERVICE_RESULT_VIEWER_PROTOCOLPREFIX}
+client.service.result.viewer.experimentPrefix=${env.CLIENT_SERVICE_RESULT_VIEWER_EXPERIMENTPREFIX}
 
-client.service.result.viewer.experimentNameColumn=EXPERIMENT_NAME
-client.service.result.viewer.experimentName.invalidCharacters="',
+client.service.result.viewer.experimentNameColumn=${env.CLIENT_SERVICE_RESULT_VIEWER_EXPERIMENTNAMECOLUMN}
+client.service.result.viewer.experimentName.invalidCharacters=${env.CLIENT_SERVICE_RESULT_VIEWER_EXPERIMENTNAME_INVALIDCHARACTERS}
 
-client.service.control.tolerance.percentage=0.01
+client.service.control.tolerance.percentage=${env.CLIENT_SERVICE_CONTROL_TOLERANCE_PERCENTAGE}
 
 # Required for Roo-based authentication and user information services. All used in CustomerSpecificFunctions.coffee
-server.roologin.getUserLink=${client.service.persistence.fullpath}authors/findbyname
-server.roologin.changeLink=http://${client.service.persistence.host}:${client.service.persistence.port}/acas/changepassword/update
-server.roologin.resetLink=http://${client.service.persistence.host}:${client.service.persistence.port}/acas/forgotpassword/update
-server.roologin.loginLink=http://${client.service.persistence.host}:${client.service.persistence.port}/acas/resources/j_spring_security_check
-client.roologin.showpasswordchange=true
+server.roologin.getUserLink=${env.SERVER_ROOLOGIN_GETUSERLINK}
+server.roologin.changeLink=${env.SERVER_ROOLOGIN_CHANGELINK}
+server.roologin.resetLink=${env.SERVER_ROOLOGIN_RESETLINK}
+server.roologin.loginLink=${env.SERVER_ROOLOGIN_LOGINLINK}
+client.roologin.showpasswordchange=${env.CLIENT_ROOLOGIN_SHOWPASSWORDCHANGE}
 
-server.allow.protocol.creation.formats=Generic,Dose Response,Custom Example,Example2,Time Result
-server.database.driver=org.postgresql.Driver
-server.database.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
-server.database.host=db
-server.database.port=5432
+server.allow.protocol.creation.formats=${env.SERVER_ALLOW_PROTOCOL_CREATION_FORMATS}
+server.database.driver=${env.SERVER_DATABASE_DRIVER}
+server.database.hibernate.dialect=${env.SERVER_DATABASE_HIBERNATE_DIALECT}
+server.database.host=${env.SERVER_DATABASE_HOST}
+server.database.port=${env.SERVER_DATABASE_PORT}
 
 #todo move to R stuff?
-server.database.r.driver=PostgreSQL()
-server.database.r.package=RPostgreSQL
-server.database.url=jdbc:postgresql://${server.database.host}:${server.database.port}/${server.database.name}
-server.delete.files.on.reload=false
-server.projects.type=HardCoded
-client.require.login=true
+server.database.r.driver=${env.SERVER_DATABASE_R_DRIVER}
+server.database.r.package=${env.SERVER_DATABASE_R_PACKAGE}
+server.database.url=${env.SERVER_DATABASE_URL}
+server.delete.files.on.reload=${env.SERVER_DELETE_FILES_ON_RELOAD}
+server.projects.type=${env.SERVER_PROJECTS_TYPE}
+client.require.login=${env.CLIENT_REQUIRE_LOGIN}
 
-server.service.external.file.type=blueimp
-server.service.external.file.service.url=
+server.service.external.file.type=${env.SERVER_SERVICE_EXTERNAL_FILE_TYPE}
+server.service.external.file.service.url=${env.SERVER_SERVICE_EXTERNAL_FILE_SERVICE_URL}
 
 # options for preferred batchid type are: NewLineSepBulkPost, SeuratCmpdReg, GeneCodeCheckByR, AcasCmpdReg, LabSynchCmpdReg, SingleBatchNameQueryString, AllPass
-client.service.external.preferred.batchid.type=NewLineSepBulkPost
-server.service.external.preferred.batchid.url=http://tomcat:8080/acas/api/v1/getPreferredName
-server.service.external.preferred.batchid.separator=-
-server.service.external.project.url=
-server.service.external.report.registration.url=
-server.service.external.user.authentication.url=
-server.service.external.user.information.url=
-server.service.external.logging.url=
+client.service.external.preferred.batchid.type=${env.CLIENT_SERVICE_EXTERNAL_PREFERRED_BATCHID_TYPE}
+server.service.external.preferred.batchid.url=${env.SERVER_SERVICE_EXTERNAL_PREFERRED_BATCHID_URL}
+server.service.external.preferred.batchid.separator=${env.SERVER_SERVICE_EXTERNAL_PREFERRED_BATCHID_SEPARATOR}
+server.service.external.project.url=${env.SERVER_SERVICE_EXTERNAL_PROJECT_URL}
+server.service.external.report.registration.url=${env.SERVER_SERVICE_EXTERNAL_REPORT_REGISTRATION_URL}
+server.service.external.user.authentication.url=${env.SERVER_SERVICE_EXTERNAL_USER_AUTHENTICATION_URL}
+server.service.external.user.information.url=${env.SERVER_SERVICE_EXTERNAL_USER_INFORMATION_URL}
+server.service.external.logging.url=${env.SERVER_SERVICE_EXTERNAL_LOGGING_URL}
 
 # Required if using Spotfire
-client.service.spotfire.host=
-client.service.spotfire.path=
+client.service.spotfire.host=${env.CLIENT_SERVICE_SPOTFIRE_HOST}
+client.service.spotfire.path=${env.CLIENT_SERVICE_SPOTFIRE_PATH}
 
 # Used by custom code for accessing inventory
-server.service.external.inventory.database.host=
-server.service.external.inventory.database.port=
-server.service.external.inventory.database.name=
-server.service.external.inventory.database.username=
-server.service.external.inventory.database.password=
+server.service.external.inventory.database.host=${env.SERVER_SERVICE_EXTERNAL_INVENTORY_DATABASE_HOST}
+server.service.external.inventory.database.port=${env.SERVER_SERVICE_EXTERNAL_INVENTORY_DATABASE_PORT}
+server.service.external.inventory.database.name=${env.SERVER_SERVICE_EXTERNAL_INVENTORY_DATABASE_NAME}
+server.service.external.inventory.database.username=${env.SERVER_SERVICE_EXTERNAL_INVENTORY_DATABASE_USERNAME}
+server.service.external.inventory.database.password=${env.SERVER_SERVICE_EXTERNAL_INVENTORY_DATABASE_PASSWORD}
 
 ## options for auth. strategy are: properties, database, ldap (sso is configured seperately)
-server.security.authstrategy=database
+server.security.authstrategy=${env.SERVER_SECURITY_AUTHSTRATEGY}
 #server.security.properties.path=/opt/seurat/SeuratServer/users.txt
 #to make authstrategy config accessible to the client
-client.security.authstrategy=${server.security.authstrategy}
+client.security.authstrategy=${env.CLIENT_SECURITY_AUTHSTRATEGY}
 
 ## SSO Configuration
 # Converts the main login page to SSO login
 # Direct login using other auth strategies available at /login/Direct
 # Examples configs using okta but can use any SAML login IDP
 
-server.security.saml.use=false
-server.security.saml.entryPoint=https://<organization>.okta.com/app/<appName>/<issuerID>/sso/saml
-server.security.saml.issuer=http://www.okta.com/<issuerID>
+server.security.saml.use=${env.SERVER_SECURITY_SAML_USE}
+server.security.saml.entryPoint=${env.SERVER_SECURITY_SAML_ENTRYPOINT}
+server.security.saml.issuer=${env.SERVER_SECURITY_SAML_ISSUER}
 # Embedded cert needs \\n in string to escape properly
-server.security.saml.cert=-----BEGIN CERTIFICATE-----\\nABC\\nXYZ\\n-----END CERTIFICATE-----
-server.security.saml.userNameAttribute=nameID
-server.security.saml.firstNameAttribute=firstName
-server.security.saml.lastNameAttribute=lastName
-server.security.saml.emailAttribute=email
-server.security.saml.logoutRedirectURL=https://<organization>.okta.com
-server.security.saml.roles.sync=false
-server.security.saml.disableRequestedAuthnContext=true
+server.security.saml.cert=${env.SERVER_SECURITY_SAML_CERT}
+server.security.saml.userNameAttribute=${env.SERVER_SECURITY_SAML_USERNAMEATTRIBUTE}
+server.security.saml.firstNameAttribute=${env.SERVER_SECURITY_SAML_FIRSTNAMEATTRIBUTE}
+server.security.saml.lastNameAttribute=${env.SERVER_SECURITY_SAML_LASTNAMEATTRIBUTE}
+server.security.saml.emailAttribute=${env.SERVER_SECURITY_SAML_EMAILATTRIBUTE}
+server.security.saml.logoutRedirectURL=${env.SERVER_SECURITY_SAML_LOGOUTREDIRECTURL}
+server.security.saml.roles.sync=${env.SERVER_SECURITY_SAML_ROLES_SYNC}
+server.security.saml.disableRequestedAuthnContext=${env.SERVER_SECURITY_SAML_DISABLEREQUESTEDAUTHNCONTEXT}
 
 #Controls whether Roo syncs the AuthorRole table with authorities granted in LDAP
-server.security.syncLdapAuthRoles=false
+server.security.syncLdapAuthRoles=${env.SERVER_SECURITY_SYNCLDAPAUTHROLES}
 #to make syncLdapAuthRoles config accessible to the client
-client.security.syncLdapAuthRoles=${server.security.syncLdapAuthRoles}
-client.scientistCodeOrigin=ACAS authors
-client.molecularTargetCodeOrigin=ACAS DDICT
+client.security.syncLdapAuthRoles=${env.CLIENT_SECURITY_SYNCLDAPAUTHROLES}
+client.scientistCodeOrigin=${env.CLIENT_SCIENTISTCODEORIGIN}
+client.molecularTargetCodeOrigin=${env.CLIENT_MOLECULARTARGETCODEORIGIN}
 
-client.roles.loginRole=ROLE_ACAS-USERS,ROLE_CMPDREG-USERS
-client.roles.cmpdreg.chemistRole=ROLE_CMPDREG-USERS
-client.roles.cmpdreg.adminRole=ROLE_CMPDREG-ADMINS
-client.roles.acas.userRole=ROLE_ACAS-USERS
-client.roles.acas.adminRole=ROLE_ACAS-ADMINS
+client.roles.loginRole=${env.CLIENT_ROLES_LOGINROLE}
+client.roles.cmpdreg.chemistRole=${env.CLIENT_ROLES_CMPDREG_CHEMISTROLE}
+client.roles.cmpdreg.adminRole=${env.CLIENT_ROLES_CMPDREG_ADMINROLE}
+client.roles.acas.userRole=${env.CLIENT_ROLES_ACAS_USERROLE}
+client.roles.acas.adminRole=${env.CLIENT_ROLES_ACAS_ADMINROLE}
 
 # To remove roles set the roles configs to nothing.  You may also need to edit module menus configuration to not require these roles
 #client.roles.loginRole=
@@ -387,20 +387,20 @@ client.roles.acas.adminRole=ROLE_ACAS-ADMINS
 #client.roles.acas.userRole=
 #client.roles.acas.adminRole=
 
-client.browser.enableSearchAll=true
+client.browser.enableSearchAll=${env.CLIENT_BROWSER_ENABLESEARCHALL}
 
 ## Cmpd Reg Bulk Loader Options
-client.service.cmpdReg.persistence.host=tomcat
-client.service.cmpdReg.persistence.path=acas/api/v1
-client.service.cmpdReg.persistence.fullpath=http://${client.service.cmpdReg.persistence.host}:${client.service.persistence.port}/${client.service.cmpdReg.persistence.path}/
-client.service.cmpdReg.persistence.basepath=http://${client.service.cmpdReg.persistence.host}:${client.service.persistence.port}/acas
+client.service.cmpdReg.persistence.host=${env.CLIENT_SERVICE_CMPDREG_PERSISTENCE_HOST}
+client.service.cmpdReg.persistence.path=${env.CLIENT_SERVICE_CMPDREG_PERSISTENCE_PATH}
+client.service.cmpdReg.persistence.fullpath=${env.CLIENT_SERVICE_CMPDREG_PERSISTENCE_FULLPATH}
+client.service.cmpdReg.persistence.basepath=${env.CLIENT_SERVICE_CMPDREG_PERSISTENCE_BASEPATH}
 
 # If project select is shown separately in the Configuration part of the GUI
-client.cmpdReg.showProjectSelect=true
-client.cmpdReg.projectName=ACAS
+client.cmpdReg.showProjectSelect=${env.CLIENT_CMPDREG_SHOWPROJECTSELECT}
+client.cmpdReg.projectName=${env.CLIENT_CMPDREG_PROJECTNAME}
 
 # Config for whether file date should be shown in the Configuration part of the GUI
-client.cmpdReg.showFileDate=true
+client.cmpdReg.showFileDate=${env.CLIENT_CMPDREG_SHOWFILEDATE}
 
 # Migration notes
 # ACAS 1.5 -> 1.6
@@ -409,8 +409,6 @@ client.cmpdReg.showFileDate=true
 #
 # Navigation to external ACAS modules from ACAS homepage
 # Example: client.moduleMenus.modules.external=[{"displayName": "Compound Registration", "href": "http://localhost:8081/cmpdreg"},\
-                                     {"displayName": "Seurat", "href": "http://localhost:9080/seurat"}, \
-                                     {"displayName": "Compound Registration Bulk Loader", "href": "http://localhost:3000/CmpdRegBulkLoader"}]
 #
 # Curve fit model configuration
 #
@@ -418,16 +416,7 @@ client.cmpdReg.showFileDate=true
 # Example: client.curvefit.modelfitparameter.classes=[{"code":"4 parameter D-R", "parametersController":"DoseResponseAnalysisParametersController", "parametersClass": "DoseResponseAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveLL4", "RSource":"public/src/modules/CurveAnalysis/src/server/ll4.R"}, \
 #                                                     {"code":"Ki Fit", "parametersController":"DoseResponseKiAnalysisParametersController", "parametersClass": "DoseResponseKiAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveKi", "RSource":"public/src/modules/CurveAnalysis/src/server/ki.R"}]
 #
-client.curvefit.modelfitparameter.classes=[{"code":"4 parameter D-R", "parametersController":"DoseResponseAnalysisParametersController", "parametersClass": "DoseResponseAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveLL4", "RSource":"src/r/CurveAnalysis/ll4.R", "parametersOptions":{"defaultBaseline":0}}, \
-                                            {"code":"Ki Fit", "parametersController":"DoseResponseKiAnalysisParametersController", "parametersClass": "DoseResponseKiAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveKi", "RSource":"src/r/CurveAnalysis/ki.R", "parametersOptions":{"defaultBaseline":0}}, \
-                                            {"code":"4 parameter D-R IC50", "parametersController":"DoseResponseAnalysisParametersController", "parametersClass": "DoseResponseIC50AnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveLL4IC50", "RSource":"src/r/CurveAnalysis/ll4IC50.R", "parametersOptions":{"defaultBaseline":0}},\
-                                            {"code":"4 parameter D-R IC50/DMax", "parametersController":"DoseResponseAnalysisParametersController", "parametersClass": "DoseResponseIC50AnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveLL4IC50", "RSource":"src/r/CurveAnalysis/ll4IC50DMax.R", "parametersOptions":{"defaultBaseline":0}},\
-                                            {"code":"Michaelis-Menten", "parametersController":"DoseResponseKmAnalysisParametersController", "parametersClass": "DoseResponseKmAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveKm", "RSource":"src/r/CurveAnalysis/mm2.R", "parametersOptions":{"defaultBaseline":0}},\
-                                            {"code":"Substrate Inhibition", "parametersController":"DoseResponseSubstrateInhibitionAnalysisParametersController", "parametersClass": "DoseResponseSubstrateInhibitionAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveSubstrateInhibition", "RSource":"src/r/CurveAnalysis/substrateInhibition.R", "parametersOptions":{"defaultBaseline":0}},\
-                                            {"code":"Scatter", "RSource":"src/r/CurveAnalysis/scatter.R", "renderOptions": {"connectPoints": false}},\
-                                            {"code":"Scatter Log-x", "RSource":"src/r/CurveAnalysis/scatter.R", "renderOptions": {"connectPoints": false}},\
-                                            {"code":"Scatter Log-y", "RSource":"src/r/CurveAnalysis/scatter.R", "renderOptions": {"connectPoints": false}},\
-                                            {"code":"Scatter Log-x,y", "RSource":"src/r/CurveAnalysis/scatter.R", "renderOptions": {"connectPoints": false}}]
+client.curvefit.modelfitparameter.classes=${env.CLIENT_CURVEFIT_MODELFITPARAMETER_CLASSES}
 
 
 # Lock when approved filter
@@ -436,93 +425,93 @@ client.curvefit.modelfitparameter.classes=[{"code":"4 parameter D-R", "parameter
 #
 # Example: client.experiment.lockwhenapproved.filter=[{"lsType": "Bio Activity"}]
 #
-client.experiment.lockwhenapproved.filter=[{"lsType": "Bio Activity"}]
+client.experiment.lockwhenapproved.filter=${env.CLIENT_EXPERIMENT_LOCKWHENAPPROVED_FILTER}
 
 #Configs for whether notebook attributes for protocols and experiments should be visible and/or required
 #Note that notebook page can't be visible if notebook is not visible and page can't be required if notebook is not required
-client.entity.notebook.save=true
-client.entity.notebook.require=true
-client.entity.notebookPage.save=true
-client.entity.notebookPage.require=false
+client.entity.notebook.save=${env.CLIENT_ENTITY_NOTEBOOK_SAVE}
+client.entity.notebook.require=${env.CLIENT_ENTITY_NOTEBOOK_REQUIRE}
+client.entity.notebookPage.save=${env.CLIENT_ENTITY_NOTEBOOKPAGE_SAVE}
+client.entity.notebookPage.require=${env.CLIENT_ENTITY_NOTEBOOKPAGE_REQUIRE}
 
 #Config for whether scientist is editable for protocols and experiments
-client.entity.scientist.editable=true
+client.entity.scientist.editable=${env.CLIENT_ENTITY_SCIENTIST_EDITABLE}
 
 #Config for default protocol/experiment status
-client.entity.status.default=created
+client.entity.status.default=${env.CLIENT_ENTITY_STATUS_DEFAULT}
 
 # Protocols and experiments which should be hidden (to non-admin users) in the protocol/expt browser when the status is in the config below
-client.entity.hideStatuses=["deleted"]
+client.entity.hideStatuses=${env.CLIENT_ENTITY_HIDESTATUSES}
 
 # client.entity.editingRoles/deletingRoles determine which users can edit/delete protocols/expts. Leave config empty if all users can edit/delete
 # use 'entityScientist' if want to restrict privileges to user saved in the scientist value
 # Example for restricting editing privs to user in entity's scientist value and users with admin role: client.entity.editingRoles=entityScientist,admin
 # client.entity.editingRoles=entityScientist,projectAdmin,admin
 # client.entity.deletingRoles=entityScientist,projectAdmin,admin
-client.entity.editingRoles=
-client.entity.deletingRoles=
+client.entity.editingRoles=${env.CLIENT_ENTITY_EDITINGROLES}
+client.entity.deletingRoles=${env.CLIENT_ENTITY_DELETINGROLES}
 #client.entity.viewDeletedRoles=projectAdmin,ROLE_ACAS-ADMINS
-client.entity.viewDeletedRoles=
+client.entity.viewDeletedRoles=${env.CLIENT_ENTITY_VIEWDELETEDROLES}
 
-client.protocol.showAssayTreeRule=false
-client.protocol.showCurveDisplayParams=true
-client.experiment.uneditableFileTypes=["source file", "annotation file"]
+client.protocol.showAssayTreeRule=${env.CLIENT_PROTOCOL_SHOWASSAYTREERULE}
+client.protocol.showCurveDisplayParams=${env.CLIENT_PROTOCOL_SHOWCURVEDISPLAYPARAMS}
+client.experiment.uneditableFileTypes=${env.CLIENT_EXPERIMENT_UNEDITABLEFILETYPES}
 
 #Controls privileges for who can create/edit and delete authors
-client.author.editingRoles=ROLE_ACAS-ADMINS
-client.author.deletingRoles=ROLE_ACAS-ADMINS
+client.author.editingRoles=${env.CLIENT_AUTHOR_EDITINGROLES}
+client.author.deletingRoles=${env.CLIENT_AUTHOR_DELETINGROLES}
 
 # Default status for experiments loaded thorugh experiment loader
-server.sel.experimentStatus=approved
-server.sel.protocolStatus=created
-server.sel.assayStage=unassigned
+server.sel.experimentStatus=${env.SERVER_SEL_EXPERIMENTSTATUS}
+server.sel.protocolStatus=${env.SERVER_SEL_PROTOCOLSTATUS}
+server.sel.assayStage=${env.SERVER_SEL_ASSAYSTAGE}
 
 # Cron- change to "false" to not start cron jobs on startup
-server.service.cron.startOnRestart=true
-server.service.cron.enable=true
+server.service.cron.startOnRestart=${env.SERVER_SERVICE_CRON_STARTONRESTART}
+server.service.cron.enable=${env.SERVER_SERVICE_CRON_ENABLE}
 
 #TODO: remove later, support both
-server.service.genericSpecificPreProcessor=false
+server.service.genericSpecificPreProcessor=${env.SERVER_SERVICE_GENERICSPECIFICPREPROCESSOR}
 
 # Comma-separated list should contain list of names of dom elements (without '.bv_group') to add hide class to
 # Example: client.experiment.hideFields=details,comments
-client.protocol.hideFields=
-client.experiment.hideFields=
+client.protocol.hideFields=${env.CLIENT_PROTOCOL_HIDEFIELDS}
+client.experiment.hideFields=${env.CLIENT_EXPERIMENT_HIDEFIELDS}
 
 # Experiment status after successful SEL upload
-server.sel.experimentStatus=approved
+server.sel.experimentStatus=${env.SERVER_SEL_EXPERIMENTSTATUS}
 
 
 # User role that allows changing protocol and experiment statuses to "Approved" or "Rejected"
-client.entity.approvalRole=
+client.entity.approvalRole=${env.CLIENT_ENTITY_APPROVALROLE}
 
-client.service.preferred.batchid.path=/api/preferredBatchId
-client.service.project.path=/api/projects
-client.service.users.path=/api/users
-server.file.server.path=privateUploads
-server.temp.file.server.path=privateTempFiles
-server.service.persistence.jdbc.validation.query=select version()
+client.service.preferred.batchid.path=${env.CLIENT_SERVICE_PREFERRED_BATCHID_PATH}
+client.service.project.path=${env.CLIENT_SERVICE_PROJECT_PATH}
+client.service.users.path=${env.CLIENT_SERVICE_USERS_PATH}
+server.file.server.path=${env.SERVER_FILE_SERVER_PATH}
+server.temp.file.server.path=${env.SERVER_TEMP_FILE_SERVER_PATH}
+server.service.persistence.jdbc.validation.query=${env.SERVER_SERVICE_PERSISTENCE_JDBC_VALIDATION_QUERY}
 
 #Rapache conf file configs
-server.rapache.conf.startservers=1
-server.rapache.conf.minspareservers=5
-server.rapache.conf.maxspareservers=5
-server.rapache.conf.serverlimit=5
-server.rapache.conf.maxclients=5
-server.rapache.conf.maxrequestsperchild=200
-server.rapache.conf.serversignature=On
-server.rapache.conf.hostnamelookups=On
-server.rapache.conf.serveradmin=root@localhost
-server.rapache.conf.serversignature=On
-server.rapache.conf.logformat='"%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined'
-server.rapache.conf.rewriteengine=On
+server.rapache.conf.startservers=${env.SERVER_RAPACHE_CONF_STARTSERVERS}
+server.rapache.conf.minspareservers=${env.SERVER_RAPACHE_CONF_MINSPARESERVERS}
+server.rapache.conf.maxspareservers=${env.SERVER_RAPACHE_CONF_MAXSPARESERVERS}
+server.rapache.conf.serverlimit=${env.SERVER_RAPACHE_CONF_SERVERLIMIT}
+server.rapache.conf.maxclients=${env.SERVER_RAPACHE_CONF_MAXCLIENTS}
+server.rapache.conf.maxrequestsperchild=${env.SERVER_RAPACHE_CONF_MAXREQUESTSPERCHILD}
+server.rapache.conf.serversignature=${env.SERVER_RAPACHE_CONF_SERVERSIGNATURE}
+server.rapache.conf.hostnamelookups=${env.SERVER_RAPACHE_CONF_HOSTNAMELOOKUPS}
+server.rapache.conf.serveradmin=${env.SERVER_RAPACHE_CONF_SERVERADMIN}
+server.rapache.conf.serversignature=${env.SERVER_RAPACHE_CONF_SERVERSIGNATURE}
+server.rapache.conf.logformat=${env.SERVER_RAPACHE_CONF_LOGFORMAT}
+server.rapache.conf.rewriteengine=${env.SERVER_RAPACHE_CONF_REWRITEENGINE}
 
 # Limit Rapache thread Limit
 # Units are in MB
 # If a thread finishes a request and has used more than this limit, it will kill itself
 # R routes that have the following string "# MEMORY_LIMIT_EXEMPT" are exempt from this checking as they
 # are routes that are expected to return as fast as possible and checking memory takes about 1/4 of a second
-server.rapache.child.memory.limit=1000
+server.rapache.child.memory.limit=${env.SERVER_RAPACHE_CHILD_MEMORY_LIMIT}
 
 #################### SUPPORT EMAIL ####################
 
@@ -542,19 +531,19 @@ server.rapache.child.memory.limit=1000
 #           server.support.smtp.auth=true
 #           server.support.smtp.ssl=true
 
-server.support.smtp.host=localhost
-server.support.smtp.port=25
-server.support.smtp.username=support@mcneilco.com
-server.support.smtp.password=null
-server.support.smtp.auth=false
-server.support.smtp.tls=false
-server.support.smtp.ssl=false
-server.support.smtp.from=
+server.support.smtp.host=${env.SERVER_SUPPORT_SMTP_HOST}
+server.support.smtp.port=${env.SERVER_SUPPORT_SMTP_PORT}
+server.support.smtp.username=${env.SERVER_SUPPORT_SMTP_USERNAME}
+server.support.smtp.password=${env.SERVER_SUPPORT_SMTP_PASSWORD}
+server.support.smtp.auth=${env.SERVER_SUPPORT_SMTP_AUTH}
+server.support.smtp.tls=${env.SERVER_SUPPORT_SMTP_TLS}
+server.support.smtp.ssl=${env.SERVER_SUPPORT_SMTP_SSL}
+server.support.smtp.from=${env.SERVER_SUPPORT_SMTP_FROM}
 
-client.basePath=/
+client.basePath=${env.CLIENT_BASEPATH}
 
-server.curveCurator.onRejectMakeReportedValuesNonPublic=false
-server.curveRender.drawPointsForRejectedCurve=true
+server.curveCurator.onRejectMakeReportedValuesNonPublic=${env.SERVER_CURVECURATOR_ONREJECTMAKEREPORTEDVALUESNONPUBLIC}
+server.curveRender.drawPointsForRejectedCurve=${env.SERVER_CURVERENDER_DRAWPOINTSFORREJECTEDCURVE}
 
 ### Plot colors
 # Colors of curves to be cycled through when coloring curves.  Black is usually the first color as the first color is used for single, non overlayed curves.
@@ -565,90 +554,176 @@ server.curveRender.drawPointsForRejectedCurve=true
 # server.curveRender.plotColors=black,red,blue,orange,purple,cyan,darkolivegreen4,firebrick4,aquamarine4,chocolate3,dodgerblue4,coral2,darkorchid3,cadetblue4,darkgoldenrod3,lightcyan4,seagreen4,mediumvioletred
 # server.curveRender.plotColors=black,#a6cee3,#1f78b4,#b2df8a,#33a02c,#fb9a99,#e31a1c,#fdbf6f,#ff7f00,#cab2d6,#6a3d9a,#ffff99,#b15928
 # server.curveRender.plotColors=black
-server.curveRender.plotColors=black,#0C5BB0FF,#EE0011FF,#15983DFF,#EC579AFF,#FA6B09FF,#149BEDFF,#A1C720FF,#FEC10BFF,#16A08CFF,#9A703EFF
+server.curveRender.plotColors=${env.SERVER_CURVERENDER_PLOTCOLORS}
 
 ### Most recent curve color
 ## Color curves by default according to the plot colors.  The list of plot colors is recycled if there are more curves in the plot than colors
-server.curveRender.usePlotColorsByDefault=true
+server.curveRender.usePlotColorsByDefault=${env.SERVER_CURVERENDER_USEPLOTCOLORSBYDEFAULT}
 
 ### Most recent curve color
 ## If supplied the most recent uploaded curve will get the supplied color
-server.curveRender.mostRecentCurveColor=green
+server.curveRender.mostRecentCurveColor=${env.SERVER_CURVERENDER_MOSTRECENTCURVECOLOR}
 
 ### Curve line width
 # Default: 1
 # If supplied, a with 0.5, the line widths of curves will be 1/2 the thickness of the default of 1.  Converseley, a value of 2 will produce curves with twice the thickeness.
-server.curveRender.curveLwd=1.5
+server.curveRender.curveLwd=${env.SERVER_CURVERENDER_CURVELWD}
 
 ### Plot points on overlay
 # If true, curves that are overlayed will show points for all the curves in the plot.  If false, no points will be shown on overlayed curves.
 # This does not affect single/non overlayed curves
-server.curveRender.plotPointsOnOverlay=false
+server.curveRender.plotPointsOnOverlay=${env.SERVER_CURVERENDER_PLOTPOINTSONOVERLAY}
 
 # Restrict experiment search by project
-server.service.projects.restrictExperiments=false
+server.service.projects.restrictExperiments=${env.SERVER_SERVICE_PROJECTS_RESTRICTEXPERIMENTS}
 
-flyway.schema=acas
-flyway.database.username=${server.database.username}
-flyway.database.password=${server.database.password}
+server.flyway.location=${env.SERVER_FLYWAY_LOCATION}
 
-server.acas.license=/home/runner/build/conf/acas.lic
+server.chemistry.package=${env.SERVER_CHEMISTRY_PACKAGE}
 
-server.systemTest.runOnStart=${env.RUN_SYSTEM_TEST}
-server.systemTest.runDestructive=false
+server.acas.batchSize=${env.SERVER_ACAS_BATCHSIZE}
+server.acas.fetchSize=${env.SERVER_ACAS_FETCHSIZE}
+server.uniqueExperimentName=${env.SERVER_UNIQUEEXPERIMENTNAME}
+server.uniqueProtocolName=${env.SERVER_UNIQUEPROTOCOLNAME}
+server.autoCreateKinds=${env.SERVER_AUTOCREATEKINDS}
+server.enableSwagger=${env.SERVER_ENABLESWAGGER}
+server.uniqueLsThingName=${env.SERVER_UNIQUELSTHINGNAME}
+server.acas.license=${env.SERVER_ACAS_LICENSE}
+
+server.systemTest.runOnStart=${env.SERVER_SYSTEMTEST_RUNONSTART}
+server.systemTest.runDestructive=${env.SERVER_SYSTEMTEST_RUNDESTRUCTIVE}
 
 
 # Required configs for which base entity to use
-client.protocol.mainControllerClassName=ProtocolBaseController
-client.experiment.mainControllerClassName=ExperimentBaseController
+client.protocol.mainControllerClassName=${env.CLIENT_PROTOCOL_MAINCONTROLLERCLASSNAME}
+client.experiment.mainControllerClassName=${env.CLIENT_EXPERIMENT_MAINCONTROLLERCLASSNAME}
 
 # Behavior without this config set to true is to give all users access to all projects
-server.project.roles.enable=false
+server.project.roles.enable=${env.SERVER_PROJECT_ROLES_ENABLE}
 
 #Controls whether to try to sync projects list from ACAS to CmpdReg
-server.project.sync.cmpdReg=true
+server.project.sync.cmpdReg=${env.SERVER_PROJECT_SYNC_CMPDREG}
 
-client.projectEditor.restrictedCheckbox.show=true
-client.projectEditor.isRestricted.default=false
+client.projectEditor.restrictedCheckbox.show=${env.CLIENT_PROJECTEDITOR_RESTRICTEDCHECKBOX_SHOW}
+client.projectEditor.isRestricted.default=${env.CLIENT_PROJECTEDITOR_ISRESTRICTED_DEFAULT}
 
-client.roles.crossProjectLoaderRole=ROLE_ACAS-CROSS-PROJECT-LOADER
+client.roles.crossProjectLoaderRole=${env.CLIENT_ROLES_CROSSPROJECTLOADERROLE}
 
 # List of project codes to filter out and hide from ACAS
 # e.g. server.projects.filterList = ["SomeProject"]
-server.projects.filterList = []
+server.projects.filterList=${env.SERVER_PROJECTS_FILTERLIST}
 
 # For whether protocols and experiments should have sequential user defined corpName labels
-client.entity.saveInitialsCorpName=false
+client.entity.saveInitialsCorpName=${env.CLIENT_ENTITY_SAVEINITIALSCORPNAME}
 
 # For which protocol clobValues from protocol metadata state are copied over to experiments
-client.experiment.copiedProtocolMetadataAttrs=
+client.experiment.copiedProtocolMetadataAttrs=${env.CLIENT_EXPERIMENT_COPIEDPROTOCOLMETADATAATTRS}
 # Whether to show the Required Entity Type GUI picklist
-client.protocol.requiredEntityType.save=false
+client.protocol.requiredEntityType.save=${env.CLIENT_PROTOCOL_REQUIREDENTITYTYPE_SAVE}
 # Whether the required entity type is a required field
-client.protocol.requiredEntityType.allowEmpty=true
+client.protocol.requiredEntityType.allowEmpty=${env.CLIENT_PROTOCOL_REQUIREDENTITYTYPE_ALLOWEMPTY}
 
 #Compound Inventory configs
-client.compoundInventory.enforceUppercaseBarcodes=false
+client.compoundInventory.enforceUppercaseBarcodes=${env.CLIENT_COMPOUNDINVENTORY_ENFORCEUPPERCASEBARCODES}
 #Default location tree labels
-client.compoundInventory.rootLocationLabel=COMPANY
-client.compoundInventory.trashLocationLabel=trash
-client.compoundInventory.benchesLocationLabel=Benches
+client.compoundInventory.rootLocationLabel=${env.CLIENT_COMPOUNDINVENTORY_ROOTLOCATIONLABEL}
+client.compoundInventory.trashLocationLabel=${env.CLIENT_COMPOUNDINVENTORY_TRASHLOCATIONLABEL}
+client.compoundInventory.benchesLocationLabel=${env.CLIENT_COMPOUNDINVENTORY_BENCHESLOCATIONLABEL}
 #Disallow loading daughter vials with different physical state than the parent vial
-client.compoundInventory.daughterVials.strictMatchPhysicalState=false
+client.compoundInventory.daughterVials.strictMatchPhysicalState=${env.CLIENT_COMPOUNDINVENTORY_DAUGHTERVIALS_STRICTMATCHPHYSICALSTATE}
 
 # Whether to save location as a codeValue or as a full location interaction
-client.compoundInventory.saveLocationAsCodeValue=true
+client.compoundInventory.saveLocationAsCodeValue=${env.CLIENT_COMPOUNDINVENTORY_SAVELOCATIONASCODEVALUE}
 
 # Allows the override of the words "Experiment" and "Protocol" throughout the ACAS UI
 # These configs should NOT be set to the same value as this would break some functionality
 # of data loaders.
 # The values are often pluralized by putting an "s" at the end, so whatever values are used
 # should be able to be pluralized with an "s" appended to them.
-client.protocol.label=Protocol
-client.experiment.label=Experiment
+client.protocol.label=${env.CLIENT_PROTOCOL_LABEL}
+client.experiment.label=${env.CLIENT_EXPERIMENT_LABEL}
 
-client.cmpdRegBulkLoader.validationMode.enable=true
-client.cmpdRegBulkLoader.validationMode.allowRegistrationOnError=false
+client.cmpdRegBulkLoader.validationMode.enable=${env.CLIENT_CMPDREGBULKLOADER_VALIDATIONMODE_ENABLE}
+client.cmpdRegBulkLoader.validationMode.allowRegistrationOnError=${env.CLIENT_CMPDREGBULKLOADER_VALIDATIONMODE_ALLOWREGISTRATIONONERROR}
+
+
+client.containerInventory.search.maxResult=${env.CLIENT_CONTAINER_INVENTORY_SEARCH_MAXRESULT}
 
 #config for whether SOLR should be updated when things are saved/updated
-client.solr.updateSolrForThings=false
+client.solr.updateSolrForThings=${env.CLIENT_SOLR_UPDATESOLRFORTHINGS}
+client.cmpdreg.sketcher=${env.CLIENT_CMPDREG_SKETCHER}
+client.cmpdreg.serverConnection.connectToServer=${env.CLIENT_CMPDREG_SERVERCONNECTION_CONNECTTOSERVER}
+client.cmpdreg.serverConnection.baseServerURL=${env.CLIENT_CMPDREG_SERVERCONNECTION_BASESERVERURL}
+client.cmpdreg.serverConnection.logoutURL=${env.CLIENT_CMPDREG_SERVERCONNECTION_LOGOUTURL}
+client.cmpdreg.serverConnection.acasURL=${env.CLIENT_CMPDREG_SERVERCONNECTION_ACASURL}
+client.cmpdreg.serverConnection.acasAppURL=${env.CLIENT_CMPDREG_SERVERCONNECTION_ACASAPPURL}
+client.cmpdreg.clientUILabels.corpNameLabel=${env.CLIENT_CMPDREG_CLIENTUILABELS_CORPNAMELABEL}
+client.cmpdreg.clientUILabels.applicationNameForTitleBar=${env.CLIENT_CMPDREG_CLIENTUILABELS_APPLICATIONNAMEFORTITLEBAR}
+client.cmpdreg.clientUILabels.commonNameLabel=${env.CLIENT_CMPDREG_CLIENTUILABELS_COMMONNAMELABEL}
+client.cmpdreg.regSearchResults.hideVirtualOption=${env.CLIENT_CMPDREG_REGSEARCHRESULTS_HIDEVIRTUALOPTION}
+client.cmpdreg.searchForm.defaultMaxResults=${env.CLIENT_CMPDREG_SEARCHFORM_DEFAULTMAXRESULTS}
+client.cmpdreg.metaLot.saltBeforeLot=${env.CLIENT_CMPDREG_METALOT_SALTBEFORELOT}
+client.cmpdreg.metaLot.lotCalledBatch=${env.CLIENT_CMPDREG_METALOT_LOTCALLEDBATCH}
+client.cmpdreg.metaLot.showBuid=${env.CLIENT_CMPDREG_METALOT_SHOWBUID}
+client.cmpdreg.metaLot.includeAbbrevInIsoSaltOption=${env.CLIENT_CMPDREG_METALOT_INCLUDEABBREVINISOSALTOPTION}
+client.cmpdreg.metaLot.saltListNoneOption=${env.CLIENT_CMPDREG_METALOT_SALTLISTNONEOPTION}
+client.cmpdreg.metaLot.isotopeListNoneOption=${env.CLIENT_CMPDREG_METALOT_ISOTOPELISTNONEOPTION}
+client.cmpdreg.metaLot.sortSaltsByAbbrev=${env.CLIENT_CMPDREG_METALOT_SORTSALTSBYABBREV}
+client.cmpdreg.metaLot.sortIsotopesByAbbrev=${env.CLIENT_CMPDREG_METALOT_SORTISOTOPESBYABBREV}
+client.cmpdreg.metaLot.showSelectCategoryOption=${env.CLIENT_CMPDREG_METALOT_SHOWSELECTCATEGORYOPTION}
+client.cmpdreg.metaLot.showSelectCompoundTypeOption=${env.CLIENT_CMPDREG_METALOT_SHOWSELECTCOMPOUNDTYPEOPTION}
+client.cmpdreg.metaLot.showSelectParentAnnotationOption=${env.CLIENT_CMPDREG_METALOT_SHOWSELECTPARENTANNOTATIONOPTION}
+client.cmpdreg.metaLot.showSelectCompoundTypeList=${env.CLIENT_CMPDREG_METALOT_SHOWSELECTCOMPOUNDTYPELIST}
+client.cmpdreg.metaLot.showSelectParentAnnotationList=${env.CLIENT_CMPDREG_METALOT_SHOWSELECTPARENTANNOTATIONLIST}
+client.cmpdreg.metaLot.fileSaveDirNamedForBatchName=${env.CLIENT_CMPDREG_METALOT_FILESAVEDIRNAMEDFORBATCHNAME}
+client.cmpdreg.metaLot.useExactMass=${env.CLIENT_CMPDREG_METALOT_USEEXACTMASS}
+client.cmpdreg.metaLot.useProjectRolesToRestrictLotDetails=${env.CLIENT_CMPDREG_METALOT_USEPROJECTROLESTORESTRICTLOTDETAILS}
+client.cmpdreg.metaLot.showTareWeight=${env.CLIENT_CMPDREG_METALOT_SHOWTAREWEIGHT}
+client.cmpdreg.metaLot.showTotalAmountStored=${env.CLIENT_CMPDREG_METALOT_SHOWTOTALAMOUNTSTORED}
+client.cmpdreg.metaLot.disableAliasEdit=${env.CLIENT_CMPDREG_METALOT_DISABLEALIASEDIT}
+client.cmpdreg.metaLot.showLotInventory=${env.CLIENT_CMPDREG_METALOT_SHOWLOTINVENTORY}
+client.cmpdreg.metaLot.disableEditMyLots=${env.CLIENT_CMPDREG_METALOT_DISABLEEDITMYLOTS}
+client.cmpdreg.metaLot.disableEditMyParents=${env.CLIENT_CMPDREG_METALOT_DISABLEEDITMYPARENTS}
+client.cmpdreg.metaLot.requireLotNumber=${env.CLIENT_CMPDREG_METALOT_REQUIRELOTNUMBER}
+client.cmpdreg.metaLot.allowManualLotNumber=${env.CLIENT_CMPDREG_METALOT_ALLOWMANUALLOTNUMBER}
+client.cmpdreg.metaLot.autoPopulateNextLotNumber=${env.CLIENT_CMPDREG_METALOT_AUTOPOPULATENEXTLOTNUMBER}
+client.cmpdreg.serverSettings.corpPrefix=${env.CLIENT_CMPDREG_SERVERSETTINGS_CORPPREFIX}
+client.cmpdreg.serverSettings.corpSeparator=${env.CLIENT_CMPDREG_SERVERSETTINGS_CORPSEPARATOR}
+client.cmpdreg.serverSettings.saltSeparator=${env.CLIENT_CMPDREG_SERVERSETTINGS_SALTSEPARATOR}
+client.cmpdreg.serverSettings.batchSeparator=${env.CLIENT_CMPDREG_SERVERSETTINGS_BATCHSEPARATOR}
+client.cmpdreg.serverSettings.numberCorpDigits=${env.CLIENT_CMPDREG_SERVERSETTINGS_NUMBERCORPDIGITS}
+client.cmpdreg.serverSettings.formatBatchDigits=${env.CLIENT_CMPDREG_SERVERSETTINGS_FORMATBATCHDIGITS}
+client.cmpdreg.serverSettings.startingCorpNumber=${env.CLIENT_CMPDREG_SERVERSETTINGS_STARTINGCORPNUMBER}
+client.cmpdreg.serverSettings.fancyCorpNumberFormat=${env.CLIENT_CMPDREG_SERVERSETTINGS_FANCYCORPNUMBERFORMAT}
+client.cmpdreg.serverSettings.corpParentFormat=${env.CLIENT_CMPDREG_SERVERSETTINGS_CORPPARENTFORMAT}
+client.cmpdreg.serverSettings.corpBatchFormat=${env.CLIENT_CMPDREG_SERVERSETTINGS_CORPBATCHFORMAT}
+client.cmpdreg.serverSettings.appendSaltCodeToLotName=${env.CLIENT_CMPDREG_SERVERSETTINGS_APPENDSALTCODETOLOTNAME}
+client.cmpdreg.serverSettings.noSaltCode=${env.CLIENT_CMPDREG_SERVERSETTINGS_NOSALTCODE}
+client.cmpdreg.serverSettings.usePredefinedList=${env.CLIENT_CMPDREG_SERVERSETTINGS_USEPREDEFINEDLIST}
+client.cmpdreg.serverSettings.newUserIsChemist=${env.CLIENT_CMPDREG_SERVERSETTINGS_NEWUSERISCHEMIST}
+client.cmpdreg.serverSettings.uniqueNotebook=${env.CLIENT_CMPDREG_SERVERSETTINGS_UNIQUENOTEBOOK}
+client.cmpdreg.serverSettings.notebookSavePath=${env.CLIENT_CMPDREG_SERVERSETTINGS_NOTEBOOKSAVEPATH}
+client.cmpdreg.serverSettings.exactMatchDef=${env.CLIENT_CMPDREG_SERVERSETTINGS_EXACTMATCHDEF}
+client.cmpdreg.serverSettings.maxSearchTime=${env.CLIENT_CMPDREG_SERVERSETTINGS_MAXSEARCHTIME}
+client.cmpdreg.serverSettings.maxSearchResults=${env.CLIENT_CMPDREG_SERVERSETTINGS_MAXSEARCHRESULTS}
+client.cmpdreg.serverSettings.unitTestDB=${env.CLIENT_CMPDREG_SERVERSETTINGS_UNITTESTDB}
+client.cmpdreg.serverSettings.initalDBLoad=${env.CLIENT_CMPDREG_SERVERSETTINGS_INITALDBLOAD}
+client.cmpdreg.serverSettings.projectRestrictions=${env.CLIENT_CMPDREG_SERVERSETTINGS_PROJECTRESTRICTIONS}
+client.cmpdreg.serverSettings.compoundInventory=${env.CLIENT_CMPDREG_SERVERSETTINGS_COMPOUNDINVENTORY}
+client.cmpdreg.serverSettings.disableTubeCreationIfNoBarcode=${env.CLIENT_CMPDREG_SERVERSETTINGS_DISABLETUBECREATIONIFNOBARCODE}
+client.cmpdreg.serverSettings.checkACASDependenciesByContainerCode=${env.CLIENT_CMPDREG_SERVERSETTINGS_CHECKACASDEPENDENCIESBYCONTAINERCODE}
+client.cmpdreg.serverSettings.jchemVersion=${env.CLIENT_CMPDREG_SERVERSETTINGS_JCHEMVERSION}
+client.cmpdreg.serverSettings.databaseType=${env.CLIENT_CMPDREG_SERVERSETTINGS_DATABASETYPE}
+client.cmpdreg.serverSettings.standardizeStructure=${env.CLIENT_CMPDREG_SERVERSETTINGS_STANDARDIZESTRUCTURE}
+client.cmpdreg.serverSettings.useExternalStandardizerConfig=${env.CLIENT_CMPDREG_SERVERSETTINGS_USEEXTERNALSTANDARDIZERCONFIG}
+client.cmpdreg.serverSettings.standardizerConfigFilePath=${env.CLIENT_CMPDREG_SERVERSETTINGS_STANDARDIZERCONFIGFILEPATH}
+client.cmpdreg.serverSettings.orderSelectLists=${env.CLIENT_CMPDREG_SERVERSETTINGS_ORDERSELECTLISTS}
+client.cmpdreg.serverSettings.registerNoStructureCompoundsAsUniqueParents=${env.CLIENT_CMPDREG_SERVERSETTINGS_REGISTERNOSTRUCTURECOMPOUNDSASUNIQUEPARENTS}
+client.cmpdreg.bulkLoadSettings.useProjectRoles=${env.CLIENT_CMPDREG_BULKLOADSETTINGS_USEPROJECTROLES}
+client.cmpdreg.bulkLoadSettings.dbProperties=${env.CLIENT_CMPDREG_BULKLOADSETTINGS_DBPROPERTIES}
+client.cmpdreg.marvin.marvinImplicitH=${env.CLIENT_CMPDREG_MARVIN_MARVINIMPLICITH}
+client.cmpdreg.marvin.sketchBondLength=${env.CLIENT_CMPDREG_MARVIN_SKETCHBONDLENGTH}
+client.cmpdreg.marvin.delayShowStep2Next=${env.CLIENT_CMPDREG_MARVIN_DELAYSHOWSTEP2NEXT}
+client.cmpdreg.marvin.exportFormat=${env.CLIENT_CMPDREG_MARVIN_EXPORTFORMAT}
+client.cmpdreg.serverSettings.liveDesign.preprocessorSettings=
+client.cmpdreg.serverSettings.maxStandardizationDisplay=${env.CLIENT_CMPDREG_SERVERSETTINGS_MAXSTANDARDIZATIONDISPLAY}

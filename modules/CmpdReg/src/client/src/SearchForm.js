@@ -51,15 +51,15 @@ $(function() {
             this.valid = false;
 			this.sketcherLoaded = false;
 			this.exportFormat = "mol";
-			if(window.configuration.marvin) {
+			if(window.configuration.sketcher == 'marvin') {
 				this.useMarvin = true;
 				if (window.configuration.marvin.exportFormat) {
 					this.exportFormat = window.configuration.marvin.exportFormat;
 				}
-			//To use ketcher you must replace the marvin hash with 	"ketcher": true,
-			// in modules/CmpdReg/src/client/custom/configuration.json
-			} else if(window.configuration.ketcher) {
+			} else if(window.configuration.sketcher == 'ketcher') {
 				this.useKetcher = true;
+			} else if(window.configuration.sketcher == 'maestro') {
+				this.useMaestro = true;
 			}
 
 		},
@@ -111,6 +111,16 @@ $(function() {
 				this.$('#searchMarvinSketch').on('load', function () {
 					self.ketcher = self.$('#searchMarvinSketch')[0].contentWindow.ketcher;
 				});
+			} else if (this.useMaestro) {
+				// Maestro deployments don't support similarity search currently so hide the option
+				$('.bv_similaritySearchGroup').hide();
+				
+				this.$('#searchMarvinSketch').attr('src',"/CmpdReg/maestrosketcher/wasm_shell.html");
+				MaestroJSUtil.getSketcher('#searchMarvinSketch').then(function (maestro) {
+					self.maestro = maestro;
+					self.show();
+					self.sketcherLoaded = true;
+				})
 			} else {
 				alert("No search sketcher configured");
 			}
@@ -161,6 +171,14 @@ $(function() {
 			} else if (this.useKetcher) {
 				mol = this.ketcher.getMolfile();
 				if (mol.indexOf("  0  0  0     1  0            999") > -1) mol = '';
+				var sf = this.makeSearchFormModel(mol);
+				if (this.isValid()) {
+					this.trigger('searchNext', sf);
+					this.hide();
+				}
+			} else if (this.useMaestro) {
+				mol = this.maestro.getSketcherMolBlock();
+				if (mol.indexOf("M  V30 COUNTS 0 0 0 0 0") > -1) mol = '';
 				var sf = this.makeSearchFormModel(mol);
 				if (this.isValid()) {
 					this.trigger('searchNext', sf);

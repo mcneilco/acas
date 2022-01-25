@@ -24,13 +24,15 @@ $(function () {
             this.valid = false;
             this.sketcherLoaded = false;
             this.exportFormat = "mol";
-	        if(window.configuration.marvin) {
+	        if(window.configuration.sketcher == 'marvin') {
 		        this.useMarvin = true;
 		        if (window.configuration.marvin.exportFormat) {
 			        this.exportFormat = window.configuration.marvin.exportFormat;
 		        }
-	        } else if(window.configuration.ketcher) {
+	        } else if(window.configuration.sketcher == 'ketcher') {
 		        this.useKetcher = true;
+	        } else if(window.configuration.sketcher == 'maestro') {
+		        this.useMaestro = true;
 	        }
             this.hide();
         },
@@ -70,7 +72,17 @@ $(function () {
 			        self.ketcher = self.$('#editParentMarvinSketch')[0].contentWindow.ketcher;
 					self.ketcher.setMolecule(self.options.parentModel.get('molStructure'));
 		        });
-	        } else {
+			} else if (this.useMaestro) {
+				this.$('#editParentMarvinSketch').attr('src',"/CmpdReg/maestrosketcher/wasm_shell.html");
+                MaestroJSUtil.getSketcher('#editParentMarvinSketch').then(function (maestro) {
+					self.maestro = maestro;
+                    if(self.options.parentModel.get('molStructure') != null && self.options.parentModel.get('molStructure') != "") {
+						self.maestro.setSketcherMolBlock(self.options.parentModel.get('molStructure'));
+                    }
+			        self.show();
+			        self.sketcherLoaded = true;
+				});
+			} else {
 		        alert("No edit parent sketcher configured");
 	        }
 
@@ -121,6 +133,20 @@ $(function () {
 	        } else if (this.useKetcher) {
 		        mol = this.ketcher.getMolfile();
 				if (mol.indexOf("  0  0  0     1  0            999") > -1) mol = null;
+		        editParentSearch.set({
+			        molStructure: mol,
+			        corpName: jQuery.trim(self.$('.corpName').val())
+		        });
+
+
+                if ( self.isValid() ) {
+                    self.trigger('editParentSearchNext', editParentSearch);
+                    self.hide();
+                }
+
+	        } else if (this.useMaestro) {
+				mol = this.maestro.getSketcherMolBlock();
+				if (mol.indexOf("M  V30 COUNTS 0 0 0 0 0") > -1) mol = null;
 		        editParentSearch.set({
 			        molStructure: mol,
 			        corpName: jQuery.trim(self.$('.corpName').val())

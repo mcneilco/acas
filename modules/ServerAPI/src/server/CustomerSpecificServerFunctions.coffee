@@ -15,11 +15,6 @@ exports.logUsage = (action, data, username) ->
 	# logger = require "../../../routes/Logger"
 	# global.logger.writeToLog("info", "logUsage", action, data, username, null)
 
-
-exports.getConfServiceVars = (sysEnv, callback) ->
-	conf = {}
-	callback(conf)
-
 exports.authCheck = (user, pass, retFun) ->
 	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 	request = require 'request'

@@ -2,6 +2,9 @@
 Interface for fetching data for ACAS API
 """
 from ldclient.client import LDClient
+from ldclient.api.requester import SUPPORTED_SERVER_VERSION
+from ldclient.base import version_str_as_tuple
+
 import argparse
 import json
 import os, sys
@@ -68,7 +71,8 @@ def list_groups(client, test):
 def auth_check(endpoint, username, password):
     auth_return = {'authorized': True, 'error': None}
     try:
-        sessionClient = LDClient(host=endpoint, username=username, password=password)
+        sessionClient = LDClient(host=endpoint, username=username, password=password, compatibility_mode=version_str_as_tuple(SUPPORTED_SERVER_VERSION))
+
     except Exception as e:
         auth_return['authorized'] = False
         auth_return['error'] = e.message    
@@ -225,7 +229,7 @@ def main():
     args = parser.parse_args()
     endpoint = "{0}/api".format(args.ld_server)
     if args.method != "auth_check":
-        client = LDClient(host=endpoint, username=args.username, password=args.password)
+        client = LDClient(host=endpoint, username=args.username, password=args.password, compatibility_mode=version_str_as_tuple(SUPPORTED_SERVER_VERSION))
         method = eval(args.method)
         result = method(client, *args.args)
     else:
