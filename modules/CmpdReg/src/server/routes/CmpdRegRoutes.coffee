@@ -27,6 +27,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/cmpdReg/MultipleFilePicker/[\\S]*', loginRoutes.ensureAuthenticated, exports.getMultipleFilePicker
 	app.post '/cmpdReg/search/cmpds', loginRoutes.ensureAuthenticated, exports.searchCmpds
 	app.post '/cmpdReg/regsearches/parent', loginRoutes.ensureAuthenticated, exports.regSearch
+	app.post '/cmpdReg/structuresearch', loginRoutes.ensureAuthenticated, exports.structureSearch
 	app.post '/cmpdReg/filesave', loginRoutes.ensureAuthenticated, exports.fileSave
 	app.post '/cmpdReg/metalots', loginRoutes.ensureAuthenticated, exports.metaLots
 	app.post '/cmpdReg/salts', loginRoutes.ensureAuthenticated, exports.saveSalts
@@ -239,6 +240,18 @@ exports.updateScientists = (jsonBody, callback) ->
 			console.log response
 			callback JSON.stringify {error: "something went wrong :("}
 	)
+
+exports.structureSearch = (req, resp) ->
+	authorRoutes = require './AuthorRoutes.js'
+	authorRoutes.allowedProjectsInternal req.user, (statusCode, allowedUserProjects) ->
+		_ = require "underscore"
+		allowedProjectCodes = _.pluck(allowedUserProjects, "code")
+		req.body.projects = allowedProjectCodes
+		console.log req.body
+		cmpdRegCall = config.all.client.service.persistence.fullpath + '/structuresearch/'
+		req.pipe(request[req.method.toLowerCase()](
+			url: cmpdRegCall
+			json: req.body)).pipe resp
 
 exports.searchCmpds = (req, resp) ->
 	authorRoutes = require './AuthorRoutes.js'
