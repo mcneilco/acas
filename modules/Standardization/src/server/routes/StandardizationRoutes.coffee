@@ -2,6 +2,8 @@ exports.setupAPIRoutes = (app) ->
 	app.get '/cmpdReg/getStandardizationSettings', exports.getStandardizationSettings
 	app.get '/cmpdReg/getStandardizationHistory', exports.getStandardizationHistory
 	app.get '/cmpdReg/standardizationDryRun', exports.standardizationDryRun
+	app.post '/cmpdReg/standardizationDryRunSearch', exports.standardizationDryRunSearch
+	app.post '/cmpdReg/standardizationDryRunSearchExport', exports.standardizationDryRunSearchExport
 	app.get '/cmpdReg/standardizationDryRunFiles', exports.standardizationDryRunFiles
 	app.get '/cmpdReg/standardizationDryRunStats', exports.getDryRunStats
 	app.get '/cmpdReg/standardizationExecute', exports.standardizationExecution
@@ -10,6 +12,8 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/cmpdReg/getStandardizationSettings', loginRoutes.ensureAuthenticated, exports.getStandardizationSettings
 	app.get '/cmpdReg/getStandardizationHistory', loginRoutes.ensureAuthenticated, exports.getStandardizationHistory
 	app.get '/cmpdReg/standardizationDryRun', loginRoutes.ensureAuthenticated, exports.standardizationDryRun
+	app.post '/cmpdReg/standardizationDryRunSearch', loginRoutes.ensureAuthenticated, exports.standardizationDryRunSearch
+	app.post '/cmpdReg/standardizationDryRunSearchExport', loginRoutes.ensureAuthenticated, exports.standardizationDryRunSearchExport
 	app.get '/cmpdReg/standardizationDryRunFiles', loginRoutes.ensureAuthenticated, exports.standardizationDryRunFiles
 	app.get '/cmpdReg/standardizationDryRunStats', loginRoutes.ensureAuthenticated, exports.getDryRunStats
 	app.get '/cmpdReg/standardizationExecute', loginRoutes.ensureAuthenticated, exports.standardizationExecution
@@ -137,6 +141,63 @@ exports.standardizationDryRunInternal = (reportOnly, callback) ->
 			console.log error
 			console.log json
 			callback error, response.statusCode
+	)
+
+exports.standardizationDryRunSearch = (req, resp) ->
+	req.setTimeout 86400000
+	url = config.all.client.service.cmpdReg.persistence.fullpath + '/standardization/dryRunSearch'
+	if req.query.countOnly?
+		url = url + "?countOnly="+req.query.countOnly
+	request(
+		method: 'POST'
+		url: url
+		body: req.body
+		json: true
+		timeout: 6000000
+	, (error, response, json) =>
+		if !error
+			resp.json json
+		else
+			console.log 'got ajax error in standardizationDryRunSearch'
+			console.log error
+			console.log json
+			console.log response
+			resp.statusCode = 500
+			resp.end JSON.stringify error
+	)
+
+exports.standardizationDryRunSearchExport = (req, resp) ->
+	req.setTimeout 86400000
+	fs = require 'fs'
+	url = config.all.client.service.cmpdReg.persistence.fullpath + '/standardization/dryRunSearchExport'
+	fileName = "standardization_dry_run_files.sdf"
+	filePath = path.resolve(path.join(config.all.server.datafiles.relative_path, fileName))
+	if !req.body.filePath?
+		req.body.filePath = filePath
+
+	request(
+		method: 'POST'
+		body: req.body
+		url: url
+		json: true
+		timeout: 86400000
+	, (error, response, json) =>
+		console.log "standardizationDryRunFiles response" + JSON.stringify(response)
+		if !error && response.statusCode == 200
+			stat = fs.statSync(filePath);
+			resp.writeHead(200, {
+				'Content-Type': 'chemical/x-mdl-sdfile',
+				'Content-Length': stat.size
+				'Content-Disposition': 'attachment; filename=' + fileName
+			})
+			readStream = fs.createReadStream(filePath)
+			readStream.pipe(resp)
+		else
+			console.log 'Error with standardization dry run files'
+			console.log error
+			console.log json
+			resp.statusCode = response.statusCode
+			resp.end error
 	)
 
 exports.standardizationDryRunFiles = (req, resp) ->

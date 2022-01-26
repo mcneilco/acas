@@ -90,3 +90,7 @@
   margin-top: 0px;
   margin-right: 3px;
 }
+
+.bv_dryRunSearchController .control-group {
+  margin-bottom: 10px;
+}
