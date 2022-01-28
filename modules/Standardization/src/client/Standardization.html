@@ -66,6 +66,8 @@
                 <ul>
                     <li>Date of standardization: <span class="bv_standardizationCompleteRecordedDate"></span></li>
                     <li>Number of structures standardized: <span class="bv_standardizationCompleteStructuresStandardizedCount"></span></li>
+                    <li>Number of structures failed standardization: <span class="bv_standardizationCompleteStandardizationErrorCount"></span></li>
+                    <li>Number of structured failed registration: <span class="bv_standardizationCompleteRegistrationErrorCount"></span></li>
                     <li>Number of structures changed: <span class="bv_standardizationCompleteChangedStructureCount"></span></li>
                     <li>Number of display changes: <span class="bv_standardizationCompleteDisplayChangeCount"></span></li>
                     <li>Number of new duplicates: <span class="bv_standardizationCompleteNewDuplicateCount"></span></li>
@@ -153,6 +155,8 @@
             <div>
                 <ul>
                     <li># Structures Standardized: Total number of structures run through the standardizer.</li>
+                    <li># Standardization Errors: Number of compounds which could not be restandardized due to errors from the standardizer.</li>
+                    <li># Registration Errors: Number of compounds which could not be fingerprinted or hashed to enable duplicate checks or structure searching.</li>
                     <li># Structures Updated: Count of parent structures that were changed as a result of standardization.</li>
                     <li># Structures Changed: Count of structures that are no longer the same as their parent structure taking into account tautomers.</li>
                     <li># Display Change: Count of structures that are no longer exact string matches for their parent structure.</li>
@@ -211,6 +215,10 @@
     <td class='bv_asDrawnStructure' style="height:300px;"></td>
     <td class='bv_parentStructure' style="height:300px;"></td>
     <td class='bv_standardizedStructure' style="height:300px;"></td>
+    <td class='bv_standardizationStatus'><%-standardizationStatus%></td>
+    <td class='bv_standardizationComment'><%-standardizationComment%></td>
+    <td class='bv_registrationStatus'><%-registrationStatus%></td>
+    <td class='bv_registrationComment'><%-registrationComment%></td>
     <td class='bv_changedStructure' style="width:30px;"><%-changedStructure%></td>
     <td class='bv_displayChange' style="width:30px;"><%-displayChange%></td>
     <td class='bv_newDuplicates' style="width:30px;"><%-newDuplicates%></td>
@@ -225,6 +233,48 @@
     <form class = "form-horizontal">
         <fieldset>
             <legend>Dry Run Report</legend>
+            <div class="control-group bv_group_standardizationStatus">
+                <label class="control-label">Standardization Status</label>
+                <div class="controls">
+                    <label class="radio inline">
+                        <input type="radio" name="standardizationStatuses" value="ERROR">
+                            Error
+                    </label>
+                    <label class="radio inline">
+                        <input type="radio" name="standardizationStatuses" value="WARNING">
+                            Warning
+                    </label>
+                    <label class="radio inline">
+                        <input type="radio" name="standardizationStatuses" value="SUCCESS">
+                            Success
+                    </label>
+                    <label class="radio inline">
+                        <input type="radio" name="standardizationStatuses" value="blank" checked>
+                            No filter
+                    </label>
+                </div>
+            </div>
+            <div class="control-group bv_group_registrationStatus">
+                <label class="control-label">Registration Status</label>
+                <div class="controls">
+                    <label class="radio inline">
+                        <input type="radio" name="registrationStatuses" value="ERROR">
+                            Error
+                    </label>
+                    <label class="radio inline">
+                        <input type="radio" name="registrationStatuses" value="WARNING">
+                            Warning
+                    </label>
+                    <label class="radio inline">
+                        <input type="radio" name="registrationStatuses" value="SUCCESS">
+                            Success
+                    </label>
+                    <label class="radio inline">
+                        <input type="radio" name="registrationStatuses" value="blank" checked>
+                            No filter
+                    </label>
+                </div>
+            </div>
             <div class="control-group bv_group_changedStructure">
                 <label class="control-label">Structure Change</label>
                 <div class="controls">
@@ -415,14 +465,18 @@
                 <label for="1"><input type="checkbox" id="1" checked/>Original Structure</label>
                 <label for="2"><input type="checkbox" id="2" />Previous Standardized Structure</label>
                 <label for="3"><input type="checkbox" id="3" checked/>New Standardized Structure</label>
-                <label for="4"><input type="checkbox" id="4" checked/>Structure Change</label>
-                <label for="5"><input type="checkbox" id="5" checked/>Display Change</label>
-                <label for="6"><input type="checkbox" id="6" checked/>New Duplicates</label>
-                <label for="7"><input type="checkbox" id="7" checked/>Existing Duplicates</label>
-                <label for="8"><input type="checkbox" id="8" checked/>Delta Mol. Weight</label>
-                <label for="9"><input type="checkbox" id="9" checked/>New Mol. Weight</label>
-                <label for="10"><input type="checkbox" id="10" checked/>Old Mol. Weight</label>
-                <label for="11"><input type="checkbox" id="11" checked/>As Drawn Display Change</label>
+                <label for="4"><input type="checkbox" id="4" checked/>Standardization Status</label>
+                <label for="5"><input type="checkbox" id="5" />Standardization Comment</label>
+                <label for="6"><input type="checkbox" id="6" checked/>Registration Status</label>
+                <label for="7"><input type="checkbox" id="7" checked/>Registration Comment</label>
+                <label for="8"><input type="checkbox" id="8" checked/>Structure Change</label>
+                <label for="9"><input type="checkbox" id="9" checked/>Display Change</label>
+                <label for="10"><input type="checkbox" id="10" checked/>New Duplicates</label>
+                <label for="11"><input type="checkbox" id="11" checked/>Existing Duplicates</label>
+                <label for="12"><input type="checkbox" id="12" checked/>Delta Mol. Weight</label>
+                <label for="13"><input type="checkbox" id="13" checked/>New Mol. Weight</label>
+                <label for="14"><input type="checkbox" id="14" checked/>Old Mol. Weight</label>
+                <label for="15"><input type="checkbox" id="15" checked/>As Drawn Display Change</label>
             </div>
         </div>
     </form>
@@ -433,6 +487,10 @@
                 <th style="width: 20%;">Original Structure</th>
                 <th style="width: 20%;" >Previous Standardized Structure</th>
                 <th style="width: 20%;">New Standardized Structure</th>
+                <th>Standardization Status</th>
+                <th>Standardization Comment</th>
+                <th>Registration Status</th>
+                <th>Registration Comment</th>
                 <th>Structure Change</th>
                 <th>Display Change</th>
                 <th>New Duplicates</th>
@@ -447,6 +505,10 @@
                 <th>Original Structure</th>
                 <th>Previous Standardized Structure</th>
                 <th>New Standardized Structure</th>
+                <th>Standardization Status</th>
+                <th>Standardization Comment</th>
+                <th>Registration Status</th>
+                <th>Registration Comment</th>
                 <th>Structure Change</th>
                 <th>Display Change</th>
                 <th>New Duplicates</th>

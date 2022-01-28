@@ -127,6 +127,8 @@ class window.StandardizationHistoryRowSummaryController extends Backbone.View
 			id: @model.get('id')
 			recordedDate: recordedDate
 			structuresStandardizedCount: @model.get('structuresStandardizedCount')
+			standardizationErrorCount: @model.get('standardizationErrorCount')
+			registrationErrorCount: @model.get('registrationErrorCount')
 			structuresUpdatedCount: @model.get('structuresUpdatedCount')
 			changedStructureCount: @model.get('changedStructureCount')
 			displayChangeCount: @model.get('displayChangeCount')
@@ -206,10 +208,12 @@ class window.StandardizationDryRunReportStatsController extends Backbone.View
 	setupDryRunStatsTable: (stats) ->
 		@$('.bv_standardizationDryRunReportStatsTable').dataTable
 			"aaData": [
-				[stats.structuresStandardizedCount, stats.changedStructureCount, stats.displayChangeCount, stats.newDuplicateCount, stats.asDrawnDisplayChangeCount, stats.existingDuplicateCount]
+				[stats.structuresStandardizedCount, stats.standardizationErrorCount, stats.registrationErrorCount, stats.changedStructureCount, stats.displayChangeCount, stats.newDuplicateCount, stats.asDrawnDisplayChangeCount, stats.existingDuplicateCount]
 			]
 			"aoColumns": [
 				{ "sTitle": "# Structures Standardized" },
+				{ "sTitle": "# Standardization Errors" },
+				{ "sTitle": "# Registration Errors" },
 				{ "sTitle": "# Structures Changed" },
 				{ "sTitle": "# Display Change" },
 				{ "sTitle": "# New Duplicates" },
@@ -251,6 +255,10 @@ class window.StandardizationDryRunReportRowSummaryController extends Backbone.Vi
 			newMolWeight: @model.get('newMolWeight')
 			oldMolWeight: @model.get('oldMolWeight')
 			asDrawnDisplayChange: @model.get('asDrawnDisplayChange')
+			standardizationStatus: @model.get('standardizationStatus')
+			standardizationComment: @model.get('standardizationComment')
+			registrationStatus: @model.get('registrationStatus')
+			registrationComment: @model.get('registrationComment')
 
 		$(@el).html(@template(toDisplay))
 
@@ -266,6 +274,8 @@ class StandardizationDryRunReportSearch extends Backbone.Model
 		displayChange: false
 		hasNewDuplicates: true
 		hasExistingDuplicates: true
+		standardizationStatus: null
+		registrationStatus: null
 		deltaMolWeight: 
 			operator: ">"
 			value: null
@@ -309,6 +319,16 @@ class StandardizationDryRunReportSearchController extends Backbone.View
 		else
 			return radioValue == "true"
 
+	getRadioChoiceOptions: (name) ->
+		radioValues = @$("input[name='#{name}']:checked").map ->
+			$(this).val()
+		.get()
+		# Switch to translate string value to boolean options
+		if(radioValues.includes("blank"))
+			return null
+		else
+			return radioValues
+
 	getNumberValue: (claz) ->
 		value = @$(claz).find("input").get()[0].valueAsNumber
 		# Check if NaN return null
@@ -319,20 +339,30 @@ class StandardizationDryRunReportSearchController extends Backbone.View
 		
 
 	updateModel: ->
+		# We are using radio buttons for standardization and registration status but this can be sent in as an array to filter on multiple values
+		@.model.set "standardizationStatuses", @getRadioChoiceOptions('standardizationStatuses')
+		@.model.set "registrationStatuses", @getRadioChoiceOptions('registrationStatuses')
+
+		# True/False no filter radios
 		@.model.set "changedStructure", @getBooleanRadioOption('changedStructure')
 		@.model.set "asDrawnDisplayChange",  @getBooleanRadioOption('asDrawnDisplayChange')
 		@.model.set "displayChange",  @getBooleanRadioOption('displayChange')
 		@.model.set "hasNewDuplicates",  @getBooleanRadioOption('hasNewDuplicates')
 		@.model.set "hasExistingDuplicates",  @getBooleanRadioOption('hasExistingDuplicates')
 		@.model.set "includeCorpNames",  @getBooleanRadioOption('includeCorpNames')
+
+		# Number inputs with operators
 		@.model.get("deltaMolWeight").value = @getNumberValue('.deltaMolWeight')
 		@.model.get("deltaMolWeight").operator = @$(".deltaMolWeight").find("select").first().val()
 		@.model.get("oldMolWeight").value = @getNumberValue('.oldMolWeight')
 		@.model.get("oldMolWeight").operator = @$(".oldMolWeight").find("select").first().val()
 		@.model.get("newMolWeight").value = @getNumberValue('.newMolWeight')
 		@.model.get("newMolWeight").operator = @$(".newMolWeight").find("select").first().val()
+
+		# Integer inputs
 		@.model.set("maxResults", @getNumberValue('.maxResults'))
 
+		# Text filter input for corp names
 		if @.model.get("includeCorpNames")?
 			@$(".corpNames").removeAttr 'disabled'
 		else
@@ -347,6 +377,7 @@ class StandardizationDryRunReportSearchController extends Backbone.View
 				corpNameList.push(corpName)
 		@.model.set("corpNames", corpNameList)
 
+		# Let the controller know that the model has changed
 		@trigger "modelUpdated"
 
 		@updateSearchCount()
@@ -428,6 +459,15 @@ class window.StandardizationDryRunReportSummaryController extends Backbone.View
 				@$('.bv_standardizerControlsWrapper').hide()
 			)
 		)
+		.catch((error) =>
+			@$('.bv_searchRunning').hide()
+			@$('.bv_search').removeClass("disabled")
+			@$('.bv_loadingStandardizationDryRunReport').hide()
+			@$('.bv_getStandardizationDryRunReportError').show()
+			@$('.bv_standardizerControlsWrapper').hide()
+			console.error(error)
+		)
+		
 		
 
 class window.StandardizationDryRunReportSummaryTableController extends Backbone.View
@@ -543,12 +583,17 @@ class window.StandardizationDryRunReportSummaryTableController extends Backbone.
 				oLanguage:
 					sSearch: "Filter results: " #rename summary table's search bar
 
-		filters = ['Corporate ID', 'Structure Change', 'Display Change', 'New Duplicates', 'Existing Duplicates', 'Delta Mol. Weight', 'New Mol. Weight', 'Old Mol. Weight', 'As Drawn Display Change']
+		filters = ['Corporate ID', 'Standardization Status', 'Standardization Comment', 'Registration Status', 'Registration Comment', 'Structure Change', 'Display Change', 'New Duplicates', 'Existing Duplicates', 'Delta Mol. Weight', 'New Mol. Weight', 'Old Mol. Weight', 'As Drawn Display Change']
 		@.$('thead tr.bv_colFilters th').each (i) ->
 			if @innerHTML in filters
 				@innerHTML = fnCreateSelect(oTable.fnGetColumnData(i))
 				$('select', this).change ->
-					oTable.fnFilter "^"+$(this).val()+"$", i, true
+					if $(this).val() != ""
+						# Filter based on value
+						oTable.fnFilter "^"+$(this).val()+"$", i, true
+					else
+						# If Filter is not set then remove the filter
+						oTable.fnFilter('', i)
 					return
 				return
 			else
@@ -609,6 +654,8 @@ class window.StandardizationController extends Backbone.View
 					@$('.bv_executingStandardizationModal').modal 'hide'
 					@$('.bv_standardizationCompleteRecordedDate').html UtilityFunctions::convertMSToYMDDate report.recordedDate
 					@$('.bv_standardizationCompleteStructuresStandardizedCount').html report.structuresStandardizedCount
+					@$('.bv_standardizationCompleteStandardizationErrorCount').html report.standardizationErrorCount
+					@$('.bv_standardizationCompleteRegistrationErrorCount').html report.registrationErrorCount
 					@$('.bv_standardizationCompleteChangedStructureCount').html report.changedStructureCount
 					@$('.bv_standardizationCompleteDisplayChangeCount').html report.displayChangeCount
 					@$('.bv_standardizationCompleteNewDuplicateCount').html report.newDuplicateCount
