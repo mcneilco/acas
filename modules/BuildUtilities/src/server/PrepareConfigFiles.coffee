@@ -107,6 +107,7 @@ getRApacheSpecificConfString = (config, apacheCompileOptions, acasHome) ->
 	confs.push('ServerLimit ' + config.server.rapache.conf.serverlimit)
 	confs.push('MaxClients ' + config.server.rapache.conf.maxclients)
 	confs.push('MaxRequestsPerChild ' + config.server.rapache.conf.maxrequestsperchild)
+	confs.push('LimitRequestLine ' + config.server.rapache.conf.limitrequestline)
 	confs.push('ServerSignature ' + config.server.rapache.conf.serversignature)
 	confs.push('ServerName ' + config.client.host)
 	confs.push('HostnameLookups ' + config.server.rapache.conf.hostnamelookups)

@@ -505,6 +505,7 @@ server.rapache.conf.serveradmin=${env.SERVER_RAPACHE_CONF_SERVERADMIN}
 server.rapache.conf.serversignature=${env.SERVER_RAPACHE_CONF_SERVERSIGNATURE}
 server.rapache.conf.logformat=${env.SERVER_RAPACHE_CONF_LOGFORMAT}
 server.rapache.conf.rewriteengine=${env.SERVER_RAPACHE_CONF_REWRITEENGINE}
+server.rapache.conf.limitrequestline=${env.SERVER_RAPACHE_CONF_LIMITREQUESTLINE}
 
 # Limit Rapache thread Limit
 # Units are in MB
