@@ -153,7 +153,7 @@ $(function() {
 					this.hide();
 				}
 			} else if (this.useMaestro) {
-				mol = this.maestro.getSketcherMolBlock();
+				mol = this.maestro.sketcherExportMolBlock();
 				if (mol.indexOf("M  V30 COUNTS 0 0 0 0 0") > -1)
 					mol = null;
 				regSearch.set({

@@ -187,7 +187,7 @@ $(function() {
 						this.model.set({molStructure: mol});
 						callback();
 					}else if (this.useMaestro) {
-						mol = this.maestro.getSketcherMolBlock();
+						mol = this.maestro.sketcherExportMolBlock();
 						if (mol.indexOf("M  V30 COUNTS 0 0 0 0 0") > -1) mol = '';
 						this.model.set({molStructure: mol});
 						callback();
@@ -340,7 +340,7 @@ $(function() {
 				self.maestro = maestro;
 				if (!self.sketcherLoaded) {
 					if( self.model.get('molStructure')!=null && self.model.get('molStructure')!='') {
-						self.maestro.setSketcherMolBlock(self.model.get('molStructure'));
+						self.maestro.sketcherImportText(self.model.get('molStructure'));
 					}
 				}
 				self.sketcherLoaded = true;

@@ -77,7 +77,7 @@ $(function () {
                 MaestroJSUtil.getSketcher('#editParentMarvinSketch').then(function (maestro) {
 					self.maestro = maestro;
                     if(self.options.parentModel.get('molStructure') != null && self.options.parentModel.get('molStructure') != "") {
-						self.maestro.setSketcherMolBlock(self.options.parentModel.get('molStructure'));
+						self.maestro.sketcherImportText(self.options.parentModel.get('molStructure'));
                     }
 			        self.show();
 			        self.sketcherLoaded = true;
@@ -145,7 +145,7 @@ $(function () {
                 }
 
 	        } else if (this.useMaestro) {
-				mol = this.maestro.getSketcherMolBlock();
+				mol = this.maestro.sketcherExportMolBlock();
 				if (mol.indexOf("M  V30 COUNTS 0 0 0 0 0") > -1) mol = null;
 		        editParentSearch.set({
 			        molStructure: mol,

@@ -297,7 +297,7 @@ $(function() {
 					if (mol.indexOf("  0  0  0     1  0            999") > -1) mol = '';
 					gotMol(mol);
 				} else if (this.useMaestro) {
-					mol = this.maestro.getSketcherMolBlock();
+					mol = this.maestro.sketcherExportMolBlock();
 					gotMol(mol);
 				} else {
 					alert("No new salt sketcher configured");

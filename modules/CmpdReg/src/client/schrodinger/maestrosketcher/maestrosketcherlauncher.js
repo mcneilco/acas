@@ -5,9 +5,9 @@ $(function() {
             function waitForReady (resolve, reject) {
                 var _a;
                 maestro = $(el)[0].contentWindow.Module;
-                const setSketcherMolBlock = (_a = this.maestro) === null || _a === void 0 ? void 0 : _a.setSketcherMolBlock;
+                const sketcherImportText = (_a = this.maestro) === null || _a === void 0 ? void 0 : _a.sketcherImportText;
                 // Wait until sketcher is initialized
-                if (!setSketcherMolBlock) {
+                if (!sketcherImportText) {
                     self = this;
                     setTimeout(function() {waitForReady(resolve, reject)}, 1000);
                 }
