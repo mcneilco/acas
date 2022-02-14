@@ -13,16 +13,14 @@ RUN \
 RUN   dnf install -y python36 python3-pip
 RUN   alternatives --set python /usr/bin/python3
 RUN   alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
-RUN		pip install argparse requests psycopg2-binary==2.8.6
-RUN   dnf install -y initscripts
+RUN		pip install argparse requests
+RUN   dnf install -y initscripts python3-psycopg2
 
 # node
 ENV NPM_CONFIG_LOGLEVEL warn
-ENV NODE_VERSION 14.15.1
-
-RUN curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.gz" \
-	&& tar -xzf "node-v$NODE_VERSION-linux-x64.tar.gz" -C /usr/local --strip-components=1 \
-	&& rm -f "node-v$NODE_VERSION-linux-x64.tar.gz"
+ENV NODE_VERSION 14.x
+RUN curl -fsSL https://rpm.nodesource.com/setup_$NODE_VERSION | bash - && \
+  dnf install -y nodejs
 
 # ACAS
 RUN	    useradd -u 1000 -ms /bin/bash runner
@@ -36,6 +34,7 @@ RUN     npm install -g gulp@4.0.2 forever@3.0.4 coffeescript@2.5.1
 COPY    --chown=runner:runner package.json $ACAS_BASE/package.json
 USER    runner
 WORKDIR $ACAS_BASE
+
 # This installs the modules but not acas, doing this makes subsequent builds much faster so that the container isn't invalidated on a small code change
 RUN     npm install --ignore-scripts --loglevel warn
 COPY --chown=runner:runner . $ACAS_BASE
