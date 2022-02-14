@@ -8,7 +8,7 @@ on:
   create:
     tags: "**"
 jobs:
-  acas-roo-server:
+  acas:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
