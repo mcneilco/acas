@@ -6,7 +6,7 @@ RUN \
 # tar for pulling down node
 # git required for some npm packages
   dnf install -y tar git && \
-  dnf install -y fontconfig urw-fonts && \
+  dnf install -y fontconfig urw-fonts iputils && \
   dnf clean all
 
 #Install python dependencies
