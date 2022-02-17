@@ -2,7 +2,7 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ release/1.13.7, release/1.13.6 ]
+    branches: [ release/* ]
 #   pull_request:
 #     branches: "**"
   create:
@@ -23,7 +23,7 @@ jobs:
         with:
           # list of Docker images to use as base name for tags
           images: |
-            bbolt/acas-oss
+            ${{ github.repository }}-oss
           # generate Docker tags based on the following events/attributes
           tags: |
             type=schedule
