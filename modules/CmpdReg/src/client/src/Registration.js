@@ -10,6 +10,7 @@ $(function () {
 			_.bindAll(
                 this,
                 'regSearchReturn',
+                'regSearchError',
                 'registrationSearchNext',
                 'searchResultsNext',
                 'searchResultsBack',
@@ -96,11 +97,18 @@ $(function () {
                 data: JSON.stringify(this.searchEntries),
                 dataType: "json",
                 contentType: 'application/json',
-                success: this.regSearchReturn
+                success: this.regSearchReturn,
+                error: this.regSearchError
             });
 
         },
 
+        regSearchError: function(jqXHR, textStatus, errorThrown) {
+            this.trigger('clearErrors', "RegistrationController");
+            this.delegateEvents(); // start listening to events
+            this.trigger('notifyError', {owner: "RegistrationController", errorLevel: 'error', message: jqXHR.responseText});
+            this.searchController.show();
+        },
         regSearchReturn: function(ajaxReturn) {
             this.trigger('clearErrors', "RegistrationController");
             this.delegateEvents(); // start listening to events

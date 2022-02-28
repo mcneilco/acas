@@ -270,6 +270,7 @@ exports.searchCmpds = (req, resp) ->
 		, (error, response, json) =>
 			if !error
 				console.log JSON.stringify json
+				resp.statusCode = response.statusCode
 				resp.setHeader('Content-Type', 'application/json')
 				resp.end JSON.stringify json
 			else
