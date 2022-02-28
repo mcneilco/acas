@@ -346,6 +346,7 @@ $(function () {
             _.bindAll(
                 this,
                 'editParentSearchReturn',
+                'editParentSearchError',
                 'editParentSearchNext',
                 'editParentSearchResultsNext',
                 'searchResultsBack',
@@ -402,11 +403,18 @@ $(function () {
                 data: JSON.stringify(this.searchEntries),
                 dataType: "json",
                 contentType: 'application/json',
-                success: this.editParentSearchReturn
+                success: this.editParentSearchReturn,
+                error: this.editParentSearchError
             });
 
         },
 
+        editParentSearchError: function(jqXHR, textStatus, errorThrown) {
+            this.trigger('clearErrors', "EditParentWorkflowController");
+            this.delegateEvents(); // start listening to events
+            this.trigger('notifyError', {owner: "EditParentWorkflowController", errorLevel: 'error', message: jqXHR.responseText});
+            this.searchController.show();
+        },
         editParentSearchReturn: function(ajaxReturn) {
             this.trigger('clearErrors', "EditParentWorkflowController");
             this.delegateEvents(); // start listening to events
