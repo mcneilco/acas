@@ -370,7 +370,7 @@ exports.getMetaLot = (req, resp) ->
 exports.regSearch = (req, resp) ->
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/regsearches/parent'
 	console.log cmpdRegCall
-	request(	
+	request(
 		method: 'POST'
 		url: cmpdRegCall
 		body: JSON.stringify req.body
