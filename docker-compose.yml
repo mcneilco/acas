@@ -50,7 +50,7 @@ services:
       - logs:/home/runner/logs
     command: ["bin/acas.sh", "run", "rservices"]
   db:
-    image: mcneilco/acas-postgres:1.1-bingo
+    image: mcneilco/acas-postgres:release-1.13.7
     restart: always
     volumes:
      - dbstore:/var/lib/postgresql/data
