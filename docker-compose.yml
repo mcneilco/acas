@@ -61,7 +61,7 @@ services:
     ports:
      - "5432:5432"
   roo:
-    image: mcneilco/acas-roo-server-oss:${ACAS_TAG}
+    image: mcneilco/acas-roo-server-oss:${ACAS_TAG}-indigo
     restart: always
     depends_on:
      - db
