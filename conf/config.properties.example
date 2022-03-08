@@ -431,6 +431,7 @@ client.experiment.lockwhenapproved.filter=${env.CLIENT_EXPERIMENT_LOCKWHENAPPROV
 #Note that notebook page can't be visible if notebook is not visible and page can't be required if notebook is not required
 client.entity.notebook.save=${env.CLIENT_ENTITY_NOTEBOOK_SAVE}
 client.entity.notebook.require=${env.CLIENT_ENTITY_NOTEBOOK_REQUIRE}
+client.entity.notebook.subclassExempt=${env.CLIENT_ENTITY_NOTEBOOKPAGE_REQUIRE}
 client.entity.notebookPage.save=${env.CLIENT_ENTITY_NOTEBOOKPAGE_SAVE}
 client.entity.notebookPage.require=${env.CLIENT_ENTITY_NOTEBOOKPAGE_REQUIRE}
 
@@ -455,7 +456,9 @@ client.entity.viewDeletedRoles=${env.CLIENT_ENTITY_VIEWDELETEDROLES}
 
 client.protocol.showAssayTreeRule=${env.CLIENT_PROTOCOL_SHOWASSAYTREERULE}
 client.protocol.showCurveDisplayParams=${env.CLIENT_PROTOCOL_SHOWCURVEDISPLAYPARAMS}
+client.protocol.notebook.require=${env.CLIENT_PROTOCOL_NOTEBOOK_REQUIRE}
 client.experiment.uneditableFileTypes=${env.CLIENT_EXPERIMENT_UNEDITABLEFILETYPES}
+client.experiment.notebook.require=${env.CLIENT_EXPERIMENT_NOTEBOOK_REQUIRE}
 
 #Controls privileges for who can create/edit and delete authors
 client.author.editingRoles=${env.CLIENT_AUTHOR_EDITINGROLES}
