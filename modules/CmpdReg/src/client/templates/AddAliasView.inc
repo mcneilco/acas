@@ -28,7 +28,7 @@
         <select class="bv_aliasTypeContainer"></select>
     </td>
     <td class="addAliasNameTd">
-        <input type="text" class="bv_aliasKind addAliasNameInput" value="<%= aliasName %>"/>
+        <input type="text" class="bv_aliasKind addAliasNameInput" value="<%- aliasName %>"/>
     </td>
     <td class="addAliasRemoveTd"><div class="bv_aliasRemove addAliasRemoveLink cancel">remove</div></td>
 
@@ -38,7 +38,7 @@
 </script>
 
 <script type="text/template" id="AliasItemView">
-    <span class="bv_aliasName"><%= aliasName %>;</span>
+    <span class="bv_aliasName"><%- aliasName %>;</span>
 </script>
 
 <script type="text/template" id="Aliases_template">
