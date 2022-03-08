@@ -20,7 +20,7 @@ $(function() {
 
 		initialize: function() {
 			_.bindAll(this, 'showFileUploadController', 'validationError');
-			this.model.bind('error',  this.validationError);
+			this.model.bind('invalid',  this.validationError);
 			this.valid = true;
             
             if(this.model.isNew()) {

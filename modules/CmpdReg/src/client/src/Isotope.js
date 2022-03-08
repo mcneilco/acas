@@ -114,7 +114,7 @@ $(function() {
 		render: function() {
 			$(this.el).empty();
 			if(window.configuration.metaLot.isotopeListNoneOption) {
-				$(this.el).append(this.make('option', {value: ''}, window.configuration.metaLot.isotopeListNoneOption));
+				$(this.el).append($('<option>', {value: ''}, window.configuration.metaLot.isotopeListNoneOption));
 			} else {
 				$(this.el).append(this.make('option', {value: ''}, 'none'));
 			}
@@ -129,6 +129,13 @@ $(function() {
 			});
 			if (self.existingCid != "") { $(self.el).val(self.existingCid); }
 		},
+
+		make: function(tagName, attributes, content) {
+            var el = document.createElement(tagName);
+            if (attributes) $(el).attr(attributes);
+            if (content) $(el).html(content);
+            return el;
+        },
 
 		addOne: function(isotope){
 			this.render();
@@ -189,12 +196,12 @@ $(function() {
             this.trigger('clearErrors', "NewIsotopeController");
 
             var isotope = new Isotope();
-            isotope.bind('error',  this.validationError);
+            isotope.bind('invalid',  this.validationError);
             var isotopeSetSucceeded = isotope.set({
 				name: jQuery.trim(this.$('.isotope_name').val()),
 				abbrev: jQuery.trim(this.$('.isotope_abbrev').val()),
 				massChange: parseFloat(jQuery.trim(this.$('.isotope_massChange').val()))
-			});
+			}, {validate: true});
 			if (isotopeSetSucceeded) {
                 this.trigger('notifyError', {
                     owner: 'NewIsotopeController',

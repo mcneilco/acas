@@ -9,7 +9,7 @@ $(function() {
             parentAnnotation: null,
             molStructure: '',
             comment: '',
-            corpName: '',
+            corpName: null,
             chemist: null,
 			isMixture: false,
 			labelPrefix: null
@@ -125,7 +125,7 @@ $(function() {
 
 		initialize: function() {
 			_.bindAll(this, 'validationError', 'setAliasToReadOnly', 'setAliasToEdit', 'render');
-			this.model.bind('error',  this.validationError);
+			this.model.bind('invalid',  this.validationError);
 			this.valid = true;
 			this.readMode = false;
 			if (this.options.readMode) {
@@ -323,16 +323,16 @@ $(function() {
                 //commonName: this.$('.commonName').val(),
 				parentAliases: this.aliasController.collection.toJSON(),
 				isMixture: this.$('.isMixture').attr('checked') == 'checked'
-		});
+			}, {validate: true});
 
 			if(this.compoundTypeCodeController != null){
-				this.model.set({compoundType: this.compoundTypeCodeController.getSelectedModel()})
+				this.model.set({compoundType: this.compoundTypeCodeController.getSelectedModel()}, {validate: true})
 			};
 			if(this.parentAnnotationCodeController != null){
-				this.model.set({parentAnnotation: this.parentAnnotationCodeController.getSelectedModel()})
+				this.model.set({parentAnnotation: this.parentAnnotationCodeController.getSelectedModel()}, {validate: true})
 			};
 			if (this.labelPrefixCodeController != null){
-				this.model.set({labelPrefix: this.labelPrefixCodeController.getSelectedModel()})
+				this.model.set({labelPrefix: this.labelPrefixCodeController.getSelectedModel()}, {validate: true});
 			};
 		},
 		editParent: function() {

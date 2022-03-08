@@ -126,6 +126,13 @@ $(function() {
 			if (self.existingCid != "") { $(self.el).val(self.existingCid); }
 		},
 
+		make: function(tagName, attributes, content) {
+            var el = document.createElement(tagName);
+            if (attributes) $(el).attr(attributes);
+            if (content) $(el).html(content);
+            return el;
+        },
+
 		addOne: function(salt){
 			this.render();
 			//$(this.el).append(new SaltOptionController({ model: salt }).render().el);
@@ -231,7 +238,7 @@ $(function() {
             this.trigger('clearErrors', "NewSaltController");
 
             var salt = new Salt();
-			salt.bind('error',  this.validationError);
+			salt.bind('invalid',  this.validationError);
 			var mol = null;
 			self = this;
 
@@ -252,7 +259,7 @@ $(function() {
 						name: jQuery.trim(self.$('.salt_name').val()),
 						abbrev: jQuery.trim(self.$('.salt_abbrev').val()),
 						molStructure: mol
-					});
+					}, {validate: true});
 					if (saltSetSucceeded) {
 						self.trigger('notifyError', {
 							owner: 'NewSaltController',

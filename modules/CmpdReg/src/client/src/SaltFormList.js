@@ -26,12 +26,20 @@ $(function() {
 			this.collection.each(function(sf){
 				$(self.el).append(new SaltFormOptionController({ model: sf }).render().el);
 			});
+			
 			$(this.el).append(this.make('option', {value: -1}, 'New Salt'));
 		},
 
+		make: function(tagName, attributes, content) {
+            var el = document.createElement(tagName);
+            if (attributes) $(el).attr(attributes);
+            if (content) $(el).html(content);
+            return el;
+        },
+
 		getSelectedSaltForm: function(){
             if ($(this.el).val() == -1) return null;
-			return this.collection.getByCid($(this.el).val());
+			return this.collection.get($(this.el).val());
 		}
 
 	});	

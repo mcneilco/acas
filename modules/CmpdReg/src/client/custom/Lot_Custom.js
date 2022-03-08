@@ -47,19 +47,19 @@ $(function() {
         var js = this.get('json');
         // set all attributes, realizing that some need to be replaced by real objcts
         this.set(js,{silent: true});
-                this.set({
-                    physicalState: new PickList(js.physicalState),
-                    amountUnits: new PickList(js.amountUnits),
-                    retainUnits: new PickList(js.retainUnits),
-                    solutionAmountUnits: new PickList(js.solutionAmountUnits),
-                    tareWeightUnits: new PickList(js.tareWeightUnits),
-                    totalAmountStoredUnits: new PickList(js.totalAmountStoredUnits),
-                    purityMeasuredBy: new PickList(js.purityMeasuredBy),
-                    purityOperator: new PickList(js.purityOperator),
-                    chemist: new PickList({selectedCode: js.chemist}),
-                    project: new PickList({selectedCode: js.project}),
-                    vendor: new PickList(js.vendor)
-                })
+        this.set({
+            physicalState: new PickList(js.physicalState),
+            amountUnits: new PickList(js.amountUnits),
+            retainUnits: new PickList(js.retainUnits),
+            solutionAmountUnits: new PickList(js.solutionAmountUnits),
+            tareWeightUnits: new PickList(js.tareWeightUnits),
+            totalAmountStoredUnits: new PickList(js.totalAmountStoredUnits),
+            purityMeasuredBy: new PickList(js.purityMeasuredBy),
+            purityOperator: new PickList(js.purityOperator),
+            chemist: new PickList({selectedCode: js.chemist}),
+            project: new PickList({selectedCode: js.project}),
+            vendor: new PickList(js.vendor)
+        }, {validate: true})
         // replace composite object pointers with real objects
         this.set({fileList: new BackboneFileList()}, {silent: true});
         this.get('fileList').model = BackboneFileDesc;
@@ -371,7 +371,7 @@ $(function() {
       this.trigger('readyForRender')
     },
     fillNextAutoLot: function() {
-      this.model.set({nextAutoLot: this.getNextAutoLot()});
+      this.model.set({nextAutoLot: this.getNextAutoLot()}, {validate: true});
       this.$('.lotNumber').val(this.getNextAutoLot());
     },
     getNextAutoLot: function() {
@@ -411,18 +411,18 @@ $(function() {
             }
             model.set({
               lotNumbers: lotNumbers
-            })
+            }, {validate: true})
           },
           error: function(error) {
             model.set({
               lotNumbers: lotNumbers
-            })
+            }, {validate: true})
           }
         });
       } else {
         model.set({
           lotNumbers: lotNumbers
-        })
+        }, {validate: true})
       }
     },
     updateModel: function() {
@@ -440,7 +440,7 @@ $(function() {
                       (jQuery.trim(this.$('.lotNumber').val())=='') ? null :
                             parseInt(jQuery.trim(this.$('.lotNumber').val()))
 
-                  });
+                  }, {validate: true});
             }
  
             if(this.model.get('isVirtual')) {
@@ -472,7 +472,7 @@ $(function() {
                     totalAmountStoredUnits: null,
                     vendor: null,
                     vendorID: null
-                });
+                }, {validate: true});
             } else {
               //set unselected properties to null
               
@@ -546,7 +546,7 @@ $(function() {
                     boilingPoint: 
                         (jQuery.trim(this.$('.boilingPoint').val())=='') ? null :
                         parseFloat(jQuery.trim(this.$('.boilingPoint').val()))
-                });
+                }, {validate: true});
             }
     }
       

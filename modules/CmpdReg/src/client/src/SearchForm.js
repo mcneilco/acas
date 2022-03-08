@@ -191,7 +191,7 @@ $(function() {
         makeSearchFormModel: function(molecule) {
             this.clearValidationErrors();
             var searchForm = new SearchForm();
-            searchForm.bind('error',  this.validationError);
+            searchForm.bind('invalid',  this.validationError);
 
             searchForm.set({
                 corpNameList: jQuery.trim(this.$('.corpNameList').val()),

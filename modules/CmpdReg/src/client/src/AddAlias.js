@@ -179,7 +179,7 @@
       this.collection.bind('add', this.render);
       this.collection.bind('remove', this.render);
       this.collection.bind('change', this.setStateOfButtons);
-      return this.collection.bind('error', this.setStateOfButtonsToDisabled);
+      return this.collection.bind('invalid', this.setStateOfButtonsToDisabled);
     };
 
     AddAliasTableController.prototype.setStateOfButtonsToDisabled = function() {
@@ -279,7 +279,7 @@
       if (this.model.get("id") != null) {
         this.model.set({
           "ignored": true
-        });
+        }, {validate: true});
       } else {
         this.model.destroy();
       }
@@ -308,14 +308,14 @@
       if (this.model.get("id") != null) {
         this.model.set({
           "ignored": true
-        });
+        }, {validate: true});
         formValues.sortId = this.model.get("sortId");
         newAlias = new AliasModel(formValues);
         return this.trigger("isDirty", newAlias);
       } else {
-        this.model.set(formValues);
+        this.model.set(formValues, {validate: true});
         var typeKind = this.model.get('lsType') + ':' + this.model.get('lsKind');
-        this.model.set({'typeKind': typeKind});
+        this.model.set({'typeKind': typeKind}, {validate: true});
         return this;
       }
     };
@@ -379,7 +379,7 @@
 
 	AliasModel.prototype.initialize = function() {
 		var typeKind = this.get('lsType') + ':' + this.get('lsKind');
-		this.set({'typeKind': typeKind});
+		this.set({'typeKind': typeKind}, {validate: true});
 	}
 
     AliasModel.prototype.validate = function(attrs, options) {

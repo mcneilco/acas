@@ -36,12 +36,12 @@ $(function() {
 					chemist: js.chemist,
 					isosalts: isel,
 					molStructure: js.molStructure
-				});
+				}, {validate: true});
 
 			} else if( this.isNew() ) {
 				this.set({
-			isosalts: new IsoSaltEquivList()
-		});
+					isosalts: new IsoSaltEquivList()
+				}, {validate: true});
 			}
 		},
 
@@ -57,8 +57,8 @@ $(function() {
 
 		getModelForSave: function() {
 			var mts = new Backbone.Model(this.attributes);
-			mts.set({isosalts: this.get('isosalts').getSetIsosalts()});
-			mts.unset('json');
+			mts.set({isosalts: this.get('isosalts').getSetIsosalts()}, {validate: true});
+			mts.unset('json', {validate: true});
 			return mts;
 		}
 
@@ -80,7 +80,7 @@ $(function() {
 			this.$('.radioWrapper').hide();
 
 			_.bindAll(this, 'showAddSaltPanel', 'validationError', 'updateModel', 'toggleStructureView', 'render');
-			this.model.bind('error',  this.validationError);
+			this.model.bind('invalid',  this.validationError);
 			this.valid = true;
 			this.isEditable = this.options.isEditable;
 
@@ -160,7 +160,7 @@ $(function() {
 			this.clearValidationErrors();
 			this.model.set({
 				casNumber: jQuery.trim(this.$('.casNumber').val())
-			});
+			}, {validate: true});
 			if (this.isEditable) {
 				// update this.model's isosalts list
 				this.isosaltEquivListController.updateModel();
@@ -176,7 +176,7 @@ $(function() {
 								mol = '';
 							else
 								mol = molecule;
-							self.model.set({molStructure: mol});
+							self.model.set({molStructure: mol}, {validate: true});
 							callback();
 						}, function (error) {
 							alert("Molecule export failed from search sketcher:" + error);
@@ -184,16 +184,16 @@ $(function() {
 					}else if (this.useKetcher) {
 						mol = this.ketcher.getMolfile();
 						if (mol.indexOf("  0  0  0     1  0            999") > -1) mol = '';
-						this.model.set({molStructure: mol});
+						this.model.set({molStructure: mol}, {validate: true});
 						callback();
 					}else if (this.useMaestro) {
 						mol = this.maestro.sketcherExportMolBlock();
 						if (mol.indexOf("M  V30 COUNTS 0 0 0 0 0") > -1) mol = '';
-						this.model.set({molStructure: mol});
+						this.model.set({molStructure: mol}, {validate: true});
 						callback();
 					}
 				} else {
-					this.model.set({molStructure: mol});
+					this.model.set({molStructure: mol}, {validate: true});
 					callback();
 				}
 			} else {

@@ -41,12 +41,12 @@ $(function() {
                         this.set({
                             salt: attr.isosalt,
                             isotope: null
-                        });
+                        }, {validate: true});
                     } else {
                         this.set({
                             isotope: attr.isosalt,
                             salt: null
-                        });
+                        }, {validate: true});
                     }
                 }
             }
@@ -83,7 +83,7 @@ $(function() {
 
 		initialize: function(){
 			_.bindAll(this, 'render', 'validationError', 'updateModel');
-			this.model.bind('error',  this.validationError);
+			this.model.bind('invalid',  this.validationError);
 			this.isEditable = this.options.isEditable;
 			this.valid = true;
 
@@ -138,12 +138,12 @@ $(function() {
 				this.model.set({
 					isosalt: null,
 					equivalents: null
-				});
+				}, {validate: true});
 			} else {
 				this.model.set({
-					isosalt: this.options.isosalts.getByCid(this.isosaltSelectController.selectedCid()),
+					isosalt: this.options.isosalts.get(this.isosaltSelectController.selectedCid()),
 					equivalents: parseFloat(this.$('.equivalents').val())
-				});
+				}, {validate: true});
 			}
 
 		},

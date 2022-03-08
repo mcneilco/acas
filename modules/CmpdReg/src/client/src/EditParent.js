@@ -105,7 +105,7 @@ $(function () {
         next: function() {
             this.clearValidationErrors();
             var editParentSearch = new EditParentSearch();
-            editParentSearch.bind('error',  this.validationError);
+            editParentSearch.bind('invalid',  this.validationError);
             var mol;
 
             var self = this;
@@ -120,7 +120,7 @@ $(function () {
 			        editParentSearch.set({
 				        molStructure: mol,
 				        corpName: jQuery.trim(self.$('.corpName').val())
-			        });
+			        }, {validate: true});
 
 			        if ( self.isValid() ) {
 				        self.trigger('editParentSearchNext', editParentSearch);
@@ -136,7 +136,7 @@ $(function () {
 		        editParentSearch.set({
 			        molStructure: mol,
 			        corpName: jQuery.trim(self.$('.corpName').val())
-		        });
+		        }, {validate: true});
 
 
                 if ( self.isValid() ) {
@@ -150,7 +150,7 @@ $(function () {
 		        editParentSearch.set({
 			        molStructure: mol,
 			        corpName: jQuery.trim(self.$('.corpName').val())
-		        });
+		        }, {validate: true});
 
 		        if ( self.isValid() ) {
 			        self.trigger('editParentSearchNext', editParentSearch);
@@ -291,7 +291,7 @@ $(function () {
                 molWeight: this.json.asDrawnMolWeight,
                 molFormula: this.json.asDrawnMolFormula,
                 molImage: this.json.asDrawnImage
-            });
+            }, {validate: true});
             this.trigger('editParentSearchResultsNext', selection);
             this.hide();
         },

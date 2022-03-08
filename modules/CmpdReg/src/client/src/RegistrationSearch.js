@@ -113,7 +113,7 @@ $(function() {
 		next: function() {
             this.clearValidationErrors();
             var regSearch = new RegistrationSearch();
-            regSearch.bind('error',  this.validationError);
+            regSearch.bind('invalid',  this.validationError);
             var mol;
 
 			var self = this;
