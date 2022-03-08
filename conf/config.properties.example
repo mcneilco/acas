@@ -455,7 +455,9 @@ client.entity.viewDeletedRoles=${env.CLIENT_ENTITY_VIEWDELETEDROLES}
 
 client.protocol.showAssayTreeRule=${env.CLIENT_PROTOCOL_SHOWASSAYTREERULE}
 client.protocol.showCurveDisplayParams=${env.CLIENT_PROTOCOL_SHOWCURVEDISPLAYPARAMS}
+client.protocol.notebook.require=${env.CLIENT_PROTOCOL_NOTEBOOK_REQUIRE}
 client.experiment.uneditableFileTypes=${env.CLIENT_EXPERIMENT_UNEDITABLEFILETYPES}
+client.experiment.notebook.require=${env.CLIENT_EXPERIMENT_NOTEBOOK_REQUIRE}
 
 #Controls privileges for who can create/edit and delete authors
 client.author.editingRoles=${env.CLIENT_AUTHOR_EDITINGROLES}
