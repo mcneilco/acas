@@ -1362,6 +1362,14 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
       stateKind = rep("dose response", length(timeResultKinds)),
       stringsAsFactors = FALSE
     )
+  } else {
+    # The value kind "curve id" is reserved for specific formats.  If its used in a format other than those
+    # above, then the user should get a warning that they may have uploaded the data using the wrong format type.
+    if (("curve id" %in% names(results))) {
+      warnUser(paste0("The upload 'Format' was set to '", inputFormat, "' and a 'curve id' column was found. ",
+                      "Curve data may not upload correctly. ",
+                      "Did you mean to use a different format (e.g. 'Dose Response')?"))
+    }
   }
   
   # Call the function that extracts valueKinds, units, conc, concunits from the headers
