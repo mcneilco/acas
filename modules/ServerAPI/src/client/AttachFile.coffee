@@ -91,6 +91,8 @@ class BasicFileController extends AbstractFormController
 			@allowedFileTypes = @options.allowedFileTypes
 		else
 			@allowedFileTypes = ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf']
+		if @options.maxFileSize?
+			@maxFileSize = @options.maxFileSize
 		if @options.fileTypeList?
 			@fileTypeList = new PickListList @options.fileTypeList
 		else
@@ -120,6 +122,7 @@ class BasicFileController extends AbstractFormController
 			requiresValidation: false
 			url: UtilityFunctions::getFileServiceURL()
 			allowedFileTypes: @allowedFileTypes
+			maxFileSize: @maxFileSize
 			hideDelete: true
 		});
 		@lsFileChooser.render()
@@ -166,6 +169,8 @@ class BasicFileListController extends Backbone.View
 			@allowedFileTypes = @options.allowedFileTypes
 		else
 			@allowedFileTypes = ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf']
+		if @options.maxFileSize?
+			@maxFileSize = @options.maxFileSize
 
 	render: =>
 		$(@el).empty()
@@ -194,6 +199,7 @@ class BasicFileListController extends Backbone.View
 			autoAddAttachFileModel: @autoAddAttachFileModel
 			firstOptionName: @options.firstOptionName
 			allowedFileTypes: @allowedFileTypes
+			maxFileSize: @maxFileSize
 		#			fileTypeList: @fileTypeList
 		@listenTo afc, 'fileUploaded', @checkIfNeedToAddNew
 		@listenTo afc, 'removeFile', @ensureValidCollectionLength
@@ -328,6 +334,7 @@ class AttachFileListController extends BasicFileListController
 			autoAddAttachFileModel: @autoAddAttachFileModel
 			firstOptionName: @options.firstOptionName
 			allowedFileTypes: @allowedFileTypes
+			maxFileSize: @maxFileSize
 			fileTypeList: @fileTypeList
 		@listenTo afc, 'fileUploaded', @checkIfNeedToAddNew
 		@listenTo afc, 'removeFile', @ensureValidCollectionLength

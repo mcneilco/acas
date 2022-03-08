@@ -100,6 +100,7 @@ ExampleThingConf =
 				formLabel: "Example File"
 				fieldWrapper: "bv_file"
 				required: false
+				maxFileSize: 10000000 # 10 MB
 		,
 			key: 'exampleMultiFile_'
 			multiple: true
@@ -115,7 +116,8 @@ ExampleThingConf =
 				fieldWrapper: "bv_multiFileWrapper"
 				allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'jpeg', 'bmp', 'ppt', 'pptx', 'pzf', 'mol', 'cdx', 'cdxml', 'afr6', 'afe6', 'afs6', 'zip', 'html']
 				url: "/api/codetables/project metadata/file type"
-				required: false
+				required: false,
+				maxFileSize: 10000000 # 10 MB
 		]
 
 
