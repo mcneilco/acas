@@ -507,9 +507,9 @@ $(function() {
               if (this.purityMeasuredByCodeController.getSelectedModel().isNew()) purityMeasuredBy = null;
               else purityMeasuredBy = this.purityMeasuredByCodeController.getSelectedModel();
                 var vendor;
+              var purityOperator; 
               if (this.operatorCodeController.getSelectedModel().isNew()) purityOperator = null;
               else purityOperator = this.operatorCodeController.getSelectedModel();
-                var tareWeightUnits; 
               if (this.vendorCodeController.getSelectedModel().isNew()) vendor = null;
               else vendor = this.vendorCodeController.getSelectedModel();
                 this.model.set({
