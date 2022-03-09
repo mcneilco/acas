@@ -171,6 +171,7 @@ class ACASFormMultiFileListController extends ACASFormAbstractFieldController
 			allowedFileTypes: @options.allowedFileTypes
 			fileTypeList: @fileTypeList
 			required: false
+			maxFileSize: @options.maxFileSize
 		@attachFileListController.on 'amClean', =>
 			@trigger 'amClean'
 		@attachFileListController.on 'renderComplete', =>
