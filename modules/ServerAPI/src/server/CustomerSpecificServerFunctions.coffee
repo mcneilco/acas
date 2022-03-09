@@ -170,8 +170,6 @@ exports.ssoLoginStrategy = (req, profile, callback) ->
 	authorRoutes = require '../../../routes/AuthorRoutes.js'
 	setupRoutes = require '../../../routes/SetupRoutes.js'
 
-	userNameAttribute = config.all.server.security.saml.userNameAttribute
-
 	# Expected profile keys
 	expectedKeys = [config.all.server.security.saml.userNameAttribute, config.all.server.security.saml.firstNameAttribute, config.all.server.security.saml.lastNameAttribute, config.all.server.security.saml.emailAttribute]
 	missingFromProfile = expectedKeys.filter (value) -> !Object.keys(profile).includes(value)
@@ -180,8 +178,13 @@ exports.ssoLoginStrategy = (req, profile, callback) ->
 		console.error err
 		return callback null, false, message: err
 		
+	userName = profile[config.all.server.security.saml.userNameAttribute]
+	newFirstName = profile[config.all.server.security.saml.firstNameAttribute]
+	newLastName = profile[config.all.server.security.saml.lastNameAttribute]
+	newEmail = profile[config.all.server.security.saml.emailAttribute]
+
 	# Check if author exists
-	[err, savedAuthor] = await serverUtilityFunctions.promisifyRequestResponseStatus(authorRoutes.getAuthorByUsernameInternal, [profile[userNameAttribute]])
+	[err, savedAuthor] = await serverUtilityFunctions.promisifyRequestResponseStatus(authorRoutes.getAuthorByUsernameInternal, [userName])
 	if err?
 		console.error("Got error checking for existing author #{err} during sso login strategy")
 		return callback null, false, message: "Got error checking for existing author during sso login strategy"
@@ -192,9 +195,9 @@ exports.ssoLoginStrategy = (req, profile, callback) ->
 		console.log "Found existing Author '#{savedAuthor.userName}'"
 		updateAuthor = false
 
-		if profile[config.all.server.security.saml.emailAttribute] != savedAuthor.emailAddress
-			console.log "SSO email address '#{profile[config.all.server.security.saml.emailAttribute]}' has changed from existing author email address '#{savedAuthor.emailAddress}'"
-			[err, unique] = await serverUtilityFunctions.promiseifyCatch(authorRoutes.checkEmailIsUnique, [profile[config.all.server.security.saml.emailAttribute]])
+		if newEmail != savedAuthor.emailAddress
+			console.log "SSO email address '#{newEmail}' has changed from existing author email address '#{savedAuthor.emailAddress}'"
+			[err, unique] = await serverUtilityFunctions.promiseifyCatch(authorRoutes.checkEmailIsUnique, [newEmail])
 			if err
 				console.error(err)
 				return callback null, false, message: "Got error checking for unique email addrress"
@@ -203,12 +206,12 @@ exports.ssoLoginStrategy = (req, profile, callback) ->
 				console.error("New email address is not unique to the sytem so it belongs to another username")
 				return callback null, false, message: "Email address already belongs to another user"
 
-		if profile[config.all.server.security.saml.emailAttribute] != savedAuthor.emailAddress || profile[config.all.server.security.saml.firstNameAttribute] != savedAuthor.firstName || profile[config.all.server.security.saml.lastNameAttribute] != savedAuthor.lastName
+		if newEmail != savedAuthor.emailAddress || newFirstName != savedAuthor.firstName || newLastName != savedAuthor.lastName
 			updateAuthor = true
 		if updateAuthor == true
-			savedAuthor.firstName = profile[config.all.server.security.saml.firstNameAttribute]
-			savedAuthor.lastName = profile[config.all.server.security.saml.lastNameAttribute]
-			savedAuthor.emailAddress = profile[config.all.server.security.saml.emailAttribute]
+			savedAuthor.firstName = newFirstName
+			savedAuthor.lastName = newLastName
+			savedAuthor.emailAddress = newEmail
 			[err, updatedAuthor] = await serverUtilityFunctions.promisifyRequestResponseStatus(authorRoutes.updateAuthorInternal, [savedAuthor])
 			if err
 				err = "Got error trying to update author using SSO user profile"
@@ -219,10 +222,10 @@ exports.ssoLoginStrategy = (req, profile, callback) ->
 				savedAuthor = updatedAuthor
 	else
 		author = 
-			firstName: profile[config.all.server.security.saml.firstNameAttribute]
-			lastName: profile[config.all.server.security.saml.lastNameAttribute]
-			emailAddress: profile[config.all.server.security.saml.emailAttribute]
-			userName: profile[userNameAttribute]
+			firstName: newFirstName
+			lastName: newLastName
+			emailAddress: newEmail
+			userName: userName
 			version: 0
 			enabled: true
 			locked: false
