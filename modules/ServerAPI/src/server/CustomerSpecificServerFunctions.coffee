@@ -146,15 +146,21 @@ exports.findByUsername = (username, fn) ->
 
 getSystemRolesFromSSOProfile = (profile) =>
 	roles = []
-	for group in profile.group
-		roleName = group.toUpperCase()
-		lsKind = 'ACAS'
-		if roleName.indexOf("CMPDREG") > -1
-			lsKind = 'CmpdReg'
-		roles.push
-			lsType: 'System'
-			lsKind: lsKind
-			roleName: "ROLE_#{roleName}"
+	if profile.group?
+		groups = profile.group
+		console.log groups
+		if typeof groups == "string"
+			groups = [profile.group]
+		for group in groups
+			roleName = group.toUpperCase()
+			lsKind = 'ACAS'
+			if roleName.indexOf("CMPDREG") > -1
+				lsKind = 'CmpdReg'
+			roles.push
+				lsType: 'System'
+				lsKind: lsKind
+				roleName: "ROLE_#{roleName}"
+	
 	return roles
 
 exports.ssoLoginStrategy = (req, profile, callback) ->
@@ -162,6 +168,7 @@ exports.ssoLoginStrategy = (req, profile, callback) ->
 	config = require '../../../conf/compiled/conf.js'
 	serverUtilityFunctions = require "#{ACAS_HOME}/routes/ServerUtilityFunctions.js"
 	authorRoutes = require '../../../routes/AuthorRoutes.js'
+	setupRoutes = require '../../../routes/SetupRoutes.js'
 
 	userNameAttribute = config.all.server.security.saml.userNameAttribute
 
@@ -234,15 +241,25 @@ exports.ssoLoginStrategy = (req, profile, callback) ->
 
 	if config.all.server.security.saml.roles.sync
 		console.log "Checking for roles to sync"
-		# Check the users ldap roles against the saved roles
+
+		# Get the groups from the profile and put them into ACAS format [{roleName: , lsType: 'System', lsKind: }]
 		ssoSystemRoles = getSystemRolesFromSSOProfile(profile)
+		console.log("Found #{ssoSystemRoles.length} 'ACAS'/'CRREG' roles in sso profile for author #{savedAuthor.userName}, #{JSON.stringify(ssoSystemRoles)}")
 
-		# Get author system roles
+		# Automatically sync all SSO roles to ACAS roles
+		[err, saveResult] = await serverUtilityFunctions.promisifyRequestResponseStatus(setupRoutes.setupTypeOrKindInternal, ["lsroles", ssoSystemRoles])
+		if err?
+			console.error("Got error trying to sync roles during sso login strategy Error #{JSON.stringify(err)}")
+			
+		# From the saved author, filter their roles to just the ones that are of type "System"
 		savedAuthorSystemRoles = authorRoutes.getRolesByLsType(savedAuthor.authorRoles, "System")
+		console.log("Found #{savedAuthorSystemRoles.length} saved system roles for author #{savedAuthor.userName}, #{JSON.stringify(savedAuthorSystemRoles)}")
 
-		# Diff system roles
+		# Determine which roles are missing from the saved author by diffing the sso system roles with the saved author system roles
 		diffSystemRolesWithSaved = util.promisify(authorRoutes.diffSystemRolesWithSaved)
-		[err, diffResult] = await exports.promiseCatch(diffSystemRolesWithSaved(savedAuthor.userName, ssoSystemRoles, savedAuthorSystemRoles, ["lsType", "lsKind", "roleName"]))
+		[err, diffResult] = await serverUtilityFunctions.promiseCatch(diffSystemRolesWithSaved(savedAuthor.userName, ssoSystemRoles, savedAuthorSystemRoles, ["lsType", "lsKind", "roleName"]))
+		console.log("Diff result between authors saved and SSO profile roles: #{JSON.stringify(diffResult)}")
+
 		if err?
 			console.error("Got error trying to diff current roles with new sso roles #{err}")
 			return callback null, false, message: err
@@ -259,7 +276,7 @@ exports.ssoLoginStrategy = (req, profile, callback) ->
 		if rolesToSync == true
 			console.log "Syncing roles"
 			syncRoles = util.promisify(authorRoutes.syncRoles)
-			[err, updatedAuthor] = await exports.promiseCatch(syncRoles(savedAuthor, diffResult.rolesToAdd, diffResult.rolesToDelete))
+			[err, updatedAuthor] = await serverUtilityFunctions.promiseCatch(syncRoles(savedAuthor, diffResult.rolesToAdd, diffResult.rolesToDelete))
 			if err?
 				console.error("Got error trying to sync roles for user #{err}")
 				return callback null, false, message: err
@@ -657,7 +674,6 @@ exports.checkRoles = (user, retFun) ->
 			roles = _.map author.roles, (role) ->
 				role.roleEntry.roleName
 			loginRoles = config.all.client.roles.loginRole.split ","
-			console.log loginRoles
 			console.log _.intersection loginRoles, roles
 			if _.intersection(loginRoles, roles).length > 0
 				console.log 'Role check successful'

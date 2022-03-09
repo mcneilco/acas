@@ -707,6 +707,10 @@ exports.syncRoles = (author, rolesToAdd, rolesToDelete, callback) =>
 									callback null, response
 
 validateAuthorAttributes = (author, callback) ->
+	# Returns a list of attributes missing on the author object
+	# or null if all attributes are present
+
+	# These are the required attributes for every user
 	requiredAttrs = ['firstName', 'lastName', 'userName', 'emailAddress']
 	missingAttrs = []
 	for attr in requiredAttrs
@@ -725,6 +729,7 @@ parseUserRoles = (user) ->
 	return userRoles
 
 checkUserCanCreateOrEditAuthor = (user, callback) ->
+	# Checks if the user has the authority to create or edit an author
 	userRoles = parseUserRoles user
 	authStrategy = config.all.server.security.authstrategy
 	adminRole = config.all.client.roles.acas.adminRole
@@ -758,6 +763,7 @@ checkUserCanEditSystemRoles = (user, callback) ->
 			callback null, false
 
 checkUserNameAndEmailAreUnique = (author, callback) ->
+	# Checks if the user name and email address are unique on the system
 	checkUserNameIsUnique author, (err, userNameUnique) ->
 		if err?
 			callback err
@@ -836,6 +842,8 @@ exports.getRolesByLsType = (authorRoles, lsType) ->
 	return lsTypeRoles
 
 parseSystemRoles = (author, callback) ->
+	# Returns a list of system roles for the author
+	# and deletes the authorRoles property from the author object
 	systemRoles = exports.getRolesByLsType(author.authorRoles, "System")
 	delete author['authorRoles']
 	callback null, author, systemRoles
@@ -901,6 +909,8 @@ deleteAuthorRoles = (rolesToDelete, cb) ->
 exports.deleteAuthorRoles = deleteAuthorRoles
 
 fetchSystemRoles = (incompleteSystemRoles, matchKeys, callback) ->
+	# Fetches the system roles from the persistence service
+	# Then filters them just to the ones that match the incompleteSystemRoles using the matchKeys provided
 	request(
 		method: 'GET'
 		url: config.all.client.service.persistence.fullpath + 'lsRoles?lsType=System'
