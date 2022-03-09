@@ -151,6 +151,7 @@ class AbstractThingFormController extends AbstractFormController
 				firstSelectText: field.fieldSettings.firstSelectText
 				modelDefaults: field.modelDefaults
 				allowedFileTypes: field.fieldSettings.allowedFileTypes
+				maxFileSize: field.fieldSettings.maxFileSize
 				displayInline: field.fieldSettings.displayInline
 				extendedLabel: field.fieldSettings.extendedLabel
 				sorter: field.fieldSettings.sorter

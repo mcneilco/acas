@@ -168,6 +168,11 @@ $(function() {
           errors.push({'attribute': 'purity', 'message':  "Purity must be a number if provided"});
         }
       }
+      if (attr.purity!=null && attr.purity!='') {
+        if(attr.purityOperator==null || attr.purityOperator=='unassigned') {
+          errors.push({'attribute': 'purityOperator', 'message':  "Purity operator must be set if purity set"});
+        }
+      }
       if (attr.meltingPoint!=null) {
         if(isNaN(attr.meltingPoint) && attr.meltingPoint!='') { 
           errors.push({'attribute': 'meltingPoint', 'message':  "MP must be a number if provided"});
@@ -293,6 +298,10 @@ $(function() {
                   })
                 this.operatorCodeController =
                     this.setupCodeController('purityOperatorCode', 'operators', 'purityOperator');
+                this.operatorCodeController.insertFirstOption = new PickList({
+                    code: "unassigned",
+                    name: "Select Units"
+                  })
                 this.amountUnitsCodeController =
                     this.setupCodeController('amountUnitsCode', 'units', 'amountUnits');
                 this.amountUnitsCodeController.insertFirstOption = new PickList({
@@ -498,6 +507,9 @@ $(function() {
               if (this.purityMeasuredByCodeController.getSelectedModel().isNew()) purityMeasuredBy = null;
               else purityMeasuredBy = this.purityMeasuredByCodeController.getSelectedModel();
                 var vendor;
+              var purityOperator; 
+              if (this.operatorCodeController.getSelectedModel().isNew()) purityOperator = null;
+              else purityOperator = this.operatorCodeController.getSelectedModel();
               if (this.vendorCodeController.getSelectedModel().isNew()) vendor = null;
               else vendor = this.vendorCodeController.getSelectedModel();
                 this.model.set({
@@ -529,7 +541,7 @@ $(function() {
                         parseFloat(jQuery.trim(this.$('.purity').val())),
                     vendorID: jQuery.trim(this.$('.vendorID').val()),
                     physicalState: physicalState,
-                    purityOperator: this.operatorCodeController.getSelectedModel(),
+                    purityOperator: purityOperator,
                     amountUnits: amountUnits,
                     retainUnits: retainUnits,
                     solutionAmountUnits: solutionAmountUnits,

@@ -839,6 +839,8 @@ class ACASFormLSFileValueFieldController extends ACASFormAbstractFieldController
 			@displayInline = @options.displayInline
 		else
 			@displayInline = false
+		if @options.maxFileSize?
+			@maxFileSize = @options.maxFileSize
 		
 	render: ->
 		super()
@@ -881,6 +883,7 @@ class ACASFormLSFileValueFieldController extends ACASFormAbstractFieldController
 				url: @fileURL
 				allowedFileTypes: @allowedFileTypes
 				hideDelete: false
+				maxFileSize: @maxFileSize
 			@fileController.on 'amDirty', =>
 				@trigger 'amDirty'
 			@fileController.on 'amClean', =>

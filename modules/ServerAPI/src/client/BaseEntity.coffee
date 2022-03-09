@@ -153,7 +153,9 @@ class BaseEntity extends Backbone.Model
 				saveNotebook= window.conf.entity.notebook.save
 			requireNotebook = true #default
 			if window.conf.entity?.notebook?.require?
-				requireNotebook= window.conf.entity.notebook.require
+				requireNotebook = window.conf.entity.notebook.require
+				if window.conf[attrs.subclass]?.notebook?.require?
+					requireNotebook = window.conf[attrs.subclass].notebook.require
 			if saveNotebook and requireNotebook
 				notebook = @getNotebook().get('stringValue')
 				if notebook is "" or notebook is undefined or notebook is null
