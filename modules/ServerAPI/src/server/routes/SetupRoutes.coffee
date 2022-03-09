@@ -14,7 +14,6 @@ exports.setupTypeOrKindInternal = (typeOrKind, roles, callback) ->
 		body: roles
 		json: true
 	, (error, response, json) =>
-		console.log response
 		callback json, response.statusCode
 	)
 
