@@ -144,14 +144,15 @@ exports.isUserAdmin = (user) ->
 exports.findByUsername = (username, fn) ->
 	return exports.getUser username, fn
 
-getSystemRolesFromSSOProfile = (profile) =>
+formatSystemRolesFromSSOGroups = (ssoGroups) =>
+	# Formats the sso roles into ACAS roles
+	# Case insensitive check for "CMPDREG" in the name assigned the role to the lsKind 'CmpdReg'
+	# if not matched, it assigns to role to the lsKind 'ACAS'
 	roles = []
-	if profile.group?
-		groups = profile.group
-		console.log groups
-		if typeof groups == "string"
-			groups = [profile.group]
-		for group in groups
+	if ssoGroups?
+		if typeof ssoGroups == "string"
+			groups = [ssoGroups]
+		for group in ssoGroups
 			roleName = group.toUpperCase()
 			lsKind = 'ACAS'
 			if roleName.indexOf("CMPDREG") > -1
@@ -182,6 +183,7 @@ exports.ssoLoginStrategy = (req, profile, callback) ->
 	newFirstName = profile[config.all.server.security.saml.firstNameAttribute]
 	newLastName = profile[config.all.server.security.saml.lastNameAttribute]
 	newEmail = profile[config.all.server.security.saml.emailAttribute]
+	ssoGroups = profile[config.all.server.security.saml.groupAttribute]
 
 	# Check if author exists
 	[err, savedAuthor] = await serverUtilityFunctions.promisifyRequestResponseStatus(authorRoutes.getAuthorByUsernameInternal, [userName])
@@ -245,9 +247,9 @@ exports.ssoLoginStrategy = (req, profile, callback) ->
 	if config.all.server.security.saml.roles.sync
 		console.log "Checking for roles to sync"
 
-		# Get the groups from the profile and put them into ACAS format [{roleName: , lsType: 'System', lsKind: }]
-		ssoSystemRoles = getSystemRolesFromSSOProfile(profile)
-		console.log("Found #{ssoSystemRoles.length} 'ACAS'/'CRREG' roles in sso profile for author #{savedAuthor.userName}, #{JSON.stringify(ssoSystemRoles)}")
+		# Format sso groups into ACAS system roles [{roleName: , lsType: 'System', lsKind: 'ACAS'/'CmpdReg'}]
+		ssoSystemRoles = formatSystemRolesFromSSOGroups(ssoGroups)
+		console.log("Found #{ssoSystemRoles.length} 'ACAS'/'CMPDREG' roles in sso profile for author #{savedAuthor.userName}, #{JSON.stringify(ssoSystemRoles)}")
 
 		# Automatically sync all SSO roles to ACAS roles
 		[err, saveResult] = await serverUtilityFunctions.promisifyRequestResponseStatus(setupRoutes.setupTypeOrKindInternal, ["lsroles", ssoSystemRoles])
