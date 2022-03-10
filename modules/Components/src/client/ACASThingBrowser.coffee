@@ -339,7 +339,7 @@ class ACASThingBrowserController extends Backbone.View
 	setupThingSummaryTable: (things) =>
 		@destroyThingSummaryTable()
 
-		$(".bv_searchingThingsMessage").addClass "hide"
+		@$(".bv_searchingThingsMessage").addClass "hide"
 		if things is null
 			@$(".bv_errorOccurredPerformingSearch").removeClass "hide"
 
@@ -357,7 +357,7 @@ class ACASThingBrowserController extends Backbone.View
 				columnFilters: @columnFilters
 
 			@thingSummaryTable.on "selectedRowUpdated", @selectedThingUpdated
-			$(".bv_thingTableController").html @thingSummaryTable.render().el
+			@$(".bv_thingTableController").html @thingSummaryTable.render().el
 
 	selectedThingUpdated: (thing) =>
 		@$('.bv_thingControllerWrapper').append("<div class='bv_thingController'></div>")
