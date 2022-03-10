@@ -89,7 +89,7 @@
             </div>
 			<div class="barcodeWrapper">
 				<label class="FormLabel">Barcode:</label>
-				<input type="textfield" class="FormInput barcode" value="<%- supplierLot %>" /><br />
+				<input type="textfield" class="FormInput barcode" value="<%- barcode %>" /><br />
 			</div>
 			<div>
 				<label class="FormLabel">Supplier lot:</label>
