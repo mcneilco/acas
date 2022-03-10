@@ -359,6 +359,7 @@ server.security.saml.entryPoint=${env.SERVER_SECURITY_SAML_ENTRYPOINT}
 server.security.saml.issuer=${env.SERVER_SECURITY_SAML_ISSUER}
 # Embedded cert needs \\n in string to escape properly
 server.security.saml.cert=${env.SERVER_SECURITY_SAML_CERT}
+server.security.saml.groupAttribute=${env.SERVER_SECURITY_SAML_GROUPATTRIBUTE}
 server.security.saml.userNameAttribute=${env.SERVER_SECURITY_SAML_USERNAMEATTRIBUTE}
 server.security.saml.firstNameAttribute=${env.SERVER_SECURITY_SAML_FIRSTNAMEATTRIBUTE}
 server.security.saml.lastNameAttribute=${env.SERVER_SECURITY_SAML_LASTNAMEATTRIBUTE}

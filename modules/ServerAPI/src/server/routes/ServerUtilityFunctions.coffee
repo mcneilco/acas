@@ -40,10 +40,10 @@ exports.promisifyRequestResponseStatus = (fun, args) ->
 	# Custom promisify function to convert "json, status" type callback
 	# functions where status > 400 is an error to a standard err, response
 	# promise return
-	fun[util.promisify.custom] = (args) =>
+	fun[util.promisify.custom] = (...args) =>
 		new Promise((resolve, reject) =>
-			fun args, (json, status) =>
-				if status >= 400
+			fun ...args, (json, status) =>
+				if typeof status != 'number' || status >= 400
 					if json?
 						reject(json)
 					else

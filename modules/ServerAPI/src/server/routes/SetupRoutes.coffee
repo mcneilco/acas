@@ -1,27 +1,23 @@
 exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/setup/:typeOrKind', exports.setupTypeOrKind
 
-exports.setupTypeOrKind = (req, resp) ->
+exports.setupTypeOrKindInternal = (typeOrKind, roles, callback) ->
 	console.log "setupTypeOrKind"
-	if req.query.testMode or global.specRunnerTestmode
-		resp.end JSON.stringify "set up type or kind"
-	else
-		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"setup/"+req.params.typeOrKind
-		request = require 'request'
-		request(
-			method: 'POST'
-			url: baseurl
-			body: req.body
-			json: true
-		, (error, response, json) =>
-			if !error && response.statusCode == 201
-				resp.end JSON.stringify json
-			else
-				console.log 'got ajax error trying to setup type/kind'
-				console.log error
-				console.log json
-				console.log response
+	console.log typeOrKind
+	console.log roles
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.persistence.fullpath+"setup/"+typeOrKind
+	request = require 'request'
+	request(
+		method: 'POST'
+		url: baseurl
+		body: roles
+		json: true
+	, (error, response, json) =>
+		callback json, response.statusCode
+	)
 
-		)
 
+exports.setupTypeOrKind = (req, resp) ->
+	exports.setupTypeOrKindInternal req.params.typeOrKind, req.body, (json, statusCode) =>
+		resp.status(statusCode).json json

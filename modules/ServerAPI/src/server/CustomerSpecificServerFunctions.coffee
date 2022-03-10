@@ -144,17 +144,24 @@ exports.isUserAdmin = (user) ->
 exports.findByUsername = (username, fn) ->
 	return exports.getUser username, fn
 
-getSystemRolesFromSSOProfile = (profile) =>
+formatSystemRolesFromSSOGroups = (ssoGroups) =>
+	# Formats the sso roles into ACAS roles
+	# Case insensitive check for "CMPDREG" in the name assigned the role to the lsKind 'CmpdReg'
+	# if not matched, it assigns to role to the lsKind 'ACAS'
 	roles = []
-	for group in profile.group
-		roleName = group.toUpperCase()
-		lsKind = 'ACAS'
-		if roleName.indexOf("CMPDREG") > -1
-			lsKind = 'CmpdReg'
-		roles.push
-			lsType: 'System'
-			lsKind: lsKind
-			roleName: "ROLE_#{roleName}"
+	if ssoGroups?
+		if typeof ssoGroups == "string"
+			groups = [ssoGroups]
+		for group in ssoGroups
+			roleName = group.toUpperCase()
+			lsKind = 'ACAS'
+			if roleName.indexOf("CMPDREG") > -1
+				lsKind = 'CmpdReg'
+			roles.push
+				lsType: 'System'
+				lsKind: lsKind
+				roleName: "ROLE_#{roleName}"
+	
 	return roles
 
 exports.ssoLoginStrategy = (req, profile, callback) ->
@@ -162,8 +169,7 @@ exports.ssoLoginStrategy = (req, profile, callback) ->
 	config = require '../../../conf/compiled/conf.js'
 	serverUtilityFunctions = require "#{ACAS_HOME}/routes/ServerUtilityFunctions.js"
 	authorRoutes = require '../../../routes/AuthorRoutes.js'
-
-	userNameAttribute = config.all.server.security.saml.userNameAttribute
+	setupRoutes = require '../../../routes/SetupRoutes.js'
 
 	# Expected profile keys
 	expectedKeys = [config.all.server.security.saml.userNameAttribute, config.all.server.security.saml.firstNameAttribute, config.all.server.security.saml.lastNameAttribute, config.all.server.security.saml.emailAttribute]
@@ -173,8 +179,14 @@ exports.ssoLoginStrategy = (req, profile, callback) ->
 		console.error err
 		return callback null, false, message: err
 		
+	userName = profile[config.all.server.security.saml.userNameAttribute]
+	newFirstName = profile[config.all.server.security.saml.firstNameAttribute]
+	newLastName = profile[config.all.server.security.saml.lastNameAttribute]
+	newEmail = profile[config.all.server.security.saml.emailAttribute]
+	ssoGroups = profile[config.all.server.security.saml.groupAttribute]
+
 	# Check if author exists
-	[err, savedAuthor] = await serverUtilityFunctions.promisifyRequestResponseStatus(authorRoutes.getAuthorByUsernameInternal, [profile[userNameAttribute]])
+	[err, savedAuthor] = await serverUtilityFunctions.promisifyRequestResponseStatus(authorRoutes.getAuthorByUsernameInternal, [userName])
 	if err?
 		console.error("Got error checking for existing author #{err} during sso login strategy")
 		return callback null, false, message: "Got error checking for existing author during sso login strategy"
@@ -185,9 +197,9 @@ exports.ssoLoginStrategy = (req, profile, callback) ->
 		console.log "Found existing Author '#{savedAuthor.userName}'"
 		updateAuthor = false
 
-		if profile[config.all.server.security.saml.emailAttribute] != savedAuthor.emailAddress
-			console.log "SSO email address '#{profile[config.all.server.security.saml.emailAttribute]}' has changed from existing author email address '#{savedAuthor.emailAddress}'"
-			[err, unique] = await serverUtilityFunctions.promiseifyCatch(authorRoutes.checkEmailIsUnique, [profile[config.all.server.security.saml.emailAttribute]])
+		if newEmail != savedAuthor.emailAddress
+			console.log "SSO email address '#{newEmail}' has changed from existing author email address '#{savedAuthor.emailAddress}'"
+			[err, unique] = await serverUtilityFunctions.promiseifyCatch(authorRoutes.checkEmailIsUnique, [newEmail])
 			if err
 				console.error(err)
 				return callback null, false, message: "Got error checking for unique email addrress"
@@ -196,12 +208,12 @@ exports.ssoLoginStrategy = (req, profile, callback) ->
 				console.error("New email address is not unique to the sytem so it belongs to another username")
 				return callback null, false, message: "Email address already belongs to another user"
 
-		if profile[config.all.server.security.saml.emailAttribute] != savedAuthor.emailAddress || profile[config.all.server.security.saml.firstNameAttribute] != savedAuthor.firstName || profile[config.all.server.security.saml.lastNameAttribute] != savedAuthor.lastName
+		if newEmail != savedAuthor.emailAddress || newFirstName != savedAuthor.firstName || newLastName != savedAuthor.lastName
 			updateAuthor = true
 		if updateAuthor == true
-			savedAuthor.firstName = profile[config.all.server.security.saml.firstNameAttribute]
-			savedAuthor.lastName = profile[config.all.server.security.saml.lastNameAttribute]
-			savedAuthor.emailAddress = profile[config.all.server.security.saml.emailAttribute]
+			savedAuthor.firstName = newFirstName
+			savedAuthor.lastName = newLastName
+			savedAuthor.emailAddress = newEmail
 			[err, updatedAuthor] = await serverUtilityFunctions.promisifyRequestResponseStatus(authorRoutes.updateAuthorInternal, [savedAuthor])
 			if err
 				err = "Got error trying to update author using SSO user profile"
@@ -212,10 +224,10 @@ exports.ssoLoginStrategy = (req, profile, callback) ->
 				savedAuthor = updatedAuthor
 	else
 		author = 
-			firstName: profile[config.all.server.security.saml.firstNameAttribute]
-			lastName: profile[config.all.server.security.saml.lastNameAttribute]
-			emailAddress: profile[config.all.server.security.saml.emailAttribute]
-			userName: profile[userNameAttribute]
+			firstName: newFirstName
+			lastName: newLastName
+			emailAddress: newEmail
+			userName: userName
 			version: 0
 			enabled: true
 			locked: false
@@ -234,15 +246,25 @@ exports.ssoLoginStrategy = (req, profile, callback) ->
 
 	if config.all.server.security.saml.roles.sync
 		console.log "Checking for roles to sync"
-		# Check the users ldap roles against the saved roles
-		ssoSystemRoles = getSystemRolesFromSSOProfile(profile)
 
-		# Get author system roles
+		# Format sso groups into ACAS system roles [{roleName: , lsType: 'System', lsKind: 'ACAS'/'CmpdReg'}]
+		ssoSystemRoles = formatSystemRolesFromSSOGroups(ssoGroups)
+		console.log("Found #{ssoSystemRoles.length} 'ACAS'/'CMPDREG' roles in sso profile for author #{savedAuthor.userName}, #{JSON.stringify(ssoSystemRoles)}")
+
+		# Automatically sync all SSO roles to ACAS roles
+		[err, saveResult] = await serverUtilityFunctions.promisifyRequestResponseStatus(setupRoutes.setupTypeOrKindInternal, ["lsroles", ssoSystemRoles])
+		if err?
+			console.error("Got error trying to sync roles during sso login strategy Error #{JSON.stringify(err)}")
+			
+		# From the saved author, filter their roles to just the ones that are of type "System"
 		savedAuthorSystemRoles = authorRoutes.getRolesByLsType(savedAuthor.authorRoles, "System")
+		console.log("Found #{savedAuthorSystemRoles.length} saved system roles for author #{savedAuthor.userName}, #{JSON.stringify(savedAuthorSystemRoles)}")
 
-		# Diff system roles
+		# Determine which roles are missing from the saved author by diffing the sso system roles with the saved author system roles
 		diffSystemRolesWithSaved = util.promisify(authorRoutes.diffSystemRolesWithSaved)
-		[err, diffResult] = await exports.promiseCatch(diffSystemRolesWithSaved(savedAuthor.userName, ssoSystemRoles, savedAuthorSystemRoles, ["lsType", "lsKind", "roleName"]))
+		[err, diffResult] = await serverUtilityFunctions.promiseCatch(diffSystemRolesWithSaved(savedAuthor.userName, ssoSystemRoles, savedAuthorSystemRoles, ["lsType", "lsKind", "roleName"]))
+		console.log("Diff result between authors saved and SSO profile roles: #{JSON.stringify(diffResult)}")
+
 		if err?
 			console.error("Got error trying to diff current roles with new sso roles #{err}")
 			return callback null, false, message: err
@@ -259,7 +281,7 @@ exports.ssoLoginStrategy = (req, profile, callback) ->
 		if rolesToSync == true
 			console.log "Syncing roles"
 			syncRoles = util.promisify(authorRoutes.syncRoles)
-			[err, updatedAuthor] = await exports.promiseCatch(syncRoles(savedAuthor, diffResult.rolesToAdd, diffResult.rolesToDelete))
+			[err, updatedAuthor] = await serverUtilityFunctions.promiseCatch(syncRoles(savedAuthor, diffResult.rolesToAdd, diffResult.rolesToDelete))
 			if err?
 				console.error("Got error trying to sync roles for user #{err}")
 				return callback null, false, message: err
@@ -657,7 +679,6 @@ exports.checkRoles = (user, retFun) ->
 			roles = _.map author.roles, (role) ->
 				role.roleEntry.roleName
 			loginRoles = config.all.client.roles.loginRole.split ","
-			console.log loginRoles
 			console.log _.intersection loginRoles, roles
 			if _.intersection(loginRoles, roles).length > 0
 				console.log 'Role check successful'
