@@ -731,3 +731,9 @@ client.cmpdreg.marvin.delayShowStep2Next=${env.CLIENT_CMPDREG_MARVIN_DELAYSHOWST
 client.cmpdreg.marvin.exportFormat=${env.CLIENT_CMPDREG_MARVIN_EXPORTFORMAT}
 client.cmpdreg.serverSettings.liveDesign.preprocessorSettings=
 client.cmpdreg.serverSettings.maxStandardizationDisplay=${env.CLIENT_CMPDREG_SERVERSETTINGS_MAXSTANDARDIZATIONDISPLAY}
+
+
+# Version configs
+client.version.version=${env.CLIENT_VERSION_VERSION}
+client.version.buildTime=${env.CLIENT_VERSION_BUILDTIME}
+client.version.revision=${env.CLIENT_VERSION_REVISION}
