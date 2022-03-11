@@ -8,8 +8,6 @@ on:
 jobs:
   acas:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
     steps:
       -
         name: Checkout
@@ -34,6 +32,31 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        # Setup which version of Python to use
+      - name: Start containers
+        run: docker-compose -f "docker-compose.yml" up -d --build
+      - name: Create docker bob
+        run: bash docker_bob_setup.sh
+      - name: Set Up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+        # Display the Python version being used
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
+        # Install the package using the setup.py
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
+        # Install the package using the setup.py
+      - name: Install acasclient and unittest
+        run: |
+          python -m pip install --upgrade pip
+          pip install acasclient
+          pip install unittest
+      - name: Run tests
+        run: python -m unittest discover  -p "test_*.py"
       -
         name: Build and push
         uses: docker/build-push-action@v2
@@ -47,3 +70,4 @@ jobs:
             BUILDTIME=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
             VERSION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
             REVISION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.revision'] }}
+

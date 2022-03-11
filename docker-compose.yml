@@ -1,8 +1,8 @@
 version: '2'
 services:
   acas:
-#    build: .
-    image: mcneilco/acas-oss:${ACAS_TAG}
+    build: .
+    # image: mcneilco/acas-oss:${ACAS_TAG}
     restart: always
     ports:
      - "3000:3000"
