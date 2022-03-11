@@ -733,7 +733,7 @@ client.cmpdreg.serverSettings.liveDesign.preprocessorSettings=
 client.cmpdreg.serverSettings.maxStandardizationDisplay=${env.CLIENT_CMPDREG_SERVERSETTINGS_MAXSTANDARDIZATIONDISPLAY}
 
 
-# Version configs
-client.version.version=${env.CLIENT_VERSION_VERSION}
-client.version.buildTime=${env.CLIENT_VERSION_BUILDTIME}
-client.version.revision=${env.CLIENT_VERSION_REVISION}
+# About configs
+client.about.acas.version=${env.CLIENT_ABOUT_ACAS_VERSION}
+client.about.acas.buildTime=${env.CLIENT_ABOUT_ACAS_BUILDTIME}
+client.about.acas.revision=${env.CLIENT_ABOUT_ACAS_REVISION}

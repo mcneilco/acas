@@ -7,9 +7,4 @@ exports.setupRoutes = (app, loginRoutes) ->
 config = require '../conf/compiled/conf.js'
 
 exports.getAbout = (req, resp) ->
-	about = 
-			acas:
-				version: config.all.client.version,
-				buildTime: config.all.client.buildTime,
-				revision: config.all.client.revision
-	resp.json(about)
+	resp.json(config.all.client.about)
