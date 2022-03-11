@@ -731,3 +731,9 @@ client.cmpdreg.marvin.delayShowStep2Next=${env.CLIENT_CMPDREG_MARVIN_DELAYSHOWST
 client.cmpdreg.marvin.exportFormat=${env.CLIENT_CMPDREG_MARVIN_EXPORTFORMAT}
 client.cmpdreg.serverSettings.liveDesign.preprocessorSettings=
 client.cmpdreg.serverSettings.maxStandardizationDisplay=${env.CLIENT_CMPDREG_SERVERSETTINGS_MAXSTANDARDIZATIONDISPLAY}
+
+
+# About configs
+client.about.acas.version=${env.CLIENT_ABOUT_ACAS_VERSION}
+client.about.acas.buildTime=${env.CLIENT_ABOUT_ACAS_BUILDTIME}
+client.about.acas.revision=${env.CLIENT_ABOUT_ACAS_REVISION}

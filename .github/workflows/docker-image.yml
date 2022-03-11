@@ -43,3 +43,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           file: Dockerfile
           platforms: linux/amd64,linux/arm64/v8
+          build-args: |
+            BUILDTIME=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
+            VERSION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
+            REVISION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.revision'] }}
