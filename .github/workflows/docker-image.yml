@@ -44,6 +44,13 @@ jobs:
         run: docker-compose -f "docker-compose.yml" up -d --build
       - name: Create docker bob
         run: bash docker_bob_setup.sh
+      - name: Create bob credentials for acasclient
+        run: |
+          mkdir ~/.acas
+          echo "[default]" >> ~/.acas/credentials
+          echo "username=bob" >> ~/.acas/credentials
+          echo "password=secret" >> ~/.acas/credentials
+          echo "url=http://localhost:3000" >> ~/.acas/credentials
       - name: Set Up Python 3.8
         uses: actions/setup-python@v2
         with:
@@ -52,17 +59,10 @@ jobs:
       - name: Display Python version
         run: python -c "import sys; print(sys.version)"
         # Install the package using the setup.py
-      - name: Install acasclient and unittest
+      - name: Install unittest
         run: |
           python -m pip install --upgrade pip
           pip install unittest
-      - name: Install bob credentials
-        run: |
-          mkdir ~/.acas
-          echo "[default]" >> ~/.acas/credentials
-          echo "username=bob" >> ~/.acas/credentials
-          echo "password=secret" >> ~/.acas/credentials
-          echo "url=http://localhost:3000" >> ~/.acas/credentials
       - name: Run tests
         run: python -m unittest discover -s ./acasclient -p "test_*.py"
       -

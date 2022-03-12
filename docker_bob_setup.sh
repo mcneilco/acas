@@ -6,8 +6,9 @@ until $(curl --output /dev/null --silent --head --fail http://localhost:3001/api
     counter=$((counter+1))
 done
 if [ $counter == $wait ]; then
-    echo "waited $wait seconds for acas to start, giving up on prepare module conf json"
+    echo "waited $wait seconds for acas to start, giving up"
 else
+    echo "ACAS started!"
     # getOrCreateACASBob
     curl -i -X GET -H "Accept: application/json" http://localhost:3001/api/systemTest/getOrCreateACASBob
     # getOrCreateGlobalProject
