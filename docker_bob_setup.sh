@@ -22,3 +22,4 @@ else
     # giveBobRoles
     curl --max-time 5 -i -X GET -H "Accept: application/json" http://localhost:3001/api/systemTest/giveBobRoles
 fi
+docker-compose logs acas
