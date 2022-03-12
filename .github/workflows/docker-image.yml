@@ -40,7 +40,7 @@ jobs:
           repository: mcneilco/acasclient
           path: acasclient
         # Setup which version of Python to use
-      - name: Start containers
+      - name: Build ACAS and docker-compose up
         run: docker-compose -f "docker-compose.yml" up -d --build
       - name: Create docker bob
         run: bash docker_bob_setup.sh

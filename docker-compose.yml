@@ -60,6 +60,7 @@ services:
       - ./conf/docker/acas/environment/acas.env
     ports:
      - "5432:5432"
+    command: ["sleep", "30", "&&", "postgres", "-c" ,"log_connections=on", "-c", "log_disconnections=on"]
   roo:
     image: mcneilco/acas-roo-server-oss:${ACAS_TAG}-indigo
     restart: always
@@ -77,7 +78,7 @@ services:
      - acas
     env_file:
       - ./conf/docker/acas/environment/acas.env
-    command: /bin/bash wait-for-it.sh db:5432 -- catalina.sh run
+    command: /bin/bash ./wait-for-it.sh -t 1000 db:5432 -- catalina.sh run
 volumes:
   dbstore:
   filestore:
