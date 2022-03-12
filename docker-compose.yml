@@ -77,7 +77,7 @@ services:
      - acas
     env_file:
       - ./conf/docker/acas/environment/acas.env
-    command: catalina.sh run
+    command: /bin/bash wait-for-it.sh db:5432 -- catalina.sh run
 volumes:
   dbstore:
   filestore:
