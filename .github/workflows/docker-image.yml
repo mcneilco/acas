@@ -49,7 +49,7 @@ jobs:
           mkdir ~/.acas
           echo "[default]" >> ~/.acas/credentials
           echo "username=bob" >> ~/.acas/credentials
-          echo "password=secret" >> ~/.acas/credentials
+          echo "password=secret-breakonpurpose" >> ~/.acas/credentials
           echo "url=http://localhost:3000" >> ~/.acas/credentials
       - name: Set Up Python 3.8
         uses: actions/setup-python@v2
