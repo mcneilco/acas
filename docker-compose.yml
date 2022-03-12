@@ -60,7 +60,6 @@ services:
       - ./conf/docker/acas/environment/acas.env
     ports:
      - "5432:5432"
-    command: ["sleep", "30", "&&", "postgres", "-c" ,"log_connections=on", "-c", "log_disconnections=on"]
   roo:
     image: mcneilco/acas-roo-server-oss:${ACAS_TAG}-indigo
     restart: always
