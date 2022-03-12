@@ -34,6 +34,11 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Checkout repo
         uses: actions/checkout@v2
+      - name: Checkout acasclient
+        uses: actions/checkout@v3
+        with:
+          repository: acasclient
+          path: acasclient
         # Setup which version of Python to use
       - name: Start containers
         run: docker-compose -f "docker-compose.yml" up -d --build
@@ -47,16 +52,19 @@ jobs:
       - name: Display Python version
         run: python -c "import sys; print(sys.version)"
         # Install the package using the setup.py
-      - name: Display Python version
-        run: python -c "import sys; print(sys.version)"
-        # Install the package using the setup.py
       - name: Install acasclient and unittest
         run: |
           python -m pip install --upgrade pip
-          pip install acasclient
           pip install unittest
+      - name: Install bob credentials
+        run: |
+          mkdir ~/.acas
+          echo "[default]" >> ~/.acas/credentials
+          echo "username=bob" >> ~/.acas/credentials
+          echo "password=secret" >> ~/.acas/credentials
+          echo "url=http://localhost:3000" >> ~/.acas/credentials
       - name: Run tests
-        run: python -m unittest discover  -p "test_*.py"
+        run: python -m unittest discover -s ./acasclient -p "test_*.py"
       -
         name: Build and push
         uses: docker/build-push-action@v2
