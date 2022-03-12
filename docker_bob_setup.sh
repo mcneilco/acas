@@ -1,8 +1,12 @@
 counter=0
-wait=1000
+wait=300
 until $(curl --output /dev/null --silent --head --fail http://localhost:3001/api/authors) || [ $counter == $wait ]; do
-    echo "Waiting on ACAS to start..."
+    if [ $counter == 0 ]; then
+        echo "Waiting for ACAS API to start..."
+    fi
     sleep 1
+    remaining=$((wait - counter))
+    echo "Waiting for ACAS API to start...remaining attempts: $remaining"
     counter=$((counter+1))
 done
 if [ $counter == $wait ]; then
