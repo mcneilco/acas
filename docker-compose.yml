@@ -1,8 +1,8 @@
 version: '2'
 services:
   acas:
-    build: .
-    # image: mcneilco/acas-oss:${ACAS_TAG}
+    # build: .
+    image: mcneilco/acas-oss:${ACAS_TAG}
     restart: always
     ports:
      - "3000:3000"
@@ -48,6 +48,7 @@ services:
     volumes:
       - filestore:/home/runner/build/privateUploads
       - logs:/home/runner/logs
+      - ../racas:/home/runner/build/racas
     command: ["bin/acas.sh", "run", "rservices"]
   db:
     image: mcneilco/acas-postgres:release-1.13.7

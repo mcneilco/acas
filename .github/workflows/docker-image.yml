@@ -37,8 +37,20 @@ jobs:
           # because we don't want to keep acasclient version in sync with ACAS version
           # at the moment.
           # ref: ${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
-      - name: Build ACAS and docker-compose up (assumes other images e.g. mcneilco/racas:release-1.13.7 or mcneilco/acas:1.13.7.x are up to date)
-        run: docker-compose -f "docker-compose.yml" up -d --build
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          push: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          file: Dockerfile
+          platforms: linux/amd64,linux/arm64/v8
+          build-args: |
+            BUILDTIME=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
+            VERSION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
+            REVISION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.revision'] }}
+      - name: Run docker-compose up (assumes other images e.g. mcneilco/racas:release-1.13.7 or mcneilco/acas:1.13.7.x are up to date)
+        run: docker-compose -f "docker-compose.yml" up -d
       - name: Create docker bob
         run: bash docker_bob_setup.sh
       - name: Create bob credentials for acasclient
