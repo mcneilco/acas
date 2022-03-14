@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v3
@@ -27,14 +27,12 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Checkout repo
-        uses: actions/checkout@v2
       - name: Checkout acasclient (assumes that there is already an acasclient tag with the same name (release/1.13.7 or 1.13.7.X))
         uses: actions/checkout@v3
         with:
           repository: mcneilco/acasclient
           path: acasclient
-          ref: ${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
+          # ref: ${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
       - name: Build ACAS and docker-compose up (assumes other images e.g. mcneilco/racas:release-1.13.7 or mcneilco/acas:1.13.7.x are up to date)
         run: docker-compose -f "docker-compose.yml" up -d --build
       - name: Create docker bob
