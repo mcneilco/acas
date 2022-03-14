@@ -37,7 +37,7 @@ jobs:
           # because we don't want to keep acasclient version in sync with ACAS version
           # at the moment.
           # ref: ${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
-      - name: Build and push
+      - name: Build (no push)
         uses: docker/build-push-action@v2
         with:
           push: false
