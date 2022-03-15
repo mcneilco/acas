@@ -34,7 +34,6 @@ jobs:
         with:
           repository: mcneilco/acasclient
           path: acasclient
-          ref: versions
           # Below checks out the same revision name as ACAS but skipping now
           # because we don't want to keep acasclient version in sync with ACAS version
           # at the moment.
