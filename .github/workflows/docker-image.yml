@@ -51,7 +51,7 @@ jobs:
             BUILDTIME=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
             VERSION=${{ env.ACAS_TAG }}
             REVISION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.revision'] }}
-      - name: Run docker-compose up - assumes racas:${{ env.ACAS_TAG }} and acas-roo-server-oss${{ env.ACAS_TAG }}-indigo exist and are up to date
+      - name: Run docker-compose up - assumes racas:${{ env.ACAS_TAG }} and acas-roo-server-oss:${{ env.ACAS_TAG }}-indigo exist and are up to date
         run: docker-compose -f "docker-compose.yml" up -d
       - name: Create docker bob
         run: bash docker_bob_setup.sh
