@@ -43,6 +43,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: false
+          load: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           file: Dockerfile
@@ -51,7 +52,7 @@ jobs:
             BUILDTIME=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
             VERSION=${{ env.ACAS_TAG }}
             REVISION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.revision'] }}
-      - name: Run docker-compose up - assumes racas:${{ env.ACAS_TAG }} and acas-roo-server-oss:${{ env.ACAS_TAG }}-indigo exist and are up to date
+      - name: Run docker-compose up - assumes racas-oss:${{ env.ACAS_TAG }} and acas-roo-server-oss:${{ env.ACAS_TAG }}-indigo exist and are up to date
         id: dockerComposeUp
         run: docker-compose -f "docker-compose.yml" up -d
       - name: Get fallback ACAS_TAG name
@@ -67,7 +68,7 @@ jobs:
           docker pull  mcneilco/racas-oss:${{ fromJSON(steps.defaultBranchMeta.outputs.json).labels['org.opencontainers.image.version'] }}
           docker tag mcneilco/racas-oss:${{ fromJSON(steps.defaultBranchMeta.outputs.json).labels['org.opencontainers.image.version'] }}-indigo mcneilco/racas-oss:${{ env.ACAS_TAG }}
           docker-compose -f "docker-compose.yml" up -d
-        if: steps.dockerComposeUp.outcome == 'failure'
+        if: ${{ always() && steps.dockerComposeUp.outcome == 'failure' }}
       - name: Create docker bob
         run: bash docker_bob_setup.sh
       - name: Create bob credentials for acasclient
