@@ -29,7 +29,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Checkout acasclient (assumes that there is already an acasclient tag with the same name (release/1.13.7 or 1.13.7.X))
+      - name: Checkout acasclient
         uses: actions/checkout@v3
         with:
           repository: mcneilco/acasclient
