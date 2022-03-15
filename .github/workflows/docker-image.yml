@@ -58,6 +58,9 @@ jobs:
         id: defaultBranchMeta
         uses: docker/metadata-action@v3
         with:
+          # list of Docker images to use as base name for tags
+          images: |
+            tmp/name
           tags: |
             type=raw,value=latest,enable=${{ github.event.repository.default_branch }}
         if: ${{ always() && steps.dockerComposeUp.outcome == 'failure' }}
