@@ -53,11 +53,13 @@ jobs:
             REVISION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.revision'] }}
       - name: Run docker-compose up - assumes racas-oss:${{ env.ACAS_TAG }} and acas-roo-server-oss:${{ env.ACAS_TAG }}-indigo exist and are up to date
         id: dockerComposeUp
-        run: docker-compose -f "docker-compose.yml" up -d
+        run: |
+          echo ::set-output name=docker_compose_pull_failure::false
+          docker-compose -f "docker-compose.yml" up -d || echo ::set-output name=docker_compose_pull_failure::true
       - name: Get fallback name
         run: |
           echo "DEFAULT_BRANCH_ACAS_TAG=$(echo ${{ github.event.repository.default_branch }} | sed -e 's/\//-/g')" >> $GITHUB_ENV
-        if: ${{ always() && steps.dockerComposeUp.outcome == 'failure' }}
+        if: ${{ steps.dockerComposeUp.outputs.docker_compose_pull_failure }}
       - name: Falling back to ${{ env.DEFAULT_BRANCH_ACAS_TAG }} for roo and racas tags
         run: |
           docker pull  mcneilco/acas-roo-server-oss:${{ env.DEFAULT_BRANCH_ACAS_TAG }}-indigo
@@ -65,7 +67,7 @@ jobs:
           docker pull  mcneilco/racas-oss:${{ env.DEFAULT_BRANCH_ACAS_TAG}}
           docker tag mcneilco/racas-oss:${{ env.DEFAULT_BRANCH_ACAS_TAG }} mcneilco/racas-oss:${{ env.ACAS_TAG }}
           docker-compose -f "docker-compose.yml" up -d
-        if: ${{ always() && steps.dockerComposeUp.outcome == 'failure' }}
+        if: ${{ steps.dockerComposeUp.outputs.docker_compose_pull_failure }}
       - name: Create docker bob
         run: bash docker_bob_setup.sh
       - name: Create bob credentials for acasclient
