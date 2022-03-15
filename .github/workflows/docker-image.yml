@@ -18,6 +18,8 @@ jobs:
           # list of Docker images to use as base name for tags
           images: |
             ${{ github.repository }}-oss
+      - name: Set ACAS_TAG to ${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.revision'] }}
+        run: echo "ACAS_TAG=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.revision'] }}" >> $GITHUB_ENV
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
       - name: Set up Docker Buildx
@@ -48,8 +50,8 @@ jobs:
           build-args: |
             BUILDTIME=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
             VERSION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
-            REVISION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.revision'] }}
-      - name: Run docker-compose up (assumes other images e.g. mcneilco/racas:release-1.13.7 or mcneilco/acas:1.13.7.x are up to date)
+            REVISION=$ACAS_TAG
+      - name: Run docker-compose up (assumes other images e.g. mcneilco/racas:$ACAS_TAG or mcneilco/acas:$ACAS_TAG are up to date)
         run: docker-compose -f "docker-compose.yml" up -d
       - name: Create docker bob
         run: bash docker_bob_setup.sh
@@ -83,4 +85,4 @@ jobs:
           build-args: |
             BUILDTIME=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
             VERSION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
-            REVISION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.revision'] }}
+            REVISION=$ACAS_TAG
