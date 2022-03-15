@@ -62,7 +62,7 @@ jobs:
           images: |
             tmp/name
           tags: |
-            type=ref,event=branch,enable=${{ github.event.repository.default_branch }}
+            type=ref,event=branch,value=${{ github.event.repository.default_branch }}
         if: ${{ always() && steps.dockerComposeUp.outcome == 'failure' }}
       - name: Falling back to ${{ fromJSON(steps.defaultBranchMeta.outputs.json).labels['org.opencontainers.image.version'] }} for roo and racas tags
         run: |
