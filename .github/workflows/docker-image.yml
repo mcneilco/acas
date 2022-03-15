@@ -55,7 +55,6 @@ jobs:
         id: dockerComposeUp
         run: docker-compose -f "docker-compose.yml" up -d
       - name: Fallback to release-1.13.7 for roo and racas
-        id: dockerComposeUp
         run: |
           ACAS_TAG=release-1.13.7
           docker-compose pull roo rservices
