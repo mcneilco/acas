@@ -48,7 +48,6 @@ services:
     volumes:
       - filestore:/home/runner/build/privateUploads
       - logs:/home/runner/logs
-      - ../racas:/home/runner/build/racas
     command: ["bin/acas.sh", "run", "rservices"]
   db:
     image: mcneilco/acas-postgres:release-1.13.7
