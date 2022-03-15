@@ -61,6 +61,7 @@ jobs:
         with:
           tags: |
             type=raw,value=latest,enable=${{ github.event.repository.default_branch }}
+        if: ${{ always() && steps.dockerComposeUp.outcome == 'failure' }}
       - name: Falling back to ${{ fromJSON(steps.defaultBranchMeta.outputs.json).labels['org.opencontainers.image.version'] }} for roo and racas tags
         run: |
           docker pull  mcneilco/acas-roo-server-oss:${{ fromJSON(steps.defaultBranchMeta.outputs.json).labels['org.opencontainers.image.version'] }}-indigo
