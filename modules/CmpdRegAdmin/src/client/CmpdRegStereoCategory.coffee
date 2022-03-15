@@ -12,7 +12,7 @@ class StereoCategory extends Backbone.Model
 		errors = []
 		if attrs.code? and @isNew()
 			validChars = attrs.code.match(/[a-zA-Z0-9 _\-+]/g)
-			unless validChars.length is attrs.code.length
+			if !validChars? || validChars.length != attrs.code.length
 				errors.push
 					attribute: 'code'
 					message: "Stereo Category code can not contain special characters"
