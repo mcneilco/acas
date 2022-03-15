@@ -52,7 +52,17 @@ jobs:
             VERSION=${{ env.ACAS_TAG }}
             REVISION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.revision'] }}
       - name: Run docker-compose up - assumes racas:${{ env.ACAS_TAG }} and acas-roo-server-oss:${{ env.ACAS_TAG }}-indigo exist and are up to date
+        id: dockerComposeUp
         run: docker-compose -f "docker-compose.yml" up -d
+      - name: Fallback to release-1.13.7 for roo and racas
+        id: dockerComposeUp
+        run: |
+          ACAS_TAG=release-1.13.7
+          docker-compose pull roo rservices
+          docker tag mcneilco/acas-roo-server-oss:${ACAS_TAG}-indigo mcneilco/acas-roo-server-oss:${{ env.ACAS_TAG }}-indigo
+          docker tag mcneilco/racas-oss:${ACAS_TAG} mcneilco/racas-oss:${{ env.ACAS_TAG }}
+          docker-compose -f "docker-compose.yml" up -d
+        if: steps.dockerComposeUp.outcome == 'failure'
       - name: Create docker bob
         run: bash docker_bob_setup.sh
       - name: Create bob credentials for acasclient
