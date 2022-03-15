@@ -54,12 +54,18 @@ jobs:
       - name: Run docker-compose up - assumes racas:${{ env.ACAS_TAG }} and acas-roo-server-oss:${{ env.ACAS_TAG }}-indigo exist and are up to date
         id: dockerComposeUp
         run: docker-compose -f "docker-compose.yml" up -d
-      - name: Fallback to release-1.13.7 for roo and racas
+      - name: Get fallback ACAS_TAG name
+        id: defaultBranchMeta
+        uses: docker/metadata-action@v3
+        with:
+          tags: |
+            type=raw,value=latest,enable=${{ github.event.repository.default_branch }}
+      - name: Falling back to ${{ fromJSON(steps.defaultBranchMeta.outputs.json).labels['org.opencontainers.image.version'] }} for roo and racas tags
         run: |
-          ACAS_TAG=release-1.13.7
-          docker-compose pull roo rservices
-          docker tag mcneilco/acas-roo-server-oss:${ACAS_TAG}-indigo mcneilco/acas-roo-server-oss:${{ env.ACAS_TAG }}-indigo
-          docker tag mcneilco/racas-oss:${ACAS_TAG} mcneilco/racas-oss:${{ env.ACAS_TAG }}
+          docker pull  mcneilco/acas-roo-server-oss:${{ fromJSON(steps.defaultBranchMeta.outputs.json).labels['org.opencontainers.image.version'] }}-indigo
+          docker tag mcneilco/acas-roo-server-oss:${{ fromJSON(steps.defaultBranchMeta.outputs.json).labels['org.opencontainers.image.version'] }}-indigo mcneilco/acas-roo-server-oss:${{ env.ACAS_TAG }}-indigo
+          docker pull  mcneilco/racas-oss:${{ fromJSON(steps.defaultBranchMeta.outputs.json).labels['org.opencontainers.image.version'] }}
+          docker tag mcneilco/racas-oss:${{ fromJSON(steps.defaultBranchMeta.outputs.json).labels['org.opencontainers.image.version'] }}-indigo mcneilco/racas-oss:${{ env.ACAS_TAG }}
           docker-compose -f "docker-compose.yml" up -d
         if: steps.dockerComposeUp.outcome == 'failure'
       - name: Create docker bob
