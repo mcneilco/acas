@@ -18,8 +18,8 @@ jobs:
           # list of Docker images to use as base name for tags
           images: |
             ${{ github.repository }}-oss
-      - name: Set ACAS_TAG to ${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.revision'] }}
-        run: echo "ACAS_TAG=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.revision'] }}" >> $GITHUB_ENV
+      - name: Set ACAS_TAG to ${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
+        run: echo "ACAS_TAG=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}" >> $GITHUB_ENV
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
       - name: Set up Docker Buildx
@@ -49,9 +49,9 @@ jobs:
           platforms: linux/amd64,linux/arm64/v8
           build-args: |
             BUILDTIME=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
-            VERSION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
-            REVISION=$ACAS_TAG
-      - name: Run docker-compose up (assumes other images e.g. mcneilco/racas:$ACAS_TAG or mcneilco/acas:$ACAS_TAG are up to date)
+            VERSION=${{ ACAS_TAG }}
+            REVISION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.revision'] }}
+      - name: Run docker-compose up - assumes racas:${{ ACAS_TAG }} and acas-roo-server-oss${{ ACAS_TAG }}-indigo exist and are up to date
         run: docker-compose -f "docker-compose.yml" up -d
       - name: Create docker bob
         run: bash docker_bob_setup.sh
@@ -84,5 +84,5 @@ jobs:
           platforms: linux/amd64,linux/arm64/v8
           build-args: |
             BUILDTIME=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
-            VERSION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
-            REVISION=$ACAS_TAG
+            VERSION=$ACAS_TAG
+            REVISION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.revision'] }}
