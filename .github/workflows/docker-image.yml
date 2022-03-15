@@ -63,7 +63,7 @@ jobs:
           docker pull  mcneilco/acas-roo-server-oss:${{ env.DEFAULT_BRANCH_ACAS_TAG }}-indigo
           docker tag mcneilco/acas-roo-server-oss:${{ env.DEFAULT_BRANCH_ACAS_TAG}}-indigo mcneilco/acas-roo-server-oss:${{ env.ACAS_TAG }}-indigo
           docker pull  mcneilco/racas-oss:${{ env.DEFAULT_BRANCH_ACAS_TAG}}
-          docker tag mcneilco/racas-oss:${{ env.DEFAULT_BRANCH_ACAS_TAG }}-indigo mcneilco/racas-oss:${{ env.ACAS_TAG }}
+          docker tag mcneilco/racas-oss:${{ env.DEFAULT_BRANCH_ACAS_TAG }} mcneilco/racas-oss:${{ env.ACAS_TAG }}
           docker-compose -f "docker-compose.yml" up -d
         if: ${{ always() && steps.dockerComposeUp.outcome == 'failure' }}
       - name: Create docker bob
