@@ -24,6 +24,7 @@ $(function() {
       meltingPoint: null,
       boilingPoint: null,
       buid: null,
+      barcode: null,
       isVirtual: false,
       lotNumber: null,
       retain: null,
