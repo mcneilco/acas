@@ -15,15 +15,15 @@ class CompoundScientist extends Backbone.Model
 			validChars = attrs.code.match(/[a-zA-Z0-9 _\-+]/g)
 			if !validChars? || validChars.length != attrs.code.length
 				errors.push
-					attribute: 'scientistCode'
+					attribute: 'codeTablesAdminCode'
 					message: "Compound Scientist code can not contain special characters"
 		if !attrs.code? or attrs.code is ""
 			errors.push
-				attribute: 'scientistCode'
+				attribute: 'codeTablesAdminCode'
 				message: "Compound Scientist code must be set and unique"
 		if !attrs.name? or attrs.name is ""
 			errors.push
-				attribute: 'scientistName'
+				attribute: 'codeTablesAdminName'
 				message: "Compound Scientist name must be set and unique"
 		if errors.length > 0
 			return errors

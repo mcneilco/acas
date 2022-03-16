@@ -15,8 +15,8 @@ class AbstractCodeTablesAdminController extends AbstractFormController
 	template: _.template($("#AbstractCodeTablesAdminView").html())
 
 	events: ->
-		"keyup .bv_codeTablesAdminCode": "handleCodeTablesAdminCodeNameChanged"
-		"keyup .bv_codeTablesAdminName": "handleCodeTablesAdminNameChanged"
+		"input .bv_codeTablesAdminCode": "handleCodeTablesAdminCodeNameChanged"
+		"input .bv_codeTablesAdminName": "handleCodeTablesAdminNameChanged"
 		"click .bv_codeTablesAdminIgnore": "handleCodeTablesAdminIgnoreChanged"
 		"click .bv_save": "handleSaveClicked"
 		"click .bv_backToCodeTablesAdminBrowserBtn": "handleBackToCodeTablesAdminBrowserClicked"
@@ -76,6 +76,11 @@ class AbstractCodeTablesAdminController extends AbstractFormController
 			@$(".bv_group_codeTablesAdminIgnore").show()
 		else
 			@$(".bv_group_codeTablesAdminIgnore").hide()
+		@notificationController = new LSNotificationController
+			el: @$('.bv_notifications')
+			showPreview: false
+		@.on 'notifyError', @notificationController.addNotification
+		@.on 'clearErrors', @notificationController.clearAllNotificiations
 		@render()
 
 	render: =>
@@ -233,6 +238,7 @@ class AbstractCodeTablesAdminController extends AbstractFormController
 
 	clearValidationErrorStyles: =>
 		super()
+		@notificationController.clearAllNotificiations()
 		@$('.bv_save').removeAttr('disabled')
 
 	checkDisplayMode: =>
