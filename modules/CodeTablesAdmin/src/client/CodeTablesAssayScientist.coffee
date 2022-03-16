@@ -15,16 +15,16 @@ class AssayScientist extends Backbone.Model
 			validChars = attrs.code.match(/[a-zA-Z0-9 _\-+]/g)
 			if !validChars? || validChars.length != attrs.code.length
 				errors.push
-					attribute: 'scientistCode'
+					attribute: 'codeTablesAdminCode'
 					message: "Assay Scientist code can not contain special characters"
 		if !attrs.code? or attrs.code is ""
 			errors.push
-				attribute: 'scientistCode'
+				attribute: 'codeTablesAdminCode'
 				message: "Assay Scientist code must be set and unique"
 		if !attrs.name? or attrs.name is ""
 			errors.push
-				attribute: 'scientistName'
-				message: "Assay Scientist name must be set and unique"
+				attribute: 'codeTablesAdminName'
+				message: "Assay Scientist name must be set"
 		if errors.length > 0
 			return errors
 		else
