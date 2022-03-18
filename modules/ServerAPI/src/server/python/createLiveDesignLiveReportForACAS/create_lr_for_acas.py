@@ -10,6 +10,7 @@ Brian Frost
 import argparse
 import json
 import re
+import time
 
 try:
     import http.client as http_client
@@ -153,29 +154,56 @@ def extract_endpoints_dict(node, endpoints_dict):
         extract_endpoints_dict(child_node, endpoints_dict)
     return endpoints_dict
 
+def wait_and_add_columns(ld_client,
+                         live_report_id,
+                         project_id,
+                         assay_name,
+                         column_names=None,
+                         max_retries=10,
+                         delay_sec=5):
+    """
+    Attempt to find and add columns with specified names into a LR.
+    If the columns don't exist, poll for `retries` times with `delay_sec` delay between tries
+    until either success or timeout.
+    :param ld_client: LD client
+    :param live_report_id: ID of LiveReport to add columns to
+    :param column_ids: Assay name of columns: if column is 'Foo (bar)' then assay_name = 'Foo'
+    :param column_names: Full column names of format 'Foo (bar)'
+    :param max_retries: Maximum of retries, defaults to 10
+    :param delay_sec: Seconds of delay been tries, defaults to 5
+    """
+    success = False
+    for attempt in range(max_retries):
+        try:
+            col_ids = find_column_ids(
+                ld_client, assay_name, project_id=project_id, column_names=column_names)
+            if not col_ids:
+                raise ValueError(
+                    f'Columns {column_names} under {assay_name} not found')
+            ld_client.add_columns(live_report_id, col_ids)
+            success = True
+            break
+        except (KeyError, ValueError) as e:
+            print(f'Failed to add columns, retrying {max_retries - attempt - 1} more times.')
+            time.sleep(delay_sec)
+    return success
+
 ### Main functions
 
-def get_column_ids(ld_client, assays_to_add, project_id):
+def get_assay_names_to_full_col_names(assays_to_add):
+    """Convert the incoming `assays_to_add` to a dictionary of assay names to list of full column names.
+    :param assays_to_add: A list of assay name & result type objects from ACAS
+    :return: A dictionary of assay names to list full column names
     """
-    Returns addable column IDs for the given column names
-    :param ld_client: LD Client
-    :param assays_to_add: List of dicts with 'protocolName' and 'resultType' keys
-    :return: List of column IDs
-    """
-    column_ids = []
-    # Convert the incoming `assays_to_add` to a dict of {assay_name: [result_type_1, result_type_2]}
-    assays_to_result_types = {}
+    assay_names_to_full_col_names = {}
     for assay in assays_to_add:
         assay_name = assay['protocolName']
         result_type = assay['resultType']
-        if assay_name not in assays_to_result_types:
-            assays_to_result_types[assay_name] = []
-        assays_to_result_types[assay_name].append(result_type)
-    # Fetch the corresponding column ids
-    for assay_name, result_types in assays_to_result_types.items():
-        column_names = [f"{assay_name} ({result_type})" for result_type in result_types]
-        column_ids.extend(find_column_ids(ld_client, assay_name, project_id, column_names=column_names))
-    return column_ids
+        if assay_name not in assay_names_to_full_col_names:
+            assay_names_to_full_col_names[assay_name] = []
+        col_name = f'{assay_name} ({result_type})'
+        assay_names_to_full_col_names[assay_name].append(col_name)
+    return assay_names_to_full_col_names
 
 def get_column_ids_legacy(ld_client, assays_to_add):
     assays = ld_client.assays()
@@ -231,12 +259,15 @@ def make_acas_live_report(api, compound_ids, assays_to_add, experiment_code, log
     print("Live Report ID is:" + str(lr_id))
     #get the list of assay addable columns
     if ldClientVersion >= 7.6:
-        addable_column_ids = get_column_ids(api, assays_to_add, project_id)
+        # convert `assays_to_add` into a list of full column names
+        assay_names_to_column_names = get_assay_names_to_full_col_names(assays_to_add)
+        for assay_name, column_names in assay_names_to_column_names.items():
+            # get columns and add them, including a retry period
+            wait_and_add_columns(api, lr_id, project_id, assay_name, column_names=column_names)
     else:
         addable_column_ids = get_column_ids_legacy(api, assays_to_add)
-
-    # Add the columns to the LR
-    api.add_columns(lr_id, addable_column_ids)
+        # Add the columns to the LR
+        api.add_columns(lr_id, addable_column_ids)
     
     # Hide the rationale column
     rationale_column_descriptor = api.column_descriptors(lr_id,'Rationale')[0]
