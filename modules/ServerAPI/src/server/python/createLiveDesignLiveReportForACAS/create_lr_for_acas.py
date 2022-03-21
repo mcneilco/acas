@@ -177,9 +177,11 @@ def wait_and_add_columns(ld_client,
         try:
             col_ids = find_column_ids(
                 ld_client, assay_name, project_id=project_id, column_names=column_names)
-            if not col_ids:
+            expected = len(column_names)
+            found = len(col_ids)
+            if found < expected:
                 raise ValueError(
-                    f'Columns {column_names} under {assay_name} not found')
+                    f'Some columns under {assay_name} not found. Found {found} of {expected}.')
             ld_client.add_columns(live_report_id, col_ids)
             success = True
             break
