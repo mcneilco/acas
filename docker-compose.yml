@@ -29,7 +29,6 @@ services:
      - ./:/home/runner/acas
      # - ./modules/BuildUtilities/:/home/runner/acas/modules/BuildUtilities
     env_file:
-      - ./conf/docker/acas/environment/acas.env
       - ./.env
 # Dev Command
     command: ["bin/acas.sh", "run", "acas", "dev"]
@@ -54,10 +53,6 @@ services:
     restart: always
     volumes:
      - dbstore:/var/lib/postgresql/data
-    env_file:
-      - ./conf/docker/postgres/environment/postgres.env
-      - ./conf/docker/db/environment/db.env
-      - ./conf/docker/acas/environment/acas.env
     ports:
      - "5432:5432"
   roo:
@@ -75,8 +70,6 @@ services:
      - TOMCAT_LISTEN_ADDRESS=0.0.0.0
     volumes_from:
      - acas
-    env_file:
-      - ./conf/docker/acas/environment/acas.env
     command: /bin/bash ./wait-for-it.sh -t 1000 db:5432 -- catalina.sh run
 volumes:
   dbstore:
