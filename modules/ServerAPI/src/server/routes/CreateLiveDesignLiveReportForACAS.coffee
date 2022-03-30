@@ -35,7 +35,7 @@ exports.getUrlForNewLiveDesignLiveReportForExperiment = (req, resp) ->
   resp.json {url: url}
 
 exports.getUrlForNewLiveDesignLiveReportForExperimentInternal = (exptCode, username, callback) ->
-  exec = require('child_process').exec
+  child_process = require('child_process')
   config = require '../conf/compiled/conf.js'
   request = require 'request'
 
@@ -48,25 +48,47 @@ exports.getUrlForNewLiveDesignLiveReportForExperimentInternal = (exptCode, usern
     exptInfo = body
     exptInfo.experimentCode = exptCode
     exptInfo.username = username
-    console.log @responseJSON
+
     #install fresh ldclient
     if !config.all.server.liveDesign.installClientOnStart? || !config.all.server.liveDesign.installClientOnStart
       exports.installLiveDesignPythonClientInternal (statusCode, output) ->
           console.log 'Updated LDClient'
-    command = "python ./src/python/ServerAPI/createLiveDesignLiveReportForACAS/create_lr_for_acas.py -e "
-    command += "'"+config.all.client.service.result.viewer.liveDesign.baseUrl+"' -u '"+config.all.client.service.result.viewer.liveDesign.username+"' -p '"+config.all.client.service.result.viewer.liveDesign.password+"' -d '"+config.all.client.service.result.viewer.liveDesign.database+"' -r '"+config.all.client.service.result.viewer.liveDesign.makeReportReadonly+"' -i '"
-    #		data = {"compounds":["V035000","CMPD-0000002"],"assays":[{"protocolName":"Target Y binding","resultType":"curve id"}]}
-    #		command += (JSON.stringify data)+"'"
-    command += (JSON.stringify exptInfo)+"'"
-    console.log "About to call python using command: "+command
 
-    child = exec command,  (error, stdout, stderr) ->
-      reportURLPos = stdout.indexOf config.all.client.service.result.viewer.liveDesign.baseUrl
-      reportURL = stdout.substr reportURLPos
+    cmd = 'python'
+    args = [ './src/python/ServerAPI/createLiveDesignLiveReportForACAS/create_lr_for_acas.py',
+              '-e', config.all.client.service.result.viewer.liveDesign.baseUrl,
+              '-c', config.all.client.service.result.viewer.liveDesign.clientUrl,
+              '-u', config.all.client.service.result.viewer.liveDesign.username,
+              '-p', config.all.client.service.result.viewer.liveDesign.password,
+              '-d', config.all.client.service.result.viewer.liveDesign.database,
+              '-r', config.all.client.service.result.viewer.liveDesign.makeReportReadonly,
+              '-i', JSON.stringify(exptInfo)
+            ]
+    # Quote the args just to pretty print the command
+    quotedArgs = args.map (arg)->
+      "'" + arg + "'"
+    console.log "About to call python using command: #{cmd} #{quotedArgs.join(' ')}"
+
+    # Spawn child with args
+    subprocess = child_process.spawn(cmd, args) 
+    stderr = ''
+    stdout = ''
+    subprocess.stdout.setEncoding('utf8');
+    subprocess.stdout.on 'data', (data) ->
+      stdout += data.toString();
+      return
+    subprocess.stderr.on 'data', (data) ->
+      stderr += data.toString();
+      return
+    subprocess.stderr.setEncoding('utf8');
+    subprocess.on 'close', (exitCode) ->
+      console.log "Exit code: "+exitCode
       console.log "stderr: " + stderr
       console.log "stdout: " + stdout
-
-      callback reportURL
+      if exitCode == 0
+        callback stdout
+      else
+        callback null
 
 exports.getLiveDesignReportContent = (req, resp) ->
   liveDesignReportID = req.params.liveDesignReportID
@@ -263,3 +285,4 @@ exports.deleteLiveDesignReportInternal = (liveDesignReportID, callback) ->
       statusCode = 200
       output = stdout
     callback statusCode, output
+

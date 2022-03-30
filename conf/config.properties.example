@@ -278,6 +278,7 @@ client.service.result.viewer.configuredViewers=${env.CLIENT_SERVICE_RESULT_VIEWE
 client.service.result.viewer.defaultViewer=${env.CLIENT_SERVICE_RESULT_VIEWER_DEFAULTVIEWER}
 client.service.result.viewer.dataViewer.exptTree.showOnlyMatches=${env.CLIENT_SERVICE_RESULT_VIEWER_DATAVIEWER_EXPTTREE_SHOWONLYMATCHES}
 client.service.result.viewer.liveDesign.baseUrl=${env.CLIENT_SERVICE_RESULT_VIEWER_LIVEDESIGN_BASEURL}
+client.service.result.viewer.liveDesign.clientUrl=${env.CLIENT_SERVICE_RESULT_VIEWER_LIVEDESIGN_CLIENTURL}
 client.service.result.viewer.liveDesign.username=${env.CLIENT_SERVICE_RESULT_VIEWER_LIVEDESIGN_USERNAME}
 client.service.result.viewer.liveDesign.password=${env.CLIENT_SERVICE_RESULT_VIEWER_LIVEDESIGN_PASSWORD}
 client.service.result.viewer.liveDesign.database.name=${env.CLIENT_SERVICE_RESULT_VIEWER_LIVEDESIGN_DATABASE_NAME}
