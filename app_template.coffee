@@ -81,6 +81,7 @@ startApp = ->
 	sessionStore = new MemoryStore();
 	global.app = express()
 	app.set 'port', config.all.client.port
+	app.set 'listenHost', config.all.client.listenHost
 	app.set 'views', __dirname + '/views'
 	app.set 'view engine', 'jade'
 	app.use logger('dev')
@@ -138,8 +139,8 @@ startApp = ->
 
 
 	if not config.all.client.use.ssl
-		httpServer = http.createServer(app).listen(app.get('port'), ->
-			console.log("ACAS server listening on port " + app.get('port'))
+		httpServer = http.createServer(app).listen(app.get('port'), app.get('listenHost'), ->
+			console.log("ACAS server listening to #{app.get('listenHost')} on port #{app.get('port')}")
 		)
 	else
 		console.log "------ Starting in SSL Mode"
@@ -150,8 +151,8 @@ startApp = ->
 			cert: fs.readFileSync config.all.server.ssl.cert.file.path
 			ca: fs.readFileSync config.all.server.ssl.cert.authority.file.path
 			passphrase: config.all.server.ssl.cert.passphrase
-		https.createServer(sslOptions, app).listen(app.get('port'), ->
-			console.log("ACAS server listening on port " + app.get('port'))
+		https.createServer(sslOptions, app).listen(app.get('port'), app.get('listenHost'), ->
+			console.log("ACAS server listening to #{app.get('listenHost')} on port #{app.get('port')}")
 		)
 		#TODO hack to prevent bug: https://github.com/mikeal/request/issues/418
 		process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"

@@ -31,6 +31,7 @@ startApp = ->
 
 	global.app = express()
 	app.set 'port', config.all.server.nodeapi.port
+	app.set 'listenHost', config.all.server.nodeapi.listenHost
 	app.set 'views', __dirname + '/views'
 	app.set 'view engine', 'jade'
 	app.use(logger('dev'))
@@ -53,8 +54,8 @@ startApp = ->
 
 	#TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES
 
-	http.createServer(app).listen(app.get('port'), ->
-		console.log("ACAS API server listening on port " + app.get('port'))
+	http.createServer(app).listen(app.get('port'), app.get('listenHost'), ->
+		console.log("ACAS API server listening to #{app.get('listenHost')} on port #{app.get('port')}")
 		console.log "Bootstrap being called"
 		bootstrap = require "./src/javascripts/ServerAPI/Bootstrap.js"
 		if bootstrap.main?

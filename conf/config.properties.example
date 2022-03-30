@@ -91,6 +91,7 @@ client.host=${env.CLIENT_HOST}
 # Example: client.port=3000
 #
 client.port=${env.CLIENT_PORT}
+client.listenHost=${env.CLIENT_LISTENHOST}
 
 
 ###########################################################################
@@ -108,6 +109,7 @@ client.port=${env.CLIENT_PORT}
 # NOTE:        nodeapi.port must be different than client.port. It should be blocked by the server's firewall
 #
 server.nodeapi.port=${env.SERVER_NODEAPI_PORT}
+server.nodeapi.listenHost=${env.SERVER_NODEAPI_LISTENHOST}
 server.nodeapi.path=${env.SERVER_NODEAPI_PATH}
 
 client.service.persistence.path=${env.CLIENT_SERVICE_PERSISTENCE_PATH}
