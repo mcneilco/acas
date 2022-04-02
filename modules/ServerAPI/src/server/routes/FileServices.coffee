@@ -41,6 +41,9 @@ setupRoutes = (app, loginRoutes, requireLogin) ->
 		)
 		
 		fileFilterFunction = (req, file, cb) ->
+
+			# Get config for dissallowed file types
+			# Return error if dissallowed file type is found and don't write it to the file system
 			disallowedTypesSetting = config.all.server.datafiles.dissallowedFileTypes
 			if disallowedTypesSetting?
 				disallowedTypesArray = JSON.parse(disallowedTypesSetting)
@@ -54,6 +57,8 @@ setupRoutes = (app, loginRoutes, requireLogin) ->
 				# If either test fails, return the error
 				if mimetype || extname
 					return cb 'Error (415) - The following file types are dissallowed: ' + disallowedTypesArray.join(', ')
+			
+			# If no error, return null
 			cb(null, true);
 			return
 
