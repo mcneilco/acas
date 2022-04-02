@@ -41,15 +41,17 @@ setupRoutes = (app, loginRoutes, requireLogin) ->
 		)
 		
 		fileFilterFunction = (req, file, cb) ->
-			# Join the filtered file types by |
 			disallowedTypesSetting = config.all.server.datafiles.dissallowedFileTypes
 			if disallowedTypesSetting?
 				disallowedTypesArray = JSON.parse(disallowedTypesSetting)
+				# Join the filtered file types by | and create regex
 				dissallowedFileTypes = new RegExp(disallowedTypesArray.join('|'))
 
-				# Check if the file type is allowed
+				# Do regex tests
 				mimetype = dissallowedFileTypes.test(file.mimetype)
 				extname = dissallowedFileTypes.test(path.extname(file.originalname).toLowerCase())
+
+				# If either test fails, return the error
 				if mimetype || extname
 					return cb 'Error (415) - The following file types are dissallowed: ' + disallowedTypesArray.join(', ')
 			cb(null, true);
