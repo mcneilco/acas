@@ -171,7 +171,7 @@ class ACASThingBrowserCellController extends Backbone.View
 		else if value instanceof Label
 			content = value.escape("labelText")
 		else
-			content = value
+			content =  @model.escape(@configs.key)
 		
 		if @configs.formatter?
 			content = @configs.formatter content
