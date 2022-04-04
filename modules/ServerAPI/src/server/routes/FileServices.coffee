@@ -39,23 +39,51 @@ setupRoutes = (app, loginRoutes, requireLogin) ->
 			destination: dataFilesPath
 			filename: fileRename
 		)
-		dataFileUploads = multer({dest:dataFilesPath, storage: storage}).any();
+		
+		fileFilterFunction = (req, file, cb) ->
+
+			# Get config for dissallowed file types
+			# Return error if dissallowed file type is found and don't write it to the file system
+			disallowedTypesSetting = config.all.server.datafiles.dissallowedFileTypes
+			if disallowedTypesSetting?
+				disallowedTypesArray = JSON.parse(disallowedTypesSetting)
+				# Join the filtered file types by | and create regex
+				dissallowedFileTypes = new RegExp(disallowedTypesArray.join('|'))
+
+				# Do regex tests
+				mimetype = dissallowedFileTypes.test(file.mimetype)
+				extname = dissallowedFileTypes.test(path.extname(file.originalname).toLowerCase())
+
+				# If either test fails, return the error
+				if mimetype || extname
+					return cb 'Error (415) - The following file types are dissallowed: ' + disallowedTypesArray.join(', ')
+			
+			# If no error, return null
+			cb(null, true);
+			return
+
+		dataFileUploads = multer({dest:dataFilesPath, storage: storage, fileFilter: fileFilterFunction}).any();
 
 		# Function to handle request after files have been saved and added
 		# to the request by multer
 		dataFileUploads req, resp, (err) ->
 			if req.fileValidationError
 				console.error(err)
-				return resp.send(req.fileValidationError)
+				return resp.status(500).send(req.fileValidationError)
 			else if !req.files
-				console.error(err)
-				return resp.send('Please post a file')
+				# Set status to 204 No Content
+				return resp.status(204).send('Please post a file')
 			else if err instanceof multer.MulterError
 				console.error(err)
-				return resp.send(err)
+				return resp.status(500).send(err)
 			else if err
+				# Set status code to 'Unsupported Media Type'
 				console.error(err)
-				return resp.send(err)
+				if err.indexOf('Error (415)') == 0
+					console.log(err.indexOf('Error (415)'))
+					return resp.status(415).send(err)
+				else
+					return resp.status(500).send(err)
 			# No errors 
 			else
 				try
