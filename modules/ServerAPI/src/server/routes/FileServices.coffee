@@ -44,7 +44,7 @@ setupRoutes = (app, loginRoutes, requireLogin) ->
 
 			# Get config for dissallowed file types
 			# Return error if dissallowed file type is found and don't write it to the file system
-			disallowedTypesSetting = config.all.server.datafiles.dissallowedFileTypes
+			disallowedTypesSetting = config.all.server.datafiles.disallowedFileTypes
 			if disallowedTypesSetting?
 				disallowedTypesArray = JSON.parse(disallowedTypesSetting)
 				# Join the filtered file types by | and create regex
