@@ -127,7 +127,7 @@ server.datafiles.without.login=false
 # specify relative to ACAS_HOME without leading slash
 server.datafiles.relative_path=privateUploads
 server.tempfiles.relative_path=privateTempFiles
-server.datafiles.dissallowedFileTypes=["svg", "bat", "exe", "cmd", "sh", "php([0-9])?", "pl", "cgi", "386", "dll", "com", "torrent", "js", "app", "jar", "pif", "vb", "vbscript", "wsf", "asp", "cer", "csr", "jsp", "drv", "sys", "ade", "adp", "bas", "chm", "cpl", "crt", "csh", "fxp", "hlp", "hta", "inf", "ins", "isp", "jse", "htaccess", "htpasswd", "ksh", "lnk", "mdb", "mde", "mdt", "mdw", "msc", "msi", "msp", "mst", "ops", "pcd", "prg", "reg", "scr", "sct", "shb", "shs", "url", "vbe", "vbs", "wsc", "wsf", "wsh"]
+server.datafiles.disallowedFileTypes=["svg", "bat", "exe", "cmd", "sh", "php([0-9])?", "pl", "cgi", "386", "dll", "com", "torrent", "js", "app", "jar", "pif", "vb", "vbscript", "wsf", "asp", "cer", "csr", "jsp", "drv", "sys", "ade", "adp", "bas", "chm", "cpl", "crt", "csh", "fxp", "hlp", "hta", "inf", "ins", "isp", "jse", "htaccess", "htpasswd", "ksh", "lnk", "mdb", "mde", "mdt", "mdw", "msc", "msi", "msp", "mst", "ops", "pcd", "prg", "reg", "scr", "sct", "shb", "shs", "url", "vbe", "vbs", "wsc", "wsf", "wsh"]
 # prefix for the client to prepend the fileValues to allow a user to download
 client.datafiles.downloadurl.prefix=/dataFiles/
 
