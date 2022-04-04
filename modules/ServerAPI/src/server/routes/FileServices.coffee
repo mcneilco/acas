@@ -2,7 +2,7 @@ serverUtilityFunctions = require './ServerUtilityFunctions.js'
 fs = require 'fs'
 path = require 'path'
 multer = require 'multer'
-
+helmet = require("helmet");
 setupRoutes = (app, loginRoutes, requireLogin) ->
 	config = require '../conf/compiled/conf.js'
 
@@ -51,11 +51,9 @@ setupRoutes = (app, loginRoutes, requireLogin) ->
 				dissallowedFileTypes = new RegExp(disallowedTypesArray.join('|'))
 
 				# Do regex tests
-				mimetype = dissallowedFileTypes.test(file.mimetype)
 				extname = dissallowedFileTypes.test(path.extname(file.originalname).toLowerCase())
 
-				# If either test fails, return the error
-				if mimetype || extname
+				if extname
 					return cb 'Error (415) - The following file types are dissallowed: ' + disallowedTypesArray.join(', ')
 			
 			# If no error, return null
@@ -153,17 +151,31 @@ setupRoutes = (app, loginRoutes, requireLogin) ->
 
 	app.post '/blobUploads', getBlobByteArray
 
+	dataFilesPolicy = (req, resp, next) ->
+		console.log 'hiyah'
+		policy = helmet(
+			contentSecurityPolicy:
+				directives:
+					imgSrc: ["'self'"]
+					defaultSrc: ["'none'"],
+					scriptSrc: ["'none'"],
+					mediaSrc: ["'self'"],
+					sandbox: []
+		)
+		policy(req, resp, next)
+	
 	serverUtilityFunctions.ensureExists dataFilesPath, 0o0744, (err) ->
 		if err?
 			console.log "Can't find or create data files dir: "+dataFilesPath
 			process.exit -1
 		else
 			if config.all.server.datafiles.without.login || !requireLogin
-				app.get '/dataFiles/*', (req, resp) ->
+				app.get '/dataFiles/*', dataFilesPolicy, (req, resp) ->
+					
 					console.log dataFilesPath
 					resp.sendfile(dataFilesPath + encodeURIComponent(req.params[0]))
 			else
-				app.get '/dataFiles/*', loginRoutes.ensureAuthenticated, (req, resp) ->
+				app.get '/dataFiles/*', dataFilesPolicy, loginRoutes.ensureAuthenticated, (req, resp) ->
 					console.log dataFilesPath
 					resp.sendfile(dataFilesPath + encodeURIComponent(req.params[0]))
 
