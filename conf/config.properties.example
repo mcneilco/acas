@@ -128,6 +128,7 @@ server.datafiles.without.login=${env.SERVER_DATAFILES_WITHOUT_LOGIN}
 # Required file path options
 # specify relative to ACAS_HOME without leading slash
 server.datafiles.relative_path=${env.SERVER_DATAFILES_RELATIVE_PATH}
+server.datafiles.disallowedFileTypes=${env.SERVER_DATAFILES_DISALLOWEDFILETYPES}
 server.tempfiles.relative_path=${env.SERVER_TEMPFILES_RELATIVE_PATH}
 
 # prefix for the client to prepend the fileValues to allow a user to download
