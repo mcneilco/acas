@@ -152,7 +152,6 @@ setupRoutes = (app, loginRoutes, requireLogin) ->
 	app.post '/blobUploads', getBlobByteArray
 
 	dataFilesPolicy = (req, resp, next) ->
-		console.log 'hiyah'
 		policy = helmet(
 			contentSecurityPolicy:
 				directives:
@@ -185,10 +184,10 @@ setupRoutes = (app, loginRoutes, requireLogin) ->
 			process.exit -1
 		else
 			if requireLogin
-				app.get '/tempfiles/*', loginRoutes.ensureAuthenticated, (req, resp) ->
+				app.get '/tempfiles/*', dataFilesPolicy, loginRoutes.ensureAuthenticated, (req, resp) ->
 					resp.sendfile(tempFilesPath + encodeURIComponent(req.params[0]))
 			else
-				app.get '/tempfiles/*', (req, resp) ->
+				app.get '/tempfiles/*', dataFilesPolicy, (req, resp) ->
 					resp.sendfile(tempFilesPath + encodeURIComponent(req.params[0]))
 
 
