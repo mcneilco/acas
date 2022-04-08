@@ -13,10 +13,22 @@ class ModuleMenusController extends Backbone.View
 		@options = options
 		$(@el).html @template()
 
-		if window.conf.moduleMenus.menuConfigurationSettings?
-			menuListJSON = window[window.conf.moduleMenus.menuConfigurationSettings]
-		else
+		# Use module menus exported variable by default and fall back to onf.moduleMenus.menuConfigurationSettings
+		if @options.menuListJSON?
 			menuListJSON = @options.menuListJSON
+		else if window.conf.moduleMenus.menuConfigurationSettings?
+			# Verify that the menu configuration settings is parsable and an array
+			try
+				menuListJSON = JSON.parse(window.conf.moduleMenus.menuConfigurationSettings)
+			catch error
+				alert "Could not parse Module Menus configuration.  Please contact your administrator."
+				return
+			if Array.isArray(menuListJSON) == false
+				alert "Module Menus configuration is not an array of module configurations.  Please contact your administrator."
+				return
+		else
+			alert "Module Menus configuration is missing.  Please contact your administrator."
+			return
 
 		@moduleLauncherList = new ModuleLauncherList(menuListJSON)
 		@moduleLauncherMenuListController = new ModuleLauncherMenuListController
