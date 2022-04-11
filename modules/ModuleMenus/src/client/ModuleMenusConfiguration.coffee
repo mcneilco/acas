@@ -1,124 +1,126 @@
-window.ModuleMenusConfiguration =
-	[
-		isHeader: true
-		menuName: "Load Data"
-		requireUserRoles: [window.conf.roles.acas.userRole]
-		collapsible: false
-	,
-		isHeader: false
-		menuName: "#{window.conf.experiment.label} Loader"
-		mainControllerClassName: "GenericDataParserController"
-		autoLaunchName:"generic_data_parser"
-		requireUserRoles: [window.conf.roles.acas.userRole]
-	,
-		isHeader: false
-		menuName: "Dose Response"
-		mainControllerClassName: "DoseResponseFitWorkflowController"
-		requireUserRoles: [window.conf.roles.acas.userRole]
-	,
-		isHeader: false
-		menuName: "#{window.conf.protocol.label} Editor"
-		mainControllerClassName: window.conf.protocol.mainControllerClassName
-		autoLaunchName:"protocol_base"
-		requireUserRoles: [window.conf.roles.acas.userRole]
-	,
-		isHeader: false
-		menuName: "#{window.conf.experiment.label} Editor"
-		mainControllerClassName: window.conf.experiment.mainControllerClassName
-		autoLaunchName:"experiment_base"
-		requireUserRoles: [window.conf.roles.acas.userRole]
-	,
-		isHeader: false, menuName: "Example Thing"
-		mainControllerClassName: "ExampleThingController"
-		autoLaunchName:"example_thing"
-	,
-		isHeader: false, menuName: "Example Thing Browser"
-		mainControllerClassName: "ExampleThingBrowserController"
-		autoLaunchName:"example_thing_browser"
-	,
-		isHeader: true
-		menuName: "Search and Edit"
-		collapsible: false
-		requireUserRoles: [window.conf.roles.acas.userRole]
-	,
-		isHeader: false, menuName: "#{window.conf.protocol.label} Browser"
-		mainControllerClassName: "ProtocolBrowserController"
-		requireUserRoles: [window.conf.roles.acas.userRole]
-	,
-		isHeader: false, menuName: "#{window.conf.experiment.label} Browser"
-		mainControllerClassName: "ExperimentBrowserController"
-		requireUserRoles: [window.conf.roles.acas.userRole]
-	,
-		isHeader: true
-		menuName: "Admin"
-		collapsible: false
-		requireUserRoles: [window.conf.roles.acas.adminRole]
-	,
-		isHeader: false
-		menuName: "Project Editor"
-		mainControllerClassName: "ProjectController"
-		autoLaunchName:"project"
-		requireUserRoles: [window.conf.roles.acas.adminRole]
-	,
-		isHeader: false, menuName: "Project Browser"
-		mainControllerClassName: "ProjectBrowserController"
-		requireUserRoles: [window.conf.roles.acas.userRole]
-	,
-		isHeader: false
-		menuName: "Author Editor"
-		mainControllerClassName: "AuthorEditorController"
-		autoLaunchName: "author"
-		requireUserRoles: [window.conf.roles.acas.adminRole]
-	,
-		isHeader: false
-		menuName: "Author Browser"
-		mainControllerClassName: "AuthorBrowserController"
-		requireUserRoles: [window.conf.roles.acas.adminRole]
-	,
-		isHeader: false
-		menuName: "System Test"
-		mainControllerClassName: "SystemTestController"
-		autoLaunchName:"system_test"
-		requireUserRoles: [window.conf.roles.acas.adminRole]
-	,
-		isHeader: false
-		menuName: "Label Sequence"
-		mainControllerClassName: "ACASLabelSequenceController"
-		autoLaunchName: "acasLabelSequence"
-		requireUserRoles: [window.conf.roles.acas.adminRole]
-	,
-		isHeader: false
-		menuName: "Additional Assay Scientists"
-		mainControllerClassName: "AssayScientistBrowserController"
-		autoLaunchName: "assay_scientist_browser"
-		requireUserRoles: [window.conf.roles.acas.adminRole]
-	,
-		isHeader: true
-		menuName: "CmpdReg Admin"
-		requireUserRoles: [window.conf.roles.cmpdreg.adminRole]
-		collapsible: false
-	,
-		isHeader: false
-		menuName: "CmpdReg Standardization"
-		mainControllerClassName: "StandardizationController"
-		autoLaunchName: "standardization"
-		requireUserRoles: [window.conf.roles.cmpdreg.adminRole]
-	,
-		isHeader: false
-		menuName: "CmpdReg Vendors"
-		mainControllerClassName: "VendorBrowserController"
-		autoLaunchName: "vendor_browser"
-		requireUserRoles: [window.conf.roles.cmpdreg.adminRole]
-	,
-		isHeader: false
-		menuName: "CmpdReg Stereo Categories"
-		mainControllerClassName: "StereoCategoryBrowserController"
-		autoLaunchName: "stereo_category_browser"
-		requireUserRoles: [window.conf.roles.cmpdreg.adminRole]
-	,
-		isHeader: false
-		menuName: "Additional CmpdReg Scientists"
-		mainControllerClassName: "CompoundScientistBrowserController"
-		autoLaunchName: "compound_scientist_browser"
-		requireUserRoles: [window.conf.roles.cmpdreg.adminRole]
-	]
+# Leaving this here as an example of configuring module menus through an exported variable
+# This default in base acas is now to use client.moduleMenus.menuConfigurationSettings
+# window.ModuleMenusConfiguration =
+# 	[
+# 		isHeader: true
+# 		menuName: "Load Data"
+# 		requireUserRoles: [window.conf.roles.acas.userRole]
+# 		collapsible: false
+# 	,
+# 		isHeader: false
+# 		menuName: "#{window.conf.experiment.label} Loader"
+# 		mainControllerClassName: "GenericDataParserController"
+# 		autoLaunchName:"generic_data_parser"
+# 		requireUserRoles: [window.conf.roles.acas.userRole]
+# 	,
+# 		isHeader: false
+# 		menuName: "Dose Response"
+# 		mainControllerClassName: "DoseResponseFitWorkflowController"
+# 		requireUserRoles: [window.conf.roles.acas.userRole]
+# 	,
+# 		isHeader: false
+# 		menuName: "#{window.conf.protocol.label} Editor"
+# 		mainControllerClassName: window.conf.protocol.mainControllerClassName
+# 		autoLaunchName:"protocol_base"
+# 		requireUserRoles: [window.conf.roles.acas.userRole]
+# 	,
+# 		isHeader: false
+# 		menuName: "#{window.conf.experiment.label} Editor"
+# 		mainControllerClassName: window.conf.experiment.mainControllerClassName
+# 		autoLaunchName:"experiment_base"
+# 		requireUserRoles: [window.conf.roles.acas.userRole]
+# 	,
+# 		isHeader: false, menuName: "Example Thing"
+# 		mainControllerClassName: "ExampleThingController"
+# 		autoLaunchName:"example_thing"
+# 	,
+# 		isHeader: false, menuName: "Example Thing Browser"
+# 		mainControllerClassName: "ExampleThingBrowserController"
+# 		autoLaunchName:"example_thing_browser"
+# 	,
+# 		isHeader: true
+# 		menuName: "Search and Edit"
+# 		collapsible: false
+# 		requireUserRoles: [window.conf.roles.acas.userRole]
+# 	,
+# 		isHeader: false, menuName: "#{window.conf.protocol.label} Browser"
+# 		mainControllerClassName: "ProtocolBrowserController"
+# 		requireUserRoles: [window.conf.roles.acas.userRole]
+# 	,
+# 		isHeader: false, menuName: "#{window.conf.experiment.label} Browser"
+# 		mainControllerClassName: "ExperimentBrowserController"
+# 		requireUserRoles: [window.conf.roles.acas.userRole]
+# 	,
+# 		isHeader: true
+# 		menuName: "Admin"
+# 		collapsible: false
+# 		requireUserRoles: [window.conf.roles.acas.adminRole]
+# 	,
+# 		isHeader: false
+# 		menuName: "Project Editor"
+# 		mainControllerClassName: "ProjectController"
+# 		autoLaunchName:"project"
+# 		requireUserRoles: [window.conf.roles.acas.adminRole]
+# 	,
+# 		isHeader: false, menuName: "Project Browser"
+# 		mainControllerClassName: "ProjectBrowserController"
+# 		requireUserRoles: [window.conf.roles.acas.userRole]
+# 	,
+# 		isHeader: false
+# 		menuName: "Author Editor"
+# 		mainControllerClassName: "AuthorEditorController"
+# 		autoLaunchName: "author"
+# 		requireUserRoles: [window.conf.roles.acas.adminRole]
+# 	,
+# 		isHeader: false
+# 		menuName: "Author Browser"
+# 		mainControllerClassName: "AuthorBrowserController"
+# 		requireUserRoles: [window.conf.roles.acas.adminRole]
+# 	,
+# 		isHeader: false
+# 		menuName: "System Test"
+# 		mainControllerClassName: "SystemTestController"
+# 		autoLaunchName:"system_test"
+# 		requireUserRoles: [window.conf.roles.acas.adminRole]
+# 	,
+# 		isHeader: false
+# 		menuName: "Label Sequence"
+# 		mainControllerClassName: "ACASLabelSequenceController"
+# 		autoLaunchName: "acasLabelSequence"
+# 		requireUserRoles: [window.conf.roles.acas.adminRole]
+# 	,
+# 		isHeader: false
+# 		menuName: "Additional Assay Scientists"
+# 		mainControllerClassName: "AssayScientistBrowserController"
+# 		autoLaunchName: "assay_scientist_browser"
+# 		requireUserRoles: [window.conf.roles.acas.adminRole]
+# 	,
+# 		isHeader: true
+# 		menuName: "CmpdReg Admin"
+# 		requireUserRoles: [window.conf.roles.cmpdreg.adminRole]
+# 		collapsible: false
+# 	,
+# 		isHeader: false
+# 		menuName: "CmpdReg Standardization"
+# 		mainControllerClassName: "StandardizationController"
+# 		autoLaunchName: "standardization"
+# 		requireUserRoles: [window.conf.roles.cmpdreg.adminRole]
+# 	,
+# 		isHeader: false
+# 		menuName: "CmpdReg Vendors"
+# 		mainControllerClassName: "VendorBrowserController"
+# 		autoLaunchName: "vendor_browser"
+# 		requireUserRoles: [window.conf.roles.cmpdreg.adminRole]
+# 	,
+# 		isHeader: false
+# 		menuName: "CmpdReg Stereo Categories"
+# 		mainControllerClassName: "StereoCategoryBrowserController"
+# 		autoLaunchName: "stereo_category_browser"
+# 		requireUserRoles: [window.conf.roles.cmpdreg.adminRole]
+# 	,
+# 		isHeader: false
+# 		menuName: "Additional CmpdReg Scientists"
+# 		mainControllerClassName: "CompoundScientistBrowserController"
+# 		autoLaunchName: "compound_scientist_browser"
+# 		requireUserRoles: [window.conf.roles.cmpdreg.adminRole]
+# 	]

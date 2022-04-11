@@ -193,7 +193,7 @@ client.moduleMenus.logoImageFilePath=${env.CLIENT_MODULEMENUS_LOGOIMAGEFILEPATH}
 client.moduleMenus.logoTextLink=${env.CLIENT_MODULEMENUS_LOGOTEXTLINK}
 client.moduleMenus.homePageMessage=${env.CLIENT_MODULEMENUS_HOMEPAGEMESSAGE}
 client.moduleMenus.copyrightMessage=${env.CLIENT_MODULEMENUS_COPYRIGHTMESSAGE}
-# client.moduleMenus.menuConfigurationSettings=ModuleMenusConfiguration
+client.moduleMenus.menuConfigurationSettings=${env.CLIENT_MODULEMENUS_MENUCONFIGURATIONSETTINGS}
 # If summary statistics is an included feature, set the following to true
 client.moduleMenus.summaryStats=${env.CLIENT_MODULEMENUS_SUMMARYSTATS}
 # For navigation to external ACAS modules from ACAS homepage

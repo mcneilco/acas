@@ -21,7 +21,7 @@ block content
                 //TODO
                 window.appController = new ModuleMenusController({
                                 el: $('#appContainer'),
-                                menuListJSON: ModuleMenusConfiguration
+                                menuListJSON:(typeof ModuleMenusConfiguration !== "undefined") ? ModuleMenusConfiguration : null
                             });
                 window.appController.render();
             };
