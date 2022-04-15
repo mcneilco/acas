@@ -1,8 +1,8 @@
 <script type="text/template" id="LotForm_ParentView_template">
 
     <div class="radioWrapper">
-        <input type="radio" name="regPick" class="regPick" ></input>
-        <label>New <span class="lotOrBatch"></span> <span class="corpName"></span></label>
+        <input id="newLot" type="radio" name="regPick" class="regPick" ></input>
+        <label for="newLot">New <span class="lotOrBatch"></span> <span class="corpName"></span></label>
         <select class="FormInput saltFormCorpNames"></select>
     </div>
 

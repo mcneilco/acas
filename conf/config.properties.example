@@ -695,6 +695,7 @@ client.cmpdreg.metaLot.disableEditMyParents=${env.CLIENT_CMPDREG_METALOT_DISABLE
 client.cmpdreg.metaLot.requireLotNumber=${env.CLIENT_CMPDREG_METALOT_REQUIRELOTNUMBER}
 client.cmpdreg.metaLot.allowManualLotNumber=${env.CLIENT_CMPDREG_METALOT_ALLOWMANUALLOTNUMBER}
 client.cmpdreg.metaLot.autoPopulateNextLotNumber=${env.CLIENT_CMPDREG_METALOT_AUTOPOPULATENEXTLOTNUMBER}
+client.cmpdreg.metaLot.maxAutoLotNumber=${env.CLIENT_CMPDREG_METALOT_MAXAUTOLOTNUMBER}
 client.cmpdreg.serverSettings.corpPrefix=${env.CLIENT_CMPDREG_SERVERSETTINGS_CORPPREFIX}
 client.cmpdreg.serverSettings.corpSeparator=${env.CLIENT_CMPDREG_SERVERSETTINGS_CORPSEPARATOR}
 client.cmpdreg.serverSettings.saltSeparator=${env.CLIENT_CMPDREG_SERVERSETTINGS_SALTSEPARATOR}

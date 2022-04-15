@@ -8,8 +8,8 @@
             </div>
 		</div>
         <div class="row2">
-            <input type="radio" name="regPick" class="regPick" value="new"  checked="checked" />
-            <label class="FormLabel">Register new structure</label>
+            <input id="registerNew" type="radio" name="regPick" class="regPick" value="new"  checked="checked" />
+            <label for="registerNew" class="FormLabel">Register new structure</label>
         </div>
         <div class="row1 isVirtualContainer">
             <input type="checkbox" class="isVirtual" />
