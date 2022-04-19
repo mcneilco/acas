@@ -242,13 +242,16 @@ Replaces `server.datafiles.relative_path` (note this isn't a realistic example o
 ACAS_SERVER_DATAFILES_RELATIVE__PATH=..
 ```
 
-##### Override containing configs which will be replaced with other configs:
+##### Override containing configs which will be replaced with other configs
 Replaces `client.service.cmpdReg.persistence.fullpath`
+
+docker-compose example which requires `$$` to esacpe the `$` override
 ```
- - ACAS_CLIENT_SERVICE_CMPDREG_PERSISTENCE_FULLPATH=http://$${client.service.cmpdReg.persistence.host}:$${client.service.persistence.port}/$${client.service.cmpdReg.persistence.path}/
+environment:
+  - ACAS_CLIENT_SERVICE_CMPDREG_PERSISTENCE_FULLPATH=http://$${client.service.cmpdReg.persistence.host}:$${client.service.persistence.port}/$${client.service.cmpdReg.persistence.path}/
 ```
 
-Shell example requires escape `$`
+> Shell example requires escape `$`
 ```
 ACAS_CLIENT_SERVICE_CMPDREG_PERSISTENCE_FULLPATH=http://\${client.service.cmpdReg.persistence.host}:\${client.service.persistence.port}/\${client.service.cmpdReg.persistence.path}/
 ```
