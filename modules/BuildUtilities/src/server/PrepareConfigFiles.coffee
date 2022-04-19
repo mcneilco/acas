@@ -197,23 +197,22 @@ getProperties = (configDir) =>
 			configString += attr+"=\n"
 
 	# Read environment variables prefixed with ACAS_ and substitute them in the config file
-	envinmentSubstitutions = {}
 	for key, value of process.env
 		if key.startsWith('ACAS_')
 			# Remove ACAS prefix and lower case
 			newKey = key.substring(5).toLowerCase()
 			# To deal with configs with an underscore, a user can set a double _ inside an environment variable and ACAS will replace it with a single _
 			# Replace double underscores with a unique separator
-			uniqueSeperator = '----------------------------ACAS-UNIQUE-SEPERATOR----------------------------'
-			newKey = newKey.replace(/__/g, uniqueSeperator)
+			uniqueSeparator = '----------------------------ACAS-UNIQUE-SEPARATOR----------------------------'
+			newKey = newKey.replace(/__/g, uniqueSeparator)
 			# Replace remaining underscores with a single .
 			newKey = newKey.replace(/\_/g,'.')
 			# Replace the unique separator with a underscore
-			newKey = newKey.replace(uniqueSeperator, '_')
+			newKey = newKey.replace(uniqueSeparator, '_')
 			# Get the index of key in lowerCaseKeys
 			index = lowerCaseConfNames.indexOf(newKey)
 			if index != -1
-				# If there is a match then set an override variable in envinmentSubstitutions
+				# If there is a match then override the config by setting it in the configString
 				console.log "environment variable #{key} is being substituted for config key #{confNames[index]}"
 				if value != null
 					configString += confNames[index]+"="+value+"\n"
