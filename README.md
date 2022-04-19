@@ -236,7 +236,7 @@ Replaces `client.moduleMenus.logoText`
 ACAS_CLIENT_MODULEMENUS_LOGOTEXT=ACME Labs
 ```
 
-Escape character usage using `__`
+##### Escape character usage using `__`
 Replaces `server.datafiles.relative_path` (note this isn't a realistic example of a config you would ever override but demonstrates the escape sequence)
 ```
 ACAS_SERVER_DATAFILES_RELATIVE__PATH=..
