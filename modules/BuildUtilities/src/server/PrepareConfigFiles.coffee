@@ -182,7 +182,14 @@ getProperties = (configDir) =>
 	allConf = []
 	for configFile in configFiles
 		console.info "reading conf file: #{configFile}"
-		allConf = _.extend allConf, propertiesParser.read(configFile)
+		conf = propertiesParser.read(configFile)
+		# Fill overwrite allConf with conf keeping conf variables at the bottom
+		# It's important that overwritten configs get moved to the bottom of the list
+		# as the variable interpolation is done in the order of the list
+		for key in Object.keys(conf)
+			if allConf[key] != undefined
+				delete allConf[key]
+			allConf[key] = conf[key]
 		console.info "read conf file: #{configFile}"
 
 	configString = ""
