@@ -204,6 +204,62 @@ docker-compose down
 docker-compose restart tomcat
 ```
 
+## Configuration
+
+
+### Environment variable configuration overrides
+
+ACAS can read configuration overrides from environment variables prefixed with `ACAS_`.  ACAS maps environment variable names to flat file configuration names by a 4 step process (e.g. `ACAS_CLIENT_MODULEMENUS_LOGOTEXT=ACME Labs`):
+
+1. Match any environment variable name prefixed with `ACAS_` and remove the prefix from the name. 
+
+Step output: CLIENT_MODULEMENUS_LOGOTEXT
+
+2. Replace `_` characters with `.` characters in the environment variable name.
+> Note, that you can escape substitution for flat file configs contain underscore by using double underscores `__` in the environment variable.
+
+Step output: ACAS.CLIENT.MODULEMENUS.LOGOTEXT
+
+3. Do a case insensitive match of the now processed environment variable name with a flat file configuration name.
+
+Match: `client.moduleMenus.logoText`
+
+4. Replace the value in the flat file name with the value provided by the matched environment variable.
+
+Final outcome: client.moduleMenus.logoText=ACME Labs
+
+#### Example environment variables:
+
+##### Simple override: 
+Replaces `client.moduleMenus.logoText`
+```
+ACAS_CLIENT_MODULEMENUS_LOGOTEXT=ACME Labs
+```
+
+Escape character usage using `__`
+Replaces `server.datafiles.relative_path` (note this isn't a realistic example of a config you would ever override but demonstrates the escape sequence)
+```
+ACAS_SERVER_DATAFILES_RELATIVE__PATH=..
+```
+
+##### Override containing configs which will be replaced with other configs:
+Replaces `client.service.cmpdReg.persistence.fullpath`
+```
+ - ACAS_CLIENT_SERVICE_CMPDREG_PERSISTENCE_FULLPATH=http://$${client.service.cmpdReg.persistence.host}:$${client.service.persistence.port}/$${client.service.cmpdReg.persistence.path}/
+```
+
+Shell example requires escape `$`
+```
+ACAS_CLIENT_SERVICE_CMPDREG_PERSISTENCE_FULLPATH=http://\${client.service.cmpdReg.persistence.host}:\${client.service.persistence.port}/\${client.service.cmpdReg.persistence.path}/
+```
+or
+
+```
+ACAS_CLIENT_SERVICE_CMPDREG_PERSISTENCE_FULLPATH='http://${client.service.cmpdReg.persistence.host}:${client.service.persistence.port}/${client.service.cmpdReg.persistence.path}/'
+```
+
+
+
 ## License
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
 [License] (./LICENSE)
