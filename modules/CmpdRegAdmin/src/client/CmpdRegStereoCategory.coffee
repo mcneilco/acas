@@ -8,10 +8,9 @@ class StereoCategory extends AbstractCodeTable
 	initialize: ->
 		options = 
 			urlRoot: "/api/cmpdRegAdmin/stereoCategories"
+			deleteUrlRoot: "/api/cmpdRegAdmin/stereoCategories"
 			displayName: 'stereo category'
 			pluralDisplayName: 'stereo categories'
-			#upperPluralDisplayName: 'Stereo Categories'
-		
 		super(options)
 
 ############################################################################
