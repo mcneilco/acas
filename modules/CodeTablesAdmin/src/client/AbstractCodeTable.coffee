@@ -15,23 +15,30 @@ class AbstractCodeTable extends Backbone.Model
 		return str.replace(/\w\S*/g, (txt) -> txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase())
 	
 	initialize: (options) ->
-		# Default values format the codeType and codeKind into display names and assume "s" for plural
 		codeType = @codeType
 		codeKind = @codeKind
-		@urlRoot = "/api/codeTablesAdmin/#{codeType}/#{codeKind}"
-		@displayName = codeKind
-		@pluralDisplayName = codeKind + "s"
-		@upperDisplayName = @titleCase(codeKind)
-		@upperPluralDisplayName = @titleCase(codeKind) + "s"
-		# In case any of the defaults are wrong for a use case, allow overrides
 		if options?.urlRoot?
 			@urlRoot = options.urlRoot
+		else
+			@urlRoot = "/api/codeTablesAdmin/#{codeType}/#{codeKind}"
+		# Default values format the codeKind into display names and assume "s" for plural
+		# If any values are overridden, use those instead
 		if options?.displayName?
 			@displayName = options.displayName
+		else
+			@displayName = codeKind
 		if options?.pluralDisplayName?
 			@pluralDisplayName = options.pluralDisplayName
+		else
+			@pluralDisplayName = @displayName + "s"
 		if options?.upperDisplayName?
 			@upperDisplayName = options.upperDisplayName
+		else
+			@upperDisplayName = @titleCase(@displayName)
+		if options?.upperPluralDisplayName?
+			@upperPluralDisplayName = options.upperPluralDisplayName
+		else
+			@upperPluralDisplayName = @titleCase(@pluralDisplayName)
 	
 	validate: (attrs) ->
 		errors = []

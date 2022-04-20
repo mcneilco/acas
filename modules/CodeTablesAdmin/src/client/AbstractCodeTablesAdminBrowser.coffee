@@ -183,6 +183,7 @@ class AbstractCodeTablesAdminBrowserController extends Backbone.View
 		@pluralDisplayName = model.pluralDisplayName
 		@upperDisplayName = model.upperDisplayName
 		@upperPluralDisplayName = model.upperPluralDisplayName
+		@urlRoot = model.urlRoot
 		# Continue with initialization
 		template = _.template( $("#AbstractCodeTablesAdminBrowserView").html());
 		$(@el).empty()
@@ -197,7 +198,7 @@ class AbstractCodeTablesAdminBrowserController extends Backbone.View
 		@searchController = new CodeTablesAdminSimpleSearchController
 			model: new CodeTablesAdminSearch()
 			el: @$('.bv_codeTablesAdminSearchController')
-			urlRoot: "/api/codeTablesAdmin/#{@codeType}/#{@codeKind}"
+			urlRoot: @urlRoot
 			toDisplay: @toDisplay
 		@searchController.render()
 		@searchController.on "searchRequested", @handleSearchRequested.bind(@)
