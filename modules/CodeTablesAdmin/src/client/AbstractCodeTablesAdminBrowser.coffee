@@ -150,17 +150,39 @@ class AbstractCodeTablesAdminBrowserController extends Backbone.View
   		codeType
   		entityClass
   		entityControllerClass
+		htmlViewId
   		moduleLaunchName
   ###
+	# Required attributes
+	entityClass: null
+	entityControllerClass: null
+	htmlViewId: null
 	includeDuplicateAndEdit: false
+	# Defaults
+	includeIgnore: false
+
 	events:
 		"click .bv_deleteCodeTablesAdmin": "handleDeleteCodeTablesAdminClicked"
 		"click .bv_editCodeTablesAdmin": "handleEditCodeTablesAdminClicked"
 		"click .bv_confirmDeleteCodeTablesAdminButton": "handleConfirmDeleteCodeTablesAdminClicked"
 		"click .bv_cancelDelete": "handleCancelDeleteClicked"
 
+	camelCase: (str) ->
+		return str.replace(/\w\S*/g, (txt) -> txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase())
 
 	initialize: ->
+		# New up a model to get its default attributes
+		model = new window[@entityClass]()
+		# Extract default attributes
+		@codeType = model.codeType
+		@codeKind = model.codeKind
+		@wrapperTemplate = _.template($(@htmlViewId).html())
+		@moduleLaunchName = @camelCase(@codeKind) + "Browser"
+		@displayName = model.displayName
+		@pluralDisplayName = model.pluralDisplayName
+		@upperDisplayName = model.upperDisplayName
+		@upperPluralDisplayName = model.upperPluralDisplayName
+		# Continue with initialization
 		template = _.template( $("#AbstractCodeTablesAdminBrowserView").html());
 		$(@el).empty()
 		@toDisplay =
@@ -180,7 +202,6 @@ class AbstractCodeTablesAdminBrowserController extends Backbone.View
 		@searchController.on "searchRequested", @handleSearchRequested.bind(@)
 		@searchController.on "searchReturned", @setupCodeTablesAdminSummaryTable.bind(@)
 		@searchController.on "createNewCodeTablesAdmin", @handleCreateNewCodeTablesAdminClicked.bind(@)
-	#@searchController.on "resetSearch", @destroyCodeTablesAdminSummaryTable
 
 	setupCodeTablesAdminSummaryTable: (codeTablesAdmins) =>
 		@destroyCodeTablesAdminSummaryTable()
