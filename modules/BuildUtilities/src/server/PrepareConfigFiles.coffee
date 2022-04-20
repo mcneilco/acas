@@ -185,16 +185,16 @@ getProperties = (configDir) =>
 		allConf = _.extend allConf, propertiesParser.read(configFile)
 		console.info "read conf file: #{configFile}"
 
-	confObject = {}
+	confMap = new Map()
 	lowerCaseConfNames = []
 	confNames = []
 	for attr, value of allConf
 		lowerCaseConfNames.push(attr.toLowerCase())
 		confNames.push(attr)
 		if value != null
-			confObject[attr]=value
+			confMap.set(attr, value)
 		else
-			confObject[attr]=null
+			confMap.set(attr, null)
 
 	# Read environment variables prefixed with ACAS_ and substitute them in the config file
 	for key, value of process.env
@@ -215,9 +215,9 @@ getProperties = (configDir) =>
 				# If there is a match then override the config by setting it in the configString
 				console.log "environment variable #{key} is being substituted for config key #{confNames[index]}"
 				if value != null
-					confObject[confNames[index]]=value
+					confMap.set(attr, value)
 				else
-					confObject[confNames[index]]=null
+					confMap.set(attr, null)
 
 	substitutions =
 		env: process.env
@@ -230,10 +230,13 @@ getProperties = (configDir) =>
 		include: true
 		vars: substitutions
 
-	# Convert confObject to a string seperated by = and \n
-	configString = Object.keys(confObject).map (key) => 
-		key + "=" + confObject[key]
-	.join("\n")
+	# Convert config map to a string seperated by = and \n
+	configString = ""
+	confMap.forEach (value, key) =>
+		if value != null
+			configString += key + "=" + value + "\n"
+		else
+			configString += key + "=\n"
 
 	properties.parse configString, options, (error, conf) =>
 		if error?
