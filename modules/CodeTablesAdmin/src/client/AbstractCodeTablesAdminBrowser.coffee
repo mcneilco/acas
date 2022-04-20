@@ -160,6 +160,7 @@ class AbstractCodeTablesAdminBrowserController extends Backbone.View
 	includeDuplicateAndEdit: false
 	# Defaults
 	includeIgnore: false
+	searchOnLoad: true
 
 	events:
 		"click .bv_deleteCodeTablesAdmin": "handleDeleteCodeTablesAdminClicked"
@@ -202,6 +203,9 @@ class AbstractCodeTablesAdminBrowserController extends Backbone.View
 		@searchController.on "searchRequested", @handleSearchRequested.bind(@)
 		@searchController.on "searchReturned", @setupCodeTablesAdminSummaryTable.bind(@)
 		@searchController.on "createNewCodeTablesAdmin", @handleCreateNewCodeTablesAdminClicked.bind(@)
+		# If search on load, trigger a search for "*"
+		if @searchOnLoad
+			@searchController.doSearch('*')
 
 	setupCodeTablesAdminSummaryTable: (codeTablesAdmins) =>
 		@destroyCodeTablesAdminSummaryTable()
