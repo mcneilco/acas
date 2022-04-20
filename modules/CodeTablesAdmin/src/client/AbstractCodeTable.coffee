@@ -21,6 +21,10 @@ class AbstractCodeTable extends Backbone.Model
 			@urlRoot = options.urlRoot
 		else
 			@urlRoot = "/api/codeTablesAdmin/#{codeType}/#{codeKind}"
+		if options?.deleteUrlRoot?
+			@deleteUrlRoot = options.deleteUrlRoot
+		else
+			@deleteUrlRoot = "/api/codeTablesAdmin"
 		# Default values format the codeKind into display names and assume "s" for plural
 		# If any values are overridden, use those instead
 		if options?.displayName?

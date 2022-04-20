@@ -184,6 +184,7 @@ class AbstractCodeTablesAdminBrowserController extends Backbone.View
 		@upperDisplayName = model.upperDisplayName
 		@upperPluralDisplayName = model.upperPluralDisplayName
 		@urlRoot = model.urlRoot
+		@deleteUrlRoot = model.deleteUrlRoot
 		# Continue with initialization
 		template = _.template( $("#AbstractCodeTablesAdminBrowserView").html());
 		$(@el).empty()
@@ -278,7 +279,7 @@ class AbstractCodeTablesAdminBrowserController extends Backbone.View
 		@$(".bv_deletingStatusIndicator").removeClass "hide"
 		@$(".bv_deleteButtons").addClass "hide"
 		$.ajax(
-			url: "/api/codeTablesAdmin/#{@codeTablesAdminController.model.get("id")}",
+			url: @deleteUrlRoot + "/#{@codeTablesAdminController.model.get("id")}",
 			type: 'DELETE',
 			success: (result) =>
 				@$(".bv_okayButton").removeClass "hide"
