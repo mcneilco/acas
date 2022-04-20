@@ -185,16 +185,16 @@ getProperties = (configDir) =>
 		allConf = _.extend allConf, propertiesParser.read(configFile)
 		console.info "read conf file: #{configFile}"
 
-	configString = ""
+	confObject = {}
 	lowerCaseConfNames = []
 	confNames = []
 	for attr, value of allConf
 		lowerCaseConfNames.push(attr.toLowerCase())
 		confNames.push(attr)
 		if value != null
-			configString += attr+"="+value+"\n"
+			confObject[attr]=value
 		else
-			configString += attr+"=\n"
+			confObject[attr]=null
 
 	# Read environment variables prefixed with ACAS_ and substitute them in the config file
 	for key, value of process.env
@@ -215,9 +215,9 @@ getProperties = (configDir) =>
 				# If there is a match then override the config by setting it in the configString
 				console.log "environment variable #{key} is being substituted for config key #{confNames[index]}"
 				if value != null
-					configString += confNames[index]+"="+value+"\n"
+					confObject[confNames[index]]=value
 				else
-					configString += confNames[index]+"=\n"
+					confObject[confNames[index]]=null
 
 	substitutions =
 		env: process.env
@@ -230,7 +230,12 @@ getProperties = (configDir) =>
 		include: true
 		vars: substitutions
 
-	properties.parse configString, options, (error, conf) =>
+	# Convert confObject to a string seperated by = and \n
+	configString = Object.keys(confObject).map (key) => 
+		key + "=" + confObject[key]
+	.join("\n")
+
+	properties.parse confObject, options, (error, conf) =>
 		if error?
 			console.log "Problem parsing #{configFile}: "+error
 		else
