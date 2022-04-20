@@ -235,7 +235,7 @@ getProperties = (configDir) =>
 		key + "=" + confObject[key]
 	.join("\n")
 
-	properties.parse confObject, options, (error, conf) =>
+	properties.parse configString, options, (error, conf) =>
 		if error?
 			console.log "Problem parsing #{configFile}: "+error
 		else
