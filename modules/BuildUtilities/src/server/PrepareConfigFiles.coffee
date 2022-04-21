@@ -215,9 +215,9 @@ getProperties = (configDir) =>
 				# If there is a match then override the config by setting it in the configString
 				console.log "environment variable #{key} is being substituted for config key #{confNames[index]}"
 				if value != null
-					confMap.set(attr, value)
+					confMap.set(confNames[index], value)
 				else
-					confMap.set(attr, null)
+					confMap.set(confNames[index], null)
 
 	substitutions =
 		env: process.env
