@@ -1,66 +1,31 @@
 ############################################################################
 # models
 ############################################################################
-class StereoCategory extends Backbone.Model
-	urlRoot: "/api/cmpdRegAdmin/stereoCategories"
-	defaults:
-		name: null
-		code: null
-		id: null
+class StereoCategory extends AbstractCodeTable
+	codeType: 'cmpdRegAdmin'
+	codeKind: 'stereoCategory'
 
-	validate: (attrs) ->
-		errors = []
-		if attrs.code? and @isNew()
-			validChars = attrs.code.match(/[a-zA-Z0-9 _\-+]/g)
-			if !validChars? || validChars.length != attrs.code.length
-				errors.push
-					attribute: 'code'
-					message: "Stereo Category code can not contain special characters"
-		if !attrs.name? or attrs.name is ""
-			errors.push
-				attribute: 'name'
-				message: "Stereo Category name must be set and unique"
-		if errors.length > 0
-			return errors
-		else
-			return null
-
-############################################################################
-class StereoCategories extends Backbone.Collection
-	model: StereoCategory
-############################################################################
+	initialize: ->
+		options = 
+			urlRoot: "/api/cmpdRegAdmin/stereoCategories"
+			deleteUrlRoot: "/api/cmpdRegAdmin/stereoCategories"
+			displayName: 'stereo category'
+			pluralDisplayName: 'stereo categories'
+		super(options)
 
 ############################################################################
 # controllers
 ############################################################################
 
-class StereoCategoryController extends AbstractCmpdRegAdminController
-	wrapperTemplate: _.template($("#StereoCategoryView").html())
-	moduleLaunchName: "stereo_category"
-	entityType: "stereoCategory"
-	entityTypePlural: "stereoCategories"
-	entityTypeToDisplay: "stereo category"
-	entityTypePluralToDisplay: "stereo categories"
-	entityTypeUpper: "Stereo Category"
-	entityTypeUpperPlural: "Stereo Categories"
+class StereoCategoryController extends AbstractCodeTablesAdminController
+	htmlViewId: "#StereoCategoryView"
+	htmlDivSelector: '.bv_stereoCategoryControllerDiv'
 	modelClass: "StereoCategory"
 	showIgnore: false
 
-	completeInitialization: =>
-		@errorOwnerName = 'StereoCategoryController'
-		$(@el).empty()
-		$(@el).html @wrapperTemplate()
-		@$('.bv_stereoCategoryControllerDiv').html super()
 
-
-class StereoCategoryBrowserController extends AbstractCmpdRegAdminBrowserController
-	wrapperTemplate: _.template($("#StereoCategoryBrowserView").html())
-	entityType: "stereoCategory"
-	entityTypePlural: "stereoCategories"
-	entityTypeToDisplay: "stereo category"
-	entityTypePluralToDisplay: "stereo categories"
-	entityTypeUpper: "Stereo Category"
-	entityTypeUpperPlural: "Stereo Categories"
+class StereoCategoryBrowserController extends AbstractCodeTablesAdminBrowserController
+	htmlViewId: "#StereoCategoryBrowserView"
 	entityClass: "StereoCategory"
 	entityControllerClass: "StereoCategoryController"
 	moduleLaunchName: "stereo_category_browser"

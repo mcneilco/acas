@@ -1,69 +1,20 @@
 ############################################################################
 # models
 ############################################################################
-class CompoundScientist extends Backbone.Model
-	urlRoot: "/api/codeTablesAdmin/compound/scientist"
-	defaults:
-		name: null
-		code: null
-		id: null
-		ignored: false
-
-	validate: (attrs) ->
-		errors = []
-		if attrs.code? and @isNew()
-			validChars = attrs.code.match(/[a-zA-Z0-9 _\-+]/g)
-			if !validChars? || validChars.length != attrs.code.length
-				errors.push
-					attribute: 'codeTablesAdminCode'
-					message: "Compound Scientist code can not contain special characters"
-		if !attrs.code? or attrs.code is ""
-			errors.push
-				attribute: 'codeTablesAdminCode'
-				message: "Compound Scientist code must be set and unique"
-		if !attrs.name? or attrs.name is ""
-			errors.push
-				attribute: 'codeTablesAdminName'
-				message: "Compound Scientist name must be set and unique"
-		if errors.length > 0
-			return errors
-		else
-			return null
+class CompoundScientist extends AbstractCodeTable
+	codeType: "compound"
+	codeKind: "scientist"
 
 ############################################################################
 # controllers
 ############################################################################
 
 class CompoundScientistController extends AbstractCodeTablesAdminController
-	wrapperTemplate: _.template($("#CompoundScientistView").html())
-	moduleLaunchName: "scientist"
-	codeType: "compound"
-	codeKind: "scientist"
-	displayName: "compound scientist"
-	pluralDisplayName: "compound scientists"
-	upperDisplayName: "Compound Scientist"
-	upperPluralDisplayName: "Scientists"
+	htmlViewId: "#CompoundScientistView"
+	htmlDivSelector: '.bv_compoundCompoundScientistControllerDiv'
 	modelClass: "CompoundScientist"
-	showIgnore: true
-
-	completeInitialization: =>
-		@errorOwnerName = 'CompoundScientistController'
-		$(@el).empty()
-		$(@el).html @wrapperTemplate()
-		console.log @$('.bv_compoundCompoundScientistControllerDiv')
-		console.log "completing initialization of CompoundScientistController"
-		@$('.bv_compoundCompoundScientistControllerDiv').html super()
-
 
 class CompoundScientistBrowserController extends AbstractCodeTablesAdminBrowserController
-	wrapperTemplate: _.template($("#CompoundScientistBrowserView").html())
-	codeType: "compound"
-	codeKind: "scientist"
-	displayName: "compound scientist"
-	pluralDisplayName: "compound scientists"
-	upperDisplayName: "Compound Scientist"
-	upperPluralDisplayName: "Compound Scientists"
+	htmlViewId: "#CompoundScientistBrowserView"
 	entityClass: "CompoundScientist"
 	entityControllerClass: "CompoundScientistController"
-	moduleLaunchName: "compound_scientist_browser"
-	showIgnore: true

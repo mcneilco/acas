@@ -1,17 +1,15 @@
 class AbstractCodeTablesAdminController extends AbstractFormController
 	###
-		Instances of this controller must supply "moduleLaunchName", "codeType", and "modelClass"
-	e.g. other required fields
-	codeType: "assay"
-	codeKind: "scientist"
-	displayName: "assay scientist"
-	pluralDisplayName: "assay scientists"
-	upperDisplayName: "Assay Scientist"
-	upperPluralDisplayName: "Assay Scientists"
-	entityClass: "AssayScientist"
-	entityControllerClass: "AssayScientistController"
-	moduleLaunchName: "assay_scientist_browser"
+		Instances of this controller must supply "htmlViewId", "htmlDivSelector", and "modelClass"
+		"modelClass" should be a subclass of AbstractCodeTable
 	###
+	
+	# Class attributes that must be set when extending this class
+	htmlViewId: null
+	htmlDivSelector: null
+	modelClass: null
+	showIgnore: true
+
 	template: _.template($("#AbstractCodeTablesAdminView").html())
 
 	events: ->
@@ -24,8 +22,27 @@ class AbstractCodeTablesAdminController extends AbstractFormController
 		"click .bv_cancel": "handleCancelClicked"
 		"click .bv_cancelClear": "handleCancelClearClicked"
 		"click .bv_confirmClear": "handleConfirmClearClicked"
+	
+	camelCase: (str) ->
+		return str.replace(/\w\S*/g, (txt) -> txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase())
 
 	initialize: (options) ->
+		# New up a model to get its default attributes
+		model = new window[@modelClass]()
+		# Extract attributes from the model
+		@codeType = model.codeType
+		@codeKind = model.codeKind
+		@moduleLaunchName = @camelCase(@codeKind)
+		@displayName = model.displayName
+		@pluralDisplayName = model.pluralDisplayName
+		@upperDisplayName = model.upperDisplayName
+		@upperPluralDisplayName = model.upperPluralDisplayName
+		# Set other attributes from inputs
+		@errorOwnerName = @moduleLaunchName + "Controller"
+		@wrapperTemplate = _.template($(@htmlViewId).html())
+		# overrides
+		@showIgnore = options.showIgnore
+		# finish initialization
 		@options = options
 		console.log "initializing Abstract Controller"
 		if @model?
@@ -66,6 +83,7 @@ class AbstractCodeTablesAdminController extends AbstractFormController
 		@listenTo @model, 'sync', @modelSaveCallback
 		@listenTo @model, 'change', @modelChangeCallback
 		$(@el).empty()
+		$(@el).html @wrapperTemplate()
 		toDisplay =
 			displayName: @displayName
 			pluralDisplayName: @pluralDisplayName
@@ -81,7 +99,7 @@ class AbstractCodeTablesAdminController extends AbstractFormController
 			showPreview: false
 		@.on 'notifyError', @notificationController.addNotification
 		@.on 'clearErrors', @notificationController.clearAllNotificiations
-		@render()
+		@$(@htmlDivSelector).html(@render())
 
 	render: =>
 		unless @model?
