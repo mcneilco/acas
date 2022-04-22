@@ -249,6 +249,7 @@ class AbstractCodeTablesAdminBrowserController extends Backbone.View
 
 	handleSearchRequested: =>
 		@$(".bv_codeTablesAdminTableController").addClass "hide"
+		@$(".bv_codeTablesAdminControllerContainer").addClass "hide"
 		@$(".bv_errorOccurredPerformingSearch").addClass "hide"
 		codeTablesAdminSearchTerm = $.trim(@$(".bv_codeTablesAdminSearchTerm").val())
 		if codeTablesAdminSearchTerm isnt ""
