@@ -152,7 +152,7 @@ class AbstractCodeTablesAdminBrowserController extends Backbone.View
   		entityControllerClass
 		htmlViewId
   		moduleLaunchName
-  ###
+  	###
 	# Required attributes
 	entityClass: null
 	entityControllerClass: null
@@ -161,6 +161,7 @@ class AbstractCodeTablesAdminBrowserController extends Backbone.View
 	# Defaults
 	includeIgnore: false
 	searchOnLoad: true
+	defaultSearchTerm: "*"
 
 	events:
 		"click .bv_deleteCodeTablesAdmin": "handleDeleteCodeTablesAdminClicked"
@@ -205,9 +206,11 @@ class AbstractCodeTablesAdminBrowserController extends Backbone.View
 		@searchController.on "searchRequested", @handleSearchRequested.bind(@)
 		@searchController.on "searchReturned", @setupCodeTablesAdminSummaryTable.bind(@)
 		@searchController.on "createNewCodeTablesAdmin", @handleCreateNewCodeTablesAdminClicked.bind(@)
-		# If search on load, trigger a search for "*"
+		if @defaultSearchTerm?
+			@$(".bv_codeTablesAdminSearchTerm").val(@defaultSearchTerm)
+		# If search on load, trigger a search
 		if @searchOnLoad
-			@searchController.doSearch('*')
+			@handleSearchRequested()
 
 	setupCodeTablesAdminSummaryTable: (codeTablesAdmins) =>
 		@destroyCodeTablesAdminSummaryTable()
