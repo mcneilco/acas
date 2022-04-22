@@ -401,7 +401,7 @@ source /dev/stdin <<< "$(cat $ACAS_HOME/conf/compiled/conf.properties | awk -f $
 
 #Once tomcat is available then try and run prepare module conf json if in environment
 if [ "$PREPARE_MODULE_CONF_JSON" = "true" ]; then
-    (ping -c 1 ${client_service_persistence_host} > /dev/null
+    (
     cd src/javascripts/BuildUtilities
     if [ $? -eq 0 ];then
         counter=0
