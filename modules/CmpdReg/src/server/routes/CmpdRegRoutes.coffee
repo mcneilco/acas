@@ -202,7 +202,7 @@ exports.getAllAuthorizedLots = (req, resp) ->
 
 exports.getStructureImage = (req, resp) ->
 	imagePath = (req.originalUrl).replace /\/cmpdreg\/structureimage/, ""
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/structureimage' + imagePath
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/structureimage' + imagePath
 	req.pipe(request(cmpdRegCall)).pipe(resp)
 
 exports.getMetaLot = (req, resp) ->
