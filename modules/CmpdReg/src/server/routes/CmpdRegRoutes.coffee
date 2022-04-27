@@ -9,11 +9,10 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/marvin4js-license.cxl', loginRoutes.ensureAuthenticated, exports.getMarvinJSLicense
 	app.get '/cmpdReg/scientists', loginRoutes.ensureAuthenticated, exports.getScientists
 	app.get '/cmpdReg/aliases/parentAliasKinds', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
-	app.get '/cmpdReg/units', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
-	app.get '/cmpdReg/solutionUnits', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
-	app.get '/cmpdReg/salts', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
-	app.get '/cmpdReg/isotopes', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
-	app.get '/cmpdReg/stereoCategorys', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
+	app.get '/cmpdReg/units', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
+	app.get '/cmpdReg/solutionUnits', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
+	app.get '/cmpdReg/salts', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
+	app.get '/cmpdReg/isotopes', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
 	app.get '/cmpdReg/compoundTypes', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
 	app.get '/cmpdReg/parentAnnotations', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
 	app.get '/cmpdReg/fileTypes', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
@@ -435,7 +434,7 @@ exports.metaLots = (req, resp) ->
 	)
 
 exports.saveSalts = (req, resp) ->
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/salts'
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/api/v1/salts'
 	request(
 		method: 'POST'
 		url: cmpdRegCall
