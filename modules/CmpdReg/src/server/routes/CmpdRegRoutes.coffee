@@ -117,47 +117,6 @@ exports.getAuthorizedCmpdRegProjects = (req, resp) ->
 		resp.status "200"
 		resp.end JSON.stringify allowedUserProjects
 
-exports.saveProjects = (jsonBody, callback) ->
-
-	console.log 'in saveProjects'
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/projects/jsonArray"
-	request(
-		method: 'POST'
-		url: cmpdRegCall
-		body: JSON.stringify jsonBody
-		json: true
-	, (error, response, json)=>
-		if !error
-			console.log JSON.stringify json
-			callback JSON.stringify json
-		else
-			console.log 'got ajax error trying to save CmpdReg projects'
-			console.log error
-			console.log json
-			console.log response
-			callback JSON.stringify {error: "something went wrong :("}
-	)
-
-exports.updateProjects = (jsonBody, callback) ->
-	console.log 'in updateProjects'
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/projects/jsonArray"
-	request(
-		method: 'PUT'
-		url: cmpdRegCall
-		body: JSON.stringify jsonBody
-		json: true
-	, (error, response, json)=>
-		if !error
-			console.log JSON.stringify json
-			callback JSON.stringify json
-		else
-			console.log 'got ajax error trying to update CmpdReg projects'
-			console.log error
-			console.log json
-			console.log response
-			callback JSON.stringify {error: "something went wrong :("}
-	)
-
 exports.getScientists = (req, resp) =>
 	exports.getScientistsInternal (authors) ->
 		resp.json authors 
@@ -170,46 +129,6 @@ exports.getScientistsInternal = (callback) ->
 		roleName = config.all.client.roles.cmpdreg.chemistRole
 	loginRoutes.getAuthorsInternal {additionalCodeType: 'compound', additionalCodeKind: 'scientist', roleName: roleName}, (statusCode, authors) =>
 		callback authors
-
-exports.saveScientists = (jsonBody, callback) ->
-	console.log 'in saveScientists'
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/scientists/jsonArray"
-	request(
-		method: 'POST'
-		url: cmpdRegCall
-		body: JSON.stringify jsonBody
-		json: true
-	, (error, response, json)=>
-		if !error
-			console.log JSON.stringify json
-			callback JSON.stringify json
-		else
-			console.log 'got ajax error trying to save CmpdReg scientists'
-			console.log error
-			console.log json
-			console.log response
-			callback JSON.stringify {error: "something went wrong :("}
-	)
-
-exports.updateScientists = (jsonBody, callback) ->
-	console.log 'in updateScientists'
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/scientists/jsonArray"
-	request(
-		method: 'PUT'
-		url: cmpdRegCall
-		body: JSON.stringify jsonBody
-		json: true
-	, (error, response, json)=>
-		if !error
-			console.log JSON.stringify json
-			callback JSON.stringify json
-		else
-			console.log 'got ajax error trying to update CmpdReg scientists'
-			console.log error
-			console.log json
-			console.log response
-			callback JSON.stringify {error: "something went wrong :("}
-	)
 
 exports.structureSearch = (req, resp) ->
 	authorRoutes = require './AuthorRoutes.js'
