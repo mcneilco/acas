@@ -76,7 +76,6 @@ exports.cmpdRegIndex = (req, res) ->
 			name: req.user.firstName + " " + req.user.lastName
 			isChemist: isChemist
 			isAdmin: isAdmin
-		syncCmpdRegUser req, cmpdRegUser
 	else
 		loginUserName = "nouser"
 		loginUser =
@@ -103,27 +102,6 @@ exports.cmpdRegIndex = (req, res) ->
 			moduleLaunchParams: if moduleLaunchParams? then moduleLaunchParams else null
 			deployMode: global.deployMode
 			cmpdRegConfig: config.all.client.cmpdreg
-
-syncCmpdRegUser = (req, cmpdRegUser) ->
-	exports.getScientistsInternal (scientistResponse) ->
-		foundScientists = JSON.parse scientistResponse
-		if (_.findWhere foundScientists, {code: cmpdRegUser.code})?
-			#update scientist
-			console.debug 'found scientist '+cmpdRegUser.code
-			if (_.findWhere foundScientists, {code: cmpdRegUser.code, isAdmin: cmpdRegUser.isAdmin, isChemist: cmpdRegUser.isChemist, name: cmpdRegUser.name})?
-				console.debug 'CmpdReg scientists are up-to-date'
-			else
-				oldScientist = _.findWhere foundScientists, {code: cmpdRegUser.code}
-				cmpdRegUser.id = oldScientist.id
-				cmpdRegUser.ignore = oldScientist.ignore
-				cmpdRegUser.version = oldScientist.version
-				console.debug 'updating scientist with JSON: '+ JSON.stringify cmpdRegUser
-				exports.updateScientists [cmpdRegUser], (updateScientistsResponse) ->
-		else
-			#create new scientist
-			console.debug 'scientist '+cmpdRegUser.code+' not found.'
-			console.debug 'creating new scientist' + JSON.stringify cmpdRegUser
-			exports.saveScientists [cmpdRegUser], (saveScientistsResponse) ->
 
 exports.getAPICmpdReg = (req, resp) ->
 	console.log 'in getAPICmpdReg'
