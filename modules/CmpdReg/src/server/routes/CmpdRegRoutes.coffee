@@ -390,13 +390,13 @@ exports.getMarvinJSLicense = (req, resp) ->
 
 exports.getMultipleFilePicker = (req, resp) ->
 	endOfUrl = (req.originalUrl).replace /\/cmpdreg\//, ""
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/" +endOfUrl
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + "/" +endOfUrl
 	cmpdRegCall = cmpdRegCall.replace /\\/g, "%5C"
 	console.log cmpdRegCall
 	req.pipe(request(cmpdRegCall)).pipe(resp)
 
 exports.fileSave = (req, resp) ->
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/filesave'
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/filesave'
 	req.pipe(request[req.method.toLowerCase()](cmpdRegCall)).pipe(resp)
 
 exports.metaLots = (req, resp) ->
