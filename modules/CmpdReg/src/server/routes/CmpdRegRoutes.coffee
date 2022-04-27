@@ -456,7 +456,7 @@ exports.saveSalts = (req, resp) ->
 	)
 
 exports.saveIsotopes = (req, resp) ->
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/isotopes'
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/api/v1/isotopes'
 	request(
 		method: 'POST'
 		url: cmpdRegCall
