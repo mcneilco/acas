@@ -156,7 +156,7 @@ $(function() {
 	            var optionToInsert = null;
             }
             this.stereoCategoryCodeController =
-                this.setupCodeController('stereoCategoryCode', 'stereoCategorys', 'stereoCategory', optionToInsert);
+                this.setupCodeController('stereoCategoryCode', 'stereoCategories', 'stereoCategory', optionToInsert);
 
 			if (window.configuration.metaLot.showSelectCompoundTypeList) {
 				if (window.configuration.metaLot.showSelectCompoundTypeOption) {
