@@ -16,12 +16,12 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/cmpdReg/stereoCategories', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
 	app.get '/cmpdReg/compoundTypes', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
 	app.get '/cmpdReg/parentAnnotations', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
-	app.get '/cmpdReg/fileTypes', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
+	app.get '/cmpdReg/fileTypes', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
 	app.get '/cmpdReg/projects', loginRoutes.ensureAuthenticated, exports.getAuthorizedCmpdRegProjects
-	app.get '/cmpdReg/vendors', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
-	app.get '/cmpdReg/physicalStates', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
-	app.get '/cmpdReg/operators', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
-	app.get '/cmpdReg/purityMeasuredBys', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
+	app.get '/cmpdReg/vendors', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
+	app.get '/cmpdReg/physicalStates', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
+	app.get '/cmpdReg/operators', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
+	app.get '/cmpdReg/purityMeasuredBys', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
 	app.get '/cmpdReg/structureimage/:type/[\\S]*', loginRoutes.ensureAuthenticated, exports.getStructureImage
 	app.get '/cmpdReg/metalots/corpName/[\\S]*', loginRoutes.ensureAuthenticated, exports.getMetaLot
 	app.get '/cmpdReg/MultipleFilePicker/[\\S]*', loginRoutes.ensureAuthenticated, exports.getMultipleFilePicker
@@ -124,14 +124,6 @@ syncCmpdRegUser = (req, cmpdRegUser) ->
 			console.debug 'scientist '+cmpdRegUser.code+' not found.'
 			console.debug 'creating new scientist' + JSON.stringify cmpdRegUser
 			exports.saveScientists [cmpdRegUser], (saveScientistsResponse) ->
-
-exports.getBasicCmpdReg = (req, resp) ->
-	console.log 'in getBasicCmpdReg'
-	console.log req.originalUrl
-	endOfUrl = (req.originalUrl).replace /\/cmpdreg\//, ""
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/" +endOfUrl
-	console.log cmpdRegCall
-	req.pipe(request(cmpdRegCall)).pipe(resp)
 
 exports.getAPICmpdReg = (req, resp) ->
 	console.log 'in getAPICmpdReg'
