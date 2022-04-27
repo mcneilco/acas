@@ -32,7 +32,6 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/cmpdReg/metalots', loginRoutes.ensureAuthenticated, exports.metaLots
 	app.post '/cmpdReg/salts', loginRoutes.ensureAuthenticated, exports.saveSalts
 	app.post '/cmpdReg/isotopes', loginRoutes.ensureAuthenticated, exports.saveIsotopes
-	app.post '/cmpdReg/api/v1/structureServices/molconvert', loginRoutes.ensureAuthenticated, exports.molConvert
 	app.post '/cmpdReg/api/v1/structureServices/clean', loginRoutes.ensureAuthenticated, exports.genericStructureService
 	app.post '/cmpdReg/api/v1/structureServices/hydrogenizer', loginRoutes.ensureAuthenticated, exports.genericStructureService
 	app.post '/cmpdReg/api/v1/structureServices/cipStereoInfo', loginRoutes.ensureAuthenticated, exports.genericStructureService
@@ -367,29 +366,6 @@ exports.saveIsotopes = (req, resp) ->
 			resp.end JSON.stringify {error: "something went wrong :("}
 	)
 
-exports.molConvert = (req, resp) ->
-	endOfUrl = (req.originalUrl).replace /\/cmpdreg\//, ""
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/" +endOfUrl
-	#	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/api/v1/structureServices/molconvert'
-	request(
-		method: 'POST'
-		url: cmpdRegCall
-		body: JSON.stringify req.body
-		json: true
-		timeout: 6000000
-	, (error, response, json) =>
-		if !error
-			console.log JSON.stringify json
-			resp.statusCode = response.statusCode
-			resp.setHeader('Content-Type', 'application/json')
-			resp.end JSON.stringify json
-		else
-			console.log 'got ajax error trying to do generic structure service'
-			console.log error
-			console.log json
-			console.log response
-			resp.end JSON.stringify {error: "something went wrong :("}
-	)
 
 exports.genericStructureService = (req, resp) ->
 	endOfUrl = (req.originalUrl).replace /\/cmpdreg\//, ""
