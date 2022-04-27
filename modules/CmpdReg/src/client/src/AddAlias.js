@@ -104,7 +104,7 @@
     AddAliasController.prototype.initialize = function() {
       this.collection = this.options.collection;
       this.listOfAliases = new AliasListList();
-      this.listOfAliases.type = "parentaliaskinds";
+      this.listOfAliases.type = "aliases/parentAliasKinds";
       this.listOfAliases.bind('reset', (function(_this) {
         return function() {
           return _this.trigger("initializationComplete");
@@ -345,7 +345,7 @@
       });
       this.aliasType = new AliasListSelectController({
         el: this.$('.bv_aliasTypeContainer'),
-        type: "parentaliaskinds",
+        type: "aliases/parentAliasKinds",
         collection: cloneOfAliasTypes,
         selectedCode: this.model.get("typeKind"),
         insertFirstOption: optionToInsert
