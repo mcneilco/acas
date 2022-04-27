@@ -149,7 +149,7 @@ exports.searchCmpds = (req, resp) ->
 		allowedProjectCodes = _.pluck(allowedUserProjects, "code")
 		req.body.projects = allowedProjectCodes
 		console.log req.body
-		cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/search/cmpds'
+		cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/search/cmpds'
 		request(
 			method: 'POST'
 			url: cmpdRegCall
@@ -257,7 +257,7 @@ exports.getMetaLot = (req, resp) ->
 	)
 
 exports.regSearch = (req, resp) ->
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/regsearches/parent'
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/regsearches/parent'
 	console.log cmpdRegCall
 	request(
 		method: 'POST'
