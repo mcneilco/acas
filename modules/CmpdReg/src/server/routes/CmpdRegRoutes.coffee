@@ -311,7 +311,7 @@ exports.getStructureImage = (req, resp) ->
 
 exports.getMetaLot = (req, resp) ->
 	endOfUrl = (req.originalUrl).replace /\/cmpdreg\/metalots/, ""
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/metalots' + endOfUrl
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/metalots' + endOfUrl
 	console.log cmpdRegCall
 	request(
 		method: 'GET'
@@ -402,7 +402,7 @@ exports.fileSave = (req, resp) ->
 exports.metaLots = (req, resp) ->
 	if req.user? && !req.body.modifiedBy?
 		req.body.lot.modifiedBy = req.user.username
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/metalots'
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/metalots'
 	request(
 		method: 'POST'
 		url: cmpdRegCall

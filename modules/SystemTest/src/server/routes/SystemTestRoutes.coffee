@@ -555,7 +555,7 @@ exports.getCmpds = (callback) ->
 	request = require('request')
 	options =
 		method: 'GET'
-		url: 	config.all.client.service.cmpdReg.persistence.basepath + "/metalots/corpName/SYSTEST-000000001-1"
+		url: 	config.all.client.service.cmpdReg.persistence.fullpath + "/metalots/corpName/SYSTEST-000000001-1"
 		json: true
 		headers:
 			'cache-control': 'no-cache'

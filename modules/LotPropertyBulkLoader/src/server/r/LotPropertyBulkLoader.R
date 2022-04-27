@@ -87,13 +87,13 @@ requestHandler <- function(request) {
 
   validatedData <- validateFileInput(fileData, headerMap, errorEnv)
 
-  metaLotBaseURL <- paste0(applicationSettings$client.service.cmpdReg.persistence.basepath,"/metalots")
+  metaLotBaseURL <- paste0(applicationSettings$client.service.cmpdReg.persistence.fullpath,"/metalots")
   metaLotCorpNameURL <- paste0(metaLotBaseURL,"/corpName")
   getPropertyNames <- names(validatedData)[ !names(validatedData) %in% c('Lot Corporate Name', 'error','warning', 'Issues')]
   getProperties <- headerMap[match(getPropertyNames, headerMap$fileHeader),]
   overwriteExisting <- as.logical(request$inputParameters$overwriteExisting)
   validatedData[ error == FALSE, c(paste0(c("Current ", "New "), rep(getProperties$fileHeader, each = 2)),"error","warning","Issues") := {
-    metaLotBaseURL <- paste0(applicationSettings$client.service.cmpdReg.persistence.basepath,"/metalots")
+    metaLotBaseURL <- paste0(applicationSettings$client.service.cmpdReg.persistence.fullpath,"/metalots")
     metaLotCorpNameURL <- paste0(metaLotBaseURL,"/corpName")
     metaLot <- fromJSON(getURL(paste0(metaLotCorpNameURL, "/",`Lot Corporate Name`)), )
     properties <- metaLot$lot[getProperties$mappedProperty]
