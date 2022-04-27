@@ -324,7 +324,7 @@ exports.metaLots = (req, resp) ->
 	)
 
 exports.saveSalts = (req, resp) ->
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/api/v1/salts'
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/salts'
 	request(
 		method: 'POST'
 		url: cmpdRegCall
@@ -346,7 +346,7 @@ exports.saveSalts = (req, resp) ->
 	)
 
 exports.saveIsotopes = (req, resp) ->
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/api/v1/isotopes'
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/isotopes'
 	request(
 		method: 'POST'
 		url: cmpdRegCall
