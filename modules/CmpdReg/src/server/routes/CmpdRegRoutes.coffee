@@ -8,20 +8,20 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/cmpdReg', loginRoutes.ensureAuthenticated, exports.cmpdRegIndex
 	app.get '/marvin4js-license.cxl', loginRoutes.ensureAuthenticated, exports.getMarvinJSLicense
 	app.get '/cmpdReg/scientists', loginRoutes.ensureAuthenticated, exports.getScientists
-	app.get '/cmpdReg/parentAliasKinds', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
-	app.get '/cmpdReg/units', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
-	app.get '/cmpdReg/solutionUnits', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
-	app.get '/cmpdReg/salts', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
-	app.get '/cmpdReg/isotopes', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
-	app.get '/cmpdReg/stereoCategorys', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
-	app.get '/cmpdReg/compoundTypes', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
-	app.get '/cmpdReg/parentAnnotations', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
-	app.get '/cmpdReg/fileTypes', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
+	app.get '/cmpdReg/aliases/parentAliasKinds', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
+	app.get '/cmpdReg/units', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
+	app.get '/cmpdReg/solutionUnits', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
+	app.get '/cmpdReg/salts', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
+	app.get '/cmpdReg/isotopes', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
+	app.get '/cmpdReg/stereoCategories', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
+	app.get '/cmpdReg/compoundTypes', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
+	app.get '/cmpdReg/parentAnnotations', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
+	app.get '/cmpdReg/fileTypes', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
 	app.get '/cmpdReg/projects', loginRoutes.ensureAuthenticated, exports.getAuthorizedCmpdRegProjects
-	app.get '/cmpdReg/vendors', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
-	app.get '/cmpdReg/physicalStates', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
-	app.get '/cmpdReg/operators', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
-	app.get '/cmpdReg/purityMeasuredBys', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
+	app.get '/cmpdReg/vendors', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
+	app.get '/cmpdReg/physicalStates', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
+	app.get '/cmpdReg/operators', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
+	app.get '/cmpdReg/purityMeasuredBys', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
 	app.get '/cmpdReg/structureimage/:type/[\\S]*', loginRoutes.ensureAuthenticated, exports.getStructureImage
 	app.get '/cmpdReg/metalots/corpName/[\\S]*', loginRoutes.ensureAuthenticated, exports.getMetaLot
 	app.get '/cmpdReg/MultipleFilePicker/[\\S]*', loginRoutes.ensureAuthenticated, exports.getMultipleFilePicker
@@ -76,7 +76,6 @@ exports.cmpdRegIndex = (req, res) ->
 			name: req.user.firstName + " " + req.user.lastName
 			isChemist: isChemist
 			isAdmin: isAdmin
-		syncCmpdRegUser req, cmpdRegUser
 	else
 		loginUserName = "nouser"
 		loginUser =
@@ -104,40 +103,11 @@ exports.cmpdRegIndex = (req, res) ->
 			deployMode: global.deployMode
 			cmpdRegConfig: config.all.client.cmpdreg
 
-syncCmpdRegUser = (req, cmpdRegUser) ->
-	exports.getScientistsInternal (scientistResponse) ->
-		foundScientists = JSON.parse scientistResponse
-		if (_.findWhere foundScientists, {code: cmpdRegUser.code})?
-			#update scientist
-			console.debug 'found scientist '+cmpdRegUser.code
-			if (_.findWhere foundScientists, {code: cmpdRegUser.code, isAdmin: cmpdRegUser.isAdmin, isChemist: cmpdRegUser.isChemist, name: cmpdRegUser.name})?
-				console.debug 'CmpdReg scientists are up-to-date'
-			else
-				oldScientist = _.findWhere foundScientists, {code: cmpdRegUser.code}
-				cmpdRegUser.id = oldScientist.id
-				cmpdRegUser.ignore = oldScientist.ignore
-				cmpdRegUser.version = oldScientist.version
-				console.debug 'updating scientist with JSON: '+ JSON.stringify cmpdRegUser
-				exports.updateScientists [cmpdRegUser], (updateScientistsResponse) ->
-		else
-			#create new scientist
-			console.debug 'scientist '+cmpdRegUser.code+' not found.'
-			console.debug 'creating new scientist' + JSON.stringify cmpdRegUser
-			exports.saveScientists [cmpdRegUser], (saveScientistsResponse) ->
-
-exports.getBasicCmpdReg = (req, resp) ->
-	console.log 'in getBasicCmpdReg'
-	console.log req.originalUrl
-	endOfUrl = (req.originalUrl).replace /\/cmpdreg\//, ""
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/" +endOfUrl
-	console.log cmpdRegCall
-	req.pipe(request(cmpdRegCall)).pipe(resp)
-
 exports.getAPICmpdReg = (req, resp) ->
 	console.log 'in getAPICmpdReg'
 	console.log req.originalUrl
 	endOfUrl = (req.originalUrl).replace /\/cmpdreg\//, ""
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/api/v1/" +endOfUrl
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + "/" +endOfUrl
 	console.log cmpdRegCall
 	req.pipe(request(cmpdRegCall)).pipe(resp)
 
@@ -146,47 +116,6 @@ exports.getAuthorizedCmpdRegProjects = (req, resp) ->
 	authorRoutes.allowedProjectsInternal req.user, (statusCode, allowedUserProjects) ->
 		resp.status "200"
 		resp.end JSON.stringify allowedUserProjects
-
-exports.saveProjects = (jsonBody, callback) ->
-
-	console.log 'in saveProjects'
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/projects/jsonArray"
-	request(
-		method: 'POST'
-		url: cmpdRegCall
-		body: JSON.stringify jsonBody
-		json: true
-	, (error, response, json)=>
-		if !error
-			console.log JSON.stringify json
-			callback JSON.stringify json
-		else
-			console.log 'got ajax error trying to save CmpdReg projects'
-			console.log error
-			console.log json
-			console.log response
-			callback JSON.stringify {error: "something went wrong :("}
-	)
-
-exports.updateProjects = (jsonBody, callback) ->
-	console.log 'in updateProjects'
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/projects/jsonArray"
-	request(
-		method: 'PUT'
-		url: cmpdRegCall
-		body: JSON.stringify jsonBody
-		json: true
-	, (error, response, json)=>
-		if !error
-			console.log JSON.stringify json
-			callback JSON.stringify json
-		else
-			console.log 'got ajax error trying to update CmpdReg projects'
-			console.log error
-			console.log json
-			console.log response
-			callback JSON.stringify {error: "something went wrong :("}
-	)
 
 exports.getScientists = (req, resp) =>
 	exports.getScientistsInternal (authors) ->
@@ -200,46 +129,6 @@ exports.getScientistsInternal = (callback) ->
 		roleName = config.all.client.roles.cmpdreg.chemistRole
 	loginRoutes.getAuthorsInternal {additionalCodeType: 'compound', additionalCodeKind: 'scientist', roleName: roleName}, (statusCode, authors) =>
 		callback authors
-
-exports.saveScientists = (jsonBody, callback) ->
-	console.log 'in saveScientists'
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/scientists/jsonArray"
-	request(
-		method: 'POST'
-		url: cmpdRegCall
-		body: JSON.stringify jsonBody
-		json: true
-	, (error, response, json)=>
-		if !error
-			console.log JSON.stringify json
-			callback JSON.stringify json
-		else
-			console.log 'got ajax error trying to save CmpdReg scientists'
-			console.log error
-			console.log json
-			console.log response
-			callback JSON.stringify {error: "something went wrong :("}
-	)
-
-exports.updateScientists = (jsonBody, callback) ->
-	console.log 'in updateScientists'
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/scientists/jsonArray"
-	request(
-		method: 'PUT'
-		url: cmpdRegCall
-		body: JSON.stringify jsonBody
-		json: true
-	, (error, response, json)=>
-		if !error
-			console.log JSON.stringify json
-			callback JSON.stringify json
-		else
-			console.log 'got ajax error trying to update CmpdReg scientists'
-			console.log error
-			console.log json
-			console.log response
-			callback JSON.stringify {error: "something went wrong :("}
-	)
 
 exports.structureSearch = (req, resp) ->
 	authorRoutes = require './AuthorRoutes.js'
@@ -260,7 +149,7 @@ exports.searchCmpds = (req, resp) ->
 		allowedProjectCodes = _.pluck(allowedUserProjects, "code")
 		req.body.projects = allowedProjectCodes
 		console.log req.body
-		cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/search/cmpds'
+		cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/search/cmpds'
 		request(
 			method: 'POST'
 			url: cmpdRegCall
@@ -314,12 +203,12 @@ exports.getAllAuthorizedLots = (req, resp) ->
 
 exports.getStructureImage = (req, resp) ->
 	imagePath = (req.originalUrl).replace /\/cmpdreg\/structureimage/, ""
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/structureimage' + imagePath
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/structureimage' + imagePath
 	req.pipe(request(cmpdRegCall)).pipe(resp)
 
 exports.getMetaLot = (req, resp) ->
 	endOfUrl = (req.originalUrl).replace /\/cmpdreg\/metalots/, ""
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/metalots' + endOfUrl
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/metalots' + endOfUrl
 	console.log cmpdRegCall
 	request(
 		method: 'GET'
@@ -368,7 +257,7 @@ exports.getMetaLot = (req, resp) ->
 	)
 
 exports.regSearch = (req, resp) ->
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/regsearches/parent'
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/regsearches/parent'
 	console.log cmpdRegCall
 	request(
 		method: 'POST'
@@ -398,19 +287,19 @@ exports.getMarvinJSLicense = (req, resp) ->
 
 exports.getMultipleFilePicker = (req, resp) ->
 	endOfUrl = (req.originalUrl).replace /\/cmpdreg\//, ""
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/" +endOfUrl
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + "/" +endOfUrl
 	cmpdRegCall = cmpdRegCall.replace /\\/g, "%5C"
 	console.log cmpdRegCall
 	req.pipe(request(cmpdRegCall)).pipe(resp)
 
 exports.fileSave = (req, resp) ->
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/filesave'
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/filesave'
 	req.pipe(request[req.method.toLowerCase()](cmpdRegCall)).pipe(resp)
 
 exports.metaLots = (req, resp) ->
 	if req.user? && !req.body.modifiedBy?
 		req.body.lot.modifiedBy = req.user.username
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/metalots'
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/metalots'
 	request(
 		method: 'POST'
 		url: cmpdRegCall
@@ -435,7 +324,7 @@ exports.metaLots = (req, resp) ->
 	)
 
 exports.saveSalts = (req, resp) ->
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/salts'
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/salts'
 	request(
 		method: 'POST'
 		url: cmpdRegCall
@@ -457,7 +346,7 @@ exports.saveSalts = (req, resp) ->
 	)
 
 exports.saveIsotopes = (req, resp) ->
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/isotopes'
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/isotopes'
 	request(
 		method: 'POST'
 		url: cmpdRegCall
