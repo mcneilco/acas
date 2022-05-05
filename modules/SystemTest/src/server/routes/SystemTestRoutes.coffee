@@ -4,13 +4,11 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.get '/api/systemTest/getOrCreateGlobalProject', exports.getOrCreateGlobalProject
 	app.get '/api/systemTest/getOrCreateGlobalProjectRole', exports.getOrCreateGlobalProjectRole
 	app.get '/api/systemTest/giveBobRoles', exports.giveBobRoles
-	app.get '/api/systemTest/getOrCreateCmpdRegBob', exports.getOrCreateCmpdRegBob
 	app.get '/api/systemTest/syncRoles', exports.syncRoles
 	app.get '/api/systemTest/getOrCreateCmpds', exports.getOrCreateCmpds
 	app.get '/api/systemTest/loadSELFile', exports.loadSELFile
 	app.get '/api/systemTest/deleteSELFile', exports.deleteSELFile
 	app.get '/api/systemTest/purgeCmpds', exports.purgeCmpds
-	app.get '/api/systemTest/deleteCmpdRegBob', exports.deleteCmpdRegBob
 	app.get '/api/systemTest/deleteACASBob', exports.deleteACASBob
 	app.get '/api/systemTest/deleteGlobalProject', exports.deleteGlobalProject
 
@@ -418,103 +416,6 @@ exports.giveBobRolesInternal = (callback) ->
 				messages: body
 			}
 
-exports.getCmpdRegBobUser = (callback) ->
-	options =
-		method: 'GET'
-		url: 	config.all.client.service.cmpdReg.persistence.basepath + "/scientists"
-		json: true
-	request options, (error, response, body) ->
-		if error
-			throw new Error(error)
-		bob =	_.findWhere body, {"code": "bob"}
-		callback bob
-
-exports.getOrCreateCmpdRegBob = (req, resp) ->
-	exports.getOrCreateCmpdRegBobInternal (statusCode, output) ->
-		resp.statusCode = statusCode
-		resp.json output
-
-exports.getOrCreateCmpdRegBobInternal = (callback)->
-	exports.getCmpdRegBobUser (cmpdRegBob) ->
-		if cmpdRegBob?
-			callback 200, {
-				hasError: false
-				messages: cmpdRegBob
-				created: false
-			}
-		else
-			exports.getACASBobUser (bob) ->
-				grantedRoles = _.map bob.roles, (role) ->
-					role.roleEntry.roleName
-				options =
-					method: 'POST'
-					url: config.all.client.service.cmpdReg.persistence.basepath + "/scientists/jsonArray"
-					headers:
-						'cache-control': 'no-cache'
-						accept: 'application/json'
-						'content-type': 'application/json'
-					body: [
-						id: bob.id
-						code: bob.username
-						name: bob.firstName + " " + bob.lastName
-						isChemist: !config.all.client.roles.cmpdreg?.chemistRole? || (config.all.client.roles.cmpdreg?.chemistRole? && config.all.client.roles.cmpdreg.chemistRole in grantedRoles)
-						isAdmin: !config.all.client.roles.cmpdreg?.adminRole? || (config.all.client.roles.cmpdreg?.adminRole? && config.all.client.roles.cmpdreg.adminRole in grantedRoles)
-						]
-					json: true
-				request options, (error, response, body) ->
-					created = false
-					if error
-						throw new Error(error)
-						statusCode=500
-						hasError = true
-					else
-						if response.statusCode == 500
-							hasError = true
-						else
-							hasError = false
-							created = true
-						statusCode = response.statusCode
-					callback statusCode, {
-						hasError: hasError
-						messages: body
-						created: created
-					}
-
-exports.deleteCmpdRegBob = (req, resp) ->
-	exports.deleteCmpdRegBobInternal (statusCode, output) ->
-		resp.statusCode = statusCode
-		resp.json output
-
-exports.deleteCmpdRegBobInternal = (callback) ->
-	exports.getCmpdRegBobUser (bob) ->
-		if !bob?
-			callback 400, {
-				hasError: true
-				messages: bob
-			}
-		else
-			options =
-				method: 'DELETE'
-				url: "#{config.all.client.service.cmpdReg.persistence.basepath}/scientists/#{bob.id}"
-				json: true
-			request options, (error, response, body) ->
-				if error
-					console.error response
-					statusCode=500
-					hasError = true
-				else
-					if response.statusCode == 500
-						hasError = true
-						created = false
-					else
-						hasError = false
-						created = true
-					statusCode = response.statusCode
-				callback statusCode, {
-					hasError: hasError
-					messages: body
-				}
-
 exports.deleteGlobalProject = (req, resp) ->
 	exports.deleteGlobalProjectInternal (statusCode, output) ->
 		resp.statusCode = statusCode
@@ -555,7 +456,7 @@ exports.getCmpds = (callback) ->
 	request = require('request')
 	options =
 		method: 'GET'
-		url: 	config.all.client.service.cmpdReg.persistence.basepath + "/metalots/corpName/SYSTEST-000000001-1"
+		url: 	config.all.client.service.cmpdReg.persistence.fullpath + "/metalots/corpName/SYSTEST-000000001-1"
 		json: true
 		headers:
 			'cache-control': 'no-cache'

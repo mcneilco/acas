@@ -15,8 +15,9 @@ RUN \
   dnf upgrade -y && \
 # tar for pulling down node
 # git required for some npm packages
+# postgresql for utility scripts
   dnf install -y tar git && \
-  dnf install -y fontconfig urw-fonts iputils && \
+  dnf install -y fontconfig urw-fonts iputils postgresql && \
   dnf clean all
 
 #Install python dependencies
