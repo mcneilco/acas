@@ -559,9 +559,15 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
       }
     } else {
       for (row in 1:nrow(newBatchIds)) {
+        NOT_REGISTERED_MESSAGE <- paste0(mainCode, " '", newBatchIds$Requested.Name[row],
+                          "' has not been registered in the system.")
+        
+        if(applicationSettings$client.cmpdreg.metaLot.allowDuplicateParentAliases && applicationSettings$server.service.external.preferred.batchid.allowParentAliasLotNames && mainCode == "Corporate Batch ID") {
+          NOT_REGISTERED_MESSAGE <- paste0(NOT_REGISTERED_MESSAGE, " If the ", mainCode, " uses a Parent Alias Lot Name, please double-check that alias is registered to one and only one Parent.")
+        }
+        NOT_REGISTERED_MESSAGE <- paste0(NOT_REGISTERED_MESSAGE, " Contact your system administrator for help." )
         if (is.null(newBatchIds$Reference.Code[row]) || is.na(newBatchIds$Reference.Code[row]) || newBatchIds$Reference.Code[row] == "") {
-          addError(paste0(mainCode, " '", newBatchIds$Requested.Name[row],
-                          "' has not been registered in the system. Contact your system administrator for help."))
+          addError(NOT_REGISTERED_MESSAGE)
         } else if (as.character(newBatchIds$Requested.Name[row]) != as.character(newBatchIds$Reference.Code[row])) {
           if (mainCode == "Corporate Batch ID" || inputFormat == "Gene ID Data") {
             warnUser(paste0("A ", mainCode, " that you entered, '", newBatchIds$Requested.Name[row],
