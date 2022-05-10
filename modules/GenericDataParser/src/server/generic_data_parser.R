@@ -563,7 +563,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
                           "' has not been registered in the system.")
         
         # TODO: Put this behind the unique alias config when we add it to ACAS
-        if(applicationSettings$server.service.external.preferred.batchid.allowParentAliasLotNames && mainCode == "Corporate Batch ID") {
+        if(applicationSettings$client.cmpdreg.metaLot.allowDuplicateParentAliases && applicationSettings$server.service.external.preferred.batchid.allowParentAliasLotNames && mainCode == "Corporate Batch ID") {
           NOT_REGISTERED_MESSAGE <- paste0(NOT_REGISTERED_MESSAGE, " If the ", mainCode, " uses a Parent Alias Lot Name, please double-check that alias is registered to one and only one Parent.")
         }
         NOT_REGISTERED_MESSAGE <- paste0(NOT_REGISTERED_MESSAGE, " Contact your system administrator for help." )
