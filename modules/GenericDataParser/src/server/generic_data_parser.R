@@ -564,7 +564,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
         
         # TODO: Put this behind the unique alias config when we add it to ACAS
         if(applicationSettings$server.service.external.preferred.batchid.allowParentAliasLotNames && mainCode == "Corporate Batch ID") {
-          NOT_REGISTERED_MESSAGE <- paste0(NOT_REGISTERED_MESSAGE, " If the ", mainCode, " is a Parent Alias Lot Name it may also mean that the Parent Alias is referenced by zero or multiple Parents.")
+          NOT_REGISTERED_MESSAGE <- paste0(NOT_REGISTERED_MESSAGE, " If the ", mainCode, " uses a Parent Alias Lot Name, please double-check that alias is registered to one and only one Parent.")
         }
         NOT_REGISTERED_MESSAGE <- paste0(NOT_REGISTERED_MESSAGE, " Contact your system administrator for help." )
         if (is.null(newBatchIds$Reference.Code[row]) || is.na(newBatchIds$Reference.Code[row]) || newBatchIds$Reference.Code[row] == "") {
