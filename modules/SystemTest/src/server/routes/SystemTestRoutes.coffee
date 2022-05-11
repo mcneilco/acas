@@ -384,11 +384,19 @@ exports.getOrCreateGlobalProjectInternal = (callback) ->
 						hasError = false
 						created = true
 					statusCode = response.statusCode
-				callback statusCode, {
-					hasError: hasError
-					messages: body
-					created: created
-				}
+				exports.getGlobalProject (globalProject) ->
+					if globalProject?
+						callback 200, {
+							hasError: false
+							messages: globalProject
+							created: false
+						}
+					else
+						callback statusCode, {
+							hasError: hasError
+							messages: body
+							created: created
+						}
 
 exports.getGlobalProjectRole = (projectCode, callback) ->
 	options =
