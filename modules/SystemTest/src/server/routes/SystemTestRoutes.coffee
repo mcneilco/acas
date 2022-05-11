@@ -11,7 +11,7 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.get '/api/systemTest/deleteSELFile', exports.deleteSELFile
 	app.get '/api/systemTest/purgeCmpds', exports.purgeCmpds
 	app.get '/api/systemTest/deleteACASBob', exports.deleteACASBob
-	app.delete 'api/systemTest/deleteTestUser/:username', exports.deleteTestUser
+	app.delete '/api/systemTest/deleteTestUser/:username', exports.deleteTestUser
 	app.get '/api/systemTest/deleteGlobalProject', exports.deleteGlobalProject
 
 exports.setupRoutes = (app, loginRoutes) ->
