@@ -26,13 +26,6 @@ fs = require 'fs'
 path = require 'path'
 crypto = require 'crypto'
 
-# TODO fix 
-
-
-exports.deleteTestUser = (req, res) ->
-	exports.deleteACASBob(req, res)
-
-
 # Get a Test user by username
 exports.getTestUser = (username, callback) ->
 	options =
@@ -44,6 +37,7 @@ exports.getTestUser = (username, callback) ->
 			throw new Error(error)
 		callback body
 
+# Create a test user
 exports.createTestUserInternal = (username, password, callback) ->
 	# Get a base64 encoded SHA-1 hash of the password
 	sha = crypto.createHash 'sha1'
@@ -87,6 +81,7 @@ exports.createTestUserInternal = (username, password, callback) ->
 			created: created
 		}	
 
+# Get or create test user by username
 exports.getOrCreateTestUser = (req, res) ->
 	callback = (statusCode, output) ->
 		resp.statusCode = statusCode
@@ -103,7 +98,43 @@ exports.getOrCreateTestUser = (req, res) ->
 			# Create the user
 			password = req.body.password
 			createTestUserInternal username, password, callback
+			#TODO add roles
 
+# Delete a test user by username
+exports.deleteTestUser = (req, res) ->
+	exports.deleteTestUserInternal req.params.username, (statusCode, output) ->
+			resp.statusCode = statusCode
+			resp.json output
+
+exports.deleteTestUserInternal = (username, callback) ->
+	exports.getTestUser username, (user) ->
+		if !user?
+			callback 400, {
+				hasError: true
+				messages: user
+			}
+		else
+			options =
+				method: 'DELETE'
+				url: "#{config.all.client.service.persistence.fullpath}authors/#{user.id}"
+				json: true
+			request options, (error, response, body) ->
+				if error
+					console.error response
+					statusCode=500
+					hasError = true
+				else
+					if response.statusCode == 500
+						hasError = true
+						created = false
+					else
+						hasError = false
+						created = true
+					statusCode = response.statusCode
+				callback statusCode, {
+					hasError: hasError
+					messages: body
+				}
 
 # Legacy "ACAS Bob" routes
 exports.getACASBobUser = (callback) ->
@@ -114,90 +145,10 @@ exports.getOrCreateACASBob = (req, resp) ->
 		resp.statusCode = statusCode
 		resp.json output
 
-exports.getOrCreateACASBobInternal = (callback) ->
-	exports.getACASBobUser (bob) ->
-		if bob?
-			callback 200, {
-				hasError: false
-				messages: bob
-				created: false
-			}
-		else
-			options =
-				method: 'POST'
-				url: "#{config.all.client.service.persistence.fullpath}authors"
-				headers:
-					'cache-control': 'no-cache'
-					accept: 'application/json'
-					'content-type': 'application/json'
-				body:
-					firstName: 'Bob'
-					lastName: 'Roberts'
-					userName: 'bob'
-					emailAddress: 'bob@mcneilco.com'
-					version: 0
-					enabled: true
-					locked: false
-					password: '5en6G6MezRroT3XKqkdPOmY/BfQ='
-					recordedBy: 'bob'
-					recordedDate: 1457542406000
-					lsType: 'default'
-					lsKind: 'default'
-				json: true
-			request options, (error, response, body) ->
-				if error
-					console.error response
-					statusCode=500
-					hasError = true
-					created = false
-				else
-					if response.statusCode == 500
-						hasError = true
-						created = false
-					else
-						hasError = false
-						created = true
-					statusCode = response.statusCode
-				callback statusCode, {
-					hasError: hasError
-					messages: body
-					created: created
-				}
-
 exports.deleteACASBob = (req, resp) ->
-	exports.deleteACASBobInternal (statusCode, output) ->
+	exports.deleteTestUserInternal 'bob', (statusCode, output) ->
 		resp.statusCode = statusCode
 		resp.json output
-
-exports.deleteACASBobInternal = (callback) ->
-	exports.getACASBobUser (bob) ->
-		if !bob?
-			callback 400, {
-				hasError: true
-				messages: bob
-			}
-		else
-			options =
-				method: 'DELETE'
-				url: "#{config.all.client.service.persistence.fullpath}authors/#{bob.id}"
-				json: true
-			request options, (error, response, body) ->
-				if error
-					console.error response
-					statusCode=500
-					hasError = true
-				else
-					if response.statusCode == 500
-						hasError = true
-						created = false
-					else
-						hasError = false
-						created = true
-					statusCode = response.statusCode
-				callback statusCode, {
-					hasError: hasError
-					messages: body
-				}
 
 exports.getGlobalProject = (callback) ->
 	options =
