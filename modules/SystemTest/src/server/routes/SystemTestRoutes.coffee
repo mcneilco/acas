@@ -77,7 +77,7 @@ exports.createTestUserInternal = (username, password, callback) ->
 			statusCode = response.statusCode
 		callback statusCode, {
 			hasError: hasError
-			messages: body
+			messages: body[0]
 			created: created
 		}	
 
