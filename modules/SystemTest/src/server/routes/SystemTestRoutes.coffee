@@ -82,7 +82,7 @@ exports.createTestUserInternal = (username, password, callback) ->
 		}	
 
 # Get or create test user by username
-exports.getOrCreateTestUser = (req, res) ->
+exports.getOrCreateTestUser = (req, resp) ->
 	callback = (statusCode, output) ->
 		resp.statusCode = statusCode
 		resp.json output
@@ -97,11 +97,24 @@ exports.getOrCreateTestUser = (req, res) ->
 		else
 			# Create the user
 			password = req.body.password
-			createTestUserInternal username, password, callback
-			#TODO add roles
+			exports.createTestUserInternal username, password, (statusCode, output) ->
+				# Add roles
+				acasUser = if req.body.acasUser? then req.body.acasUser else false
+				acasAdmin = if req.body.acasAdmin? then req.body.acasAdmin else false
+				cmpdregUser = if req.body.cmpdregUser? then req.body.cmpdregUser else false
+				cmpdregAdmin = if req.body.cmpdregAdmin? then req.body.cmpdregAdmin else false
+				projectNames = if req.body.projectNames? then req.body.projectNames else []
+				exports.giveTestUserRolesInternal username, acasUser, acasAdmin, cmpdregUser, cmpdregAdmin, projectNames, (statusCode, output) ->
+					# Get the user
+					exports.getTestUser username, (user) ->
+						callback 200, {
+							hasError: false
+							messages: user
+							created: false
+						}
 
 # Delete a test user by username
-exports.deleteTestUser = (req, res) ->
+exports.deleteTestUser = (req, resp) ->
 	exports.deleteTestUserInternal req.params.username, (statusCode, output) ->
 			resp.statusCode = statusCode
 			resp.json output
