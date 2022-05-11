@@ -136,6 +136,28 @@ exports.deleteTestUserInternal = (username, callback) ->
 					messages: body
 				}
 
+add_project_roles = (projectNames, roles, username, callback) ->
+	if !projectNames?
+		projectNames = []
+	# Look up projects and translate names to codes
+	options =
+		method: 'GET'
+		json: true
+		url: "#{config.all.server.nodeapi.path}/api/projects/getAllProjects/stubs"
+	request options, (error, response, body) ->
+		if error
+			throw new Error(error)
+		_.each projectNames, (projectName) ->
+			project = _.findWhere body, {"name":projectName}
+			if project?
+				roles.push {
+					roleType: 'Project'
+					roleKind: project.code
+					roleName: 'User'
+					userName: username
+				}
+		callback roles
+
 # Grant roles to a test user
 exports.giveTestUserRolesInternal = (username, acas_user, acas_admin, cmpdreg_user, cmpdreg_admin, projects, callback) ->
 	roles = []
@@ -167,37 +189,27 @@ exports.giveTestUserRolesInternal = (username, acas_user, acas_admin, cmpdreg_us
 			roleName: 'ROLE_CMPDREG-ADMINS'
 			userName: username
 		}
-	#TODO convert name to code
-	if projects?
-		_.each projects, (project) ->
-			exports.getGlobalProject (globalProject) ->
-				projectCode = globalProject.code
-				roles.push {
-					roleType: 'Project'
-					roleKind: projectCode
-					roleName: 'User'
-					userName: username
-				}
-	options =
-		method: 'POST'
-		url: "#{config.all.client.service.persistence.fullpath}authorroles/saveRoles"
-		json: true
-		body: roles
-	request options, (error, response, body) ->
-			if error
-				throw new Error(error)
-				statusCode=500
-				hasError = true
-			else
-				if response.statusCode == 500
+	add_project_roles projects, roles, username, (updated_roles) ->
+		options =
+			method: 'POST'
+			url: "#{config.all.client.service.persistence.fullpath}authorroles/saveRoles"
+			json: true
+			body: roles
+		request options, (error, response, body) ->
+				if error
+					throw new Error(error)
+					statusCode=500
 					hasError = true
 				else
-					hasError = false
-				statusCode = response.statusCode
-			callback statusCode, {
-				hasError: hasError
-				messages: body
-			}
+					if response.statusCode == 500
+						hasError = true
+					else
+						hasError = false
+					statusCode = response.statusCode
+				callback statusCode, {
+					hasError: hasError
+					messages: body
+				}
 
 # Legacy "ACAS Bob" routes
 exports.getACASBobUser = (callback) ->
