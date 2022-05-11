@@ -1,6 +1,7 @@
 exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.post '/api/runSystemTest', exports.runSystemTest
 	app.get '/api/systemTest/getOrCreateACASBob', exports.getOrCreateACASBob
+	app.post '/api/systemTest/getOrCreateTestUser', exports.getOrCreateTestUser
 	app.get '/api/systemTest/getOrCreateGlobalProject', exports.getOrCreateGlobalProject
 	app.get '/api/systemTest/getOrCreateGlobalProjectRole', exports.getOrCreateGlobalProjectRole
 	app.get '/api/systemTest/giveBobRoles', exports.giveBobRoles
@@ -10,6 +11,7 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.get '/api/systemTest/deleteSELFile', exports.deleteSELFile
 	app.get '/api/systemTest/purgeCmpds', exports.purgeCmpds
 	app.get '/api/systemTest/deleteACASBob', exports.deleteACASBob
+	app.delete 'api/systemTest/deleteTestUser/:username', exports.deleteTestUser
 	app.get '/api/systemTest/deleteGlobalProject', exports.deleteGlobalProject
 
 exports.setupRoutes = (app, loginRoutes) ->
@@ -22,20 +24,93 @@ request = require('request')
 _ = require 'underscore'
 fs = require 'fs'
 path = require 'path'
+crypto = require 'crypto'
 
-#Create Bob User
-exports.getACASBobUser = (callback) ->
+# TODO fix 
+
+
+exports.deleteTestUser = (req, res) ->
+	exports.deleteACASBob(req, res)
+
+
+# Get a Test user by username
+exports.getTestUser = (username, callback) ->
 	options =
 		method: 'GET'
-		url: "#{config.all.server.nodeapi.path}/api/users/bob"
+		url: "#{config.all.server.nodeapi.path}/api/users/#{username}"
 		json: true
 	request options, (error, response, body) ->
 		if error
 			throw new Error(error)
 		callback body
 
+exports.createTestUserInternal = (username, password, callback) ->
+	# Get a base64 encoded SHA-1 hash of the password
+	sha = crypto.createHash 'sha1'
+	sha.update password
+	passwordHash = sha.digest 'base64'
+	# Format the request to create the user
+	options = 
+		method: 'POST'
+		url: "#{config.all.client.service.persistence.fullpath}authors/jsonArray"
+		json: true
+		body:
+			[
+				firstName: username
+				lastName: username
+				userName: username
+				emailAddress: username + "@example.com"
+				enabled: true
+				password: passwordHash
+				recordedBy: 'systemTest'
+				lsType: 'default'
+				lsKind: 'default'
+			]
+	# persist the new user
+	request options, (error, response, body) ->
+		if error
+			console.error response
+			statusCode=500
+			hasError = true
+			created = false
+		else
+			if response.statusCode == 500
+				hasError = true
+				created = false
+			else
+				hasError = false
+				created = true
+			statusCode = response.statusCode
+		callback statusCode, {
+			hasError: hasError
+			messages: body
+			created: created
+		}	
+
+exports.getOrCreateTestUser = (req, res) ->
+	callback = (statusCode, output) ->
+		resp.statusCode = statusCode
+		resp.json output
+	username = req.body.username
+	exports.getTestUser username, (user) ->
+		if user?
+			callback 200, {
+				hasError: false
+				messages: user
+				created: false
+			}
+		else
+			# Create the user
+			password = req.body.password
+			createTestUserInternal username, password, callback
+
+
+# Legacy "ACAS Bob" routes
+exports.getACASBobUser = (callback) ->
+	exports.getTestUser('bob', callback)
+
 exports.getOrCreateACASBob = (req, resp) ->
-	exports.getOrCreateACASBobInternal (statusCode, output) ->
+	exports.createTestUserInternal 'bob', 'secret', (statusCode, output) ->
 		resp.statusCode = statusCode
 		resp.json output
 
