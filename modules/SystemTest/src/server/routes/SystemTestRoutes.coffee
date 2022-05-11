@@ -136,6 +136,69 @@ exports.deleteTestUserInternal = (username, callback) ->
 					messages: body
 				}
 
+# Grant roles to a test user
+exports.giveTestUserRolesInternal = (username, acas_user, acas_admin, cmpdreg_user, cmpdreg_admin, projects, callback) ->
+	roles = []
+	if acas_user
+		roles.push {
+			roleType: 'System'
+			roleKind: 'ACAS'
+			roleName: 'ROLE_ACAS-USERS'
+			userName: username
+		}
+	if acas_admin
+		roles.push {
+			roleType: 'System'
+			roleKind: 'ACAS'
+			roleName: 'ROLE_ACAS-ADMINS'
+			userName: username
+		}
+	if cmpdreg_user
+		roles.push {
+			roleType: 'System'
+			roleKind: 'CmpdReg'
+			roleName: 'ROLE_CMPDREG-USERS'
+			userName: username
+		}
+	if cmpdreg_admin
+		roles.push {
+			roleType: 'System'
+			roleKind: 'CmpdReg'
+			roleName: 'ROLE_CMPDREG-ADMINS'
+			userName: username
+		}
+	#TODO convert name to code
+	if projects?
+		_.each projects, (project) ->
+			exports.getGlobalProject (globalProject) ->
+				projectCode = globalProject.code
+				roles.push {
+					roleType: 'Project'
+					roleKind: projectCode
+					roleName: 'User'
+					userName: username
+				}
+	options =
+		method: 'POST'
+		url: "#{config.all.client.service.persistence.fullpath}authorroles/saveRoles"
+		json: true
+		body: roles
+	request options, (error, response, body) ->
+			if error
+				throw new Error(error)
+				statusCode=500
+				hasError = true
+			else
+				if response.statusCode == 500
+					hasError = true
+				else
+					hasError = false
+				statusCode = response.statusCode
+			callback statusCode, {
+				hasError: hasError
+				messages: body
+			}
+
 # Legacy "ACAS Bob" routes
 exports.getACASBobUser = (callback) ->
 	exports.getTestUser('bob', callback)
@@ -147,6 +210,11 @@ exports.getOrCreateACASBob = (req, resp) ->
 
 exports.deleteACASBob = (req, resp) ->
 	exports.deleteTestUserInternal 'bob', (statusCode, output) ->
+		resp.statusCode = statusCode
+		resp.json output
+
+exports.giveBobRoles = (req, resp) ->
+	exports.giveTestUserRolesInternal 'bob', true, true, true, true, ['Global'], (statusCode, output) ->
 		resp.statusCode = statusCode
 		resp.json output
 
@@ -373,74 +441,6 @@ exports.syncRolesInternal = (callback) ->
 			hasError: hasError
 			messages: body
 		}
-
-exports.giveBobRoles = (req, resp) ->
-	exports.giveBobRolesInternal (statusCode, output) ->
-		resp.statusCode = statusCode
-		resp.json output
-
-exports.giveBobRolesInternal = (callback) ->
-	exports.getGlobalProject (globalProject) ->
-		globalProjectCode = globalProject.code
-		options =
-			method: 'POST'
-			url: "#{config.all.client.service.persistence.fullpath}authorroles/saveRoles"
-			headers:
-				'content-type': 'application/json'
-			body: [
-				{
-					roleType: 'System'
-					roleKind: 'ACAS'
-					roleName: 'ROLE_ACAS-ADMINS'
-					userName: 'bob'
-				}
-				{
-					roleType: 'System'
-					roleKind: 'ACAS'
-					roleName: 'ROLE_ACAS-USERS'
-					userName: 'bob'
-				}
-				{
-					roleType: 'System'
-					roleKind: 'ACAS'
-					roleName: 'ROLE_ACAS-CROSS-PROJECT-LOADER'
-					userName: 'bob'
-				}
-				{
-					roleType: 'System'
-					roleKind: 'CmpdReg'
-					roleName: 'ROLE_CMPDREG-ADMINS'
-					userName: 'bob'
-				}
-				{
-					roleType: 'System'
-					roleKind: 'CmpdReg'
-					roleName: 'ROLE_CMPDREG-USERS'
-					userName: 'bob'
-				}
-				{
-					roleType: 'Project'
-					roleKind: globalProjectCode
-					roleName: 'User'
-					userName: 'bob'
-				}
-			]
-			json: true
-		request options, (error, response, body) ->
-			if error
-				throw new Error(error)
-				statusCode=500
-				hasError = true
-			else
-				if response.statusCode == 500
-					hasError = true
-				else
-					hasError = false
-				statusCode = response.statusCode
-			callback statusCode, {
-				hasError: hasError
-				messages: body
-			}
 
 exports.deleteGlobalProject = (req, resp) ->
 	exports.deleteGlobalProjectInternal (statusCode, output) ->
