@@ -1000,43 +1000,9 @@ exports.updateAuthorRolesInternal = (newAuthorRoles, authorRolesToDelete, user, 
 					#save new author roles
 					console.log "newAuthorRoles"
 					console.log newAuthorRoles
-					postAuthorRoles newAuthorRoles, (err) =>
+					saveAuthorRoles newAuthorRoles, (err) =>
 						if err?
 							callback err
 						else
 							console.log "post author roles success"
 							callback null, 'saved author roles successfully'
-
-deleteAuthorRoles = (authorRoles, callback) ->
-	baseurl = config.all.client.service.persistence.fullpath+"authorroles/deleteRoles"
-	request(
-		method: 'POST'
-		url: baseurl
-		body: authorRoles
-		json: true
-	, (error, response, json) =>
-		console.log response.statusCode
-		if !error && response.statusCode == 200
-			console.log "successfully deleted author roles"
-			#returns empty json
-			callback null
-		else
-			console.log 'got ajax error trying to delete author roles'
-			console.log error
-			callback "saveFailed for deleting author roles" + error
-	)
-
-postAuthorRoles = (authorRoles, callback) ->
-	baseurl = config.all.client.service.persistence.fullpath+"authorroles/saveRoles"
-	request(
-		method: 'POST'
-		url: baseurl
-		body: authorRoles
-		json: true
-	, (error, response, json) =>
-		if !error && response.statusCode == 201
-			#json is empty
-			callback null
-		else
-			callback "saveFailed posting new author roles"
-	)
