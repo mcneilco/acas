@@ -149,7 +149,7 @@ exports.deleteTestUserInternal = (username, callback) ->
 					messages: body
 				}
 
-add_project_roles = (projectNames, roles, username, callback) ->
+addProjectRoles = (projectNames, roles, username, callback) ->
 	if !projectNames?
 		projectNames = []
 	# Look up projects and translate names to codes
@@ -202,7 +202,7 @@ exports.giveTestUserRolesInternal = (username, acas_user, acas_admin, cmpdreg_us
 			roleName: 'ROLE_CMPDREG-ADMINS'
 			userName: username
 		}
-	add_project_roles projects, roles, username, (updated_roles) ->
+	addProjectRoles projects, roles, username, (updated_roles) ->
 		options =
 			method: 'POST'
 			url: "#{config.all.client.service.persistence.fullpath}authorroles/saveRoles"
