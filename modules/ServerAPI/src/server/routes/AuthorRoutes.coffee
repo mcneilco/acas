@@ -6,6 +6,7 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.delete '/api/authors/:id', exports.deleteAuthor
 	app.post '/api/author', exports.saveAuthor
 	app.put '/api/author/:id', exports.updateAuthor
+	app.post '/api/updateAuthorRoles', exports.updateAuthorRoles
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/authorByUsername/:username', loginRoutes.ensureAuthenticated, exports.getAuthorByUsername
@@ -17,6 +18,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.put '/api/author/:id', loginRoutes.ensureAuthenticated, exports.updateAuthor
 	app.get '/activateUser', exports.activateUserAndRedirectToChangePassword
 	app.get '/api/allowedProjects', loginRoutes.ensureAuthenticated, exports.allowedProjects
+	app.post '/api/updateAuthorRoles', loginRoutes.ensureAuthenticated, exports.updateAuthorRoles
 
 serverUtilityFunctions = require './ServerUtilityFunctions.js'
 _ = require 'underscore'
@@ -964,4 +966,78 @@ exports.signupNewAuthorInternal = (author, cb) ->
 			cb json, null
 		else
 			cb null, json
+	)
+
+exports.updateAuthorRoles = (req, resp) ->
+	if req.session?.passport?.user?
+		user = req.session.passport.user
+	else
+		user =
+			username: 'anonymous'
+			roles: []
+	exports.updateAuthorRolesInternal req.body.newAuthorRoles, req.body.authorRolesToDelete, user, (err, response) ->
+		if err?
+			resp.statusCode = 500
+			resp.json err
+		else
+			resp.json response
+
+exports.updateAuthorRolesInternal = (newAuthorRoles, authorRolesToDelete, user, callback) ->
+	_ = require '../public/lib/underscore.js'
+	checkUserCanCreateOrEditAuthor user, (err, userCanCreate) ->
+		if err?
+			callback err
+		else if !userCanCreate
+			console.error "ALERT: User #{user.username} attempted to create an author without having the proper roles."
+			callback 'You do not have permissions to create authors! This incident will be reported to your system administrator.'
+		else
+			#delete author roles
+			console.log "authorRolesToDelete"
+			console.log authorRolesToDelete
+			deleteAuthorRoles authorRolesToDelete, (err) =>
+				if err?
+					callback err
+				else
+					#save new author roles
+					console.log "newAuthorRoles"
+					console.log newAuthorRoles
+					postAuthorRoles newAuthorRoles, (err) =>
+						if err?
+							callback err
+						else
+							console.log "post author roles success"
+							callback null, 'saved author roles successfully'
+
+deleteAuthorRoles = (authorRoles, callback) ->
+	baseurl = config.all.client.service.persistence.fullpath+"authorroles/deleteRoles"
+	request(
+		method: 'POST'
+		url: baseurl
+		body: authorRoles
+		json: true
+	, (error, response, json) =>
+		console.log response.statusCode
+		if !error && response.statusCode == 200
+			console.log "successfully deleted author roles"
+			#returns empty json
+			callback null
+		else
+			console.log 'got ajax error trying to delete author roles'
+			console.log error
+			callback "saveFailed for deleting author roles" + error
+	)
+
+postAuthorRoles = (authorRoles, callback) ->
+	baseurl = config.all.client.service.persistence.fullpath+"authorroles/saveRoles"
+	request(
+		method: 'POST'
+		url: baseurl
+		body: authorRoles
+		json: true
+	, (error, response, json) =>
+		if !error && response.statusCode == 201
+			#json is empty
+			callback null
+		else
+			callback "saveFailed posting new author roles"
 	)
