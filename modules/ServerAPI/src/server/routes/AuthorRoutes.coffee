@@ -983,13 +983,12 @@ exports.updateAuthorRoles = (req, resp) ->
 			resp.json response
 
 exports.updateAuthorRolesInternal = (newAuthorRoles, authorRolesToDelete, user, callback) ->
-	_ = require '../public/lib/underscore.js'
 	checkUserCanCreateOrEditAuthor user, (err, userCanCreate) ->
 		if err?
 			callback err
 		else if !userCanCreate
-			console.error "ALERT: User #{user.username} attempted to create an author without having the proper roles."
-			callback 'You do not have permissions to create authors! This incident will be reported to your system administrator.'
+			console.error "ALERT: User #{user.username} attempted to change author roles without having the proper roles."
+			callback 'You do not have permissions to modify author roles! This incident will be reported to your system administrator.'
 		else
 			#delete author roles
 			console.log "authorRolesToDelete"

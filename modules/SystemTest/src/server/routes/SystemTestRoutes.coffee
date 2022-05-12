@@ -62,19 +62,14 @@ exports.createTestUserInternal = (username, password, callback) ->
 			]
 	# persist the new user
 	request options, (error, response, body) ->
+		statusCode = response.statusCode
 		if error
 			console.error response
-			statusCode=500
-			hasError = true
-			created = false
-		else
-			if response.statusCode == 500
-				hasError = true
-				created = false
-			else
-				hasError = false
-				created = true
-			statusCode = response.statusCode
+			statusCode = 500
+		hasError = true
+		created = false
+		hasError = response.statusCode == 500
+		created = !hasError
 		callback statusCode, {
 			hasError: hasError
 			messages: body[0]
