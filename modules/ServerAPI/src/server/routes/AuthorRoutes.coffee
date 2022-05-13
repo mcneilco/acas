@@ -660,53 +660,22 @@ exports.updateAuthorAndRolesInternal = (author, user, callback) ->
 												diffSystemRolesWithSaved author.userName, systemRoles, savedSystemRoles, ["id"], (err, roleDiff) ->
 													rolesToAdd = roleDiff.rolesToAdd
 													rolesToDelete = roleDiff.rolesToDelete
-													if rolesToAdd.length > 0 or rolesToDelete.length > 0
-														checkUserCanEditSystemRoles user, (err, userCanEditRoles) ->
-															if err?
-																callback err
-															else if !userCanEditRoles
-																console.error "ALERT: User #{user.username} attempted to edit system roles without having the proper authorities."
-																callback 'You do not have permissions to edit system roles! This incident will be reported to your system administrator.'
-															else
-																exports.syncRoles author, rolesToAdd, rolesToDelete, (err, updatedAuthor) ->
-																	if err?
-																		callback err
-																	else
-																		callback null, updatedAuthor
-													else
-														#roles have not changed, just update the author
-														exports.updateAuthorInternal author, (updatedAuthor, statusCode) ->
-															if statusCode != 200
-																callback updatedAuthor
-															else
-																#save successful. Fetch the new author and return.
-																exports.getAuthorByUsernameInternal author.userName, (response, statusCode) ->
-																	if statusCode != 200
-																		callback err
-																	else
-																		callback null, response
-
-exports.syncRoles = (author, rolesToAdd, rolesToDelete, callback) =>
-	exports.updateAuthorInternal author, (errorOrUpdatedAuthor, statusCode) =>
-		if statusCode != 200
-			callback errorOrUpdatedAuthor
-		else
-			saveAuthorRoles rolesToAdd, (err, savedRoles) ->
-				console.log err
-				console.log savedRoles
-				if err?
-					callback err
-				else
-					deleteAuthorRoles rolesToDelete, (err, deletedRoles) ->
-						if err?
-							callback err
-						else
-							#save successful. Fetch the new author and return.
-							exports.getAuthorByUsernameInternal author.userName, (response, statusCode) ->
-								if statusCode != 200
-									callback err
-								else
-									callback null, response
+													# Update the roles
+													exports.updateAuthorRolesInternal rolesToAdd, rolesToDelete, user, (err, response) ->
+														if err?
+															callback err
+														else
+															# Update the author
+															exports.updateAuthorInternal author, (updatedAuthor, statusCode) ->
+																if statusCode != 200
+																	callback updatedAuthor
+																else
+																	#save successful. Fetch the new author and return.
+																	exports.getAuthorByUsernameInternal author.userName, (response, statusCode) ->
+																		if statusCode != 200
+																			callback err
+																		else
+																			callback null, response
 
 validateAuthorAttributes = (author, callback) ->
 	# Returns a list of attributes missing on the author object
@@ -982,27 +951,31 @@ exports.updateAuthorRoles = (req, resp) ->
 		else
 			resp.json response
 
+# Confirm user has proper roles, then add & delete author roles
 exports.updateAuthorRolesInternal = (newAuthorRoles, authorRolesToDelete, user, callback) ->
-	checkUserCanCreateOrEditAuthor user, (err, userCanCreate) ->
-		if err?
-			callback err
-		else if !userCanCreate
-			console.error "ALERT: User #{user.username} attempted to change author roles without having the proper roles."
-			callback 'You do not have permissions to modify author roles! This incident will be reported to your system administrator.'
-		else
-			#delete author roles
-			console.log "authorRolesToDelete"
-			console.log authorRolesToDelete
-			deleteAuthorRoles authorRolesToDelete, (err) =>
-				if err?
-					callback err
-				else
-					#save new author roles
-					console.log "newAuthorRoles"
-					console.log newAuthorRoles
-					saveAuthorRoles newAuthorRoles, (err) =>
-						if err?
-							callback err
-						else
-							console.log "post author roles success"
-							callback null, 'saved author roles successfully'
+	if newAuthorRoles.length == 0 and authorRolesToDelete.length == 0
+		callback null, 'no roles to add or delete'
+	else
+		checkUserCanEditSystemRoles user, (err, userCanEditRoles) ->
+			if err?
+				callback err
+			else if !userCanEditRoles
+				console.error "ALERT: User #{user.username} attempted to change author roles without having the proper roles."
+				callback 'You do not have permissions to modify author roles! This incident will be reported to your system administrator.'
+			else
+				#delete author roles
+				console.log "authorRolesToDelete"
+				console.log authorRolesToDelete
+				deleteAuthorRoles authorRolesToDelete, (err) =>
+					if err?
+						callback err
+					else
+						#save new author roles
+						console.log "newAuthorRoles"
+						console.log newAuthorRoles
+						saveAuthorRoles newAuthorRoles, (err) =>
+							if err?
+								callback err
+							else
+								console.log "post author roles success"
+								callback null, 'saved author roles successfully'
