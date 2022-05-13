@@ -2908,6 +2908,214 @@ splitOnSemicolon <- function(x) {
   # splits a semicolon delimited list
   unlist(trim(strsplit(x, ";")))
 }
+getFitDataFromUploadOrganizedResults <- function(calculatedResults) {
+  curve_params <- as.data.table(calculatedResults)
+  saveSession("/tmp/org")
+  #TODO get curve display min and curve display max from protocol if it exists
+  curve_params$curvedisplaymin <- 0
+  curve_params$curvedisplaymax <- 100
+
+  dt <- curve_params[ ,  {
+    #   modelFit <- get_model_fit_from_type_code(renderingHint)
+
+    me <<- copy(.SD)
+    # .SD <- copy(me)
+    modelFit <- ll4
+    storedFields <- modelFit$typeMap[!is.na(lsType)]
+    usedTypes <- unique(storedFields$lsType)
+    dt <- dcast.data.table(.SD, "stateGroupIndex~valueKind", value.var = usedTypes)
+    dt[ , which(sapply(dt, function(x) all(is.na(x)))) := NULL]
+    columnHeaders <- paste(storedFields$lsType, storedFields$ls_kind, sep = "_")
+    replaceIndexes <- na.omit(match(names(dt), columnHeaders))
+    from <- na.omit(match(columnHeaders, names(dt)))
+    setnames(dt, columnHeaders[replaceIndexes], storedFields$name[replaceIndexes])
+    dt[ , modelFit := list(list(modelFit))]
+
+    # Determine which are the parameters so we can override reported values with the fitted values
+    fittedKinds <- paste("Fitted",storedFields[match(modelFit$paramNames, storedFields$name),]$ls_kind)
+    paramOverrideColumns <- storedFields[match(fittedKinds, storedFields$ls_kind),]$name
+    fixedParams <- list()
+    for(p in 1:length(modelFit$paramNames)) {
+        if(paramOverrideColumns[p] %in% names(dt)) {
+            fixedParams[modelFit$paramNames[p]] <- dt[,paramOverrideColumns[p], with = FALSE]
+        } else if (modelFit$paramNames[p] %in% names(dt)) {
+            fixedParams[modelFit$paramNames[p]] <- dt[,modelFit$paramNames[p], with = FALSE]
+        }
+    }
+    dt[ , fixedParams := list(fixedParams)]
+    dt[ , rowID := rowID]
+    dt[ , batchCode := batchCode]
+    list(list(dt))
+  }, by = c("rowID", "batchCode")]
+
+  parameters <- rbindlist(dt$V1, fill = TRUE)
+
+  parameters[ , name := curveId]
+  parameters[ , curveId := NULL]
+  setnames(parameters, "rowID", "curveId")
+  parameters[, model.synced := FALSE]
+  parameters$recordedDate <- date()
+  return(parameters)
+}
+subjectDataToDoseResponsePoints <- function(subjectData, modelFitTransformation) {
+  
+  subjectData <- as.data.table(subjectData)
+  subjectData[ , concentration := as.numeric(concentration)]
+  keepColumns <- c("linkID", "rowID", "valueKind", "numericValue", "valueUnit", "concentration", "concUnit")
+  dt1 <- subjectData[valueKind == modelFitTransformation, keepColumns, with = FALSE]
+  setnames(dt1, keepColumns, c("curveId", "rowID", "responseKind", "response", "responseUnits", "dose", "doseUnits"))
+
+  dt2 <- subjectData[stateKind == 'preprocess flag' & valueType == "codeValue", c("linkID", "valueKind", "codeValue", "rowID"), with = FALSE]
+  dt2 <- dcast.data.table(dt2, "linkID+rowID ~ valueKind", value.var = "codeValue")    
+  setnames(dt2, c("linkID", "flag cause", "flag observation", "flag status"), c("curveId", "preprocessFlagCause", "preprocessFlagObservation", "preprocessFlagStatus"))
+
+  dt3 <- subjectData[stateKind == 'preprocess flag' & valueKind == "comment", c("linkID", "rowID", "stringValue"), with = FALSE]
+  setnames(dt3, c("curveId", "rowID", "prepreprocessFlagComment"))
+
+  setkey(dt1, "rowID")
+  setkey(dt2, "rowID")
+  setkey(dt3, "rowID")
+  points <- merge.data.table(dt1, dt2, by = c("curveId","rowID"), all = TRUE)
+
+  # Fill missing flags with "" as its needed in in curve fit functions
+  unique_dt2_names <- setdiff(names(dt2), names(dt1))
+  for (col in unique_dt2_names) points[is.na(get(col)), (col) := ""]
+
+  #columns in df2 not in df1
+  unique_dt3_names <- setdiff(names(dt3), names(points))
+  points <- merge.data.table(points, dt3, by = c("curveId","rowID"), all = TRUE)
+
+  for (col in unique_dt3_names) points[is.na(get(col)), (col) := ""]
+
+  setnames(points, "rowID", "responseSubjectValueId")
+  points[ , c("algorithmFlagCause", "userFlagCause", "algorithmFlagObservation", "userFlagObservation", "algorithmFlagStatus", "userFlagStatus", "algorithmFlagComment", "preprocessFlagComment", "userFlagComment") := ""]
+  points[ ,tempFlagStatus := ""]
+  points[ , flagchanged := FALSE]
+ 
+  return(points)
+}
+validateDoseResponseData <- function(calculatedResults, subjectData, mainCode, modelFitTransformation) {
+    saveSession('/tmp/val')
+    fitsData <- getFitDataFromUploadOrganizedResults(calculatedResults)
+
+    # Get raw results from subjectData
+    # modelFitTransformation <- "efficacy"
+    allPoints <- subjectDataToDoseResponsePoints(subjectData, modelFitTransformation)
+
+    # Joint the results
+    allPoints <- allPoints[ , list(list(.SD)), .SDcols = 1:ncol(allPoints), keyby = "curveId"]
+    setnames(allPoints, "V1", "points")
+
+    setkey(fitsData, "curveId")
+    setkey(allPoints, "curveId")
+    fitData <- fitsData[allPoints]
+
+    fitData[ ,  c("SSE", "SSR", "SST", "TR") := {
+        curveXrn <- c(NA, NA)
+        fitData <- copy(.SD)
+        fitData[ , curveId := curveId]
+
+        plot_limits <- get_plot_window(points[[1]], logDose = TRUE)
+        xrn <- plot_limits[c(1,3)]
+        yrn <- plot_limits[c(4,2)]
+        if(is.na(curveXrn[1])) {
+            curveXrn[1] <- xrn[1]
+        }
+        if(length(curveXrn) == 1 | is.na(curveXrn[2])) {
+            curveXrn[2] <- xrn[2]
+        }
+        tmp <- as.data.frame(fixedParams[[1]])
+
+        parsedParams <- racas::parse_params_curve_render_dr(list(curveIds=as.character(curveId)), NA)
+        plotLog <- "x"
+        for(i in 1:ncol(tmp)) {
+            assign(names(tmp)[i], tmp[,i])
+        }
+        fct <- eval(parse(text=paste0('function(x) ', LL4)))
+
+        # TODO: make sure we ignore flagged points here
+        yValuesAlongFittedData <- getCurveRangeData(fct, from = curveXrn[1], to = curveXrn[2], log = plotLog, n = nrow(points[[1]]))
+        SSE <- sum((fct(points[[1]]$dose) - points[[1]]$response)^2)
+        SSR <- sum((fct(points[[1]]$dose) - mean(points[[1]]$response))^2)
+        SST <- SSR + SSE
+        R2 <- SSR/SST
+
+        ## PREP FROM RENDER CURVE
+        # Colors
+        # plotColors <- c("black", "#0C5BB0FF", "#EE0011FF", "#15983DFF", "#EC579AFF", "#FA6B09FF", 
+        #                 "#149BEDFF", "#A1C720FF", "#FEC10BFF", "#16A08CFF", "#9A703EFF")
+        if(!is.null(racas::applicationSettings$server.curveRender.plotColors)) {
+            plotColors <- trimws(strsplit(racas::applicationSettings$server.curveRender.plotColors,",")[[1]])
+        } else {
+            plotColors <- c("black", "#0C5BB0FF", "#EE0011FF", "#15983DFF", "#EC579AFF", "#FA6B09FF", 
+                            "#149BEDFF", "#A1C720FF", "#FEC10BFF", "#16A08CFF", "#9A703EFF")
+        }
+        if(!is.na(parsedParams$colorBy)) {
+            key <- switch(parsedParams$colorBy,
+                        "protocol" = "protocol_label",
+                        "experiment" = "experiment_label",
+                        "batch" = "batch_code"
+            )
+            uniqueKeys <- setkeyv(unique(fitData[ , key, with = FALSE]), key)
+            colorCategories <- uniqueKeys[, color:=rep(plotColors, length.out = .N)][ , name:=get(key)]
+            fitData <- merge(fitData, colorCategories, by = key)
+        }
+
+        # fitData <- fitData[exists("category") & (!is.null(category) & category %in% c("inactive","potent")), c("fittedMax", "fittedMin") := {
+        #     responseMean <- mean(points[[1]][userFlagStatus!="knocked out" & preprocessFlagStatus!="knocked out" & algorithmFlagStatus!="knocked out" & tempFlagStatus!="knocked out",]$response)
+        #     list("fittedMax" = responseMean, "fittedMin" = responseMean)
+        # }, by = curveId]
+        fitData[ , renderingOptions := list(list(get_rendering_hint_options(renderingHint))), by = renderingHint]
+
+
+        data <- list(parameters = as.data.frame(fitData), points = as.data.frame(rbindlist(fitData$points)))
+
+        if(!is.na(parsedParams$logDose)) {
+            logDose <- parsedParams$logDose
+        } else {
+            logDose <- TRUE
+            if(fitData[1]$renderingHint %in% c("Michaelis-Menten", "Substrate Inhibition", "Scatter", "Scatter Log-y")) logDose <- FALSE
+        }
+        if(!is.na(parsedParams$logResponse)) {
+            logResponse <- parsedParams$logResponse
+        } else {
+            logResponse <- FALSE
+            if(fitData[1]$renderingHint %in% c("Scatter Log-y","Scatter Log-x,y")) logResponse <- TRUE
+        }
+        t <- tempfile()
+        plotCurve(curveData = data$points, params = data$parameters, drawCurve = TRUE, logDose = logDose, logResponse = logResponse, outFile = t, ymin=parsedParams$yMin, ymax=parsedParams$yMax, xmin=parsedParams$xMin, xmax=parsedParams$xMax, height=parsedParams$height, width=parsedParams$width, showGrid = parsedParams$showGrid, showAxes = parsedParams$showAxes, labelAxes = parsedParams$labelAxes, showLegend=parsedParams$legend, mostRecentCurveColor = parsedParams$mostRecentCurveColor, axes = parsedParams$axes, plotColors = parsedParams$plotColors, curveLwd=parsedParams$curveLwd, plotPoints=parsedParams$plotPoints, xlabel = parsedParams$xLab, ylabel = parsedParams$yLab)
+        IMG <- base64Encode(readBin(t, "raw", file.info(t)[1, "size"]), "txt")
+        # html <- sprintf('<html><body><img src="data:image/png;base64,%s"></body></html>', IMG)
+        # cat(html, file = tf2 <- tempfile(fileext = ".html"))
+        # browseURL(tf2)
+
+        TR <- "<tr>"
+        TR <- paste0(TR,sprintf('<td>%s</td>', batchCode))
+        TR <- paste0(TR,sprintf('<td><img src="data:image/png;base64,%s"></td>', IMG))
+        for(stat in c(SSE, SSR, SST, R2)) {
+            TR <- paste0(TR,sprintf('<td>%s</td>', format(stat, digits=3)))
+        }
+        TR <- paste0(TR,"</tr>" )
+        list(SSE, SSR, SST, TR)
+    }, by = c("curveId", "batchCode")]
+
+    table <- '<h4>Dose Response Summary</h4><table class="table table-bordered table-striped table-hover" >'
+    thead <- "<thead>"
+    tr <- "<tr>"
+    for(stat in columnNames <- c(mainCode, "Curve", "SSE", "SSR", "SST", "R2")) {
+        tr <- paste0(tr,sprintf('<th>%s</th>', stat))
+    }
+    thead <- paste0(thead,tr)
+    thead <- paste0(thead,"</thead>" )
+    table <- paste0(table,thead)
+    tbody <- "<tbody>"
+    trs <- paste0(fitData$TR, collapse = "")
+    tbody <- paste0(tbody,trs)
+    tbody <- paste0(tbody,"</tbody>" )
+    table <- paste0(table,tbody)
+    table <- paste0(table,"</table>" )
+    return(table)
+}
 runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
                     lsTranscationComments=NULL, dryRun, developmentMode = FALSE, testOutputLocation="./JSONoutput.json",
                     configList, testMode = FALSE, recordedBy, imagesFile = NULL, errorEnv = NULL) {
@@ -3055,6 +3263,14 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   treatmentGroupData <- subjectAndTreatmentData$treatmentGroupData
   modelFitTransformation <- subjectAndTreatmentData$modelFitTransformation
   validateSubjectData(subjectData, dryRun)
+
+  # Validate Dose Response Data
+  if (inputFormat == "Dose Response") {
+    doseResponseHtmlSummary <- validateDoseResponseData(calculatedResults, subjectData, mainCode,modelFitTransformation)
+  } else {
+    doseResponseHtmlSummary <- NULL
+  }
+  saveSession('/tmp/ss')
   
   # If there are errors, do not allow an upload
   errorFree <- length(messenger()$errors)==0
@@ -3227,6 +3443,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     }
   }
   summaryInfo$experimentEntity <- experiment
+  summaryInfo$doseResponseHtmlSummary <- doseResponseHtmlSummary
   
   summaryInfo$info <- summaryInfo$info[lapply(summaryInfo$info,length)>0]
   return(summaryInfo)
@@ -3393,11 +3610,16 @@ parseGenericData <- function(request) {
   # Create the HTML to display
   htmlSummary <- createHtmlSummary(hasError, allTextErrors, hasWarning, warningList, 
                                    summaryInfo=loadResult$value, dryRun)
-  
+
   if(!dryRun) {
     htmlSummary <- saveAnalysisResults(experiment=experiment, hasError, htmlSummary, loadResult$value$lsTransactionId)
   }
-  
+  # # We don't want to save the dose response html as it can be pretty large so we append it to the html summary
+  # # after save
+  if(!is.null(loadResult$value) && !is.null(loadResult$value$doseResponseHtmlSummary)) {
+    htmlSummary<- paste0(htmlSummary, loadResult$value$doseResponseHtmlSummary)
+  }
+
   # Return the output structure
   response <- list(
     commit= (!dryRun & !hasError),
