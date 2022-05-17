@@ -40,10 +40,13 @@ renderCurve <- function(getParams, postData) {
     fitData <- merge(fitData, colorCategories, by = key)
   }
   
-  fitData <- fitData[exists("category") & (!is.null(category) & category %in% c("inactive","potent")), c("fittedMax", "fittedMin") := {
-    responseMean <- mean(points[[1]][userFlagStatus!="knocked out" & preprocessFlagStatus!="knocked out" & algorithmFlagStatus!="knocked out" & tempFlagStatus!="knocked out",]$response)
-    list("fittedMax" = responseMean, "fittedMin" = responseMean)
-  }, by = curveId]
+  if("category" %in% names(fitData)) {
+    fitData <- fitData[exists("category") & (!is.null(category) & category %in% c("inactive","potent")), c("fittedMax", "fittedMin") := {
+      responseMean <- mean(points[[1]][userFlagStatus!="knocked out" & preprocessFlagStatus!="knocked out" & algorithmFlagStatus!="knocked out" & tempFlagStatus!="knocked out",]$response)
+      list("fittedMax" = responseMean, "fittedMin" = responseMean)
+    }, by = curveId]
+  }
+
 
   fitData[ , renderingOptions := list(list(get_rendering_hint_options(renderingHint))), by = renderingHint]
 
