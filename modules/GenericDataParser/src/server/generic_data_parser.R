@@ -2910,37 +2910,64 @@ splitOnSemicolon <- function(x) {
 }
 getFitDataFromUploadOrganizedResults <- function(calculatedResults) {
   curve_params <- as.data.table(calculatedResults)
-  saveSession("/tmp/org")
   #TODO get curve display min and curve display max from protocol if it exists
   curve_params$curvedisplaymin <- 0
   curve_params$curvedisplaymax <- 100
-
   dt <- curve_params[ ,  {
-    #   modelFit <- get_model_fit_from_type_code(renderingHint)
+    # Get the rendering hint value for the curve set
+    renderingHint <- .SD[valueKind == "Rendering Hint"]$stringValue
 
-    me <<- copy(.SD)
-    # .SD <- copy(me)
-    modelFit <- ll4
+    # Get the model fit function mappings for the rendering hint
+    modelFit <- get_model_fit_from_type_code(renderingHint)
+
+    # Get the fields that we actually store in the database this map stores more than just the stored value fields
     storedFields <- modelFit$typeMap[!is.na(lsType)]
     usedTypes <- unique(storedFields$lsType)
+
+    # Pivot the long skinny .SD data.table into a wide format using the usedType and by value kind
+    # This produces a single row data.table with columns like "numericValue_EC50" and "stringValue_EC50" for each
+    # of the "usedTypes" and "valueKind"
     dt <- dcast.data.table(.SD, "stateGroupIndex~valueKind", value.var = usedTypes)
+    
+    # We want to remove columns with NA values leaving only the columns that the user actually supplied
     dt[ , which(sapply(dt, function(x) all(is.na(x)))) := NULL]
+
+    # Now we want to replace all the lsKind name headers with the "name" values from the modelFit
+    # e.g. "EC50" -> "ec50" and "Fitted Slope" -> "fittedSlope"
+    # The curve renderer expects the names to match those values in the function like
+    # LL4 Function = "min + (max - min)/(1 + exp(slope * (log(x/ec50))))"
     columnHeaders <- paste(storedFields$lsType, storedFields$ls_kind, sep = "_")
     replaceIndexes <- na.omit(match(names(dt), columnHeaders))
     from <- na.omit(match(columnHeaders, names(dt)))
     setnames(dt, columnHeaders[replaceIndexes], storedFields$name[replaceIndexes])
+
+    # Attached the model fit as a column to the row for use later on
     dt[ , modelFit := list(list(modelFit))]
 
     # Determine which are the parameters so we can override reported values with the fitted values
-    fittedKinds <- paste("Fitted",storedFields[match(modelFit$paramNames, storedFields$name),]$ls_kind)
-    paramOverrideColumns <- storedFields[match(fittedKinds, storedFields$ls_kind),]$name
-    fixedParams <- list()
-    for(p in 1:length(modelFit$paramNames)) {
-        if(paramOverrideColumns[p] %in% names(dt)) {
-            fixedParams[modelFit$paramNames[p]] <- dt[,paramOverrideColumns[p], with = FALSE]
-        } else if (modelFit$paramNames[p] %in% names(dt)) {
-            fixedParams[modelFit$paramNames[p]] <- dt[,modelFit$paramNames[p], with = FALSE]
-        }
+    if(length(modelFit$paramNames) > 0) {
+      # If this rendering hint uses a model fct (most do but e.g. Scatter does not)
+      # We need to get the list of paramters to actually draw which can be overriden by providing "fitted" values
+      # If a user does not provide all of the required parameters for drawing a curve then we should warn them
+      reportedParamLsKinds <- storedFields[match(modelFit$paramNames, storedFields$name),]$ls_kind
+      fittedParamLsKinds <- paste("Fitted",storedFields[match(modelFit$paramNames, storedFields$name),]$ls_kind)
+      paramOverrideColumns <- storedFields[match(fittedParamLsKinds, storedFields$ls_kind),]$name
+      fixedParams <- list()
+      missing <- c()
+      for(p in 1:length(modelFit$paramNames)) {
+          if(paramOverrideColumns[p] %in% names(dt)) {
+              fixedParams[modelFit$paramNames[p]] <- dt[,paramOverrideColumns[p], with = FALSE]
+          } else if (modelFit$paramNames[p] %in% names(dt)) {
+              fixedParams[modelFit$paramNames[p]] <- dt[,modelFit$paramNames[p], with = FALSE]
+          } else {
+              missing <- c(missing, p)
+          }
+      }
+      if(length(missing) > 0) {
+          warnUser(paste0("The following parameters were not found for curve id '", dt$curveId, "'.  Please provide values for these parameters so that curves are drawn properly: ", paste(reportedParamLsKinds[missing], collapse = ", ")))
+      }
+    } else {
+      fixedParams <- list()
     }
     dt[ , fixedParams := list(fixedParams)]
     dt[ , rowID := rowID]
@@ -2948,17 +2975,25 @@ getFitDataFromUploadOrganizedResults <- function(calculatedResults) {
     list(list(dt))
   }, by = c("rowID", "batchCode")]
 
+  # Combine all results into a big data.table as this is whats expected by the curve renderer
   parameters <- rbindlist(dt$V1, fill = TRUE)
 
+  # Set the curveId column (as the name so that it shows up in plot legends)
+  # The curve renderer preferrentially sets the legend to the name if provided
   parameters[ , name := curveId]
+
+  # Set the curveId to the row ID as that is what we match the raw data to later on
   parameters[ , curveId := NULL]
   setnames(parameters, "rowID", "curveId")
+  
+  # The model.synced column is not necessarily used by the curve renderer but we need set it here
+  # but it is required if we want to fit this data as part of validation so we just set it here now.
   parameters[, model.synced := FALSE]
   parameters$recordedDate <- date()
   return(parameters)
 }
 subjectDataToDoseResponsePoints <- function(subjectData, modelFitTransformation) {
-  
+  # This function pivots long skinny data formatted for upload into the format requried by the curve renderer
   subjectData <- as.data.table(subjectData)
   subjectData[ , concentration := as.numeric(concentration)]
   keepColumns <- c("linkID", "rowID", "valueKind", "numericValue", "valueUnit", "concentration", "concUnit")
@@ -2994,52 +3029,54 @@ subjectDataToDoseResponsePoints <- function(subjectData, modelFitTransformation)
  
   return(points)
 }
+
 validateDoseResponseData <- function(calculatedResults, subjectData, mainCode, modelFitTransformation) {
-    saveSession('/tmp/val')
+
+    # Organize the data into a data.table as its native to the way curve rendering works
     fitsData <- getFitDataFromUploadOrganizedResults(calculatedResults)
 
-    # Get raw results from subjectData
-    # modelFitTransformation <- "efficacy"
+    # Group all of the point data by curve id so we can attach it to the data table for rendering
     allPoints <- subjectDataToDoseResponsePoints(subjectData, modelFitTransformation)
 
-    # Joint the results
+    # Join the calculated results and the points together
     allPoints <- allPoints[ , list(list(.SD)), .SDcols = 1:ncol(allPoints), keyby = "curveId"]
     setnames(allPoints, "V1", "points")
-
     setkey(fitsData, "curveId")
     setkey(allPoints, "curveId")
     fitData <- fitsData[allPoints]
 
-    fitData[ ,  c("SSE", "SSR", "SST", "TR") := {
-        curveXrn <- c(NA, NA)
+    # Now that the data is organized for the curve renderer
+    # Loop through the dataset by curve id and batch code
+    # and validate each curve fit against the data
+    fitData[ ,  c("SSE", "SST", "SSR", "R2", "TR") := {
         fitData <- copy(.SD)
         fitData[ , curveId := curveId]
+        defaultRenderingParams <- list(curveIds=as.character(curveId), width = 400, height = 250)
+        parsedParams <- racas::parse_params_curve_render_dr(defaultRenderingParams, NA)
+        renderingOptions <- get_rendering_hint_options(renderingHint)    
+        fitData[ , renderingOptions := list(list(renderingOptions)), by = renderingHint]
 
-        plot_limits <- get_plot_window(points[[1]], logDose = TRUE)
-        xrn <- plot_limits[c(1,3)]
-        yrn <- plot_limits[c(4,2)]
-        if(is.na(curveXrn[1])) {
-            curveXrn[1] <- xrn[1]
+        # Calculate the goodness of fit parameters using the 
+        # curve fit function and fixed parameters the user has provided
+        SSE <- NA
+        SSR <- NA
+        SST <- NA
+        R2 <- NA
+        if(!is.na(renderingOptions$fct)) {
+          tmp <- as.data.frame(fixedParams[[1]])
+          fct <- eval(parse(text=paste0('function(x) ', renderingOptions$fct)))
+          plotLog <- "x"
+          for(i in 1:ncol(tmp)) {
+              assign(names(tmp)[i], tmp[,i])
+          }
+          goodPoints <- filterFlaggedPoints(points[[1]], returnGood = TRUE)
+          SSE <- sum((fct(goodPoints$dose) - goodPoints$response)^2)
+          SSR <- sum((fct(goodPoints$dose) - mean(goodPoints$response))^2)
+          SST <- SSR + SSE
+          R2 <- SSR/SST
         }
-        if(length(curveXrn) == 1 | is.na(curveXrn[2])) {
-            curveXrn[2] <- xrn[2]
-        }
-        tmp <- as.data.frame(fixedParams[[1]])
 
-        parsedParams <- racas::parse_params_curve_render_dr(list(curveIds=as.character(curveId)), NA)
-        plotLog <- "x"
-        for(i in 1:ncol(tmp)) {
-            assign(names(tmp)[i], tmp[,i])
-        }
-        fct <- eval(parse(text=paste0('function(x) ', LL4)))
-
-        # TODO: make sure we ignore flagged points here
-        yValuesAlongFittedData <- getCurveRangeData(fct, from = curveXrn[1], to = curveXrn[2], log = plotLog, n = nrow(points[[1]]))
-        SSE <- sum((fct(points[[1]]$dose) - points[[1]]$response)^2)
-        SSR <- sum((fct(points[[1]]$dose) - mean(points[[1]]$response))^2)
-        SST <- SSR + SSE
-        R2 <- SSR/SST
-
+        ## START REFACTOR THIS - this was all lifted directly from renderCurve.R - need to make this into a function or set of functiions to refactor
         ## PREP FROM RENDER CURVE
         # Colors
         # plotColors <- c("black", "#0C5BB0FF", "#EE0011FF", "#15983DFF", "#EC579AFF", "#FA6B09FF", 
@@ -3061,13 +3098,12 @@ validateDoseResponseData <- function(calculatedResults, subjectData, mainCode, m
             fitData <- merge(fitData, colorCategories, by = key)
         }
 
-        # fitData <- fitData[exists("category") & (!is.null(category) & category %in% c("inactive","potent")), c("fittedMax", "fittedMin") := {
-        #     responseMean <- mean(points[[1]][userFlagStatus!="knocked out" & preprocessFlagStatus!="knocked out" & algorithmFlagStatus!="knocked out" & tempFlagStatus!="knocked out",]$response)
-        #     list("fittedMax" = responseMean, "fittedMin" = responseMean)
-        # }, by = curveId]
-        fitData[ , renderingOptions := list(list(get_rendering_hint_options(renderingHint))), by = renderingHint]
-
-
+        if("category" %in% names(fitData)) {
+          fitData <- fitData[exists("category") & (!is.null(category) & category %in% c("inactive","potent")), c("fittedMax", "fittedMin") := {
+            responseMean <- mean(points[[1]][userFlagStatus!="knocked out" & preprocessFlagStatus!="knocked out" & algorithmFlagStatus!="knocked out" & tempFlagStatus!="knocked out",]$response)
+            list("fittedMax" = responseMean, "fittedMin" = responseMean)
+          }, by = curveId]
+        }
         data <- list(parameters = as.data.frame(fitData), points = as.data.frame(rbindlist(fitData$points)))
 
         if(!is.na(parsedParams$logDose)) {
@@ -3082,27 +3118,50 @@ validateDoseResponseData <- function(calculatedResults, subjectData, mainCode, m
             logResponse <- FALSE
             if(fitData[1]$renderingHint %in% c("Scatter Log-y","Scatter Log-x,y")) logResponse <- TRUE
         }
-        t <- tempfile()
-        plotCurve(curveData = data$points, params = data$parameters, drawCurve = TRUE, logDose = logDose, logResponse = logResponse, outFile = t, ymin=parsedParams$yMin, ymax=parsedParams$yMax, xmin=parsedParams$xMin, xmax=parsedParams$xMax, height=parsedParams$height, width=parsedParams$width, showGrid = parsedParams$showGrid, showAxes = parsedParams$showAxes, labelAxes = parsedParams$labelAxes, showLegend=parsedParams$legend, mostRecentCurveColor = parsedParams$mostRecentCurveColor, axes = parsedParams$axes, plotColors = parsedParams$plotColors, curveLwd=parsedParams$curveLwd, plotPoints=parsedParams$plotPoints, xlabel = parsedParams$xLab, ylabel = parsedParams$yLab)
-        IMG <- base64Encode(readBin(t, "raw", file.info(t)[1, "size"]), "txt")
-        # html <- sprintf('<html><body><img src="data:image/png;base64,%s"></body></html>', IMG)
-        # cat(html, file = tf2 <- tempfile(fileext = ".html"))
-        # browseURL(tf2)
+        ## END REFACTOR THIS
 
-        TR <- "<tr>"
-        TR <- paste0(TR,sprintf('<td>%s</td>', batchCode))
-        TR <- paste0(TR,sprintf('<td><img src="data:image/png;base64,%s"></td>', IMG))
-        for(stat in c(SSE, SSR, SST, R2)) {
-            TR <- paste0(TR,sprintf('<td>%s</td>', format(stat, digits=3)))
+        t <- tempfile()
+        suppressWarnings(plotCurve(curveData = data$points, params = data$parameters, drawCurve = TRUE, logDose = logDose, logResponse = logResponse, outFile = t, ymin=parsedParams$yMin, ymax=parsedParams$yMax, xmin=parsedParams$xMin, xmax=parsedParams$xMax, height=parsedParams$height, width=parsedParams$width, showGrid = parsedParams$showGrid, showAxes = parsedParams$showAxes, labelAxes = parsedParams$labelAxes, showLegend=parsedParams$legend, mostRecentCurveColor = parsedParams$mostRecentCurveColor, axes = parsedParams$axes, plotColors = parsedParams$plotColors, curveLwd=parsedParams$curveLwd, plotPoints=parsedParams$plotPoints, xlabel = parsedParams$xLab, ylabel = parsedParams$yLab))
+        imgTxt <- base64Encode(readBin(t, "raw", file.info(t)[1, "size"]), "txt")
+        unlink(t)
+        tr <- ''
+        tr <- paste0(tr,sprintf('<td>%s</td>', batchCode))
+        tr <- paste0(tr,sprintf('<td>%s</td>', fitData$name))
+        tr <- paste0(tr,sprintf('<td><img src="data:image/png;base64,%s"></td>', imgTxt))
+        styleClass = ""
+        for(stat in c("SSE", "SST", "R2")) {
+            statValue <- get(stat)
+            statValueText <- format(statValue, digits=3)
+            if(!is.null(renderingOptions$goodnessOfFit)) {
+                if(stat %in% names(renderingOptions$goodnessOfFit)) {
+                    for(class in names(renderingOptions$goodnessOfFit[[stat]])) {
+                        range <- renderingOptions$goodnessOfFit[[stat]][[class]]
+                        if(is.na(statValue) || statValue >= range$min && statValue <= range$max) {
+                            styleClass <- class
+                            if(!is.na(statValue)) {
+                              if(stat == "R2") {
+                                statName <- "R&#178;"
+                              } else {
+                                statName <- stat
+                              }
+                              warnUser(paste0("The curve stat ", statName, " for curve id '", name, "' is ", statValueText, " which is within the ", class," range for goodness of fit."))
+                            }
+                        }
+                    }
+                }
+            }
+            tr <- paste0(tr,sprintf('<td class="%s">%s</td>', styleClass, statValueText))
         }
-        TR <- paste0(TR,"</tr>" )
-        list(SSE, SSR, SST, TR)
+        tr <- paste0(sprintf('<tr class="%s">', styleClass), tr)
+        tr <- paste0(tr,"</tr>" )
+        list(SSE, SST, SSR, R2, tr)
     }, by = c("curveId", "batchCode")]
 
-    table <- '<h4>Dose Response Summary</h4><table class="table table-bordered table-striped table-hover" >'
+    table <- '<h4>Dose Response Summary</h4><table class="table table-bordered" >'
     thead <- "<thead>"
     tr <- "<tr>"
-    for(stat in columnNames <- c(mainCode, "Curve", "SSE", "SSR", "SST", "R2")) {
+    # for(stat in columnNames <- c(mainCode, "curve id", "Curve", "SSE", "SSR", "SST", "R2")) {
+    for(stat in columnNames <- c(mainCode, "curve id", "Curve", "SSE", "SST", "R&#178;")) {
         tr <- paste0(tr,sprintf('<th>%s</th>', stat))
     }
     thead <- paste0(thead,tr)
@@ -3265,12 +3324,14 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   validateSubjectData(subjectData, dryRun)
 
   # Validate Dose Response Data
+  doseResponseHtmlSummary <- NULL
   if (inputFormat == "Dose Response") {
-    doseResponseHtmlSummary <- validateDoseResponseData(calculatedResults, subjectData, mainCode,modelFitTransformation)
-  } else {
-    doseResponseHtmlSummary <- NULL
+    tryCatch({
+      doseResponseHtmlSummary <- validateDoseResponseData(calculatedResults, subjectData, mainCode,modelFitTransformation)
+    }, error = function(e) {
+      addError(paste0("Caught an error trying to validate dose response data. Please contact your administrator.: ", e$message))
+    })
   }
-  saveSession('/tmp/ss')
   
   # If there are errors, do not allow an upload
   errorFree <- length(messenger()$errors)==0
