@@ -2910,9 +2910,7 @@ splitOnSemicolon <- function(x) {
 }
 getFitDataFromUploadOrganizedResults <- function(calculatedResults) {
   curve_params <- as.data.table(calculatedResults)
-  #TODO get curve display min and curve display max from protocol if it exists
-  curve_params$curvedisplaymin <- 0
-  curve_params$curvedisplaymax <- 100
+
   dt <- curve_params[ ,  {
     # Get the rendering hint value for the curve set
     renderingHint <- .SD[valueKind == "Rendering Hint"]$stringValue
@@ -3030,7 +3028,19 @@ subjectDataToDoseResponsePoints <- function(subjectData, modelFitTransformation)
   return(points)
 }
 
-validateDoseResponseData <- function(calculatedResults, subjectData, mainCode, modelFitTransformation) {
+validateDoseResponseData <- function(calculatedResults, subjectData, mainCode, modelFitTransformation, protocol) {
+    metadataState <- getStatesByTypeAndKind(protocol, "metadata_screening assay")
+    protocolDisplayValues <- list(ymax=NA, ymin=NA)
+    if(length(metadataState) > 0) {
+        curve_display_min_value <- getValuesByTypeAndKind(metadataState[[1]], "numericValue_curve display min")
+        if(length(curve_display_min_value) > 0) {
+            protocolDisplayValues$ymin <- curve_display_min_value[[1]]$numericValue
+        }
+        curve_display_max_value <- getValuesByTypeAndKind(metadataState[[1]], "numericValue_curve display max")
+        if(length(curve_display_max_value) > 0) {
+            protocolDisplayValues$ymax <- curve_display_max_value[[1]]$numericValue
+        }
+    }
 
     # Organize the data into a data.table as its native to the way curve rendering works
     fitsData <- getFitDataFromUploadOrganizedResults(calculatedResults)
@@ -3048,20 +3058,44 @@ validateDoseResponseData <- function(calculatedResults, subjectData, mainCode, m
     # Now that the data is organized for the curve renderer
     # Loop through the dataset by curve id and batch code
     # and validate each curve fit against the data
-    fitData[ ,  c("SSE", "SST", "SSR", "R2", "TR") := {
+    defaultRenderingParams <- list(curveIds="NA", width = 400, height = 250)
+    fitData[ ,  c("SSE", "SST", "SSR", "rSquared", "styleClass", "TR") := {
         fitData <- copy(.SD)
         fitData[ , curveId := curveId]
-        defaultRenderingParams <- list(curveIds=as.character(curveId), width = 400, height = 250)
         parsedParams <- racas::parse_params_curve_render_dr(defaultRenderingParams, NA)
         renderingOptions <- get_rendering_hint_options(renderingHint)    
         fitData[ , renderingOptions := list(list(renderingOptions)), by = renderingHint]
 
+        # Goodness of fit parameters
+        # saveSession('/tmp/good')
+        goodnessOfFitStatNames <- c("SSE", "SST", "rSquared")
+        goodnessOfFitClasses <- c("warning", "error")
+        goodnessOfFitParameters <- list()
+        for(stat in goodnessOfFitStatNames) {
+          goodnessOfFitParameters[[stat]] <- list()
+          for(class in goodnessOfFitClasses) {
+            goodnessOfFitParameters[[stat]][[class]] <- list("value" = NA_real_, "operator" = NA_character_)
+            if(length(metadataState) > 0) {
+              statValue <- getValuesByTypeAndKind(metadataState[[1]], paste("numericValue_goodness of fit", stat, class))
+            } else {
+              statValue <- NULL
+            }
+            if(!is.null(renderingOptions$goodnessOfFit[[stat]][[class]]$value)) {
+              goodnessOfFitParameters[[stat]][[class]]$value <- renderingOptions$goodnessOfFit[[stat]][[class]]$value
+              goodnessOfFitParameters[[stat]][[class]]$operator <- renderingOptions$goodnessOfFit[[stat]][[class]]$operator
+            }
+            if(length(statValue) > 0 && length(statValue[[1]]$numericValue) > 0 && !is.na(statValue[[1]]$numericValue)) {
+                goodnessOfFitParameters[[stat]][[class]]$value <- statValue[[1]]$numericValue
+                goodnessOfFitParameters[[stat]][[class]]$value <- statValue[[1]]$operatorKind
+            }
+          }
+        }
         # Calculate the goodness of fit parameters using the 
         # curve fit function and fixed parameters the user has provided
         SSE <- NA
         SSR <- NA
         SST <- NA
-        R2 <- NA
+        rSquared <- NA
         if(!is.na(renderingOptions$fct)) {
           tmp <- as.data.frame(fixedParams[[1]])
           fct <- eval(parse(text=paste0('function(x) ', renderingOptions$fct)))
@@ -3069,100 +3103,88 @@ validateDoseResponseData <- function(calculatedResults, subjectData, mainCode, m
           for(i in 1:ncol(tmp)) {
               assign(names(tmp)[i], tmp[,i])
           }
-          goodPoints <- filterFlaggedPoints(points[[1]], returnGood = TRUE)
+          goodPoints <- racas::filterFlaggedPoints(points[[1]], returnGood = TRUE)
           SSE <- sum((fct(goodPoints$dose) - goodPoints$response)^2)
           SSR <- sum((fct(goodPoints$dose) - mean(goodPoints$response))^2)
           SST <- SSR + SSE
-          R2 <- SSR/SST
+          rSquared <- SSR/SST
         }
 
-        ## START REFACTOR THIS - this was all lifted directly from renderCurve.R - need to make this into a function or set of functiions to refactor
-        ## PREP FROM RENDER CURVE
-        # Colors
-        # plotColors <- c("black", "#0C5BB0FF", "#EE0011FF", "#15983DFF", "#EC579AFF", "#FA6B09FF", 
-        #                 "#149BEDFF", "#A1C720FF", "#FEC10BFF", "#16A08CFF", "#9A703EFF")
-        if(!is.null(racas::applicationSettings$server.curveRender.plotColors)) {
-            plotColors <- trimws(strsplit(racas::applicationSettings$server.curveRender.plotColors,",")[[1]])
-        } else {
-            plotColors <- c("black", "#0C5BB0FF", "#EE0011FF", "#15983DFF", "#EC579AFF", "#FA6B09FF", 
-                            "#149BEDFF", "#A1C720FF", "#FEC10BFF", "#16A08CFF", "#9A703EFF")
-        }
-        if(!is.na(parsedParams$colorBy)) {
-            key <- switch(parsedParams$colorBy,
-                        "protocol" = "protocol_label",
-                        "experiment" = "experiment_label",
-                        "batch" = "batch_code"
-            )
-            uniqueKeys <- setkeyv(unique(fitData[ , key, with = FALSE]), key)
-            colorCategories <- uniqueKeys[, color:=rep(plotColors, length.out = .N)][ , name:=get(key)]
-            fitData <- merge(fitData, colorCategories, by = key)
-        }
-
-        if("category" %in% names(fitData)) {
-          fitData <- fitData[exists("category") & (!is.null(category) & category %in% c("inactive","potent")), c("fittedMax", "fittedMin") := {
-            responseMean <- mean(points[[1]][userFlagStatus!="knocked out" & preprocessFlagStatus!="knocked out" & algorithmFlagStatus!="knocked out" & tempFlagStatus!="knocked out",]$response)
-            list("fittedMax" = responseMean, "fittedMin" = responseMean)
-          }, by = curveId]
-        }
-        data <- list(parameters = as.data.frame(fitData), points = as.data.frame(rbindlist(fitData$points)))
-
-        if(!is.na(parsedParams$logDose)) {
-            logDose <- parsedParams$logDose
-        } else {
-            logDose <- TRUE
-            if(fitData[1]$renderingHint %in% c("Michaelis-Menten", "Substrate Inhibition", "Scatter", "Scatter Log-y")) logDose <- FALSE
-        }
-        if(!is.na(parsedParams$logResponse)) {
-            logResponse <- parsedParams$logResponse
-        } else {
-            logResponse <- FALSE
-            if(fitData[1]$renderingHint %in% c("Scatter Log-y","Scatter Log-x,y")) logResponse <- TRUE
-        }
-        ## END REFACTOR THIS
-
+        # Apply parsed params to fit data
+        output <- racas::applyParsedParametersToFitData(fitData, parsedParams, protocolDisplayValues)
+        data <- output$data
+        parsedParams <- output$parsedParams
         t <- tempfile()
-        suppressWarnings(plotCurve(curveData = data$points, params = data$parameters, drawCurve = TRUE, logDose = logDose, logResponse = logResponse, outFile = t, ymin=parsedParams$yMin, ymax=parsedParams$yMax, xmin=parsedParams$xMin, xmax=parsedParams$xMax, height=parsedParams$height, width=parsedParams$width, showGrid = parsedParams$showGrid, showAxes = parsedParams$showAxes, labelAxes = parsedParams$labelAxes, showLegend=parsedParams$legend, mostRecentCurveColor = parsedParams$mostRecentCurveColor, axes = parsedParams$axes, plotColors = parsedParams$plotColors, curveLwd=parsedParams$curveLwd, plotPoints=parsedParams$plotPoints, xlabel = parsedParams$xLab, ylabel = parsedParams$yLab))
-        imgTxt <- base64Encode(readBin(t, "raw", file.info(t)[1, "size"]), "txt")
+        suppressWarnings(racas::plotCurve(curveData = data$points, params = data$parameters, drawCurve = TRUE, logDose = parsedParams$logDose, logResponse = parsedParams$logResponse, outFile = t, ymin=parsedParams$yMin, ymax=parsedParams$yMax, xmin=parsedParams$xMin, xmax=parsedParams$xMax, height=parsedParams$height, width=parsedParams$width, showGrid = parsedParams$showGrid, showAxes = parsedParams$showAxes, labelAxes = parsedParams$labelAxes, showLegend=parsedParams$legend, mostRecentCurveColor = parsedParams$mostRecentCurveColor, axes = parsedParams$axes, plotColors = parsedParams$plotColors, curveLwd=parsedParams$curveLwd, plotPoints=parsedParams$plotPoints, xlabel = parsedParams$xLab, ylabel = parsedParams$yLab))
+        imgTxt <- RCurl::base64Encode(readBin(t, "raw", file.info(t)[1, "size"]), "txt")
         unlink(t)
-        tr <- ''
-        tr <- paste0(tr,sprintf('<td>%s</td>', batchCode))
-        tr <- paste0(tr,sprintf('<td>%s</td>', fitData$name))
-        tr <- paste0(tr,sprintf('<td><img src="data:image/png;base64,%s"></td>', imgTxt))
+        
+        # Apply the goodness of fit rules
+        # saveSession('/tmp/stats')
         styleClass = ""
-        for(stat in c("SSE", "SST", "R2")) {
-            statValue <- get(stat)
+        statsCells <- ""
+        for(s in 1:length(goodnessOfFitParameters)) {
+            statThresholds <- goodnessOfFitParameters[[s]]
+            statValue <- get(names(goodnessOfFitParameters)[s])
             statValueText <- format(statValue, digits=3)
-            if(!is.null(renderingOptions$goodnessOfFit)) {
-                if(stat %in% names(renderingOptions$goodnessOfFit)) {
-                    for(class in names(renderingOptions$goodnessOfFit[[stat]])) {
-                        range <- renderingOptions$goodnessOfFit[[stat]][[class]]
-                        if(is.na(statValue) || statValue >= range$min && statValue <= range$max) {
-                            styleClass <- class
-                            if(!is.na(statValue)) {
-                              if(stat == "R2") {
-                                statName <- "R&#178;"
-                              } else {
-                                statName <- stat
-                              }
-                              warnUser(paste0("The curve stat ", statName, " for curve id '", name, "' is ", statValueText, " which is within the ", class," range for goodness of fit."))
-                            }
-                        }
+            warnings <- list()
+            errors <- list()
+            for(r in 1:length(statThresholds)) {
+                threshold <- statThresholds[[r]]
+                class <- names(statThresholds)[r]
+                if(is.na(statValue) || !is.na(threshold$value) && !is.na(threshold$operator) && eval(parse(text = paste0('statValue ', threshold$operator, ' threshold$value')))) {
+                    if(stat == "rSquared") {
+                      statName <- "R&#178;"
+                    } else {
+                      statName <- stat
+                    }
+                    # We only want to up the style class if we are not already in a higher class
+                    if(styleClass == "" && class == "warning") {
+                      styleClass <- "warning"
+                      warnings[[length(warnings)+1]] <- paste0("The ", statName, " for curve id '", name, "' is ", statValueText, " which is ", threshold$operator, " than the threshold value of ", threshold$value, ".")
+                    } else if(class == "error") {
+                      styleClass <- "error"
+                      errors[[length(errors)+1]] <- paste0("The ", statName, " for curve id '", name, "' is ", statValueText, " which is ", threshold$operator, " than the threshold value of ", threshold$value, ".")
                     }
                 }
             }
-            tr <- paste0(tr,sprintf('<td class="%s">%s</td>', styleClass, statValueText))
+            if(length(errors) > 0) {
+              for(e in errors) {
+                addError(e)
+              }
+            } else if(length(warnings) > 0) {
+              for(w in warnings) {
+                warnUser(w)
+              }
+            }
+            statsCells <- paste0(statsCells,sprintf('<td class="stat_%s">%s</td>', styleClass, statValueText))
         }
+        tr <- ''
+        tr <- paste0(tr,sprintf('<td>%s</td>', batchCode))
+        tr <- paste0(tr,sprintf('<td>%s</td>', fitData$name))
+        tr <- paste0(tr,sprintf('<td>%s</td>', styleClass))
+        tr <- paste0(tr,sprintf('<td><img src="data:image/png;base64,%s"></td>', imgTxt))
+        tr <- paste0(tr, statsCells)
         tr <- paste0(sprintf('<tr class="%s">', styleClass), tr)
         tr <- paste0(tr,"</tr>" )
-        list(SSE, SST, SSR, R2, tr)
+        list(SSE, SST, SSR, rSquared, styleClass, tr)
     }, by = c("curveId", "batchCode")]
 
-    table <- '<h4>Dose Response Summary</h4><table class="table table-bordered" >'
+    table <- '<h4>Dose Response Summary</h4><table class="table table-bordered bv_doseResponseSummaryTable" >'
     thead <- "<thead>"
     tr <- "<tr>"
-    # for(stat in columnNames <- c(mainCode, "curve id", "Curve", "SSE", "SSR", "SST", "R2")) {
-    for(stat in columnNames <- c(mainCode, "curve id", "Curve", "SSE", "SST", "R&#178;")) {
-        tr <- paste0(tr,sprintf('<th>%s</th>', stat))
+    for(stat in columnNames <- c(mainCode, "curve id", "class", "Curve", "SSE", "SST", "R&#178;")) {
+        style <- ""
+        if(stat == "Curve") {
+          style <- paste0(' style="min-width: ', defaultRenderingParams$width,'px;"')
+        }
+        if(stat == mainCode) {
+          style <- paste0(' style="min-width: 140px;"')
+        }
+        if(stat == "curve id") {
+          style <- paste0(' style="min-width: 60px;"')
+        }
+        tr <- paste0(tr,sprintf('<th%s>%s</th>', style, stat))
     }
     thead <- paste0(thead,tr)
     thead <- paste0(thead,"</thead>" )
@@ -3177,7 +3199,7 @@ validateDoseResponseData <- function(calculatedResults, subjectData, mainCode, m
 }
 runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
                     lsTranscationComments=NULL, dryRun, developmentMode = FALSE, testOutputLocation="./JSONoutput.json",
-                    configList, testMode = FALSE, recordedBy, imagesFile = NULL, errorEnv = NULL) {
+                    configList, testMode = FALSE, recordedBy, imagesFile = NULL, moduleName = NULL, errorEnv = NULL) {
   # This function runs all of the functions within the error handling
   # lsTransactionComments input is currently unused
   #
@@ -3325,9 +3347,9 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
 
   # Validate Dose Response Data
   doseResponseHtmlSummary <- NULL
-  if (inputFormat == "Dose Response") {
+  if (inputFormat == "Dose Response" || is.null(moduleName) || moduleName != "DoseResponseDataParserController") {
     tryCatch({
-      doseResponseHtmlSummary <- validateDoseResponseData(calculatedResults, subjectData, mainCode,modelFitTransformation)
+      doseResponseHtmlSummary <- validateDoseResponseData(calculatedResults, subjectData, mainCode,modelFitTransformation, protocol)
     }, error = function(e) {
       addError(paste0("Caught an error trying to validate dose response data. Please contact your administrator.: ", e$message))
     })
@@ -3613,6 +3635,7 @@ parseGenericData <- function(request) {
   reportFilePath <- request$reportFile
   recordedBy <- request$user
   imagesFile <- request$imagesFile
+  moduleName <- request$moduleName
   
   # Fix capitalization mismatch between R and javascript
   dryRun <- interpretJSONBoolean(dryRun)
@@ -3639,6 +3662,7 @@ parseGenericData <- function(request) {
                                        testMode=testMode,
                                        recordedBy=recordedBy,
                                        imagesFile=imagesFile,
+                                       moduleName=moduleName,
                                        errorEnv = errorEnv),
                        errorList = messenger()$errors,
                        warningList = list())
@@ -3651,6 +3675,7 @@ parseGenericData <- function(request) {
                                       testMode=testMode,
                                       recordedBy=recordedBy,
                                       imagesFile=imagesFile,
+                                      moduleName=moduleName,
                                       errorEnv = errorEnv))
   }
   
