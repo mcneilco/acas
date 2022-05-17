@@ -153,6 +153,7 @@ class BasicFileValidateAndSaveController extends Backbone.View
 			imagesFile: @imagesFileNameOnServer
 			dryRunMode: dryRun
 			user: user
+			moduleName: @errorOwnerName
 		$.extend(data,@additionalData)
 
 		data
@@ -174,6 +175,7 @@ class BasicFileValidateAndSaveController extends Backbone.View
 		@notificationController.addNotifications(@errorOwnerName, json.errorMessages)
 		if json.results?.htmlSummary?
 			@$('.bv_htmlSummary').html(json.results.htmlSummary)
+			@$('.bv_htmlSummary .bv_doseResponseSummaryTable').dataTable()
 		if json.results?.preProcessorHTMLSummary?
 			@showPreProcessorHTMLSUmmary json.results.preProcessorHTMLSummary
 		@$('.bv_validateStatusDropDown').modal("hide")
