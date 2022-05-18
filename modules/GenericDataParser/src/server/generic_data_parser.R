@@ -971,6 +971,19 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun, r
   if (any(usedReservedWords)) {
     stopUser(paste0(sqliz(reserved[usedReservedWords]), " is reserved and cannot be used as a column header."))
   }
+
+  # Throw errors for duplicate value kinds with different types within the same upload
+  # make a dataframe of kind, type
+  # deduplicate unique combinations of kind, type
+  if (length(neededValueKinds) > 0) {
+    uniqueValueKindTypes = unique(data.frame(neededValueKinds, neededValueKindTypes))
+    # Check if there are any duplicate kinds
+    n_occur <- data.frame(table(uniqueValueKindTypes$neededValueKinds))
+    duplicateValueKinds <- n_occur[n_occur$Freq > 1,]$Var1
+    if (length(duplicateValueKinds) > 0) {
+      stopUser(paste0("The following header(s) are duplicated: ",sqliz(duplicateValueKinds), ". Uploads cannot contain the same result header twice. Please rename the duplicate headers or consolidate the data and try again."))
+    }
+  }
   
   currentValueKindsList <- getAllValueKinds()  
   
