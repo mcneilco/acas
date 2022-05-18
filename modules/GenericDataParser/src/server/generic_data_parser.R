@@ -3044,7 +3044,7 @@ subjectDataToDoseResponsePoints <- function(subjectData, modelFitTransformation)
 validateDoseResponseCurves <- function(calculatedResults, subjectData, mainCode, modelFitTransformation, protocol) {
     # This function validates the calculated results against and subject data against the curve fit model
     protocolDisplayValues <- list(ymax=NA, ymin=NA)
-    if(!is.na(protocol)) {
+    if(class(protocol) == "list" && length(protocol) > 1) {
       metadataState <- getStatesByTypeAndKind(protocol, "metadata_screening assay")
       if(length(metadataState) > 0) {
           curve_display_min_value <- getValuesByTypeAndKind(metadataState[[1]], "numericValue_curve display min")
