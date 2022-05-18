@@ -64,10 +64,33 @@
     border: 1px solid transparent;
     box-shadow: 0 0 10px red;
     border-radius: 10px;
+    background-image: linear-gradient(225deg, red, red 10px, transparent 10px, transparent);  
 }
 
 .bv_doseResponseSummaryTable tr td.stat_warning {
     border: 1px solid transparent;
     box-shadow: 0 0 10px orange;
     border-radius: 10px;
+    background-image: linear-gradient(225deg, orange, orange 10px, transparent 10px, transparent);  
 }
+
+.bv_doseResponseSummaryTable tr td.stat_warning[title]:hover:after, .bv_doseResponseSummaryTable tr td.stat_error[title]:hover:after {
+    content: attr(title);
+    padding: 4px 8px;
+    color: #333;
+    position: absolute;
+    z-index: 20px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+    -moz-box-shadow: 0px 0px 4px #222;
+    -webkit-box-shadow: 0px 0px 4px #222;
+    box-shadow: 0px 0px 4px #222;
+    background-image: -moz-linear-gradient(top, #eeeeee, #cccccc);
+    background-image: -webkit-gradient(linear,left top,left bottom,color-stop(0, #eeeeee),color-stop(1, #cccccc));
+    background-image: -webkit-linear-gradient(top, #eeeeee, #cccccc);
+    background-image: -moz-linear-gradient(top, #eeeeee, #cccccc);
+    background-image: -ms-linear-gradient(top, #eeeeee, #cccccc);
+    background-image: -o-linear-gradient(top, #eeeeee, #cccccc);
+}
+
