@@ -425,12 +425,12 @@ client.cmpdReg.showFileDate=true
 #                                                     {"code":"Ki Fit", "parametersController":"DoseResponseKiAnalysisParametersController", "parametersClass": "DoseResponseKiAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveKi", "RSource":"public/src/modules/CurveAnalysis/src/server/ki.R"}]
 #
 # "goodnessOfFit": {"rSquared": {"warning": {"operator": "<", "value": 0.9}, "error": {"operator": "<", "value": 0.3}}} controls how the UI will show red (error) or yellow (warning)
-client.curvefit.modelfitparameter.classes=[{"code":"4 parameter D-R", "parametersController":"DoseResponseAnalysisParametersController", "parametersClass": "DoseResponseAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveLL4", "RSource":"src/r/CurveAnalysis/ll4.R", "parametersOptions":{"defaultBaseline":0}, "goodnessOfFit": {"rSquared": {"warning": {"operator": "<", "value": 0.9}, "error": {"operator": "<", "value": 0.3}}}}, \
-                                            {"code":"Ki Fit", "parametersController":"DoseResponseKiAnalysisParametersController", "parametersClass": "DoseResponseKiAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveKi", "RSource":"src/r/CurveAnalysis/ki.R", "parametersOptions":{"defaultBaseline":0},  "goodnessOfFit": {"rSquared": {"error": {"min": 0, "max": 0.7}, "warning": {"min": 0.7, "max": 0.85}}}}, \
-                                            {"code":"4 parameter D-R IC50", "parametersController":"DoseResponseAnalysisParametersController", "parametersClass": "DoseResponseIC50AnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveLL4IC50", "RSource":"src/r/CurveAnalysis/ll4IC50.R", "parametersOptions":{"defaultBaseline":0},  "goodnessOfFit": {"rSquared": {"error": {"min": 0, "max": 0.7}, "warning": {"min": 0.7, "max": 0.85}}}}, \
-                                            {"code":"4 parameter D-R IC50/DMax", "parametersController":"DoseResponseAnalysisParametersController", "parametersClass": "DoseResponseIC50AnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveLL4IC50", "RSource":"src/r/CurveAnalysis/ll4IC50DMax.R", "parametersOptions":{"defaultBaseline":0},  "goodnessOfFit": {"rSquared": {"error": {"min": 0, "max": 0.7}, "warning": {"min": 0.7, "max": 0.85}}}}, \
-                                            {"code":"Michaelis-Menten", "parametersController":"DoseResponseKmAnalysisParametersController", "parametersClass": "DoseResponseKmAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveKm", "RSource":"src/r/CurveAnalysis/mm2.R", "parametersOptions":{"defaultBaseline":0},  "goodnessOfFit": {"rSquared": {"error": {"min": 0, "max": 0.7}, "warning": {"min": 0.7, "max": 0.85}}}}, \
-                                            {"code":"Substrate Inhibition", "parametersController":"DoseResponseSubstrateInhibitionAnalysisParametersController", "parametersClass": "DoseResponseSubstrateInhibitionAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveSubstrateInhibition", "RSource":"src/r/CurveAnalysis/substrateInhibition.R", "parametersOptions":{"defaultBaseline":0}, "goodnessOfFit": {"rSquared": {"error": {"min": 0, "max": 0.7}, "warning": {"min": 0.7, "max": 0.85}}}}, \
+client.curvefit.modelfitparameter.classes=[{"code":"4 parameter D-R", "parametersController":"DoseResponseAnalysisParametersController", "parametersClass": "DoseResponseAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveLL4", "RSource":"src/r/CurveAnalysis/ll4.R", "parametersOptions":{"defaultBaseline":0}, "goodnessOfFit": {"rSquared": {"warning": {"operator": "<", "value": 0.9}}}},\
+                                            {"code":"Ki Fit", "parametersController":"DoseResponseKiAnalysisParametersController", "parametersClass": "DoseResponseKiAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveKi", "RSource":"src/r/CurveAnalysis/ki.R", "parametersOptions":{"defaultBaseline":0},  "goodnessOfFit": {"rSquared": {"warning": {"operator": "<", "value": 0.9}}}},\
+                                            {"code":"4 parameter D-R IC50", "parametersController":"DoseResponseAnalysisParametersController", "parametersClass": "DoseResponseIC50AnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveLL4IC50", "RSource":"src/r/CurveAnalysis/ll4IC50.R", "parametersOptions":{"defaultBaseline":0}, "goodnessOfFit": {"rSquared": {"warning": {"operator": "<", "value": 0.9}}}},\
+                                            {"code":"4 parameter D-R IC50/DMax", "parametersController":"DoseResponseAnalysisParametersController", "parametersClass": "DoseResponseIC50AnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveLL4IC50", "RSource":"src/r/CurveAnalysis/ll4IC50DMax.R", "parametersOptions":{"defaultBaseline":0}, "goodnessOfFit": {"rSquared": {"warning": {"operator": "<", "value": 0.9}}}},\
+                                            {"code":"Michaelis-Menten", "parametersController":"DoseResponseKmAnalysisParametersController", "parametersClass": "DoseResponseKmAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveKm", "RSource":"src/r/CurveAnalysis/mm2.R", "parametersOptions":{"defaultBaseline":0}, "goodnessOfFit": {"rSquared": {"warning": {"operator": "<", "value": 0.9}}}},\
+                                            {"code":"Substrate Inhibition", "parametersController":"DoseResponseSubstrateInhibitionAnalysisParametersController", "parametersClass": "DoseResponseSubstrateInhibitionAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveSubstrateInhibition", "RSource":"src/r/CurveAnalysis/substrateInhibition.R", "parametersOptions":{"defaultBaseline":0}, "goodnessOfFit": {"rSquared": {"warning": {"operator": "<", "value": 0.9}}}},\
                                             {"code":"Scatter", "RSource":"src/r/CurveAnalysis/scatter.R", "renderOptions": {"connectPoints": false}},\
                                             {"code":"Scatter Log-x", "RSource":"src/r/CurveAnalysis/scatter.R", "renderOptions": {"connectPoints": false}},\
                                             {"code":"Scatter Log-y", "RSource":"src/r/CurveAnalysis/scatter.R", "renderOptions": {"connectPoints": false}},\
@@ -485,6 +485,7 @@ client.author.deletingRoles=ROLE_ACAS-ADMINS
 server.sel.experimentStatus=approved
 server.sel.protocolStatus=created
 server.sel.assayStage=unassigned
+server.sel.validateDoseResponseCurves=true
 
 # Cron- change to "false" to not start cron jobs on startup
 server.service.cron.startOnRestart=true
@@ -497,10 +498,6 @@ server.service.genericSpecificPreProcessor=false
 # Example: client.experiment.hideFields=details,comments
 client.protocol.hideFields=
 client.experiment.hideFields=
-
-# Experiment status after successful SEL upload
-server.sel.experimentStatus=approved
-
 
 # User role that allows changing protocol and experiment statuses to "Approved" or "Rejected"
 client.entity.approvalRole=
