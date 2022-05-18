@@ -61,9 +61,13 @@
 }
 
 .bv_doseResponseSummaryTable tr td.stat_error {
-    /* border-color: #be1414 !important; */
-    border: 0px solid transparent;
-    box-shadow: 0 0 5px red;
+    border: 1px solid transparent;
+    box-shadow: 0 0 10px red;
     border-radius: 10px;
 }
 
+.bv_doseResponseSummaryTable tr td.stat_warning {
+    border: 1px solid transparent;
+    box-shadow: 0 0 10px orange;
+    border-radius: 10px;
+}
