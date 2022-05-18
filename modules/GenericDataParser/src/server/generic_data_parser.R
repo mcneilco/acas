@@ -3043,17 +3043,19 @@ subjectDataToDoseResponsePoints <- function(subjectData, modelFitTransformation)
 
 validateDoseResponseCurves <- function(calculatedResults, subjectData, mainCode, modelFitTransformation, protocol) {
     # This function validates the calculated results against and subject data against the curve fit model
-    metadataState <- getStatesByTypeAndKind(protocol, "metadata_screening assay")
     protocolDisplayValues <- list(ymax=NA, ymin=NA)
-    if(length(metadataState) > 0) {
-        curve_display_min_value <- getValuesByTypeAndKind(metadataState[[1]], "numericValue_curve display min")
-        if(length(curve_display_min_value) > 0) {
-            protocolDisplayValues$ymin <- curve_display_min_value[[1]]$numericValue
-        }
-        curve_display_max_value <- getValuesByTypeAndKind(metadataState[[1]], "numericValue_curve display max")
-        if(length(curve_display_max_value) > 0) {
-            protocolDisplayValues$ymax <- curve_display_max_value[[1]]$numericValue
-        }
+    if(!is.na(protocol)) {
+      metadataState <- getStatesByTypeAndKind(protocol, "metadata_screening assay")
+      if(length(metadataState) > 0) {
+          curve_display_min_value <- getValuesByTypeAndKind(metadataState[[1]], "numericValue_curve display min")
+          if(length(curve_display_min_value) > 0) {
+              protocolDisplayValues$ymin <- curve_display_min_value[[1]]$numericValue
+          }
+          curve_display_max_value <- getValuesByTypeAndKind(metadataState[[1]], "numericValue_curve display max")
+          if(length(curve_display_max_value) > 0) {
+              protocolDisplayValues$ymax <- curve_display_max_value[[1]]$numericValue
+          }
+      }
     }
 
     # Organize the data into a data.table as its native to the way curve rendering works
