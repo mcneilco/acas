@@ -3377,7 +3377,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
 
   # Validate Dose Response Data
   doseResponseHtmlSummary <- NULL
-  if (racas::applicationSettings$server.sel.validateDoseResponseCurves == TRUE && (inputFormat == "Dose Response" || is.null(moduleName) || moduleName != "DoseResponseDataParserController")) {
+  if (racas::applicationSettings$server.sel.validateDoseResponseCurves == TRUE && (inputFormat == "Dose Response" && (is.null(moduleName) || moduleName != "DoseResponseDataParserController"))) {
     tryCatch({
       doseResponseHtmlSummary <- validateDoseResponseCurves(calculatedResults, subjectData, mainCode, modelFitTransformation, protocol)
     }, error = function(e) {

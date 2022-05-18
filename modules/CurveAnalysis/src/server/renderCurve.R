@@ -18,9 +18,9 @@ renderCurve <- function(getParams, postData) {
   if(!is.null(postData) && !is.na(postData) && postData != "") {
     postParams <- jsonlite::fromJSON(postData)
   }  
+
   # Parse GET Parameters
   parsedParams <- racas::parse_params_curve_render_dr(getParams, postParams)
-
 
   # GET FIT DATA
   fitData <- racas::get_curve_data(parsedParams$curveIds, raw_data = TRUE, globalConnect = TRUE)
@@ -28,7 +28,7 @@ renderCurve <- function(getParams, postData) {
   # Get protocol curve min and max
   protocol_display_values <- racas::get_protocol_curve_display_min_and_max_by_curve_id(parsedParams$curveIds[[1]])
 
-  output <- applyParsedParametersToFitData(fitData, parsedParams, protocol_display_values, protocol_display_values)
+  output <- applyParsedParametersToFitData(fitData, parsedParams, protocol_display_values)
   data <- output$data
   parsedParams <- output$parsedParams
 
