@@ -225,7 +225,7 @@ class AbstractCodeTablesAdminController extends AbstractFormController
 				@handleValidateError(JSON.parse err.responseText)
 
 	handleValidateError: (err) =>
-		if err?[0]?.level? and err[0].level is "ERROR"
+		if err?[0]?.errorLevel? and err[0].errorLevel is "ERROR"
 			alert "The requested code has already been used"
 		@$('.bv_saving').hide()
 		@$('.bv_saveFailed').show()

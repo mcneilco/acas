@@ -42,12 +42,17 @@ exports.validateCodeTablesEntityBeforeSave = (req, resp) ->
 	codeTableServiceRoutes = require "./CodeTableServiceRoutes.js"
 	searchTerm = req.params.searchTerm
 	codeTableServiceRoutes.getCodeTableValuesInternal req.params.codeType, req.params.codeKind, (results) ->
+		if !req.body.data?
+			data = req.body
+		else
+			data = req.body.data
+		if typeof(data) == 'string'
+			data = JSON.parse(data)
 		for r in results
-			data = JSON.parse(req.body.data)
 			if (!data.id? || data.id!=r.id) && r.code == data.code
-				resp.end JSON.stringify([{"errorLevel": "ERROR", "message": "Code value already exists for #{req.params.codeType} #{req.params.codeKind}"}])
-				return
-		resp.end req.body.data
+				resp.statusCode = 409
+				resp.json [{"errorLevel": "ERROR", "message": "Code value already exists for #{req.params.codeType} #{req.params.codeKind}"}]
+		resp.json data
 
 exports.getCodeTablesEntityById = (req, resp) ->
 	request = require 'request'

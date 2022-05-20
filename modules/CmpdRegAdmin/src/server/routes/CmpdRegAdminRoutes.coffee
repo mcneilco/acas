@@ -46,11 +46,17 @@ exports.validateCmpdRegEntityBeforeSave = (req, resp) ->
 	config = require '../conf/compiled/conf.js'
 	entityType = req.params.entityType
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + "#{entityType}/validateBeforeSave"
-	console.log cmpdRegCall
+	# consolidate x-www-form-urlencoded from UI and JSON from API requests
+	if !req.body.data?
+		data = req.body
+	else
+		data = req.body.data
+	if typeof(data) == 'string'
+		data = JSON.parse(data)
 	request(
 		method: 'POST'
 		url: cmpdRegCall
-		body: req.body.data
+		body: data
 		json: true
 		timeout: 6000000
 		headers:
