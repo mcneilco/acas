@@ -49,7 +49,7 @@ exports.validateCodeTablesEntityBeforeSave = (req, resp) ->
 		if typeof(data) == 'string'
 			data = JSON.parse(data)
 		for r in results
-			if (!data.id? || data.id!=r.id) && r.code == data.code
+			if (!data.id? || data.id!=r.id) && r.code.toLowerCase() == data.code.toLowerCase()
 				resp.statusCode = 409
 				resp.json [{"errorLevel": "ERROR", "message": "Code value already exists for #{req.params.codeType} #{req.params.codeKind}"}]
 		resp.json data
