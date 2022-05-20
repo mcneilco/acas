@@ -360,7 +360,7 @@ class ProtocolBaseController extends BaseEntityController
 			collection: @projectList
 			insertFirstOption: new PickList
 				code: "unassigned"
-				name: "Select Project"
+				name: "Not Restricted"
 			selectedCode: @model.getProjectCode().get('codeValue')
 
 	finishSetupAttachFileListController: (attachFileList, fileTypeList) ->
