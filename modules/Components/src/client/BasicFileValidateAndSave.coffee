@@ -175,7 +175,9 @@ class BasicFileValidateAndSaveController extends Backbone.View
 		@notificationController.addNotifications(@errorOwnerName, json.errorMessages)
 		if json.results?.htmlSummary?
 			@$('.bv_htmlSummary').html(json.results.htmlSummary)
-			@$('.bv_htmlSummary .bv_doseResponseSummaryTable').dataTable()
+			doseResponseTableElements = this.$('.bv_htmlSummary .bv_doseResponseSummaryTable')
+			if doseResponseTableElements.length > 0
+				@$('.bv_htmlSummary .bv_doseResponseSummaryTable').dataTable()
 		if json.results?.preProcessorHTMLSummary?
 			@showPreProcessorHTMLSUmmary json.results.preProcessorHTMLSummary
 		@$('.bv_validateStatusDropDown').modal("hide")
