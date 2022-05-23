@@ -12,12 +12,12 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/cmpdRegAdmin/:entityType/codeName/:code', loginRoutes.ensureAuthenticated, exports.getCmpdRegEntityByCode
 	app.get '/api/cmpdRegAdmin/:entityType', loginRoutes.ensureAuthenticated, exports.getCmpdRegEntities
 	app.get '/api/cmpdRegAdmin/:entityType/search/:searchTerm', loginRoutes.ensureAuthenticated, exports.searchCmpdRegEntities
-	app.post '/api/cmpdRegAdmin/:entityType/validateBeforeSave', loginRoutes.ensureAuthenticated, exports.validateCmpdRegEntityBeforeSave
+	app.post '/api/cmpdRegAdmin/:entityType/validateBeforeSave', loginRoutes.ensureAuthenticated, loginRoutes.ensureCmpdRegAdmin, exports.validateCmpdRegEntityBeforeSave
 
 	app.get '/api/cmpdRegAdmin/:entityType/:id', loginRoutes.ensureAuthenticated, exports.getCmpdRegEntityById
-	app.post '/api/cmpdRegAdmin/:entityType', loginRoutes.ensureAuthenticated, exports.saveCmpdRegEntity
-	app.put '/api/cmpdRegAdmin/:entityType/:id', loginRoutes.ensureAuthenticated, exports.updateCmpdRegEntity
-	app.delete '/api/cmpdRegAdmin/:entityType/:id', loginRoutes.ensureAuthenticated, exports.deleteCmpdRegEntity
+	app.post '/api/cmpdRegAdmin/:entityType', loginRoutes.ensureAuthenticated, loginRoutes.ensureCmpdRegAdmin, exports.saveCmpdRegEntity
+	app.put '/api/cmpdRegAdmin/:entityType/:id', loginRoutes.ensureAuthenticated, loginRoutes.ensureCmpdRegAdmin, exports.updateCmpdRegEntity
+	app.delete '/api/cmpdRegAdmin/:entityType/:id', loginRoutes.ensureAuthenticated, loginRoutes.ensureCmpdRegAdmin, exports.deleteCmpdRegEntity
 
 exports.validateCmpdRegEntity = (req, resp) ->
 	request = require 'request'
