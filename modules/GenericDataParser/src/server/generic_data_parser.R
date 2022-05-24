@@ -3056,33 +3056,42 @@ validateDoseResponseCurves <- function(calculatedResults, subjectData, mainCode,
     setkey(allPoints, "curveId")
     fitData <- fitsData[allPoints]
 
+    # Calculate the goodness of fit stats, plot curves and attach to the fit data
     defaultRenderingParams <- list(curveIds="NA", width = 400, height = 250)
     fitData <- prepForRender(fitData, protocol, defaultRenderingParams)
-    rmd <- system.file("rmd", "doseResponseCurveValidation.rmd", package="racas")
 
-     htmlSummary <- knit2html_bug_fix(input = rmd, 
-                                     options = c("base64_images", "mathjax"),
-                                     template =  NULL,
-                                     stylesheet = system.file("rmd", "racas_container.css", package="racas"))                                
+    # Render the html for the curve fit
+    rmd <- system.file("rmd", "doseResponseCurveValidation.rmd", package="racas")
+    htmlSummary <- knit2html_bug_fix(input = rmd, 
+                                    options = c("base64_images", "mathjax"),
+                                    template =  NULL,
+                                    stylesheet = system.file("rmd", "racas_container.css", package="racas"))                                
     return(htmlSummary)
 }
 prepForRender <- function(fitData, protocol, defaultRenderingParams) {
 
-  # This function validates the calculated results against and subject data against the curve fit model
+  # Get the protocol min and max y values if they exist
   protocolDisplayValues <- racas::get_protocol_curve_display_min_and_max_by_protocol(protocol)
 
+  # Ge the parameters for curve fitting (all teh defaults for plotting curves)
+  parsedParams <- racas::parse_params_curve_render_dr(defaultRenderingParams, NA)
+
+  # Calculate the goodness of fit stats, plot curves, categorize and return an html row for each curve
   fitData[ ,  c("SSE", "SST", "SSR", "rSquared", "errorLevel", "TR") := {
       fitData <- copy(.SD)
+
+      # When looping by a variable it's removed from .SD so we need to add it back in for the plotCurve function to use
       fitData[ , curveId := curveId]
-      parsedParams <- racas::parse_params_curve_render_dr(defaultRenderingParams, NA)
-      renderingOptions <- get_rendering_hint_options(renderingHint)    
+      
+      # Rendering hint options are overides for curve rendering plus some required values per rendering hint
+      renderingOptions <- get_rendering_hint_options(renderingHint)
       fitData[ , renderingOptions := list(list(renderingOptions)), by = renderingHint]
 
       # Goodness of fit parameters from configs for rendering hint
       goodnessOfFitThresholds <- get_goodness_of_fit_thresholds_from_rendering_options(renderingOptions)
 
-      # Calculate the goodness of fit parameters using the 
-      calculatedGoodnessOfFitParameters <- get_goodness_of_fit_stats_from_fixed_parameters(fixedParams, missingParameters, points, renderingOptions)
+      # Calculate the goodness of fit parameters using the fixedParams and points a fit function
+      calculatedGoodnessOfFitParameters <- get_goodness_of_fit_stats_from_fixed_parameters(fixedParams, missingParameters, points, renderingOptions$fct)
 
       # Apply parsed params to fit data
       # This applies color preferences, plot limits etc. to the fit data and parsed params objects
@@ -3097,7 +3106,7 @@ prepForRender <- function(fitData, protocol, defaultRenderingParams) {
       imgTxt <- RCurl::base64Encode(readBin(t, "raw", file.info(t)[1, "size"]), "txt")
       unlink(t)
       
-      # Apply the goodness of fit rules and return the table row with stats
+      # Apply the goodness of fit rules and return the table row with stats and errorLevel cateogories
       errorLevel = ""
       statsCells <- ""
       for(s in 1:length(goodnessOfFitThresholds)) {
@@ -3159,7 +3168,7 @@ prepForRender <- function(fitData, protocol, defaultRenderingParams) {
       }
       tr <- ''
       tr <- paste0(tr,sprintf('<td>%s</td>', batchCode))
-      tr <- paste0(tr,sprintf('<td>%s</td>', fitData$name))
+      tr <- paste0(tr,sprintf('<td>%s</td>', name))
       tr <- paste0(tr,sprintf('<td>%s</td>', errorLevel))
       tr <- paste0(tr,sprintf('<td><img src="data:image/png;base64,%s"></td>', imgTxt))
       tr <- paste0(tr, statsCells)
@@ -3167,7 +3176,7 @@ prepForRender <- function(fitData, protocol, defaultRenderingParams) {
       tr <- paste0(tr,"</tr>" )
 
       c(calculatedGoodnessOfFitParameters, errorLevel = errorLevel, tr = tr)
-      
+
   }, by = c("curveId", "batchCode")]
   return(fitData)
 }
