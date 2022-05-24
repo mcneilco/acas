@@ -3073,9 +3073,6 @@ prepForRender <- function(fitData, protocol, defaultRenderingParams) {
   # Get the protocol min and max y values if they exist
   protocolDisplayValues <- racas::get_protocol_curve_display_min_and_max_by_protocol(protocol)
 
-  # Ge the parameters for curve fitting (all teh defaults for plotting curves)
-  parsedParams <- racas::parse_params_curve_render_dr(defaultRenderingParams, NA)
-
   # Calculate the goodness of fit stats, plot curves, categorize and return an html row for each curve
   fitData[ ,  c("SSE", "SST", "SSR", "rSquared", "errorLevel", "TR") := {
       fitData <- copy(.SD)
@@ -3093,6 +3090,9 @@ prepForRender <- function(fitData, protocol, defaultRenderingParams) {
       # Calculate the goodness of fit parameters using the fixedParams and points a fit function
       calculatedGoodnessOfFitParameters <- get_goodness_of_fit_stats_from_fixed_parameters(fixedParams, missingParameters, points, renderingOptions$fct)
 
+      # Get the parameters for curve fitting (all teh defaults for plotting curves)
+      parsedParams <- racas::parse_params_curve_render_dr(defaultRenderingParams, NA)
+
       # Apply parsed params to fit data
       # This applies color preferences, plot limits etc. to the fit data and parsed params objects
       # It also returns the curve fit data as points and params as the renderer requires
@@ -3101,6 +3101,9 @@ prepForRender <- function(fitData, protocol, defaultRenderingParams) {
       parsedParams <- output$parsedParams
 
       # Plot the curve and get the base64 encoded text of the image
+      # racasMessenger$logger$info(parsedParams$yMax)
+      racasMessenger$logger$debug(sprintf("Ymin %s", parsedParams$yMin))
+      racasMessenger$logger$info(sprintf("Ymax %s", parsedParams$yMax))
       t <- tempfile()
       suppressWarnings(racas::plotCurve(curveData = data$points, params = data$parameters, drawCurve = TRUE, logDose = parsedParams$logDose, logResponse = parsedParams$logResponse, outFile = t, ymin=parsedParams$yMin, ymax=parsedParams$yMax, xmin=parsedParams$xMin, xmax=parsedParams$xMax, height=parsedParams$height, width=parsedParams$width, showGrid = parsedParams$showGrid, showAxes = parsedParams$showAxes, labelAxes = parsedParams$labelAxes, showLegend=parsedParams$legend, mostRecentCurveColor = parsedParams$mostRecentCurveColor, axes = parsedParams$axes, plotColors = parsedParams$plotColors, curveLwd=parsedParams$curveLwd, plotPoints=parsedParams$plotPoints, xlabel = parsedParams$xLab, ylabel = parsedParams$yLab))
       imgTxt <- RCurl::base64Encode(readBin(t, "raw", file.info(t)[1, "size"]), "txt")
