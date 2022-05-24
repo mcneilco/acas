@@ -217,19 +217,14 @@ exports.registerCmpds = (req, resp) ->
 						# get the list of chemists/projects in the SDF file/DB mappings
 						exports.validationPropertiesInternal req.body, (sdfProperties) =>
 						    # find chemists and projects that are invalid
-							# Lowercase chemist codes to be case insensitive
-							lowerChemists = _.map sdfProperties.chemists, (c) ->
-								c.toLowerCase()
-							lowerAuthorCodes = _.map authorCodes, (c) ->
-								c.toLowerCase()
-							missingAuthorCodes = _.difference lowerChemists, lowerAuthorCodes
+							missingAuthorCodes = _.difference sdfProperties.chemists, authorCodes
 							missingProjectCodes = _.difference sdfProperties.projects, projectCodes
 
-							# if any chemists are invalid then pass those invalid users to the registration
-							# service for automatic failure
+							# if any chemists are invalid then pass those invalid users to the registration service
+							# Also pass validCodes in case there are case differences that can be solved by substition
 							if missingAuthorCodes.length > 0
-								_.extend(_.findWhere(req.body.mappings, { dbProperty: 'Lot Chemist' }), {invalidValues: missingAuthorCodes});
-							# if any chemists are invalid then pass those invalid users to the registration
+								_.extend(_.findWhere(req.body.mappings, { dbProperty: 'Lot Chemist' }), {invalidValues: missingAuthorCodes, validValues: authorCodes});
+							# if any projects are invalid then pass those invalid users to the registration
 							# service for automatic failure
 							if missingProjectCodes.length > 0
 								_.extend(_.findWhere(req.body.mappings, { dbProperty: 'Project' }), {invalidValues: missingProjectCodes});
