@@ -217,7 +217,12 @@ exports.registerCmpds = (req, resp) ->
 						# get the list of chemists/projects in the SDF file/DB mappings
 						exports.validationPropertiesInternal req.body, (sdfProperties) =>
 						    # find chemists and projects that are invalid
-							missingAuthorCodes = _.difference sdfProperties.chemists, authorCodes
+							# Lowercase chemist codes to be case insensitive
+							lowerChemists = _.map sdfProperties.chemists, (c) ->
+								c.toLowerCase()
+							lowerAuthorCodes = _.map authorCodes, (c) ->
+								c.toLowerCase()
+							missingAuthorCodes = _.difference lowerChemists, lowerAuthorCodes
 							missingProjectCodes = _.difference sdfProperties.projects, projectCodes
 
 							# if any chemists are invalid then pass those invalid users to the registration

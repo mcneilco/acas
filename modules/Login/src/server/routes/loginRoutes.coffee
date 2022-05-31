@@ -133,6 +133,44 @@ exports.ensureAuthenticated = (req, res, next) ->
 		redirectURL = "#{basePath}#{req.originalURL || req.url}"
 	res.redirect '/login?redirect_url='+redirectURL
 
+exports.ensureCmpdRegAdmin = (req, res, next) ->
+	if req.session?.passport?.user?
+		user = req.session.passport.user
+	else
+		user =
+			username: 'anonymous'
+			roles: []
+	exports.checkHasRole user, config.all.client.roles.cmpdreg.adminRole, (err, hasRole) ->
+		console.log "Checked role: #{config.all.client.roles.cmpdreg.adminRole}, for user: #{user.username}, for path #{req.url}, result: #{hasRole}"
+		if !hasRole
+			res.statusCode = 401
+			res.json 'Unathorized: You have attempted an action that requires CmpdReg Admin permissions! This incident will be reported to your system administrator.'
+		else
+			return next()
+	
+
+exports.checkHasRole = (user, roleConfig, callback) ->
+	_ = require 'underscore'
+	userRoles = parseUserRoles user
+	if !roleConfig
+		validRoles = []
+	else
+		validRoles = roleConfig.split(",")
+	if validRoles? and validRoles.length > 0
+		hasRole = ((_.intersection userRoles, validRoles).length > 0)
+		callback null, hasRole
+	else
+		# if role is not configured, default to not giving access
+		callback null, false
+
+parseUserRoles = (user) ->
+	_ = require 'underscore'
+	userRoles = []
+	if user.roles?
+		_.each user.roles, (authorRole) ->
+			userRoles.push authorRole.roleEntry.roleName
+	return userRoles
+
 exports.ensureAuthenticatedAPI = (req, res, next) ->
 	console.log "checking for login for path: "+req.url
 	if req.isAuthenticated()
