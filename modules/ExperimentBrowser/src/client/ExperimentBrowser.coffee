@@ -612,22 +612,8 @@ class ExperimentBrowserController extends Backbone.View
 
 	handleOpenInQueryToolClicked: =>
 		unless @$('.bv_openInQueryToolButton').hasClass 'dropdown-toggle'
-			if @experimentController.model.get('lsLabels') not instanceof LabelList
-				@experimentController.model.set 'lsLabels',  new LabelList @experimentController.model.get('lsLabels')
-			subclass = @experimentController.model.get('subclass')
-			if window.conf.entity?.saveInitialsCorpName? and window.conf.entity.saveInitialsCorpName is true
-				if @experimentController.model.get('lsLabels').getLabelByTypeAndKind("corpName", subclass + ' corpName').length > 0
-					code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('corpName', subclass + ' corpName')[0].get('labelText')
-				else if @experimentController.model.get('lsKind') is "study" and @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
-					code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id')[0].get('labelText')
-				else
-					code = @experimentController.model.get("codeName")
-			else if @experimentController.model.get('lsKind') is "study" and @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
-				code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id')[0].get('labelText')
-			else
-				code = @experimentController.model.get('codeName')
-
-			window.open("/openExptInQueryTool?experiment=#{code}",'_blank')
+			handleGetLinkQueryToolClicked()
+			window.open(@$('.bv_exptLink'),'_blank')
 
 	handleGetLinkQueryToolClicked: => 
 			# Preparatory Logic to Get Code to Pass to Generate Link Route 
