@@ -2,6 +2,7 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.get '/api/cmpdRegAdmin/:entityType', exports.getCmpdRegEntities
 	app.get '/api/cmpdRegAdmin/:entityType/validate/:code', exports.validateCmpdRegEntity
 	app.get '/api/cmpdRegAdmin/:entityType/codeName/:code', exports.getCmpdRegEntityByCode
+	app.get '/api/cmpdRegAdmin/:entityType/search/:searchTerm', exports.searchCmpdRegEntities
 	app.post '/api/cmpdRegAdmin/:entityType/validateBeforeSave', exports.validateCmpdRegEntityBeforeSave
 	app.post '/api/cmpdRegAdmin/:entityType',  exports.saveCmpdRegEntity
 	app.put '/api/cmpdRegAdmin/:entityType/:id', exports.updateCmpdRegEntity
