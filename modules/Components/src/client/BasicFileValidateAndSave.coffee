@@ -177,7 +177,18 @@ class BasicFileValidateAndSaveController extends Backbone.View
 			@$('.bv_htmlSummary').html(json.results.htmlSummary)
 			doseResponseTableElements = this.$('.bv_htmlSummary .bv_doseResponseSummaryTable')
 			if doseResponseTableElements.length > 0
-				@$('.bv_htmlSummary .bv_doseResponseSummaryTable').dataTable()
+				try
+					@$('.bv_htmlSummary .bv_doseResponseSummaryTable').dataTable({
+						"asStripeClasses": [] ## Disable odd/even stripes
+					})
+				catch e
+					dataTableErrorHtmls = '<p style="background-color:#fbf7dc" >Warning: Could not create interactive table.  Displaying plain table instead.</p>'
+					## It's not critical to the workflow that the table be rendered as a data.table but if it fails, it's likely 
+					## that there is an error associated with the data which is expected by be caught by the service.
+					## So here we just render as html and let the user know that there is an error rendering the interactive table
+					doseResponseTableElements.before(dataTableErrorHtmls)
+					console.error(e)
+
 		if json.results?.preProcessorHTMLSummary?
 			@showPreProcessorHTMLSUmmary json.results.preProcessorHTMLSummary
 		@$('.bv_validateStatusDropDown').modal("hide")
