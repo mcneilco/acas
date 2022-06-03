@@ -2909,11 +2909,18 @@ splitOnSemicolon <- function(x) {
   unlist(trim(strsplit(x, ";")))
 }
 getFitDataFromUploadOrganizedResults <- function(calculatedResults) {
+  # Function to transform calculatedResults formatted data into the dose response "fitData" format used for curve rendering and curve fitting
+  # Generally this is means that we are going from a long format to a wide format with specific columns matching the rendering hint parameters used for upload
+  # this also means we are transforming lsKind names to names used by the curve fitting and rendering functions
+
+  # Use data.table to convert the calculatedResults into fitData
   curve_params <- as.data.table(calculatedResults)
   dt <- curve_params[ ,  {
 
-    # Get the rendering hint value for the curve set
+    # Get the rendering hint value for the curve set so we can use it to get the correct parameters from calculatedResults
     renderingHint <- .SD[valueKind == "Rendering Hint"]$stringValue
+
+    # Catch the case where rendering hint was not set but a curve id was provided
     if (is.na(renderingHint)|| length(renderingHint) == 0) {
       me <- copy(.SD)
       curveId <- .SD[valueKind == "curve id"]$stringValue
@@ -2924,7 +2931,7 @@ getFitDataFromUploadOrganizedResults <- function(calculatedResults) {
       list(list(data.table()))
     } else {
 
-      # Get the model fit function mappings for the rendering hint
+      # Get the model fit function mappings for the rendering hint which maps ls kinds to curve fitting parameter names
       modelFit <- get_model_fit_from_type_code(renderingHint)
 
       # Get the fields that we actually store in the database this map stores more than just the stored value fields
@@ -2951,7 +2958,7 @@ getFitDataFromUploadOrganizedResults <- function(calculatedResults) {
       # Attached the model fit as a column to the row for use later on
       dt[ , modelFit := list(list(modelFit))]
 
-      # Determine which are the parameters so we can override reported values with the fitted values
+      # Determine which lsKinds are the parameters so we can override reported values with the fitted values
       dt[ , missingParameters := FALSE]
       if(length(modelFit$paramNames) > 0) {
         # If this rendering hint uses a model fct (most do but e.g. Scatter does not)
@@ -2962,22 +2969,37 @@ getFitDataFromUploadOrganizedResults <- function(calculatedResults) {
         paramOverrideColumns <- storedFields[match(fittedParamLsKinds, storedFields$ls_kind),]$name
         fixedParams <- list()
         missing <- c()
+
+        # Get a list of the "fixed parameters", and describe if they are missing or not, and also produce a pretty value to be rendered later in the html summary
         for(p in 1:length(modelFit$paramNames)) {
-            if(paramOverrideColumns[p] %in% names(dt)) {
-                fixedParams[modelFit$paramNames[p]] <- dt[,paramOverrideColumns[p], with = FALSE]
+            fixedParams[[modelFit$paramNames[p]]] <- list(value= NA_real_, formattedValue = NA_character_, missing = FALSE, ls_kind = reportedParamLsKinds[p])
+            if (paramOverrideColumns[p] %in% names(dt)) {
+              fixedParams[[modelFit$paramNames[p]]]$value <- dt[[paramOverrideColumns[p]]]
+              fixedParams[[modelFit$paramNames[p]]]$formattedValue <- format(dt[[paramOverrideColumns[p]]], digits = 4)
             } else if (modelFit$paramNames[p] %in% names(dt)) {
-                fixedParams[modelFit$paramNames[p]] <- dt[,modelFit$paramNames[p], with = FALSE]
+              fixedParams[[modelFit$paramNames[p]]]$value <- dt[[modelFit$paramNames[p]]]
+              fixedParams[[modelFit$paramNames[p]]]$formattedValue <- format(dt[[modelFit$paramNames[p]]], digits = 4)
             } else {
-                missing <- c(missing, p)
+              fixedParams[[modelFit$paramNames[p]]]$missing <- TRUE
+              missing <- c(missing, p)
             }
         }
+
+        # If they are missing parameters we need to warn the user about it
+        # We decided not to throw errors as this would be a breaking change for some workflows
         if(length(missing) > 0) {
             dt[ , missingParameters := TRUE]
-            addError(paste0("The following parameters were not found for curve id '", dt$curveId, "'.  Please provide values for these parameters so that curves are drawn properly: ", paste(reportedParamLsKinds[missing], collapse = ", ")))
+            missingParametersMessage <- paste0("The following parameters were not found for curve id '", dt$curveId, "'.  Please provide values for these parameters so that curves are drawn properly: ", paste(reportedParamLsKinds[missing], collapse = ", "))
+            warnUser(missingParametersMessage)
+
+            # Attach the message to the row so we can reuse it in dose response summary table
+            dt[ , missingParametersMsg := missingParametersMessage]
         }
       } else {
         fixedParams <- list()
+        reportedParamLsKinds <- c()
       }
+      dt[ , reportedParamLsKinds := list(reportedParamLsKinds)]
       dt[ , fixedParams := list(fixedParams)]
       dt[ , rowID := rowID]
       dt[ , batchCode := batchCode]
@@ -3058,7 +3080,9 @@ validateDoseResponseCurves <- function(calculatedResults, subjectData, mainCode,
 
     # Calculate the goodness of fit stats, plot curves and attach to the fit data
     defaultRenderingParams <- list(curveIds="NA", width = 400, height = 250)
-    fitData <- prepForRender(fitData, protocol, defaultRenderingParams)
+
+    # Validate the goodness of fit stats and decorate the fitData with the results
+    fitData <- validateGoodnessOfFits(fitData, protocol, defaultRenderingParams)
 
     # Render the html for the curve fit
     rmd <- system.file("rmd", "doseResponseCurveValidation.rmd", package="racas")
@@ -3068,11 +3092,15 @@ validateDoseResponseCurves <- function(calculatedResults, subjectData, mainCode,
                                     stylesheet = system.file("rmd", "racas_container.css", package="racas"))                                
     return(htmlSummary)
 }
-prepForRender <- function(fitData, protocol, defaultRenderingParams) {
+
+validateGoodnessOfFits <- function(fitData, protocol, defaultRenderingParams) {
+  # This function validates the goodness of fit stats and decorates the fitData with the results
 
   # Get the protocol min and max y values if they exist
   protocolDisplayValues <- racas::get_protocol_curve_display_min_and_max_by_protocol(protocol)
 
+  # Get the stats to show in the summary
+  
   # Calculate the goodness of fit stats, plot curves, categorize and return an html row for each curve
   fitData[ ,  c("SSE", "SST", "SSR", "rSquared", "errorLevel", "TR") := {
       fitData <- copy(.SD)
@@ -3088,9 +3116,9 @@ prepForRender <- function(fitData, protocol, defaultRenderingParams) {
       goodnessOfFitThresholds <- get_goodness_of_fit_thresholds_from_rendering_options(renderingOptions)
 
       # Calculate the goodness of fit parameters using the fixedParams and points a fit function
-      calculatedGoodnessOfFitParameters <- get_goodness_of_fit_stats_from_fixed_parameters(fixedParams, missingParameters, points, renderingOptions$fct)
+      calculatedGoodnessOfFitParameters <- get_goodness_of_fit_stats_from_fixed_parameters(fixedParams[[1]], points, renderingOptions$fct)
 
-      # Get the parameters for curve fitting (all teh defaults for plotting curves)
+      # Get the parameters for curve fitting (all the defaults for plotting curves)
       parsedParams <- racas::parse_params_curve_render_dr(defaultRenderingParams, NA)
 
       # Apply parsed params to fit data
@@ -3102,72 +3130,111 @@ prepForRender <- function(fitData, protocol, defaultRenderingParams) {
 
       # Plot the curve and get the base64 encoded text of the image
       # racasMessenger$logger$info(parsedParams$yMax)
-      racasMessenger$logger$debug(sprintf("Ymin %s", parsedParams$yMin))
-      racasMessenger$logger$info(sprintf("Ymax %s", parsedParams$yMax))
       t <- tempfile()
-      suppressWarnings(racas::plotCurve(curveData = data$points, params = data$parameters, drawCurve = TRUE, logDose = parsedParams$logDose, logResponse = parsedParams$logResponse, outFile = t, ymin=parsedParams$yMin, ymax=parsedParams$yMax, xmin=parsedParams$xMin, xmax=parsedParams$xMax, height=parsedParams$height, width=parsedParams$width, showGrid = parsedParams$showGrid, showAxes = parsedParams$showAxes, labelAxes = parsedParams$labelAxes, showLegend=parsedParams$legend, mostRecentCurveColor = parsedParams$mostRecentCurveColor, axes = parsedParams$axes, plotColors = parsedParams$plotColors, curveLwd=parsedParams$curveLwd, plotPoints=parsedParams$plotPoints, xlabel = parsedParams$xLab, ylabel = parsedParams$yLab))
+      suppressWarnings(racas::plotCurve(curveData = data$points, params = data$parameters, drawCurve = TRUE, logDose = parsedParams$logDose, logResponse = parsedParams$logResponse, outFile = t, ymin=parsedParams$yMin, ymax=parsedParams$yMax, xmin=parsedParams$xMin, xmax=parsedParams$xMax, height=parsedParams$height, width=parsedParams$width, showGrid = parsedParams$showGrid, showAxes = parsedParams$showAxes, labelAxes = parsedParams$labelAxes, showLegend=parsedParams$legend, mostRecentCurveColor = parsedParams$mostRecentCurveColor, axes = parsedParams$axes, plotColors = parsedParams$plotColors, curveLwd=parsedParams$curveLwd, plotPoints=parsedParams$plotPoints, xlabel = parsedParams$xLab, ylabel = parsedParams$yLab, bg = NA))
       imgTxt <- RCurl::base64Encode(readBin(t, "raw", file.info(t)[1, "size"]), "txt")
       unlink(t)
       
       # Apply the goodness of fit rules and return the table row with stats and errorLevel cateogories
       errorLevel = ""
       statsCells <- ""
+      missingParameters <- Filter(f=function(x) x$missing == TRUE, fixedParams[[1]])
       for(s in 1:length(goodnessOfFitThresholds)) {
           tdStyleClass <- ""
-          title <- ""
+          titles <- c()
           statThresholds <- goodnessOfFitThresholds[[s]]
           stat <- names(goodnessOfFitThresholds)[s]
-          # Get the stat variable value from the environment
+
+          # Stat is rendered as html so we need the html title to get a pretty R² in the UI
+          if(stat == "rSquared") {
+            statName <- "R&#178;"
+          } else {
+            statName <- stat
+          }
+
+          # Fetch the current calculated stat from the calculated stats object
           statValue <- calculatedGoodnessOfFitParameters[[stat]]
+
+          # This is the pretty print value to renderin in the UI
           statValueText <- format(statValue, digits=3)
+
           warnings <- list()
           errors <- list()
-          for(r in 1:length(statThresholds)) {
+
+          if(length(missingParameters) > 0) {
+              # If we are missing parameters, then our stats won't be calculated or thresholded properly
+              # Just show a warning in the row and continue
+              warnings[[length(warnings)+1]] <- NA_character_
+              titles <- c(titles, paste0(missingParametersMsg))
+          } else {
+            for(r in 1:length(statThresholds)) {
               threshold <- statThresholds[[r]]
+
+              # Class tells us what error level this should invoke in the UI and therefore if we should block the user from submitting the data
               class <- names(statThresholds)[r]
-              if(is.na(statValue) || !is.na(threshold$value) && !is.na(threshold$operator) && eval(parse(text = paste0('statValue ', threshold$operator, ' threshold$value')))) {
-                  if(stat == "rSquared") {
-                    statName <- "R&#178;"
-                  } else {
-                    statName <- stat
-                  }
-                  if(is.na(statValue)) {
-                    title <- paste0(statName," could not be calculated.")
-                  }
-                  # We only want to up the style class if we are not already in a higher class
-                  if(tdStyleClass == "" && class == "warning") {
-                    tdStyleClass <- "warning"
-                    # If the curve is missing parameters then the error or warning was captured elsewhere so lets just style the class
-                    if(!missingParameters) {
-                      warnings[[length(warnings)+1]] <- paste0("The ", statName, " for curve id '", name, "' is ", statValueText, " which is ", threshold$operator, " than the threshold value of ", threshold$value, ".")
-                      title <- paste0(statName," value of ",statValueText, " is ", threshold$operator, " than threshold value ", threshold$value)
+
+              # If the values are filled in then we proceed but if they are empty, then there is no googness of fit to evaluate
+              if(!is.na(threshold$value) && !is.na(threshold$operator)) {
+                # If the stat value is empty but we don't have missing parameters then something is wrong
+                if(is.na(statValue)) {
+                    msg <- paste0("The ", statName, " for curve id '", name, "' could not be calculated. Please check the curve data.")
+                    if(class == "error") {
+                      errors[[length(errors)+1]] <- msg
+                    } else {
+                      warnings[[length(warnings)+1]] <- msg
                     }
-                  } else if(class == "error") {
-                    tdStyleClass <- "error"
-                    errorLevel <- "error"
-                    if(!missingParameters) {
-                      errors[[length(errors)+1]] <- paste0("The ", statName, " for curve id '", name, "' is ", statValueText, " which is ", threshold$operator, " than the threshold value of ", threshold$value, ".")
-                      title <- paste0(statName," value of ",statValueText, " is ", threshold$operator, " than threshold value ", threshold$value)
+                    titles <- c(titles, msg)
+                    break;
+                } else {
+                  if(eval(parse(text = paste0('statValue ', threshold$operator, ' threshold$value')))) {
+                    # We only want to up the style class if we are not already in a higher class
+                    if(tdStyleClass == "" && class == "warning") {
+                      # If the curve is missing parameters then the error or warning was captured elsewhere so lets just style the class
+                      if(length(missingParameters) == 0) {
+                        warnings[[length(warnings)+1]] <- paste0("The ", statName, " for curve id '", name, "' is ", statValueText, " which is ", threshold$operator, " than the threshold value of ", threshold$value, ".")
+                        titles <- c(titles, paste0(statName," value of ",statValueText, " is ", threshold$operator, " than threshold value ", threshold$value))
+                      }
+                    } else if(class == "error") {
+                      if(length(missingParameters) == 0) {
+                        errors[[length(errors)+1]] <- paste0("The ", statName, " for curve id '", name, "' is ", statValueText, " which is ", threshold$operator, " than the threshold value of ", threshold$value, ".")
+                        titles <- c(titles, paste0(statName," value of ",statValueText, " is ", threshold$operator, " than threshold value ", threshold$value))
+                      }
                     }
                   }
-                  if(tdStyleClass == "warning" && errorLevel == "") {
-                    errorLevel <- "warning"
-                  }
+                }
               }
+            }
           }
           if(length(errors) > 0) {
+            tdStyleClass <- "error"
+            errorLevel <- "error"
             for(e in errors) {
-              addError(e)
+              if(!is.na(e)) {
+                addError(e)
+              }
             }
           } else if(length(warnings) > 0) {
+            tdStyleClass <- "warning"
+            if(errorLevel == "") {
+              errorLevel <- "warning"
+            }
             for(w in warnings) {
-              warnUser(w)
+              if(!is.na(w)) {
+                warnUser(w)
+              }
             }
           }
-          if(title != "") {
-            title <- sprintf('title="%s"',title)
+          title <- ""
+          if(length(titles) > 0) {
+            title <- sprintf('title="%s"', paste0(titles, sep = "", collapse = "&#xa;"))
           }
-          statsCells <- paste0(statsCells,sprintf('<td %s class="stat_%s">%s</td>', title, tdStyleClass, statValueText))
+          if(stat %in% c("rSquared")) {
+            statsCells <- paste0(statsCells,sprintf('<td %s class="stat_%s">%s</td>', title, tdStyleClass, statValueText))
+          }
+      }
+      valueCells <- ""
+      for(r in 1:length(reportedParamLsKinds[[1]])) {
+        valueCells <- paste0(valueCells, sprintf('<td>%s</td>', fixedParams[[1]][[r]]$formattedValue))
       }
       tr <- ''
       tr <- paste0(tr,sprintf('<td>%s</td>', batchCode))
@@ -3175,6 +3242,7 @@ prepForRender <- function(fitData, protocol, defaultRenderingParams) {
       tr <- paste0(tr,sprintf('<td>%s</td>', errorLevel))
       tr <- paste0(tr,sprintf('<td><img src="data:image/png;base64,%s"></td>', imgTxt))
       tr <- paste0(tr, statsCells)
+      tr <- paste0(tr, valueCells)
       tr <- paste0(sprintf('<tr class="%s">', errorLevel), tr)
       tr <- paste0(tr,"</tr>" )
 
