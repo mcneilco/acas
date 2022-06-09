@@ -1,6 +1,6 @@
 exports.setupAPIRoutes = (app) ->
 	app.get '/cmpdReg/scientists', exports.getScientists
-	app.get '/cmpdReg/metalots/corpName/[\\S]*', exports.getMetaLot
+	app.get '/cmpdReg/metalots/corpName/:lotCorpName', exports.getMetaLot
 	app.post '/cmpdReg/metalots', exports.metaLots
 	app.get '/cmpdReg/parentLot/getAllAuthorizedLots', exports.getAllAuthorizedLots
 
@@ -23,7 +23,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/cmpdReg/operators', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
 	app.get '/cmpdReg/purityMeasuredBys', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
 	app.get '/cmpdReg/structureimage/:type/[\\S]*', loginRoutes.ensureAuthenticated, exports.getStructureImage
-	app.get '/cmpdReg/metalots/corpName/[\\S]*', loginRoutes.ensureAuthenticated, exports.getMetaLot
+	app.get '/cmpdReg/metalots/corpName/:lotCorpName', loginRoutes.ensureAuthenticated, exports.getMetaLot
 	app.get '/cmpdReg/MultipleFilePicker/[\\S]*', loginRoutes.ensureAuthenticated, exports.getMultipleFilePicker
 	app.post '/cmpdReg/search/cmpds', loginRoutes.ensureAuthenticated, exports.searchCmpds
 	app.post '/cmpdReg/regsearches/parent', loginRoutes.ensureAuthenticated, exports.regSearch
@@ -57,6 +57,10 @@ exports.setupRoutes = (app, loginRoutes) ->
 _ = require 'underscore'
 request = require 'request'
 config = require '../conf/compiled/conf.js'
+# node-fetch is ES5 modules only so need to import it like this async
+fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+serverUtilityFunctions = require './ServerUtilityFunctions.js'
+loginRoutes = require './loginRoutes.js'
 
 exports.cmpdRegIndex = (req, res) ->
 	scriptPaths = require './RequiredClientScripts.js'
@@ -122,7 +126,6 @@ exports.getScientists = (req, resp) =>
 		resp.json authors 
 
 exports.getScientistsInternal = (callback) ->
-	loginRoutes = require './loginRoutes.js'
 	config = require '../conf/compiled/conf.js'
 	roleName = null
 	if config.all.client.roles.cmpdreg.chemistRole? && config.all.client.roles.cmpdreg.chemistRole != ""
@@ -206,55 +209,106 @@ exports.getStructureImage = (req, resp) ->
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/structureimage' + imagePath
 	req.pipe(request(cmpdRegCall)).pipe(resp)
 
-exports.getMetaLot = (req, resp) ->
-	endOfUrl = (req.originalUrl).replace /\/cmpdreg\/metalots/, ""
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/metalots' + endOfUrl
-	console.log cmpdRegCall
-	request(
-		method: 'GET'
-		url: cmpdRegCall
-		json: true
-	, (error, response, json)=>
-		console.log "metalot return"
-		console.log error
-		console.log response
-		console.log json
+class HTTPResponseError extends Error
+	constructor: (response, ...args) ->
+		super("HTTP Error Response: #{response.status} #{response.statusText}", ...args)
+		this.response = response
 
-		if !error
-			if not json.lot?
-				resp.statusCode = 500
-				resp.end JSON.stringify "Could not find lot"
-				return			
+class InternalServerError extends Error
+	# Throw an internal server error
+	constructor: (text, ...args) ->
+		super("Internal server error: #{text}", ...args)
 
-			if json?.lot?.project?
-				projectCode = json.lot.project
-				if config.all.client.cmpdreg.metaLot.useProjectRolesToRestrictLotDetails
-					authorRoutes = require './AuthorRoutes.js'
-					authorRoutes.allowedProjectsInternal req.user, (statusCode, acasProjectsForUsers) =>
-						if statusCode != 200
-							resp.statusCode = statusCode
-							resp.end JSON.stringify acasProjectsForUsers
-						if _.where(acasProjectsForUsers, {code: projectCode}).length > 0
-							resp.json json
-						else
-							console.log "user does not have permissions to the lot's project"
-							resp.statusCode = 500
-							resp.end JSON.stringify "Lot does not exist"
-				else
-					resp.json json
-			else #no project attr in lot
-				if config.all.client.cmpdreg.metaLot.useProjectRolesToRestrictLotDetails
-					resp.statusCode = 500
-					resp.end JSON.stringify "Could not find lot"
-				else
-					resp.json json
+checkStatus = (response) ->
+	# check for http error
+	if response.ok
+		return response
+	else
+		throw new HTTPResponseError response
+
+exports.getMetaLot = (req, resp, next) ->
+	# Get the metalot and check acls
+	response = await exports.getMetaLotInternal(req.params.lotCorpName)
+	try
+		checkStatus response
+		metaLot = await response.json()
+		if Object.keys(metaLot).length == 0 || !metaLot.lot?
+			resp.statusCode = 500
+			resp.end JSON.stringify "Could not find lot"
+			return
 		else
-			console.log 'got ajax error trying to get CmpdReg MetaLot'
-			console.log error
-			console.log json
-			console.log response
-			resp.end JSON.stringify error
-	)
+			acls = await exports.getLotAcls(metaLot.lot, req.user)
+			metaLot.lot.acls = acls
+			if(acls.getRead())
+				resp.json metaLot
+			else
+				resp.statusCode = 403
+				resp.end JSON.stringify "You do not have permission to view this lot"
+	catch error
+		console.log error
+		resp.statusCode = 500
+		resp.end JSON.stringify "Error getting lot"
+
+# Simple class to store acls
+class Acls
+	constructor: (read, write) ->
+		this.read = read
+		this.write = write
+
+	getRead: ->
+		return this.read
+
+	getWrite: ->
+		return this.write
+
+	setRead: (read) ->
+		this.read = read
+
+	setWrite: (write) ->
+		this.write = write
+
+exports.getLotAcls = (lot, user) ->
+	# Get the acls for the lot
+	lotAcls = new Acls(false, false)
+
+	# Check if user is cmpdreg admin
+	isCmpdRegAdmin = loginRoutes.checkHasRole(user, config.all.client.roles.cmpdreg.adminRole)
+	if isCmpdRegAdmin
+		# If the user is a cmpd reg admin, then regardless of the lot's project or other configs they can read and write the lot
+		lotAcls.setRead(true)
+		lotAcls.setWrite(true)
+	else
+		# If the user is not a cmpd reg admin, then they can only read the lot if they have the project role for the lot's project
+		if lot.project? && config.all.client.cmpdreg.metaLot.useProjectRolesToRestrictLotDetails
+			projectCode = lot.project
+			authorRoutes = require './AuthorRoutes.js'
+			[err, acasProjectsForUsers] = await serverUtilityFunctions.promisifyRequestStatusResponse(authorRoutes.allowedProjectsInternal, [user])
+			if err?
+				throw new InternalServerError "Could not get user's projects" 
+			if _.where(acasProjectsForUsers, {code: projectCode}).length > 0
+				lotAcls.setRead(true)
+		else
+			lotAcls.setRead(true)
+		
+		# If the user is not a cmpd reg admin, then they can only write the lot if they are allowed to read the lot
+		if !lotAcls.getRead()
+			lotAcls.setWrite(false)
+		else
+			# If the user is not a cmpd reg admin, then they can only write the lot if disableEditMyLots is false
+			# and they are either the chemist or the lot recordedBy
+			if config.all.client.cmpdreg.metaLot.disableEditMyLots == false
+				if lot.chemist? && lot.chemist == user.username
+					lotAcls.setWrite(true)
+				else
+					if lot.recordedBy? && lot.recordedBy == user.username
+						lotAcls.setWrite(true)
+	lotAcls.setWrite(false)
+	return lotAcls
+
+exports.getMetaLotInternal = (lotCorpName) ->
+	url = config.all.client.service.cmpdReg.persistence.fullpath + '/metalots/corpName/' + lotCorpName
+	response = await fetch(url, headers: {'Content-Type': 'application/json'})
+	return response;
 
 exports.regSearch = (req, resp) ->
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/regsearches/parent'
