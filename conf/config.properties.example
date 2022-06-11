@@ -615,7 +615,7 @@ client.protocol.mainControllerClassName=ProtocolBaseController
 client.experiment.mainControllerClassName=ExperimentBaseController
 
 # Behavior without this config set to true is to give all users access to all projects
-server.project.roles.enable=false
+server.project.roles.enable=true
 
 #Controls whether to try to sync projects list from ACAS to CmpdReg
 server.project.sync.cmpdReg=true
@@ -692,7 +692,7 @@ client.cmpdreg.metaLot.showSelectCompoundTypeList=false
 client.cmpdreg.metaLot.showSelectParentAnnotationList=false
 client.cmpdreg.metaLot.fileSaveDirNamedForBatchName=true
 client.cmpdreg.metaLot.useExactMass=true
-client.cmpdreg.metaLot.useProjectRolesToRestrictLotDetails=false
+client.cmpdreg.metaLot.useProjectRolesToRestrictLotDetails=true
 client.cmpdreg.metaLot.showTareWeight=false
 client.cmpdreg.metaLot.showTotalAmountStored=false
 client.cmpdreg.metaLot.disableAliasEdit=false
