@@ -286,18 +286,25 @@ exports.getLotAcls = (lot, user, allowedProjects) ->
 		lotAcls.setRead(true)
 		lotAcls.setWrite(true)
 	else
-		# If the user is not a cmpd reg admin, then they can only read the lot if they have the project role for the lot's project
+		# If the user is not a cmpd reg admin, then check if we are restricting the lot by project acls
 		if lot.project? && config.all.client.cmpdreg.metaLot.useProjectRolesToRestrictLotDetails
 			projectCode = lot.project
+			# There are some cases where we want to call this function where we want to pass allowed projects in rather than call out to the service.
+			# If the allowedProjects parameter is passed in, then we use that instead of calling the service.
 			if !allowedProjects?
+				# Get the allowed projects for the user
 				[err, allowedProjects] = await serverUtilityFunctions.promisifyRequestStatusResponse(authorRoutes.allowedProjectsInternal, [user])
 				if err?
 					throw new InternalServerError "Could not get user's projects" 
+
+			# Check if the lot's project is in the allowed projects
 			if _.where(allowedProjects, {code: projectCode}).length > 0
 				lotAcls.setRead(true)
 			else
+				# Default to not allowing read access so no need to set false here, just log it
 				console.warn "User #{user.username} does not have access to project #{projectCode} for lot #{lot.corpName}"
 		else
+			# If we are not restricting the lot by project acls then anyone can read the lot 
 			lotAcls.setRead(true)
 		
 		# If the user is not a cmpd reg admin, then they can only write the lot if they are allowed to read the lot
@@ -307,11 +314,13 @@ exports.getLotAcls = (lot, user, allowedProjects) ->
 			# If the user is not a cmpd reg admin, then they can only write the lot if disableEditMyLots is false
 			# and they are either the chemist or the lot recordedBy
 			if config.all.client.cmpdreg.metaLot.disableEditMyLots == false
-				if lot.chemist? && lot.chemist == user.username
+				canWrite = (lot.chemist? && lot.chemist == user.username) || (lot.recordedBy? && lot.recordedBy == user.username)
+				if canWrite
 					lotAcls.setWrite(true)
 				else
-					if lot.recordedBy? && lot.recordedBy == user.username
-						lotAcls.setWrite(true)
+					console.log "User #{user.username} does not have permission to edit lot #{lot.corpName} which is not their lot (recordedBy: #{lot.recordedBy}, chemist: #{lot.chemist})"
+					lotAcls.setWrite(false)
+
 	console.log "User #{user.username} lot #{lot.corpName} lot acls #{JSON.stringify(lotAcls)}"
 	return lotAcls
 
@@ -365,12 +374,13 @@ exports.metaLots = (req, resp) ->
 
 	# Verify that lot is included as a metalot with no lot is not allowed
 	if metaLot.lot?
-		# If the user is in the request then update the lot's modifiedBy field
+		# If the user is in the request then update the lot's modifiedBy field as the persistence service does not
 		if req.user?
 			metaLot.lot.modifiedBy = req.user.username
 		# If this is a saved lot then we need to check the user has permission to edit the lot
 		# By checking the saved lots project, the users allowed projects
 		if metaLot.lot.id? && metaLot.lot.corpName?
+			# Get the saved meta lot as it returns the saved metalot and includes the acls
 			[err, savedMetaLot, statusCode] = await exports.getMetaLotInternal metaLot.lot.corpName, req.user
 			if err?
 				resp.statusCode = statusCode
