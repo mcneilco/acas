@@ -634,12 +634,14 @@ class ExperimentBrowserController extends Backbone.View
 				type: 'GET'
 				url: "/getLinkExptQueryTool?experiment=#{code}"
 				success: (response) => 
+					# Take Away Generating Progress Mask 
+					@$('.bv_generatingLink').hide()
 					window.open(response,'_blank')
 				error: (err) =>
+					# Take Away Generating Progress Mask 
+					@$('.bv_generatingLink').hide()
 					console.log err
 				datatype: 'json'
-			# Take Away Generating Progress Mask 
-			@$('.bv_generatingLink').hide()
 
 	handleGetLinkQueryToolClicked: => 
 			# Preparatory Logic to Get Code to Pass to Generate Link Route 
@@ -664,18 +666,22 @@ class ExperimentBrowserController extends Backbone.View
 				type: 'GET'
 				url: "/getLinkExptQueryTool?experiment=#{code}"
 				success: (response) => 
+					# Take Away Generating Progress Mask 
+					@$('.bv_generatingLink').hide()
 					@$('.bv_getLinkResults').show()
 					@$('.bv_exptLink').val(response)
 				error: (err) =>
+					# Take Away Generating Progress Mask 
+					@$('.bv_generatingLink').hide()
 					console.log err
 				datatype: 'json'
-			# Take Away Generating Progress Mask 
-			@$('.bv_generatingLink').hide()
 
-	handleCopyLinkClicked: => 
-		@$('.bv_exptLink').select()
-		document.execCommand("copy")
-		alert("Link Copied to Clipboard!")
+	handleCopyLinkClicked: =>
+    	link = @$('.bv_exptLink').value
+    	if link? # Defined and not null
+            alert("Link copied to clipboard!")
+    	else
+			alert("Unable to copy link to clipboard")
 
 	formatOpenInQueryToolButton: =>
 		@$('.bv_viewerOptions').empty()
