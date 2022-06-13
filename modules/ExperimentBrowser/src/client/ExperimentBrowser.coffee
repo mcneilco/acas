@@ -677,10 +677,10 @@ class ExperimentBrowserController extends Backbone.View
 				datatype: 'json'
 
 	handleCopyLinkClicked: =>
-    	link = @$('.bv_exptLink').value
-    	if link? # Defined and not null
+		link = @$('.bv_exptLink').value
+		if link? # Defined and not null
 			alert("Link copied to clipboard!")
-    	else
+		else
 			alert("Unable to copy link to clipboard")
 
 	formatOpenInQueryToolButton: =>
