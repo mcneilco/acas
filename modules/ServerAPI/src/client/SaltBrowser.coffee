@@ -110,8 +110,8 @@ class SaltSummaryTableController extends Backbone.View
 
 class SaltBrowserController extends Backbone.View
 	events:
-		"click .bv_deleteSalt": "handleDeleteSaltClicked" 
-		"click .bv_editSalt": "handleEditSaltClicked"
+		# "click .bv_deleteSalt": "handleDeleteSaltClicked" 
+		# "click .bv_editSalt": "handleEditSaltClicked"
 		#"click .bv_confirmDeleteSaltButton": "handleConfirmDeleteSaltClicked"
 		"click .bv_cancelDelete": "handleCancelDeleteClicked"
 
@@ -154,17 +154,17 @@ class SaltBrowserController extends Backbone.View
 		$(".bv_saltController").removeClass("hide")
 		$(".bv_saltControllerContainer").removeClass("hide")
 
-		@$('.bv_editSalt').show()
-		if window.conf.salt?.editingRoles?
-			editingRoles = window.conf.salt.editingRoles.split(",")
-			if !UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, editingRoles)
-				@$('.bv_editSalt').hide()
+		# @$('.bv_editSalt').show()
+		# if window.conf.salt?.editingRoles?
+		# 	editingRoles = window.conf.salt.editingRoles.split(",")
+		# 	if !UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, editingRoles)
+		# 		@$('.bv_editSalt').hide()
 
-		@$('.bv_deleteSalt').show()
-		if window.conf.salt?.deletingRoles?
-			deletingRoles= window.conf.salt.deletingRoles.split(",")
-			if !UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, deletingRoles)
-				@$('.bv_deleteSalt').hide()
+		# @$('.bv_deleteSalt').show()
+		# if window.conf.salt?.deletingRoles?
+		# 	deletingRoles= window.conf.salt.deletingRoles.split(",")
+		# 	if !UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, deletingRoles)
+		# 		@$('.bv_deleteSalt').hide()
 
 				# Not Implemented Fully Yet
 	handleDeleteSaltClicked: =>
