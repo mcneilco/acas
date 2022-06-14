@@ -3,7 +3,7 @@ exports.setupAPIRoutes = (app) ->
 	app.get '/cmpdReg/metalots/corpName/:lotCorpName', exports.getMetaLot
 	app.delete '/cmpdReg/metalots/corpName/:lotCorpName', exports.deleteMetaLot
 	app.get '/cmpdReg/metalots/checkDependencies/corpName/:lotCorpName', exports.getMetaLotDepedencies
-	app.post '/cmpdReg/metalots', exports.metaLots
+	app.post '/cmpdReg/metalots', exports.saveMetaLot
 	app.get '/cmpdReg/parentLot/getAllAuthorizedLots', exports.getAllAuthorizedLots
 
 exports.setupRoutes = (app, loginRoutes) ->
@@ -31,7 +31,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/cmpdReg/regsearches/parent', loginRoutes.ensureAuthenticated, exports.regSearch
 	app.post '/cmpdReg/structuresearch', loginRoutes.ensureAuthenticated, exports.structureSearch
 	app.post '/cmpdReg/filesave', loginRoutes.ensureAuthenticated, exports.fileSave
-	app.post '/cmpdReg/metalots', loginRoutes.ensureAuthenticated, exports.metaLots
+	app.post '/cmpdReg/metalots', loginRoutes.ensureAuthenticated, exports.saveMetaLot
 	app.delete '/cmpdReg/metalots/corpName/:lotCorpName', loginRoutes.ensureAuthenticated, exports.deleteMetaLot
 	app.get '/cmpdReg/metalots/checkDependencies/corpName/:lotCorpName',  loginRoutes.ensureAuthenticated, loginRoutes.ensureCmpdRegAdmin, exports.getMetaLotDepedencies
 	app.post '/cmpdReg/salts', loginRoutes.ensureAuthenticated, exports.saveSalts
@@ -442,7 +442,7 @@ exports.fileSave = (req, resp) ->
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/filesave'
 	req.pipe(request[req.method.toLowerCase()](cmpdRegCall)).pipe(resp)
 
-exports.metaLots = (req, resp) ->
+exports.saveMetaLot = (req, resp) ->
 	metaLot = req.body;
 
 	# Verify that lot is included as a metalot with no lot is not allowed
