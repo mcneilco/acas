@@ -1,6 +1,8 @@
 exports.setupAPIRoutes = (app) ->
 	app.get '/cmpdReg/scientists', exports.getScientists
 	app.get '/cmpdReg/metalots/corpName/:lotCorpName', exports.getMetaLot
+	app.delete '/cmpdReg/metalots/corpName/:lotCorpName', exports.deleteMetaLot
+	app.get '/cmpdReg/metalots/checkDependencies/corpName/:lotCorpName', exports.getMetaLotDepedencies
 	app.post '/cmpdReg/metalots', exports.metaLots
 	app.get '/cmpdReg/parentLot/getAllAuthorizedLots', exports.getAllAuthorizedLots
 
@@ -30,6 +32,8 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/cmpdReg/structuresearch', loginRoutes.ensureAuthenticated, exports.structureSearch
 	app.post '/cmpdReg/filesave', loginRoutes.ensureAuthenticated, exports.fileSave
 	app.post '/cmpdReg/metalots', loginRoutes.ensureAuthenticated, exports.metaLots
+	app.delete '/cmpdReg/metalots/corpName/:lotCorpName', loginRoutes.ensureAuthenticated, exports.deleteMetaLot
+	app.get '/cmpdReg/metalots/checkDependencies/corpName/:lotCorpName',  loginRoutes.ensureAuthenticated, loginRoutes.ensureCmpdRegAdmin, exports.getMetaLotDepedencies
 	app.post '/cmpdReg/salts', loginRoutes.ensureAuthenticated, exports.saveSalts
 	app.post '/cmpdReg/isotopes', loginRoutes.ensureAuthenticated, exports.saveIsotopes
 	app.post '/cmpdReg/api/v1/structureServices/molconvert', loginRoutes.ensureAuthenticated, exports.molConvert
@@ -223,6 +227,26 @@ checkStatus = (response) ->
 	else
 		throw new HTTPResponseError response
 
+exports.getMetaLotDepedencies = (req, resp, next) ->
+	# We aren't checking acls because the route requires cmpdreg admin already
+	response = await exports.fetchMetaLotDependencies(req.params.lotCorpName)
+	try
+		checkStatus response
+		resp.status = 200
+		resp.json await response.json()
+	catch error
+		console.log error
+		err =  "Error getting lot"
+		resp.statusCode = response.status
+		resp.json {error: err}
+	
+
+exports.fetchMetaLotDependencies = (lotCorpName) ->
+	url = config.all.client.service.cmpdReg.persistence.fullpath + '/metalots/checkDependencies/corpName/' + lotCorpName
+	response = await fetch(url, method: 'GET')
+	return response
+
+
 exports.getMetaLotInternal = (lotCorpName, user) ->
 	# Get the metalot and check acls
 	response = await exports.fetchMetaLot(lotCorpName)
@@ -256,6 +280,55 @@ exports.getMetaLot = (req, resp, next) ->
 	else
 		resp.json metaLot
 
+exports.deleteMetaLot = (req, resp, next) ->
+	if !req.user?
+		req.user = {
+			username: "bob"
+			roles: []
+		}
+	[err, metaLot, statusCode] = await exports.getMetaLotInternal req.params.lotCorpName, req.user
+	if err?
+		resp.statusCode = statusCode
+		resp.json err
+	else
+		if metaLot.lot.acls.getWrite()
+			console.log "Calling delete lot"
+			response = await exports.deleteLotByCorpName(metaLot.lot.corpName)
+			console.log "Got response from delete lot"
+			if response.status == 200
+				resp.statusCode = 200
+				resp.json {success: true}
+			else
+				resp.statusCode = 500
+				jsonResponse = await response.json()
+				resp.json jsonResponse
+		else
+			resp.statusCode = 403
+			resp.json "You do not have permission to delete this lot"
+
+exports.checkMetaLotDepedencies = (req, resp, next) ->
+	[err, metaLot, statusCode] = await exports.getMetaLotInternal req.params.lotCorpName, req.user
+	if err?
+		resp.statusCode = statusCode
+		resp.json err
+	else
+		[err, depdencies, statusCode] = await exports.checkLotDepedencies(metaLot.lot.corpName)
+		if err?
+			resp.statusCode = statusCode
+			resp.json err
+		else
+			resp.json depdencies
+	
+
+exports.fetchMetaLot = (lotCorpName) ->
+	url = config.all.client.service.cmpdReg.persistence.fullpath + '/metalots/corpName/' + lotCorpName
+	response = await fetch(url, headers: {'Content-Type': 'application/json'})
+	return response;
+
+exports.deleteLotByCorpName = (lotCorpName) ->
+	url = config.all.client.service.cmpdReg.persistence.fullpath + '/metalots/corpName/' + lotCorpName
+	response = await fetch(url, method: 'DELETE')
+	return response
 
 # Simple class to store acls
 class Acls

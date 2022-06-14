@@ -221,7 +221,18 @@ div {
 .MetaLotView div.floatingPanel.newIsotopeView div {
     height: 20px;
 }
-
+.MetaLotView div.floatingPanel.deleteLotView {
+    cursor: hand;
+    width: 620px;
+    min-height: 500px;
+    margin-left: 150px;
+}
+.MetaLotView div.floatingPanel.deleteLotView div {
+    height: 300px;
+}
+.MetaLotView div.floatingPanel.deleteLotView .marvinWrapper {
+    height: 506px !important;
+}
 .MetaLotView .bv_lotInventory iframe {
     width: 700px;
     height: 700px;
@@ -265,7 +276,7 @@ div {
     padding: 10px 5px 0px 5px;
     border: none;
 }
-.cancelNewSaltButton {
+.cancelNewSaltButton, .cancelDeleteLotButton {
     background: no-repeat url('../images/cancel.png');
     float:right;
     height: 27px;
@@ -1123,7 +1134,7 @@ div.MetaLotViewButtons.buttons {
     margin-top: 20px;
     width: 636px;
 }
-.MetaLotViewButtons a.cancelButton, a.saveButton, a.backButton, a.newLotButton, a.detailsButton, a.editAnalyticalFiles, a.editLotButton, a.closeButton, a.backToSearchButton {
+.MetaLotViewButtons a.cancelButton, a.deleteButton, a.saveButton, a.backButton, a.newLotButton, a.detailsButton, a.editAnalyticalFiles, a.editLotButton, a.closeButton, a.backToSearchButton {
     float: right;
     height: 27px;
     width: 90px;
@@ -1155,6 +1166,15 @@ div.MetaLotViewButtons.buttons {
 .MetaLotViewButtons a.closeImage {
     background: no-repeat url('../images/close.png');
     /*    margin-right: 8px;*/
+}
+.MetaLotViewButtons a.deleteButton {
+    background-color: rgb(42, 67, 83);
+    color: rgb(185, 190, 197);
+    font: normal 13px/30px "Helvetica Neue", Helvetica, sans-serif;
+    text-decoration: none !important;
+    padding: 1px 0px 0px 10px;
+    margin-right: 11px;
+    width: 80px;
 }
 /****** DETAILS LOT VIEW ******/
 
