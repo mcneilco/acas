@@ -146,7 +146,20 @@ exports.ensureCmpdRegAdmin = (req, res, next) ->
 		res.json 'Unathorized: You have attempted an action that requires CmpdReg Admin permissions! This incident will be reported to your system administrator.'
 	else
 		return next()
-	
+
+exports.ensureACASAdmin = (req, res, next) ->
+	if req.session?.passport?.user?
+		user = req.session.passport.user
+	else
+		user =
+			username: 'anonymous'
+			roles: []
+	hasRole = exports.checkHasRole(user, config.all.client.roles.acas.adminRole)
+	if !hasRole
+		res.statusCode = 401
+		res.json 'Unathorized: You have attempted an action that requires ACAS Admin permissions! This incident will be reported to your system administrator.'
+	else
+		return next()
 
 exports.checkHasRole = (user, roleConfig, callback) ->
 	_ = require 'underscore'
