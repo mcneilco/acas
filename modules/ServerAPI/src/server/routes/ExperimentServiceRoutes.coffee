@@ -785,41 +785,150 @@ exports.createAndUpdateExptExptItxs = (req, resp) ->
 		resp.json json
 
 exports.experimentsByCodeNamesArray = (req, resp) ->
-	exports.experimentsByCodeNamesArrayInternal req.body.data, req.query.option, req.query.testMode, (returnedExpts) ->
+	exports.experimentsByCodeNamesArrayInternal req.body.data, req.query.option, req.query.testMode, (returnedExpts, statusCode) ->
 		if returnedExpts.indexOf("Failed") > -1
 			resp.statusCode = 500
 		resp.json returnedExpts
 
 
 exports.experimentsByCodeNamesArrayInternal = (codeNamesArray, returnOption, testMode, callback) ->
-	if testMode or global.specRunnerTestmode
-		callback JSON.stringify "stubsMode not implemented"
+	
+	response = await exports.fetchExperimentsByCodeNames(codeNamesArray, returnOption)
+	if response.ok
+		json = await response.json()
+		callback json, 200
 	else
-		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"experiments/codename/jsonArray"
-		#returnOption are analysisgroups, analysisgroupstates, analysisgroupvalues, fullobject, prettyjson, prettyjsonstub, stubwithprot, and stub
-		if returnOption?
-			baseurl += "?with=#{returnOption}"
-		console.log "experimentsByCodeNamesArray"
-		console.log baseurl
-		request = require 'request'
-		request(
-			method: 'POST'
-			url: baseurl
-			body: codeNamesArray
-			json: true
-		, (error, response, json) =>
-			console.log "experimentsByCodeNamesArray json"
-			console.log json
-			console.log "response.statusCode"
-			console.log response.statusCode
-			console.log response
-			if !error && response.statusCode == 200
-				callback json
+		callback "Bulk get experiments saveFailed: " + JSON.stringify error, 500
+
+exports.fetchExperimentsByCodeNames = (codeNamesArray, returnOption) ->
+	url = config.all.client.service.persistence.fullpath+"experiments/codename/jsonArray"
+	# Add params to fetch
+	urlParams = new URLSearchParams()
+	if returnOption?
+		urlParams.append("with", returnOption)
+	response = await fetch(url + urlParams, method: 'POST', body: JSON.stringify(codeNamesArray), headers: {'Content-Type': 'application/json'})
+	return response
+	
+exports.getExperimentACL = (experiment, user, allowedProjects) ->
+	# Get the acls for the lot
+	acls = new Acls(false, false, false)
+
+	# Check if user is cmpdreg admin
+	isACASAdmin = loginRoutes.checkHasRole(user, config.all.client.roles.acas.adminRole)
+	isACASUser = loginRoutes.checkHasRole(user, config.all.client.roles.acas.userRole)
+	isCmpdRegAdmin = loginRoutes.checkHasRole(user, config.all.client.roles.cmpdreg.adminRole)
+	# cmpdRegUser = loginRoutes.checkHasRole(user, config.all.client.roles.cmpdreg.chemistRole)
+	# if false
+	if isACASAdmin
+		# If the user is a cmpd reg admin, then regardless of the lot's project or other configs they can read and write the lot
+		acls.setRead(true)
+		acls.setWrite(true)
+		acls.setDelete(true)
+	else
+		if isCmpdRegAdmin
+			acls.setRead(true)
+		if !isACASUser
+			return acls
+
+		# IF we are here, then the user is an ACAS user.  Check if the user is a member of the experiment's project.
+		# Or if they are the scientist of the experiment.
+		projectCode = exports.getEntityValue(experiment, "metadata", "experiment metadata", "codeValue", "project")
+		scientist = exports.getEntityValue(experiment, "metadata", "experiment metadata", "codeValue", "scientist")
+		console.log "Experiment #{experiment.codeName} has project: #{projectCode} and scientist: #{scientist}"
+		if scientist is null
+			acls.setRead(true)
+			acls.setWrite(true)
+			acls.setDelete(true)
+		else
+			# only do project acl checks if the user doesn't already have read access by nature of their admin roles above
+			if !self.getRead() 
+				# Project roles may have been passed in as an array, so only fetch allowed projects if they are not null
+				if !allowedProjects?
+					# Get the allowed projects for the user
+					[err, allowedProjects] = await serverUtilityFunctions.promisifyRequestStatusResponse(authorRoutes.allowedProjectsInternal, [user])
+					if err?
+						throw new InternalServerError "Could not get user's projects"
+				# Check if the lot's project is in the allowed projects
+				if _.where(allowedProjects, {code: projectCode}).length > 0
+					acls.setRead(true)
+				else
+					# Default to not allowing read access so no need to set false here, just log it
+					console.warn "User #{user.username} does not have access to project #{projectCode} for experiment #{experiment.codeName}"
+			
+			# If the user can't read, then they should be able to write or delete
+			if self.getRead()
+				acls.setWrite(exports.canEditExperiment(user, experiment, projectCode, scientist))
+				acls.setDelete(exports.canDeleteExperiment(user, experiment, projectCode, scientist))
+
+	console.log "Experiment #{experiment.codeName} has acls: #{JSON.stringify(acls)} for user #{user.username}"
+	return acls
+			
+exports.canEditExperiment = (user, experiment, project, scientist) ->
+	if experiment.lsKind is 'study'
+		editingRoles = null
+		if config.all.entity?.study?.editingRoles?
+			editingRoles = config.all.entity.study.editingRoles
+	else if config.all.entity?.editingRoles?
+		editingRoles = config.all.entity.editingRoles
+	if editingRoles?
+		rolesToTest = []
+		for role in editingRoles.split(",")
+			role = role.trim()
+			if role is 'entityScientist'
+				if (user.username == scientist)
+					return true
+			else if role is 'projectAdmin'
+				projectAdminRole =
+					lsType: "Project"
+					lsKind: project
+					roleName: "Administrator"
+				if testUserHasRoleTypeKindName(user, [projectAdminRole])
+					return true
 			else
-				console.log "Failed: got error in bulk get of experiments"
-				callback "Bulk get experiments saveFailed: " + JSON.stringify error
-		)
+				rolesToTest.push role
+		if rolesToTest.length is 0
+			return false
+		unless testUserHasRole user, rolesToTest
+			return false
+	return true
+
+exports.canDeleteExperiment = (user, experiment, project, scientist) ->
+	if config.all.entity?.deletingRoles?
+		rolesToTest = []
+		for role in config.all.entity.deletingRoles.split(",")
+			role = role.trim()
+			if role is 'entityScientist'
+				if (user.username is scientist)
+					return true
+			else if role is 'projectAdmin'
+				projectAdminRole =
+					lsType: "Project"
+					lsKind: project
+					roleName: "Administrator"
+				if testUserHasRoleTypeKindName(user, [projectAdminRole])
+					return true
+			else
+				rolesToTest.push role
+		if rolesToTest.length is 0
+			return false
+		unless testUserHasRole user, rolesToTest
+			return false
+	return true
+
+exports.getEntityValue = (entity, stateType, stateKind, valueType, valueKind) ->
+	value = null
+	if entity.lsStates?
+		for lsState in entity.lsStates
+			if lsState.ignored? && lsState.ignored || lsState.deleted? && lsState.deleted
+				continue
+			if lsState.lsType == stateType && lsState.lsKind == stateKind
+				for lsValue in lsState.lsValues
+					if lsValue.ignored? && lsValue.ignored || lsValue.deleted? && lsValue.deleted
+						continue
+					if lsValue.lsType == valueType && lsValue.lsKind == valueKind
+						value = lsValue[valueType]
+						break
+	return value
 
 exports.getExptExptItxsToDisplay = (req, resp) ->
 	console.log "getExptExptItxsToDisplay"
@@ -832,7 +941,7 @@ exports.getExptExptItxsToDisplay = (req, resp) ->
 			exptExptItxs = _.filter JSON.parse(exptExptItxs), (itx) ->
 				!itx.ignored
 			secondExpts = _.pluck (_.pluck exptExptItxs, 'secondExperiment'), 'codeName'
-			exports.experimentsByCodeNamesArrayInternal secondExpts, "stubwithprot", req.query.testMode, (returnedExpts) ->
+			exports.experimentsByCodeNamesArrayInternal secondExpts, "stubwithprot", req.query.testMode, (returnedExpts, statusCode) ->
 				#add returnedExpts information into the secondExperiment attribute
 				_.each exptExptItxs, (itx) ->
 					secondExptInfo = _.where(returnedExpts, experimentCodeName: itx.secondExperiment.codeName)[0]
