@@ -176,7 +176,7 @@ $(function() {
 			} else {
 				this.lotController.render();
 			}
-		    if (!this.model.get('lot').get("acls").write) {
+		    if (!this.model.isNew() && !this.model.get('lot').get("acls").write) {
 			    this.lotController.disableAll();
 			    this.parentController.setAliasToReadOnly();
 		    } else {
@@ -414,7 +414,7 @@ $(function() {
 	    },
 
 	    saltFormAllowedToUpdate: function () {
-		    if (!this.model.get('lot').get("acls").write) return false;
+		    if (!this.model.get('lot').isNew() && !this.model.get('lot').get("acls").write) return false;
 
 		    if (window.configuration.metaLot.saltBeforeLot && this.model.get('lot').isNew()
 			    && !this.model.get('parent').isNew() && !this.model.get('saltForm').isNew()) {
@@ -430,17 +430,9 @@ $(function() {
 				if (!this.user.get('isAdmin')) return false;
 			}
 			// Further check to see if the parent is editable by checking the metalot allowedToUpdate function
-			if (!this.model.get('lot').get("acls").write) return false;
+			if (!this.model.get('lot').isNew() && !this.model.get('lot').get("acls").write) return false;
 
-			// If we get here, then just check if the lot is new or not
-		    if (this.model.get('lot').isNew()) {
-			    return false;
-		    } else {
-			    return true;
-			}
-
-			// We shouldn't get here but lets disable edit parent by default to be safe
-			return false
+		    return true
 	    }
     });
 });
