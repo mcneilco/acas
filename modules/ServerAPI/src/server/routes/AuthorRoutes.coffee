@@ -69,6 +69,7 @@ exports.allowedProjectsInternal = (user, callback) ->
 				else if role.roleEntry.roleName == config.all.client.roles.acas.adminRole
 					isAdmin = true
 			if isAdmin
+				console.log "User #{user.username} granted admin role so returning all projects"
 				filteredProjects = allProjects
 			else
 				allProjects.forEach (project) ->
@@ -76,11 +77,14 @@ exports.allowedProjectsInternal = (user, callback) ->
 					if isRestricted
 						if _.contains(allowedProjectCodes, project.code)
 							filteredProjects.push(project)
+						else
+							console.log "User #{user.username} is not allowed to see project #{project.code}"
 					else 
 						filteredProjects.push(project)
 			projects = filteredProjects
 		else
 			projects = allProjects
+		console.log "User #{user.username} has access to #{projects.length} projects: #{projects.map (project) -> project.code}"
 		callback 200, projects
 
 

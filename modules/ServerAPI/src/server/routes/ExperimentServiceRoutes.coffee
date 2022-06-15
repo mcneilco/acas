@@ -90,6 +90,7 @@ exports.experimentByCodename = (req, resp) ->
 				if json.codeName?
 					if json.ignored
 						if json.deleted
+							console.log "Experiment #{req.params.code} exists but is deleted"
 							resp.statusCode = 500
 							resp.end JSON.stringify "Experiment does not exist"
 						else
@@ -99,11 +100,14 @@ exports.experimentByCodename = (req, resp) ->
 								viewDeletedRoles = []
 							grantedRoles = _.map req.user.roles, (role) ->
 								role.roleEntry.roleName
-							canViewDeleted = (viewDeletedRoles in grantedRoles)
+							canViewDeleted = true
+							if viewDeletedRoles.length > 0
+								canViewDeleted = ((_.intersection viewDeletedRoles, grantedRoles).length > 0)
 							if canViewDeleted
 								resp.statusCode = statusCode
 								resp.end JSON.stringify json
 							else
+								console.log "User #{req.user.username} does not have privs to view deleted experiments they are not in viewDeletedRoles #{viewDeletedRoles} they are in grantedRoles #{grantedRoles}"
 								resp.statusCode = 500
 								resp.end JSON.stringify "Experiment does not exist"
 					else

@@ -1,5 +1,8 @@
-exports.setupRoutes = (app, loginRoutes) ->
+exports.setupAPIRoutes = (app) ->
 	app.post '/api/setup/:typeOrKind', exports.setupTypeOrKind
+
+exports.setupRoutes = (app, loginRoutes) ->
+	app.post '/api/setup/:typeOrKind', loginRoutes.ensureAuthenticated, loginRoutes.ensureACASAdmin, exports.setupTypeOrKind
 
 exports.setupTypeOrKindInternal = (typeOrKind, roles, callback) ->
 	console.log "setupTypeOrKind"
@@ -16,7 +19,6 @@ exports.setupTypeOrKindInternal = (typeOrKind, roles, callback) ->
 	, (error, response, json) =>
 		callback json, response.statusCode
 	)
-
 
 exports.setupTypeOrKind = (req, resp) ->
 	exports.setupTypeOrKindInternal req.params.typeOrKind, req.body, (json, statusCode) =>

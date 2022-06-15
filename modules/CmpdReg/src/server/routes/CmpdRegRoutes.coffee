@@ -1,7 +1,7 @@
 exports.setupAPIRoutes = (app) ->
 	app.get '/cmpdReg/scientists', exports.getScientists
-	app.get '/cmpdReg/metalots/corpName/[\\S]*', exports.getMetaLot
-	app.post '/cmpdReg/metalots', exports.metaLots
+	app.get '/cmpdReg/metalots/corpName/:lotCorpName', exports.getMetaLot
+	app.post '/cmpdReg/metalots', exports.saveMetaLot
 	app.get '/cmpdReg/parentLot/getAllAuthorizedLots', exports.getAllAuthorizedLots
 
 exports.setupRoutes = (app, loginRoutes) ->
@@ -23,13 +23,13 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/cmpdReg/operators', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
 	app.get '/cmpdReg/purityMeasuredBys', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
 	app.get '/cmpdReg/structureimage/:type/[\\S]*', loginRoutes.ensureAuthenticated, exports.getStructureImage
-	app.get '/cmpdReg/metalots/corpName/[\\S]*', loginRoutes.ensureAuthenticated, exports.getMetaLot
+	app.get '/cmpdReg/metalots/corpName/:lotCorpName', loginRoutes.ensureAuthenticated, exports.getMetaLot
 	app.get '/cmpdReg/MultipleFilePicker/[\\S]*', loginRoutes.ensureAuthenticated, exports.getMultipleFilePicker
 	app.post '/cmpdReg/search/cmpds', loginRoutes.ensureAuthenticated, exports.searchCmpds
 	app.post '/cmpdReg/regsearches/parent', loginRoutes.ensureAuthenticated, exports.regSearch
 	app.post '/cmpdReg/structuresearch', loginRoutes.ensureAuthenticated, exports.structureSearch
 	app.post '/cmpdReg/filesave', loginRoutes.ensureAuthenticated, exports.fileSave
-	app.post '/cmpdReg/metalots', loginRoutes.ensureAuthenticated, exports.metaLots
+	app.post '/cmpdReg/metalots', loginRoutes.ensureAuthenticated, exports.saveMetaLot
 	app.post '/cmpdReg/salts', loginRoutes.ensureAuthenticated, exports.saveSalts
 	app.post '/cmpdReg/isotopes', loginRoutes.ensureAuthenticated, exports.saveIsotopes
 	app.post '/cmpdReg/api/v1/structureServices/molconvert', loginRoutes.ensureAuthenticated, exports.molConvert
@@ -57,6 +57,11 @@ exports.setupRoutes = (app, loginRoutes) ->
 _ = require 'underscore'
 request = require 'request'
 config = require '../conf/compiled/conf.js'
+# node-fetch is ES5 modules only so need to import it like this async
+fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+serverUtilityFunctions = require './ServerUtilityFunctions.js'
+loginRoutes = require './loginRoutes.js'
+authorRoutes = require './AuthorRoutes.js'
 
 exports.cmpdRegIndex = (req, res) ->
 	scriptPaths = require './RequiredClientScripts.js'
@@ -112,7 +117,6 @@ exports.getAPICmpdReg = (req, resp) ->
 	req.pipe(request(cmpdRegCall)).pipe(resp)
 
 exports.getAuthorizedCmpdRegProjects = (req, resp) ->
-	authorRoutes = require './AuthorRoutes.js'
 	authorRoutes.allowedProjectsInternal req.user, (statusCode, allowedUserProjects) ->
 		resp.status "200"
 		resp.end JSON.stringify allowedUserProjects
@@ -122,7 +126,6 @@ exports.getScientists = (req, resp) =>
 		resp.json authors 
 
 exports.getScientistsInternal = (callback) ->
-	loginRoutes = require './loginRoutes.js'
 	config = require '../conf/compiled/conf.js'
 	roleName = null
 	if config.all.client.roles.cmpdreg.chemistRole? && config.all.client.roles.cmpdreg.chemistRole != ""
@@ -131,7 +134,6 @@ exports.getScientistsInternal = (callback) ->
 		callback authors
 
 exports.structureSearch = (req, resp) ->
-	authorRoutes = require './AuthorRoutes.js'
 	authorRoutes.allowedProjectsInternal req.user, (statusCode, allowedUserProjects) ->
 		_ = require "underscore"
 		allowedProjectCodes = _.pluck(allowedUserProjects, "code")
@@ -143,7 +145,6 @@ exports.structureSearch = (req, resp) ->
 			json: req.body)).pipe resp
 
 exports.searchCmpds = (req, resp) ->
-	authorRoutes = require './AuthorRoutes.js'
 	authorRoutes.allowedProjectsInternal req.user, (statusCode, allowedUserProjects) ->
 		_ = require "underscore"
 		allowedProjectCodes = _.pluck(allowedUserProjects, "code")
@@ -173,7 +174,6 @@ exports.searchCmpds = (req, resp) ->
 
 exports.getAllAuthorizedLots = (req, resp) ->
 	req.setTimeout 86400000
-	authorRoutes = require './AuthorRoutes.js'
 	authorRoutes.allowedProjectsInternal req.user, (statusCode, allowedUserProjects) ->
 		_ = require "underscore"
 		allowedProjectCodes = _.pluck(allowedUserProjects, "code")
@@ -206,55 +206,128 @@ exports.getStructureImage = (req, resp) ->
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/structureimage' + imagePath
 	req.pipe(request(cmpdRegCall)).pipe(resp)
 
-exports.getMetaLot = (req, resp) ->
-	endOfUrl = (req.originalUrl).replace /\/cmpdreg\/metalots/, ""
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/metalots' + endOfUrl
-	console.log cmpdRegCall
-	request(
-		method: 'GET'
-		url: cmpdRegCall
-		json: true
-	, (error, response, json)=>
-		console.log "metalot return"
-		console.log error
-		console.log response
-		console.log json
+class HTTPResponseError extends Error
+	constructor: (response, ...args) ->
+		super("HTTP Error Response: #{response.status} #{response.statusText}", ...args)
+		this.response = response
 
-		if !error
-			if not json.lot?
-				resp.statusCode = 500
-				resp.end JSON.stringify "Could not find lot"
-				return			
+class InternalServerError extends Error
+	# Throw an internal server error
+	constructor: (text, ...args) ->
+		super("Internal server error: #{text}", ...args)
 
-			if json?.lot?.project?
-				projectCode = json.lot.project
-				if config.all.client.cmpdreg.metaLot.useProjectRolesToRestrictLotDetails
-					authorRoutes = require './AuthorRoutes.js'
-					authorRoutes.allowedProjectsInternal req.user, (statusCode, acasProjectsForUsers) =>
-						if statusCode != 200
-							resp.statusCode = statusCode
-							resp.end JSON.stringify acasProjectsForUsers
-						if _.where(acasProjectsForUsers, {code: projectCode}).length > 0
-							resp.json json
-						else
-							console.log "user does not have permissions to the lot's project"
-							resp.statusCode = 500
-							resp.end JSON.stringify "Lot does not exist"
-				else
-					resp.json json
-			else #no project attr in lot
-				if config.all.client.cmpdreg.metaLot.useProjectRolesToRestrictLotDetails
-					resp.statusCode = 500
-					resp.end JSON.stringify "Could not find lot"
-				else
-					resp.json json
+checkStatus = (response) ->
+	# check for http error
+	if response.ok
+		return response
+	else
+		throw new HTTPResponseError response
+
+exports.getMetaLotInternal = (lotCorpName, user) ->
+	# Get the metalot and check acls
+	response = await exports.fetchMetaLot(lotCorpName)
+	err = null
+	metaLot = null
+	statusCode = 200
+	try
+		checkStatus response
+		metaLot = await response.json()
+		if Object.keys(metaLot).length == 0 || !metaLot.lot?
+			statusCode = 500
+			err =  "Could not find lot"
 		else
-			console.log 'got ajax error trying to get CmpdReg MetaLot'
-			console.log error
-			console.log json
-			console.log response
-			resp.end JSON.stringify error
-	)
+			acls = await exports.getLotAcls(metaLot.lot, user)
+			metaLot.lot.acls = acls
+			if !acls.getRead()
+				statusCode = 403
+				err = "You do not have permission to view this lot"
+	catch error
+		console.log error
+		statusCode = 500
+		err =  "Error getting lot"
+	return [err, metaLot, statusCode]
+
+exports.getMetaLot = (req, resp, next) ->
+	[err, metaLot, statusCode] = await exports.getMetaLotInternal req.params.lotCorpName, req.user
+	resp.statusCode = statusCode
+	if err?
+		resp.statusCode = statusCode
+		resp.json err
+	else
+		resp.json metaLot
+
+
+# Simple class to store acls
+class Acls
+	constructor: (read, write) ->
+		this.read = read
+		this.write = write
+
+	getRead: ->
+		return this.read
+
+	getWrite: ->
+		return this.write
+
+	setRead: (read) ->
+		this.read = read
+
+	setWrite: (write) ->
+		this.write = write
+
+exports.getLotAcls = (lot, user, allowedProjects) ->
+	# Get the acls for the lot
+	lotAcls = new Acls(false, false)
+
+	# Check if user is cmpdreg admin
+	isCmpdRegAdmin = loginRoutes.checkHasRole(user, config.all.client.roles.cmpdreg.adminRole)
+	if isCmpdRegAdmin
+		# If the user is a cmpd reg admin, then regardless of the lot's project or other configs they can read and write the lot
+		lotAcls.setRead(true)
+		lotAcls.setWrite(true)
+	else
+		# If the user is not a cmpd reg admin, then check if we are restricting the lot by project acls
+		if lot.project? && config.all.client.cmpdreg.metaLot.useProjectRolesToRestrictLotDetails
+			projectCode = lot.project
+			# There are some cases where we want to call this function where we want to pass allowed projects in rather than call out to the service.
+			# If the allowedProjects parameter is passed in, then we use that instead of calling the service.
+			if !allowedProjects?
+				# Get the allowed projects for the user
+				[err, allowedProjects] = await serverUtilityFunctions.promisifyRequestStatusResponse(authorRoutes.allowedProjectsInternal, [user])
+				if err?
+					throw new InternalServerError "Could not get user's projects" 
+
+			# Check if the lot's project is in the allowed projects
+			if _.where(allowedProjects, {code: projectCode}).length > 0
+				lotAcls.setRead(true)
+			else
+				# Default to not allowing read access so no need to set false here, just log it
+				console.warn "User #{user.username} does not have access to project #{projectCode} for lot #{lot.corpName}"
+		else
+			# If we are not restricting the lot by project acls then anyone can read the lot 
+			lotAcls.setRead(true)
+		
+		# If the user is not a cmpd reg admin, then they can only write the lot if they are allowed to read the lot
+		if !lotAcls.getRead()
+			lotAcls.setWrite(false)
+		else
+			# If the user is not a cmpd reg admin, then they can only write the lot if disableEditMyLots is false
+			# and they are either the chemist or the lot recordedBy
+			if config.all.client.cmpdreg.metaLot.disableEditMyLots == false
+				canWrite = (lot.chemist? && lot.chemist == user.username) || (lot.recordedBy? && lot.recordedBy == user.username)
+				if canWrite
+					lotAcls.setWrite(true)
+				else
+					console.log "User #{user.username} does not have permission to edit lot #{lot.corpName} which is not their lot (recordedBy: #{lot.recordedBy}, chemist: #{lot.chemist})"
+					lotAcls.setWrite(false)
+
+	console.log "User #{user.username} lot #{lot.corpName} lot acls #{JSON.stringify(lotAcls)}"
+	return lotAcls
+
+exports.fetchMetaLot = (lotCorpName) ->
+	url = config.all.client.service.cmpdReg.persistence.fullpath + '/metalots/corpName/' + lotCorpName
+	response = await fetch(url, headers: {'Content-Type': 'application/json'})
+	return response;
 
 exports.regSearch = (req, resp) ->
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/regsearches/parent'
@@ -296,9 +369,33 @@ exports.fileSave = (req, resp) ->
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/filesave'
 	req.pipe(request[req.method.toLowerCase()](cmpdRegCall)).pipe(resp)
 
-exports.metaLots = (req, resp) ->
-	if req.user? && !req.body.modifiedBy?
-		req.body.lot.modifiedBy = req.user.username
+exports.saveMetaLot = (req, resp) ->
+	metaLot = req.body;
+
+	# Verify that lot is included as a metalot with no lot is not allowed
+	if metaLot.lot?
+		# If the user is in the request then update the lot's modifiedBy field as the persistence service does not
+		if req.user?
+			metaLot.lot.modifiedBy = req.user.username
+		# If this is a saved lot then we need to check the user has permission to edit the lot
+		# By checking the saved lots project, the users allowed projects
+		if metaLot.lot.id? && metaLot.lot.corpName?
+			# Get the saved meta lot as it returns the saved metalot and includes the acls
+			[err, savedMetaLot, statusCode] = await exports.getMetaLotInternal metaLot.lot.corpName, req.user
+			if err?
+				resp.statusCode = statusCode
+				resp.end err
+				return
+			if savedMetaLot.lot.acls.getWrite() == false
+				resp.statusCode = 403
+				resp.json JSON.stringify {error: "You are not allowed to update to this lot"}
+				return
+	else
+		resp.statusCode = 400
+		resp.json JSON.stringify {error: "No lot specified"}
+		return
+	
+	# We got here then then we can save the lot
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/metalots'
 	request(
 		method: 'POST'
@@ -314,6 +411,9 @@ exports.metaLots = (req, resp) ->
 			else
 				resp.statusCode = response.statusCode
 			resp.setHeader('Content-Type', 'application/json')
+			# Need to add acls here if the user just created the lot or updated it we can assume they have both read and write access checked above
+			if json.metalot?.lot?
+				json.metalot.lot.acls = new Acls(true, true)
 			resp.end JSON.stringify json
 		else
 			console.log 'got ajax error trying to do metalot save'

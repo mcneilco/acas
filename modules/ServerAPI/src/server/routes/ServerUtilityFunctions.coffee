@@ -53,6 +53,23 @@ exports.promisifyRequestResponseStatus = (fun, args) ->
 		)
 	return await exports.promiseifyCatch(fun, args)
 
+exports.promisifyRequestStatusResponse = (fun, args) ->
+	# Custom promisify function to convert "status, json" type callback
+	# functions where status > 400 is an error to a standard err, response
+	# promise return
+	fun[util.promisify.custom] = (...args) =>
+		new Promise((resolve, reject) =>
+			fun ...args, (status, json) =>
+				if typeof status != 'number' || status >= 400
+					if json?
+						reject(json)
+					else
+						reject(err)
+				else
+					resolve(json)
+		)
+	return await exports.promiseifyCatch(fun, args)
+
 exports.runRFunction_HIDDEN = (request, rScript, rFunction, returnFunction, preValidationFunction) ->
 	config = require '../conf/compiled/conf.js'
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'

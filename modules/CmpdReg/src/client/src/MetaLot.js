@@ -176,7 +176,7 @@ $(function() {
 			} else {
 				this.lotController.render();
 			}
-		    if (!this.allowedToUpdate()) {
+		    if (!this.model.isNew() && !this.model.get('lot').get("acls").write) {
 			    this.lotController.disableAll();
 			    this.parentController.setAliasToReadOnly();
 		    } else {
@@ -224,7 +224,7 @@ $(function() {
 			    this.$('.cancelButton').removeClass('cancelImage');
 			    this.$('.cancelButton').addClass('closeImage');
 			    this.$('.backButton').hide();
-			    if (this.allowedToUpdate()) {
+			    if (this.model.get('lot').get("acls").write) {
 				    this.$('.formTitle').html('Edit ' + (lisb ? 'Batch' : 'Lot') + ' ' + this.model.get('lot').get('corpName'));
 			    } else {
 				    this.$('.formTitle').html((lisb ? 'Batch' : 'Lot') + ' Details for ' + this.model.get('lot').get('corpName'));
@@ -234,7 +234,7 @@ $(function() {
 				    this.$('.newLotButton').hide();
 				    this.$('.saveButton').hide();
 			    }
-			    if (!this.allowedToUpdate()) {
+			    if (!this.model.get('lot').get("acls").write) {
 				    this.$('.saveButton').hide();
 			    }
 			    console.log("about to load inventory");
@@ -413,23 +413,8 @@ $(function() {
 
 	    },
 
-	    allowedToUpdate: function () {
-				var chemist = this.model.get('lot').get('chemist').get('selectedCode');
-				var registeredBy = this.model.get('lot').get('registeredBy');
-
-		    if (this.user == null || chemist == null || this.model.get('lot').isNew()) return true; // test mode or new
-
-		    if (this.user.get('isAdmin')) {
-			    return true;
-		    }else if (!window.configuration.metaLot.disableEditMyLots && (this.user.get('code') == chemist || (registeredBy != null && this.user.get('code') == registeredBy))) {
-				return true;
-			} else {
-			    return false;
-		    }
-	    },
-
 	    saltFormAllowedToUpdate: function () {
-		    if (!this.allowedToUpdate()) return false;
+		    if (!this.model.get('lot').isNew() && !this.model.get('lot').get("acls").write) return false;
 
 		    if (window.configuration.metaLot.saltBeforeLot && this.model.get('lot').isNew()
 			    && !this.model.get('parent').isNew() && !this.model.get('saltForm').isNew()) {
@@ -445,17 +430,9 @@ $(function() {
 				if (!this.user.get('isAdmin')) return false;
 			}
 			// Further check to see if the parent is editable by checking the metalot allowedToUpdate function
-			if (!this.allowedToUpdate()) return false;
+			if (!this.model.get('lot').isNew() && !this.model.get('lot').get("acls").write) return false;
 
-			// If we get here, then just check if the lot is new or not
-		    if (this.model.get('lot').isNew()) {
-			    return false;
-		    } else {
-			    return true;
-			}
-
-			// We shouldn't get here but lets disable edit parent by default to be safe
-			return false
+		    return true
 	    }
     });
 });

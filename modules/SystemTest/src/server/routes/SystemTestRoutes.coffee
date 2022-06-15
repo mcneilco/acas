@@ -101,6 +101,7 @@ exports.getOrCreateTestUser = (req, resp) ->
 				projectNames = if req.body.projectNames? then req.body.projectNames else []
 				exports.giveTestUserRolesInternal username, acasUser, acasAdmin, cmpdregUser, cmpdregAdmin, projectNames, (statusCode, output) ->
 					# Get the user
+					console.log "getOrCreateTestUser: output: #{JSON.stringify(output)}"
 					exports.getTestUser username, (user) ->
 						callback 200, {
 							hasError: false
@@ -158,12 +159,15 @@ addProjectRoles = (projectNames, roles, username, callback) ->
 		_.each projectNames, (projectName) ->
 			project = _.findWhere body, {"name":projectName}
 			if project?
+				console.log "Adding project name #{projectName}  to user #{username}"
 				roles.push {
 					roleType: 'Project'
 					roleKind: project.code
 					roleName: 'User'
 					userName: username
 				}
+			else 
+				throw new Error("Project not found: #{projectName}")
 		callback roles
 
 # Grant roles to a test user
