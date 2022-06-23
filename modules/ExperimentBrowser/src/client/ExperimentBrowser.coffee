@@ -346,6 +346,8 @@ class ExperimentBrowserController extends Backbone.View
 		"click .bv_confirmDeleteExperimentButton": "handleConfirmDeleteExperimentClicked"
 		"click .bv_cancelDelete": "handleCancelDeleteClicked"
 		"click .bv_openInQueryToolButton": "handleOpenInQueryToolClicked"
+		"click .bv_getLinkQueryToolButton": "handleGetLinkQueryToolClicked"
+		"click .bv_copyExptLink" : "handleCopyLinkClicked"
 
 	initialize: ->
 		template = _.template( $("#ExperimentBrowserView").html(),  {includeDuplicateAndEdit: @includeDuplicateAndEdit} );
@@ -384,6 +386,7 @@ class ExperimentBrowserController extends Backbone.View
 			$(".bv_experimentTableController").html @experimentSummaryTable.render().el
 
 	selectedExperimentUpdated: (experiment) =>
+		@$('.bv_getLinkResults').hide()
 		@trigger "selectedExperimentUpdated"
 		$.ajax
 			type: 'GET'
@@ -609,6 +612,7 @@ class ExperimentBrowserController extends Backbone.View
 
 	handleOpenInQueryToolClicked: =>
 		unless @$('.bv_openInQueryToolButton').hasClass 'dropdown-toggle'
+			# Preparatory Logic to Get Code to Pass to Generate Link Route 
 			if @experimentController.model.get('lsLabels') not instanceof LabelList
 				@experimentController.model.set 'lsLabels',  new LabelList @experimentController.model.get('lsLabels')
 			subclass = @experimentController.model.get('subclass')
@@ -623,8 +627,61 @@ class ExperimentBrowserController extends Backbone.View
 				code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id')[0].get('labelText')
 			else
 				code = @experimentController.model.get('codeName')
+			# Add Generating Link Loading Mask 
+			@$('.bv_generatingLink').show()
+			# Call to Route to Get URL 
+			$.ajax
+				type: 'GET'
+				url: "/getLinkExptQueryTool?experiment=#{code}"
+				success: (response) => 
+					# Take Away Generating Progress Mask 
+					@$('.bv_generatingLink').hide()
+					window.open(response,'_blank')
+				error: (err) =>
+					# Take Away Generating Progress Mask 
+					@$('.bv_generatingLink').hide()
+					console.log err
+				datatype: 'json'
 
-			window.open("/openExptInQueryTool?experiment=#{code}",'_blank')
+	handleGetLinkQueryToolClicked: => 
+			# Preparatory Logic to Get Code to Pass to Generate Link Route 
+			if @experimentController.model.get('lsLabels') not instanceof LabelList
+				@experimentController.model.set 'lsLabels',  new LabelList @experimentController.model.get('lsLabels')
+			subclass = @experimentController.model.get('subclass')
+			if window.conf.entity?.saveInitialsCorpName? and window.conf.entity.saveInitialsCorpName is true
+				if @experimentController.model.get('lsLabels').getLabelByTypeAndKind("corpName", subclass + ' corpName').length > 0
+					code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('corpName', subclass + ' corpName')[0].get('labelText')
+				else if @experimentController.model.get('lsKind') is "study" and @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
+					code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id')[0].get('labelText')
+				else
+					code = @experimentController.model.get("codeName")
+			else if @experimentController.model.get('lsKind') is "study" and @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
+				code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id')[0].get('labelText')
+			else
+				code = @experimentController.model.get('codeName')
+			# Add Generating Link Loading Mask 
+			@$('.bv_generatingLink').show()
+			# Call to Route to Get URL 
+			$.ajax
+				type: 'GET'
+				url: "/getLinkExptQueryTool?experiment=#{code}"
+				success: (response) => 
+					# Take Away Generating Progress Mask 
+					@$('.bv_generatingLink').hide()
+					@$('.bv_getLinkResults').show()
+					@$('.bv_exptLink').val(response)
+				error: (err) =>
+					# Take Away Generating Progress Mask 
+					@$('.bv_generatingLink').hide()
+					console.log err
+				datatype: 'json'
+
+	handleCopyLinkClicked: =>
+		link = @$('.bv_exptLink').value
+		if link? # Defined and not null
+			alert("Link copied to clipboard!")
+		else
+			alert("Unable to copy link to clipboard")
 
 	formatOpenInQueryToolButton: =>
 		@$('.bv_viewerOptions').empty()
