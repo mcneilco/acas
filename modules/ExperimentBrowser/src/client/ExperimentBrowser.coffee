@@ -679,7 +679,8 @@ class ExperimentBrowserController extends Backbone.View
 	handleCopyLinkClicked: =>
 		link = @$('.bv_exptLink').val()
 		if link? # Defined and not null
-			alert("Link copied to clipboard!")
+			navigator.clipboard.writeText(link).then ->
+				alert("Link copied to clipboard!")
 		else
 			alert("Unable to copy link to clipboard")
 
