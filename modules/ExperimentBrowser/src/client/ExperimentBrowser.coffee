@@ -677,7 +677,7 @@ class ExperimentBrowserController extends Backbone.View
 				datatype: 'json'
 
 	handleCopyLinkClicked: =>
-		link = @$('.bv_exptLink').value
+		link = @$('.bv_exptLink').val()
 		if link? # Defined and not null
 			alert("Link copied to clipboard!")
 		else
