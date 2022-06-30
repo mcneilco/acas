@@ -1,9 +1,23 @@
 <script type="text/template" id="DeleteLotView" xmlns="http://www.w3.org/1999/html">
-    <h2 class="form_title bv_title"></h2>
-	<input type=button class="saveNewSaltButton" />
-	<input type=button class="cancelDeleteLotButton" />
-	<div class="bv_dependencyCheckError hide" style="text-align: center;">
+    <h2 class="form_title bv_title bv_deleteLotTitle"></h2>
+	<div class="bv_dependencyCheckError hide" style="">
 		<h1>Failed to check dependencies.</h1>
 	</div>
-
+	<div class="bv_deleteLotError hide" style="">
+		<h1>Failed to delete lot. Please contact your administrator.</h1>
+	</div>
+	<div class="bv_deleteLotSuccess hide" style="">
+		<h1>Lot deleted successfully.
+		</h1>
+		<h1>
+			<a href="#" class="bv_backToCreg">Back to Creg Home</a>
+		</h1>
+		
+		<div class= "bv_remainintLotsOnParentLinks"></div>
+	</div>
+	<div class="bv_dependencySummary hide" style=""></div>
+	<div class="MetaLotViewButtons buttons deleteLotButtons">
+		<input type=button class="deleteLotButton hide" value="Delete">
+		<input type=button class="cancelDeleteLotButton" />
+	</div>
 </script>

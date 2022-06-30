@@ -248,6 +248,7 @@ exports.getMetaLotDepedencies = (req, resp, next) ->
 		checkStatus response
 		resp.status = 200
 		dependencies = await response.json()
+		dependencies.metaLot = metaLot
 		console.log "Got meta lot dependencies from server as #{JSON.stringify(dependencies)}"
 		# We decorate the linkedExperiments with the acls for the user
 		if dependencies.linkedExperiments? && dependencies.linkedExperiments.length > 0
@@ -284,7 +285,7 @@ exports.getMetaLotDepedencies = (req, resp, next) ->
 				dependentMetaLot = await response.json()
 				dependentLotAcls = await exports.getLotAcls(dependentMetaLot.lot, user, allowedProjects)
 				if dependentLotAcls.getRead()
-					linkedLots.push codeTable
+					linkedLots.push _.extend(codeTable, {acls: dependentLotAcls})
 				else
 					noReadLotsCont++
 					console.log "Lot #{codeTable.code} is not readable by user #{user.username}"
