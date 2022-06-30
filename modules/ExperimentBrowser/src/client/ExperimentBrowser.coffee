@@ -632,7 +632,7 @@ class ExperimentBrowserController extends Backbone.View
 			# Call to Route to Get URL 
 			$.ajax
 				type: 'GET'
-				url: "/getLinkExptQueryTool?experiment=#{code}"
+				url: "/api/getLinkExptQueryTool?experiment=#{code}"
 				success: (response) => 
 					# Take Away Generating Progress Mask 
 					@$('.bv_generatingLink').hide()
@@ -664,7 +664,7 @@ class ExperimentBrowserController extends Backbone.View
 			# Call to Route to Get URL 
 			$.ajax
 				type: 'GET'
-				url: "/getLinkExptQueryTool?experiment=#{code}"
+				url: "/api/getLinkExptQueryTool?experiment=#{code}"
 				success: (response) => 
 					# Take Away Generating Progress Mask 
 					@$('.bv_generatingLink').hide()
