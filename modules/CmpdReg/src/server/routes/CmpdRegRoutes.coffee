@@ -647,6 +647,33 @@ exports.exportSearchResults = (req, resp) ->
 	path = require 'path'
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 
+
+	# Get the lots from the req.body
+	foundCompounds = req.body.foundCompounds
+	JSON.stringify(foundCompounds)
+	# Combine array of lotIds from each found compound
+	lotCorpNames = []
+	foundCompounds.forEach (foundCompound) ->
+		console.log(foundCompound)
+		lots = foundCompound.lotIDs
+		lots.forEach (lot) ->
+			console.log lots
+			lotCorpNames.push lot.corpName
+	console.log JSON.stringify(lotCorpNames)
+
+	# Verify acls on the lots requested
+	[err, allowedProjects] = await serverUtilityFunctions.promisifyRequestStatusResponse(authorRoutes.allowedProjectsInternal, [req.user])
+
+	# # Get each metalot and verify the acls
+	for lotCorpName in lotCorpNames
+		console.log "Checking user acls for lot " + lotCorpName
+		[err, metaLot, statusCode] = await exports.getMetaLotInternal(lotCorpName, req.user, allowedProjects)
+		if err?
+			console.log "User #{req.user.username} does not have permission to export results for #{lotCorpName}"
+			resp.statusCode = statusCode
+			resp.json err
+			return
+
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/export/searchResults'
 
 	uploadsPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path

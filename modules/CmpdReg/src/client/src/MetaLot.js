@@ -110,7 +110,8 @@ $(function() {
 		    'click .backButton': 'back',
 		    'click .cancelButton': 'close',
 		    'click .newLotButton': 'newLot',
-		    'click .deleteButton': 'deleteLotRequest'
+		    'click .deleteButton': 'deleteLotRequest',
+		    'click .downloadLotButton': 'downloadLot'
 	    },
 
 	    initialize: function () {
@@ -450,6 +451,44 @@ $(function() {
 		    window.open("#register/" + this.lotController.model.get('corpName'));
 
 	    },
+
+		downloadLot: function() {
+			search_results = {
+				"foundCompounds": [
+					{
+						"lotIDs":  [
+							{
+								"corpName": this.lotController.model.get('corpName'),
+							}
+						]
+					}
+				]
+			}
+            $.ajax({
+                type: "POST",
+                url: "/cmpdReg/export/searchResults",
+                data: JSON.stringify(search_results),
+                dataType: "json",
+                contentType: 'application/json',
+                success: (function(_this)
+                {
+                    return function(ajaxReturn){
+                        return _this.exportedResults(ajaxReturn);
+                    };
+                })(this),
+                error: (function(_this)
+                {
+                    return function(error){
+                        return _this.errorExportingResults(error);
+                    };
+                })(this)
+            });
+		},
+
+		exportedResults: function(ajaxReturn) {
+			var url = ajaxReturn.reportFilePath;
+			window.location.assign(url);
+		},
 
 	    saltFormAllowedToUpdate: function () {
 		    if (!this.model.get('lot').isNew() && !this.model.get('lot').get("acls").write) return false;

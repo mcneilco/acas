@@ -9,7 +9,8 @@
 		<a class="button cancelButton" href="#" onclick="this.blur(); return false;"></a>
 		<a class="button backButton" href="#" onclick="this.blur(); return false;"></a>
         <a class="button newLotButton" href="#" onclick="this.blur(); return false;"></a>
-		<a class="button deleteButton" href="#" onclick="this.blur(); return false;">Delete</a>
+		<a class="button cregBtn downloadLotButton" href="#" onclick="this.blur(); return false;">Download</a>
+		<a class="button cregBtn deleteButton" href="#" onclick="this.blur(); return false;">Delete</a>
 	</div>
     <div class="floatingPanel NewLotSuccessView"></div>
 	<div class="bv_lotInventory"></div>

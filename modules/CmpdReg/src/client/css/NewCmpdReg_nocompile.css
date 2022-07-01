@@ -160,7 +160,7 @@ div {
 .buttons { /*Need to rename this class to navigationButtons !!! */
     padding: 10px 0 0 10px;
     width: 705px;
-    margin-left: 180px;
+    margin-left: 16px;
     clear: both;
 }
 .RegSearchResultsView .buttons { /*Need to rename this class to navigationButtons !!! */
@@ -1132,19 +1132,21 @@ div.analyticalFiles {
 /*** BUTTONS ***/
 div.MetaLotViewButtons.buttons {
     margin-top: 20px;
-    width: 636px;
+    width: 800px;
 }
-.MetaLotViewButtons a.cancelButton, input.deleteLotButton, a.deleteButton, a.saveButton, a.backButton, a.newLotButton, a.detailsButton, a.editAnalyticalFiles, a.editLotButton, a.closeButton, a.backToSearchButton {
+.MetaLotViewButtons a.cancelButton, input.deleteLotButton, a.cregBtn, a.saveButton, a.backButton, a.newLotButton, a.detailsButton, a.editAnalyticalFiles, a.editLotButton, a.closeButton, a.backToSearchButton {
     float: right;
     height: 27px;
     width: 90px;
     padding: 10px 5px 0px 5px;
 }
-.MetaLotViewButtons input.deleteLotButton {
+.MetaLotViewButtons input.cregBtn {
     padding-left: 0px;
     padding-right: 25px;
     padding-top: 0px;
-    border-top: 0px;
+    border: 0;
+    box-shadow: none;
+    border-radius: 0px;
 }
 .MetaLotViewButtons a.saveButton {
     background: no-repeat url('../images/save.png');
@@ -1173,7 +1175,7 @@ div.MetaLotViewButtons.buttons {
     background: no-repeat url('../images/close.png');
     /*    margin-right: 8px;*/
 }
-.MetaLotViewButtons .deleteButton, input.deleteLotButton {
+.MetaLotViewButtons .cregBtn, input.cregBtn {
     background-color: rgb(42, 67, 83);
     color: rgb(185, 190, 197);
     font: normal 13px/28px "Helvetica Neue", Helvetica, sans-serif;
