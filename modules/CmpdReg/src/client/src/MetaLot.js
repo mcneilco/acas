@@ -453,41 +453,7 @@ $(function() {
 	    },
 
 		downloadLot: function() {
-			search_results = {
-				"foundCompounds": [
-					{
-						"lotIDs":  [
-							{
-								"corpName": this.lotController.model.get('corpName'),
-							}
-						]
-					}
-				]
-			}
-            $.ajax({
-                type: "POST",
-                url: "/cmpdReg/export/searchResults",
-                data: JSON.stringify(search_results),
-                dataType: "json",
-                contentType: 'application/json',
-                success: (function(_this)
-                {
-                    return function(ajaxReturn){
-                        return _this.exportedResults(ajaxReturn);
-                    };
-                })(this),
-                error: (function(_this)
-                {
-                    return function(error){
-                        return _this.errorExportingResults(error);
-                    };
-                })(this)
-            });
-		},
-
-		exportedResults: function(ajaxReturn) {
-			var url = ajaxReturn.reportFilePath;
-			window.location.assign(url);
+			window.open("/cmpdReg/export/corpName/"+this.lotController.model.get('corpName'))
 		},
 
 	    saltFormAllowedToUpdate: function () {

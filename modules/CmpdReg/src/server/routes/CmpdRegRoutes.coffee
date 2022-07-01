@@ -57,6 +57,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/cmpdReg/parentLot/getLotsByParent', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
 	app.get '/cmpdReg/parentLot/getAllAuthorizedLots', loginRoutes.ensureAuthenticated, exports.getAllAuthorizedLots
 	app.get '/cmpdReg/allowCmpdRegistration', loginRoutes.ensureAuthenticated, exports.allowCmpdRegistration
+	app.get '/cmpdReg/export/corpName/:lotCorpName', loginRoutes.ensureAuthenticated, exports.exportLotToSDF
 
 _ = require 'underscore'
 request = require 'request'
@@ -642,6 +643,48 @@ exports.genericStructureService = (req, resp) ->
 			console.log response
 			resp.end JSON.stringify {error: "something went wrong :("}
 	)
+
+exports.exportLotToSDF = (req, resp) ->
+
+	# Get the list of lots to export
+	lotCorpNames = [req.params.lotCorpName]
+	
+	# Verify acls on the lots requested
+	[err, allowedProjects] = await serverUtilityFunctions.promisifyRequestStatusResponse(authorRoutes.allowedProjectsInternal, [req.user])
+
+	# Get each metalot and verify the acls
+	for lotCorpName in lotCorpNames
+		console.log "Checking user acls for lot " + lotCorpName
+		[err, metaLot, statusCode] = await exports.getMetaLotInternal(lotCorpName, req.user, allowedProjects)
+		if err?
+			console.log "User #{req.user.username} does not have permission to export results for #{lotCorpName}"
+			resp.statusCode = statusCode
+			resp.json err
+			return
+
+	# Service URL
+	exportCall = config.all.client.service.cmpdReg.persistence.fullpath + '/export/lotCorpNames'
+
+	try
+	# Use fetch to call the service and pipe the response to the client
+		response = await fetch(exportCall,
+			method: 'POST'
+			body: JSON.stringify(lotCorpNames)
+			headers:
+				'Content-Type': 'application/json'
+		)
+		checkStatus response
+		resp.set({
+			"content-length": response.headers.get('content-length'),
+			"content-disposition": "inline;filename=\"#{req.params.lotCorpName}.sdf\"",
+			"content-type": response.headers.get('content-type'),        
+		})
+		response.body.pipe(resp);
+	catch err
+		console.log "Error calling service: " + err
+		resp.statusCode = 500
+		resp.json err
+
 
 exports.exportSearchResults = (req, resp) ->
 	path = require 'path'
