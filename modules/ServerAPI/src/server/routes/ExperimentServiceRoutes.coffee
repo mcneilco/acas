@@ -841,7 +841,7 @@ exports.getExperimentACL = (experiment, user, allowedProjects) ->
 			acls.setDelete(true)
 		else
 			# only do project acl checks if the user doesn't already have read access by nature of their admin roles above
-			if !self.getRead() 
+			if !acls.getRead() 
 				# Project roles may have been passed in as an array, so only fetch allowed projects if they are not null
 				if !allowedProjects?
 					# Get the allowed projects for the user
@@ -856,7 +856,7 @@ exports.getExperimentACL = (experiment, user, allowedProjects) ->
 					console.warn "User #{user.username} does not have access to project #{projectCode} for experiment #{experiment.codeName}"
 			
 			# If the user can't read, then they should be able to write or delete
-			if self.getRead()
+			if acls.getRead()
 				acls.setWrite(exports.canEditExperiment(user, experiment, projectCode, scientist))
 				acls.setDelete(exports.canDeleteExperiment(user, experiment, projectCode, scientist))
 
