@@ -632,7 +632,7 @@ class ExperimentBrowserController extends Backbone.View
 			# Call to Route to Get URL 
 			$.ajax
 				type: 'GET'
-				url: "/getLinkExptQueryTool?experiment=#{code}"
+				url: "/api/getLinkExptQueryTool?experiment=#{code}"
 				success: (response) => 
 					# Take Away Generating Progress Mask 
 					@$('.bv_generatingLink').hide()
@@ -664,7 +664,7 @@ class ExperimentBrowserController extends Backbone.View
 			# Call to Route to Get URL 
 			$.ajax
 				type: 'GET'
-				url: "/getLinkExptQueryTool?experiment=#{code}"
+				url: "/api/getLinkExptQueryTool?experiment=#{code}"
 				success: (response) => 
 					# Take Away Generating Progress Mask 
 					@$('.bv_generatingLink').hide()
@@ -677,9 +677,10 @@ class ExperimentBrowserController extends Backbone.View
 				datatype: 'json'
 
 	handleCopyLinkClicked: =>
-		link = @$('.bv_exptLink').value
+		link = @$('.bv_exptLink').val()
 		if link? # Defined and not null
-			alert("Link copied to clipboard!")
+			navigator.clipboard.writeText(link).then ->
+				alert("Link copied to clipboard!")
 		else
 			alert("Unable to copy link to clipboard")
 
