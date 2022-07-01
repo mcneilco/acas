@@ -4,9 +4,11 @@ class DeleteLotController extends Backbone.View
 	events:
 		"click .cancelDeleteLotButton": "handleCancelButtonClicked"
 		"click .deleteLotButton": "handleDeleteButtonClicked"
+		"click .downloadLotButton": "downloadLot"
+
 
 	initialize: ->
-		_.bindAll(@, 'handleCancelButtonClicked', 'handleDeleteButtonClicked', 'checkDependencies', 'dependencyCheckReturn', 'dependencyCheckError', 'deleteLotError', 'deleteLotReturn');
+		_.bindAll(@, 'handleCancelButtonClicked', 'handleDeleteButtonClicked', 'checkDependencies', 'dependencyCheckReturn', 'dependencyCheckError', 'deleteLotError', 'deleteLotReturn', 'downloadLot');
 		$(@el).empty()
 		$(@el).html @template()
 		@$(".bv_title").html("Delete " + @.options.corpName + ": Review Dependencies")
@@ -52,6 +54,8 @@ class DeleteLotController extends Backbone.View
 			error: @.dependencyCheckError
 		});
 		
+	downloadLot: ->
+		window.open("/cmpdReg/export/corpName/"+@.corpName)
 
 	dependencyCheckReturn: (data) ->
 		@.trigger('clearErrors', "DeleteLotController");
