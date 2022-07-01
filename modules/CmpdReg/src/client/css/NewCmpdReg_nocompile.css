@@ -1134,10 +1134,10 @@ div.MetaLotViewButtons.buttons {
     margin-top: 20px;
     width: 800px;
 }
-.MetaLotViewButtons a.cancelButton, input.deleteLotButton, a.cregBtn, a.saveButton, a.backButton, a.newLotButton, a.detailsButton, a.editAnalyticalFiles, a.editLotButton, a.closeButton, a.backToSearchButton {
+.MetaLotViewButtons a.cancelButton, input.cregBtn, a.cregBtn, a.saveButton, a.backButton, a.newLotButton, a.detailsButton, a.editAnalyticalFiles, a.editLotButton, a.closeButton, a.backToSearchButton {
     float: right;
     height: 27px;
-    width: 90px;
+    width: 95px;
     padding: 10px 5px 0px 5px;
 }
 .MetaLotViewButtons input.cregBtn {
@@ -1182,7 +1182,11 @@ div.MetaLotViewButtons.buttons {
     text-decoration: none !important;
     padding: 1px 0px 0px 10px;
     margin-right: 11px;
-    width: 80px;
+    width: 95px;
+}
+.MetaLotViewButtons .cregBtn.small, input.cregBtn.small {
+    font: normal 11px/28px "Helvetica Neue", Helvetica, sans-serif;
+    padding-right: 10px;
 }
 /****** DETAILS LOT VIEW ******/
 
