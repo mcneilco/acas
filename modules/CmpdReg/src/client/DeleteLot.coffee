@@ -175,7 +175,7 @@ class DeleteLotController extends Backbone.View
 			if deletableExperiments
 				warningSummary += "<li>Deleting this lot will also delete associated assay results. This will not affect results in the same experiment associated with other compound lots.</li>"
 			if !linkedLots
-				parentCorpName = data.metaLot.lot.parent.corpName
+				parentCorpName = data.lot.parent.corpName
 				warningSummary += "<li>This is the only lot on the parent structure #{parentCorpName}. Deleting this lot will delete #{parentCorpName} also.</li>"
 			warningSummary += "</ul>"
 		else
