@@ -260,7 +260,6 @@ exports.getLotDependenciesInternal = (lot, user, allowedProjects) ->
 	checkStatus response
 	dependencies = await response.json()
 	dependencies.lot = lot
-	console.log "Got lot dependencies from server as #{JSON.stringify(dependencies)}"
 	# We decorate the linkedExperiments with the acls for the user
 	if dependencies.linkedExperiments? && dependencies.linkedExperiments.length > 0
 		console.log "Found #{dependencies.linkedExperiments.length} linked experiments to #{lotCorpName}, checking user acls on each experiment"
@@ -345,7 +344,7 @@ exports.getMetaLotInternal = (lotCorpName, user, allowedProjects, getDeleteAcl=t
 	return [err, metaLot, statusCode]
 
 exports.getMetaLot = (req, resp, next) ->
-	[err, metaLot, statusCode] = await exports.getMetaLotInternal req.params.lotCorpName, req.user, getDeleteAcl=true
+	[err, metaLot, statusCode] = await exports.getMetaLotInternal req.params.lotCorpName, req.user, null, getDeleteAcl=true
 	resp.statusCode = statusCode
 	if err?
 		resp.statusCode = statusCode
@@ -359,7 +358,7 @@ exports.deleteMetaLot = (req, resp, next) ->
 			username: "bob"
 			roles: []
 		}
-	[err, metaLot, statusCode] = await exports.getMetaLotInternal req.params.lotCorpName, req.user, getDeleteAcl=true
+	[err, metaLot, statusCode] = await exports.getMetaLotInternal req.params.lotCorpName, req.user, null, getDeleteAcl=true
 	if err?
 		resp.statusCode = statusCode
 		resp.json err
@@ -429,6 +428,7 @@ exports.getLotAcls = (lot, user, allowedProjects, checkDelete=true) ->
 					throw new InternalServerError "Could not get user's projects" 
 
 			# Check if the lot's project is in the allowed projects
+			console.log "Checking if lot's project #{projectCode} is in allowed projects: #{JSON.stringify(allowedProjects)}"
 			if _.where(allowedProjects, {code: projectCode}).length > 0
 				lotAcls.setRead(true)
 			else
@@ -452,10 +452,9 @@ exports.getLotAcls = (lot, user, allowedProjects, checkDelete=true) ->
 					console.log "User #{user.username} does not have permission to edit lot #{lot.corpName} which is not their lot (recordedBy: #{lot.recordedBy}, chemist: #{lot.chemist})"
 					lotAcls.setWrite(false)
 
-	if checkDelete
+	if lotAcls.getRead() && lotAcls.getWrite() && checkDelete
 		console.log "Checking delete acl for lot #{lot.corpName}"
 		dependencies = await exports.getLotDependenciesInternal(lot, user, allowedProjects)
-		console.log "Got dependencies for lot #{lot.corpName} as #{JSON.stringify(dependencies)}"
 		canDelete = true
 		for experiment in dependencies.linkedExperiments
 			if !experiment.acls.getDelete()
@@ -463,8 +462,6 @@ exports.getLotAcls = (lot, user, allowedProjects, checkDelete=true) ->
 				break
 		if canDelete
 			lotAcls.setDelete(true)
-		else
-			lotAcls.setDelete(false)
 
 	console.log "User #{user.username} lot #{lot.corpName} lot acls #{JSON.stringify(lotAcls)}"
 	return lotAcls
@@ -526,7 +523,7 @@ exports.saveMetaLot = (req, resp) ->
 		# By checking the saved lots project, the users allowed projects
 		if metaLot.lot.id? && metaLot.lot.corpName?
 			# Get the saved meta lot as it returns the saved metalot and includes the acls
-			[err, savedMetaLot, statusCode] = await exports.getMetaLotInternal metaLot.lot.corpName, req.user, getDeleteAcl=false
+			[err, savedMetaLot, statusCode] = await exports.getMetaLotInternal metaLot.lot.corpName, req.user, null, getDeleteAcl=false
 			if err?
 				resp.statusCode = statusCode
 				resp.end err
