@@ -50,7 +50,6 @@ exports.allowedProjects = (req, resp) ->
 exports.allowedProjectsInternal = (user, callback) ->
 	csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
 	csUtilities.getProjectStubsInternal (statusCode, allProjects) ->
-		console.log "allProjects: ", allProjects
 		config = require '../conf/compiled/conf.js'
 		_ = require 'underscore'
 

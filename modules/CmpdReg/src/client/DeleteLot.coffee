@@ -16,6 +16,7 @@ class DeleteLotController extends Backbone.View
 		@.eNotiList = @.options.errorNotifList;
 		@.bind('notifyError', @.eNotiList.add);
 		@.bind('clearErrors', @.eNotiList.removeMessagesForOwner);
+		@lotLabel = if window.configuration.metaLot.lotCalledBatch == true then "Batch" else "Lot"
 		@checkDependencies()
 
 
@@ -27,7 +28,7 @@ class DeleteLotController extends Backbone.View
 		@.trigger('notifyError', {
 			owner: 'DeleteLotController',
 			errorLevel: 'warning',
-			message: 'Deleting lot...'
+			message: "Deleting #{@lotLabel}..."
 		});
 		url = window.configuration.serverConnection.baseServerURL+"metalots/corpName/"+@.corpName;
 
@@ -100,10 +101,11 @@ class DeleteLotController extends Backbone.View
 		if linkedExperiments
 			linkedExperiments = _.sortBy(data.linkedExperiments, (experiment) -> experiment.code)
 
-			experimentSummaryHeader = "Dependent Experimental Results"
-			deletableExperimentSummary = "<h3>#{experimentSummaryHeader}:</h3>"
-			undeletableExperimentSummary = "<h3>#{experimentSummaryHeader} which are not deletable by you:</h3>"
-			unreadableExperimentSummary = "<h3>#{experimentSummaryHeader} which are not readable by you:</h3>"
+			experimentSummaryText = "Dependent Experimental Results"
+			experimentSummary += "<h3>#{experimentSummaryText}</h3><ul>"
+			deletableExperimentSummary = "<li>Which you have access to delete:"
+			undeletableExperimentSummary = "<li>Which are not deletable by you:"
+			unreadableExperimentSummary = "<li>Which are not readable by you:"
 
 			deletableExperiments = linkedExperiments.filter((experiment) -> experiment.acls.delete)
 			undeletableExperiments = linkedExperiments.filter((experiment) -> experiment.acls.read && !experiment.acls.delete)
@@ -112,19 +114,16 @@ class DeleteLotController extends Backbone.View
 
 			if deletableExperiments.length > 0
 				deletableExperimentSummary += @getUlFromCodeArray(deletableExperiments)
-			else
-				deletableExperimentSummary += "<p>None</p>"
+				experimentSummary += deletableExperimentSummary + "</li>"
 
 			if undeletableExperiments.length > 0
 				undeletableExperimentSummary += @getUlFromCodeArray(undeletableExperiments)
-			else
-				undeletableExperimentSummary += "<p>None</p>"
+				experimentSummary += undeletableExperimentSummary + "</li>"
 
 			if unreadableExperimentsCount > 0
-				unreadableExperimentSummary += "<p>#{unreadableExperimentsCount}</p>"
-			else
-				unreadableExperimentSummary += "<p>None</p>"
-			experimentSummary = deletableExperimentSummary
+				unreadableExperimentSummary += " #{unreadableExperimentsCount}"
+				experimentSummary += unreadableExperimentSummary + "</li>"
+			experimentSummary += "</ul>"
 
 		# Get linked lots summary
 		lotSummary = ""
@@ -133,54 +132,36 @@ class DeleteLotController extends Backbone.View
 			# Sorty the list of lots
 			linkedLots = _.sortBy(data.linkedLots, (lot) -> lot.code)
 
-			lotSummaryHeader = "Remaining Lots On This Parent"
-			deletableLotSummary = "<h3>#{lotSummaryHeader}:</h3>"
-			readableLotSummary = "<h3>#{lotSummaryHeader} which are not deletable by you:</h3>"
-			unreadableLotSummary = "<h3>#{lotSummaryHeader} which are not readable by you:</h3>"
+			lotSummaryText = "Remaining #{@lotLabel.toLowerCase()}s on this parent compound"
+			lotSummary += "<h3>#{lotSummaryText}</h3>"
 
-			deletableLots = linkedLots.filter((lot) -> lot.acls.delete)
-			readableLots = linkedLots.filter((lot) -> lot.acls.read && !lot.acls.delete)
-			unreadableLotsCount = linkedLots.filter((lot) -> !lot.acls.read).length
+			if linkedLots.length > 0
+				lotSummary += @getUlFromCodeArray(linkedLots, "#lot/")
+				lotSummary += "</li>"
 
-			if deletableLots.length > 0
-				deletableLotSummary += @getUlFromCodeArray(deletableLots, "#lot/")
-			else
-				deletableLotSummary += "<p>None</p>"
-
-			if readableLots.length > 0
-				readableLotSummary += @getUlFromCodeArray(readableLots, "#lot/")
-			else
-				readableLotSummary += "<p>None</p>"
-
-			if unreadableLotsCount > 0
-				unreadableLotSummary += "<p>#{unreadableLotsCount}</p>"
-			else
-				unreadableLotSummary += "<p>None</p>"
-
-			lotSummary = deletableLotSummary
+			lotSummary += "</ul>"
 			@lotSummary = lotSummary
 
-		errorSummary = "<h3>Errors</h3>"
+		errorSummary = "<h3>Errors</h3><ul>"
 		if linkedExperiments && (unreadableExperimentsCount > 0 || undeletableExperiments.length > 0)
 			@$('.deleteLotButton').hide()
-			errorSummary += unreadableExperimentSummary + undeletableExperimentSummary
+			errorSummary += "<li>You do not have the necessary permissions to delete associated experimental results. Please contact your Administrator for assistance.</li>"
 		else
 			@$('.deleteLotButton').show()
-			errorSummary += "<p>None</p>"
+			errorSummary += "<li>None</li>"
+		errorSummary += "</ul>"
 
-		warningSummary = "<h3>Warnings</h3>"
+		warningSummary = "<h3>Warnings</h3><ul>"
 		deletableExperiments = (linkedExperiments && deletableExperiments.length > 0)
 		if deletableExperiments || !linkedLots
-			warningSummary += "<ul>"
 			if deletableExperiments
-				warningSummary += "<li>Deleting this lot will also delete associated assay results. This will not affect results in the same experiment associated with other compound lots.</li>"
+				warningSummary += "<li>Deleting this #{@lotLabel.toLowerCase()} will also delete the associated experimental results. This will not affect results in the same experiment associated with other compound #{@lotLabel.toLowerCase()}s.</li>"
 			if !linkedLots
 				parentCorpName = data.lot.parent.corpName
-				warningSummary += "<li>This is the only lot on the parent structure #{parentCorpName}. Deleting this lot will delete #{parentCorpName} also.</li>"
-			warningSummary += "</ul>"
+				warningSummary += "<li>This is the only lot on the parent compound #{parentCorpName}. Deleting this #{@lotLabel.toLowerCase()} will delete #{parentCorpName} also.</li>"
 		else
-			warningSummary += "<p>None</p>"
-
+			warningSummary += "<li>None</li>"
+		warningSummary += "</ul>"
 		return experimentSummary + lotSummary + errorSummary + warningSummary;
 
 	showOne:  (className) ->
@@ -207,7 +188,7 @@ class DeleteLotController extends Backbone.View
 		@trigger('notifyError', {
 			owner: 'DeleteLotController',
 			errorLevel: 'info',
-			message: 'Successfully deleted lot'
+			message: "Successfully deleted #{@lotLabel}"
 		})
 		# Get summary of dependencies
 		@$(".bv_remainintLotsOnParentLinks").html(@lotSummary)
@@ -229,6 +210,6 @@ class DeleteLotController extends Backbone.View
 		@trigger('notifyError', {
 			owner: 'DeleteLotController',
 			errorLevel: 'error',
-			message: 'Error deleting lot'
+			message: "Error deleting #{@lotLabel}"
 		})
 		@showOne('bv_deleteLotError')
