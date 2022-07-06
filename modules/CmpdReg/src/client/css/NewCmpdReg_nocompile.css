@@ -158,9 +158,9 @@ div {
     margin-top: 12px;
 }
 .buttons { /*Need to rename this class to navigationButtons !!! */
-    padding: 10px 0 0 10px;
+    padding: 10px 0 0 0px;
     width: 705px;
-    margin-left: 16px;
+    margin-left: 0px;
     clear: both;
 }
 .RegSearchResultsView .buttons { /*Need to rename this class to navigationButtons !!! */
@@ -1132,13 +1132,14 @@ div.analyticalFiles {
 /*** BUTTONS ***/
 div.MetaLotViewButtons.buttons {
     margin-top: 20px;
-    width: 800px;
+    width: 660px;
+    height: 30px;
 }
 .MetaLotViewButtons a.cancelButton, input.cregBtn, a.cregBtn, a.saveButton, a.backButton, a.newLotButton, a.detailsButton, a.editAnalyticalFiles, a.editLotButton, a.closeButton, a.backToSearchButton {
     float: right;
     height: 27px;
     width: 95px;
-    padding: 10px 5px 0px 5px;
+    padding: 30px 5px 0px 5px;
 }
 .MetaLotViewButtons input.cregBtn {
     padding-left: 0px;
@@ -1150,7 +1151,6 @@ div.MetaLotViewButtons.buttons {
 }
 .MetaLotViewButtons a.saveButton {
     background: no-repeat url('../images/save.png');
-    margin-right: 170px;
 }
 .MetaLotViewButtons a.cancelButton {
     background: no-repeat url('../images/cancel.png');
@@ -1195,8 +1195,9 @@ div.MetaLotViewButtons.buttons {
     /*position: absolute;*/
     left: 556px;
     bottom: 40px;
-    margin-left: 150px;
-    padding-right: 39px;
+    margin-left: 0px;
+    padding-right: 40px;
+    padding-left: 0px;
     /*
         margin-top: 5px;
         margin-left: 15px;
