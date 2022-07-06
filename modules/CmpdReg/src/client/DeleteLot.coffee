@@ -5,10 +5,11 @@ class DeleteLotController extends Backbone.View
 		"click .cancelDeleteLotButton": "handleCancelButtonClicked"
 		"click .deleteLotButton": "handleDeleteButtonClicked"
 		"click .downloadLotButton": "downloadLot"
+		"click .bv_backToCreg": "handleBackToCregButtonClicked"
 
 
 	initialize: ->
-		_.bindAll(@, 'handleCancelButtonClicked', 'handleDeleteButtonClicked', 'checkDependencies', 'dependencyCheckReturn', 'dependencyCheckError', 'deleteLotError', 'deleteLotReturn', 'downloadLot');
+		_.bindAll(@, 'handleCancelButtonClicked', 'handleDeleteButtonClicked', 'checkDependencies', 'dependencyCheckReturn', 'dependencyCheckError', 'deleteLotError', 'deleteLotReturn', 'downloadLot', 'handleBackToCregButtonClicked');
 		$(@el).empty()
 		$(@el).html @template()
 		@$(".bv_title").html("Delete " + @.options.corpName + ": Review Dependencies")
@@ -70,23 +71,28 @@ class DeleteLotController extends Backbone.View
 		# Show the summary
 		@$(".bv_dependencySummary").show();
 		
+	handleBackToCregButtonClicked: ->
+		window.location.href = 	window.configuration.serverConnection.baseServerURL
 		
 	getUlFromCodeArray: (codeArray, link) ->
 		ul = "<ul>";
 		_.each(codeArray, (code) ->
+			descriptionText = ""
+			if code.description?
+				descriptionText = ": #{code.description}"
 			if link?
 				# target blank
-				if code.name == code.name
+				if code.code == code.name
 					# target blank a tag with a href to link with code
-					ul += "<li><a href='"+link+code.name+"' target='_blank'>"+code.name+"</a></li>"
+					ul += "<li><a href='#{link+code.name}' target='_blank'>#{code.code}#{descriptionText}</a></li>"
 				else
 					# target blank a tag with a href to link with code
-					ul += "<li><a href='"+link+code.name+"' target='_blank'>"+code.name+"</a> ("+code.code+")</li>"
+					ul += "<li><a href='#{link+code.name}' target='_blank'>#{code.name}</a> (#{code.code})#{descriptionText}</li>"
 			else 
 				if code.name == code.code
-					ul += "<li>" + code.name + "</li>"
+					ul += "<li>#{code.code}#{descriptionText}</li>"
 				else
-					ul += "<li>" + code.name + " (" + code.code + ")" + "</li>"	
+					ul += "<li>#{code.code} \"#{code.name}\"#{descriptionText}" + "</li>"	
 		);
 		ul += "</ul>";
 		return ul;
@@ -191,8 +197,7 @@ class DeleteLotController extends Backbone.View
 			message: "Successfully deleted #{@lotLabel}"
 		})
 		# Get summary of dependencies
-		@$(".bv_remainintLotsOnParentLinks").html(@lotSummary)
-		@$(".bv_backToCreg").attr("href", window.configuration.serverConnection.baseServerURL)
+		@$(".bv_remainingLotsOnParentLinks").html(@lotSummary)
 
 		# Hide all buttons
 		@$(".deleteLotButtons").hide()

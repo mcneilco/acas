@@ -199,6 +199,8 @@ $(function() {
 		    var lisb = window.configuration.metaLot.lotCalledBatch;
 		    if (this.model.get('lot').isNew()) {
 			    this.$('.newLotButton').hide();
+			    this.$('.downloadLotButton').hide();
+			    this.$('.deleteButton').hide();
 			    this.$('.saveButton').addClass('saveImage');
 			    this.$('.saveButton').removeClass('updateImage');
 			    this.$('.cancelButton').addClass('cancelImage');
@@ -239,7 +241,9 @@ $(function() {
 			    if (!this.model.get('lot').get("acls").write) {
 				    this.$('.saveButton').hide();
 				    this.$('.deleteButton').hide();
-			    }
+			    } else {
+					this.$('.deleteButton').html(lisb ? 'Delete Batch...' : 'Delete Lot...');
+				}
 			    console.log("about to load inventory");
 			    console.log(window.configuration.metaLot.showLotInventory);
 			    if (window.configuration.metaLot.showLotInventory) {

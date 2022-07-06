@@ -835,7 +835,7 @@ exports.getExperimentACL = (experiment, user, allowedProjects) ->
 		projectCode = exports.getEntityValue(experiment, "metadata", "experiment metadata", "codeValue", "project")
 		scientist = exports.getEntityValue(experiment, "metadata", "experiment metadata", "codeValue", "scientist")
 		console.log "Experiment #{experiment.codeName} has project: #{projectCode} and scientist: #{scientist}"
-		if scientist is null
+		if scientist is null || projectCode is null
 			acls.setRead(true)
 			acls.setWrite(true)
 			acls.setDelete(true)

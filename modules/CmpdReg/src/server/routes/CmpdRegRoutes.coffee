@@ -264,10 +264,17 @@ exports.getLotDependenciesInternal = (lot, user, allowedProjects) ->
 	if dependencies.linkedExperiments? && dependencies.linkedExperiments.length > 0
 		console.log "Found #{dependencies.linkedExperiments.length} linked experiments to #{lotCorpName}, checking user acls on each experiment"
 		experimentCodeList = _.pluck(dependencies.linkedExperiments, "code")
+		experimentCodeList = _.uniq experimentCodeList
 		response = await experimentServiceRoutes.fetchExperimentsByCodeNames(experimentCodeList)
 		experiments = await response.json()
+		if(experiments.length != experimentCodeList.length)
+			console.log "Error: #{experimentCodeList.length} experiments were requested, but only #{experiments.length} were returned"
+			console.log "Requested codes: #{experimentCodeList}"
+			console.log "Returned experiments: #{JSON.stringify(experiments)}"
+			throw new InternalServerError "Error: #{experimentCodeList.length} experiments were requested, but only #{experiments.length} were returned"
 		noReadExperimentsCount = 0
 		for experiment in experiments
+			console.log "Checking acls for experiment #{experiment.code}"
 			acls = await experimentServiceRoutes.getExperimentACL(experiment.experiment, user, allowedProjects)
 			idx = _.findIndex(dependencies.linkedExperiments, { code: experiment.experiment.codeName })
 			if !acls.getRead()
@@ -457,6 +464,8 @@ exports.getLotAcls = (lot, user, allowedProjects, checkDelete=true) ->
 		dependencies = await exports.getLotDependenciesInternal(lot, user, allowedProjects)
 		canDelete = true
 		for experiment in dependencies.linkedExperiments
+			console.log "experiment"
+			console.log experiment
 			if !experiment.acls.getDelete()
 				canDelete = false
 				break
