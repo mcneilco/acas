@@ -243,7 +243,7 @@ $(function() {
 				    this.$('.deleteButton').hide();
 			    } else {
 					this.$('.deleteButton').html(lisb ? 'Delete Batch...' : 'Delete Lot...');
-				}
+			    }
 			    console.log("about to load inventory");
 			    console.log(window.configuration.metaLot.showLotInventory);
 			    if (window.configuration.metaLot.showLotInventory) {
@@ -319,28 +319,37 @@ $(function() {
 		    });
 	    },
 
-		delete: function () {
+		deleteLotRequest: function () {
+		    this.trigger('clearErrors', "MetaLotController");
+		    this.trigger('clearErrors', "LotController");
+		    $(this.el).empty();
+		    this.deleteLotController = new DeleteLotController({
+			    el: $(this.el),
+			    corpName: this.model.get('lot').get("corpName"),
+			    errorNotifList: this.options.errorNotifList,
+			    user: this.user
+		    });
+	    },
+
+	    delete: function () {
 		    if (this.saveInProgress) {
 			    return;
 		    }
 		    this.saveInProgress = true;
 		    this.trigger('clearErrors', "MetaLotController");
 		    this.updateModel();
-			var lisb = window.configuration.metaLot.lotCalledBatch;
-			this.delegateEvents({}); // stop listening to buttons
-			this.trigger('notifyError', {
-				owner: 'MetaLotController',
-				errorLevel: 'warning',
-				message: 'Checking for ' + (lisb ? 'batch' : 'lot') + ' dependencies...'
-			});
-			this.deleteLotController = new DeleteLotController({
-				el: this.$('.deleteLotView'),
-				model: this.model.get('lot')
-			});
-			// this.$('.bv_deleteLotDialog').modal({backdrop: 'static'})
-			this.$('.deleteLotView').show();
-			// this.$('.bv_deleteLotDialog').modal()
-
+		    var lisb = window.configuration.metaLot.lotCalledBatch;
+		    this.delegateEvents({}); // stop listening to buttons
+		    this.trigger('notifyError', {
+			    owner: 'MetaLotController',
+			    errorLevel: 'warning',
+			    message: 'Checking for ' + (lisb ? 'batch' : 'lot') + ' dependencies...'
+		    });
+		    this.deleteLotController = new DeleteLotController({
+			    el: this.$('.deleteLotView'),
+			    model: this.model.get('lot')
+		    });
+		    this.$('.deleteLotView').show();
 	    },
 
 	    editParentRequest: function (parent) {
@@ -356,17 +365,6 @@ $(function() {
 		    });
 	    },
 
-		deleteLotRequest: function () {
-			this.trigger('clearErrors', "MetaLotController");
-			this.trigger('clearErrors', "LotController");
-			$(this.el).empty();
-			this.deleteLotController = new DeleteLotController({
-				el: $(this.el),
-			    corpName: this.model.get('lot').get("corpName"),
-				errorNotifList: this.options.errorNotifList,
-				user: this.user
-		    });
-	    },
 
 	    newLotSaved: function (message) {
 			if(message.errors.length > 0){
@@ -453,12 +451,11 @@ $(function() {
 
 	    newLot: function () {
 		    window.open("#register/" + this.lotController.model.get('corpName'));
-
 	    },
 
-		downloadLot: function() {
-			window.open("/cmpdReg/export/corpName/"+this.lotController.model.get('corpName'))
-		},
+	    downloadLot: function() {
+		    window.open("/cmpdReg/export/corpName/"+this.lotController.model.get('corpName'))
+	    },
 
 	    saltFormAllowedToUpdate: function () {
 		    if (!this.model.get('lot').isNew() && !this.model.get('lot').get("acls").write) return false;
