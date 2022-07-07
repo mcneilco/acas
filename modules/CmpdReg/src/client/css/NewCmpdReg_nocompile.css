@@ -221,18 +221,6 @@ div {
 .MetaLotView div.floatingPanel.newIsotopeView div {
     height: 20px;
 }
-.MetaLotView div.floatingPanel.deleteLotView {
-    cursor: hand;
-    width: 620px;
-    min-height: 500px;
-    margin-left: 150px;
-}
-.MetaLotView div.floatingPanel.deleteLotView div {
-    height: 300px;
-}
-.MetaLotView div.floatingPanel.deleteLotView .marvinWrapper {
-    height: 506px !important;
-}
 .MetaLotView .bv_lotInventory iframe {
     width: 700px;
     height: 700px;

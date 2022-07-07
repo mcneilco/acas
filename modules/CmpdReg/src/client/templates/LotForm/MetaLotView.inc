@@ -14,5 +14,5 @@
 	</div>
     <div class="floatingPanel NewLotSuccessView"></div>
 	<div class="bv_lotInventory"></div>
-	<div class="hide floatingPanel deleteLotView"></div>
+	<div class="hide deleteLotView"></div>
 </script>
