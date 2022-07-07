@@ -319,7 +319,7 @@ $(function() {
 		    });
 	    },
 
-		deleteLotRequest: function () {
+	    deleteLotRequest: function () {
 		    this.trigger('clearErrors', "MetaLotController");
 		    this.trigger('clearErrors', "LotController");
 		    $(this.el).empty();
