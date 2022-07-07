@@ -233,8 +233,14 @@ exports.getMetaLotDepedencies = (req, resp, next) ->
 	requestedLotCorpName = req.params.lotCorpName
 	user = req.user
 	console.log "Checking meta lot dependencies for lot #{requestedLotCorpName} with user #{user.username}"
-	# Faster to get the users allowed projects up front
+
+	# Faster to get the users allowed projects up front and pass it down to other functions
 	[err, allowedProjects] = await serverUtilityFunctions.promisifyRequestStatusResponse(authorRoutes.allowedProjectsInternal, [user])
+	if err?
+		console.log "Error checking user projects: #{err}"
+		resp.statusCode = 500
+		resp.json err
+		return
 
 	# Get the meta lot
 	[err, metaLot, statusCode] = await exports.getMetaLotInternal(req.params.lotCorpName, req.user, allowedProjects, getDeleteAcl=false)
@@ -384,21 +390,6 @@ exports.deleteMetaLot = (req, resp, next) ->
 		else
 			resp.statusCode = 403
 			resp.json "You do not have permission to delete this lot"
-
-# exports.checkMetaLotDepedencies = (req, resp, next) ->
-# 	[err, metaLot, statusCode] = await exports.getMetaLotInternal req.params.lotCorpName, req.user
-# 	if err?
-# 		console.log "User #{req.user.username} does not have permission to check dependencies for lot #{req.params.lotCorpName}"
-# 		resp.statusCode = statusCode
-# 		resp.json err
-# 	else
-# 		console.log "User #{req.user.username} has permission to check dependencies for lot #{req.params.lotCorpName}"
-# 		[err, depdencies, statusCode] = await exports.checkLotDepedencies(metaLot.lot.corpName)
-# 		if err?
-# 			resp.statusCode = statusCode
-# 			resp.json err
-# 		else
-# 			resp.json depdencies
 	
 
 exports.fetchMetaLot = (lotCorpName) ->
