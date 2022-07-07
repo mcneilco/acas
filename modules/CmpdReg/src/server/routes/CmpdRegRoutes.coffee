@@ -262,38 +262,59 @@ exports.getMetaLotDepedencies = (req, resp, next) ->
 exports.getLotDependenciesInternal = (lot, user, allowedProjects) ->
 	console.log "Checking lot dependencies for lot #{lot.corpName} with user #{user.username}"
 	lotCorpName = lot.corpName
+
+	# Get the depdencies from the service which does not cover user ACLS
 	response = await exports.fetchMetaLotDependencies(lotCorpName)
+
 	checkStatus response
 	dependencies = await response.json()
+
+	## Add the lot to the dependencies return
 	dependencies.lot = lot
+
 	# We decorate the linkedExperiments with the acls for the user
 	if dependencies.linkedExperiments? && dependencies.linkedExperiments.length > 0
 		console.log "Found #{dependencies.linkedExperiments.length} linked experiments to #{lotCorpName}, checking user acls on each experiment"
+
+		# Get the codes and experiments from the server so we can look up project codes and scientist ownership of the experiments
 		experimentCodeList = _.pluck(dependencies.linkedExperiments, "code")
+
+		# Unique the list just in case there are duplicates (there should not be)
 		experimentCodeList = _.uniq experimentCodeList
+
+		# Get the experiments from the server
 		response = await experimentServiceRoutes.fetchExperimentsByCodeNames(experimentCodeList)
 		experiments = await response.json()
+
+		# It's unexpected that the server would return a list of experiments that are not in the list of codes we asked for, so we check for that and erorr
 		if(experiments.length != experimentCodeList.length)
 			console.log "Error: #{experimentCodeList.length} experiments were requested, but only #{experiments.length} were returned"
 			console.log "Requested codes: #{experimentCodeList}"
 			console.log "Returned experiments: #{JSON.stringify(experiments)}"
 			throw new InternalServerError "Error: #{experimentCodeList.length} experiments were requested, but only #{experiments.length} were returned"
-		noReadExperimentsCount = 0
+
+		# Get the acls for the experiments
 		for experiment in experiments
 			console.log "Checking acls for experiment #{experiment.code}"
+
+			# This returns the acls (read, write, delete of the experiment for the user and allowed project the user has)
 			acls = await experimentServiceRoutes.getExperimentACL(experiment.experiment, user, allowedProjects)
 			idx = _.findIndex(dependencies.linkedExperiments, { code: experiment.experiment.codeName })
+			
+			# The experiment is not readable by the user, then just return the acls in the array of experiments
+			# This way it'know there are experiments linked that aren't readable
 			if !acls.getRead()
-				noReadExperimentsCount++
 				console.log "Experiment #{experiment.experiment.codeName} is not readable by user #{user.username}"
 				# Get the experiment from the linkedExperiments by code
 				dependencies.linkedExperiments[idx] = {acls: acls, code: null, name: null, ignored: false}
 			else
+				# The experiment is readable so includ the experiment and acls
 				dependencies.linkedExperiments[idx].acls = acls
 	else
 		console.log "No experiments linked to #{lotCorpName}"
 
-	#TODO CLEAN THIS UP add logging and try/catch
+	# May not need to look up the acls of the 
+	# Need to look up acls of the linked lots
 	response = await exports.fetchLotsByParent(lot.parent.corpName)
 	allLotsForParent = await response.json()
 	console.log "Found #{allLotsForParent.length} lots for parent #{lotCorpName}"
