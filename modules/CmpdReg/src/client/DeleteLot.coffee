@@ -84,10 +84,10 @@ class DeleteLotController extends Backbone.View
 				# target blank
 				if code.code == code.name
 					# target blank a tag with a href to link with code
-					ul += "<li><a href='#{link+code.name}' target='_blank'>#{code.code}#{descriptionText}</a></li>"
+					ul += "<li><a href='#{link+code.code}' target='_blank'>#{code.code}#{descriptionText}</a></li>"
 				else
 					# target blank a tag with a href to link with code
-					ul += "<li><a href='#{link+code.name}' target='_blank'>#{code.name}</a> (#{code.code})#{descriptionText}</li>"
+					ul += "<li><a href='#{link+code.code}' target='_blank'>#{code.name} (#{code.code})</a>#{descriptionText}</li>"
 			else 
 				if code.name == code.code
 					ul += "<li>#{code.code}#{descriptionText}</li>"
@@ -119,11 +119,11 @@ class DeleteLotController extends Backbone.View
 			
 
 			if deletableExperiments.length > 0
-				deletableExperimentSummary += @getUlFromCodeArray(deletableExperiments)
+				deletableExperimentSummary += @getUlFromCodeArray(deletableExperiments, "/entity/edit/codeName/")
 				experimentSummary += deletableExperimentSummary + "</li>"
 
 			if undeletableExperiments.length > 0
-				undeletableExperimentSummary += @getUlFromCodeArray(undeletableExperiments)
+				undeletableExperimentSummary += @getUlFromCodeArray(undeletableExperiments, "/entity/edit/codeName/")
 				experimentSummary += undeletableExperimentSummary + "</li>"
 
 			if unreadableExperimentsCount > 0
@@ -135,17 +135,26 @@ class DeleteLotController extends Backbone.View
 		lotSummary = ""
 		linkedLots =  (data.linkedLots? && data.linkedLots.length > 0)
 		if linkedLots
-			# Sorty the list of lots
 			linkedLots = _.sortBy(data.linkedLots, (lot) -> lot.code)
 
-			lotSummaryText = "Remaining #{@lotLabel.toLowerCase()}s on this parent compound"
-			lotSummary += "<h3>#{lotSummaryText}</h3>"
+			lotSummaryText = "Remaining Lots On Parent"
+			lotSummary += "<h3>#{lotSummaryText}</h3><ul>"
+			readableLotSummary = "<li>Which are readable by you:"
+			unreadableLotSummary = "<li>Which are not readable by you:"
 
-			if linkedLots.length > 0
-				lotSummary += @getUlFromCodeArray(linkedLots, "#lot/")
-				lotSummary += "</li>"
+			readableLots = linkedLots.filter((lot) -> lot.acls.read)
+			unreadableLotsCount = linkedLots.filter((lot) -> !lot.acls.read).length
 
+			if readableLots.length > 0
+				readableLotSummary += @getUlFromCodeArray(readableLots, "#lot/")
+				lotSummary += readableLotSummary + "</li>"
+
+			if unreadableLotsCount > 0
+				unreadableLotSummary += " #{unreadableLotsCount}"
+				lotSummary += unreadableLotSummary + "</li>"
 			lotSummary += "</ul>"
+			
+			## Add the lot summary as a global to the controller so it can be displayed again after delete
 			@lotSummary = lotSummary
 
 		errorSummary = "<h3>Errors</h3><ul>"
