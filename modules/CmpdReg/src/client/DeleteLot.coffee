@@ -12,12 +12,12 @@ class DeleteLotController extends Backbone.View
 		_.bindAll(@, 'handleCancelButtonClicked', 'handleDeleteButtonClicked', 'checkDependencies', 'dependencyCheckReturn', 'dependencyCheckError', 'deleteLotError', 'deleteLotReturn', 'downloadLot', 'handleBackToCregButtonClicked');
 		$(@el).empty()
 		$(@el).html @template()
-		@$(".bv_title").html("Delete " + @.options.corpName + ": Review Dependencies")
+		@lotLabel = if window.configuration.metaLot.lotCalledBatch == true then "Batch" else "Lot"
+		@$(".bv_title").html("Delete #{@lotLabel} #{@.options.corpName}: Review Dependencies")
 		@.corpName = @.options.corpName;
 		@.eNotiList = @.options.errorNotifList;
 		@.bind('notifyError', @.eNotiList.add);
 		@.bind('clearErrors', @.eNotiList.removeMessagesForOwner);
-		@lotLabel = if window.configuration.metaLot.lotCalledBatch == true then "Batch" else "Lot"
 		@checkDependencies()
 
 
@@ -87,7 +87,7 @@ class DeleteLotController extends Backbone.View
 					ul += "<li><a href='#{link+code.code}' target='_blank'>#{code.code}#{descriptionText}</a></li>"
 				else
 					# target blank a tag with a href to link with code
-					ul += "<li><a href='#{link+code.code}' target='_blank'>#{code.name} (#{code.code})</a>#{descriptionText}</li>"
+					ul += "<li><a href='#{link+code.code}' target='_blank'>#{code.code} \"#{code.name}\"</a>#{descriptionText}</li>"
 			else 
 				if code.name == code.code
 					ul += "<li>#{code.code}#{descriptionText}</li>"
