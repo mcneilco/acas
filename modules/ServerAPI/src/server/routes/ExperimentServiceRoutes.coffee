@@ -810,24 +810,25 @@ exports.fetchExperimentsByCodeNames = (codeNamesArray, returnOption) ->
 	return response
 	
 exports.getExperimentACL = (experiment, user, allowedProjects) ->
-	# Get the acls for the lot
+	# Get acls for an experiment, user and allowed set of projects
 	acls = new Acls(false, false, false)
 
 	# Check if user is cmpdreg admin
 	isACASAdmin = loginRoutes.checkHasRole(user, config.all.client.roles.acas.adminRole)
 	isACASUser = loginRoutes.checkHasRole(user, config.all.client.roles.acas.userRole)
 	isCmpdRegAdmin = loginRoutes.checkHasRole(user, config.all.client.roles.cmpdreg.adminRole)
-	# cmpdRegUser = loginRoutes.checkHasRole(user, config.all.client.roles.cmpdreg.chemistRole)
-	# if false
+
+    # If the user is a cmpd reg admin, then regardless of the lot's project or other configs they can read and write the lot	
 	if isACASAdmin
-		# If the user is a cmpd reg admin, then regardless of the lot's project or other configs they can read and write the lot
 		acls.setRead(true)
 		acls.setWrite(true)
 		acls.setDelete(true)
+		return acls
 	else
 		if isCmpdRegAdmin
 			acls.setRead(true)
 		if !isACASUser
+			# If the user isn't an ACAS user then we've done all to the acls we want to do as by default
 			return acls
 
 		# IF we are here, then the user is an ACAS user.  Check if the user is a member of the experiment's project.
@@ -835,13 +836,22 @@ exports.getExperimentACL = (experiment, user, allowedProjects) ->
 		projectCode = exports.getEntityValue(experiment, "metadata", "experiment metadata", "codeValue", "project")
 		scientist = exports.getEntityValue(experiment, "metadata", "experiment metadata", "codeValue", "scientist")
 		console.log "Experiment #{experiment.codeName} has project: #{projectCode} and scientist: #{scientist}"
+
+		# If the experiment doesn't have a scientist or a project then we should log this but there is nothing to restrict the user's access.
 		if scientist is null || projectCode is null
+			# Check which one is null and log it.
+			if scientist is null
+				console.log "Experiment #{experiment.codeName} has no scientist"
+			if projectCode is null
+				console.log "Experiment #{experiment.codeName} has no project"
+			console.log "Experiment #{experiment.codeName} has no project or scientist.  No ACLs will be set."
 			acls.setRead(true)
 			acls.setWrite(true)
 			acls.setDelete(true)
+			return acls
 		else
-			# only do project acl checks if the user doesn't already have read access by nature of their admin roles above
-			if !acls.getRead() 
+			# If the user doesn't have read access yet then check to see if they are a member of the project of the experiment to see if they can read the experiment.
+			if !acls.getRead()
 				# Project roles may have been passed in as an array, so only fetch allowed projects if they are not null
 				if !allowedProjects?
 					# Get the allowed projects for the user
@@ -855,15 +865,21 @@ exports.getExperimentACL = (experiment, user, allowedProjects) ->
 					# Default to not allowing read access so no need to set false here, just log it
 					console.warn "User #{user.username} does not have access to project #{projectCode} for experiment #{experiment.codeName}"
 			
-			# If the user can't read, then they should be able to write or delete
+			# If the user can read the experiment, then check to see if they can write and delete the experiment. 
 			if acls.getRead()
+				# Check to see if the 
 				acls.setWrite(exports.canEditExperiment(user, experiment, projectCode, scientist))
-				acls.setDelete(exports.canDeleteExperiment(user, experiment, projectCode, scientist))
+				acls.setDelete(exports.canDeleteExperiment(user, projectCode, scientist))
 
 	console.log "Experiment #{experiment.codeName} has acls: #{JSON.stringify(acls)} for user #{user.username}"
 	return acls
 			
 exports.canEditExperiment = (user, experiment, project, scientist) ->
+	# If editing roles are not defined, then allow editing
+	# If editing roles are define then
+	#    If the role is "entityScientist" then the user.username just needs to be the same as the scientist
+	#    If the role is "projectAdmin" then the user needs to have the project admin role for the project
+	# Order seems to really matter here, but this is what was done in the old code so I'm leaving it as is.
 	if experiment.lsKind is 'study'
 		editingRoles = null
 		if config.all.entity?.study?.editingRoles?
@@ -892,7 +908,12 @@ exports.canEditExperiment = (user, experiment, project, scientist) ->
 			return false
 	return true
 
-exports.canDeleteExperiment = (user, experiment, project, scientist) ->
+exports.canDeleteExperiment = (user, project, scientist) ->
+	# If deleting roles are not defined, then allow delete
+	# If deleting roles are defined then 
+	#   If the role is "entityScientist" then the user.username just needs to be the same as the scientist
+	#   If the role is "projectAdmin" then the user needs to have the project admin role for the project
+	# Order seems to really matter here, but this is what was done in the old code so I'm leaving it as is.
 	if config.all.entity?.deletingRoles?
 		rolesToTest = []
 		for role in config.all.entity.deletingRoles.split(",")
