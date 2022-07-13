@@ -926,10 +926,18 @@ class FileRowSummaryController extends Backbone.View
 			fileDate = ""
 		else
 			fileDate = UtilityFunctions::convertMSToYMDDate(fileDate)
+
+		fileName = @model.get('fileName')
+		# Replace .sdf with .zip since the report file shares the same name 
+		reportName = fileName.replace "\.sdf", ".zip"
+
 		toDisplay =
-			fileName: @model.get('fileName')
+			fileName: fileName
 			loadDate: fileDate
 			loadUser: @model.get('recordedBy')
+			fileLink: window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" + fileName
+			reportName: reportName
+			reportLink: window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" + reportName
 		$(@el).html(@template(toDisplay))
 
 		@

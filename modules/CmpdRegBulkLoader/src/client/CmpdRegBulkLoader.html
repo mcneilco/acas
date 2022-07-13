@@ -261,9 +261,10 @@
 </script>
 
 <script type="text/template" id="FileRowSummaryView" xmlns="http://www.w3.org/1999/html">
-    <td class='bv_fileName'><%-fileName%></td>
+    <td class='bv_fileName'><a href='<%-fileLink%>'><%-fileName%></a></td>
     <td class='bv_loadDate'><%-loadDate%></td>
     <td class='bv_loadUser'><%-loadUser%></td>
+    <td class='bv_Report'><a href='<%-reportLink%>'><%-reportName%></a></td>
 </script>
 
 <script type="text/template" id="FileSummaryTableView" xmlns="http://www.w3.org/1999/html">
@@ -273,6 +274,7 @@
                 <th>File</th>
                 <th>Load Date</th>
                 <th>Load User</th>
+                <th>Report</th>
             </tr>
         </thead>
         <tbody style="">
