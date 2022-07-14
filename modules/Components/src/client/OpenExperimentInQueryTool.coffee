@@ -77,7 +77,8 @@ class OpenExperimentInQueryToolController extends Backbone.View
             for viewer in configuredViewers
                 viewerName = $.trim viewer                    
                 href = "'/openExptInQueryTool?tool=#{viewerName}&experiment=#{@code}','_blank'"
-                if @experimentStatus.get('codeValue') != "approved" and viewerName is "LiveDesign"
+                # TODO: look up default experiment status
+                if @experimentStatus != "approved" and viewerName is "LiveDesign"
                     @$('.bv_viewerOptions').append '<li class="disabled"><a href='+href+' target="_blank">'+viewerName+'</a></li>'
                 else
                     @$('.bv_viewerOptions').append '<li><a href='+href+' target="_blank">'+viewerName+'</a></li>'

@@ -434,7 +434,7 @@ class ExperimentBrowserController extends Backbone.View
 			code = @getExperimentCode()
 			@openExperimentInQueryToolController = new OpenExperimentInQueryToolController
 				code: code 
-				experimentStatus: @experimentController.model.getStatus()
+				experimentStatus: @experimentController.model.getStatus().get('codeValue')
 			$('.bv_openExperimentInQueryToolPlaceholder').html @openExperimentInQueryToolController.render().el
 			if @canEdit()
 				@$('.bv_editExperiment').show()

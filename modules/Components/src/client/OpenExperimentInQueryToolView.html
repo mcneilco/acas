@@ -1,32 +1,32 @@
 <script type="text/template" id="OpenExperimentInQueryToolView" xmlns="http://www.w3.org/1999/html">
-    <div class="hide bv_generatingLink" style="margin: auto;">
+    <div class="hide bv_generatingLink" style="margin-bottom: 10px;">
         <h5>Generating Link...</h5>
         <div class="progress progress-striped active " style="width: 90%; margin: auto;">
             <div class="bar" style="width: 100%; margin: auto;"></div>
         </div>
     </div>
 
-    <span class="btn-group pull-right bv_getLinkQueryTool" style="margin-right:5px;">
-        <button type="button" class="btn btn-default bv_getLinkQueryToolButton">
-            Generate Link
-        </button>
-        <div class="hide bv_getLinkResults" style="margin: auto;">
-            <br>
+    <div style="display: inline-block; margin-bottom: 10px;">
+        <span class="btn-group bv_openInQueryTool" style="margin-right:5px;">
+            <button type="button" class="btn btn-default bv_openInQueryToolButton dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Open In <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu bv_viewerOptions">
+                <!--<li><a href="#">Data Viewer</a></li>-->
+                <!--<li><a href="#">Seurat</a></li>-->
+                <!--<li><a href="#">Live Design</a></li>-->
+            </ul>
+        </span>
+        <span class="btn-group bv_getLinkQueryTool" style="margin-right:5px; margin-bottom:10px;">
+            <button type="button" class="btn btn-default bv_getLinkQueryToolButton">
+                Generate Link
+            </button>
+        </span>
+        <div class="hide bv_getLinkResults pull-right" style="margin-left: 5px; display: none;">
             <input type="text" class="bv_exptLink" name="exptLink" value="" readonly style="margin-right:5px;">
             <button type="button" class="btn btn-default bv_copyExptLink" style="margin-bottom: 10px;">
                 Copy Link
             </button>
         </div>
-    </span>
-
-    <span class="btn-group pull-right bv_openInQueryTool" style="margin-right:5px;">
-        <button type="button" class="btn btn-default bv_openInQueryToolButton dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            Open In <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu bv_viewerOptions">
-            <!--<li><a href="#">Data Viewer</a></li>-->
-            <!--<li><a href="#">Seurat</a></li>-->
-            <!--<li><a href="#">Live Design</a></li>-->
-        </ul>
-    </span>
+    </div>
 </script>
