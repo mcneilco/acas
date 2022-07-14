@@ -251,7 +251,14 @@ exports.getMetaLotDependencies = (req, resp, next) ->
 		return
 	
 	try
-		dependencies = await exports.getLotDependenciesInternal(metaLot.lot, user, allowedProjects)
+		# Check the parameter for includeLinkedLots but return true by default
+		if req.query.includeLinkedLots?
+			# Booleans are passed as strings, so convert to boolean
+			# Only set this to false if the value is actually "false" or "0"
+			includeLinkedLots = if(req.query.includeLinkedLots == "false" || req.query.includeLinkedLots == "0") then false else true
+		else
+			includeLinkedLots = true
+		dependencies = await exports.getLotDependenciesInternal(metaLot.lot, user, allowedProjects, includeLinkedLots)
 		resp.json dependencies
 	catch error
 		console.error error
@@ -259,7 +266,7 @@ exports.getMetaLotDependencies = (req, resp, next) ->
 		resp.statusCode = 500
 		resp.json {error: err}
 
-exports.getLotDependenciesInternal = (lot, user, allowedProjects) ->
+exports.getLotDependenciesInternal = (lot, user, allowedProjects, includeLinkedLots=true) ->
 	console.log "Checking lot dependencies for lot #{lot.corpName} with user #{user.username}"
 	lotCorpName = lot.corpName
 
@@ -305,7 +312,8 @@ exports.getLotDependenciesInternal = (lot, user, allowedProjects) ->
 			# This way it'know there are experiments linked that aren't readable
 			if !acls.getRead()
 				console.log "Experiment #{experiment.experiment.codeName} is not readable by user #{user.username}"
-				# Get the experiment from the linkedExperiments by code
+				# If the experiiment is not readable we just want to include the acls but not the experiment code table
+				# We include the acls so that the user can see that there is an experiment linked that they can't read
 				dependencies.linkedExperiments[idx] = {acls: acls, code: null, name: null, ignored: false}
 			else
 				# The experiment is readable so includ the experiment and acls
@@ -315,26 +323,29 @@ exports.getLotDependenciesInternal = (lot, user, allowedProjects) ->
 
 	# Look up and attach the acls of the linked lots
 	# Don't show any information except acls if the user cannot read the lot
-	response = await exports.fetchLotsByParent(lot.parent.corpName)
-	allLotsForParent = await response.json()
-	console.log "Found #{allLotsForParent.length} lots for parent #{lotCorpName}"
-	linkedLots = []
-	noReadLotsCont = 0
-	for codeTable in allLotsForParent
-		if codeTable.code == lotCorpName
-			console.log "Ignoring #{lotCorpName} because it is the same as the meta lot"
-			continue
-		else	
-			response = await exports.fetchMetaLot(codeTable.code)
-			dependentMetaLot = await response.json()
-			dependentLotAcls = await exports.getLotAcls(dependentMetaLot.lot, user, allowedProjects, getDeleteAcl=false)
-			if dependentLotAcls.getRead()
-				linkedLots.push _.extend(codeTable, {acls: dependentLotAcls})
-			else
-				noReadLotsCont++
-				console.log "Lot #{codeTable.code} is not readable by user #{user.username}"
-				linkedLots.push {acls: dependentLotAcls, code: null, name: null, ignored: false}
-	dependencies.linkedLots = linkedLots
+	# This data is purely informational when considering the dependencies of a lot
+	# because linked lots do not mean that the user cannot delete the lot.
+	if includeLinkedLots? && includeLinkedLots
+		response = await exports.fetchLotsByParent(lot.parent.corpName)
+		allLotsForParent = await response.json()
+		console.log "Found #{allLotsForParent.length} lots for parent #{lotCorpName}"
+		linkedLots = []
+		for codeTable in allLotsForParent
+			if codeTable.code == lotCorpName
+				console.log "Ignoring #{lotCorpName} because it is the same as the lot we are checking"
+				continue
+			else	
+				response = await exports.fetchMetaLot(codeTable.code)
+				dependentMetaLot = await response.json()
+				dependentLotAcls = await exports.getLotAcls(dependentMetaLot.lot, user, allowedProjects, getDeleteAcl=false)
+				if dependentLotAcls.getRead()
+					linkedLots.push _.extend(codeTable, {acls: dependentLotAcls})
+				else
+					console.log "Lot #{codeTable.code} is not readable by user #{user.username}"
+					# If the lot is not readable we just want to include the acls but not the lot code table
+					# We include the acls so that the user can see that there is a lot linked that they can't read
+					linkedLots.push {acls: dependentLotAcls, code: null, name: null, ignored: false}
+		dependencies.linkedLots = linkedLots
 
 	# Delete the summary attribute from dependencies if it exists
 	if dependencies.summary?
@@ -473,7 +484,8 @@ exports.getLotAcls = (lot, user, allowedProjects, checkDelete=true) ->
 
 	if lotAcls.getRead() && lotAcls.getWrite() && checkDelete
 		console.log "Checking delete acl for lot #{lot.corpName}"
-		dependencies = await exports.getLotDependenciesInternal(lot, user, allowedProjects)
+		# Do not need to fetch linked lots here because they do not matter when considering delete acls (linked lots are purely informational)
+		dependencies = await exports.getLotDependenciesInternal(lot, user, allowedProjects, false)
 		canDelete = true
 		for experiment in dependencies.linkedExperiments
 			console.log "experiment"
