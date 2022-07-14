@@ -13,7 +13,6 @@ class OpenExperimentInQueryToolController extends Backbone.View
         $(@el).empty()
         $(@el).html @template()
         @formatOpenInQueryToolButton()
-        # Some elements might be hidden to star with; check on that
 
         @
         
@@ -30,8 +29,6 @@ class OpenExperimentInQueryToolController extends Backbone.View
             # Call to Route to Get URL 
             $.ajax
                 type: 'GET'
-                # This route priorities LD -> Seurat -> DataViewer -> CurveCurator
-                # Whichever is 
                 url: "/api/getLinkExptQueryTool?experiment=#{@code}"
                 success: (response) => 
                     # Take Away Generating Progress Mask 
@@ -44,25 +41,24 @@ class OpenExperimentInQueryToolController extends Backbone.View
                 datatype: 'json'
 
     handleGetLinkQueryToolClicked: => 
-        #unless @$('.bv_openInQueryToolButton').hasClass 'dropdown-toggle'
-            # Add Generating Link Loading Mask 
-            @$('.bv_generatingLink').show()
-            # Call to Route to Get URL 
-            setTimeout(=>  
-                $.ajax
-                    type: 'GET'
-                    url: "/api/getLinkExptQueryTool?experiment=#{@code}"
-                    success: (response) => 
-                        # Take Away Generating Progress Mask 
-                        @$('.bv_generatingLink').hide()
-                        @$('.bv_getLinkResults').show()
-                        @$('.bv_exptLink').val(response)
-                    error: (err) =>
-                        # Take Away Generating Progress Mask 
-                        @$('.bv_generatingLink').hide()
-                        console.log err
-                    datatype: 'json'
-              , 3000);
+        # Add Generating Link Loading Mask 
+        @$('.bv_generatingLink').show()
+        # Call to Route to Get URL 
+        setTimeout(=>  
+            $.ajax
+                type: 'GET'
+                url: "/api/getLinkExptQueryTool?experiment=#{@code}"
+                success: (response) => 
+                    # Take Away Generating Progress Mask 
+                    @$('.bv_generatingLink').hide()
+                    @$('.bv_getLinkResults').show()
+                    @$('.bv_exptLink').val(response)
+                error: (err) =>
+                    # Take Away Generating Progress Mask 
+                    @$('.bv_generatingLink').hide()
+                    console.log err
+                datatype: 'json'
+            , 3000);
 
     handleCopyLinkClicked: =>
         link = @$('.bv_exptLink').val()

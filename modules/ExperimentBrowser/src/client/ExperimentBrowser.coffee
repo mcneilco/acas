@@ -345,9 +345,6 @@ class ExperimentBrowserController extends Backbone.View
 		"click .bv_duplicateExperiment": "handleDuplicateExperimentClicked"
 		"click .bv_confirmDeleteExperimentButton": "handleConfirmDeleteExperimentClicked"
 		"click .bv_cancelDelete": "handleCancelDeleteClicked"
-		# "click .bv_openInQueryToolButton": "handleOpenInQueryToolClicked"
-		# "click .bv_getLinkQueryToolButton": "handleGetLinkQueryToolClicked"
-		# "click .bv_copyExptLink" : "handleCopyLinkClicked"
 
 	initialize: ->
 		template = _.template( $("#ExperimentBrowserView").html(),  {includeDuplicateAndEdit: @includeDuplicateAndEdit} );
@@ -360,7 +357,6 @@ class ExperimentBrowserController extends Backbone.View
 		@searchController.render()
 		@searchController.on "searchReturned", @setupExperimentSummaryTable.bind(@)
 		#@searchController.on "resetSearch", @destroyExperimentSummaryTable
-#		@$('.bv_queryToolDisplayName').html window.conf.service.result.viewer.displayName
 
 	setupExperimentSummaryTable: (experiments) =>
 		@destroyExperimentSummaryTable()
@@ -440,8 +436,6 @@ class ExperimentBrowserController extends Backbone.View
 				code: code 
 				experimentStatus: @experimentController.model.getStatus()
 			$('.bv_openExperimentInQueryToolPlaceholder').html @openExperimentInQueryToolController.render().el
-			#@$('.bv_openInQueryTool').show()
-			#@formatOpenInQueryToolButton() 
 			if @canEdit()
 				@$('.bv_editExperiment').show()
 			else
@@ -615,114 +609,6 @@ class ExperimentBrowserController extends Backbone.View
 		else
 			window.open("/entity/copy/experiment_base/#{@experimentController.model.get("codeName")}",'_blank');
 
-	# handleOpenInQueryToolClicked: =>
-		# unless @$('.bv_openInQueryToolButton').hasClass 'dropdown-toggle'
-			# Preparatory Logic to Get Code to Pass to Generate Link Route 
-			# if @experimentController.model.get('lsLabels') not instanceof LabelList
-			# 	@experimentController.model.set 'lsLabels',  new LabelList @experimentController.model.get('lsLabels')
-			# subclass = @experimentController.model.get('subclass')
-			# if window.conf.entity?.saveInitialsCorpName? and window.conf.entity.saveInitialsCorpName is true
-			# 	if @experimentController.model.get('lsLabels').getLabelByTypeAndKind("corpName", subclass + ' corpName').length > 0
-			# 		code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('corpName', subclass + ' corpName')[0].get('labelText')
-			# 	else if @experimentController.model.get('lsKind') is "study" and @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
-			# 		code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id')[0].get('labelText')
-			# 	else
-			# 		code = @experimentController.model.get("codeName")
-			# else if @experimentController.model.get('lsKind') is "study" and @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
-			# 	code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id')[0].get('labelText')
-			# else
-			# 	code = @experimentController.model.get('codeName')
-			# # Add Generating Link Loading Mask 
-			# @$('.bv_generatingLink').show()
-			# # Call to Route to Get URL 
-			# $.ajax
-			# 	type: 'GET'
-			# 	url: "/api/getLinkExptQueryTool?experiment=#{code}"
-			# 	success: (response) => 
-			# 		# Take Away Generating Progress Mask 
-			# 		@$('.bv_generatingLink').hide()
-			# 		window.open(response,'_blank')
-			# 	error: (err) =>
-			# 		# Take Away Generating Progress Mask 
-			# 		@$('.bv_generatingLink').hide()
-			# 		console.log err
-			# 	datatype: 'json'
-
-	# handleGetLinkQueryToolClicked: => 
-			# # Preparatory Logic to Get Code to Pass to Generate Link Route 
-			# if @experimentController.model.get('lsLabels') not instanceof LabelList
-			# 	@experimentController.model.set 'lsLabels',  new LabelList @experimentController.model.get('lsLabels')
-			# subclass = @experimentController.model.get('subclass')
-			# if window.conf.entity?.saveInitialsCorpName? and window.conf.entity.saveInitialsCorpName is true
-			# 	if @experimentController.model.get('lsLabels').getLabelByTypeAndKind("corpName", subclass + ' corpName').length > 0
-			# 		code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('corpName', subclass + ' corpName')[0].get('labelText')
-			# 	else if @experimentController.model.get('lsKind') is "study" and @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
-			# 		code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id')[0].get('labelText')
-			# 	else
-			# 		code = @experimentController.model.get("codeName")
-			# else if @experimentController.model.get('lsKind') is "study" and @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
-			# 	code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id')[0].get('labelText')
-			# else
-			# 	code = @experimentController.model.get('codeName')
-			# # Add Generating Link Loading Mask 
-			# @$('.bv_generatingLink').show()
-			# # Call to Route to Get URL 
-			# $.ajax
-			# 	type: 'GET'
-			# 	url: "/api/getLinkExptQueryTool?experiment=#{code}"
-			# 	success: (response) => 
-			# 		# Take Away Generating Progress Mask 
-			# 		@$('.bv_generatingLink').hide()
-			# 		@$('.bv_getLinkResults').show()
-			# 		@$('.bv_exptLink').val(response)
-			# 	error: (err) =>
-			# 		# Take Away Generating Progress Mask 
-			# 		@$('.bv_generatingLink').hide()
-			# 		console.log err
-			# 	datatype: 'json'
-
-	# handleCopyLinkClicked: =>
-	# 	link = @$('.bv_exptLink').val()
-	# 	if link? # Defined and not null
-	# 		navigator.clipboard.writeText(link).then ->
-	# 			alert("Link copied to clipboard!")
-	# 	else
-	# 		alert("Unable to copy link to clipboard")
-
-	# formatOpenInQueryToolButton: =>
-	# 	@$('.bv_viewerOptions').empty()
-	# 	configuredViewers = window.conf.service.result.viewer.configuredViewers
-	# 	if configuredViewers?
-	# 		configuredViewers = configuredViewers.split(",")
-	# 	if configuredViewers? and configuredViewers.length>1
-	# 		for viewer in configuredViewers
-	# 			viewerName = $.trim viewer
-	# 			if @experimentController.model.get('lsLabels') not instanceof LabelList
-	# 				@experimentController.model.set 'lsLabels',  new LabelList @experimentController.model.get('lsLabels')
-	# 			subclass = @experimentController.model.get('subclass')
-	# 			if window.conf.entity?.saveInitialsCorpName? and window.conf.entity.saveInitialsCorpName is true
-	# 				if @experimentController.model.get('lsLabels').getLabelByTypeAndKind("corpName", subclass + ' corpName').length > 0
-	# 					code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('corpName', subclass + ' corpName')[0].get('labelText')
-	# 				else if @experimentController.model.get('lsKind') is "study" and @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
-	# 					code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id')[0].get('labelText')
-	# 				else
-	# 					code = @experimentController.model.get("codeName")
-	# 			else if @experimentController.model.get('lsKind') is "study" and @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
-	# 				code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id')[0].get('labelText')
-	# 			else
-	# 				code = @experimentController.model.get('codeName')
-					
-	# 			href = "'/openExptInQueryTool?tool=#{viewerName}&experiment=#{code}','_blank'"
-	# 			if @experimentController.model.getStatus().get('codeValue') != "approved" and viewerName is "LiveDesign"
-	# 				@$('.bv_viewerOptions').append '<li class="disabled"><a href='+href+' target="_blank">'+viewerName+'</a></li>'
-	# 			else
-	# 				@$('.bv_viewerOptions').append '<li><a href='+href+' target="_blank">'+viewerName+'</a></li>'
-	# 	else
-	# 		@$('.bv_openInQueryToolButton').removeAttr 'data-toggle', 'dropdown'
-	# 		@$('.bv_openInQueryToolButton').removeClass 'dropdown-toggle'
-	# 		@$('.bv_openInQueryToolButton .caret').hide()
-	# 		@$('.bv_openInQueryToolButton').html("Open In " + window.conf.service.result.viewer.displayName)
-	# 		@$('.bv_openInQueryTool').removeClass "btn-group"
 
 	getExperimentCode: => 
 		if @experimentController.model.get('lsLabels') not instanceof LabelList
