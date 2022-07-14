@@ -331,27 +331,6 @@ $(function() {
 		    });
 	    },
 
-	    delete: function () {
-		    if (this.saveInProgress) {
-			    return;
-		    }
-		    this.saveInProgress = true;
-		    this.trigger('clearErrors', "MetaLotController");
-		    this.updateModel();
-		    var lisb = window.configuration.metaLot.lotCalledBatch;
-		    this.delegateEvents({}); // stop listening to buttons
-		    this.trigger('notifyError', {
-			    owner: 'MetaLotController',
-			    errorLevel: 'warning',
-			    message: 'Checking for ' + (lisb ? 'batch' : 'lot') + ' dependencies...'
-		    });
-		    this.deleteLotController = new DeleteLotController({
-			    el: this.$('.deleteLotView'),
-			    model: this.model.get('lot')
-		    });
-		    this.$('.deleteLotView').show();
-	    },
-
 	    editParentRequest: function (parent) {
 		    this.trigger('clearErrors', "MetaLotController");
 		    this.trigger('clearErrors', "LotController");
