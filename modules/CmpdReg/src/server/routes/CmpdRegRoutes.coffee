@@ -2,7 +2,7 @@ exports.setupAPIRoutes = (app) ->
 	app.get '/cmpdReg/scientists', exports.getScientists
 	app.get '/cmpdReg/metalots/corpName/:lotCorpName', exports.getMetaLot
 	app.delete '/cmpdReg/metalots/corpName/:lotCorpName', exports.deleteMetaLot
-	app.get '/cmpdReg/metalots/checkDependencies/corpName/:lotCorpName', exports.getMetaLotDepedencies
+	app.get '/cmpdReg/metalots/checkDependencies/corpName/:lotCorpName', exports.getMetaLotDependencies
 	app.post '/cmpdReg/metalots', exports.saveMetaLot
 	app.get '/cmpdReg/parentLot/getAllAuthorizedLots', exports.getAllAuthorizedLots
 
@@ -33,7 +33,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/cmpdReg/filesave', loginRoutes.ensureAuthenticated, exports.fileSave
 	app.post '/cmpdReg/metalots', loginRoutes.ensureAuthenticated, exports.saveMetaLot
 	app.delete '/cmpdReg/metalots/corpName/:lotCorpName', loginRoutes.ensureAuthenticated, exports.deleteMetaLot
-	app.get '/cmpdReg/metalots/checkDependencies/corpName/:lotCorpName',  loginRoutes.ensureAuthenticated, exports.getMetaLotDepedencies
+	app.get '/cmpdReg/metalots/checkDependencies/corpName/:lotCorpName',  loginRoutes.ensureAuthenticated, exports.getMetaLotDependencies
 	app.post '/cmpdReg/salts', loginRoutes.ensureAuthenticated, exports.saveSalts
 	app.post '/cmpdReg/isotopes', loginRoutes.ensureAuthenticated, exports.saveIsotopes
 	app.post '/cmpdReg/api/v1/structureServices/molconvert', loginRoutes.ensureAuthenticated, exports.molConvert
@@ -228,7 +228,7 @@ checkStatus = (response) ->
 		throw new HTTPResponseError response
 
 
-exports.getMetaLotDepedencies = (req, resp, next) ->
+exports.getMetaLotDependencies = (req, resp, next) ->
 
 	requestedLotCorpName = req.params.lotCorpName
 	user = req.user

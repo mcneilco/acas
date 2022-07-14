@@ -44,7 +44,7 @@ class DeleteLotController extends Backbone.View
 		@.trigger('notifyError', {
 			owner: 'DeleteLotController',
 			errorLevel: 'warning',
-			message: 'Checking depedencies...'
+			message: 'Checking dependencies...'
 		});
 		url = window.configuration.serverConnection.baseServerURL+"metalots/checkDependencies/corpName/"+@.corpName;
 		
@@ -63,7 +63,7 @@ class DeleteLotController extends Backbone.View
 		@.trigger('clearErrors', "DeleteLotController");
 
 		# Get summary of dependencies
-		dependencySummary = @summarizeDepdencyCheckResults(data);
+		dependencySummary = @summarizeDependencyCheckResults(data);
 		
 		# Display summary of dependencies
 		@$(".bv_dependencySummary").html(dependencySummary);
@@ -98,7 +98,7 @@ class DeleteLotController extends Backbone.View
 		return ul;
 		
 	
-	summarizeDepdencyCheckResults: (data) ->
+	summarizeDependencyCheckResults: (data) ->
 		# Returns html string with summary of dependency check results
 		
 		# Get linked experiments summary
