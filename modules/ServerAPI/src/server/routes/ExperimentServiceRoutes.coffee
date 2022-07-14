@@ -818,7 +818,7 @@ exports.getExperimentACL = (experiment, user, allowedProjects) ->
 	isACASUser = loginRoutes.checkHasRole(user, config.all.client.roles.acas.userRole)
 	isCmpdRegAdmin = loginRoutes.checkHasRole(user, config.all.client.roles.cmpdreg.adminRole)
 
-    # If the user is a cmpd reg admin, then regardless of the lot's project or other configs they can read and write the lot	
+	# If the user is a cmpd reg admin, then regardless of the lot's project or other configs they can read and write the lot	
 	if isACASAdmin
 		acls.setRead(true)
 		acls.setWrite(true)
