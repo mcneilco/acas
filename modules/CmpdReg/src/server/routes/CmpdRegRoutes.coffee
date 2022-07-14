@@ -313,8 +313,7 @@ exports.getLotDependenciesInternal = (lot, user, allowedProjects) ->
 	else
 		console.log "No experiments linked to #{lotCorpName}"
 
-	# May not need to look up the acls of the 
-	# Need to look up acls of the linked lots
+	# Look up the acls of the linked lots so we can show the user if they can delete the lot, or not even show it if they can't read it.
 	response = await exports.fetchLotsByParent(lot.parent.corpName)
 	allLotsForParent = await response.json()
 	console.log "Found #{allLotsForParent.length} lots for parent #{lotCorpName}"
