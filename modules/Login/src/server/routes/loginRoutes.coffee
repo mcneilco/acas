@@ -29,7 +29,7 @@ exports.setupRoutes = (app, passport) ->
 		app.get '/login', exports.loginPage
 	app.get '/login/direct', exports.loginPage
 	app.post '/login',
-		passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }), exports.loginPost
+		passport.authenticate('local', { failureRedirect: '/login', failureFlash: true, keepSessionInfo: true }), exports.loginPost
 	app.get '/logout*', exports.logout
 	app.post '/api/userAuthentication', exports.authenticationService
 	app.get '/passwordReset', exports.resetpage
@@ -90,20 +90,20 @@ exports.changePost = (req, res) ->
 	res.redirect '/passwordChange'
 
 exports.logout = (req, res) ->
-	req.logout()
-	if config.all.server.security.saml.use == true && config.all.server.security.saml.logoutRedirectURL?
-		redirectMatch = config.all.server.security.saml.logoutRedirectURL
-	else 
-		redirectMatch = req.originalUrl.match(/^\/logout\/(.*)\/?$/i)
-		if redirectMatch?
-			redirectMatch = redirectMatch[1]
-		else
-			if config.all.client.basePath?
-				redirectMatch = config.all.client.basePath
+	req.logout =>
+		if config.all.server.security.saml.use == true && config.all.server.security.saml.logoutRedirectURL?
+			redirectMatch = config.all.server.security.saml.logoutRedirectURL
+		else 
+			redirectMatch = req.originalUrl.match(/^\/logout\/(.*)\/?$/i)
+			if redirectMatch?
+				redirectMatch = redirectMatch[1]
 			else
-				redirectMatch = '/'
-			redirectMatch = "/"
-	res.redirect redirectMatch
+				if config.all.client.basePath?
+					redirectMatch = config.all.client.basePath
+				else
+					redirectMatch = '/'
+				redirectMatch = "/"
+		res.redirect redirectMatch
 
 exports.ssoFailure = (req, res, next) ->
 	errorMsg = ""
