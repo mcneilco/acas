@@ -109,13 +109,15 @@ $(function() {
 		    'click .saveButton': 'save',
 		    'click .backButton': 'back',
 		    'click .cancelButton': 'close',
-		    'click .newLotButton': 'newLot'
+		    'click .newLotButton': 'newLot',
+		    'click .deleteButton': 'deleteLotRequest',
+		    'click .downloadLotButton': 'downloadLot'
 	    },
 
 	    initialize: function () {
 		    //TODO the template load be in render(), but saltFormController won't work that way, unless I new it in the render'
 		    $(this.el).html(this.template());
-		    _.bindAll(this, 'save', 'back', 'newLot', 'newLotSaved', 'lotUpdated', 'editParentRequest', 'handleLotControllerReadyForRender');
+		    _.bindAll(this, 'save', 'back', 'newLot', 'newLotSaved', 'deleteLotRequest', 'lotUpdated', 'editParentRequest', 'handleLotControllerReadyForRender');
 
 		    var eNoti = this.options.errorNotifList;
 
@@ -197,6 +199,8 @@ $(function() {
 		    var lisb = window.configuration.metaLot.lotCalledBatch;
 		    if (this.model.get('lot').isNew()) {
 			    this.$('.newLotButton').hide();
+			    this.$('.downloadLotButton').hide();
+			    this.$('.deleteButton').hide();
 			    this.$('.saveButton').addClass('saveImage');
 			    this.$('.saveButton').removeClass('updateImage');
 			    this.$('.cancelButton').addClass('cancelImage');
@@ -236,6 +240,9 @@ $(function() {
 			    }
 			    if (!this.model.get('lot').get("acls").write) {
 				    this.$('.saveButton').hide();
+				    this.$('.deleteButton').hide();
+			    } else {
+					this.$('.deleteButton').html(lisb ? 'Delete Batch...' : 'Delete Lot...');
 			    }
 			    console.log("about to load inventory");
 			    console.log(window.configuration.metaLot.showLotInventory);
@@ -312,6 +319,18 @@ $(function() {
 		    });
 	    },
 
+	    deleteLotRequest: function () {
+		    this.trigger('clearErrors', "MetaLotController");
+		    this.trigger('clearErrors', "LotController");
+		    $(this.el).empty();
+		    this.deleteLotController = new DeleteLotController({
+			    el: $(this.el),
+			    corpName: this.model.get('lot').get("corpName"),
+			    errorNotifList: this.options.errorNotifList,
+			    user: this.user
+		    });
+	    },
+
 	    editParentRequest: function (parent) {
 		    this.trigger('clearErrors', "MetaLotController");
 		    this.trigger('clearErrors', "LotController");
@@ -324,6 +343,7 @@ $(function() {
 			    parentModel: parent
 		    });
 	    },
+
 
 	    newLotSaved: function (message) {
 			if(message.errors.length > 0){
@@ -410,7 +430,10 @@ $(function() {
 
 	    newLot: function () {
 		    window.open("#register/" + this.lotController.model.get('corpName'));
+	    },
 
+	    downloadLot: function() {
+		    window.open("/cmpdReg/export/corpName/"+this.lotController.model.get('corpName'))
 	    },
 
 	    saltFormAllowedToUpdate: function () {

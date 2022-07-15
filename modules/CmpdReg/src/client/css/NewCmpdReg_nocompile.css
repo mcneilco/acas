@@ -158,9 +158,9 @@ div {
     margin-top: 12px;
 }
 .buttons { /*Need to rename this class to navigationButtons !!! */
-    padding: 10px 0 0 10px;
+    padding: 10px 0 0 0px;
     width: 705px;
-    margin-left: 180px;
+    margin-left: 0px;
     clear: both;
 }
 .RegSearchResultsView .buttons { /*Need to rename this class to navigationButtons !!! */
@@ -221,7 +221,6 @@ div {
 .MetaLotView div.floatingPanel.newIsotopeView div {
     height: 20px;
 }
-
 .MetaLotView .bv_lotInventory iframe {
     width: 700px;
     height: 700px;
@@ -265,7 +264,7 @@ div {
     padding: 10px 5px 0px 5px;
     border: none;
 }
-.cancelNewSaltButton {
+.cancelNewSaltButton, .cancelDeleteLotButton {
     background: no-repeat url('../images/cancel.png');
     float:right;
     height: 27px;
@@ -1121,17 +1120,25 @@ div.analyticalFiles {
 /*** BUTTONS ***/
 div.MetaLotViewButtons.buttons {
     margin-top: 20px;
-    width: 636px;
+    width: 660px;
+    height: 30px;
 }
-.MetaLotViewButtons a.cancelButton, a.saveButton, a.backButton, a.newLotButton, a.detailsButton, a.editAnalyticalFiles, a.editLotButton, a.closeButton, a.backToSearchButton {
+.MetaLotViewButtons a.cancelButton, input.cregBtn, a.cregBtn, a.saveButton, a.backButton, a.newLotButton, a.detailsButton, a.editAnalyticalFiles, a.editLotButton, a.closeButton, a.backToSearchButton {
     float: right;
     height: 27px;
-    width: 90px;
-    padding: 10px 5px 0px 5px;
+    width: 95px;
+    padding: 30px 5px 0px 5px;
+}
+.MetaLotViewButtons input.cregBtn {
+    padding-left: 0px;
+    padding-right: 25px;
+    padding-top: 0px;
+    border: 0;
+    box-shadow: none;
+    border-radius: 0px;
 }
 .MetaLotViewButtons a.saveButton {
     background: no-repeat url('../images/save.png');
-    margin-right: 170px;
 }
 .MetaLotViewButtons a.cancelButton {
     background: no-repeat url('../images/cancel.png');
@@ -1156,6 +1163,19 @@ div.MetaLotViewButtons.buttons {
     background: no-repeat url('../images/close.png');
     /*    margin-right: 8px;*/
 }
+.MetaLotViewButtons .cregBtn, input.cregBtn {
+    background-color: rgb(42, 67, 83);
+    color: rgb(185, 190, 197);
+    font: normal 13px/28px "Helvetica Neue", Helvetica, sans-serif;
+    text-decoration: none !important;
+    padding: 1px 0px 0px 10px;
+    margin-right: 11px;
+    width: 95px;
+}
+.MetaLotViewButtons .cregBtn.small, input.cregBtn.small {
+    font: normal 11px/28px "Helvetica Neue", Helvetica, sans-serif;
+    padding-right: 10px;
+}
 /****** DETAILS LOT VIEW ******/
 
 .LotForm_LotView a.editAnalyticalFiles {
@@ -1163,8 +1183,9 @@ div.MetaLotViewButtons.buttons {
     /*position: absolute;*/
     left: 556px;
     bottom: 40px;
-    margin-left: 150px;
-    padding-right: 39px;
+    margin-left: 0px;
+    padding-right: 40px;
+    padding-left: 0px;
     /*
         margin-top: 5px;
         margin-left: 15px;

@@ -1,6 +1,8 @@
 exports.setupAPIRoutes = (app) ->
 	app.get '/cmpdReg/scientists', exports.getScientists
 	app.get '/cmpdReg/metalots/corpName/:lotCorpName', exports.getMetaLot
+	app.delete '/cmpdReg/metalots/corpName/:lotCorpName', exports.deleteMetaLot
+	app.get '/cmpdReg/metalots/checkDependencies/corpName/:lotCorpName', exports.getMetaLotDependencies
 	app.post '/cmpdReg/metalots', exports.saveMetaLot
 	app.get '/cmpdReg/parentLot/getAllAuthorizedLots', exports.getAllAuthorizedLots
 
@@ -30,6 +32,8 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/cmpdReg/structuresearch', loginRoutes.ensureAuthenticated, exports.structureSearch
 	app.post '/cmpdReg/filesave', loginRoutes.ensureAuthenticated, exports.fileSave
 	app.post '/cmpdReg/metalots', loginRoutes.ensureAuthenticated, exports.saveMetaLot
+	app.delete '/cmpdReg/metalots/corpName/:lotCorpName', loginRoutes.ensureAuthenticated, exports.deleteMetaLot
+	app.get '/cmpdReg/metalots/checkDependencies/corpName/:lotCorpName',  loginRoutes.ensureAuthenticated, exports.getMetaLotDependencies
 	app.post '/cmpdReg/salts', loginRoutes.ensureAuthenticated, exports.saveSalts
 	app.post '/cmpdReg/isotopes', loginRoutes.ensureAuthenticated, exports.saveIsotopes
 	app.post '/cmpdReg/api/v1/structureServices/molconvert', loginRoutes.ensureAuthenticated, exports.molConvert
@@ -53,15 +57,15 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/cmpdReg/parentLot/getLotsByParent', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
 	app.get '/cmpdReg/parentLot/getAllAuthorizedLots', loginRoutes.ensureAuthenticated, exports.getAllAuthorizedLots
 	app.get '/cmpdReg/allowCmpdRegistration', loginRoutes.ensureAuthenticated, exports.allowCmpdRegistration
+	app.get '/cmpdReg/export/corpName/:lotCorpName', loginRoutes.ensureAuthenticated, exports.exportLotToSDF
 
 _ = require 'underscore'
 request = require 'request'
 config = require '../conf/compiled/conf.js'
-# node-fetch is ES5 modules only so need to import it like this async
-fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 serverUtilityFunctions = require './ServerUtilityFunctions.js'
 loginRoutes = require './loginRoutes.js'
 authorRoutes = require './AuthorRoutes.js'
+experimentServiceRoutes = require './ExperimentServiceRoutes.js'
 
 exports.cmpdRegIndex = (req, res) ->
 	scriptPaths = require './RequiredClientScripts.js'
@@ -223,7 +227,144 @@ checkStatus = (response) ->
 	else
 		throw new HTTPResponseError response
 
-exports.getMetaLotInternal = (lotCorpName, user) ->
+
+exports.getMetaLotDependencies = (req, resp, next) ->
+
+	requestedLotCorpName = req.params.lotCorpName
+	user = req.user
+	console.log "Checking meta lot dependencies for lot #{requestedLotCorpName} with user #{user.username}"
+
+	# Faster to get the users allowed projects up front and pass it down to other functions
+	[err, allowedProjects] = await serverUtilityFunctions.promisifyRequestStatusResponse(authorRoutes.allowedProjectsInternal, [user])
+	if err?
+		console.log "Error checking user projects: #{err}"
+		resp.statusCode = 500
+		resp.json err
+		return
+
+	# Get the meta lot
+	[err, metaLot, statusCode] = await exports.getMetaLotInternal(req.params.lotCorpName, req.user, allowedProjects, getDeleteAcl=false)
+	if err?
+		console.log "User #{req.user.username} does not have permission to check dependencies for lot #{req.params.lotCorpName}"
+		resp.statusCode = statusCode
+		resp.json err
+		return
+	
+	try
+		# Check the parameter for includeLinkedLots but return true by default
+		if req.query.includeLinkedLots?
+			# Booleans are passed as strings, so convert to boolean
+			# Only set this to false if the value is actually "false" or "0"
+			includeLinkedLots = if(req.query.includeLinkedLots == "false" || req.query.includeLinkedLots == "0") then false else true
+		else
+			includeLinkedLots = true
+		dependencies = await exports.getLotDependenciesInternal(metaLot.lot, user, allowedProjects, includeLinkedLots)
+		resp.json dependencies
+	catch error
+		console.error error
+		err =  "Error getting lot"
+		resp.statusCode = 500
+		resp.json {error: err}
+
+exports.getLotDependenciesInternal = (lot, user, allowedProjects, includeLinkedLots=true) ->
+	console.log "Checking lot dependencies for lot #{lot.corpName} with user #{user.username}"
+	lotCorpName = lot.corpName
+
+	# Get the depdencies from the service which does not cover user ACLS
+	response = await exports.fetchMetaLotDependencies(lotCorpName)
+
+	checkStatus response
+	dependencies = await response.json()
+
+	## Add the lot to the dependencies return
+	dependencies.lot = lot
+
+	# We decorate the linkedExperiments with the acls for the user
+	if dependencies.linkedExperiments? && dependencies.linkedExperiments.length > 0
+		console.log "Found #{dependencies.linkedExperiments.length} linked experiments to #{lotCorpName}, checking user acls on each experiment"
+
+		# Get the codes and experiments from the server so we can look up project codes and scientist ownership of the experiments
+		experimentCodeList = _.pluck(dependencies.linkedExperiments, "code")
+
+		# Unique the list just in case there are duplicates (there should not be)
+		experimentCodeList = _.uniq experimentCodeList
+
+		# Get the experiments from the server
+		response = await experimentServiceRoutes.fetchExperimentsByCodeNames(experimentCodeList)
+		experiments = await response.json()
+
+		# It's unexpected that the server would return a list of experiments that are not in the list of codes we asked for, so we check for that and erorr
+		if(experiments.length != experimentCodeList.length)
+			console.log "Error: #{experimentCodeList.length} experiments were requested, but only #{experiments.length} were returned"
+			console.log "Requested codes: #{experimentCodeList}"
+			console.log "Returned experiments: #{JSON.stringify(experiments)}"
+			throw new InternalServerError "Error: #{experimentCodeList.length} experiments were requested, but only #{experiments.length} were returned"
+
+		# Get the acls for the experiments
+		for experiment in experiments
+			console.log "Checking acls for experiment #{experiment.code}"
+
+			# This returns the acls (read, write, delete of the experiment for the user and allowed project the user has)
+			acls = await experimentServiceRoutes.getExperimentACL(experiment.experiment, user, allowedProjects)
+			idx = _.findIndex(dependencies.linkedExperiments, { code: experiment.experiment.codeName })
+			
+			# The experiment is not readable by the user, then just return the acls in the array of experiments
+			# This way it'know there are experiments linked that aren't readable
+			if !acls.getRead()
+				console.log "Experiment #{experiment.experiment.codeName} is not readable by user #{user.username}"
+				# If the experiiment is not readable we just want to include the acls but not the experiment code table
+				# We include the acls so that the user can see that there is an experiment linked that they can't read
+				dependencies.linkedExperiments[idx] = {acls: acls, code: null, name: null, ignored: false}
+			else
+				# The experiment is readable so includ the experiment and acls
+				dependencies.linkedExperiments[idx].acls = acls
+	else
+		console.log "No experiments linked to #{lotCorpName}"
+
+	# Look up and attach the acls of the linked lots
+	# Don't show any information except acls if the user cannot read the lot
+	# This data is purely informational when considering the dependencies of a lot
+	# because linked lots do not mean that the user cannot delete the lot.
+	if includeLinkedLots? && includeLinkedLots
+		response = await exports.fetchLotsByParent(lot.parent.corpName)
+		allLotsForParent = await response.json()
+		console.log "Found #{allLotsForParent.length} lots for parent #{lotCorpName}"
+		linkedLots = []
+		for codeTable in allLotsForParent
+			if codeTable.code == lotCorpName
+				console.log "Ignoring #{lotCorpName} because it is the same as the lot we are checking"
+				continue
+			else	
+				response = await exports.fetchMetaLot(codeTable.code)
+				dependentMetaLot = await response.json()
+				dependentLotAcls = await exports.getLotAcls(dependentMetaLot.lot, user, allowedProjects, getDeleteAcl=false)
+				if dependentLotAcls.getRead()
+					linkedLots.push _.extend(codeTable, {acls: dependentLotAcls})
+				else
+					console.log "Lot #{codeTable.code} is not readable by user #{user.username}"
+					# If the lot is not readable we just want to include the acls but not the lot code table
+					# We include the acls so that the user can see that there is a lot linked that they can't read
+					linkedLots.push {acls: dependentLotAcls, code: null, name: null, ignored: false}
+		dependencies.linkedLots = linkedLots
+
+	# Delete the summary attribute from dependencies if it exists
+	if dependencies.summary?
+		delete dependencies.summary
+	return dependencies
+
+exports.fetchMetaLotDependencies = (lotCorpName) ->
+	url = config.all.client.service.cmpdReg.persistence.fullpath + '/metalots/checkDependencies/corpName/' + lotCorpName
+	response = await fetch(url, method: 'GET')
+	return response
+	
+
+exports.fetchLotsByParent = (parentCorpName) ->
+	urlParams = new URLSearchParams({parentCorpName: parentCorpName})
+	url = config.all.client.service.cmpdReg.persistence.fullpath + '/parentLot/getLotsByParent?'
+	response = await fetch(url + urlParams, method: 'GET')
+	return response
+
+exports.getMetaLotInternal = (lotCorpName, user, allowedProjects, getDeleteAcl=true) ->
 	# Get the metalot and check acls
 	response = await exports.fetchMetaLot(lotCorpName)
 	err = null
@@ -236,19 +377,19 @@ exports.getMetaLotInternal = (lotCorpName, user) ->
 			statusCode = 500
 			err =  "Could not find lot"
 		else
-			acls = await exports.getLotAcls(metaLot.lot, user)
+			acls = await exports.getLotAcls(metaLot.lot, user, allowedProjects, getDeleteAcl)
 			metaLot.lot.acls = acls
 			if !acls.getRead()
 				statusCode = 403
 				err = "You do not have permission to view this lot"
 	catch error
-		console.log error
+		console.error error
 		statusCode = 500
 		err =  "Error getting lot"
 	return [err, metaLot, statusCode]
 
 exports.getMetaLot = (req, resp, next) ->
-	[err, metaLot, statusCode] = await exports.getMetaLotInternal req.params.lotCorpName, req.user
+	[err, metaLot, statusCode] = await exports.getMetaLotInternal req.params.lotCorpName, req.user, null, getDeleteAcl=true
 	resp.statusCode = statusCode
 	if err?
 		resp.statusCode = statusCode
@@ -256,28 +397,47 @@ exports.getMetaLot = (req, resp, next) ->
 	else
 		resp.json metaLot
 
+exports.deleteMetaLot = (req, resp, next) ->
+	if !req.user?
+		req.user = {
+			username: "bob"
+			roles: []
+		}
+	[err, metaLot, statusCode] = await exports.getMetaLotInternal req.params.lotCorpName, req.user, null, getDeleteAcl=true
+	if err?
+		resp.statusCode = statusCode
+		resp.json err
+	else
+		if metaLot.lot.acls.getDelete()
+			console.log "Calling delete lot"
+			response = await exports.deleteLotByCorpName(metaLot.lot.corpName)
+			console.log "Got response from delete lot"
+			if response.status == 200
+				resp.statusCode = 200
+				resp.json {success: true}
+			else
+				resp.statusCode = 500
+				jsonResponse = await response.json()
+				resp.json jsonResponse
+		else
+			resp.statusCode = 403
+			resp.json "You do not have permission to delete this lot"
+	
 
-# Simple class to store acls
-class Acls
-	constructor: (read, write) ->
-		this.read = read
-		this.write = write
+exports.fetchMetaLot = (lotCorpName) ->
+	url = config.all.client.service.cmpdReg.persistence.fullpath + '/metalots/corpName/' + lotCorpName
+	response = await fetch(url, headers: {'Content-Type': 'application/json'})
+	return response;
 
-	getRead: ->
-		return this.read
+exports.deleteLotByCorpName = (lotCorpName) ->
+	url = config.all.client.service.cmpdReg.persistence.fullpath + '/metalots/corpName/' + lotCorpName
+	response = await fetch(url, method: 'DELETE')
+	return response
 
-	getWrite: ->
-		return this.write
 
-	setRead: (read) ->
-		this.read = read
-
-	setWrite: (write) ->
-		this.write = write
-
-exports.getLotAcls = (lot, user, allowedProjects) ->
+exports.getLotAcls = (lot, user, allowedProjects, checkDelete=true) ->
 	# Get the acls for the lot
-	lotAcls = new Acls(false, false)
+	lotAcls = new Acls(false, false, false)
 
 	# Check if user is cmpdreg admin
 	isCmpdRegAdmin = loginRoutes.checkHasRole(user, config.all.client.roles.cmpdreg.adminRole)
@@ -298,6 +458,7 @@ exports.getLotAcls = (lot, user, allowedProjects) ->
 					throw new InternalServerError "Could not get user's projects" 
 
 			# Check if the lot's project is in the allowed projects
+			console.log "Checking if lot's project #{projectCode} is in allowed projects: #{JSON.stringify(allowedProjects)}"
 			if _.where(allowedProjects, {code: projectCode}).length > 0
 				lotAcls.setRead(true)
 			else
@@ -320,6 +481,20 @@ exports.getLotAcls = (lot, user, allowedProjects) ->
 				else
 					console.log "User #{user.username} does not have permission to edit lot #{lot.corpName} which is not their lot (recordedBy: #{lot.recordedBy}, chemist: #{lot.chemist})"
 					lotAcls.setWrite(false)
+
+	if lotAcls.getRead() && lotAcls.getWrite() && checkDelete
+		console.log "Checking delete acl for lot #{lot.corpName}"
+		# Do not need to fetch linked lots here because they do not matter when considering delete acls (linked lots are purely informational)
+		dependencies = await exports.getLotDependenciesInternal(lot, user, allowedProjects, false)
+		canDelete = true
+		for experiment in dependencies.linkedExperiments
+			console.log "experiment"
+			console.log experiment
+			if !experiment.acls.getDelete()
+				canDelete = false
+				break
+		if canDelete
+			lotAcls.setDelete(true)
 
 	console.log "User #{user.username} lot #{lot.corpName} lot acls #{JSON.stringify(lotAcls)}"
 	return lotAcls
@@ -381,7 +556,7 @@ exports.saveMetaLot = (req, resp) ->
 		# By checking the saved lots project, the users allowed projects
 		if metaLot.lot.id? && metaLot.lot.corpName?
 			# Get the saved meta lot as it returns the saved metalot and includes the acls
-			[err, savedMetaLot, statusCode] = await exports.getMetaLotInternal metaLot.lot.corpName, req.user
+			[err, savedMetaLot, statusCode] = await exports.getMetaLotInternal metaLot.lot.corpName, req.user, null, getDeleteAcl=false
 			if err?
 				resp.statusCode = statusCode
 				resp.end err
@@ -514,9 +689,78 @@ exports.genericStructureService = (req, resp) ->
 			resp.end JSON.stringify {error: "something went wrong :("}
 	)
 
+exports.exportLotToSDF = (req, resp) ->
+
+	# Get the list of lots to export
+	lotCorpNames = [req.params.lotCorpName]
+	
+	# Verify acls on the lots requested
+	[err, allowedProjects] = await serverUtilityFunctions.promisifyRequestStatusResponse(authorRoutes.allowedProjectsInternal, [req.user])
+
+	# Get each metalot and verify the acls
+	for lotCorpName in lotCorpNames
+		console.log "Checking user acls for lot " + lotCorpName
+		[err, metaLot, statusCode] = await exports.getMetaLotInternal(lotCorpName, req.user, allowedProjects, getDeleteAcl=false)
+		if err?
+			console.log "User #{req.user.username} does not have permission to export results for #{lotCorpName}"
+			resp.statusCode = statusCode
+			resp.json err
+			return
+
+	# Service URL
+	exportCall = config.all.client.service.cmpdReg.persistence.fullpath + '/export/lotCorpNames'
+
+	try
+	# Use fetch to call the service and pipe the response to the client
+		response = await fetch(exportCall,
+			method: 'POST'
+			body: JSON.stringify(lotCorpNames)
+			headers:
+				'Content-Type': 'application/json'
+		)
+		checkStatus response
+		resp.set({
+			"content-length": response.headers.get('content-length'),
+			"content-disposition": "inline;filename=\"#{req.params.lotCorpName}.sdf\"",
+			"content-type": response.headers.get('content-type'),        
+		})
+		response.body.pipe(resp);
+	catch err
+		console.log "Error calling service: " + err
+		resp.statusCode = 500
+		resp.json err
+
+
 exports.exportSearchResults = (req, resp) ->
 	path = require 'path'
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+
+
+	# Get the lots from the req.body
+	foundCompounds = req.body.foundCompounds
+	JSON.stringify(foundCompounds)
+	# Combine array of lotIds from each found compound
+	lotCorpNames = []
+	foundCompounds.forEach (foundCompound) ->
+		console.log(foundCompound)
+		lots = foundCompound.lotIDs
+		lots.forEach (lot) ->
+			console.log lots
+			lotCorpNames.push lot.corpName
+	console.log JSON.stringify(lotCorpNames)
+
+	# Verify acls on the lots requested
+	[err, allowedProjects] = await serverUtilityFunctions.promisifyRequestStatusResponse(authorRoutes.allowedProjectsInternal, [req.user])
+
+	# # Get each metalot and verify the acls
+	for lotCorpName in lotCorpNames
+		console.log "Checking user acls for lot " + lotCorpName
+		[err, metaLot, statusCode] = await exports.getMetaLotInternal(lotCorpName, req.user, allowedProjects, getDeleteAcl=false)
+		if err?
+			console.log "User #{req.user.username} does not have permission to export results for #{lotCorpName}"
+			resp.statusCode = statusCode
+			resp.json err
+			return
 
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/export/searchResults'
 
