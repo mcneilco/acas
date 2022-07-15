@@ -502,20 +502,7 @@ class ExperimentBrowserController extends Backbone.View
 		return true
 
 	handleDeleteExperimentClicked: =>
-		if @experimentController.model.get('lsLabels') not instanceof LabelList
-			@experimentController.model.set 'lsLabels',  new LabelList @experimentController.model.get('lsLabels')
-		subclass = @experimentController.model.get('subclass')
-		if window.conf.entity?.saveInitialsCorpName? and window.conf.entity.saveInitialsCorpName is true
-			if @experimentController.model.get('lsLabels').getLabelByTypeAndKind("corpName", subclass + ' corpName').length > 0
-				code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('corpName', subclass + ' corpName')[0].escape('labelText')
-			else if @model.get('lsKind') is "study" and @model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
-				code = @model.get('lsLabels').getLabelByTypeAndKind('id', 'study id')[0].escape('labelText')
-			else
-				code = @experimentController.model.get("codeName")
-		else if @experimentController.model.get('lsKind') is "study" and @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
-			code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id')[0].escape('labelText')
-		else
-			code = @experimentController.model.escape('codeName')
+		code = @getExperimentCode() 
 
 		@$(".bv_experimentCodeName").html code
 		@$(".bv_deleteButtons").removeClass "hide"
@@ -553,49 +540,13 @@ class ExperimentBrowserController extends Backbone.View
 		@$(".bv_confirmDeleteExperiment").modal('hide')
 
 	handleEditExperimentClicked: =>
-		if @experimentController.model.get('lsLabels') not instanceof LabelList
-			@experimentController.model.set 'lsLabels',  new LabelList @experimentController.model.get('lsLabels')
-		subclass = @experimentController.model.get('subclass')
-		if window.conf.entity?.saveInitialsCorpName? and window.conf.entity.saveInitialsCorpName is true
-			if @experimentController.model.get('lsLabels').getLabelByTypeAndKind("corpName", subclass + ' corpName').length > 0
-				code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('corpName', subclass + ' corpName')[0].get('labelText')
-			else if @experimentController.model.get('lsKind') is "study" and @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
-				code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id')[0].get('labelText')
-			else
-				code = @experimentController.model.get("codeName")
-		else if @experimentController.model.get('lsKind') is "study" and @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
-			code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id')[0].get('labelText')
-		else
-			code = @experimentController.model.get('codeName')
-#
-#		if @experimentController.model.get('lsKind') is 'study'
-#			if @experimentController.model.get('lsLabels') not instanceof LabelList
-#				@experimentController.model.set 'lsLabels',  new LabelList @experimentController.model.get('lsLabels')
-#			if @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
-#				code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id')[0].get('labelText')
-#			else
-#				code = @experimentController.model.get("codeName")
-#		else
-#			code = @experimentController.model.get("codeName")
+		code = @getExperimentCode()
 		window.open("/entity/edit/codeName/#{code}",'_blank');
 
 	handleDuplicateExperimentClicked: =>
 		experimentKind = @experimentController.model.get('lsKind')
-		if @experimentController.model.get('lsLabels') not instanceof LabelList
-			@experimentController.model.set 'lsLabels',  new LabelList @experimentController.model.get('lsLabels')
-		subclass = @experimentController.model.get('subclass')
-		if window.conf.entity?.saveInitialsCorpName? and window.conf.entity.saveInitialsCorpName is true
-			if @experimentController.model.get('lsLabels').getLabelByTypeAndKind("corpName", subclass + ' corpName').length > 0
-				code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('corpName', subclass + ' corpName')[0].get('labelText')
-			else if @experimentController.model.get('lsKind') is "study" and @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
-				code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id')[0].get('labelText')
-			else
-				code = @experimentController.model.get("codeName")
-		else if @experimentController.model.get('lsKind') is "study" and @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
-			code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id')[0].get('labelText')
-		else
-			code = @experimentController.model.get('codeName')
-		
+		code = @getExperimentCode()
+
 		if experimentKind is "Bio Activity"
 			window.open("/entity/copy/primary_screen_experiment/#{@experimentController.model.get("codeName")}",'_blank');
 		else if experimentKind is "study"
