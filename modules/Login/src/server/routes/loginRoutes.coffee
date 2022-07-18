@@ -164,19 +164,11 @@ exports.ensureAuthenticated = (req, res, next) ->
 		query = {
 			redirect_url: redirectUrl
 		}
-	# res.redirect(url.format(
-	# 	pathname:"/login",
-	# 	query: query
-	# ))
-	res.render 'login',
-		title: "ACAS Login"
-		scripts: []
-		user: user
-		message: errorMsg
-		resetPasswordOption: resetPasswordOption
-		redirectUrl: redirect_url
-		logoText: config.all.client.moduleMenus.logoText
-		
+	res.redirect(url.format(
+		pathname:"/login",
+		query: query
+	))
+
 exports.ensureCmpdRegAdmin = (req, res, next) ->
 	if req.session?.passport?.user?
 		user = req.session.passport.user
