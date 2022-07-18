@@ -1,6 +1,7 @@
 
 config = require '../conf/compiled/conf.js'
 csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
+url = require 'url'
 
 exports.setupAPIRoutes = (app) ->
 	app.get '/api/users/:username', exports.getUsers
@@ -52,6 +53,11 @@ exports.loginPage = (req, res) ->
 	if req.user?
 		user = req.user
 
+	if req.query.redirect_url?
+		redirect_url = req.query.redirect_url
+	else
+		redirect_url = null
+
 	errorMsg = ""
 	error = req.flash('error')
 	if error.length > 0
@@ -67,6 +73,7 @@ exports.loginPage = (req, res) ->
 		user: user
 		message: errorMsg
 		resetPasswordOption: resetPasswordOption
+		redirectUrl: redirect_url
 		logoText: config.all.client.moduleMenus.logoText
 
 exports.resetPost = (req, res) ->
@@ -76,13 +83,33 @@ exports.resetPost = (req, res) ->
 	
 exports.loginPost = (req, res) ->
 	console.log "got to login post"
-	if req.session.returnTo? && req.session.returnTo != "/"
-		res.redirect req.session.returnTo
+	redirectUrl = config.all.client.basePath
+	
+	# Get referer URL
+	# Check if referer URL has redirect_url query parameter
+	if req.query.redirect_url? && req.query.redirect_url != ""
+		console.log "redirectUrl is #{req.query.redirect_url}"
+		# If so, get the redirect_url value
+		parsedUrl = url.parse(req.query.redirect_url, true)
+		# If redirect_url is set then parse it
+		if parsedUrl?
+			# If redirect_url has a protocol, use it
+			if !parsedUrl.host? || req.get("host") == parsedUrl.host
+				console.log "Redirecting to #{parsedUrl.pathname}"
+				redirectUrl = parsedUrl.pathname
+			else
+				console.log "Req.host is #{req.get("host")} but parsedUrl.host is #{parsedUrl.host}"
+				# Render the external redirect page
+				res.render 'externalRedirect',
+					title: "ACAS reset"
+					scripts: []
+					redirectUrl: redirectUrl
+					homeUrl: config.all.client.basePath
+				return
 	else
-		if config.all.client.basePath?
-			res.redirect config.all.client.basePath
-		else
-			res.redirect '/'
+		console.log "No referer"
+			
+	res.redirect redirectUrl
 
 exports.changePost = (req, res) ->
 	console.log req.session
@@ -123,21 +150,33 @@ exports.ensureAuthenticated = (req, res, next) ->
 	console.log "checking for login for path: "+req.url
 	if req.isAuthenticated()
 		return next()
-	if req.session?
-		req.session.returnTo = req.url
 
 	basePath = req.protocol + '://' + req.get('host')
-
 	requestedUrl = "#{req.originalUrl || req.url}"
-	if config.all.client.basePath? && requestedUrl == "/"
-		redirectURL = "#{basePath}#{config.all.client.basePath}"
-		console.log "redirecting to base url: #{redirectURL}"
+	if config.all.client.basePath? && (requestedUrl == "/" || requestedUrl == config.all.client.basePath)
+		redirectUrl = null
 	else
-		redirectURL = "#{basePath}#{req.originalURL || req.url}"
-		console.log "redirecting to requested url: #{redirectURL}"
-	console.log "redirectURL: #{redirectURL}"
-	res.redirect '/login?redirect_url='+redirectURL
-
+		redirectUrl = "#{req.originalURL || req.url}"
+		console.log "redirecting to requested url: #{redirectUrl}"
+	
+	query = {}
+	if redirectUrl?
+		query = {
+			redirect_url: redirectUrl
+		}
+	# res.redirect(url.format(
+	# 	pathname:"/login",
+	# 	query: query
+	# ))
+	res.render 'login',
+		title: "ACAS Login"
+		scripts: []
+		user: user
+		message: errorMsg
+		resetPasswordOption: resetPasswordOption
+		redirectUrl: redirect_url
+		logoText: config.all.client.moduleMenus.logoText
+		
 exports.ensureCmpdRegAdmin = (req, res, next) ->
 	if req.session?.passport?.user?
 		user = req.session.passport.user
