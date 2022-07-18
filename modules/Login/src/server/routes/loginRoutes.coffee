@@ -127,10 +127,15 @@ exports.ensureAuthenticated = (req, res, next) ->
 		req.session.returnTo = req.url
 
 	basePath = req.protocol + '://' + req.get('host')
-	if req.originalUrl == "/" && config.all.client.basePath?
+
+	requestedUrl = "#{req.originalUrl || req.url}"
+	if config.all.client.basePath? && requestedUrl == "/"
 		redirectURL = "#{basePath}#{config.all.client.basePath}"
+		console.log "redirecting to base url: #{redirectURL}"
 	else
 		redirectURL = "#{basePath}#{req.originalURL || req.url}"
+		console.log "redirecting to requested url: #{redirectURL}"
+	console.log "redirectURL: #{redirectURL}"
 	res.redirect '/login?redirect_url='+redirectURL
 
 exports.ensureCmpdRegAdmin = (req, res, next) ->
