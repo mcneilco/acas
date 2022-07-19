@@ -13,6 +13,7 @@ class SaltSimpleSearchController extends AbstractFormController
 	render: =>
 		$(@el).empty()
 		$(@el).html @template()
+		@doSearch "*"
 
 	updateSaltSearchTerm: (e) =>
 		ENTER_KEY = 13
@@ -164,19 +165,42 @@ class SaltBrowserController extends Backbone.View
 		# Need to Use This Route (Or Similar) to Display Salt Structure
 		# app.get '/api/chemStructure/renderStructureByCode', exports.renderStructureByCode
 
-		@$('.bv_editSalt').show()
-		if window.conf.salt?.editingRoles?
-			editingRoles = window.conf.salt.editingRoles.split(",")
-			if !UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, editingRoles)
-				@$('.bv_editSalt').hide()
+		# Need to Get 
+		requestJSON = {
+			#	"codeName" :  "#{@saltController.model.get("id")}"
+				"molStructure" : "#{@saltController.model.get("molStructure")}",
+				"height" : 100, 
+				"width" : 100, 
+				"format" : "png"
+			}
 
-		@$('.bv_deleteSalt').show()
-		if window.conf.salt?.deletingRoles?
-			deletingRoles= window.conf.salt.deletingRoles.split(",")
-			if !UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, deletingRoles)
-				@$('.bv_deleteSalt').hide()
 
-				# Not Implemented Fully Yet
+		$.ajax(
+			type: 'POST'
+			url: "/api/chemStructure/renderMolStructureBase64"
+			contentType: 'application/json'
+			dataType: 'text'
+
+			data: JSON.stringify(requestJSON)
+			success: (base64ImagePNG) => # Rendered Image Should Be Displayed on Sever
+				pngSrc = "data:image/png;base64," + base64ImagePNG
+				pngImage = '<img src="' + pngSrc + '" />'
+				@$('.bv_structureHolder').html pngImage 
+
+				@$('.bv_editSalt').show()
+				if window.conf.salt?.editingRoles?
+					editingRoles = window.conf.salt.editingRoles.split(",")
+					if !UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, editingRoles)
+						@$('.bv_editSalt').hide()
+
+				@$('.bv_deleteSalt').show()
+				if window.conf.salt?.deletingRoles?
+					deletingRoles= window.conf.salt.deletingRoles.split(",")
+					if !UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, deletingRoles)
+						@$('.bv_deleteSalt').hide()
+			error: (result) =>
+				console.log(result)
+		)
 
 	handleCreateSaltClicked: =>
 		# Call Chemical Structure Service to Create Salt 
@@ -241,9 +265,18 @@ class SaltBrowserController extends Backbone.View
 				type: 'GET'
 				url: "/api/cmpdRegAdmin/salts" 
 				success: (salts) =>
-					console.log(salts)
+					@downloadSDF("allSalts.txt", JSON.stringify(salts))
 				error: (result) =>
 					console.log(result)
+	
+	downloadSDF: (filename, text) => 
+		element = document.createElement('a');
+		element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+		element.setAttribute('download', filename);
+		element.style.display = 'none';
+		document.body.appendChild(element);
+		element.click();
+		document.body.removeChild(element);
 	
 	handleDeleteSaltClicked: =>
 		@$(".bv_saltUserName").html @saltController.model.get("name") 
@@ -283,7 +316,7 @@ class SaltBrowserController extends Backbone.View
 				#@$(".bv_okayButton").removeClass "hide"
 				@$(".bv_deletingStatusIndicator").addClass "hide"
 				@$(".bv_saltDeletedSuccessfullyMessage").removeClass "hide"
-				@searchController.handleDoSearchClicked()
+				@doSearch "*"
 			error: (result) =>
 				#@$(".bv_okayButton").removeClass "hide"
 				@$(".bv_deletingStatusIndicator").addClass "hide"
@@ -301,13 +334,28 @@ class SaltBrowserController extends Backbone.View
 		molStr = @saltController.model.get("molStructure")
 		console.log(molStr)
 
+		# @$('.bv_editChemicalStructureForm').attr('src',"/lib/ketcher-2.0.0-alpha.3_custom/ketcher.html?api_path=/api/cmpdReg/ketcher/")
+		# @$('.bv_editChemicalStructureForm').on('load', =>
+		# 	@ketcher = @$('.bv_editChemicalStructureForm')[0].contentWindow.ketcher
+		# 	@ketcher.setMolecule(molStr)
+		# )
 		@chemicalStructureController = new KetcherChemicalStructureController 
 		$('.bv_editChemicalStructureForm').html @chemicalStructureController.render().el
+		@chemicalStructureController.on('sketcherLoaded', =>
+			@chemicalStructureController.setMol(molStr)
+			# Need to Format It Like This To Work
+		)
 
-		#molSet = @chemicalStructureController.setMol(molStr)
+		#@chemicalStructureController.on  'sketcherLoaded', @chemicalStructureController.setMol(molStr)
+
 		#This Is Causing Problems
 
 		# Sketcher should be controlled by CReg sketcher settings!! 
+		# this.$('#editParentMarvinSketch').attr('src',"/lib/ketcher-2.0.0-alpha.3_custom/ketcher.html?api_path=/api/cmpdReg/ketcher/");
+		#         this.$('#editParentMarvinSketch').on('load', function () {
+		# 	        self.ketcher = self.$('#editParentMarvinSketch')[0].contentWindow.ketcher;
+		# 			self.ketcher.setMolecule(self.options.parentModel.get('molStructure'));
+		#         });
 
 	handleConfirmEditSaltClicked: =>
 		# Placeholder 
@@ -315,15 +363,19 @@ class SaltBrowserController extends Backbone.View
 		# Get Mol
 		saltStruct = @chemicalStructureController.getMol()
 		# Only New to Push This Dict Through Since Everything Else Same
+		console.log(@saltController.model)
 		saltDict = 
 		{
+			"abbrev": @saltController.model.get("abbrev"),
+			"name": @saltController.model.get("name"),
 			"molStructure": saltStruct,
+			"cdId":  @saltController.model.get("cdId"),
 		}
 		# Restandardization Call
 
 		$.ajax(
 			url: "/api/cmpdRegAdmin/salts/#{@saltController.model.get("id")}", # NEED TO CHECK VALID ROUTE
-			type: 'POST',
+			type: 'PUT',
 			data: JSON.stringify(saltDict)
 			contentType: 'application/json'
 			dataType: 'json'

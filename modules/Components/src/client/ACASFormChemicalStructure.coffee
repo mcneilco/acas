@@ -127,7 +127,6 @@ class KetcherChemicalStructureController extends Backbone.View
 		@trigger 'sketcherLoaded'
 
 	renderEditMode: (molStr) =>
-		render: =>
 		$(@el).empty()
 		$(@el).html @template()
 
@@ -135,14 +134,17 @@ class KetcherChemicalStructureController extends Backbone.View
 
 		@$('.bv_sketcherIFrame').attr 'src', searchFrameURL
 
-		@$('.bv_sketcherIFrame').on 'load', @startSketcher(molStr)
+		@$('.bv_sketcherIFrame').on 'load', @startEditMode(molStr)
 
 		@
 
 	startEditMode: (molStr) => 
 		@windowObj = @$('.bv_sketcherIFrame')[0].contentWindow
-		@windowObj.ketcher.setMolecule molStr
+		@ketcher = @windowObj.ketcher
+		@ketcher.setMolecule molStr
 		@trigger 'sketcherLoaded'
+
+		#@$('.bv_sketcherIFrame').on 'load', @ketcher.setMolecule molStr
 
 	getMol: ->
 		@windowObj.ketcher.getMolfile();
