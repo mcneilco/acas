@@ -926,10 +926,20 @@ class FileRowSummaryController extends Backbone.View
 			fileDate = ""
 		else
 			fileDate = UtilityFunctions::convertMSToYMDDate(fileDate)
+
+		#To get the current state, we need the bulk file ID to get lots and then generate the updated SDF file
+		reportID = @model.get('id')
+		fileName = @model.get('fileName')
+
+		# Rename the SDF file representing the current state
+		currentFileName = fileName.replace "\.sdf", "_current_state.sdf"
+
 		toDisplay =
 			fileName: @model.get('fileName')
 			loadDate: fileDate
 			loadUser: @model.get('recordedBy')
+			currentFileLink: "/api/cmpdRegBulkLoader/getSDFFromBulkFileID/" + reportID
+			currentFileName: currentFileName
 		$(@el).html(@template(toDisplay))
 
 		@
@@ -946,6 +956,7 @@ class FileSummaryTableController extends Backbone.View
 			# display message indicating no files were found
 		else
 			$(".bv_noFilesFoundMessage").addClass "hide"
+			#TODO (Hansen) - this code iterates over each file fed from getFilesToPurge
 			@collection.each (file) =>
 				frsc = new FileRowSummaryController
 					model: file
