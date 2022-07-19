@@ -12,10 +12,10 @@ exports.getLinkQueryToolForExperiment = (req, resp) ->
 	if tool is 'LiveDesign'
 		getLdUrl = require './CreateLiveDesignLiveReportForACAS.js'
 		username = req.session.passport.user.username
-		getLdUrl.getUrlForNewLiveDesignLiveReportForExperimentInternal req.query.experiment, username, (url) ->
+		getLdUrl.getUrlForNewLiveDesignLiveReportForExperimentInternal req.query.experiment, username, (statusCode, url) ->
 			url = url.replace /(\r\n|\n|\r)/gm,""
 			console.log "generating link: #{url}"
-			resp.status(200).send url
+			resp.status(statusCode).send url
 			# Need to Send This Link Back to UI To Add to Link
 	else if tool is 'Seurat'
 		expRoutes = require './ExperimentServiceRoutes.js'

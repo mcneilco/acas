@@ -640,6 +640,7 @@ class ExperimentBrowserController extends Backbone.View
 				error: (err) =>
 					# Take Away Generating Progress Mask 
 					@$('.bv_generatingLink').hide()
+					alert('Cannot generate link:'+err.responseText)
 					console.log err
 				datatype: 'json'
 
@@ -673,6 +674,7 @@ class ExperimentBrowserController extends Backbone.View
 				error: (err) =>
 					# Take Away Generating Progress Mask 
 					@$('.bv_generatingLink').hide()
+					alert('Cannot generate link:'+err.responseText)
 					console.log err
 				datatype: 'json'
 
