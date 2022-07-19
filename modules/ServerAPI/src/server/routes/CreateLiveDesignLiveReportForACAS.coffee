@@ -25,14 +25,20 @@ _ = require 'underscore'
 exports.redirectToNewLiveDesignLiveReportForExperiment = (req, resp) ->
   exptCode = req.params.experimentCode
   username = req.session.passport.user.username
-  exports.getUrlForNewLiveDesignLiveReportForExperimentInternal exptCode, username, (url) ->
+  exports.getUrlForNewLiveDesignLiveReportForExperimentInternal exptCode, username, (status_code, url) ->
+    if status_code != 200
+      resp.statusCode = status_code
+      resp.end url
     resp.redirect url
 
 exports.getUrlForNewLiveDesignLiveReportForExperiment = (req, resp) ->
   exptCode = req.params.experimentCode
   username = req.session.passport.user.username
-  exports.getUrlForNewLiveDesignLiveReportForExperimentInternal exptCode, (url) ->
-  resp.json {url: url}
+  exports.getUrlForNewLiveDesignLiveReportForExperimentInternal exptCode, (status_code, url) ->
+    if status_code != 200
+      resp.statusCode = status_code
+      resp.end url
+    resp.json {url: url}
 
 exports.getUrlForNewLiveDesignLiveReportForExperimentInternal = (exptCode, username, callback) ->
   child_process = require('child_process')
@@ -86,9 +92,15 @@ exports.getUrlForNewLiveDesignLiveReportForExperimentInternal = (exptCode, usern
       console.log "stderr: " + stderr
       console.log "stdout: " + stdout
       if exitCode == 0
-        callback stdout
+        # Parse stdout for "STATUS_CODE: " and "RESULT: "
+        lines = stdout.split(/\r?\n/)
+        status_line = lines[0]
+        result_line = lines[1]
+        status_code = parseInt status_line.replace('STATUS_CODE: ','')
+        result = result_line.replace('RESULT: ','')
+        callback status_code, result
       else
-        callback null
+        callback 500, null
 
 exports.getLiveDesignReportContent = (req, resp) ->
   liveDesignReportID = req.params.liveDesignReportID
@@ -164,15 +176,11 @@ exports.getResultViewerURLByExperimentNameInternal = (experimentName, callback) 
   exports.getExperimentByName experimentName, (experiment) ->
     if experiment?
       experimentCode = experiment.codeName
-      options =
-        method: 'GET'
-        url: "#{config.all.server.nodeapi.path}/api/getUrlForNewLiveDesignLiveReportForExperiment/#{experimentCode}"
-        json: true
-      request options, (error, response, body) ->
-        if error
-          throw new Error(error)
-        body.url = body.url.replace("\n","")
-        callback body
+      exports.getUrlForNewLiveDesignLiveReportForExperimentInternal exptCode, username, (status_code, url) ->
+        if status_code != 200
+          # resp.statusCode = status_code
+          throw new Error(url)
+        callback url
     else
       console.error "could not find experiment"
       callback null
