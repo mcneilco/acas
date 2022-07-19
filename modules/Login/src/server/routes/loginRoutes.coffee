@@ -16,7 +16,7 @@ exports.setupRoutes = (app, passport) ->
 		app.get '/login', exports.loginPage
 	app.get '/login/direct', exports.loginPage
 	app.post '/login',
-		passport.authenticate('local', { failureRedirect: '/login', failureFlash: true, keepSessionInfo: true }), exports.loginPost
+		passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }), exports.loginPost
 	app.get '/logout*', exports.logout
 	app.post '/api/userAuthentication', exports.authenticationService
 	app.get '/passwordReset', exports.resetpage
