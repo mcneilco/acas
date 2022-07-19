@@ -29,7 +29,7 @@ block content
                                 - if (resetPasswordOption)
                                     a.forgotPasswordLink(href="/passwordReset") Forgot your password?
         - if (redirectUrl)
-            div.span7.offset1.alert.alert-success.loginError After login your will be redirected to #{redirectUrl}
+            div.span7.offset1.alert.alert-success.loginError After login you will be redirected to #{redirectUrl}
         - if (message == "Your new password is set.")
             div.span7.offset1.alert.alert-success.loginError #{message}
         - else if (message != "")
