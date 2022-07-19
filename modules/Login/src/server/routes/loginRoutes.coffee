@@ -1,35 +1,22 @@
 
 config = require '../conf/compiled/conf.js'
 csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
+url = require 'url'
 
 exports.setupAPIRoutes = (app) ->
 	app.get '/api/users/:username', exports.getUsers
 	app.get '/api/authors', exports.getAuthors
 
 exports.setupRoutes = (app, passport) ->
+	# If SAML is configured, make the default page the SAML login page.
 	if config.all.server.security.saml.use == true
-		app.get '/login', ((req, res, next) ->
-			# If the redirect_url is set, pass it to the passport request as a relay state query
-			# This will then be returned as part of the body on callback
-			req.query.RelayState = req.query.redirect_url
-			next()
-		), passport.authenticate('saml',{failureRedirect: '/', failureFlash: true})
-		app.post '/login/callback', passport.authenticate('saml',
-			failureRedirect: '/login/ssoFailure'
-			failureFlash: true
-		), (req, res) =>
-			# If relay state value is set, it's because we set it to the redirect_url above
-			# So if it's set then redirect the user to the RelayState value
-			if req.body?.RelayState? && req.body.RelayState != ""
-				console.log "redirecting to #{req.body.RelayState}"
-				res.redirect(req.body.RelayState)
-			else
-				res.redirect('/');
+		app.get '/login', exports.ssoLogin, passport.authenticate('saml',{failureRedirect: '/', failureFlash: true})
+		app.post '/login/callback', passport.authenticate('saml', failureRedirect: '/login/ssoFailure', failureFlash: true), exports.ssoCallback
 	else
 		app.get '/login', exports.loginPage
 	app.get '/login/direct', exports.loginPage
 	app.post '/login',
-		passport.authenticate('local', { failureRedirect: '/login', failureFlash: true, keepSessionInfo: true }), exports.loginPost
+		passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }), exports.loginPost
 	app.get '/logout*', exports.logout
 	app.post '/api/userAuthentication', exports.authenticationService
 	app.get '/passwordReset', exports.resetpage
@@ -47,10 +34,27 @@ exports.setupRoutes = (app, passport) ->
 	app.get '/login/ssoFailure', exports.ssoFailure
 
 
+exports.getRedirectUrl = (req) ->
+	redirectUrl = null
+	
+	# Check to see if the RelayState value is set in the request
+	if req.body?.RelayState? && req.body.RelayState != ""
+		redirectUrl = req.body.RelayState
+		console.log "redirecting to #{redirectUrl}"
+	else
+		parsedUrl = url.parse(req.originalUrl || req.url)
+		if parsedUrl.pathname? && parsedUrl.pathname != "/" && parsedUrl.pathname != "/login" && parsedUrl.pathname != "/login/direct" && parsedUrl.pathname != "/login/callback" && parsedUrl.pathname != config.all.client.basePath 
+			redirectUrl = parsedUrl.path
+	return redirectUrl
+
 exports.loginPage = (req, res) ->
 	user = null
 	if req.user?
 		user = req.user
+
+	# Get an appropriate redirect URL for the user to be sent to after they log in.
+	# The login page adds this url to login post as a query parameter called redirect_url.
+	redirectUrl = exports.getRedirectUrl(req)
 
 	errorMsg = ""
 	error = req.flash('error')
@@ -67,6 +71,7 @@ exports.loginPage = (req, res) ->
 		user: user
 		message: errorMsg
 		resetPasswordOption: resetPasswordOption
+		redirectUrl: redirectUrl
 		logoText: config.all.client.moduleMenus.logoText
 
 exports.resetPost = (req, res) ->
@@ -76,13 +81,31 @@ exports.resetPost = (req, res) ->
 	
 exports.loginPost = (req, res) ->
 	console.log "got to login post"
-	if req.session.returnTo? && req.session.returnTo != "/"
-		res.redirect req.session.returnTo
-	else
-		if config.all.client.basePath?
-			res.redirect config.all.client.basePath
+	redirectUrl = config.all.client.basePath
+	
+	# Get redirect_url query parameter
+	if req.query.redirect_url? && req.query.redirect_url != ""
+		console.log "redirect_url query parameter is '#{req.query.redirect_url}'"
+		# Try an parse the redirect url as a url
+		parsedUrl = url.parse(req.query.redirect_url, true)
+		# If the host is set and is the same as the req host (which is what we are using right now as the expected hostname)
+		# Or if the hostname is not set in the URL, then we can use the redirect url as is.
+		if !parsedUrl.host? || req.get("host") == parsedUrl.host
+			console.log "Redirecting to #{parsedUrl.pathname}"
+			redirectUrl = parsedUrl.pathname
 		else
-			res.redirect '/'
+			# If somehow the redirect url is external, then we show the external redirect page and let them choose to visit the site or not
+			console.log "req.host is #{req.get("host")} but parsedUrl.host is #{parsedUrl.host}, redirecting to external redirect page instead of automatically redirecting"
+			# Render the external redirect page
+			res.render 'externalRedirect',
+				title: "ACAS reset"
+				scripts: []
+				redirectUrl: redirectUrl
+				homeUrl: config.all.client.basePath
+			return
+	else
+		console.log "No redirect url detected using default"
+	res.redirect redirectUrl
 
 exports.changePost = (req, res) ->
 	console.log req.session
@@ -105,33 +128,68 @@ exports.logout = (req, res) ->
 				redirectMatch = "/"
 		res.redirect redirectMatch
 
+exports.ssoLogin = (req, res, next) ->
+	# Entry point for SSO login.
+	if req.query.redirect_url?
+		redirectUrl = req.query.redirect_url
+	else
+		console.log "No redirect_url"
+		redirectUrl = exports.getRedirectUrl(req)
+	req.query.RelayState = redirectUrl
+	next()
+
+exports.ssoCallback = (req, res, next) ->
+	# If relay state value is set, it's because we set it to the redirect_url above
+	# So if it's set then redirect the user to the RelayState value
+	redirectUrl = exports.getRedirectUrl(req)
+	if redirectUrl?
+		res.redirect redirectUrl
+	else
+		res.redirect config.all.client.basePath
+
 exports.ssoFailure = (req, res, next) ->
 	errorMsg = ""
 	error = req.flash('error')
 	if error.length > 0
 		errorMsg = error[0]
-	console.error errorMsg
-	res.render 'PermissionDenied',
-		title: "Permission denied"
-		scripts: []
-		message: errorMsg
-		logoText: config.all.client.moduleMenus.logoText
-		logoLink: config.all.client.moduleMenus.logoTextLink
-		permissionDeniedText: "Single Sign-on failure: Permission Denied"
+	if errorMsg? && errorMsg != ""
+		console.error "SSO failure: '#{errorMsg}'"
+		res.render 'PermissionDenied',
+			title: "Permission denied"
+			scripts: []
+			message: errorMsg
+			logoText: config.all.client.moduleMenus.logoText
+			logoLink: config.all.client.moduleMenus.logoTextLink
+			permissionDeniedText: "Single Sign-on failure: Permission Denied"
+	else
+		console.error "SSO failure: No error message"
+		# If there is no error, this is likely a refresh of the page, so just redirect to the home page which will reprompt the user for SSO if need be.
+		res.redirect(config.all.client.basePath)
+
+exports.ssoRelayStateRedirect = (req, res, next) ->
+	# Redirects to /login?redirect_url=<redirect_url>
+	redirectUrl = exports.getRedirectUrl(req)
+	res.redirect(url.format(
+		pathname:"/login",
+		query: {
+			redirect_url: redirectUrl
+		}
+	))
+	
 
 exports.ensureAuthenticated = (req, res, next) ->
+	# Primary authentication check method.
+	# If the user is not authenticated, redirect to the appropriate login page based on the authentication strategy.
 	console.log "checking for login for path: "+req.url
 	if req.isAuthenticated()
 		return next()
-	if req.session?
-		req.session.returnTo = req.url
 
-	basePath = req.protocol + '://' + req.get('host')
-	if req.originalUrl == "/" && config.all.client.basePath?
-		redirectURL = "#{basePath}#{config.all.client.basePath}"
+	# If SAML is enabled, then redirect to the SAML login page
+	if config.all.server.security.saml.use == true
+			exports.ssoRelayStateRedirect(req, res, next)
 	else
-		redirectURL = "#{basePath}#{req.originalURL || req.url}"
-	res.redirect '/login?redirect_url='+redirectURL
+		# If Authentication strategy is not SAML then redirect to the login page
+		exports.loginPage(req, res, next)
 
 exports.ensureCmpdRegAdmin = (req, res, next) ->
 	if req.session?.passport?.user?

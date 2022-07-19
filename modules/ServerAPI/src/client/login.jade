@@ -9,7 +9,10 @@ block content
         div.span8.offset1
             h3 Please Login
             div.well
-                form.form-horizontal(action="/login", method="post")
+                - var action = "/login"
+                if redirectUrl
+                    - var action = '/login?redirect_url=' + redirectUrl
+                form.form-horizontal(action="#{action}", method="post")
                     div.control-group
                         label.control-label Username:
                         div.controls
@@ -25,6 +28,8 @@ block content
                                 input.btn.btn-primary(type="submit", value="Submit")
                                 - if (resetPasswordOption)
                                     a.forgotPasswordLink(href="/passwordReset") Forgot your password?
+        - if (redirectUrl)
+            div.span7.offset1.alert.alert-success.loginError After login you will be redirected to #{redirectUrl}
         - if (message == "Your new password is set.")
             div.span7.offset1.alert.alert-success.loginError #{message}
         - else if (message != "")
