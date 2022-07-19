@@ -78,9 +78,10 @@ class ACASFormChemicalStructureController extends Backbone.View
 		@$('.bv_sketcherIFrame').on 'load', @startSketcher
 
 		searchFrameURL = "/components/ACASFormChemicalRegStructure"
-		if @options.searchMode?
-			if @options.searchMode
-				searchFrameURL = "/components/ACASFormChemicalSearchStructure"
+		if @options?
+			if @options.searchMode?
+				if @options.searchMode
+					searchFrameURL = "/components/ACASFormChemicalSearchStructure"
 
 		@$('.bv_sketcherIFrame').attr 'src', searchFrameURL
 
@@ -125,11 +126,29 @@ class KetcherChemicalStructureController extends Backbone.View
 		@windowObj = @$('.bv_sketcherIFrame')[0].contentWindow
 		@trigger 'sketcherLoaded'
 
+	renderEditMode: (molStr) =>
+		render: =>
+		$(@el).empty()
+		$(@el).html @template()
+
+		searchFrameURL = "/lib/ketcher-2.0.0-alpha.3_custom/ketcher.html?api_path=/api/chemStructure/ketcher/"
+
+		@$('.bv_sketcherIFrame').attr 'src', searchFrameURL
+
+		@$('.bv_sketcherIFrame').on 'load', @startSketcher(molStr)
+
+		@
+
+	startEditMode: (molStr) => 
+		@windowObj = @$('.bv_sketcherIFrame')[0].contentWindow
+		@windowObj.ketcher.setMolecule molStr
+		@trigger 'sketcherLoaded'
+
 	getMol: ->
 		@windowObj.ketcher.getMolfile();
 
 	setMol: (molStr) ->
-		molStruct = @windowObj.ketcher.setMolecule molStr
+		@windowObj.ketcher.setMolecule molStr
 
 
 

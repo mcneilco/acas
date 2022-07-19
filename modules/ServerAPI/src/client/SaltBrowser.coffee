@@ -49,7 +49,8 @@ class SaltSimpleSearchController extends AbstractFormController
 		unless saltSearchTerm is "" 
 			$.ajax
 				type: 'GET'
-				url: @genericSearchUrl + "/search/" + saltSearchTerm
+				url: @genericSearchUrl # + "/search/" + saltSearchTerm
+				# CHANGE THIS AND FIX SEARCH
 				contentType: "application/json"
 				dataType: "json"
 				success: (salt) =>
@@ -110,10 +111,16 @@ class SaltSummaryTableController extends Backbone.View
 
 class SaltBrowserController extends Backbone.View
 	events:
-		# "click .bv_deleteSalt": "handleDeleteSaltClicked" 
-		# "click .bv_editSalt": "handleEditSaltClicked"
-		#"click .bv_confirmDeleteSaltButton": "handleConfirmDeleteSaltClicked"
+		"click .bv_deleteSalt": "handleDeleteSaltClicked" 
+		"click .bv_confirmDeleteSaltButton": "handleConfirmDeleteSaltClicked"
 		"click .bv_cancelDelete": "handleCancelDeleteClicked"
+		"click .bv_downloadSaltBtn": "handleDownloadSaltClicked"
+		"click .bv_createNewSaltBtn": "handleCreateSaltClicked"
+		"click .bv_confirmCreateSaltButton": "handleConfirmCreateSaltClicked"
+		"click .bv_cancelCreate": "handleCancelCreateClicked"
+		"click .bv_editSalt": "handleEditSaltClicked"
+		"click .bv_confirmEditSaltButton": "handleConfirmEditSaltClicked"
+		"click .bv_cancelEdit":"handleCancelEditSaltClicked"
 
 	initialize: ->
 		template = _.template($("#SaltBrowserView").html())
@@ -154,23 +161,94 @@ class SaltBrowserController extends Backbone.View
 		$(".bv_saltController").removeClass("hide")
 		$(".bv_saltControllerContainer").removeClass("hide")
 
-		# @$('.bv_editSalt').show()
-		# if window.conf.salt?.editingRoles?
-		# 	editingRoles = window.conf.salt.editingRoles.split(",")
-		# 	if !UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, editingRoles)
-		# 		@$('.bv_editSalt').hide()
+		# Need to Use This Route (Or Similar) to Display Salt Structure
+		# app.get '/api/chemStructure/renderStructureByCode', exports.renderStructureByCode
 
-		# @$('.bv_deleteSalt').show()
-		# if window.conf.salt?.deletingRoles?
-		# 	deletingRoles= window.conf.salt.deletingRoles.split(",")
-		# 	if !UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, deletingRoles)
-		# 		@$('.bv_deleteSalt').hide()
+		@$('.bv_editSalt').show()
+		if window.conf.salt?.editingRoles?
+			editingRoles = window.conf.salt.editingRoles.split(",")
+			if !UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, editingRoles)
+				@$('.bv_editSalt').hide()
+
+		@$('.bv_deleteSalt').show()
+		if window.conf.salt?.deletingRoles?
+			deletingRoles= window.conf.salt.deletingRoles.split(",")
+			if !UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, deletingRoles)
+				@$('.bv_deleteSalt').hide()
 
 				# Not Implemented Fully Yet
+
+	handleCreateSaltClicked: =>
+		# Call Chemical Structure Service to Create Salt 
+		console.log("Create Salt Clicked!")
+		# Use ACASFormChemicalStructureController 
+		@$('.bv_createSalt').show()
+		@chemicalStructureController = new KetcherChemicalStructureController 
+		$('.bv_chemicalStructureForm').html @chemicalStructureController.render().el
+		# Sketcher should be controlled by CReg sketcher settings!!
+		# Need to Setup Text Boxes for Name and Abbrev
+
+	handleConfirmCreateSaltClicked: =>
+		# Need to Check Name, Struct, and Abbrev Are All Filled! 
+		saltAbbrev = UtilityFunctions::getTrimmedInput @$('.bv_abbrevName')
+		
+		saltName = UtilityFunctions::getTrimmedInput @$('.bv_saltName')
+
+		saltStruct = @chemicalStructureController.getMol()
+
+		# TO DO VALIDATION WORK HERE
+		
+		saltDict = 
+		{
+			"abbrev": saltAbbrev,
+			"molStructure": saltStruct,
+			"name": saltName,
+		}
+
+
+		$.ajax(
+			url: "/api/cmpdRegAdmin/salts",
+			type: 'POST', 
+			data: JSON.stringify(saltDict)
+			contentType: 'application/json'
+			dataType: 'json'
+			success: (result) =>
+				console.log(result)
+				@$('.bv_createSalt').hide()
+				# Reload Search
+				@searchController.doSearch("*")
+			error: (result) =>
+				console.log(result)
+				@$('.bv_createSalt').hide()
+				@$('.bv_errorCreatingSaltMessage').show()
+				# Change Windows 
+					# @$('.bv_createSalt').hide()
+					# Show Error Window! 
+					# Alternative: Insert Error Elements
+				# Report Errors To User
+		)
+
+	handleCancelCreateClicked: =>
+		console.log("Confirm Cancel Salt Clicked")
+		@$(".bv_createSalt").hide()
+
+	handleDownloadSaltClicked: =>
+		# Create Route to Download SDF of All Salts 
+		console.log("Download Salt Clicked!")
+		# Use Get Route to Obtain All Salts 
+		# See SDF Example Route Brain Bolt Gave 
+		$.ajax
+				type: 'GET'
+				url: "/api/cmpdRegAdmin/salts" 
+				success: (salts) =>
+					console.log(salts)
+				error: (result) =>
+					console.log(result)
+	
 	handleDeleteSaltClicked: =>
-		@$(".bv_saltUserName").html @saltController.model.escape("saltName")
+		@$(".bv_saltUserName").html @saltController.model.get("name") 
 		@$(".bv_deleteButtons").removeClass "hide"
-		@$(".bv_okayButton").addClass "hide"
+		#@$(".bv_okayButton").addClass "hide"
 		@$(".bv_errorDeletingSaltMessage").addClass "hide"
 		@$(".bv_deleteWarningMessage").removeClass "hide"
 		@$(".bv_deletingStatusIndicator").addClass "hide"
@@ -181,30 +259,83 @@ class SaltBrowserController extends Backbone.View
 			backdrop: true
 		})
 
+		# NEED TO CHECK DEPENDENCIES 
+		# Clicking Delete should trigger a dependency check. 
+			# Call Dependency Check
+				# See Route Brian Bolt Gave 
+		# If any Lots still reference this salt, then the Salt cannot be deleted.
+			# If Dependency Then Show Preconfigured "Cannot Delete Salt Message"
+			# Show Error Window! 
+		# If there are no dependent lots, then allow the user to confirm and proceed with the delete
+			# If No Dependency Then Proceed w/ Normal Base Implementation 
+			# Show Normal Window 
+
 	# Not Implemented Fully Yet
-	#handleConfirmDeleteSaltClicked: =>
-		# @$(".bv_deleteWarningMessage").addClass "hide"
-		# @$(".bv_deletingStatusIndicator").removeClass "hide"
-		# @$(".bv_deleteButtons").addClass "hide"
-		# $.ajax(
-		# 	url: "/api/cmpdRegAdmin/salts/#{@saltController.model.get("id")}", # NEED TO CHECK VALID ROUTE
-		# 	type: 'DELETE', 
-		# 	success: (result) =>
-		# 		@$(".bv_okayButton").removeClass "hide"
-		# 		@$(".bv_deletingStatusIndicator").addClass "hide"
-		# 		@$(".bv_saltDeletedSuccessfullyMessage").removeClass "hide"
-		# 		@searchController.handleDoSearchClicked()
-		# 	error: (result) =>
-		# 		@$(".bv_okayButton").removeClass "hide"
-		# 		@$(".bv_deletingStatusIndicator").addClass "hide"
-		# 		@$(".bv_errorDeletingSaltMessage").removeClass "hide"
-		#
+	handleConfirmDeleteSaltClicked: =>
+		@$(".bv_deleteWarningMessage").addClass "hide"
+		@$(".bv_deletingStatusIndicator").removeClass "hide"
+		@$(".bv_deleteButtons").addClass "hide"
+
+		$.ajax(
+			url: "/api/cmpdRegAdmin/salts/#{@saltController.model.get("id")}", # NEED TO CHECK VALID ROUTE
+			type: 'DELETE', 
+			success: (result) =>
+				#@$(".bv_okayButton").removeClass "hide"
+				@$(".bv_deletingStatusIndicator").addClass "hide"
+				@$(".bv_saltDeletedSuccessfullyMessage").removeClass "hide"
+				@searchController.handleDoSearchClicked()
+			error: (result) =>
+				#@$(".bv_okayButton").removeClass "hide"
+				@$(".bv_deletingStatusIndicator").addClass "hide"
+				@$(".bv_errorDeletingSaltMessage").removeClass "hide"
+		)
 
 	handleCancelDeleteClicked: =>
 		@$(".bv_confirmDeleteSalt").modal('hide')
 
 	handleEditSaltClicked: =>
 		# Need to Implement
+		console.log("Hit Edit Button!")
+		@$('.bv_editSaltWindow').show()
+
+		molStr = @saltController.model.get("molStructure")
+		console.log(molStr)
+
+		@chemicalStructureController = new KetcherChemicalStructureController 
+		$('.bv_editChemicalStructureForm').html @chemicalStructureController.render().el
+
+		#molSet = @chemicalStructureController.setMol(molStr)
+		#This Is Causing Problems
+
+		# Sketcher should be controlled by CReg sketcher settings!! 
+
+	handleConfirmEditSaltClicked: =>
+		# Placeholder 
+		console.log("Confirm Edit Button Clicked!")
+		# Get Mol
+		saltStruct = @chemicalStructureController.getMol()
+		# Only New to Push This Dict Through Since Everything Else Same
+		saltDict = 
+		{
+			"molStructure": saltStruct,
+		}
+		# Restandardization Call
+
+		$.ajax(
+			url: "/api/cmpdRegAdmin/salts/#{@saltController.model.get("id")}", # NEED TO CHECK VALID ROUTE
+			type: 'POST',
+			data: JSON.stringify(saltDict)
+			contentType: 'application/json'
+			dataType: 'json'
+			success: (result) =>
+				console.log(result)
+			error: (result) =>
+				console.log(result)
+		)
+
+	handleCancelEditSaltClicked: =>
+		console.log("Cancel Edit Button Clicked!")
+		@$(".bv_editSaltWindow").hide()
 
 	destroySaltSummaryTable: =>
 		if @saltSummaryTable?

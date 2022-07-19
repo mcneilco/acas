@@ -23,7 +23,10 @@
                         <i class="icon-search bv_doSearchIcon"></i>
                         <i class="icon-remove bv_clearSearchIcon hide"></i>
                     </button>
+                    <button type="button" class="btn bv_downloadSaltBtn pull-right" style="margin-top:0px;">Download SDF</button>
+                    <button type="button" class="btn bv_createNewSaltBtn pull-right" style="margin-top:0px;">Create New Salt</button>
                 </div>
+                <div class="right-aligned-buttons"></div>
             </div>
         </div>
     </div>
@@ -94,8 +97,8 @@
     <div class="well well-small bv_saltControllerContainer hide" style="margin-top: 10px;">
         <div>
             <!-- Delete and Edit are not currently implemented! -->
-            <!-- <button class="btn btn-danger bv_deleteSalt">Delete</button>
-            <button class="btn bv_editSalt pull-right">Edit</button> -->
+            <button class="btn btn-danger bv_deleteSalt">Delete</button>
+            <button class="btn bv_editSalt pull-right">Edit</button>
         </div>
         <hr style="margin-top:40px;"/>
         <div class="row-fluid">
@@ -103,6 +106,86 @@
         </div>
     </div>
 
+    <!-- CREATE SALT SECTION -->
+    <div class="modal hide bv_createSalt">
+        <div class="modal-header">
+            <h3>Create Salt</h3>
+        </div>
+        <div class="modal-body">
+            <div class="bv_chemicalStructureForm">
+            </div>
+            <label for="abbrevName">Abbreviation: </label><br>
+            <input type="text" id="abbrevName" name="abbrevName" class="bv_abbrevName"><br>
+            <label for="saltName">Name:</label><br>
+            <input type="text" id="saltName" name="saltName" class="bv_saltName">
+            <div class="bv_createStatusIndicator hide">
+                <table width="100%"></table>
+                <tr>
+                    <td style="text-align: center; width: 100%">
+                        <h4>Creating Salt</h4>
+                        <div class="progress progress-striped active" style="width: 100%;">
+                            <div class="bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                </tr>
+            </div>
+            <div class="bv_saltCreatedSuccessfullyMessage hide">
+                <p>Salt <span class="bv_saltCodeName"></span> has successfully been created</p>
+            </div>
+            <div class="bv_errorCreatingSaltMessage hide">
+                <p>An error occured creating Salt <span class="bv_saltCodeName"></span>.  Please contact support for additional help.</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+		    <span class="bv_createButtons">
+		      <a href="#" class="btn btn-primary bv_cancelCreate">Cancel</a>
+		      <a href="#" class="btn btn-danger bv_confirmCreateSaltButton">Create Salt</a>
+			  </span>
+		    <span class="bv_okayButton hide">
+			    <a href="#" class="btn btn-primary bv_cancelCreate">Okay</a>
+		    </span>
+        </div>
+    </div>
+
+
+    <!-- CREATE SALT SECTION -->
+    <div class="modal hide bv_editSaltWindow">
+        <div class="modal-header">
+            <h3>Edit Salt</h3>
+        </div>
+        <div class="modal-body">
+            <div class="bv_editChemicalStructureForm">
+            </div>
+            <div class="bv_editStatusIndicator hide">
+                <table width="100%"></table>
+                <tr>
+                    <td style="text-align: center; width: 100%">
+                        <h4>Editing Salt</h4>
+                        <div class="progress progress-striped active" style="width: 100%;">
+                            <div class="bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                </tr>
+            </div>
+            <div class="bv_saltEditedSuccessfullyMessage hide">
+                <p>Salt <span class="bv_saltCodeName"></span> has successfully been edited</p>
+            </div>
+            <div class="bv_errorEditingSaltMessage hide">
+                <p>An error occured editing Salt <span class="bv_saltCodeName"></span>.  Please contact support for additional help.</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <span class="bv_createButtons">
+                <a href="#" class="btn btn-primary bv_cancelEdit">Cancel</a>
+                <a href="#" class="btn btn-danger bv_confirmEditSaltButton">Edit Salt</a>
+                </span>
+            <span class="bv_okayButton hide">
+                <a href="#" class="btn btn-primary bv_cancelEdit">Okay</a>
+            </span>
+        </div>
+    </div>
+
+    <!-- DELETE SECTION -->
     <!-- This is not functional right now but is being looked at adding later-->
     <div class="modal hide bv_confirmDeleteSalt">
         <div class="modal-header">
@@ -135,9 +218,9 @@
 		      <a href="#" class="btn btn-primary bv_cancelDelete">Cancel</a>
 		      <a href="#" class="btn btn-danger bv_confirmDeleteSaltButton">Delete Salt</a>
 			  </span>
-		    <span class="bv_okayButton hide">
+		    <!-- <span class="bv_okayButton hide">
 			    <a href="#" class="btn btn-primary bv_cancelDelete">Okay</a>
-		    </span>
+		    </span> -->
         </div>
     </div>
 </script>
