@@ -52,6 +52,8 @@ exports.loginPage = (req, res) ->
 	if req.user?
 		user = req.user
 
+	# Get an appropriate redirect URL for the user to be sent to after they log in.
+	# The login page adds this url to login post as a query parameter called redirect_url.
 	redirectUrl = exports.getRedirectUrl(req)
 
 	errorMsg = ""
@@ -81,30 +83,28 @@ exports.loginPost = (req, res) ->
 	console.log "got to login post"
 	redirectUrl = config.all.client.basePath
 	
-	# Get referer URL
-	# Check if referer URL has redirect_url query parameter
+	# Get redirect_url query parameter
 	if req.query.redirect_url? && req.query.redirect_url != ""
-		console.log "redirectUrl is #{req.query.redirect_url}"
-		# If so, get the redirect_url value
+		console.log "redirect_url query parameter is '#{req.query.redirect_url}'"
+		# Try an parse the redirect url as a url
 		parsedUrl = url.parse(req.query.redirect_url, true)
-		# If redirect_url is set then parse it
-		if parsedUrl?
-			# If redirect_url has a protocol, use it
-			if !parsedUrl.host? || req.get("host") == parsedUrl.host
-				console.log "Redirecting to #{parsedUrl.pathname}"
-				redirectUrl = parsedUrl.pathname
-			else
-				console.log "Req.host is #{req.get("host")} but parsedUrl.host is #{parsedUrl.host}"
-				# Render the external redirect page
-				res.render 'externalRedirect',
-					title: "ACAS reset"
-					scripts: []
-					redirectUrl: redirectUrl
-					homeUrl: config.all.client.basePath
-				return
+		# If the host is set and is the same as the req host (which is what we are using right now as the expected hostname)
+		# Or if the hostname is not set in the URL, then we can use the redirect url as is.
+		if !parsedUrl.host? || req.get("host") == parsedUrl.host
+			console.log "Redirecting to #{parsedUrl.pathname}"
+			redirectUrl = parsedUrl.pathname
+		else
+			# If somehow the redirect url is external, then we show the external redirect page and let them choose to visit the site or not
+			console.log "req.host is #{req.get("host")} but parsedUrl.host is #{parsedUrl.host}, redirecting to external redirect page instead of automatically redirecting"
+			# Render the external redirect page
+			res.render 'externalRedirect',
+				title: "ACAS reset"
+				scripts: []
+				redirectUrl: redirectUrl
+				homeUrl: config.all.client.basePath
+			return
 	else
-		console.log "No referer"
-			
+		console.log "No redirect url detected using default"
 	res.redirect redirectUrl
 
 exports.changePost = (req, res) ->
@@ -129,6 +129,7 @@ exports.logout = (req, res) ->
 		res.redirect redirectMatch
 
 exports.ssoLogin = (req, res, next) ->
+	# Entry point for SSO login.
 	if req.query.redirect_url?
 		redirectUrl = req.query.redirect_url
 	else
@@ -177,14 +178,17 @@ exports.ssoRelayStateRedirect = (req, res, next) ->
 	
 
 exports.ensureAuthenticated = (req, res, next) ->
+	# Primary authentication check method.
+	# If the user is not authenticated, redirect to the appropriate login page based on the authentication strategy.
 	console.log "checking for login for path: "+req.url
 	if req.isAuthenticated()
 		return next()
 
+	# If SAML is enabled, then redirect to the SAML login page
 	if config.all.server.security.saml.use == true
-		    # If SAML is enabled, then redirect to the SAML login page
 			exports.ssoRelayStateRedirect(req, res, next)
 	else
+		# If Authentication strategy is not SAML then redirect to the login page
 		exports.loginPage(req, res, next)
 
 exports.ensureCmpdRegAdmin = (req, res, next) ->
