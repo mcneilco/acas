@@ -40,13 +40,11 @@ exports.getRedirectUrl = (req) ->
 	# Check to see if the RelayState value is set in the request
 	if req.body?.RelayState? && req.body.RelayState != ""
 		redirectUrl = req.body.RelayState
+		console.log "redirecting to #{redirectUrl}"
 	else
 		parsedUrl = url.parse(req.originalUrl || req.url)
 		if parsedUrl.pathname? && parsedUrl.pathname != "/" && parsedUrl.pathname != "/login" && parsedUrl.pathname != "/login/direct" && parsedUrl.pathname != "/login/callback" && parsedUrl.pathname != config.all.client.basePath 
 			redirectUrl = parsedUrl.path
-
-	if !redirectUrl?
-	
 	return redirectUrl
 
 exports.loginPage = (req, res) ->
@@ -131,7 +129,12 @@ exports.logout = (req, res) ->
 		res.redirect redirectMatch
 
 exports.ssoLogin = (req, res, next) ->
-	req.query.RelayState = exports.getRedirectUrl(req)
+	if req.query.redirect_url?
+		redirectUrl = req.query.redirect_url
+	else
+		console.log "No redirect_url"
+		redirectUrl = exports.getRedirectUrl(req)
+	req.query.RelayState = redirectUrl
 	next()
 
 exports.ssoCallback = (req, res, next) ->
