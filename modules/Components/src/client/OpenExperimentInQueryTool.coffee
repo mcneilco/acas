@@ -44,21 +44,19 @@ class OpenExperimentInQueryToolController extends Backbone.View
         # Add Generating Link Loading Mask 
         @$('.bv_generatingLink').show()
         # Call to Route to Get URL 
-        setTimeout(=>  
-            $.ajax
-                type: 'GET'
-                url: "/api/getLinkExptQueryTool?experiment=#{@code}"
-                success: (response) => 
-                    # Take Away Generating Progress Mask 
-                    @$('.bv_generatingLink').hide()
-                    @$('.bv_getLinkResults').show()
-                    @$('.bv_exptLink').val(response)
-                error: (err) =>
-                    # Take Away Generating Progress Mask 
-                    @$('.bv_generatingLink').hide()
-                    console.log err
-                datatype: 'json'
-            , 3000);
+        $.ajax
+            type: 'GET'
+            url: "/api/getLinkExptQueryTool?experiment=#{@code}"
+            success: (response) => 
+                # Take Away Generating Progress Mask 
+                @$('.bv_generatingLink').hide()
+                @$('.bv_getLinkResults').show()
+                @$('.bv_exptLink').val(response)
+            error: (err) =>
+                # Take Away Generating Progress Mask 
+                @$('.bv_generatingLink').hide()
+                console.log err
+            datatype: 'json'
 
     handleCopyLinkClicked: =>
         link = @$('.bv_exptLink').val()
@@ -77,7 +75,6 @@ class OpenExperimentInQueryToolController extends Backbone.View
             for viewer in configuredViewers
                 viewerName = $.trim viewer                    
                 href = "'/openExptInQueryTool?tool=#{viewerName}&experiment=#{@code}','_blank'"
-                # TODO: look up default experiment status
                 if @experimentStatus != "approved" and viewerName is "LiveDesign"
                     @$('.bv_viewerOptions').append '<li class="disabled"><a href='+href+' target="_blank">'+viewerName+'</a></li>'
                 else

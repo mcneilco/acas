@@ -356,7 +356,6 @@ class ExperimentBrowserController extends Backbone.View
 			includeDuplicateAndEdit: @includeDuplicateAndEdit
 		@searchController.render()
 		@searchController.on "searchReturned", @setupExperimentSummaryTable.bind(@)
-		#@searchController.on "resetSearch", @destroyExperimentSummaryTable
 
 	setupExperimentSummaryTable: (experiments) =>
 		@destroyExperimentSummaryTable()
