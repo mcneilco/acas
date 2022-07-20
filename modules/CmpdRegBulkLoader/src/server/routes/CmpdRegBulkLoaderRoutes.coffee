@@ -7,6 +7,7 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.get '/api/cmpdRegBulkLoader/getFilesToPurge', exports.getFilesToPurge
 	app.post '/api/cmpdRegBulkLoader/purgeFile', exports.purgeFile
 	app.get '/api/cmpdRegBulkLoader/getSDFFromBulkFileId/:bulkFileID', exports.getSDFFromBulkFileId
+	app.get '/api/cmpdRegBulkLoader/checkForBulkFileModifications/:bulkFileID', exports.checkForBulkFileModifications
 
 
 
@@ -21,6 +22,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/cmpdRegBulkLoader/checkFileDependencies', loginRoutes.ensureAuthenticated, exports.checkFileDependencies
 	app.post '/api/cmpdRegBulkLoader/purgeFile', loginRoutes.ensureAuthenticated, exports.purgeFile
 	app.get '/api/cmpdRegBulkLoader/getSDFFromBulkFileId/:bulkFileID', loginRoutes.ensureAuthenticated, exports.getSDFFromBulkFileId
+	app.get '/api/cmpdRegBulkLoader/checkForBulkFileModifications/:bulkFileID', loginRoutes.ensureAuthenticated, exports.checkForBulkFileModifications
 
 exports.cmpdRegBulkLoaderIndex = (req, res) ->
 	scriptPaths = require './RequiredClientScripts.js'
@@ -390,6 +392,54 @@ exports.getSDFFromBulkFileId = (req, resp) ->
 			console.log 'got ajax error trying to retrieve lots from bulk file ID'
 			console.log error
 			console.log json
+			console.log response
+			resp.end JSON.stringify "Error"
+	)
+	
+exports.checkForBulkFileModifications = (req, resp) ->
+	req.setTimeout 86400000
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"bulkload/getLotsByBulkLoadFileID?bulkLoadFileID=" +req.params.bulkFileID
+	request = require 'request'
+	request(
+		method: 'GET'
+		url: baseurl
+		json: true
+	, (error, response, lotCorpNames) =>
+		if !error && response.statusCode == 200
+			try
+				#If one of the lots has been modified, we say the bulkFile has been updated
+				bulkFileUpdated = "No"
+
+				#run a loop to find out if each lot has been modified, and if so who/when
+				for lotName in lotCorpNames
+					baseurl = config.all.client.service.cmpdReg.persistence.fullpath + "/metalots/corpName/" + lotName
+					response = await fetch(baseurl, method: 'GET')
+
+					checkStatus response
+					lotMetadata = await response.json()
+					lotModifiedBy = lotMetadata.lot.modifiedBy
+					# TODO - Add sorting for who last modified the bulk file, and when it was last modified
+					# TODO - When you edit a lot in ACAS, it doesn't seem to record the modified date 
+					#lotModifiedDate = lotMetadata.lot.modifiedDate
+
+					#if there is a user who modified one of the lots, we know that the lots in file have been udpated and end the loop
+					if lotModifiedBy != null
+						bulkFileUpdated = "Yes"
+						break
+
+				resp.end JSON.stringify bulkFileUpdated
+
+		
+			catch err
+				console.log "Error calling service: " + err
+				resp.statusCode = 500
+				resp.json err			
+
+		else
+			console.log 'got ajax error trying to retrieve lots from bulk file ID'
+			console.log error
+			console.log lotCorpNames
 			console.log response
 			resp.end JSON.stringify "Error"
 	)

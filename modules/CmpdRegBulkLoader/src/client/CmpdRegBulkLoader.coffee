@@ -911,7 +911,7 @@ class FileRowSummaryController extends Backbone.View
 	className: 'dataTableRow'
 	events:
 		"click": "handleClick"
-
+	
 	handleClick: =>
 		@trigger "gotClick", @model
 		$(@el).closest("table").find("tr").removeClass "info"
@@ -919,7 +919,7 @@ class FileRowSummaryController extends Backbone.View
 
 	initialize: ->
 		@template = _.template($('#FileRowSummaryView').html())
-
+	
 	render: =>
 		fileDate = @model.get('fileDate')
 		if fileDate is null
@@ -933,7 +933,7 @@ class FileRowSummaryController extends Backbone.View
 
 		# Rename the SDF file representing the current state
 		currentFileName = fileName.replace "\.sdf", "_current_state.sdf"
-
+    
 		toDisplay =
 			fileName: @model.get('fileName')
 			loadDate: fileDate
@@ -942,6 +942,15 @@ class FileRowSummaryController extends Backbone.View
 			currentFileName: currentFileName
 		$(@el).html(@template(toDisplay))
 
+		#Check whether lots in the bulk file have been updated since they were registered
+		$.ajax
+			type: 'GET'
+			url: "/api/cmpdRegBulkLoader/checkForBulkFileModifications/" + reportID
+			dataType: "json"
+			success: (response) =>
+				@$('.bv_bulkFileUpdated').html response
+			error: (err) =>
+				@$('.bv_bulkFileUpdated').html "N/A"
 		@
 
 class FileSummaryTableController extends Backbone.View
@@ -956,7 +965,6 @@ class FileSummaryTableController extends Backbone.View
 			# display message indicating no files were found
 		else
 			$(".bv_noFilesFoundMessage").addClass "hide"
-			#TODO (Hansen) - this code iterates over each file fed from getFilesToPurge
 			@collection.each (file) =>
 				frsc = new FileRowSummaryController
 					model: file
