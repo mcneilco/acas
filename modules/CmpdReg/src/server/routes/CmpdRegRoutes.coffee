@@ -43,7 +43,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/cmpdReg/export/searchResults', loginRoutes.ensureAuthenticated, exports.exportSearchResults
 	app.post '/cmpdReg/validateParent', loginRoutes.ensureAuthenticated, exports.validateParent
 	app.post '/cmpdReg/updateParent', loginRoutes.ensureAuthenticated, exports.updateParent
-	app.post '/cmpdReg/swapParentStructures', exports.swapParentStructures  # TODO: Ensure the user is authenticated.
+	app.post '/cmpdReg/swapParentStructures', loginRoutes.ensureAuthenticated, exports.swapParentStructures
 	app.post '/cmpdReg/api/v1/lotServices/update/lot/metadata', loginRoutes.ensureAuthenticated, exports.updateLotMetadata
 	app.post '/cmpdReg/api/v1/lotServices/update/lot/metadata/jsonArray', loginRoutes.ensureAuthenticated, exports.updateLotsMetadata
 	app.post '/cmpdReg/api/v1/parentServices/update/parent/metadata', loginRoutes.ensureAuthenticated, exports.updateParentMetadata
@@ -860,7 +860,7 @@ exports.updateParent = (req, resp) ->
 
 exports.swapParentStructures = (req, resp) ->
 	console.log "exports.swapParentStructures"
-	
+
 	# TODO: Do we need to keep track of who swapped the parent structure.
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parents/swapParentStructures'
 	request(
@@ -869,17 +869,17 @@ exports.swapParentStructures = (req, resp) ->
 		body: req.body
 		json: true
 		timeout: 6000000
-	, (error, response, json) =>
-		if !error
-			resp.setHeader('Content-Type', 'plain/text')
-			resp.json json
-		else
+	, (error, response, data) =>
+		if error
 			console.log 'got ajax error trying to swap parent structures'
 			console.log error
 			console.log json
 			console.log response
 			resp.statusCode = 500
 			resp.end "Error trying to swap parent structures: " + error
+		else
+			resp.statusCode = response.statusCode
+			resp.end data
 	)
 
 exports.updateLotMetadata = (req, resp) ->
