@@ -37,7 +37,11 @@ class OpenExperimentInQueryToolController extends Backbone.View
                 error: (err) =>
                     # Take Away Generating Progress Mask 
                     @$('.bv_generatingLink').hide()
-                    console.log err
+                    toast = new ACASToast
+                        type: "error"
+                        title: "Cannot Open Experiment"
+                        text: "ACAS encountered an error when trying to open the experiment in the Query Tool. Please contact your administrator with this error: #{err.responseText}"
+                        position: "top-middle"
                 datatype: 'json'
 
     handleGetLinkQueryToolClicked: => 
@@ -55,7 +59,11 @@ class OpenExperimentInQueryToolController extends Backbone.View
             error: (err) =>
                 # Take Away Generating Progress Mask 
                 @$('.bv_generatingLink').hide()
-                console.log err
+                toast = new ACASToast
+                    type: "error"
+                    title: "Cannot Generate Link"
+                    text: "ACAS encountered an error when trying to generate a link for the experiment in the Query Tool. Please contact your administrator with this error: #{err.responseText}"
+                    position: "top-middle"
             datatype: 'json'
 
     handleCopyLinkClicked: =>
@@ -69,10 +77,10 @@ class OpenExperimentInQueryToolController extends Backbone.View
                     position: "top-middle"
         else
             toast = new ACASToast
-                    type: "error"
-                    title: "Copy Failed"
-                    text: "Unable to copy link to clipboard."
-                    position: "top-middle"
+                type: "error"
+                title: "Copy Failed"
+                text: "Unable to copy link to clipboard."
+                position: "top-middle"
 
     formatOpenInQueryToolButton: =>
         @$('.bv_viewerOptions').empty()
