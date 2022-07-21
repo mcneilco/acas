@@ -6,8 +6,8 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.post '/api/cmpdRegBulkLoader/validationProperties', exports.validationProperties
 	app.get '/api/cmpdRegBulkLoader/getFilesToPurge', exports.getFilesToPurge
 	app.post '/api/cmpdRegBulkLoader/purgeFile', exports.purgeFile
-	app.get '/api/cmpdRegBulkLoader/getSDFFromBulkFileId/:bulkFileID', exports.getSDFFromBulkFileId
-	app.get '/api/cmpdRegBulkLoader/checkForBulkFileModifications/:bulkFileID', exports.checkForBulkFileModifications
+	app.get '/api/cmpdRegBulkLoader/getSDFFromBulkLoadFileId/:bulkFileID', exports.getSDFFromBulkLoadFileId
+	app.get '/api/cmpdRegBulkLoader/checkForBulkLoadFileModifications/:bulkFileID', exports.checkForBulkLoadFileModifications
 
 
 
@@ -21,8 +21,8 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/cmpdRegBulkLoader/validateCmpds', loginRoutes.ensureAuthenticated, exports.validateCmpds
 	app.post '/api/cmpdRegBulkLoader/checkFileDependencies', loginRoutes.ensureAuthenticated, exports.checkFileDependencies
 	app.post '/api/cmpdRegBulkLoader/purgeFile', loginRoutes.ensureAuthenticated, exports.purgeFile
-	app.get '/api/cmpdRegBulkLoader/getSDFFromBulkFileId/:bulkFileID', loginRoutes.ensureAuthenticated, exports.getSDFFromBulkFileId
-	app.get '/api/cmpdRegBulkLoader/checkForBulkFileModifications/:bulkFileID', loginRoutes.ensureAuthenticated, exports.checkForBulkFileModifications
+	app.get '/api/cmpdRegBulkLoader/getSDFFromBulkLoadFileId/:bulkFileID', loginRoutes.ensureAuthenticated, exports.getSDFFromBulkLoadFileId
+	app.get '/api/cmpdRegBulkLoader/checkForBulkLoadFileModifications/:bulkFileID', loginRoutes.ensureAuthenticated, exports.checkForBulkLoadFileModifications
 
 exports.cmpdRegBulkLoaderIndex = (req, res) ->
 	scriptPaths = require './RequiredClientScripts.js'
@@ -356,7 +356,7 @@ class HTTPResponseError extends Error
 		super("HTTP Error Response: #{response.status} #{response.statusText}", ...args)
 		this.response = response
 
-exports.getSDFFromBulkFileId = (req, resp) ->
+exports.getSDFFromBulkLoadFileId = (req, resp) ->
 	req.setTimeout 86400000
 	config = require '../conf/compiled/conf.js'
 	baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"bulkload/getLotsByBulkLoadFileID?bulkLoadFileID=" +req.params.bulkFileID
@@ -395,8 +395,8 @@ exports.getSDFFromBulkFileId = (req, resp) ->
 			console.log response
 			resp.end JSON.stringify "Error"
 	)
-	
-exports.checkForBulkFileModifications = (req, resp) ->
+
+exports.checkForBulkLoadFileModifications = (req, resp) ->
 	req.setTimeout 86400000
 	config = require '../conf/compiled/conf.js'
 	baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"bulkload/getLotsByBulkLoadFileID?bulkLoadFileID=" +req.params.bulkFileID

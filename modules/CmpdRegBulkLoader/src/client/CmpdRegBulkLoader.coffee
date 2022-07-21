@@ -931,21 +931,33 @@ class FileRowSummaryController extends Backbone.View
 		reportID = @model.get('id')
 		fileName = @model.get('fileName')
 
-		# Rename the SDF file representing the current state
-		currentFileName = fileName.replace "\.sdf", "_current_state.sdf"
+		#Get today's date to timestamp any updated SDF files
+		today = new Date
+		dd = today.getDate()
+		#The value returned by getMonth is an integer between 0 and 11, referring 0 to January, 1 to February, and so on.
+		mm = today.getMonth() + 1
+		yyyy = today.getFullYear()
+		if dd < 10
+			dd = '0' + dd
+		if mm < 10
+			mm = '0' + mm
+		today = '_' + mm + '_' + dd + '_' + yyyy
+
+		# Rename the SDF file representing the current
+		currentFileName = fileName.replace "\.sdf", today + "_current_state.sdf"
     
 		toDisplay =
 			fileName: @model.get('fileName')
 			loadDate: fileDate
 			loadUser: @model.get('recordedBy')
-			currentFileLink: "/api/cmpdRegBulkLoader/getSDFFromBulkFileID/" + reportID
+			currentFileLink: "/api/cmpdRegBulkLoader/getSDFFromBulkLoadFileID/" + reportID
 			currentFileName: currentFileName
 		$(@el).html(@template(toDisplay))
 
 		#Check whether lots in the bulk file have been updated since they were registered
 		$.ajax
 			type: 'GET'
-			url: "/api/cmpdRegBulkLoader/checkForBulkFileModifications/" + reportID
+			url: "/api/cmpdRegBulkLoader/checkForBulkLoadFileModifications/" + reportID
 			dataType: "json"
 			success: (response) =>
 				@$('.bv_bulkFileUpdated').html response
