@@ -62,7 +62,11 @@ class OpenExperimentInQueryToolController extends Backbone.View
         link = @$('.bv_exptLink').val()
         if link? # Defined and not null
             navigator.clipboard.writeText(link).then ->
-                alert("Link copied to clipboard!")
+                toast = new ACASToast
+                    type: "success"
+                    title: "Link Copied"
+                    text: "The link has been copied to your clipboard."
+                    duration: 3000
         else
             alert("Unable to copy link to clipboard")
 
