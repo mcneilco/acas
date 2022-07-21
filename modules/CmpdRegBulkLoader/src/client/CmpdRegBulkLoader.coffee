@@ -934,7 +934,6 @@ class FileRowSummaryController extends Backbone.View
 		#Get today's date to timestamp any updated SDF files
 		today = new Date
 		dd = today.getDate()
-		#The value returned by getMonth is an integer between 0 and 11, referring 0 to January, 1 to February, and so on.
 		mm = today.getMonth() + 1
 		yyyy = today.getFullYear()
 		if dd < 10
