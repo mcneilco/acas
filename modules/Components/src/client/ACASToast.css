@@ -1,9 +1,32 @@
 .toast-container {
     position: fixed;
     z-index: 9999;
+}
+.toast-container.top-left {
+    top: 20px;
+    left: 20px;
+}
+.toast-container.top-middle {
+    top: 20px;;
+    margin-left: 50%;
+}
+.toast-container.top-right {
     top: 20px;
     right: 20px;
 }
+.toast-container.bottom-left {
+    bottom: 20px;
+    left: 20px;
+}
+.toast-container.bottom-middle {
+    bottom: 20px;;
+    margin-left: 50%;
+}
+.toast-container.bottom-right {
+    bottom: 20px;
+    right: 20px;
+}
+
 .toast-container .toast {
     position: relative;
     width: 100%;
@@ -102,5 +125,8 @@
     color: #eee;
 }
 .toast-container .toast.error .t-title {
+    color: #eee;
+}
+.toast-container .toast.error .icon-remove {
     color: #eee;
 }

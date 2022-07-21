@@ -2,14 +2,17 @@ class ACASToast extends Backbone.View
     template: _.template($("#ACASToastView").html())
 
     initialize: (options) ->
-        # Support options are: type, title, text, duration
+        # Support options are: type, title, text, duration, and position
         # Supported types are: success, error, warning, info
         @type = options.type
         @title = options.title
         @text = options.text
+        # Duration is in milliseconds
         @duration = options.duration
+        # Supported positions are: top-right, top-center, top-left, bottom-right, bottom-center, bottom-left
+        @position = options.position
         # If duration is not set, default to 3000ms
-        if !duration?
+        if !@duration?
             @duration = 3000
         # If type isn't set, default to info
         if !@type?
@@ -18,16 +21,13 @@ class ACASToast extends Backbone.View
         if @type == "success"
             @iconType = 'icon-ok'
         if @type == "error"
-            @iconType = 'icon-remove'
+            @iconType = 'icon-white icon-remove'
         if @type == "warning"
             @iconType = 'icon-warning-sign'
         if @type == "info"
             @iconType = 'icon-exclamation-sign'
-        @createToastContainer()
+        @getToastContainer()
         @render()
-    
-    # events: ->
-    #     "click .t-close": "closeToast"
     
     render: ->
         # Build a new toast element from the template
@@ -38,34 +38,26 @@ class ACASToast extends Backbone.View
             text: @text
             iconType: @iconType
         toastElem = parser.parseFromString(txt, 'text/html').querySelector('.toast')
-        # get toast-container element
-        @toastContainer = document.querySelector(".toast-container")
         # append toast message to it
         @toastContainer.appendChild(toastElem)
         # wait just a bit to add active class to the message to trigger animation
         setTimeout(() ->                 
             toastElem.classList.add('active');
         , 1)
-        # check duration
-        setTimeout( () ->
-            toastElem.classList.remove('active');
-            setTimeout( () ->
-                toastElem.remove();
-            , 350) # 350 ms wait for the animation
-        , @duration)
-        #if duration is 0, toast message will not be closed
+        # grab the close button
+        closeElem = toastElem.querySelector('.t-close')
         # Bind close event to close toast message
+        closeElem.addEventListener('click', @closeToast)
+        # check duration. if duration is 0, toast message will not be closed
         if @duration > 0
-            closeElem = toastElem.querySelector('.t-close')
-            closeElem.addEventListener('click', @closeToast)
+            setTimeout( () ->
+                @closeToast(closeElem)
+            , @duration)
+        
 
-    createToastContainer: -> 
-        # Look for existing toast-container element
-        toastContainer = @$(".toast-container")
-        # If it doesn't exist, create it
-        if(toastContainer.length == 0)
-            toastContainerContent = '<div class="toast-container"></div>'
-            @$("body").innerHTML += toastContainerContent
+    getToastContainer: -> 
+        # Get toast container based on position
+        @toastContainer = document.querySelector(".toast-container.#{@position}")
     
     closeToast: (el) ->
         # get toast element

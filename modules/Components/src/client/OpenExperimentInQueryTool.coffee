@@ -66,9 +66,13 @@ class OpenExperimentInQueryToolController extends Backbone.View
                     type: "success"
                     title: "Link Copied"
                     text: "The link has been copied to your clipboard."
-                    duration: 3000
+                    position: "top-middle"
         else
-            alert("Unable to copy link to clipboard")
+            toast = new ACASToast
+                    type: "error"
+                    title: "Copy Failed"
+                    text: "Unable to copy link to clipboard."
+                    position: "top-middle"
 
     formatOpenInQueryToolButton: =>
         @$('.bv_viewerOptions').empty()
