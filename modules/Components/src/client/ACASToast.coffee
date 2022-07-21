@@ -47,11 +47,12 @@ class ACASToast extends Backbone.View
         # grab the close button
         closeElem = toastElem.querySelector('.t-close')
         # Bind close event to close toast message
-        closeElem.addEventListener('click', @closeToast)
+        closeElem.addEventListener('click', @handleCloseToastClicked)
         # check duration. if duration is 0, toast message will not be closed
         if @duration > 0
-            setTimeout( () ->
-                @closeToast(closeElem)
+            setTimeout( () =>
+
+                @closeToast(toastElem)
             , @duration)
         
 
@@ -59,9 +60,17 @@ class ACASToast extends Backbone.View
         # Get toast container based on position
         @toastContainer = document.querySelector(".toast-container.#{@position}")
     
-    closeToast: (el) ->
+    handleCloseToastClicked: (el) ->
         # get toast element
         toastElement = el.target.parentElement;
+        # remove active class from it to trigger css animation with duration of 300ms
+        toastElement.classList.remove('active');
+        # wait for 350ms and then remove element
+        setTimeout( () ->                 
+            toastElement.remove();
+        , 350)
+    
+    closeToast: (toastElement) ->
         # remove active class from it to trigger css animation with duration of 300ms
         toastElement.classList.remove('active');
         # wait for 350ms and then remove element
