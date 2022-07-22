@@ -954,9 +954,10 @@ class FileRowSummaryController extends Backbone.View
 			loadUser: @model.get('recordedBy')
 			currentFileLink: "/api/cmpdRegBulkLoader/getSDFFromBulkLoadFileID/" + reportID
 			currentFileName: currentFileName
-			fileLink: window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" + fileName
 			reportName: reportName
-			reportLink: window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" + reportName
+			#remove special characters from the links to prevent errors, but not from the displayed names
+			fileLink: window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" + encodeURIComponent(fileName)
+			reportLink: window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" + encodeURIComponent(reportName)
 		$(@el).html(@template(toDisplay))
 
 		#Check whether lots in the bulk file have been updated since they were registered
@@ -1188,13 +1189,13 @@ class CmpdRegBulkLoaderAppController extends Backbone.View
 			@$('.bv_bulkValSummary').hide()
 			@$('.bv_bulkRegSummary').show()
 			@setupBulkRegCmpdsSummaryController(summary[0])
-			downloadUrl = window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" +summary[1]
+			downloadUrl = window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" + encodeURIComponent(summary[1])
 			@$('.bv_downloadSummary').attr "href", downloadUrl
 		@regCmpdsController.on 'validateComplete', (summary) =>
 			@$('.bv_bulkReg').hide()
 			@$('.bv_bulkValSummary').show()
 			@setupBulkValCmpdsSummaryController(summary[0])
-			downloadUrl = window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" +summary[1]
+			downloadUrl = window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" + encodeURIComponent(summary[1])
 			@$('.bv_downloadSummary').attr "href", downloadUrl
 
 	setupBulkRegCmpdsSummaryController: (summary) ->
