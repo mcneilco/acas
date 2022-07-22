@@ -954,7 +954,6 @@ class FileRowSummaryController extends Backbone.View
 			loadUser: @model.get('recordedBy')
 			currentFileLink: "/api/cmpdRegBulkLoader/getSDFFromBulkLoadFileID/" + reportID
 			currentFileName: currentFileName
-			fileLink: window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" + fileName
 			reportName: reportName
 			#remove special characters from the links to prevent errors, but not from the displayed names
 			fileLink: window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" + encodeURIComponent(fileName)
