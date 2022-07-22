@@ -42,6 +42,7 @@ class OpenExperimentInQueryToolController extends Backbone.View
                         title: "Cannot Open Experiment"
                         text: "ACAS encountered an error when trying to open the experiment in the Query Tool. Please contact your administrator with this error: #{err.responseText}"
                         position: "top-middle"
+                        duration: 10000
                 datatype: 'json'
 
     handleGetLinkQueryToolClicked: => 
@@ -64,6 +65,7 @@ class OpenExperimentInQueryToolController extends Backbone.View
                     title: "Cannot Generate Link"
                     text: "ACAS encountered an error when trying to generate a link for the experiment in the Query Tool. Please contact your administrator with this error: #{err.responseText}"
                     position: "top-middle"
+                    duration: 10000
             datatype: 'json'
 
     handleCopyLinkClicked: =>
