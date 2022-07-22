@@ -1,0 +1,17 @@
+extends layout
+block content
+    div.navbar.navbar-inverse.navbar-fixed-top
+        div.navbar-inner
+            div.container-fluid
+                div.brand #{logoText}
+
+    div.container.externalLinkContainer
+        div.span8.offset1
+            h3 Redirect notice
+            div.well.alert.alert-warn
+                - if (redirectUrl)
+                    div You are being redirected to an external site 
+                        a(href="#{redirectUrl}") #{redirectUrl}
+                br
+                div If you do not want to be redirected you can return 
+                    a(href="#{homeUrl}") home

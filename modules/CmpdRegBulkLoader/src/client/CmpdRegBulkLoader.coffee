@@ -945,12 +945,18 @@ class FileRowSummaryController extends Backbone.View
 		# Rename the SDF file representing the current
 		currentFileName = fileName.replace "\.sdf", today + "_current_state.sdf"
     
+		# Replace .sdf with .zip since the report file shares the same name 
+		reportName = fileName.replace "\.sdf", ".zip"
+
 		toDisplay =
-			fileName: @model.get('fileName')
+			fileName: fileName
 			loadDate: fileDate
 			loadUser: @model.get('recordedBy')
 			currentFileLink: "/api/cmpdRegBulkLoader/getSDFFromBulkLoadFileID/" + reportID
 			currentFileName: currentFileName
+			fileLink: window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" + fileName
+			reportName: reportName
+			reportLink: window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" + reportName
 		$(@el).html(@template(toDisplay))
 
 		#Check whether lots in the bulk file have been updated since they were registered

@@ -202,8 +202,14 @@ class BasicFileValidateAndSaveController extends Backbone.View
 		else
 			summaryStr += "Failed due to errors "
 		@notificationController.addNotifications(@errorOwnerName, json.errorMessages)
-		@$('.bv_htmlSummary').html(json.results.htmlSummary)
 		@newExperimentCode = json.results.experimentCode
+		if json.results?.htmlSummary?
+			@$('.bv_htmlSummary').html(json.results.htmlSummary)
+			@openExperimentInQueryToolController = new OpenExperimentInQueryToolController
+				code: @newExperimentCode 
+				experimentStatus: 'approved'
+			$('.bv_openExptInQueryToolSection').html @openExperimentInQueryToolController.render().el
+		
 		@showFileUploadCompletePhase()
 		if json.results?.preProcessorHTMLSummary?
 			@showPreProcessorHTMLSUmmary json.results.preProcessorHTMLSummary

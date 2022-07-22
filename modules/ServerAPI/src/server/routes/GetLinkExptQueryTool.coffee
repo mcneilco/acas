@@ -1,5 +1,5 @@
 exports.setupRoutes = (app, loginRoutes) ->
-	app.get '/getLinkExptQueryTool', loginRoutes.ensureAuthenticated, exports.getLinkQueryToolForExperiment
+	app.get '/api/getLinkExptQueryTool', loginRoutes.ensureAuthenticated, exports.getLinkQueryToolForExperiment
 
 
 exports.getLinkQueryToolForExperiment = (req, resp) ->

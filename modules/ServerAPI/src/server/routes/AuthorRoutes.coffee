@@ -681,6 +681,28 @@ exports.updateAuthorAndRolesInternal = (author, user, callback) ->
 																		else
 																			callback null, response
 
+exports.syncRoles = (author, rolesToAdd, rolesToDelete, callback) =>
+	exports.updateAuthorInternal author, (errorOrUpdatedAuthor, statusCode) =>
+		if statusCode != 200
+			callback errorOrUpdatedAuthor
+		else
+			saveAuthorRoles rolesToAdd, (err, savedRoles) ->
+				console.log err
+				console.log savedRoles
+				if err?
+					callback err
+				else
+					deleteAuthorRoles rolesToDelete, (err, deletedRoles) ->
+						if err?
+							callback err
+						else
+							#save successful. Fetch the new author and return.
+							exports.getAuthorByUsernameInternal author.userName, (response, statusCode) ->
+								if statusCode != 200
+									callback err
+								else
+									callback null, response
+
 validateAuthorAttributes = (author, callback) ->
 	# Returns a list of attributes missing on the author object
 	# or null if all attributes are present
