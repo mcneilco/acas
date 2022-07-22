@@ -1,0 +1,12 @@
+/* Generating link loading bar requires different styling in Experiment Browser vs SEL summary */
+.bv_ExperimentBrowserController .bv_generatingLink {
+    position: absolute;
+    margin-top: 30px;
+    margin-left: -40%;
+    width: 50%
+}
+
+.bv_GenericDataParserController .bv_generatingLink {
+    margin-top: 30px;
+    width: 400%
+}
