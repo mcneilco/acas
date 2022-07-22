@@ -911,7 +911,7 @@ class FileRowSummaryController extends Backbone.View
 	className: 'dataTableRow'
 	events:
 		"click": "handleClick"
-
+	
 	handleClick: =>
 		@trigger "gotClick", @model
 		$(@el).closest("table").find("tr").removeClass "info"
@@ -919,7 +919,7 @@ class FileRowSummaryController extends Backbone.View
 
 	initialize: ->
 		@template = _.template($('#FileRowSummaryView').html())
-
+	
 	render: =>
 		fileDate = @model.get('fileDate')
 		if fileDate is null
@@ -927,7 +927,24 @@ class FileRowSummaryController extends Backbone.View
 		else
 			fileDate = UtilityFunctions::convertMSToYMDDate(fileDate)
 
+		#To get the current state, we need the bulk file ID to get lots and then generate the updated SDF file
+		reportID = @model.get('id')
 		fileName = @model.get('fileName')
+
+		#Get today's date to timestamp any updated SDF files
+		today = new Date
+		dd = today.getDate()
+		mm = today.getMonth() + 1
+		yyyy = today.getFullYear()
+		if dd < 10
+			dd = '0' + dd
+		if mm < 10
+			mm = '0' + mm
+		today = '_' + mm + '_' + dd + '_' + yyyy
+
+		# Rename the SDF file representing the current
+		currentFileName = fileName.replace "\.sdf", today + "_current_state.sdf"
+    
 		# Replace .sdf with .zip since the report file shares the same name 
 		reportName = fileName.replace "\.sdf", ".zip"
 
@@ -935,11 +952,22 @@ class FileRowSummaryController extends Backbone.View
 			fileName: fileName
 			loadDate: fileDate
 			loadUser: @model.get('recordedBy')
+			currentFileLink: "/api/cmpdRegBulkLoader/getSDFFromBulkLoadFileID/" + reportID
+			currentFileName: currentFileName
 			fileLink: window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" + fileName
 			reportName: reportName
 			reportLink: window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" + reportName
 		$(@el).html(@template(toDisplay))
 
+		#Check whether lots in the bulk file have been updated since they were registered
+		$.ajax
+			type: 'GET'
+			url: "/api/cmpdRegBulkLoader/checkForBulkLoadFileModifications/" + reportID
+			dataType: "json"
+			success: (response) =>
+				@$('.bv_bulkFileUpdated').html response
+			error: (err) =>
+				@$('.bv_bulkFileUpdated').html "N/A"
 		@
 
 class FileSummaryTableController extends Backbone.View
