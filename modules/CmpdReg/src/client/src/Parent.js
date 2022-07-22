@@ -523,11 +523,13 @@ $(function() {
 		render: function() {
 			RegParentController.__super__.render.call(this);
 			this.$('.editParentButtonWrapper').hide();
+            this.$('.reparentLotWrapper').show();
 			return this;
 		},
 
         setupForRegSelect: function(saltForms) {
             this.$('.regPick').val(this.model.get('corpName'));
+            this.$('.reparentLotPick').val(this.model.get('corpName'));
             this.$('.corpName').html(this.model.get('corpName'));
             var lisb = window.configuration.metaLot.lotCalledBatch;
             this.$('.lotOrBatch').html(lisb?'batch':'lot');

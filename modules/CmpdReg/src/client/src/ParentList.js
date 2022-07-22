@@ -17,6 +17,11 @@ $(function() {
             var sfListCont;
             var js = this.options.json;
 
+            this.showReparentLot = false;
+            if(this.options.showReparentLot) {
+                this.showReparentLot = true;
+            }
+
 			_.each(js, function(pc){
                 parentController = self.setupParentController(pc);
 				$(self.el).append(parentController.render().el);
@@ -45,7 +50,8 @@ $(function() {
                 className: 'RegSearchResults_ParentView',
                 model: parent,
                 readMode: true,
-                step: 'regSearchResults'
+                step: 'regSearchResults',
+                showReparentLot: this.showReparentLot
             });
             return parentController;
 

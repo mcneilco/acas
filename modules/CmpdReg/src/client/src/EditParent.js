@@ -203,6 +203,9 @@ $(function () {
             this.sketcherLoaded = false;
             this.hide();
             this.parentModel = this.options.parentModel;
+            if(this.options.showReparentLot) {
+                this.showReparentLot = true;
+            }
         },
 
         render: function () {
@@ -233,6 +236,7 @@ $(function () {
 
             this.parentListCont = new ParentListController({
                 json: this.json.parents,
+                showReparentLot: this.showReparentLot,
                 el: '.EditParentSearchResults_ParentListView'
             });
             this.parentListCont.render()
@@ -292,7 +296,20 @@ $(function () {
                 molFormula: this.json.asDrawnMolFormula,
                 molImage: this.json.asDrawnImage
             });
-            this.trigger('editParentSearchResultsNext', selection);
+
+            // Determine if reparent lot is selected on any of the search results
+            // If so, then pass the selected reparent name to the next step
+            var reparentLotSelection = null
+            if(this.showReparentLot) {
+                reparentCorpName = this.$('.reparentLotPick:checked').val()
+                if(typeof(reparentCorpName) != 'undefined' && reparentCorpName != null && reparentCorpName != '') {
+                    reparentLotSelection = new window.Backbone.Model({
+                        selectedCorpName: this.$('.reparentLotPick:checked').val(),
+                        isVirtual: this.$('.isVirtual').is(':checked')
+                    });
+                }
+            }
+            this.trigger('editParentSearchResultsNext', selection, reparentLotSelection);
             this.hide();
         },
         isValid: function() {
@@ -356,11 +373,14 @@ $(function () {
             this.eNotiList = this.options.errorNotifList;
             this.parentModel = this.options.parentModel;
 
+            // If passed a lot a re-parent lot workflow is shown as an option to the user
+            this.lotModel = this.options.lotModel;
 
             this.searchController = new EditParentSearchController({
                 el: $(".EditParentSearchView"),
                 corpName: this.options.corpName,
-                parentModel: this.parentModel
+                parentModel: this.parentModel,
+                lotModel: this.lotModel
             });
 
             if(this.options.user) {
@@ -435,10 +455,12 @@ $(function () {
                 if( this.searchResultsController !=null ) {
                     this.deleteSearchResultsController();
                 }
+
                 this.searchResultsController = new EditParentSearchResultsController({
                     el: $('.EditParentSearchResultsView'),
                     json: this.editParentSearchResults,
-                    parentModel: this.parentModel
+                    parentModel: this.parentModel,
+                    showReparentLot: this.lotModel != null
                 });
                 this.searchResultsController.render();
                 this.searchResultsController.bind('editParentSearchResultsNext', this.editParentSearchResultsNext);
@@ -450,7 +472,17 @@ $(function () {
             this.$('.editParentButtonWrapper').hide();
         },
 
-        editParentSearchResultsNext: function(selection) {
+        editParentSearchResultsNext: function(selection, reparentLotSelection) {
+            if(reparentLotSelection != null) {
+                // Reparent lot workflow
+                this.editParentSearchResultsToReparentLotStep(selection, reparentLotSelection);
+            } else {
+                this.editParentSearchResultsToEditParentStep(selection);
+            }
+        },
+
+        editParentSearchResultsToEditParentStep: function(selection) {
+            // Edit parent workflow
             this.parentModel = selection.get('parent');
             if( this.parentController !=null ) {
                 this.deleteParentController();
@@ -471,6 +503,17 @@ $(function () {
             })(this));
             this.parentController.render();
             this.$('.ParentView').prepend("<h1 class='formTitle EditParentStepThreeTitle'>Edit Parent Step Three: Update Parent Attributes</h1>");//fiona
+        },
+
+        editParentSearchResultsToReparentLotStep: function(selection, reparentLotSelection) {
+		    this.reparentLotController = new ReparentLotController({
+                el: this.$('.ReparentLotView'),
+                buttons: this.$('.ParentView .buttons'),
+			    corpName: this.lotModel.get("corpName"),
+			    parentCorpName: reparentLotSelection.get("selectedCorpName"),
+			    errorNotifList: this.options.errorNotifList,
+			    user: this.user
+		    });
         },
 
         parentUpdated: function(ajaxReturn){
