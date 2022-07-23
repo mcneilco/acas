@@ -3,20 +3,20 @@ class ReparentLotController extends Backbone.View
 
 	events:
 		"click .cancelReparentLotButton": "handleCancelButtonClicked"
-		"click .reparentLotButton": "handleDeleteButtonClicked"
+		"click .reparentLotButton": "handleReparentButtonClicked"
 		"click .downloadLotButton": "downloadLot"
 		"click .bv_backToCreg": "handleBackToCregButtonClicked"
 
 
 	initialize: ->
-		_.bindAll(@, 'handleCancelButtonClicked', 'handleDeleteButtonClicked', 'checkDependencies', 'dependencyCheckReturn', 'dependencyCheckError', 'deleteLotError', 'deleteLotReturn', 'downloadLot', 'handleBackToCregButtonClicked');
+		_.bindAll(@, 'handleCancelButtonClicked', 'handleReparentButtonClicked', 'checkDependencies', 'dependencyCheckReturn', 'dependencyCheckError', 'reparentLotError', 'reparentLotReturn', 'downloadLot', 'handleBackToCregButtonClicked');
 		# $(@el).empty()
 		$(@el).html @template()
 
 		@lotLabel = if window.configuration.metaLot.lotCalledBatch == true then "Batch" else "Lot"
 		@.corpName = @.options.corpName;
 		@.newParentCorpName = @.options.parentCorpName;
-		@$(".bv_title").html("Re-parent #{@lotLabel} #{@.corpName} on to compound #{@.newParentCorpName}: Review Dependencies")
+		@$(".bv_title").html("Re-parent #{@lotLabel} #{@.corpName} on to compound #{@.newParentCorpName}: Review effects")
 		@.eNotiList = @.options.errorNotifList;
 		@.bind('notifyError', @.eNotiList.add);
 		@.bind('clearErrors', @.eNotiList.removeMessagesForOwner);
@@ -26,25 +26,29 @@ class ReparentLotController extends Backbone.View
 	handleCancelButtonClicked: ->
 		window.location.reload();
 
-	handleDeleteButtonClicked: ->
+	handleReparentButtonClicked: ->
 		@.trigger('clearErrors', "ReparentLotController");
 		@.trigger('notifyError', {
 			owner: 'ReparentLotController',
 			errorLevel: 'warning',
 			message: "Reparenting #{@lotLabel}..."
 		});
-		url = window.configuration.serverConnection.baseServerURL+"metalots/corpName/"+@.corpName;
-
+		url = "/api/cmpdRegAdmin/lotServices/reparent/lot"
 		$.ajax({
-			type: "DELETE",
+			type: "POST",
 			url: url,
-			success: @.deleteLotReturn,
-			error: @.deleteLotError
+			data: {
+				parentCorpName: @.newParentCorpName
+				lotCorpName: @.corpName
+			},
+			success: @.reparentLotReturn,
+			error: @.reparentLotError,
+			dataType: "json"
 		});
 
 	checkDependencies: ->
 		@.trigger('notifyError', {
-			owner: 'DeleteLotController',
+			owner: 'ReparentLotController',
 			errorLevel: 'warning',
 			message: 'Checking dependencies...'
 		});
@@ -62,7 +66,7 @@ class ReparentLotController extends Backbone.View
 		window.open("/cmpdReg/export/corpName/"+@.corpName)
 
 	dependencyCheckReturn: (data) ->
-		@.trigger('clearErrors', "DeleteLotController");
+		@.trigger('clearErrors', "ReparentLotController");
 
 		# Get summary of dependencies
 		dependencySummary = @summarizeDependencyCheckResults(data);
@@ -103,6 +107,12 @@ class ReparentLotController extends Backbone.View
 	summarizeDependencyCheckResults: (data) ->
 		# Returns html string with summary of dependency check results
 		
+
+		changesToLotSummary = "<h3>Changes to this #{@lotLabel.toLowerCase()}</h3>"
+		changesToLotSummary += "<ul>"
+		changesToLotSummary += "<li>Parent will be updated from #{parentCorpName} to #{@.newParentCorpName}</li>"
+		changesToLotSummary += "<li>#{@lotLabel} Molecular Weight will be recalculated</li>"
+		
 		# Get linked experiments summary
 		experimentSummary = ""
 		linkedExperiments = data.linkedExperiments? && data.linkedExperiments.length > 0
@@ -111,12 +121,12 @@ class ReparentLotController extends Backbone.View
 
 			experimentSummaryText = "Dependent Experimental Results"
 			experimentSummary += "<h3>#{experimentSummaryText}</h3><ul>"
-			modifableExperimentSummary = "<li>Which you have access to delete:"
+			modifableExperimentSummary = "<li>Which you have access to modify:"
 			unmodifableExperimentSummary = "<li>Which are not modifable by you:"
 			unreadableExperimentSummary = "<li>Which are not readable by you:"
 
-			modifableExperiments = linkedExperiments.filter((experiment) -> experiment.acls.delete)
-			unmodifableExperiments = linkedExperiments.filter((experiment) -> experiment.acls.read && !experiment.acls.delete)
+			modifableExperiments = linkedExperiments.filter((experiment) -> experiment.acls.write)
+			unmodifableExperiments = linkedExperiments.filter((experiment) -> experiment.acls.read && !experiment.acls.write)
 			unreadableExperimentsCount = linkedExperiments.filter((experiment) -> !experiment.acls.read).length
 			
 
@@ -156,7 +166,7 @@ class ReparentLotController extends Backbone.View
 				lotSummary += unreadableLotSummary + "</li>"
 			lotSummary += "</ul>"
 			
-			## Add the lot summary as a global to the controller so it can be displayed again after delete
+			## Add the lot summary as a global to the controller so it can be displayed again after reparenting
 			@lotSummary = lotSummary
 
 		errorSummary = "<h3>Errors</h3><ul>"
@@ -182,7 +192,7 @@ class ReparentLotController extends Backbone.View
 		return experimentSummary + lotSummary + errorSummary + warningSummary;
 
 	showOne:  (className) ->
-		classes = ["bv_deleteLotError", "bv_dependencySummary", "bv_dependencyCheckError", "bv_deleteLotSuccess"]
+		classes = ["bv_reparentLotError", "bv_dependencySummary", "bv_dependencyCheckError", "bv_reparentLotSuccess"]
 		me = this
 		_.each(classes, (c) ->
 			if c == className
@@ -192,40 +202,40 @@ class ReparentLotController extends Backbone.View
 		)
 	
 	dependencyCheckError:  (data) ->
-		@.trigger('clearErrors', "DeleteLotController");
+		@.trigger('clearErrors', "ReparentLotController");
 		@trigger('notifyError', {
-			owner: 'DeleteLotController',
+			owner: 'ReparentLotController',
 			errorLevel: 'error',
 			message: 'Error checking dependencies'
 		})
 		@showOne('bv_dependencySummary')
 
-	deleteLotReturn: (data) ->
-		@.trigger('clearErrors', "DeleteLotController");
+	reparentLotReturn: (data) ->
+		@.trigger('clearErrors', "ReparentLotController");
 		@trigger('notifyError', {
-			owner: 'DeleteLotController',
+			owner: 'ReparentLotController',
 			errorLevel: 'info',
-			message: "Successfully deleted #{@lotLabel}"
+			message: "Successfully reparented #{@lotLabel}"
 		})
 		# Get summary of dependencies
-		@$(".bv_remainingLotsOnParentLinks").html(@lotSummary)
+		@$(".bv_reparentLotSuccess .bv_reparentLotSuccessSummary").html("<a href='#lot/#{data.newLot.corpName}' target='_blank'>#{data.newLot.corpName}</a>")
 
 		# Hide all buttons
 		@$(".reparentLotButtons").hide()
 
 		# Hide form title
-		@$(".bv_deleteLotTitle").hide()
+		@$(".bv_reparentLotTitle").hide()
 
 		# Show success message
-		@showOne('bv_deleteLotSuccess')
+		@showOne('bv_reparentLotSuccess')
 
 		
 
-	deleteLotError:  (data) ->
-		@.trigger('clearErrors', "DeleteLotController");
+	reparentLotError:  (data) ->
+		@.trigger('clearErrors', "ReparentLotController");
 		@trigger('notifyError', {
-			owner: 'DeleteLotController',
+			owner: 'ReparentLotController',
 			errorLevel: 'error',
-			message: "Error deleting #{@lotLabel}"
+			message: "Error reparenting #{@lotLabel}"
 		})
-		@showOne('bv_deleteLotError')
+		@showOne('bv_reparentLotError')

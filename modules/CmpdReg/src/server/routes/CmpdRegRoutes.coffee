@@ -47,8 +47,6 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/cmpdReg/api/v1/lotServices/update/lot/metadata/jsonArray', loginRoutes.ensureAuthenticated, exports.updateLotsMetadata
 	app.post '/cmpdReg/api/v1/parentServices/update/parent/metadata', loginRoutes.ensureAuthenticated, exports.updateParentMetadata
 	app.post '/cmpdReg/api/v1/parentServices/update/parent/metadata/jsonArray', loginRoutes.ensureAuthenticated, exports.updateParentsMetadata
-	app.post '/cmpdReg/api/v1/lotServices/reparent/lot', loginRoutes.ensureAuthenticated, exports.reparentLot
-	app.post '/cmpdReg/api/v1/lotServices/reparent/lot/jsonArray', loginRoutes.ensureAuthenticated, exports.reparentLots
 	app.get '/api/cmpdReg/ketcher/knocknock', loginRoutes.ensureAuthenticated, exports.ketcherKnocknock
 	app.get '/api/cmpdReg/ketcher/layout', loginRoutes.ensureAuthenticated, exports.ketcherConvertSmiles
 	app.post '/api/cmpdReg/ketcher/layout', loginRoutes.ensureAuthenticated, exports.ketcherLayout
@@ -268,6 +266,13 @@ exports.getMetaLotDependencies = (req, resp, next) ->
 
 exports.getLotDependenciesInternal = (lot, user, allowedProjects, includeLinkedLots=true) ->
 	console.log "Checking lot dependencies for lot #{lot.corpName} with user #{user.username}"
+
+	if !allowedProjects?
+		[err, allowedProjects] = await serverUtilityFunctions.promisifyRequestStatusResponse(authorRoutes.allowedProjectsInternal, [user])
+		if err?
+			throw new InternalServerError "Error checking user projects"
+			return
+
 	lotCorpName = lot.corpName
 
 	# Get the depdencies from the service which does not cover user ACLS
@@ -960,54 +965,6 @@ exports.updateParentsMetadata = (req, resp) ->
 			console.log response
 			resp.statusCode = 500
 			resp.end "Error trying to update parent: " + error;
-	)
-
-exports.reparentLot = (req, resp) ->
-	console.log 'in reparent lot'
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parentLot/reparentLot'
-	console.log cmpdRegCall
-
-	request(
-		method: 'POST'
-		url: cmpdRegCall
-		body: req.body
-		json: true
-		timeout: 6000000
-	, (error, response, json) =>
-		if !error
-			resp.setHeader('Content-Type', 'plain/text')
-			resp.json json
-		else
-			console.log 'got ajax error trying to reparent lot'
-			console.log error
-			console.log json
-			console.log response
-			resp.statusCode = 500
-			resp.end "Error trying to reparent lot: " + error;
-	)
-
-exports.reparentLots = (req, resp) ->
-	console.log 'in reparent lot'
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parentLot/reparentLot/jsonArray'
-	console.log cmpdRegCall
-
-	request(
-		method: 'POST'
-		url: cmpdRegCall
-		body: req.body
-		json: true
-		timeout: 6000000
-	, (error, response, json) =>
-		if !error
-			resp.setHeader('Content-Type', 'plain/text')
-			resp.json json
-		else
-			console.log 'got ajax error trying to reparent lot array'
-			console.log error
-			console.log json
-			console.log response
-			resp.statusCode = 500
-			resp.end "Error trying to reparent lot array: " + error;
 	)
 
 exports.ketcherKnocknock = (req, resp) ->

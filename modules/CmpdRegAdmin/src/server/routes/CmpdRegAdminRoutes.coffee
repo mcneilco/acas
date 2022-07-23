@@ -13,11 +13,12 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/cmpdRegAdmin/:entityType', loginRoutes.ensureAuthenticated, exports.getCmpdRegEntities
 	app.get '/api/cmpdRegAdmin/:entityType/search/:searchTerm', loginRoutes.ensureAuthenticated, exports.searchCmpdRegEntities
 	app.post '/api/cmpdRegAdmin/:entityType/validateBeforeSave', loginRoutes.ensureAuthenticated, loginRoutes.ensureCmpdRegAdmin, exports.validateCmpdRegEntityBeforeSave
-
 	app.get '/api/cmpdRegAdmin/:entityType/:id', loginRoutes.ensureAuthenticated, exports.getCmpdRegEntityById
 	app.post '/api/cmpdRegAdmin/:entityType', loginRoutes.ensureAuthenticated, loginRoutes.ensureCmpdRegAdmin, exports.saveCmpdRegEntity
 	app.put '/api/cmpdRegAdmin/:entityType/:id', loginRoutes.ensureAuthenticated, loginRoutes.ensureCmpdRegAdmin, exports.updateCmpdRegEntity
 	app.delete '/api/cmpdRegAdmin/:entityType/:id', loginRoutes.ensureAuthenticated, loginRoutes.ensureCmpdRegAdmin, exports.deleteCmpdRegEntity
+	app.post '/api/cmpdRegAdmin/lotServices/reparent/lot', loginRoutes.ensureAuthenticated, loginRoutes.ensureCmpdRegAdmin, exports.reparentLot
+	app.post '/api/cmpdRegAdmin/lotServices/reparent/lot/jsonArray', loginRoutes.ensureAuthenticated, loginRoutes.ensureCmpdRegAdmin, exports.reparentLots
 
 exports.validateCmpdRegEntity = (req, resp) ->
 	request = require 'request'
@@ -236,4 +237,60 @@ exports.deleteCmpdRegEntity = (req, resp) ->
 			console.log "got ajax error trying to delete #{entityType}"
 			console.log json
 			resp.end JSON.stringify {error: "something went wrong :("}
+	)
+
+exports.reparentLot = (req, resp) ->
+	console.log 'in reparent lot'
+	request = require 'request'
+	config = require '../conf/compiled/conf.js'
+	cmpdRegRoutes = require './CmpdRegRoutes.js'
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parentLot/reparentLot'
+	console.log cmpdRegCall
+
+	req.body.modifiedBy = req.session.passport.user.username
+	
+	request(
+		method: 'POST'
+		url: cmpdRegCall
+		body: req.body
+		json: true
+		timeout: 6000000
+	, (error, response, json) =>
+		if !error
+			if json?.newLot?
+				# Fetch the new lot dependencies and attach it to the json
+				dependencies = await cmpdRegRoutes.getLotDependenciesInternal(json.newLot, req.session.passport.user, null, true)
+				json.dependencies = dependencies
+			resp.json json
+		else
+			console.log 'got ajax error trying to reparent lot'
+			console.log error
+			console.log json
+			console.log response
+			resp.statusCode = 500
+			resp.end "Error trying to reparent lot: " + error;
+	)
+
+exports.reparentLots = (req, resp) ->
+	console.log 'in reparent lot'
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parentLot/reparentLot/jsonArray'
+	console.log cmpdRegCall
+
+	request(
+		method: 'POST'
+		url: cmpdRegCall
+		body: req.body
+		json: true
+		timeout: 6000000
+	, (error, response, json) =>
+		if !error
+			resp.setHeader('Content-Type', 'plain/text')
+			resp.json json
+		else
+			console.log 'got ajax error trying to reparent lot array'
+			console.log error
+			console.log json
+			console.log response
+			resp.statusCode = 500
+			resp.end "Error trying to reparent lot array: " + error;
 	)
