@@ -1,0 +1,21 @@
+<!-- toast containers -->
+<div class="toast-container top-left"></div>
+<div class="toast-container top-middle"></div>
+<div class="toast-container top-right"></div>
+<div class="toast-container bottom-left"></div>
+<div class="toast-container bottom-middle"></div>
+<div class="toast-container bottom-right"></div>
+
+<script type="text/template" id="ACASToastView">
+    <div class="toast <%-type%>">
+        <p class="t-title">
+            <span class="<%-iconType%>"></span>
+            <%-title%>
+        </p>
+        <p class="t-close">
+        </p>
+        <p class="t-text">
+            <%-text%>
+        </p>
+    </div>
+</script>

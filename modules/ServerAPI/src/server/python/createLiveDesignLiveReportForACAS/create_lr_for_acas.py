@@ -377,10 +377,22 @@ def main():
     ld_client_version = get_ldclient_version()
     eprint("LDClient version is:"+str(ld_client_version))
     project_id = get_ld_project_id(ld_client, project)
-    lr_id = make_acas_live_report(ld_client, compound_ids, assays_to_add, experiment_code, logged_in_user, database, project_id, ld_client_version, args["readonly"])
-    
-    liveReportSuffix = "/#/projects/"+str(project_id)+"/livereports/";
-    print(ld_client_url + liveReportSuffix + str(lr_id))
+    status_code = 200
+    result = ''
+    try:
+        lr_id = make_acas_live_report(ld_client, compound_ids, assays_to_add, experiment_code, logged_in_user, database, project_id, ld_client_version, args["readonly"])
+        liveReportSuffix = "/#/projects/"+str(project_id)+"/livereports/";
+        result = ld_client_url + liveReportSuffix + str(lr_id)
+    except requests.exceptions.HTTPError as e:
+        status_code = e.response.status_code
+        try:
+            # Attempt to parse the response body
+            result = e.response.json()[0]['message']
+        except:
+            result = e.response.content
+    # Print results to stdout
+    print("STATUS_CODE: {}".format(status_code))
+    print("RESULT: " + result)
 
 if __name__ == '__main__':
     main()

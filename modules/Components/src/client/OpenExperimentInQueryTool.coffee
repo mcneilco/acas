@@ -37,7 +37,12 @@ class OpenExperimentInQueryToolController extends Backbone.View
                 error: (err) =>
                     # Take Away Generating Progress Mask 
                     @$('.bv_generatingLink').hide()
-                    console.log err
+                    toast = new ACASToast
+                        type: "error"
+                        title: "Cannot Open Experiment"
+                        text: "ACAS encountered an error when trying to open the experiment in the Query Tool. Please contact your administrator with this error: #{err.responseText}"
+                        position: "top-middle"
+                        duration: 10000
                 datatype: 'json'
 
     handleGetLinkQueryToolClicked: => 
@@ -55,16 +60,29 @@ class OpenExperimentInQueryToolController extends Backbone.View
             error: (err) =>
                 # Take Away Generating Progress Mask 
                 @$('.bv_generatingLink').hide()
-                console.log err
+                toast = new ACASToast
+                    type: "error"
+                    title: "Cannot Generate Link"
+                    text: "ACAS encountered an error when trying to generate a link for the experiment in the Query Tool. Please contact your administrator with this error: #{err.responseText}"
+                    position: "top-middle"
+                    duration: 10000
             datatype: 'json'
 
     handleCopyLinkClicked: =>
         link = @$('.bv_exptLink').val()
         if link? # Defined and not null
             navigator.clipboard.writeText(link).then ->
-                alert("Link copied to clipboard!")
+                toast = new ACASToast
+                    type: "success"
+                    title: "Link Copied"
+                    text: "The link has been copied to your clipboard."
+                    position: "top-middle"
         else
-            alert("Unable to copy link to clipboard")
+            toast = new ACASToast
+                type: "error"
+                title: "Copy Failed"
+                text: "Unable to copy link to clipboard."
+                position: "top-middle"
 
     formatOpenInQueryToolButton: =>
         @$('.bv_viewerOptions').empty()
