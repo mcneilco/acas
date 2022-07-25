@@ -1,14 +1,13 @@
 <script type="text/template" id="LotForm_ParentView_template">
 
     <div class="radioWrapper">
-        <input id="newLot" type="radio" name="regPick" class="regPick" ></input>
-        <label for="newLot">New <span class="lotOrBatch"></span> <span class="corpName"></span></label>
+        <label><input id="newLot" type="radio" name="regPick" class="regPick" ></input>New <span class="lotOrBatch"></span> <span class="corpName"></span></label>
+        
         <select class="FormInput saltFormCorpNames"></select>
     </div>
 
 	<div class="reparentLotWrapper hide">
-        <input id="reparentLot" type="radio" name="reparentLotPick" class="reparentLotPick" ></input>
-        <label for="reparentLot">Reparent <span class="lotOrBatch"></span> to <span class="corpName"></span></label>
+        <label><input id="reparentLot" type="radio" name="reparentLotPick" class="reparentLotPick" ></input>Reparent <span class="lotOrBatch"></span> to <span class="corpName"></span></label>
 	</div>
 
 	<div><h2>Parent Structure:</h2></div>
