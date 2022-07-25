@@ -80,7 +80,7 @@ class ReparentLotController extends Backbone.View
 	handleBackToCregButtonClicked: ->
 		window.location.href = 	window.configuration.serverConnection.baseServerURL
 		
-	getUlFromCodeArray: (codeArray, link) ->
+	getUlFromCodeArray: (codeArray, codeKey, nameKey, link) ->
 		ul = "<ul>";
 		_.each(codeArray, (code) ->
 			descriptionText = ""
@@ -88,108 +88,69 @@ class ReparentLotController extends Backbone.View
 				descriptionText = ": #{code.description}"
 			if link?
 				# target blank
-				if code.code == code.name
+				if code[codeKey] == code[nameKey]
 					# target blank a tag with a href to link with code
-					ul += "<li><a href='#{link+code.code}' target='_blank'>#{code.code}#{descriptionText}</a></li>"
+					ul += "<li><a href='#{link+code[codeKey]}' target='_blank'>#{code[codeKey]}#{descriptionText}</a></li>"
 				else
 					# target blank a tag with a href to link with code
-					ul += "<li><a href='#{link+code.code}' target='_blank'>#{code.code} \"#{code.name}\"</a>#{descriptionText}</li>"
+					ul += "<li><a href='#{link+code[codeKey]}' target='_blank'>#{code[codeKey]} \"#{code[nameKey]}\"</a>#{descriptionText}</li>"
 			else 
-				if code.name == code.code
-					ul += "<li>#{code.code}#{descriptionText}</li>"
+				if code[codeKey] == code[nameKey]
+					ul += "<li>#{code[codeKey]}#{descriptionText}</li>"
 				else
-					ul += "<li>#{code.code} \"#{code.name}\"#{descriptionText}" + "</li>"	
+					ul += "<li>#{code[codeKey]} \"#{code[nameKey]}\"#{descriptionText}" + "</li>"	
 		);
 		ul += "</ul>";
 		return ul;
 		
+	summarizeLinkedCodeTable: (codeArray, header, link) ->
+		# Get linked experiments summary
+		entitySummary = ""
+		hasLinkedEntity = codeArray? && codeArray.length > 0
+		if hasLinkedEntity
+			if codeArray[0].containerBarcode?
+				codeKey = "containerBarcode"
+				nameKey = "wellName"
+			else
+				codeKey = "code"
+				nameKey = "name"
+			linkedEntities = _.sortBy(codeArray, (codeObject) -> codeObject[codeKey])
+			entitySummary += "<h3>#{header}</h3><ul>"
+			ulSummary = @getUlFromCodeArray(linkedEntities, codeKey, nameKey, link)
+			entitySummary += ulSummary + "</li>"
+			entitySummary += "</ul>"
+		return entitySummary
 	
 	summarizeDependencyCheckResults: (data) ->
 		# Returns html string with summary of dependency check results
 		
-
 		changesToLotSummary = "<h3>Changes to this #{@lotLabel.toLowerCase()}</h3>"
 		changesToLotSummary += "<ul>"
 		changesToLotSummary += "<li>Parent will be updated from #{parentCorpName} to #{@.newParentCorpName}</li>"
 		changesToLotSummary += "<li>#{@lotLabel} Molecular Weight will be recalculated</li>"
-		
+
 		# Get linked experiments summary
-		experimentSummary = ""
-		linkedExperiments = data.linkedExperiments? && data.linkedExperiments.length > 0
-		if linkedExperiments
-			linkedExperiments = _.sortBy(data.linkedExperiments, (experiment) -> experiment.code)
-
-			experimentSummaryText = "Dependent Experimental Results"
-			experimentSummary += "<h3>#{experimentSummaryText}</h3><ul>"
-			modifableExperimentSummary = "<li>Which you have access to modify:"
-			unmodifableExperimentSummary = "<li>Which are not modifable by you:"
-			unreadableExperimentSummary = "<li>Which are not readable by you:"
-
-			modifableExperiments = linkedExperiments.filter((experiment) -> experiment.acls.write)
-			unmodifableExperiments = linkedExperiments.filter((experiment) -> experiment.acls.read && !experiment.acls.write)
-			unreadableExperimentsCount = linkedExperiments.filter((experiment) -> !experiment.acls.read).length
-			
-
-			if modifableExperiments.length > 0
-				modifableExperimentSummary += @getUlFromCodeArray(modifableExperiments, "/entity/edit/codeName/")
-				experimentSummary += modifableExperimentSummary + "</li>"
-
-			if unmodifableExperiments.length > 0
-				unmodifableExperimentSummary += @getUlFromCodeArray(unmodifableExperiments, "/entity/edit/codeName/")
-				experimentSummary += unmodifableExperimentSummary + "</li>"
-
-			if unreadableExperimentsCount > 0
-				unreadableExperimentSummary += " #{unreadableExperimentsCount}"
-				experimentSummary += unreadableExperimentSummary + "</li>"
-			experimentSummary += "</ul>"
+		experimentSummary = @summarizeLinkedCodeTable(data.linkedExperiments,"Dependent Experimental Results", "/entity/edit/codeName/")
 
 		# Get linked lots summary
-		lotSummary = ""
-		linkedLots =  (data.linkedLots? && data.linkedLots.length > 0)
-		if linkedLots
-			linkedLots = _.sortBy(data.linkedLots, (lot) -> lot.code)
+		lotSummary = @summarizeLinkedCodeTable(data.linkedLots,"Remaining Lots On Parent", "#lot/")
 
-			lotSummaryText = "Remaining Lots On Parent"
-			lotSummary += "<h3>#{lotSummaryText}</h3><ul>"
-			readableLotSummary = "<li>Which are readable by you:"
-			unreadableLotSummary = "<li>Which are not readable by you:"
-
-			readableLots = linkedLots.filter((lot) -> lot.acls.read)
-			unreadableLotsCount = linkedLots.filter((lot) -> !lot.acls.read).length
-
-			if readableLots.length > 0
-				readableLotSummary += @getUlFromCodeArray(readableLots, "#lot/")
-				lotSummary += readableLotSummary + "</li>"
-
-			if unreadableLotsCount > 0
-				unreadableLotSummary += " #{unreadableLotsCount}"
-				lotSummary += unreadableLotSummary + "</li>"
-			lotSummary += "</ul>"
-			
-			## Add the lot summary as a global to the controller so it can be displayed again after reparenting
-			@lotSummary = lotSummary
+		# Get linked container summary
+		containerSummary = @summarizeLinkedCodeTable(data.linkedContainers,"Dependent Inventory Results")
 
 		errorSummary = "<h3>Errors</h3><ul>"
-		if linkedExperiments && (unreadableExperimentsCount > 0 || unmodifableExperiments.length > 0)
-			@$('.reparentLotButton').hide()
-			errorSummary += "<li>You do not have the necessary permissions to edit associated experimental results. Please contact your Administrator for assistance.</li>"
-		else
-			@$('.reparentLotButton').show()
-			errorSummary += "<li>None</li>"
+		@$('.reparentLotButton').show()
+		errorSummary += "<li>None</li>"
 		errorSummary += "</ul>"
 
 		warningSummary = "<h3>Warnings</h3><ul>"
-		modifableExperiments = (linkedExperiments && modifableExperiments.length > 0)
-		if modifableExperiments || !linkedLots
-			if modifableExperiments
-				warningSummary += "<li>Reparenting this #{@lotLabel.toLowerCase()} will update dependent experimental results to reference the new #{@lotLabel} Corp Name. This will cause the database to diverge from the original experiment upload file.</li>"
-			if !linkedLots
-				parentCorpName = data.lot.parent.corpName
-				warningSummary += "<li>This is the only lot on the parent compound #{parentCorpName}. Reparening this #{@lotLabel.toLowerCase()} will delete #{parentCorpName}.</li>"
+		if data.linkedLots? && data.linkedLots.length == 0
+			parentCorpName = data.lot.parent.corpName
+			warningSummary += "<li>This is the only lot on the parent compound #{parentCorpName}. Reparening this #{@lotLabel.toLowerCase()} will delete #{parentCorpName}.</li>"
 		else
 			warningSummary += "<li>None</li>"
 		warningSummary += "</ul>"
-		return experimentSummary + lotSummary + errorSummary + warningSummary;
+		return experimentSummary + lotSummary + containerSummary + errorSummary + warningSummary;
 
 	showOne:  (className) ->
 		classes = ["bv_reparentLotError", "bv_dependencySummary", "bv_dependencyCheckError", "bv_reparentLotSuccess"]
@@ -217,8 +178,17 @@ class ReparentLotController extends Backbone.View
 			errorLevel: 'info',
 			message: "Successfully reparented #{@lotLabel}"
 		})
+
+		successSummary = ""
+		successSummary += "<h1>Success: #{@lotLabel} #{@corpName} Reparented to #{data.newLot.corpName}</h1>"
+		successSummary += @summarizeLinkedCodeTable(data.dependencies.linkedExperiments,"Moved Experimental Results", "/entity/edit/codeName/")
+		successSummary += @summarizeLinkedCodeTable(data.dependencies.linkedContainers,"Moved Inventory Results")
+
+		if data.originalParentDeleted? && data.originalParentDeleted
+			successSummary += "<p>The parent compound #{data.originalParentCorpName} was deleted.</p>"
+
 		# Get summary of dependencies
-		@$(".bv_reparentLotSuccess .bv_reparentLotSuccessSummary").html("<a href='#lot/#{data.newLot.corpName}' target='_blank'>#{data.newLot.corpName}</a>")
+		@$(".bv_reparentLotSuccess .bv_reparentLotSuccessSummary").html(successSummary)
 
 		# Hide all buttons
 		@$(".reparentLotButtons").hide()
