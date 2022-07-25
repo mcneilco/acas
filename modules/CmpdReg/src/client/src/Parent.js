@@ -520,10 +520,23 @@ $(function() {
 
     window.RegParentController = ParentController.extend({
 
+		initialize: function() {
+			RegParentController.__super__.render.call(this);
+			if(typeof(this.options.showReparentLot) != "undefined" && this.options.showReparentLot == true){
+				this.showReparentLot = this.options.showReparentLot;
+			} else {
+				this.showReparentLot = false;
+			}
+		},
+
 		render: function() {
 			RegParentController.__super__.render.call(this);
 			this.$('.editParentButtonWrapper').hide();
-            this.$('.reparentLotWrapper').show();
+			if(this.showReparentLot){
+            	this.$('.reparentLotWrapper').show();
+			} else {
+				this.$('.reparentLotWrapper').hide();
+			}
 			return this;
 		},
 

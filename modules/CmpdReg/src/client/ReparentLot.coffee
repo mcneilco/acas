@@ -4,12 +4,12 @@ class ReparentLotController extends Backbone.View
 	events:
 		"click .cancelReparentLotButton": "handleCancelButtonClicked"
 		"click .reparentLotButton": "handleReparentButtonClicked"
-		"click .downloadLotButton": "downloadLot"
+		"click .backFromReparentLotButton": "back"
 		"click .bv_backToCreg": "handleBackToCregButtonClicked"
 
 
 	initialize: ->
-		_.bindAll(@, 'handleCancelButtonClicked', 'handleReparentButtonClicked', 'checkDependencies', 'dependencyCheckReturn', 'dependencyCheckError', 'reparentLotError', 'reparentLotReturn', 'downloadLot', 'handleBackToCregButtonClicked');
+		_.bindAll(@, 'handleCancelButtonClicked', 'handleReparentButtonClicked', 'checkDependencies', 'dependencyCheckReturn', 'dependencyCheckError', 'reparentLotError', 'reparentLotReturn', 'back', 'handleBackToCregButtonClicked');
 		# $(@el).empty()
 		$(@el).html @template()
 
@@ -62,8 +62,16 @@ class ReparentLotController extends Backbone.View
 			error: @.dependencyCheckError
 		});
 		
-	downloadLot: ->
-		window.open("/cmpdReg/export/corpName/"+@.corpName)
+	back: ->
+		this.hide()
+		@.trigger("back")
+
+
+	hide: ->
+		$(this.el).hide()
+
+	show: ->
+		$(this.el).show()
 
 	dependencyCheckReturn: (data) ->
 		@.trigger('clearErrors', "ReparentLotController");

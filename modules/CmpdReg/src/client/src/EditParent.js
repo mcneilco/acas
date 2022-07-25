@@ -195,11 +195,12 @@ $(function () {
             'click .nextButton': 'next',
             'click .cancelEditButton': 'cancel',
             'click .isVirtual': 'toggleParentsVisible',
-            'click .backToSearchButton': 'back'
+            'click .backToSearchButton': 'back',
+            'click .reparentLotPick': 'reparentLotPick'
         },
 
         initialize: function(){
-            _.bindAll(this, 'toggleParentsVisible', 'next');
+            _.bindAll(this, 'toggleParentsVisible', 'next', 'back', 'reparentLotPick');
             this.sketcherLoaded = false;
             this.hide();
             this.parentModel = this.options.parentModel;
@@ -282,6 +283,21 @@ $(function () {
         back: function() {
             this.trigger('searchResultsBack');
             this.hide();
+        },
+
+        reparentLotPick: function(e) {
+            el = $(e.target)
+            newSelectedParentCorpName = el.val()
+            if(typeof(this.reparentCorpNamePick) != 'undefined' && this.reparentCorpNamePick != null) {
+                if(this.reparentCorpNamePick == newSelectedParentCorpName) {
+                    el.prop('checked', false);
+                    this.reparentCorpNamePick = null;
+                } else {
+                    this.reparentCorpNamePick = newSelectedParentCorpName;
+                }
+            } else {
+                this.reparentCorpNamePick = newSelectedParentCorpName
+            }
         },
 
         next: function() {
@@ -506,6 +522,10 @@ $(function () {
         },
 
         editParentSearchResultsToReparentLotStep: function(selection, reparentLotSelection) {
+            // Edit parent workflow
+            if( this.reparentLotController !=null ) {
+                this.deleteReparentLotController();
+            }
 		    this.reparentLotController = new ReparentLotController({
                 el: this.$('.ReparentLotView'),
                 buttons: this.$('.ParentView .buttons'),
@@ -514,6 +534,9 @@ $(function () {
 			    errorNotifList: this.options.errorNotifList,
 			    user: this.user
 		    });
+            this.reparentLotController.show();
+            this.reparentLotController.bind('back', this.updateParentBack);
+
         },
 
         parentUpdated: function(ajaxReturn){
@@ -560,6 +583,12 @@ $(function () {
             this.parentController.delegateEvents({});
             this.parentController = null;
             this.$('.ParentView').html('');
+        },
+
+        deleteReparentLotController: function() {
+            this.reparentLotController.delegateEvents({});
+            this.reparentLotController = null;
+            this.$('.ReparentLotView').html('');
         },
 
         render: function () {

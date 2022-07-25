@@ -74,7 +74,7 @@ class DeleteLotController extends Backbone.View
 	handleBackToCregButtonClicked: ->
 		window.location.href = 	window.configuration.serverConnection.baseServerURL
 		
-	getUlFromCodeArray: (codeArray, link) ->
+	getUlFromCodeArray: (codeArray, codeKey, nameKey, link) ->
 		ul = "<ul>";
 		_.each(codeArray, (code) ->
 			descriptionText = ""
@@ -82,17 +82,17 @@ class DeleteLotController extends Backbone.View
 				descriptionText = ": #{code.description}"
 			if link?
 				# target blank
-				if code.code == code.name
+				if code[codeKey] == code[nameKey]
 					# target blank a tag with a href to link with code
-					ul += "<li><a href='#{link+code.code}' target='_blank'>#{code.code}#{descriptionText}</a></li>"
+					ul += "<li><a href='#{link+code[codeKey]}' target='_blank'>#{code[codeKey]}#{descriptionText}</a></li>"
 				else
 					# target blank a tag with a href to link with code
-					ul += "<li><a href='#{link+code.code}' target='_blank'>#{code.code} \"#{code.name}\"</a>#{descriptionText}</li>"
+					ul += "<li><a href='#{link+code[codeKey]}' target='_blank'>#{code[codeKey]} \"#{code[nameKey]}\"</a>#{descriptionText}</li>"
 			else 
-				if code.name == code.code
-					ul += "<li>#{code.code}#{descriptionText}</li>"
+				if code[codeKey] == code[nameKey]
+					ul += "<li>#{code[codeKey]}#{descriptionText}</li>"
 				else
-					ul += "<li>#{code.code} \"#{code.name}\"#{descriptionText}" + "</li>"	
+					ul += "<li>#{code[codeKey]} \"#{code[nameKey]}\"#{descriptionText}" + "</li>"	
 		);
 		ul += "</ul>";
 		return ul;
@@ -119,11 +119,11 @@ class DeleteLotController extends Backbone.View
 			
 
 			if deletableExperiments.length > 0
-				deletableExperimentSummary += @getUlFromCodeArray(deletableExperiments, "/entity/edit/codeName/")
+				deletableExperimentSummary += @getUlFromCodeArray(deletableExperiments, "code", "name", "/entity/edit/codeName/")
 				experimentSummary += deletableExperimentSummary + "</li>"
 
 			if undeletableExperiments.length > 0
-				undeletableExperimentSummary += @getUlFromCodeArray(undeletableExperiments, "/entity/edit/codeName/")
+				undeletableExperimentSummary += @getUlFromCodeArray(undeletableExperiments, "code", "name", "/entity/edit/codeName/")
 				experimentSummary += undeletableExperimentSummary + "</li>"
 
 			if unreadableExperimentsCount > 0
@@ -146,7 +146,7 @@ class DeleteLotController extends Backbone.View
 			unreadableLotsCount = linkedLots.filter((lot) -> !lot.acls.read).length
 
 			if readableLots.length > 0
-				readableLotSummary += @getUlFromCodeArray(readableLots, "#lot/")
+				readableLotSummary += @getUlFromCodeArray(readableLots, "code", "name", "#lot/")
 				lotSummary += readableLotSummary + "</li>"
 
 			if unreadableLotsCount > 0
@@ -156,6 +156,19 @@ class DeleteLotController extends Backbone.View
 			
 			## Add the lot summary as a global to the controller so it can be displayed again after delete
 			@lotSummary = lotSummary
+
+
+		# Linked container summary
+		containerSummary = ""
+		linkedContainers = (data.linkedContainers? && data.linkedContainers.length > 0)
+		if linkedContainers
+			linkedContainers = _.sortBy(data.linkedContainers, (container) -> container.containerBarcode)
+			containerSummaryText = "Dependent Inventory"
+			containerSummary += "<h3>#{containerSummaryText}</h3><ul>"			
+			if linkedContainers.length > 0
+				readableContainerSummary = @getUlFromCodeArray(linkedContainers, "containerBarcode", "wellName", null)
+				containerSummary += readableContainerSummary + "</li>"
+			containerSummary += "</ul>"
 
 		errorSummary = "<h3>Errors</h3><ul>"
 		if linkedExperiments && (unreadableExperimentsCount > 0 || undeletableExperiments.length > 0)
@@ -177,7 +190,7 @@ class DeleteLotController extends Backbone.View
 		else
 			warningSummary += "<li>None</li>"
 		warningSummary += "</ul>"
-		return experimentSummary + lotSummary + errorSummary + warningSummary;
+		return experimentSummary + lotSummary + containerSummary + errorSummary + warningSummary;
 
 	showOne:  (className) ->
 		classes = ["bv_deleteLotError", "bv_dependencySummary", "bv_dependencyCheckError", "bv_deleteLotSuccess"]
