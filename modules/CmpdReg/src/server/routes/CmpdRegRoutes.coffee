@@ -876,7 +876,7 @@ exports.swapParentStructures = (req, resp) ->
 	, (error, response, data) =>
 		if !error
 			resp.statusCode = response.statusCode
-			resp.end data
+			resp.json data
 		else
 			console.log 'got ajax error trying to swap parent structures'
 			console.log error
