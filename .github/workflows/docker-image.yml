@@ -43,7 +43,7 @@ jobs:
           echo "ACAS_CLIENT_REF=${{ github.base_ref }}" >> $GITHUB_ENV
         if: github.event_name == 'pull_request'
        # If a tag, run tests on acasclient branch by the same tag
-      - name: Set ACAS_CLIENT_REF to tag ${{ github.ref##*/ }}
+      - name: Set ACAS_CLIENT_REF to tag extracted from ${{ github.ref }}
         run: |
           ACAS_CLIENT_REF=$(echo ${{ github.ref }} | sed 's/refs\/tags\///')
           echo "ACAS_CLIENT_REF=$ACAS_CLIENT_REF" >> $GITHUB_ENV
