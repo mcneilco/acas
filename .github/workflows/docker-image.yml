@@ -47,7 +47,7 @@ jobs:
         run: |
           ACAS_CLIENT_REF=$(echo ${{ github.ref }} | sed 's/refs\/tags\///')
           echo "ACAS_CLIENT_REF=$ACAS_CLIENT_REF" >> $GITHUB_ENV
-        if: github.event_name == 'tag'
+        if: github.event_name == 'create'
       - name: Checkout acasclient
         uses: actions/checkout@v3
         with:
