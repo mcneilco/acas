@@ -53,9 +53,7 @@ jobs:
         with:
           repository: mcneilco/acasclient
           path: acasclient
-          # Below checks out the same revision name as ACAS but skipping now
-          # because we don't want to keep acasclient version in sync with ACAS version
-          # at the moment.
+          # Check out the branch specified by ACAS_CLIENT_REF
           ref: ${{ env.ACAS_CLIENT_REF }}
       - name: Build (no push)
         uses: docker/build-push-action@v2
