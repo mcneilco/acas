@@ -860,13 +860,7 @@ exports.updateParent = (req, resp) ->
 
 exports.swapParentStructures = (req, resp) ->
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parents/swapParentStructures'
-
-	username = req.session.passport?.user.username
-	if !username
-		resp.statusCode = 401
-		resp.end "No user name specified"
-		return
-	req.body['username'] = username
+	req.body['username'] = req.session.passport.user.username
 	request(
 		method: 'POST'
 		url: cmpdRegCall
