@@ -43,6 +43,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/cmpdReg/export/searchResults', loginRoutes.ensureAuthenticated, exports.exportSearchResults
 	app.post '/cmpdReg/validateParent', loginRoutes.ensureAuthenticated, exports.validateParent
 	app.post '/cmpdReg/updateParent', loginRoutes.ensureAuthenticated, exports.updateParent
+	app.post '/cmpdReg/swapParentStructures', loginRoutes.ensureAuthenticated, exports.swapParentStructures
 	app.post '/cmpdReg/api/v1/lotServices/update/lot/metadata', loginRoutes.ensureAuthenticated, exports.updateLotMetadata
 	app.post '/cmpdReg/api/v1/lotServices/update/lot/metadata/jsonArray', loginRoutes.ensureAuthenticated, exports.updateLotsMetadata
 	app.post '/cmpdReg/api/v1/parentServices/update/parent/metadata', loginRoutes.ensureAuthenticated, exports.updateParentMetadata
@@ -856,8 +857,29 @@ exports.updateParent = (req, resp) ->
 			resp.statusCode = 500
 			resp.end "Error trying to update parent: " + error;
 	)
-	
-	
+
+exports.swapParentStructures = (req, resp) ->
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parents/swapParentStructures'
+	req.body['username'] = req.session.passport.user.username
+	request(
+		method: 'POST'
+		url: cmpdRegCall
+		body: JSON.stringify req.body
+		json: true
+		timeout: 6000000
+	, (error, response, data) =>
+		if !error
+			resp.statusCode = response.statusCode
+			resp.json data
+		else
+			console.log 'got ajax error trying to swap parent structures'
+			console.log error
+			console.log json
+			console.log response
+			resp.statusCode = 500
+			resp.end "Error trying to swap parent structures: " + error
+	)
+
 exports.updateLotMetadata = (req, resp) ->
 	request = require 'request'
 	config = require '../conf/compiled/conf.js'
