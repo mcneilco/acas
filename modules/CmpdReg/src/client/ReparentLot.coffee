@@ -9,10 +9,10 @@ class ReparentLotController extends Backbone.View
 
 
 	initialize: ->
-		_.bindAll(@, 'handleCancelButtonClicked', 'handleReparentButtonClicked', 'checkDependencies', 'dependencyCheckReturn', 'dependencyCheckError', 'reparentLotError', 'reparentLotReturn', 'back', 'handleBackToCregButtonClicked');
+		_.bindAll(@, 'handleCancelButtonClicked', 'handleReparentButtonClicked', 'reparentDryRun', 'reparentDryRunReturn', 'reparentDryRunError', 'reparentLotError', 'reparentLotReturn', 'back', 'handleBackToCregButtonClicked');
 		# $(@el).empty()
 		$(@el).html @template()
-
+		@lotLink = "#lot/"
 		@lotLabel = if window.configuration.metaLot.lotCalledBatch == true then "Batch" else "Lot"
 		@.corpName = @.options.corpName;
 		@.newParentCorpName = @.options.parentCorpName;
@@ -20,7 +20,7 @@ class ReparentLotController extends Backbone.View
 		@.eNotiList = @.options.errorNotifList;
 		@.bind('notifyError', @.eNotiList.add);
 		@.bind('clearErrors', @.eNotiList.removeMessagesForOwner);
-		@checkDependencies()
+		@reparentDryRun()
 
 
 	handleCancelButtonClicked: ->
@@ -33,7 +33,7 @@ class ReparentLotController extends Backbone.View
 			errorLevel: 'warning',
 			message: "Reparenting #{@lotLabel}..."
 		});
-		url = "/api/cmpdRegAdmin/lotServices/reparent/lot"
+		url = "/api/cmpdRegAdmin/lotServices/reparent/lot?dryRun=false"
 		$.ajax({
 			type: "POST",
 			url: url,
@@ -46,26 +46,29 @@ class ReparentLotController extends Backbone.View
 			dataType: "json"
 		});
 
-	checkDependencies: ->
+	reparentDryRun: ->
 		@.trigger('notifyError', {
 			owner: 'ReparentLotController',
 			errorLevel: 'warning',
 			message: 'Checking dependencies...'
 		});
-		url = window.configuration.serverConnection.baseServerURL+"metalots/checkDependencies/corpName/"+@.corpName;
-		
-		# @delegateEvents({}); # stop listening to buttons
+		url = "/api/cmpdRegAdmin/lotServices/reparent/lot?dryRun=true"
 		$.ajax({
-			type: "GET",
+			type: "POST",
 			url: url,
-			success: @.dependencyCheckReturn,
-			error: @.dependencyCheckError
+			data: {
+				parentCorpName: @.newParentCorpName
+				lotCorpName: @.corpName
+			},
+			success: @.reparentDryRunReturn,
+			error: @.reparentDryRunError
+			dataType: "json"
 		});
+
 		
 	back: ->
 		this.hide()
 		@.trigger("back")
-
 
 	hide: ->
 		$(this.el).hide()
@@ -73,11 +76,11 @@ class ReparentLotController extends Backbone.View
 	show: ->
 		$(this.el).show()
 
-	dependencyCheckReturn: (data) ->
+	reparentDryRunReturn: (data) ->
 		@.trigger('clearErrors', "ReparentLotController");
 
 		# Get summary of dependencies
-		dependencySummary = @summarizeDependencyCheckResults(data);
+		dependencySummary = @summarizeDryRunResults(data);
 		
 		# Display summary of dependencies
 		@$(".bv_dependencySummary").html(dependencySummary);
@@ -96,7 +99,7 @@ class ReparentLotController extends Backbone.View
 				descriptionText = ": #{code.description}"
 			if link?
 				# target blank
-				if code[codeKey] == code[nameKey]
+				if code[codeKey] == code[nameKey] 
 					# target blank a tag with a href to link with code
 					ul += "<li><a href='#{link+code[codeKey]}' target='_blank'>#{code[codeKey]}#{descriptionText}</a></li>"
 				else
@@ -123,28 +126,34 @@ class ReparentLotController extends Backbone.View
 				codeKey = "code"
 				nameKey = "name"
 			linkedEntities = _.sortBy(codeArray, (codeObject) -> codeObject[codeKey])
-			entitySummary += "<h3>#{header}</h3><ul>"
+			entitySummary += "<li>#{header}</li>"
 			ulSummary = @getUlFromCodeArray(linkedEntities, codeKey, nameKey, link)
-			entitySummary += ulSummary + "</li>"
-			entitySummary += "</ul>"
+			entitySummary += ulSummary
 		return entitySummary
 	
-	summarizeDependencyCheckResults: (data) ->
+	summarizeDryRunResults: (data) ->
 		# Returns html string with summary of dependency check results
 		
+		dependencies = data.dependencies
 		changesToLotSummary = "<h3>Changes to this #{@lotLabel.toLowerCase()}</h3>"
 		changesToLotSummary += "<ul>"
-		changesToLotSummary += "<li>Parent will be updated from #{parentCorpName} to #{@.newParentCorpName}</li>"
+		changesToLotSummary += "<li>Parent will be updated from #{data.originalParentCorpName} to #{@.newParentCorpName}</li>"
 		changesToLotSummary += "<li>#{@lotLabel} Molecular Weight will be recalculated</li>"
+		changesToLotSummary += "<li>#{@lotLabel} Number will be updated from #{data.originalLotNumber} to #{data.newLot.lotNumber}</li>"
+		changesToLotSummary += "<li>#{@lotLabel} Name will be: #{data.newLot.corpName}</li>"
 
 		# Get linked experiments summary
-		experimentSummary = @summarizeLinkedCodeTable(data.linkedExperiments,"Dependent Experimental Results", "/entity/edit/codeName/")
+		experimentSummary = @summarizeLinkedCodeTable(dependencies.linkedExperiments, "Dependent experiment results which will be moved to #{@.newParentCorpName}", "/entity/edit/codeName/")
+		changesToLotSummary += experimentSummary
 
 		# Get linked lots summary
-		lotSummary = @summarizeLinkedCodeTable(data.linkedLots,"Remaining Lots On Parent", "#lot/")
+		lotSummary = @summarizeLinkedCodeTable(dependencies.linkedLots,"Remaining Lots On Parent", @lotLink)
 
 		# Get linked container summary
-		containerSummary = @summarizeLinkedCodeTable(data.linkedContainers,"Dependent Inventory Results")
+		containerSummary = @summarizeLinkedCodeTable(dependencies.linkedContainers,"Dependent Inventory Results")
+		changesToLotSummary += containerSummary
+
+		changesToLotSummary += "</ul>"
 
 		errorSummary = "<h3>Errors</h3><ul>"
 		@$('.reparentLotButton').show()
@@ -152,13 +161,13 @@ class ReparentLotController extends Backbone.View
 		errorSummary += "</ul>"
 
 		warningSummary = "<h3>Warnings</h3><ul>"
-		if data.linkedLots? && data.linkedLots.length == 0
-			parentCorpName = data.lot.parent.corpName
+		if dependencies.linkedLots? && dependencies.linkedLots.length == 0
+			parentCorpName = dependencies.lot.parent.corpName
 			warningSummary += "<li>This is the only lot on the parent compound #{parentCorpName}. Reparening this #{@lotLabel.toLowerCase()} will delete #{parentCorpName}.</li>"
 		else
 			warningSummary += "<li>None</li>"
 		warningSummary += "</ul>"
-		return experimentSummary + lotSummary + containerSummary + errorSummary + warningSummary;
+		return changesToLotSummary + lotSummary + errorSummary + warningSummary;
 
 	showOne:  (className) ->
 		classes = ["bv_reparentLotError", "bv_dependencySummary", "bv_dependencyCheckError", "bv_reparentLotSuccess"]
@@ -170,12 +179,17 @@ class ReparentLotController extends Backbone.View
 				me.$("." + c).hide()
 		)
 	
-	dependencyCheckError:  (data) ->
+	reparentDryRunError: (xhr, status, error) ->
 		@.trigger('clearErrors', "ReparentLotController");
+
+		message = "Error checking #{@lotLabel.toLowerCase()} dependencies"
+		if error == "Conflict"
+			message = xhr.responseText
+
 		@trigger('notifyError', {
 			owner: 'ReparentLotController',
 			errorLevel: 'error',
-			message: 'Error checking dependencies'
+			message: message
 		})
 		@showOne('bv_dependencySummary')
 
@@ -189,11 +203,22 @@ class ReparentLotController extends Backbone.View
 
 		successSummary = ""
 		successSummary += "<h1>Success: #{@lotLabel} #{@corpName} Reparented to #{data.newLot.corpName}</h1>"
+
+		# Changes to this lot
+		successSummary += "<h3>Changes to this #{@lotLabel.toLowerCase()}</h3>"
+		successSummary += "<ul>"
+		aTag = "<a href='#{@lotLink+data.newLot.corpName}' target='_blank'>#{data.newLot.corpName}</a>"
+		successSummary += "<li>The #{@lotLabel} was reparented to #{aTag}</li>"
+		if data.originalParentDeleted? && data.originalParentDeleted
+			successSummary += "<li>The parent compound #{data.originalParentCorpName} was deleted.</li>"
+
+		# Moveed experiment results summary
 		successSummary += @summarizeLinkedCodeTable(data.dependencies.linkedExperiments,"Moved Experimental Results", "/entity/edit/codeName/")
+
+		# Moved Inventory results summary
 		successSummary += @summarizeLinkedCodeTable(data.dependencies.linkedContainers,"Moved Inventory Results")
 
-		if data.originalParentDeleted? && data.originalParentDeleted
-			successSummary += "<p>The parent compound #{data.originalParentCorpName} was deleted.</p>"
+		successSummary += "</ul>"
 
 		# Get summary of dependencies
 		@$(".bv_reparentLotSuccess .bv_reparentLotSuccessSummary").html(successSummary)
@@ -207,13 +232,19 @@ class ReparentLotController extends Backbone.View
 		# Show success message
 		@showOne('bv_reparentLotSuccess')
 
+	reparentLotError: (xhr, status, error) ->
+		# Hide the reparent lot button and disable it
+		@$(".reparentLotButton").hide()
+		@$(".reparentLotButton").attr("disabled", "disabled")
 		
+		message = "Error reparenting #{@lotLabel}"
+		if error == "Conflict"
+			message = xhr.responseText
 
-	reparentLotError:  (data) ->
 		@.trigger('clearErrors', "ReparentLotController");
 		@trigger('notifyError', {
 			owner: 'ReparentLotController',
 			errorLevel: 'error',
-			message: "Error reparenting #{@lotLabel}"
+			message: message
 		})
 		@showOne('bv_reparentLotError')

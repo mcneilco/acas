@@ -264,6 +264,11 @@ exports.getMetaLotDependencies = (req, resp, next) ->
 		resp.statusCode = 500
 		resp.json {error: err}
 
+exports.getLotDependenciesByCorpNameInternal = (lotCorpName, user, allowedProjects, includeLinkedLots=true) ->
+	[err, metaLot, statusCode] = await exports.getMetaLotInternal(lotCorpName, user, allowedProjects, getDeleteAcl=false)
+	dependencies = await exports.getLotDependenciesInternal(metaLot.lot, user, allowedProjects, includeLinkedLots)
+	return dependencies
+
 exports.getLotDependenciesInternal = (lot, user, allowedProjects, includeLinkedLots=true) ->
 	console.log "Checking lot dependencies for lot #{lot.corpName} with user #{user.username}"
 

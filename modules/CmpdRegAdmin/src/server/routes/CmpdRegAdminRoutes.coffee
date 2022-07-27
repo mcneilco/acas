@@ -246,8 +246,14 @@ exports.reparentLot = (req, resp) ->
 	cmpdRegRoutes = require './CmpdRegRoutes.js'
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parentLot/reparentLot'
 	console.log cmpdRegCall
-
 	req.body.modifiedBy = req.session.passport.user.username
+
+	if req.query.dryRun == 'true'
+		dryRun = true
+		cmpdRegCall += '?dryRun=true'
+	else
+		dryRun = false
+		cmpdRegCall += '?dryRun=false'
 	
 	request(
 		method: 'POST'
@@ -256,19 +262,31 @@ exports.reparentLot = (req, resp) ->
 		json: true
 		timeout: 6000000
 	, (error, response, json) =>
-		if !error
+		console.log response.statusCode
+		if !error && response.statusCode == 200
 			if json?.newLot?
 				# Fetch the new lot dependencies and attach it to the json
-				dependencies = await cmpdRegRoutes.getLotDependenciesInternal(json.newLot, req.session.passport.user, null, true)
+				if dryRun
+					console.log "Dry run is true, returning dependencies for original lot corp name #{json.originalLotCorpName}"
+					dependencies = await cmpdRegRoutes.getLotDependenciesByCorpNameInternal(json.originalLotCorpName, req.session.passport.user, null, true)
+				else
+					console.log "Dry run is false, returning dependencies for original lot corp name #{json.originalLotCorpName}"
+					dependencies = await cmpdRegRoutes.getLotDependenciesInternal(json.newLot, req.session.passport.user, null, true)
+
 				json.dependencies = dependencies
 			resp.json json
 		else
-			console.log 'got ajax error trying to reparent lot'
-			console.log error
-			console.log json
-			console.log response
-			resp.statusCode = 500
-			resp.end "Error trying to reparent lot: " + error;
+			if response.statusCode == 409
+			# This is a conflict error meaning that the attempt at saving the lot failed because of a lot corp name conflict
+				resp.statusCode = 409
+				resp.send json
+			else
+				console.log 'got ajax error trying to reparent lot'
+				console.log error
+				console.log json
+				console.log response
+				resp.statusCode = 500
+				resp.end "Error trying to reparent lot: " + error;
 	)
 
 exports.reparentLots = (req, resp) ->
@@ -283,14 +301,18 @@ exports.reparentLots = (req, resp) ->
 		json: true
 		timeout: 6000000
 	, (error, response, json) =>
-		if !error
-			resp.setHeader('Content-Type', 'plain/text')
+		if !error || response.statusCode != 200
 			resp.json json
 		else
-			console.log 'got ajax error trying to reparent lot array'
-			console.log error
-			console.log json
-			console.log response
-			resp.statusCode = 500
-			resp.end "Error trying to reparent lot array: " + error;
+			if response.statusCode == 409
+			# This is a conflict error meaning that the attempt at saving the lot failed because of a lot corp name conflict
+				resp.statusCode = 409
+				resp.text =  json
+			else
+				console.log 'got ajax error trying to reparent lot array'
+				console.log error
+				console.log json
+				console.log response
+				resp.statusCode = 500
+				resp.end "Error trying to reparent lot array: " + error;
 	)

@@ -5,7 +5,11 @@
 	<div class="marvinWrapper"> <!--dependent? change name...-->
 		<iframe id="editParentMarvinSketch" class="sketcher-frame"></iframe>
 	</div>
-
+		<div class="corpNameInput">
+			<label>Or enter compound ID </label>
+			<input type=text class="corpName" />
+			</div>
+		</div>
 	<div class="buttons">
 		<a class="nextButton" href="#" onclick="this.blur(); return false;"><span></span></a>
 		<a class="cancelEditButton" href="#" onclick="this.blur(); return false;"><span></span></a>

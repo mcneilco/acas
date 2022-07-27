@@ -4,11 +4,14 @@ $(function () {
         // this model has attributes molStructure and corpName, but we don't want them undefined by default
         validate: function(attributes) {
             var errors = new Array();
-            if (attributes.molStructure==null) {
-                errors.push({attribute: 'corpName', message: "Registration panel must have a structure filled in"});
+            if (attributes.molStructure==null && (attributes.corpName == "")) {
+                errors.push({attribute: 'corpName', message: "Registration panel must have a structure OR corp name filled in"});
+            } else if (attributes.molStructure!=null && (attributes.corpName != "")) {
+                errors.push({attribute: 'corpName', message: "Registration panel must have a structure OR corp name filled in but not both"});
             }
             if (errors.length > 0) {return errors;}
         }
+
     });
 
     window.EditParentSearchController = Backbone.View.extend({
@@ -121,11 +124,7 @@ $(function () {
 				        molStructure: mol,
 				        corpName: jQuery.trim(self.$('.corpName').val())
 			        });
-
-			        if ( self.isValid() ) {
-				        self.trigger('editParentSearchNext', editParentSearch);
-				        self.hide();
-			        }
+                    self.checkEditParentSearchNext(editParentSearch);
 		        }, function(error) {
 			        alert("Molecule export failed from search sketcher:"+error);
 		        });
@@ -138,11 +137,8 @@ $(function () {
 			        corpName: jQuery.trim(self.$('.corpName').val())
 		        });
 
+                self.checkEditParentSearchNext(editParentSearch);
 
-                if ( self.isValid() ) {
-                    self.trigger('editParentSearchNext', editParentSearch);
-                    self.hide();
-                }
 
 	        } else if (this.useMaestro) {
 				mol = this.maestro.sketcherExportMolBlock();
@@ -152,15 +148,62 @@ $(function () {
 			        corpName: jQuery.trim(self.$('.corpName').val())
 		        });
 
-		        if ( self.isValid() ) {
-			        self.trigger('editParentSearchNext', editParentSearch);
-			        self.hide();
-		        }
+                self.checkEditParentSearchNext(editParentSearch);
             } else {
 		        alert("No edit parent sketcher configured in search action");
 	        }
 
         },
+
+        searchForParentCorpName: async function(corpName) {
+            var editParentSearch = new EditParentSearch();
+            editParentSearch.set({
+                corpName: jQuery.trim(corpName)
+            }, { silent: true });
+            var url = window.configuration.serverConnection.baseServerURL+"regsearches/parent";
+
+            response = await fetch( url, {
+                method: 'POST',
+                body: JSON.stringify(editParentSearch.attributes),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).catch(function(error) {
+                return null
+            });
+            json = await response.json();
+            if(json.parents.length == 1) {
+                return json.parents[0];
+            } else {
+                return null;
+            }
+        },
+
+        checkEditParentSearchNext: async function(editParentSearch) {
+            // If not valid then the validation error will be shown to the user as the errors are bound to the view.
+            if(this.isValid()) {
+                // In order to be able to show the structure in the next step, we need to do the main Edit Parent Search by mol structure and not by corp name
+                // This is because the service fills in the image to the search results based on the mol structure passed to the search.
+                // So if the structure is null, we need to search by name, fetch the structure and then trigger the main search with the structure.
+                if(editParentSearch.get("molStructure") == null) {
+                    parent = await this.searchForParentCorpName(editParentSearch.get('corpName'));
+                    if(parent != null) {
+                        molStructure = parent.molStructure;
+                        editParentSearch.set({
+                            molStructure: molStructure,
+                            corpName: ""
+                        }, { silent: true });
+                        this.hide();
+                    } else {
+                        this.trigger('notifyError', {owner: "EditParentSearchController", errorLevel: 'error', message: "Could not find parent with name: " + editParentSearch.get('corpName')});
+                        return
+                    }
+                }
+                this.hide();
+                this.trigger('editParentSearchNext', editParentSearch);
+            }
+        },
+
         isValid: function() {
             return this.valid;
         },
@@ -418,7 +461,7 @@ $(function () {
             this.searchController.show();
         },
 
-        editParentSearchNext: function(searchEntries) {
+        editParentSearchNext: async function(searchEntries) {
             this.trigger('clearErrors', "EditParentWorkflowController");
             this.searchEntries = searchEntries;
             if(window.configuration.serverConnection.connectToServer) {
