@@ -50,13 +50,14 @@ class SaltSimpleSearchController extends AbstractFormController
 		unless saltSearchTerm is "" 
 			$.ajax
 				type: 'GET'
-				url: @genericSearchUrl # + "/search/" + saltSearchTerm
+				url: @genericSearchUrl + "/search/" + saltSearchTerm
 				# CHANGE THIS AND FIX SEARCH
 				contentType: "application/json"
 				dataType: "json"
 				success: (salt) =>
 					@trigger "searchReturned", salt
 				error: (result) =>
+					console.log(result)
 					@trigger "searchReturned", null
 				complete: =>
 					@$(".bv_saltSearchTerm").attr "disabled", false
@@ -213,44 +214,50 @@ class SaltBrowserController extends Backbone.View
 		# Need to Setup Text Boxes for Name and Abbrev
 
 	handleConfirmCreateSaltClicked: =>
-		# Need to Check Name, Struct, and Abbrev Are All Filled! 
+		fieldsFilled = true
 		saltAbbrev = UtilityFunctions::getTrimmedInput @$('.bv_abbrevName')
-		
+		if (saltAbbrev == "" || saltAbbrev == null)
+			fieldsFilled = false
+			# Error Msg Window 
+
 		saltName = UtilityFunctions::getTrimmedInput @$('.bv_saltName')
+		if (saltName == "" || saltName == null)
+			fieldsFilled = false
+			# Error Msg Window 
 
 		saltStruct = @chemicalStructureController.getMol()
-
-		# TO DO VALIDATION WORK HERE
+		if (saltStruct == "" || saltStruct == null)
+			fieldsFilled = false
+			# Error Msg Window 
 		
-		saltDict = 
-		{
-			"abbrev": saltAbbrev,
-			"molStructure": saltStruct,
-			"name": saltName,
-		}
+		if (fieldsFilled)
+			saltDict = 
+			{
+				"abbrev": saltAbbrev,
+				"molStructure": saltStruct,
+				"name": saltName,
+			} 
 
 
-		$.ajax(
-			url: "/api/cmpdRegAdmin/salts",
-			type: 'POST', 
-			data: JSON.stringify(saltDict)
-			contentType: 'application/json'
-			dataType: 'json'
-			success: (result) =>
-				console.log(result)
-				@$('.bv_createSalt').hide()
-				# Reload Search
-				@searchController.doSearch("*")
-			error: (result) =>
-				console.log(result)
-				@$('.bv_createSalt').hide()
-				@$('.bv_errorCreatingSaltMessage').show()
-				# Change Windows 
-					# @$('.bv_createSalt').hide()
-					# Show Error Window! 
-					# Alternative: Insert Error Elements
-				# Report Errors To User
-		)
+			$.ajax(
+				url: "/api/cmpdRegAdmin/salts",
+				type: 'POST', 
+				data: JSON.stringify(saltDict)
+				contentType: 'application/json'
+				dataType: 'json'
+				success: (result) =>
+					console.log(result)
+					@$('.bv_createSalt').hide()
+					# Reload Search
+					@searchController.doSearch("*")
+					# Might Need to Do Something More Sophisticated Here
+				error: (errorMsg) =>
+					console.log(errorMsg)
+					@$('.bv_createSalt').hide()
+					@$('.bv_errorCreatingSaltMessage').show()
+					@$('.bv_createSaltErrorMessageHolder') errorMsg
+			)
+
 
 	handleCancelCreateClicked: =>
 		console.log("Confirm Cancel Salt Clicked")
@@ -263,10 +270,12 @@ class SaltBrowserController extends Backbone.View
 		# See SDF Example Route Brain Bolt Gave 
 		$.ajax
 				type: 'GET'
-				url: "/api/cmpdRegAdmin/salts" 
+				url: "/api/cmpdRegAdmin/salts/sdf" 
 				success: (salts) =>
-					@downloadSDF("allSalts.txt", JSON.stringify(salts))
+					# Server should've returned salts in correct formatting
+					@downloadSDF("allSalts.sdf", salts)
 				error: (result) =>
+					# Show Window Saying Server Error ? 
 					console.log(result)
 	
 	downloadSDF: (filename, text) => 
@@ -281,7 +290,7 @@ class SaltBrowserController extends Backbone.View
 	handleDeleteSaltClicked: =>
 		@$(".bv_saltUserName").html @saltController.model.get("name") 
 		@$(".bv_deleteButtons").removeClass "hide"
-		#@$(".bv_okayButton").addClass "hide"
+		@$(".bv_okayButton").addClass "hide"
 		@$(".bv_errorDeletingSaltMessage").addClass "hide"
 		@$(".bv_deleteWarningMessage").removeClass "hide"
 		@$(".bv_deletingStatusIndicator").addClass "hide"
@@ -303,7 +312,6 @@ class SaltBrowserController extends Backbone.View
 			# If No Dependency Then Proceed w/ Normal Base Implementation 
 			# Show Normal Window 
 
-	# Not Implemented Fully Yet
 	handleConfirmDeleteSaltClicked: =>
 		@$(".bv_deleteWarningMessage").addClass "hide"
 		@$(".bv_deletingStatusIndicator").removeClass "hide"
@@ -313,14 +321,15 @@ class SaltBrowserController extends Backbone.View
 			url: "/api/cmpdRegAdmin/salts/#{@saltController.model.get("id")}", # NEED TO CHECK VALID ROUTE
 			type: 'DELETE', 
 			success: (result) =>
-				#@$(".bv_okayButton").removeClass "hide"
+				@$(".bv_okayButton").removeClass "hide"
 				@$(".bv_deletingStatusIndicator").addClass "hide"
 				@$(".bv_saltDeletedSuccessfullyMessage").removeClass "hide"
-				@doSearch "*"
-			error: (result) =>
-				#@$(".bv_okayButton").removeClass "hide"
+				@searchController.doSearch("*")
+			error: (errorMsg) =>
+				@$(".bv_okayButton").removeClass "hide"
 				@$(".bv_deletingStatusIndicator").addClass "hide"
 				@$(".bv_errorDeletingSaltMessage").removeClass "hide"
+				@$(".bv_deleteErrorMessage").html errorMsg
 		)
 
 	handleCancelDeleteClicked: =>
@@ -330,6 +339,12 @@ class SaltBrowserController extends Backbone.View
 		# Need to Implement
 		console.log("Hit Edit Button!")
 		@$('.bv_editSaltWindow').show()
+		currAbbrev = @saltController.model.get("abbrev")
+		console.log(currAbbrev)
+		@$('.bv_abbrevNameEdit').val currAbbrev
+		currName = @saltController.model.get("name")
+		console.log(currName)
+		@$('.bv_saltNameEdit').val currName 
 
 		molStr = @saltController.model.get("molStructure")
 		console.log(molStr)
@@ -363,26 +378,33 @@ class SaltBrowserController extends Backbone.View
 		# Get Mol
 		saltStruct = @chemicalStructureController.getMol()
 		# Only New to Push This Dict Through Since Everything Else Same
-		console.log(@saltController.model)
 		saltDict = 
 		{
-			"abbrev": @saltController.model.get("abbrev"),
-			"name": @saltController.model.get("name"),
+			"abbrev": UtilityFunctions::getTrimmedInput @$('.bv_abbrevNameEdit'),
+			"name": UtilityFunctions::getTrimmedInput @$('.bv_saltNameEdit'),
 			"molStructure": saltStruct,
 			"cdId":  @saltController.model.get("cdId"),
 		}
-		# Restandardization Call
+
+		console.log(saltDict)
 
 		$.ajax(
-			url: "/api/cmpdRegAdmin/salts/#{@saltController.model.get("id")}", # NEED TO CHECK VALID ROUTE
+			url: "/api/cmpdRegAdmin/salts/edit/#{@saltController.model.get("id")}", # NEED TO CHECK VALID ROUTE
 			type: 'PUT',
 			data: JSON.stringify(saltDict)
 			contentType: 'application/json'
 			dataType: 'json'
 			success: (result) =>
-				console.log(result)
+				@$(".bv_okayButton").removeClass "hide"
+				@$(".bv_editStatusIndicator").addClass "hide"
+				@$(".bv_bv_editSaltWindow").addClass "hide"
+				@$(".bv_saltEditedSuccessfullyMessage").removeClass "hide"
+				@searchController.doSearch("*")
 			error: (result) =>
-				console.log(result)
+				@$(".bv_okayButton").removeClass "hide"
+				@$(".bv_bv_editSaltWindow").addClass "hide"
+				@$(".bv_errorEditingSaltMessage").removeClass "hide"
+				@$(".bv_errorEditingSaltMessage").html result
 		)
 
 	handleCancelEditSaltClicked: =>

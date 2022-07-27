@@ -3,9 +3,11 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.get '/api/cmpdRegAdmin/:entityType/validate/:code', exports.validateCmpdRegEntity
 	app.get '/api/cmpdRegAdmin/:entityType/codeName/:code', exports.getCmpdRegEntityByCode
 	app.get '/api/cmpdRegAdmin/:entityType/search/:searchTerm', exports.searchCmpdRegEntities
+	app.get '/api/cmpdRegAdmin/:entityType/sdf', exports.getSDFCmpdRegEntities
 	app.post '/api/cmpdRegAdmin/:entityType/validateBeforeSave', exports.validateCmpdRegEntityBeforeSave
 	app.post '/api/cmpdRegAdmin/:entityType',  exports.saveCmpdRegEntity
 	app.put '/api/cmpdRegAdmin/:entityType/:id', exports.updateCmpdRegEntity
+	app.put '/api/cmpdRegAdmin/:entityType/edit/:id', exports.editCmpdRegEntity
 	app.delete '/api/cmpdRegAdmin/:entityType/:id', exports.deleteCmpdRegEntity
 
 exports.setupRoutes = (app, loginRoutes) ->
@@ -13,11 +15,13 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/cmpdRegAdmin/:entityType/codeName/:code', loginRoutes.ensureAuthenticated, exports.getCmpdRegEntityByCode
 	app.get '/api/cmpdRegAdmin/:entityType', loginRoutes.ensureAuthenticated, exports.getCmpdRegEntities
 	app.get '/api/cmpdRegAdmin/:entityType/search/:searchTerm', loginRoutes.ensureAuthenticated, exports.searchCmpdRegEntities
+	app.get '/api/cmpdRegAdmin/:entityType/sdf', loginRoutes.ensureAuthenticated, exports.getSDFCmpdRegEntities
 	app.post '/api/cmpdRegAdmin/:entityType/validateBeforeSave', loginRoutes.ensureAuthenticated, loginRoutes.ensureCmpdRegAdmin, exports.validateCmpdRegEntityBeforeSave
 
 	app.get '/api/cmpdRegAdmin/:entityType/:id', loginRoutes.ensureAuthenticated, exports.getCmpdRegEntityById
 	app.post '/api/cmpdRegAdmin/:entityType', loginRoutes.ensureAuthenticated, loginRoutes.ensureCmpdRegAdmin, exports.saveCmpdRegEntity
 	app.put '/api/cmpdRegAdmin/:entityType/:id', loginRoutes.ensureAuthenticated, loginRoutes.ensureCmpdRegAdmin, exports.updateCmpdRegEntity
+	app.put '/api/cmpdRegAdmin/:entityType/edit/:id', loginRoutes.ensureAuthenticated, loginRoutes.ensureCmpdRegAdmin, exports.editCmpdRegEntity
 	app.delete '/api/cmpdRegAdmin/:entityType/:id', loginRoutes.ensureAuthenticated, loginRoutes.ensureCmpdRegAdmin, exports.deleteCmpdRegEntity
 
 exports.validateCmpdRegEntity = (req, resp) ->
@@ -144,6 +148,29 @@ exports.searchCmpdRegEntities = (req, resp) ->
 			resp.end JSON.stringify {error: "something went wrong :("}
 	)
 
+exports.getSDFCmpdRegEntities = (req, resp) ->
+	request = require 'request'
+	config = require '../conf/compiled/conf.js'
+	entityType = req.params.entityType
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + "#{entityType}/sdf" 
+	console.debug cmpdRegCall
+	request(
+		method: 'GET'
+		url: cmpdRegCall
+		json: true
+		timeout: 6000000
+	, (error, response, json) =>
+		if !error && response.statusCode == 200
+			console.log JSON.stringify json
+			resp.statusCode = response.statusCode
+			resp.setHeader('Content-Type', 'application/json')
+			resp.json json
+		else
+			resp.statusCode = 404
+			console.log "got ajax error trying to do export sdf of #{entityType}"
+			console.log json
+			resp.end JSON.stringify {error: "got ajax error trying to do export sdf of #{entityType}"}
+	)
 
 exports.getCmpdRegEntities = (req, resp) ->
 	request = require 'request'
@@ -214,6 +241,29 @@ exports.updateCmpdRegEntity = (req, resp) ->
 			console.log json
 			resp.statusCode = 500
 			resp.end "Error trying to update #{entityType}: " + error;
+	)
+
+exports.editCmpdRegEntity = (req, resp) ->
+	request = require 'request'
+	config = require '../conf/compiled/conf.js'
+	entityType = req.params.entityType
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + "#{entityType}/edit/" + req.params.id 
+	request(
+		method: 'PUT'
+		url: cmpdRegCall
+		body: req.body
+		json: true
+		timeout: 6000000
+		headers:
+			"Content-Type": 'application/json'
+	, (error, response, json) =>
+		if !error and response.statusCode == 200
+			resp.setHeader('Content-Type', 'plain/text')
+			resp.json json
+		else
+			console.log "got ajax error trying to edit #{entityType}"
+			resp.statusCode = 500
+			resp.end JSON.stringify(response)
 	)
 
 exports.deleteCmpdRegEntity = (req, resp) ->
