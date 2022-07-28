@@ -533,7 +533,7 @@ $(function() {
 			RegParentController.__super__.render.call(this);
 			this.$('.editParentButtonWrapper').hide();
 			if(this.showReparentLot){
-            	this.$('.reparentLotWrapper').show();
+				this.$('.reparentLotWrapper').show();
 			} else {
 				this.$('.reparentLotWrapper').hide();
 			}
