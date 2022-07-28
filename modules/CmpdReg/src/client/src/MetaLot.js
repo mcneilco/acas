@@ -340,7 +340,8 @@ $(function() {
 			    corpName: this.model.get('corpName'),
 			    errorNotifList: this.options.errorNotifList,
 			    user: this.user,
-			    parentModel: parent
+			    parentModel: parent,
+				lotModel: this.model.get('lot')
 		    });
 	    },
 

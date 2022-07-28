@@ -1,10 +1,14 @@
 <script type="text/template" id="LotForm_ParentView_template">
 
     <div class="radioWrapper">
-        <input id="newLot" type="radio" name="regPick" class="regPick" ></input>
-        <label for="newLot">New <span class="lotOrBatch"></span> <span class="corpName"></span></label>
+        <label><input id="newLot" type="radio" name="regPick" class="regPick" ></input>New <span class="lotOrBatch"></span> <span class="corpName"></span></label>
+        
         <select class="FormInput saltFormCorpNames"></select>
     </div>
+
+	<div class="reparentLotWrapper hide">
+        <label><input id="reparentLot" type="radio" name="reparentLotPick" class="reparentLotPick" ></input>Reparent <span class="lotOrBatch"></span> to <span class="corpName"></span></label>
+	</div>
 
 	<div><h2>Parent Structure:</h2></div>
 
@@ -82,6 +86,12 @@
 		<a class="button bv_saveUpdateParentButton saveUpdateParentButtonOn" href="#" onclick="this.blur(); return false;"></a>
 		<a class="button bv_cancelUpdateParentButton cancelUpdateParentButtonOn" href="#" onclick="this.blur(); return false;"></a>
 		<a class="button bv_backUpdateParentButton backUpdateParentButtonOn" href="#" onclick="this.blur(); return false;"></a>
+	</div>
+
+	<div class="ReparentLotButtons buttons hide">
+		<a class="button bv_saveReparentLotButton saveReparentLotButtonOn" href="#" onclick="this.blur(); return false;"></a>
+		<a class="button bv_cancelReparentLotButton cancelReparentLotButtonOn" href="#" onclick="this.blur(); return false;"></a>
+		<a class="button bv_backReparentLotButton backReparentLotButtonOn" href="#" onclick="this.blur(); return false;"></a>
 	</div>
 
 	<div class="ValidateParentErrorsPanel hide"></div>

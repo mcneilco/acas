@@ -520,14 +520,29 @@ $(function() {
 
     window.RegParentController = ParentController.extend({
 
+		initialize: function() {
+			RegParentController.__super__.render.call(this);
+			if(typeof(this.options.showReparentLot) != "undefined" && this.options.showReparentLot == true){
+				this.showReparentLot = this.options.showReparentLot;
+			} else {
+				this.showReparentLot = false;
+			}
+		},
+
 		render: function() {
 			RegParentController.__super__.render.call(this);
 			this.$('.editParentButtonWrapper').hide();
+			if(this.showReparentLot){
+				this.$('.reparentLotWrapper').show();
+			} else {
+				this.$('.reparentLotWrapper').hide();
+			}
 			return this;
 		},
 
         setupForRegSelect: function(saltForms) {
             this.$('.regPick').val(this.model.get('corpName'));
+            this.$('.reparentLotPick').val(this.model.get('corpName'));
             this.$('.corpName').html(this.model.get('corpName'));
             var lisb = window.configuration.metaLot.lotCalledBatch;
             this.$('.lotOrBatch').html(lisb?'batch':'lot');

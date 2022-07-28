@@ -264,7 +264,7 @@ div {
     padding: 10px 5px 0px 5px;
     border: none;
 }
-.cancelNewSaltButton, .cancelDeleteLotButton {
+.cancelNewSaltButton, .cancelDeleteLotButton, .cancelReparentLotButton {
     background: no-repeat url('../images/cancel.png');
     float:right;
     height: 27px;

@@ -4,11 +4,14 @@ $(function () {
         // this model has attributes molStructure and corpName, but we don't want them undefined by default
         validate: function(attributes) {
             var errors = new Array();
-            if (attributes.molStructure==null) {
-                errors.push({attribute: 'corpName', message: "Registration panel must have a structure filled in"});
+            if (attributes.molStructure==null && (attributes.corpName == "")) {
+                errors.push({attribute: 'corpName', message: "Registration panel must have a structure OR corp name filled in"});
+            } else if (attributes.molStructure!=null && (attributes.corpName != "")) {
+                errors.push({attribute: 'corpName', message: "Registration panel must have a structure OR corp name filled in but not both"});
             }
             if (errors.length > 0) {return errors;}
         }
+
     });
 
     window.EditParentSearchController = Backbone.View.extend({
@@ -121,11 +124,7 @@ $(function () {
 				        molStructure: mol,
 				        corpName: jQuery.trim(self.$('.corpName').val())
 			        });
-
-			        if ( self.isValid() ) {
-				        self.trigger('editParentSearchNext', editParentSearch);
-				        self.hide();
-			        }
+                    self.checkEditParentSearchNext(editParentSearch);
 		        }, function(error) {
 			        alert("Molecule export failed from search sketcher:"+error);
 		        });
@@ -138,11 +137,8 @@ $(function () {
 			        corpName: jQuery.trim(self.$('.corpName').val())
 		        });
 
+                self.checkEditParentSearchNext(editParentSearch);
 
-                if ( self.isValid() ) {
-                    self.trigger('editParentSearchNext', editParentSearch);
-                    self.hide();
-                }
 
 	        } else if (this.useMaestro) {
 				mol = this.maestro.sketcherExportMolBlock();
@@ -152,15 +148,62 @@ $(function () {
 			        corpName: jQuery.trim(self.$('.corpName').val())
 		        });
 
-		        if ( self.isValid() ) {
-			        self.trigger('editParentSearchNext', editParentSearch);
-			        self.hide();
-		        }
+                self.checkEditParentSearchNext(editParentSearch);
             } else {
 		        alert("No edit parent sketcher configured in search action");
 	        }
 
         },
+
+        searchForParentCorpName: async function(corpName) {
+            var editParentSearch = new EditParentSearch();
+            editParentSearch.set({
+                corpName: jQuery.trim(corpName)
+            }, { silent: true });
+            var url = window.configuration.serverConnection.baseServerURL+"regsearches/parent";
+
+            response = await fetch( url, {
+                method: 'POST',
+                body: JSON.stringify(editParentSearch.attributes),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).catch(function(error) {
+                return null
+            });
+            json = await response.json();
+            if(json.parents.length == 1) {
+                return json.parents[0];
+            } else {
+                return null;
+            }
+        },
+
+        checkEditParentSearchNext: async function(editParentSearch) {
+            // If not valid then the validation error will be shown to the user as the errors are bound to the view.
+            if(this.isValid()) {
+                // In order to be able to show the structure in the next step, we need to do the main Edit Parent Search by mol structure and not by corp name
+                // This is because the service fills in the image to the search results based on the mol structure passed to the search.
+                // So if the structure is null, we need to search by name, fetch the structure and then trigger the main search with the structure.
+                if(editParentSearch.get("molStructure") == null) {
+                    parent = await this.searchForParentCorpName(editParentSearch.get('corpName'));
+                    if(parent != null) {
+                        molStructure = parent.molStructure;
+                        editParentSearch.set({
+                            molStructure: molStructure,
+                            corpName: ""
+                        }, { silent: true });
+                        this.hide();
+                    } else {
+                        this.trigger('notifyError', {owner: "EditParentSearchController", errorLevel: 'error', message: "Could not find parent with name: " + editParentSearch.get('corpName')});
+                        return
+                    }
+                }
+                this.hide();
+                this.trigger('editParentSearchNext', editParentSearch);
+            }
+        },
+
         isValid: function() {
             return this.valid;
         },
@@ -195,14 +238,18 @@ $(function () {
             'click .nextButton': 'next',
             'click .cancelEditButton': 'cancel',
             'click .isVirtual': 'toggleParentsVisible',
-            'click .backToSearchButton': 'back'
+            'click .backToSearchButton': 'back',
+            'click .reparentLotPick': 'reparentLotPick'
         },
 
         initialize: function(){
-            _.bindAll(this, 'toggleParentsVisible', 'next');
+            _.bindAll(this, 'toggleParentsVisible', 'next', 'back', 'reparentLotPick');
             this.sketcherLoaded = false;
             this.hide();
             this.parentModel = this.options.parentModel;
+            if(this.options.showReparentLot) {
+                this.showReparentLot = true;
+            }
         },
 
         render: function () {
@@ -233,6 +280,7 @@ $(function () {
 
             this.parentListCont = new ParentListController({
                 json: this.json.parents,
+                showReparentLot: this.showReparentLot,
                 el: '.EditParentSearchResults_ParentListView'
             });
             this.parentListCont.render()
@@ -280,6 +328,21 @@ $(function () {
             this.hide();
         },
 
+        reparentLotPick: function(e) {
+            el = $(e.target)
+            newSelectedParentCorpName = el.val()
+            if(typeof(this.reparentCorpNamePick) != 'undefined' && this.reparentCorpNamePick != null) {
+                if(this.reparentCorpNamePick == newSelectedParentCorpName) {
+                    el.prop('checked', false);
+                    this.reparentCorpNamePick = null;
+                } else {
+                    this.reparentCorpNamePick = newSelectedParentCorpName;
+                }
+            } else {
+                this.reparentCorpNamePick = newSelectedParentCorpName
+            }
+        },
+
         next: function() {
             this.clearValidationErrors();
             var selection = new window.Backbone.Model({
@@ -292,7 +355,20 @@ $(function () {
                 molFormula: this.json.asDrawnMolFormula,
                 molImage: this.json.asDrawnImage
             });
-            this.trigger('editParentSearchResultsNext', selection);
+
+            // Determine if reparent lot is selected on any of the search results
+            // If so, then pass the selected reparent name to the next step
+            var reparentLotSelection = null
+            if(this.showReparentLot) {
+                reparentCorpName = this.$('.reparentLotPick:checked').val()
+                if(typeof(reparentCorpName) != 'undefined' && reparentCorpName != null && reparentCorpName != '') {
+                    reparentLotSelection = new window.Backbone.Model({
+                        selectedCorpName: this.$('.reparentLotPick:checked').val(),
+                        isVirtual: this.$('.isVirtual').is(':checked')
+                    });
+                }
+            }
+            this.trigger('editParentSearchResultsNext', selection, reparentLotSelection);
             this.hide();
         },
         isValid: function() {
@@ -356,11 +432,14 @@ $(function () {
             this.eNotiList = this.options.errorNotifList;
             this.parentModel = this.options.parentModel;
 
+            // If passed a lot a re-parent lot workflow is shown as an option to the user
+            this.lotModel = this.options.lotModel;
 
             this.searchController = new EditParentSearchController({
                 el: $(".EditParentSearchView"),
                 corpName: this.options.corpName,
-                parentModel: this.parentModel
+                parentModel: this.parentModel,
+                lotModel: this.lotModel
             });
 
             if(this.options.user) {
@@ -382,7 +461,7 @@ $(function () {
             this.searchController.show();
         },
 
-        editParentSearchNext: function(searchEntries) {
+        editParentSearchNext: async function(searchEntries) {
             this.trigger('clearErrors', "EditParentWorkflowController");
             this.searchEntries = searchEntries;
             if(window.configuration.serverConnection.connectToServer) {
@@ -435,10 +514,12 @@ $(function () {
                 if( this.searchResultsController !=null ) {
                     this.deleteSearchResultsController();
                 }
+
                 this.searchResultsController = new EditParentSearchResultsController({
                     el: $('.EditParentSearchResultsView'),
                     json: this.editParentSearchResults,
-                    parentModel: this.parentModel
+                    parentModel: this.parentModel,
+                    showReparentLot: this.lotModel != null
                 });
                 this.searchResultsController.render();
                 this.searchResultsController.bind('editParentSearchResultsNext', this.editParentSearchResultsNext);
@@ -450,7 +531,17 @@ $(function () {
             this.$('.editParentButtonWrapper').hide();
         },
 
-        editParentSearchResultsNext: function(selection) {
+        editParentSearchResultsNext: function(selection, reparentLotSelection) {
+            if(reparentLotSelection != null) {
+                // Reparent lot workflow
+                this.editParentSearchResultsToReparentLotStep(selection, reparentLotSelection);
+            } else {
+                this.editParentSearchResultsToEditParentStep(selection);
+            }
+        },
+
+        editParentSearchResultsToEditParentStep: function(selection) {
+            // Edit parent workflow
             this.parentModel = selection.get('parent');
             if( this.parentController !=null ) {
                 this.deleteParentController();
@@ -471,6 +562,24 @@ $(function () {
             })(this));
             this.parentController.render();
             this.$('.ParentView').prepend("<h1 class='formTitle EditParentStepThreeTitle'>Edit Parent Step Three: Update Parent Attributes</h1>");//fiona
+        },
+
+        editParentSearchResultsToReparentLotStep: function(selection, reparentLotSelection) {
+            // Edit parent workflow
+            if( this.reparentLotController !=null ) {
+                this.deleteReparentLotController();
+            }
+		    this.reparentLotController = new ReparentLotController({
+                el: this.$('.ReparentLotView'),
+                buttons: this.$('.ParentView .buttons'),
+			    corpName: this.lotModel.get("corpName"),
+			    parentCorpName: reparentLotSelection.get("selectedCorpName"),
+			    errorNotifList: this.options.errorNotifList,
+			    user: this.user
+		    });
+            this.reparentLotController.show();
+            this.reparentLotController.bind('back', this.updateParentBack);
+
         },
 
         parentUpdated: function(ajaxReturn){
@@ -517,6 +626,12 @@ $(function () {
             this.parentController.delegateEvents({});
             this.parentController = null;
             this.$('.ParentView').html('');
+        },
+
+        deleteReparentLotController: function() {
+            this.reparentLotController.delegateEvents({});
+            this.reparentLotController = null;
+            this.$('.ReparentLotView').html('');
         },
 
         render: function () {
