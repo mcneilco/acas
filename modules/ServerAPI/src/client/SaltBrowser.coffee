@@ -51,7 +51,6 @@ class SaltSimpleSearchController extends AbstractFormController
 			$.ajax
 				type: 'GET'
 				url: @genericSearchUrl + "/search/" + saltSearchTerm
-				# CHANGE THIS AND FIX SEARCH
 				contentType: "application/json"
 				dataType: "json"
 				success: (salt) =>
@@ -176,12 +175,8 @@ class SaltBrowserController extends Backbone.View
 		$(".bv_saltController").removeClass("hide")
 		$(".bv_saltControllerContainer").removeClass("hide")
 
-		# Need to Use This Route (Or Similar) to Display Salt Structure
-		# app.get '/api/chemStructure/renderStructureByCode', exports.renderStructureByCode
-
-		# Need to Get 
+		# Request JSON Used to Render Image of Salt
 		requestJSON = {
-			#	"codeName" :  "#{@saltController.model.get("id")}"
 				"molStructure" : "#{@saltController.model.get("molStructure")}",
 				"height" : 100, 
 				"width" : 100, 
@@ -220,25 +215,21 @@ class SaltBrowserController extends Backbone.View
 		@$('.bv_createSalt').show()
 		@chemicalStructureController = new KetcherChemicalStructureController 
 		$('.bv_chemicalStructureForm').html @chemicalStructureController.render().el
-		# Sketcher should be controlled by CReg sketcher settings!!
-		# Need to Setup Text Boxes for Name and Abbrev
+		# Sketcher should be controlled by CReg sketcher settings!
 
 	handleConfirmCreateSaltClicked: =>
 		fieldsFilled = true
 		saltAbbrev = UtilityFunctions::getTrimmedInput @$('.bv_abbrevName')
 		if (saltAbbrev == "" || saltAbbrev == null)
 			fieldsFilled = false
-			# Error Msg Window 
 
 		saltName = UtilityFunctions::getTrimmedInput @$('.bv_saltName')
 		if (saltName == "" || saltName == null)
 			fieldsFilled = false
-			# Error Msg Window 
 
 		saltStruct = @chemicalStructureController.getMol()
 		if (saltStruct == "" || saltStruct == null)
 			fieldsFilled = false
-			# Error Msg Window 
 		
 		if (fieldsFilled)
 			saltDict = 
@@ -248,6 +239,7 @@ class SaltBrowserController extends Backbone.View
 				"name": saltName,
 			} 
 
+			# Dryrun Request Just to Preview Calculations 
 			requestData = 
 			{
 				"dryrun" : "true",
@@ -282,6 +274,7 @@ class SaltBrowserController extends Backbone.View
 						"format" : "png"
 					}
 
+					# Render Image
 					$.ajax(
 						type: 'POST'
 						url: "/api/chemStructure/renderMolStructureBase64"
@@ -304,7 +297,7 @@ class SaltBrowserController extends Backbone.View
 					@$('.bv_errorCreatingSaltMessage').show()
 					@$('.bv_createSaltErrorMessageHolder') errorMsg
 			)
-	# Does Dry Run of Create Structure and Shows Pre-Calculations Going to Be Saved
+
 	handleBackConfirmCreateClicked: => 
 		@$('.bv_confirmCreateSalt').hide()
 		@$('.bv_createSalt').show()
@@ -312,23 +305,23 @@ class SaltBrowserController extends Backbone.View
 	handleCancelConfirmCreateClicked: => 
 		@$('.bv_confirmCreateSalt').hide()
 
+	# Non Dry Run Method to Register Salt Reviewed by User
 	handleSaveSaltButtonClicked: =>
 		fieldsFilled = true
 		saltAbbrev = UtilityFunctions::getTrimmedInput @$('.bv_abbrevNameConfirm')
 		if (saltAbbrev == "" || saltAbbrev == null)
 			fieldsFilled = false
-			# Error Msg Window 
+			console.log("Salt Abbrev Was Empty! Cannot Register!")
 
 		saltName = UtilityFunctions::getTrimmedInput @$('.bv_saltNameConfirm')
 		if (saltName == "" || saltName == null)
 			fieldsFilled = false
-			# Error Msg Window 
+			console.log("Salt Name Was Empty! Cannot Register!")
 
 		saltStruct = @chemicalStructureController.getMol()
 		if (saltStruct == "" || saltStruct == null)
 			fieldsFilled = false
 			console.log("Salt Structure Was Empty! Cannot Register!")
-			# Error Msg Window 
 		
 		if (fieldsFilled)
 			saltDict = 
@@ -351,12 +344,11 @@ class SaltBrowserController extends Backbone.View
 				data: JSON.stringify(requestData)
 				contentType: 'application/json'
 				dataType: 'json'
-				success: (result) =>
+				success: (result) => # Succesfull Registration! 
 					console.log(result)
 					@$('.bv_confirmCreateSalt').hide()
 					# Reload Search
 					@searchController.doSearch("*")
-					# Might Need to Do Something More Sophisticated Here
 				error: (errorMsg) =>
 					console.log(errorMsg)
 					@$('.bv_confirmCreateSalt').hide()
@@ -369,10 +361,7 @@ class SaltBrowserController extends Backbone.View
 		@$(".bv_createSalt").hide()
 
 	handleDownloadSaltClicked: =>
-		# Create Route to Download SDF of All Salts 
-		console.log("Download Salt Clicked!")
-		# Use Get Route to Obtain All Salts 
-		# See SDF Example Route Brain Bolt Gave 
+		# Calls Custom Route to Download SDF of All Salts Registered 
 		$.ajax
 				type: 'GET'
 				url: "/api/cmpdRegAdmin/salts/sdf" 
@@ -380,7 +369,6 @@ class SaltBrowserController extends Backbone.View
 					# Server should've returned salts in correct formatting
 					@downloadSDF("allSalts.sdf", salts)
 				error: (result) =>
-					# Show Window Saying Server Error ? 
 					console.log(result)
 	
 	downloadSDF: (filename, text) => 
@@ -405,16 +393,9 @@ class SaltBrowserController extends Backbone.View
 			backdrop: true
 		})
 
-		# NEED TO CHECK DEPENDENCIES 
 		# Clicking Delete should trigger a dependency check. 
-			# Call Dependency Check
-				# See Route Brian Bolt Gave 
 		# If any Lots still reference this salt, then the Salt cannot be deleted.
-			# If Dependency Then Show Preconfigured "Cannot Delete Salt Message"
-			# Show Error Window! 
 		# If there are no dependent lots, then allow the user to confirm and proceed with the delete
-			# If No Dependency Then Proceed w/ Normal Base Implementation 
-			# Show Normal Window 
 
 	handleConfirmDeleteSaltClicked: =>
 		@$(".bv_deleteWarningMessage").hide()
@@ -444,23 +425,16 @@ class SaltBrowserController extends Backbone.View
 		@$(".bv_deleteSaltStatus").hide()
 
 	handleEditSaltClicked: =>
-		console.log("Hit Edit Button!")
 		@$('.bv_editSaltWindow').show()
+
 		currAbbrev = @saltController.model.get("abbrev")
-		console.log(currAbbrev)
 		@$('.bv_abbrevNameEdit').val currAbbrev
+
 		currName = @saltController.model.get("name")
-		console.log(currName)
 		@$('.bv_saltNameEdit').val currName 
 
 		molStr = @saltController.model.get("molStructure")
-		console.log(molStr)
 
-		# @$('.bv_editChemicalStructureForm').attr('src',"/lib/ketcher-2.0.0-alpha.3_custom/ketcher.html?api_path=/api/cmpdReg/ketcher/")
-		# @$('.bv_editChemicalStructureForm').on('load', =>
-		# 	@ketcher = @$('.bv_editChemicalStructureForm')[0].contentWindow.ketcher
-		# 	@ketcher.setMolecule(molStr)
-		# )
 		@chemicalStructureController = new KetcherChemicalStructureController 
 		$('.bv_editChemicalStructureForm').html @chemicalStructureController.render().el
 		@chemicalStructureController.on('sketcherLoaded', =>
@@ -470,12 +444,9 @@ class SaltBrowserController extends Backbone.View
 
 
 	handleConfirmEditSaltClicked: =>
-		# Placeholder 
-		console.log("Edit Button Clicked! Running Edit Dry Run")
 		# Get Mol
 		saltStruct = @chemicalStructureController.getMol()
-		# Only New to Push This Dict Through Since Everything Else Same
-		console.log(saltStruct)
+
 		saltDict = 
 		{
 			"abbrev": @$('.bv_abbrevNameEdit').val(),
@@ -484,8 +455,6 @@ class SaltBrowserController extends Backbone.View
 			"cdId":  @saltController.model.get("cdId"),
 		}
 
-		console.log(saltDict)
-
 		requestData = 
 			{
 				"dryrun" : "true",
@@ -493,17 +462,16 @@ class SaltBrowserController extends Backbone.View
 			}
 
 		$.ajax(
-			url: "/api/cmpdRegAdmin/salts/edit/#{@saltController.model.get("id")}", # NEED TO CHECK VALID ROUTE
+			# This AJAX Call is Used to Collect Warnings and Errors If Salt is Edited 
+			url: "/api/cmpdRegAdmin/salts/edit/#{@saltController.model.get("id")}",
 			type: 'PUT',
 			data: JSON.stringify(requestData)
 			contentType: 'application/json'
 			dataType: 'json'
 			success: (result) =>
-				console.log(result)
 				@$(".bv_editSaltWindow").hide()
 				@$(".bv_confirmEditSalt").show()
-				# Need to Get JSON of Salt and Display in Placeholder Fields
-				# Need to Generate Picture of New Structure 
+				# This AJAX Call is Used to Collect Calculations of Newly Proposed Salt
 				$.ajax(
 					url: "/api/cmpdRegAdmin/salts",
 					type: 'POST', 
@@ -511,8 +479,6 @@ class SaltBrowserController extends Backbone.View
 					contentType: 'application/json'
 					dataType: 'json'
 					success: (result) =>
-						console.log(result)
-
 						# Need to Parse Result Values Into Form Fields 
 
 						@$('.bv_abbrevNameEditConfirm').val result.abbrev
@@ -529,6 +495,7 @@ class SaltBrowserController extends Backbone.View
 							"format" : "png"
 						}
 
+						# AJAX Call to Generate Picture of New Structure
 						$.ajax(
 							type: 'POST'
 							url: "/api/chemStructure/renderMolStructureBase64"
@@ -541,20 +508,26 @@ class SaltBrowserController extends Backbone.View
 								@$('.bv_saltStructEditConfirm').html pngImage 
 							error: (result) =>
 								console.log(result)
-								@$('.bv_saltStructEditConfirm').hide()
+								@$(".bv_okayEditButton").show()
+								@$(".bv_editSaltWindow").hide()
+								@$(".bv_errorEditingSaltMessage").show()
+								@$(".bv_errorEditingSaltMessage").html result
 
 						)
 					errors: (result) =>
 						console.log(result)
+						@$(".bv_okayEditButton").show()
+						@$(".bv_editSaltWindow").hide()
+						@$(".bv_errorEditingSaltMessage").show()
+						@$(".bv_errorEditingSaltMessage").html result
 				)
-				# Need to Also Get List of Warnings and Dependencies 
-					# Parse Into Speicifc Lists 
+				# Need to Get List of Warnings and Dependencies 
+				# Parse Into Speicifc Lists 
 				htmlList = '<ul>'
 				for warning in result
 					htmlList += '<li>' + warning.message + '</li>'          
 				htmlList += '</ul>'
 
-				console.log(htmlList)
 				@$(".bv_saltDependencies").html htmlList 
 			error: (result) =>
 				@$(".bv_okayEditButton").show()
@@ -564,13 +537,9 @@ class SaltBrowserController extends Backbone.View
 		)
 	
 	handleEditSaltButtonClicked: =>
-		# Placeholder 
-		console.log("Edit Button Clicked! Registering Edited Salt")
 		# Get Mol
 		saltStruct = @chemicalStructureController.getMol()
-		console.log(saltStruct)
 
-		# Salt Dict Should Be Same As Before Unless Eidts Were Done
 		saltDict = 
 		{
 			"abbrev": @$('.bv_abbrevNameEditConfirm').val(),
@@ -579,16 +548,15 @@ class SaltBrowserController extends Backbone.View
 			"cdId":  @saltController.model.get("cdId"),
 		}
 
-		console.log(saltDict)
-
 		requestData = 
 			{
 				"dryrun" : "false",
 				"saltJSON" : saltDict
 			}
 
+		# AJAX Call to Register New Edited Salt
 		$.ajax(
-			url: "/api/cmpdRegAdmin/salts/edit/#{@saltController.model.get("id")}", # NEED TO CHECK VALID ROUTE
+			url: "/api/cmpdRegAdmin/salts/edit/#{@saltController.model.get("id")}", 
 			type: 'PUT',
 			data: JSON.stringify(requestData)
 			contentType: 'application/json'
@@ -619,7 +587,6 @@ class SaltBrowserController extends Backbone.View
 		@$('.bv_editSaltWindow').hide()
 
 	handleCancelEditSaltClicked: =>
-		console.log("Cancel Edit Button Clicked!")
 		@$(".bv_editSaltWindow").hide()
 
 	destroySaltSummaryTable: =>
