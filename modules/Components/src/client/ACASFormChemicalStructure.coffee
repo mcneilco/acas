@@ -144,7 +144,6 @@ class KetcherChemicalStructureController extends Backbone.View
 		@ketcher.setMolecule molStr
 		@trigger 'sketcherLoaded'
 
-		#@$('.bv_sketcherIFrame').on 'load', @ketcher.setMolecule molStr
 
 	getMol: ->
 		@windowObj.ketcher.getMolfile();
