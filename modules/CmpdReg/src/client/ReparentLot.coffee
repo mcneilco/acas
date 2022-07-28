@@ -156,14 +156,15 @@ class ReparentLotController extends Backbone.View
 		changesToLotSummary += "</ul>"
 
 		errorSummary = "<h3>Errors</h3><ul>"
-		@$('.reparentLotButton').show()
+		# Currently we don't have any error cases so we alway show the reparent lot button on successful service call.
+		@$('.reparentLotButton').show();
 		errorSummary += "<li>None</li>"
 		errorSummary += "</ul>"
 
 		warningSummary = "<h3>Warnings</h3><ul>"
 		if dependencies.linkedLots? && dependencies.linkedLots.length == 0
 			parentCorpName = dependencies.lot.parent.corpName
-			warningSummary += "<li>This is the only lot on the parent compound #{parentCorpName}. Reparening this #{@lotLabel.toLowerCase()} will delete #{parentCorpName}.</li>"
+			warningSummary += "<li>This is the only lot on the parent compound #{parentCorpName}. Reparenting this #{@lotLabel.toLowerCase()} will delete #{parentCorpName}.</li>"
 		else
 			warningSummary += "<li>None</li>"
 		warningSummary += "</ul>"
