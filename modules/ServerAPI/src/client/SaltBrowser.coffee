@@ -48,7 +48,7 @@ class SaltSimpleSearchController extends AbstractFormController
 		@$(".bv_doSearch").attr "disabled", true
 		@trigger 'find'
 		unless saltSearchTerm is "" 
-			$.ajax
+			$.ajax(
 				type: 'GET'
 				url: @genericSearchUrl + "/search/" + saltSearchTerm
 				contentType: "application/json"
@@ -61,6 +61,7 @@ class SaltSimpleSearchController extends AbstractFormController
 				complete: =>
 					@$(".bv_saltSearchTerm").attr "disabled", false
 					@$(".bv_doSearch").attr "disabled", false
+			)
 
 class SaltRowSummaryController extends Backbone.View
 	tagName: 'tr'
@@ -254,7 +255,6 @@ class SaltBrowserController extends Backbone.View
 				contentType: 'application/json'
 				dataType: 'json'
 				success: (result) => # Result Success Should Be JSON of Salt
-					console.log(result)
 					@$('.bv_createSalt').hide()
 					@$('.bv_confirmCreateSalt').show()
 
@@ -345,7 +345,6 @@ class SaltBrowserController extends Backbone.View
 				contentType: 'application/json'
 				dataType: 'json'
 				success: (result) => # Succesfull Registration! 
-					console.log(result)
 					@$('.bv_confirmCreateSalt').hide()
 					# Reload Search
 					@searchController.doSearch("*")
@@ -362,7 +361,7 @@ class SaltBrowserController extends Backbone.View
 
 	handleDownloadSaltClicked: =>
 		# Calls Custom Route to Download SDF of All Salts Registered 
-		$.ajax
+		$.ajax(
 				type: 'GET'
 				url: "/api/cmpdRegAdmin/salts/sdf" 
 				success: (salts) =>
@@ -370,6 +369,7 @@ class SaltBrowserController extends Backbone.View
 					@downloadSDF("allSalts.sdf", salts)
 				error: (result) =>
 					console.log(result)
+		)
 	
 	downloadSDF: (filename, text) => 
 		element = document.createElement('a');
