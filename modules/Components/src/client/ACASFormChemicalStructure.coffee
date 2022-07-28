@@ -126,25 +126,6 @@ class KetcherChemicalStructureController extends Backbone.View
 		@windowObj = @$('.bv_sketcherIFrame')[0].contentWindow
 		@trigger 'sketcherLoaded'
 
-	renderEditMode: (molStr) =>
-		$(@el).empty()
-		$(@el).html @template()
-
-		searchFrameURL = "/lib/ketcher-2.0.0-alpha.3_custom/ketcher.html?api_path=/api/chemStructure/ketcher/"
-
-		@$('.bv_sketcherIFrame').attr 'src', searchFrameURL
-
-		@$('.bv_sketcherIFrame').on 'load', @startEditMode(molStr)
-
-		@
-
-	startEditMode: (molStr) => 
-		@windowObj = @$('.bv_sketcherIFrame')[0].contentWindow
-		@ketcher = @windowObj.ketcher
-		@ketcher.setMolecule molStr
-		@trigger 'sketcherLoaded'
-
-
 	getMol: ->
 		@windowObj.ketcher.getMolfile();
 
