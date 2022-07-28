@@ -179,8 +179,8 @@ class SaltBrowserController extends Backbone.View
 		# Request JSON Used to Render Image of Salt
 		requestJSON = {
 				"molStructure" : "#{@saltController.model.get("molStructure")}",
-				"height" : 100, 
-				"width" : 100, 
+				"height" : 200, 
+				"width" : 200, 
 				"format" : "png"
 			}
 
@@ -269,8 +269,8 @@ class SaltBrowserController extends Backbone.View
 					# Need to Render Preview of Structure 
 					requestJSON = {
 						"molStructure" : result.molStructure,
-						"height" : 100, 
-						"width" : 100, 
+						"height" : 200, 
+						"width" : 200, 
 						"format" : "png"
 					}
 
@@ -490,8 +490,8 @@ class SaltBrowserController extends Backbone.View
 						# Need to Render Preview of Structure 
 						requestJSON = {
 							"molStructure" : result.molStructure,
-							"height" : 100, 
-							"width" : 100, 
+							"height" : 200, 
+							"width" : 200, 
 							"format" : "png"
 						}
 
