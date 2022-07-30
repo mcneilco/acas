@@ -5,6 +5,7 @@ on:
     branches: ["**"]
   create:
     tags: "**"
+  workflow_dispatch:
 jobs:
   acas:
     runs-on: ubuntu-latest
