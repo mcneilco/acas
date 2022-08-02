@@ -169,6 +169,9 @@ class ExperimentSimpleSearchController extends AbstractFormController
 		#get the text value in the filter input text field
 		filterSearchTerm = $(".dataTables_filter input").val()
 
+		#replace "-" in filterSearchTerm with spaces (for filtering later on)
+		filterSearchTerm = filterSearchTerm.replaceAll("-", " ")
+
 		#create an array to store all experiment files
 		allExperimentFiles = []
 		$.ajax
@@ -182,12 +185,31 @@ class ExperimentSimpleSearchController extends AbstractFormController
 				#Here we extract all of the file attachments in all the experiments that pass filtering
 				#Then we send the file urls to a route in the backend that makes and returns a zip
 
-				#TODO - Add error handling in case there is a missing field
-				#TODO - Set values to blanks so that old values don't carry over if they are missing fields
+				#helper function for handling competing metadata values
+				findMostRecentValue =(dates,values) ->
+					#if there are multiple competing values, it finds the most recent and returns it
+					if values.length == 0
+						return ""
+					else if values.length == 1
+						return values[0]
+					else
+						#if there are multiple values, find the index position of the highest date
+						mostRecentDatePosition = 0 #start at the initial position
+						for x in [0...dates.length]
+							if dates[x] > dates[mostRecentDatePosition]
+								mostRecentDatePosition = x
+						#select the value based on that index
+						return values[mostRecentDatePosition]
 
 				for experimentData in response
-					#create an array to store experiment files
+					#TODO - Write a try, catch here in case an experiment can't be parsed.
+
+					#create an array to store all the experiment's files
 					experimentFiles = []
+
+					#In addition to extracting each experiment's files...
+					#...we want to parse out the 9 metadata variables in the experiment browser for filtering:
+					#Code, Name, Protocol Code, Protocol Name, Project, Scientist, Date, Status, Analysis Status
 
 					#extract the more easily accessible experiment metadata values
 					experimentCode = experimentData.codeName
@@ -204,30 +226,65 @@ class ExperimentSimpleSearchController extends AbstractFormController
 						dd = '0' + dd
 					if mm < 10
 						mm = '0' + mm
-					experimentDate = yyyy + "-" + mm + "-" + dd
+					experimentDate = yyyy + " " + mm + " " + dd #We replace dashes with spaces for regex purposes
 
-					#extract the more difficult to access experiment values
+					#Extract the more difficult to access experiment values
+					#Given the way soome of the metadata is stored, its possible for an experiment to still have older values if an experiment has been modified...
+					#...so we need to keep track of all values and dates, then pick the most recent for these specific metadata values
+					experimentAnalysisStatusDates = []
+					experimentAnalysisStatusValues = []
+
+					experimentScientistDates = []
+					experimentScientistValues = []
+
+					experimentExperimentStatusDates = []
+					experimentExperimentStatusValues = []
+
 					for experimentLsState in experimentData.lsStates
 						if experimentLsState.lsKind == "experiment metadata"
 							for experimentLsValue in experimentLsState.lsValues
 								#extract the analysis status
 								if experimentLsValue.lsKind == "analysis status"
-									experimentAnalysisStatus = experimentLsValue.codeValue
-
+									experimentAnalysisStatusValues.push experimentLsValue.codeValue
+									experimentAnalysisStatusDates.push experimentLsValue.recordedDate
+									
 								#extract the experiment scientist
 								if experimentLsValue.lsKind == "scientist"
-									experimentScientist = experimentLsValue.codeValue
+									experimentScientistValues.push experimentLsValue.codeValue
+									experimentScientistDates.push experimentLsValue.recordedDate
 
 								#extract the experiment status
 								if experimentLsValue.lsKind == "experiment status"
-									experimentExperimentStatus = experimentLsValue.codeValue
-								
+									experimentExperimentStatusValues.push experimentLsValue.codeValue
+									experimentExperimentStatusDates.push experimentLsValue.recordedDate
+
+								if experimentLsValue.dateValue
+									experimentDate = new Date(experimentLsValue.dateValue)
+									#convert experimentDate into YYYY-MM-DD format
+									dd = experimentDate.getDate()
+									mm = experimentDate.getMonth() + 1 #need to correct format being one month behind
+									yyyy = experimentDate.getFullYear()
+									if dd < 10
+										dd = '0' + dd
+									if mm < 10
+										mm = '0' + mm
+									experimentDate = yyyy + " " + mm + " " + dd #We replace dashes with spaces for regex purposes
+
 								#extract any attachments for the experiment
 								if experimentLsValue.fileValue
+									#Keeping track of dates and values isn't necessary for files since they are all stored in separate lsValues (no duplicates)
 									experimentFiles.push "dataFiles/" + experimentLsValue.fileValue
 					
+					#Given the dates and corresponding values, find the most recent value
+					experimentAnalysisStatus = findMostRecentValue(experimentAnalysisStatusDates, experimentAnalysisStatusValues)
+					experimentExperimentStatus = findMostRecentValue(experimentExperimentStatusDates, experimentExperimentStatusValues)
+					experimentScientist = findMostRecentValue(experimentScientistDates, experimentScientistValues)
+
+					#if the experiment has been deleted, automatically fail filtering, don't include files in the download
+					if experimentExperimentStatus == "deleted"
+						passFiltering = false
 					#if there is no search term, automatically pass filtering
-					if filterSearchTerm == ""
+					else if filterSearchTerm == "" 
 						passFiltering = true 
 					#if there is a search term, run checks for filtering
 					else
@@ -238,15 +295,19 @@ class ExperimentSimpleSearchController extends AbstractFormController
 						experimentAnalysisStatus + " " + experimentScientist + " " + 
 						experimentExperimentStatus
 						
-						#convert filterSearchTerm to case-insensitive regular expression
-						#TODO - update this to work with date searches ie. "2020-11-22"
-						re = new RegExp(filterSearchTerm, "i")
+						#filterSearchTerm needs to be split into separate terms by spaces and checked individually
+						filterSearchTerms = filterSearchTerm.split(" ")
 
-						#if the term is not present, the experiment fails the filtering step
-						if experimentMetadataStr.search(re) == -1
-							passFiltering = false
-						else
-							passFiltering = true
+						#all sub-terms need to be found in order to pass filtering, so if one is not found we set passFiltering to false
+						passFiltering = true 
+						for subSearchTerm in filterSearchTerms
+							#convert filterSearchTerm to case-insensitive regular expression
+							re = new RegExp(subSearchTerm, "i")
+
+							#if the term is not present, the experiment fails the filtering step, end the loop
+							if experimentMetadataStr.search(re) == -1
+								passFiltering = false
+								break
 															
 					#if the experiment passes the filtering criteria, append experiment files to total expeirment files
 					if passFiltering
