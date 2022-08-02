@@ -156,10 +156,142 @@ class ExperimentSimpleSearchController extends AbstractFormController
 	events:
 		'keyup .bv_experimentSearchTerm': 'updateExperimentSearchTerm'
 		'click .bv_doSearch': 'handleDoSearchClicked'
+		'click .bv_downloadFiles': 'downloadFiles'
 
 	render: =>
 		$(@el).empty()
 		$(@el).html @template()
+	
+	downloadFiles: =>
+		#extract the current search term in the experiment browser
+		experimentSearchTerm = $.trim(@$(".bv_experimentSearchTerm").val())
+		
+		#get the text value in the filter input text field
+		filterSearchTerm = $(".dataTables_filter input").val()
+
+		#create an array to store all experiment files
+		allExperimentFiles = []
+		$.ajax
+			type: 'GET'
+			url: "/api/experiments/genericSearch/#{experimentSearchTerm}"
+			dataType: "json"
+			data:
+				testMode: false
+				fullObject: true
+			success: (response) =>
+				#Here we extract all of the file attachments in all the experiments that pass filtering
+				#Then we send the file urls to a route in the backend that makes and returns a zip
+
+				#TODO - Add error handling in case there is a missing field
+				#TODO - Set values to blanks so that old values don't carry over if they are missing fields
+
+				for experimentData in response
+					#create an array to store experiment files
+					experimentFiles = []
+
+					#extract the more easily accessible experiment metadata values
+					experimentCode = experimentData.codeName
+					experimentName = experimentData.lsLabels[0].labelText
+					experimentProtocolCode = experimentData.protocol.codeName
+					experimentProtocolName = experimentData.protocol.lsLabels[0].labelText
+					experimentDate = new Date(experimentData.recordedDate)
+					
+					#convert experimentDate into YYYY-MM-DD format
+					dd = experimentDate.getDate()
+					mm = experimentDate.getMonth()
+					yyyy = experimentDate.getFullYear()
+					if dd < 10
+						dd = '0' + dd
+					if mm < 10
+						mm = '0' + mm
+					experimentDate = yyyy + "-" + mm + "-" + dd
+
+					#extract the more difficult to access experiment values
+					for experimentLsState in experimentData.lsStates
+						if experimentLsState.lsKind == "experiment metadata"
+							for experimentLsValue in experimentLsState.lsValues
+								#extract the analysis status
+								if experimentLsValue.lsKind == "analysis status"
+									experimentAnalysisStatus = experimentLsValue.codeValue
+
+								#extract the experiment scientist
+								if experimentLsValue.lsKind == "scientist"
+									experimentScientist = experimentLsValue.codeValue
+
+								#extract the experiment status
+								if experimentLsValue.lsKind == "experiment status"
+									experimentExperimentStatus = experimentLsValue.codeValue
+								
+								#extract any attachments for the experiment
+								if experimentLsValue.fileValue
+									experimentFiles.push "dataFiles/" + experimentLsValue.fileValue
+					
+					#if there is no search term, automatically pass filtering
+					if filterSearchTerm == ""
+						passFiltering = true 
+					#if there is a search term, run checks for filtering
+					else
+						#create a large string containing all the experiment metadata of interest, run one search on it
+						experimentMetadataStr = experimentCode + " " +  experimentName + 
+						" " + experimentProtocolCode + " " + experimentProtocolName + 
+						" " + experimentScientist  + " " + experimentDate + " " + 
+						experimentAnalysisStatus + " " + experimentScientist + " " + 
+						experimentExperimentStatus
+						
+						#convert filterSearchTerm to case-insensitive regular expression
+						#TODO - update this to work with date searches ie. "2020-11-22"
+						re = new RegExp(filterSearchTerm, "i")
+
+						#if the term is not present, the experiment fails the filtering step
+						if experimentMetadataStr.search(re) == -1
+							passFiltering = false
+						else
+							passFiltering = true
+															
+					#if the experiment passes the filtering criteria, append experiment files to total expeirment files
+					if passFiltering
+						for experimentFile in experimentFiles
+							allExperimentFiles.push experimentFile
+					
+				#Get today's date to timestamp any experiment file exports
+				today = new Date
+				dd = today.getDate()
+				mm = today.getMonth() + 1
+				yyyy = today.getFullYear()
+				if dd < 10
+					dd = '0' + dd
+				if mm < 10
+					mm = '0' + mm
+				today = '_' + mm + '_' + dd + '_' + yyyy
+
+				#construct request
+				dataToPost =
+					fileName: "experiment_files" + today
+					mappings: JSON.parse(JSON.stringify(allExperimentFiles))
+					userName: window.AppLaunchParams.loginUser.username 
+
+				#send all experiment filenames to backend to zip up
+				$.ajax
+					type: 'POST'
+					url: "/api/exportExperimentFiles"
+					data: dataToPost
+					timeout: 6000000
+					success: (response) =>
+						#Since we can't directly send the .zip file to download it...
+						#...we create a hidden link with the download path and automatically click on it
+						a = document.createElement('a');
+						a.style.display = 'none';
+						a.href = "dataFiles/" + response;
+						document.body.appendChild(a);
+						a.click();
+
+					error: (err) =>
+						#TODO - Create some kind of notification to GUI that files couldn't be downloaded
+						@serviceReturn = null
+					dataType: 'json'
+
+
+
 
 	updateExperimentSearchTerm: (e) =>
 		ENTER_KEY = 13
@@ -210,7 +342,7 @@ class ExperimentSimpleSearchController extends AbstractFormController
 					# re-enable the search text field regardless of if any results found
 					@$(".bv_experimentSearchTerm").attr "disabled", false
 					@$(".bv_doSearch").attr "disabled", false
-
+					$('.dataTables_filter input').addClass('bv_experimentFilterInput')
 
 
 class ExperimentRowSummaryController extends Backbone.View
@@ -310,7 +442,6 @@ class ExperimentSummaryTableController extends Backbone.View
 
 			@$("table").dataTable oLanguage:
 				sSearch: "Filter results: " #rename summary table's search bar
-
 		@
 
 	canViewDeleted: (exp) ->

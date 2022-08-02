@@ -5,8 +5,12 @@ Add this line to public/src/modules/ModuleMenus/src/client/ModuleMenusConfigurat
 
 ###
 
+path = require 'path'
+
+
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/experimentsForProtocol/:protocolCode', loginRoutes.ensureAuthenticated, exports.experimentsForProtocol
+	app.post '/api/exportExperimentFiles', loginRoutes.ensureAuthenticated, exports.exportExperimentFiles
 
 exports.experimentsForProtocol = (req, resp) ->
 	fixturesData = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
@@ -39,4 +43,36 @@ exports.experimentsForProtocol = (req, resp) ->
 
 	#response.send fixturesData.listOfExperiments
 
+
+exports.exportExperimentFiles = (req, resp) ->
+	req.setTimeout 86400000
+	config = require '../conf/compiled/conf.js'
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+	fs = require 'fs'
+	JSZip = require 'jszip'
+
+	experimentFiles = req.body.mappings
+	fileName = req.body.fileName
+	zipFileName = fileName+".zip"
+	
+	#Create a zip file of the all experiment files 
+	zip = new JSZip()
+	for rFile in experimentFiles
+		#convert the path from the route used to find the files to where they are actually located (dataFiles/ -> privateUploads/)
+		rFileName = rFile.replace("dataFiles/experiments/", '')
+		rFile = rFile.replace('\n', "").replace('dataFiles/', "privateUploads/")
+		zip.file(rFileName, fs.readFileSync(rFile))
+
+	#Write zip file
+	origUploadsPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path
+	zipFilePath = origUploadsPath + zipFileName
+	console.log zipFilePath
+	fstream = zip.generateNodeStream({type:"nodebuffer", streamFiles:true}).pipe(fs.createWriteStream(zipFilePath))
+	fstream.on 'finish', ->
+		console.log "finished create write stream"
+		resp.json [zipFileName]
+	fstream.on 'error', (err) ->
+		console.log "error writing stream for zip"
+		console.log err
+		resp.end "Summary ZIP file could not be created"
 
