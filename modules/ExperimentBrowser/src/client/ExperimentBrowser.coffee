@@ -174,6 +174,8 @@ class ExperimentSimpleSearchController extends AbstractFormController
 
 		#create an array to store all experiment files
 		allExperimentFiles = []
+
+		#search for experiments
 		$.ajax
 			type: 'GET'
 			url: "/api/experiments/genericSearch/#{experimentSearchTerm}"
@@ -202,118 +204,109 @@ class ExperimentSimpleSearchController extends AbstractFormController
 						return values[mostRecentDatePosition]
 
 				for experimentData in response
-					#TODO - Write a try, catch here in case an experiment can't be parsed.
+					try
+						#create an array to store all the experiment's files
+						experimentFiles = []
 
-					#create an array to store all the experiment's files
-					experimentFiles = []
+						#In addition to extracting each experiment's files...
+						#...we want to parse out the 9 metadata variables in the experiment browser to match filtering in the browser:
+						#Code, Name, Protocol Code, Protocol Name, Project, Scientist, Date, Status, Analysis Status
 
-					#In addition to extracting each experiment's files...
-					#...we want to parse out the 9 metadata variables in the experiment browser for filtering:
-					#Code, Name, Protocol Code, Protocol Name, Project, Scientist, Date, Status, Analysis Status
+						#extract the more easily accessible experiment metadata values
+						experimentCode = experimentData.codeName
+						experimentName = experimentData.lsLabels[0].labelText
+						experimentProtocolCode = experimentData.protocol.codeName
+						experimentProtocolName = experimentData.protocol.lsLabels[0].labelText
 
-					#extract the more easily accessible experiment metadata values
-					experimentCode = experimentData.codeName
-					experimentName = experimentData.lsLabels[0].labelText
-					experimentProtocolCode = experimentData.protocol.codeName
-					experimentProtocolName = experimentData.protocol.lsLabels[0].labelText
-					experimentDate = new Date(experimentData.recordedDate)
-					
-					#convert experimentDate into YYYY-MM-DD format
-					dd = experimentDate.getDate()
-					mm = experimentDate.getMonth()
-					yyyy = experimentDate.getFullYear()
-					if dd < 10
-						dd = '0' + dd
-					if mm < 10
-						mm = '0' + mm
-					experimentDate = yyyy + " " + mm + " " + dd #We replace dashes with spaces for regex purposes
+						#Extract the more difficult to access experiment values
+						#Given the way some of the metadata is stored, its possible for an experiment to still have older values if an experiment has been modified...
+						#...so we need to keep track of all values and dates, then pick the most recent for these specific metadata values
+						experimentAnalysisStatusDates = []
+						experimentAnalysisStatusValues = []
 
-					#Extract the more difficult to access experiment values
-					#Given the way soome of the metadata is stored, its possible for an experiment to still have older values if an experiment has been modified...
-					#...so we need to keep track of all values and dates, then pick the most recent for these specific metadata values
-					experimentAnalysisStatusDates = []
-					experimentAnalysisStatusValues = []
+						experimentScientistDates = []
+						experimentScientistValues = []
 
-					experimentScientistDates = []
-					experimentScientistValues = []
+						experimentExperimentStatusDates = []
+						experimentExperimentStatusValues = []
 
-					experimentExperimentStatusDates = []
-					experimentExperimentStatusValues = []
+						for experimentLsState in experimentData.lsStates
+							if experimentLsState.lsKind == "experiment metadata"
+								for experimentLsValue in experimentLsState.lsValues
+									#extract the analysis status
+									if experimentLsValue.lsKind == "analysis status"
+										experimentAnalysisStatusValues.push experimentLsValue.codeValue
+										experimentAnalysisStatusDates.push experimentLsValue.recordedDate
+										
+									#extract the experiment scientist
+									if experimentLsValue.lsKind == "scientist"
+										experimentScientistValues.push experimentLsValue.codeValue
+										experimentScientistDates.push experimentLsValue.recordedDate
 
-					for experimentLsState in experimentData.lsStates
-						if experimentLsState.lsKind == "experiment metadata"
-							for experimentLsValue in experimentLsState.lsValues
-								#extract the analysis status
-								if experimentLsValue.lsKind == "analysis status"
-									experimentAnalysisStatusValues.push experimentLsValue.codeValue
-									experimentAnalysisStatusDates.push experimentLsValue.recordedDate
-									
-								#extract the experiment scientist
-								if experimentLsValue.lsKind == "scientist"
-									experimentScientistValues.push experimentLsValue.codeValue
-									experimentScientistDates.push experimentLsValue.recordedDate
+									#extract the experiment status
+									if experimentLsValue.lsKind == "experiment status"
+										experimentExperimentStatusValues.push experimentLsValue.codeValue
+										experimentExperimentStatusDates.push experimentLsValue.recordedDate
 
-								#extract the experiment status
-								if experimentLsValue.lsKind == "experiment status"
-									experimentExperimentStatusValues.push experimentLsValue.codeValue
-									experimentExperimentStatusDates.push experimentLsValue.recordedDate
+									#extract the experiment's date
+									if experimentLsValue.dateValue
+										experimentDate = new Date(experimentLsValue.dateValue)
+										#convert experimentDate into YYYY-MM-DD format
+										dd = experimentDate.getDate()
+										mm = experimentDate.getMonth() + 1 #need to add 1 to correct stored format being one month behind?
+										yyyy = experimentDate.getFullYear()
+										if dd < 10
+											dd = '0' + dd
+										if mm < 10
+											mm = '0' + mm
+										experimentDate = yyyy + " " + mm + " " + dd #We replace dashes with spaces for regex purposes
 
-								if experimentLsValue.dateValue
-									experimentDate = new Date(experimentLsValue.dateValue)
-									#convert experimentDate into YYYY-MM-DD format
-									dd = experimentDate.getDate()
-									mm = experimentDate.getMonth() + 1 #need to correct format being one month behind
-									yyyy = experimentDate.getFullYear()
-									if dd < 10
-										dd = '0' + dd
-									if mm < 10
-										mm = '0' + mm
-									experimentDate = yyyy + " " + mm + " " + dd #We replace dashes with spaces for regex purposes
-
-								#extract any attachments for the experiment
-								if experimentLsValue.fileValue
-									#Keeping track of dates and values isn't necessary for files since they are all stored in separate lsValues (no duplicates)
-									experimentFiles.push "dataFiles/" + experimentLsValue.fileValue
-					
-					#Given the dates and corresponding values, find the most recent value
-					experimentAnalysisStatus = findMostRecentValue(experimentAnalysisStatusDates, experimentAnalysisStatusValues)
-					experimentExperimentStatus = findMostRecentValue(experimentExperimentStatusDates, experimentExperimentStatusValues)
-					experimentScientist = findMostRecentValue(experimentScientistDates, experimentScientistValues)
-
-					#if the experiment has been deleted, automatically fail filtering, don't include files in the download
-					if experimentExperimentStatus == "deleted"
-						passFiltering = false
-					#if there is no search term, automatically pass filtering
-					else if filterSearchTerm == "" 
-						passFiltering = true 
-					#if there is a search term, run checks for filtering
-					else
-						#create a large string containing all the experiment metadata of interest, run one search on it
-						experimentMetadataStr = experimentCode + " " +  experimentName + 
-						" " + experimentProtocolCode + " " + experimentProtocolName + 
-						" " + experimentScientist  + " " + experimentDate + " " + 
-						experimentAnalysisStatus + " " + experimentScientist + " " + 
-						experimentExperimentStatus
+									#extract any attachments for the experiment
+									if experimentLsValue.fileValue
+										#Keeping track of dates and values isn't necessary for files since they are all stored in separate lsValues (no duplicates)
+										experimentFiles.push "dataFiles/" + experimentLsValue.fileValue
 						
-						#filterSearchTerm needs to be split into separate terms by spaces and checked individually
-						filterSearchTerms = filterSearchTerm.split(" ")
+						#Given the dates and corresponding values, find the most recent value
+						experimentAnalysisStatus = findMostRecentValue(experimentAnalysisStatusDates, experimentAnalysisStatusValues)
+						experimentExperimentStatus = findMostRecentValue(experimentExperimentStatusDates, experimentExperimentStatusValues)
+						experimentScientist = findMostRecentValue(experimentScientistDates, experimentScientistValues)
 
-						#all sub-terms need to be found in order to pass filtering, so if one is not found we set passFiltering to false
-						passFiltering = true 
-						for subSearchTerm in filterSearchTerms
-							#convert filterSearchTerm to case-insensitive regular expression
-							re = new RegExp(subSearchTerm, "i")
+						#if the experiment has been deleted, automatically fail filtering, don't include files in the download
+						if experimentExperimentStatus == "deleted"
+							passFiltering = false
+						#if there is no search term, automatically pass filtering
+						else if filterSearchTerm == "" 
+							passFiltering = true 
+						#if there is a search term, run checks for filtering
+						else
+							#create a large string containing all the experiment metadata of interest, run one search on it
+							experimentMetadataStr = experimentCode + " " +  experimentName + 
+							" " + experimentProtocolCode + " " + experimentProtocolName + 
+							" " + experimentScientist  + " " + experimentDate + " " + 
+							experimentAnalysisStatus + " " + experimentScientist + " " + 
+							experimentExperimentStatus
+							
+							#filterSearchTerm needs to be split into separate terms by spaces and checked individually
+							filterSearchTerms = filterSearchTerm.split(" ")
 
-							#if the term is not present, the experiment fails the filtering step, end the loop
-							if experimentMetadataStr.search(re) == -1
-								passFiltering = false
-								break
-															
-					#if the experiment passes the filtering criteria, append experiment files to total expeirment files
-					if passFiltering
-						for experimentFile in experimentFiles
-							allExperimentFiles.push experimentFile
-					
+							#all sub-terms need to be found in order to pass filtering, so if one is not found we set passFiltering to false
+							passFiltering = true 
+							for subSearchTerm in filterSearchTerms
+								#convert filterSearchTerm to case-insensitive regular expression
+								re = new RegExp(subSearchTerm, "i")
+
+								#if the term is not present, the experiment fails the filtering step, end the loop
+								if experimentMetadataStr.search(re) == -1
+									passFiltering = false
+									break
+																
+						#if the experiment passes the filtering criteria, append experiment files to total expeirment files
+						if passFiltering
+							for experimentFile in experimentFiles
+								allExperimentFiles.push experimentFile
+					catch error
+						console.log "There was an error parsing experiment metadata:" + error
+
 				#Get today's date to timestamp any experiment file exports
 				today = new Date
 				dd = today.getDate()
@@ -346,10 +339,22 @@ class ExperimentSimpleSearchController extends AbstractFormController
 						document.body.appendChild(a);
 						a.click();
 
+						#Update GUI to indicate succesful download
+						$(".bv_downloadWarning").hide()
+						$(".bv_downloadSuccess").show()
+
 					error: (err) =>
-						#TODO - Create some kind of notification to GUI that files couldn't be downloaded
+						console.log "Could not download files" + err
+
+						#Update GUI to indicate files could not be downloaded
+						$(".bv_downloadSuccess").hide()
+						$(".bv_downloadWarning").show()
 						@serviceReturn = null
 					dataType: 'json'
+			error: (err) =>
+				console.log "Could not search for experiments" + err
+				$(".bv_downloadSuccess").hide()
+				$(".bv_downloadWarning").show()
 
 
 
@@ -403,8 +408,6 @@ class ExperimentSimpleSearchController extends AbstractFormController
 					# re-enable the search text field regardless of if any results found
 					@$(".bv_experimentSearchTerm").attr "disabled", false
 					@$(".bv_doSearch").attr "disabled", false
-					$('.dataTables_filter input').addClass('bv_experimentFilterInput')
-
 
 class ExperimentRowSummaryController extends Backbone.View
 	tagName: 'tr'
@@ -503,6 +506,7 @@ class ExperimentSummaryTableController extends Backbone.View
 
 			@$("table").dataTable oLanguage:
 				sSearch: "Filter results: " #rename summary table's search bar
+
 		@
 
 	canViewDeleted: (exp) ->
