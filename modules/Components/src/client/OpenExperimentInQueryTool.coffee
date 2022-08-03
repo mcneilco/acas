@@ -57,6 +57,7 @@ class OpenExperimentInQueryToolController extends Backbone.View
                 @$('.bv_generatingLink').hide()
                 @$('.bv_getLinkResults').show()
                 @$('.bv_exptLink').val(response)
+                @$('.bv_getLinkQueryToolButton').attr("disabled", true)
             error: (err) =>
                 # Take Away Generating Progress Mask 
                 @$('.bv_generatingLink').hide()
