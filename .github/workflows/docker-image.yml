@@ -2,7 +2,9 @@ name: Docker Image CI
 
 on:
   push:
-    branches: ["**"]
+    branches: ["master", "release/*"]
+  pull_request:
+    types: [opened, synchronize]
   create:
     tags: "**"
 jobs:
@@ -29,15 +31,35 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      # The following few steps figure out what version of acasclient to test with
+      # If main or release branch, run tests using matching release branch of acasclient
+      - name: Set ACAS_CLIENT_REF to the current branch ${{ github.ref }}
+        run: |
+          echo "ACAS_CLIENT_REF=$(echo ${{ github.ref }} | sed 's/refs\/heads\///g')" >> $GITHUB_ENV
+        if: github.event_name == 'push'
+      # If a PR, run tests on acasclient branch matching destination of PR
+      - name: Set ACAS_CLIENT_REF to the PR destination branch ${{ github.base_ref }}
+        run: |
+          echo "ACAS_CLIENT_REF=${{ github.base_ref }}" >> $GITHUB_ENV
+        if: github.event_name == 'pull_request'
+       # If a tag, run tests on acasclient branch by the same tag
+      - name: Set ACAS_CLIENT_REF to tag extracted from ${{ github.ref }}
+        run: |
+          ACAS_CLIENT_REF=$(echo ${{ github.ref }} | sed 's/refs\/tags\///')
+          echo "ACAS_CLIENT_REF=$ACAS_CLIENT_REF" >> $GITHUB_ENV
+        if: github.event_name == 'create'
+      # If on the "master" branch, run tests on the "main" branch of acasclient
+      - name: Override ACAS_CLIENT_REF if branch is "master"
+        run: |
+          echo "ACAS_CLIENT_REF=main" >> $GITHUB_ENV
+        if: github.ref == 'refs/heads/master'
       - name: Checkout acasclient
         uses: actions/checkout@v3
         with:
           repository: mcneilco/acasclient
           path: acasclient
-          # Below checks out the same revision name as ACAS but skipping now
-          # because we don't want to keep acasclient version in sync with ACAS version
-          # at the moment.
-          # ref: ${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
+          # Check out the branch specified by ACAS_CLIENT_REF
+          ref: ${{ env.ACAS_CLIENT_REF }}
       - name: Build (no push)
         uses: docker/build-push-action@v2
         with:
