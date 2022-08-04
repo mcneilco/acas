@@ -5,9 +5,9 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.get '/api/cmpdRegAdmin/:entityType/search/:searchTerm', exports.searchCmpdRegEntities
 	app.get '/api/cmpdRegAdmin/:entityType/sdf', exports.getSDFCmpdRegEntities
 	app.post '/api/cmpdRegAdmin/:entityType/validateBeforeSave', exports.validateCmpdRegEntityBeforeSave
-	app.post '/api/cmpdRegAdmin/:entityType',  exports.saveCmpdRegEntity
+	app.post '/api/cmpdRegAdmin/:entityType/:dryrun',  exports.saveCmpdRegEntity
 	app.put '/api/cmpdRegAdmin/:entityType/:id', exports.updateCmpdRegEntity
-	app.put '/api/cmpdRegAdmin/:entityType/edit/:id', exports.editCmpdRegEntity
+	app.put '/api/cmpdRegAdmin/:entityType/edit/:id/:dryrun', exports.editCmpdRegEntity
 	app.delete '/api/cmpdRegAdmin/:entityType/:id', exports.deleteCmpdRegEntity
 
 exports.setupRoutes = (app, loginRoutes) ->
@@ -19,9 +19,9 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/cmpdRegAdmin/:entityType/validateBeforeSave', loginRoutes.ensureAuthenticated, loginRoutes.ensureCmpdRegAdmin, exports.validateCmpdRegEntityBeforeSave
 
 	app.get '/api/cmpdRegAdmin/:entityType/:id', loginRoutes.ensureAuthenticated, exports.getCmpdRegEntityById
-	app.post '/api/cmpdRegAdmin/:entityType', loginRoutes.ensureAuthenticated, loginRoutes.ensureCmpdRegAdmin, exports.saveCmpdRegEntity
+	app.post '/api/cmpdRegAdmin/:entityType/:dryrun', loginRoutes.ensureAuthenticated, loginRoutes.ensureCmpdRegAdmin, exports.saveCmpdRegEntity
 	app.put '/api/cmpdRegAdmin/:entityType/:id', loginRoutes.ensureAuthenticated, loginRoutes.ensureCmpdRegAdmin, exports.updateCmpdRegEntity
-	app.put '/api/cmpdRegAdmin/:entityType/edit/:id', loginRoutes.ensureAuthenticated, loginRoutes.ensureCmpdRegAdmin, exports.editCmpdRegEntity
+	app.put '/api/cmpdRegAdmin/:entityType/edit/:id/:dryrun', loginRoutes.ensureAuthenticated, loginRoutes.ensureCmpdRegAdmin, exports.editCmpdRegEntity
 	app.delete '/api/cmpdRegAdmin/:entityType/:id', loginRoutes.ensureAuthenticated, loginRoutes.ensureCmpdRegAdmin, exports.deleteCmpdRegEntity
 
 exports.validateCmpdRegEntity = (req, resp) ->
@@ -199,7 +199,7 @@ exports.saveCmpdRegEntity = (req, resp) ->
 	request = require 'request'
 	config = require '../conf/compiled/conf.js'
 	entityType = req.params.entityType
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + "#{entityType}"
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + "#{entityType}/?dryrun=" + req.params.dryrun
 	request(
 		method: 'POST'
 		url: cmpdRegCall
@@ -247,7 +247,7 @@ exports.editCmpdRegEntity = (req, resp) ->
 	request = require 'request'
 	config = require '../conf/compiled/conf.js'
 	entityType = req.params.entityType
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + "#{entityType}/edit/" + req.params.id 
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + "#{entityType}/edit/" + req.params.id + "/?dryrun=" + req.params.dryrun
 	request(
 		method: 'PUT'
 		url: cmpdRegCall

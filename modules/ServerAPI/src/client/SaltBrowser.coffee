@@ -241,17 +241,12 @@ class SaltBrowserController extends Backbone.View
 			} 
 
 			# Dryrun Request Just to Preview Calculations 
-			requestData = 
-			{
-				"dryrun" : "true",
-				"saltJSON" : saltDict
-			}
-
+			dryrun = true
 
 			$.ajax(
-				url: "/api/cmpdRegAdmin/salts",
+				url: "/api/cmpdRegAdmin/salts/" + dryrun, 
 				type: 'POST', 
-				data: JSON.stringify(requestData)
+				data: JSON.stringify(saltDict)
 				contentType: 'application/json'
 				dataType: 'json'
 				success: (result) => # Result Success Should Be JSON of Salt
@@ -331,17 +326,13 @@ class SaltBrowserController extends Backbone.View
 				"name": saltName,
 			} 
 
-			requestData = 
-			{
-				"dryrun" : "false",
-				"saltJSON" : saltDict
-			}
+			dryrun = false
 
 
 			$.ajax(
-				url: "/api/cmpdRegAdmin/salts",
+				url: "/api/cmpdRegAdmin/salts/" + dryrun,
 				type: 'POST', 
-				data: JSON.stringify(requestData)
+				data: JSON.stringify(saltDict)
 				contentType: 'application/json'
 				dataType: 'json'
 				success: (result) => # Succesfull Registration! 
@@ -455,27 +446,24 @@ class SaltBrowserController extends Backbone.View
 			"cdId":  @saltController.model.get("cdId"),
 		}
 
-		requestData = 
-			{
-				"dryrun" : "true",
-				"saltJSON" : saltDict
-			}
+		dryrun = true
 
 		$.ajax(
 			# This AJAX Call is Used to Collect Warnings and Errors If Salt is Edited 
-			url: "/api/cmpdRegAdmin/salts/edit/#{@saltController.model.get("id")}",
+			url: "/api/cmpdRegAdmin/salts/edit/#{@saltController.model.get("id")}/" + dryrun,
 			type: 'PUT',
-			data: JSON.stringify(requestData)
+			data: JSON.stringify(saltDict)
 			contentType: 'application/json'
 			dataType: 'json'
 			success: (result) =>
 				@$(".bv_editSaltWindow").hide()
 				@$(".bv_confirmEditSalt").show()
+
 				# This AJAX Call is Used to Collect Calculations of Newly Proposed Salt
 				$.ajax(
-					url: "/api/cmpdRegAdmin/salts",
+					url: "/api/cmpdRegAdmin/salts/" + dryrun,
 					type: 'POST', 
-					data: JSON.stringify(requestData)
+					data: JSON.stringify(saltDict)
 					contentType: 'application/json'
 					dataType: 'json'
 					success: (result) =>
@@ -548,17 +536,13 @@ class SaltBrowserController extends Backbone.View
 			"cdId":  @saltController.model.get("cdId"),
 		}
 
-		requestData = 
-			{
-				"dryrun" : "false",
-				"saltJSON" : saltDict
-			}
+		dryrun = false
 
 		# AJAX Call to Register New Edited Salt
 		$.ajax(
-			url: "/api/cmpdRegAdmin/salts/edit/#{@saltController.model.get("id")}", 
+			url: "/api/cmpdRegAdmin/salts/edit/#{@saltController.model.get("id")}/" + dryrun, 
 			type: 'PUT',
-			data: JSON.stringify(requestData)
+			data: JSON.stringify(saltDict)
 			contentType: 'application/json'
 			dataType: 'json'
 			success: (result) =>
