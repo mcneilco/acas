@@ -114,18 +114,20 @@ exports.changePost = (req, res) ->
 
 exports.logout = (req, res) ->
 	req.logout =>
+		# If using saml then redirect to the specified logout url
 		if config.all.server.security.saml.use == true && config.all.server.security.saml.logoutRedirectURL?
 			redirectMatch = config.all.server.security.saml.logoutRedirectURL
 		else 
+			# If the original url is e.g. /logout/cmpdreg then attempt to redirect to /cmpdreg
 			redirectMatch = req.originalUrl.match(/^\/logout\/(.*)\/?$/i)
 			if redirectMatch?
-				redirectMatch = redirectMatch[1]
+				redirectMatch = "/#{redirectMatch[1]}"
 			else
+				# If the url is just /logout then redirect to the base path
 				if config.all.client.basePath?
 					redirectMatch = config.all.client.basePath
 				else
 					redirectMatch = '/'
-				redirectMatch = "/"
 		res.redirect redirectMatch
 
 exports.ssoLogin = (req, res, next) ->
