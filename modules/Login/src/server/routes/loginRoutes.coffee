@@ -189,6 +189,11 @@ exports.ensureAuthenticated = (req, res, next) ->
 			exports.ssoRelayStateRedirect(req, res, next)
 	else
 		# If Authentication strategy is not SAML then redirect to the login page
+		# If this is a failed login attempt we send the location because
+		# this is a redirect and some dependent systems require a location to detect
+		# failed login attempts.
+		res.statusCode = 302
+		res.location('/login')
 		exports.loginPage(req, res, next)
 
 exports.ensureCmpdRegAdmin = (req, res, next) ->
