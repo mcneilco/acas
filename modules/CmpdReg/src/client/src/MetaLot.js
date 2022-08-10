@@ -111,7 +111,7 @@ $(function() {
 		    'click .cancelButton': 'close',
 		    'click .newLotButton': 'newLot',
 		    'click .deleteButton': 'deleteLotRequest',
-		    'click .downloadMetaLotButton': 'downloadLot'
+		    'click .downloadLotButton': 'downloadLot'
 	    },
 
 	    initialize: function () {
@@ -199,7 +199,7 @@ $(function() {
 		    var lisb = window.configuration.metaLot.lotCalledBatch;
 		    if (this.model.get('lot').isNew()) {
 			    this.$('.newLotButton').hide();
-			    this.$('.downloadMetaLotButton').hide();
+			    this.$('.downloadLotButton').hide();
 			    this.$('.deleteButton').hide();
 			    this.$('.saveButton').addClass('saveImage');
 			    this.$('.saveButton').removeClass('updateImage');
@@ -322,6 +322,7 @@ $(function() {
 	    deleteLotRequest: function () {
 		    this.trigger('clearErrors', "MetaLotController");
 		    this.trigger('clearErrors', "LotController");
+			this.delegateEvents({}); // stop listening to buttons
 		    $(this.el).empty();
 		    this.deleteLotController = new DeleteLotController({
 			    el: $(this.el),
