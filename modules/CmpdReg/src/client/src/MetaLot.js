@@ -111,7 +111,7 @@ $(function() {
 		    'click .cancelButton': 'close',
 		    'click .newLotButton': 'newLot',
 		    'click .deleteButton': 'deleteLotRequest',
-		    'click .downloadLotButton': 'downloadLot'
+		    'click .downloadMetaLotButton': 'downloadLot'
 	    },
 
 	    initialize: function () {
@@ -199,7 +199,7 @@ $(function() {
 		    var lisb = window.configuration.metaLot.lotCalledBatch;
 		    if (this.model.get('lot').isNew()) {
 			    this.$('.newLotButton').hide();
-			    this.$('.downloadLotButton').hide();
+			    this.$('.downloadMetaLotButton').hide();
 			    this.$('.deleteButton').hide();
 			    this.$('.saveButton').addClass('saveImage');
 			    this.$('.saveButton').removeClass('updateImage');
