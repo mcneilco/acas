@@ -190,7 +190,9 @@ exports.ensureAuthenticated = (req, res, next) ->
 	if config.all.server.security.saml.use == true
 			exports.ssoRelayStateRedirect(req, res, next)
 	else
-		# If Authentication strategy is not SAML then redirect to the login page
+		# If Authentication strategy is not SAML then send the login page
+		# And set the status code to 401
+		res.statusCode = 401
 		exports.loginPage(req, res, next)
 
 exports.ensureCmpdRegAdmin = (req, res, next) ->
