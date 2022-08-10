@@ -426,13 +426,6 @@ class ExperimentBrowserController extends Backbone.View
 				@serviceReturn = null
 			dataType: 'json'
 
-
-
-
-		
-
-
-
 	setupExperimentSummaryTable: (experiments) =>
 		@destroyExperimentSummaryTable()
 
