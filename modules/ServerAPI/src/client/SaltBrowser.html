@@ -1,116 +1,120 @@
-<script type="text/template" id="SaltSimpleSearchView" xmlns="http://www.w3.org/1999/html">
-    <div class="navbar" style="margin-bottom: 0px; ">
-        <div class="navbar-inner" style="border-bottom-left-radius:	0px; border-bottom-right-radius:	0px;">
-            <div class="control-group" style="margin-top: 5px; margin-bottom: 5px;">
-                <div class="input-append">
-                    <input class="bv_saltSearchTerm" style="
-							padding-right: 14px;
-							border-top-left-radius: 15px;
-							border-bottom-left-radius: 15px;
-							" type="text" placeholder="Search for salts">
-                    <button class="btn bv_doSearch add-on" style="
-							border-top-right-radius: 15px;
-							border-bottom-right-radius: 15px;
-							height: 30px;
-							margin-top: 0px;
-							background-color: #fff;
-							border-left: 0px;
-							border-bottom: 1px solid #cccccc;
-							border-right: 1px solid #cccccc;
-							border-top: 1px solid #cccccc;
-              box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
-              width: 2.5em; padding-right: 0.8em;transition: border 0.2s linear 0s, box-shadow 0.2s linear 0s;" type="button" disabled>
-                        <i class="icon-search bv_doSearchIcon"></i>
-                        <i class="icon-remove bv_clearSearchIcon hide"></i>
-                    </button>
-                    <button type="button" class="btn bv_downloadSaltBtn pull-right" style="margin-top:0px;">Download All Salts SDF</button>
-                    <button type="button" class="btn bv_createNewSaltBtn pull-right" style="margin-top:0px;">Create New Salt</button>
+<div class="bv_saltBrowserCore">
+    <script type="text/template" id="SaltSimpleSearchView" xmlns="http://www.w3.org/1999/html">
+        <div class="navbar" style="margin-bottom: 0px; ">
+            <div class="navbar-inner" style="border-bottom-left-radius:	0px; border-bottom-right-radius:	0px;">
+                <div class="control-group" style="margin-top: 5px; margin-bottom: 5px;">
+                    <div class="input-append">
+                        <input class="bv_saltSearchTerm" style="
+                                padding-right: 14px;
+                                border-top-left-radius: 15px;
+                                border-bottom-left-radius: 15px;
+                                " type="text" placeholder="Search for salts">
+                        <button class="btn bv_doSearch add-on" style="
+                                border-top-right-radius: 15px;
+                                border-bottom-right-radius: 15px;
+                                height: 30px;
+                                margin-top: 0px;
+                                background-color: #fff;
+                                border-left: 0px;
+                                border-bottom: 1px solid #cccccc;
+                                border-right: 1px solid #cccccc;
+                                border-top: 1px solid #cccccc;
+                box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
+                width: 2.5em; padding-right: 0.8em;transition: border 0.2s linear 0s, box-shadow 0.2s linear 0s;" type="button" disabled>
+                            <i class="icon-search bv_doSearchIcon"></i>
+                            <i class="icon-remove bv_clearSearchIcon hide"></i>
+                        </button>
+                        <button type="button" class="btn bv_downloadSaltBtn pull-right" style="margin-top:0px;">Download All Salts SDF</button>
+                        <button type="button" class="btn bv_createNewSaltBtn pull-right" style="margin-top:0px;">Create New Salt</button>
+                    </div>
+                    <div class="right-aligned-buttons"></div>
                 </div>
-                <div class="right-aligned-buttons"></div>
+            </div>
+        </div>
+
+    </script>
+
+    <script type="text/template" id="SaltRowSummaryView" xmlns="http://www.w3.org/1999/html">
+        <td class='bv_molName'><%-saltName%></td>
+        <td class='bv_abbrev'><%-abbrev%></td>
+        <td class='bv_molFormula'><%-molFormula%></td>
+        <td class='bv_molWeight'><%-molWeight%></td>
+        <td class='bv_charge'><%-charge%></td>
+    </script>
+
+    <script type="text/template" id="SaltSummaryTableView" xmlns="http://www.w3.org/1999/html">
+        <table class="table table-bordered table-striped table-hover" style="margin: 0px; padding: 0px; border: 0px; width: 100%; ">
+            <thead style="">
+            <tr>
+                <th style="width: 125px;">Abbreviation</th>
+                <th style="width: 125px;">Salt Name</th>
+                <th style="width: 125px;">Formula</th>
+                <th style="width: 125px;">Molecular Weight</th>
+                <th style="width: 125px;">Charge</th>
+            </tr>
+            </thead>
+            <tbody style="">
+
+            </tbody>
+        </table>
+    </script>
+</div>
+
+<script type="text/template" id="SaltBrowserView" xmlns="http://www.w3.org/1999/html">
+
+    <div class="bv_saltBrowserCoreContainer">
+        <div class="bv_saltSearchController" style="padding-bottom: 0px;"></div>
+        <div class="" style=" border: 1px solid #d4d4d4; border-top: 0px; margin: 0px; padding: 0px; ">
+
+            <div class="bv_searchSaltsStatusIndicator" style="height: 280px;">
+                <table width="100%">
+                    <thead>
+                    <tr><td style="display: none;">placeholder</td></tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td style="text-align: center; width: 100%; align-content: center; height: 250px;">
+                            <h5 class="bv_noMatchingSaltsFoundMessage hide">No Matching Salts Found</h5>
+                            <h5 class="bv_moreSpecificSaltSearchNeeded hide">A more specific search term is required.</h5>
+                            <h5 class="bv_errorOccurredPerformingSearch hide">An error occurred while searching for the salt.</h5>
+
+                            <div class="bv_saltBrowserSearchInstructions">
+                                <i class="icon-search bv_doSearchIcon"></i>
+                                Salt Browser
+                            </div>
+                            <div class="hide bv_searchingSaltsMessage" style="margin: auto;">
+                                <h5>Searching for Salts containing text "<i class="bv_exptSearchTerm"></i>"</h5>
+                                <div class="progress progress-striped active " style="width: 90%; margin: auto;">
+                                    <div class="bar" style="width: 100%; margin: auto;"></div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="bv_saltTableController hide" style="margin:0px; padding:10px; overflow: auto; overflow: auto;"></div>
+        </div>
+        <div class="well well-small bv_saltControllerContainer hide" style="margin-top: 10px;">
+            <div>
+                <button class="btn btn-danger bv_deleteSalt">Delete</button>
+                <button class="btn bv_editSalt pull-right">Edit</button>
+            </div>
+            <hr style="margin-top:40px;"/>
+            <div class="row-fluid">
+                <div class="bv_saltController hide"></div>
             </div>
         </div>
     </div>
 
-</script>
-
-<script type="text/template" id="SaltRowSummaryView" xmlns="http://www.w3.org/1999/html">
-    <td class='bv_molName'><%-saltName%></td>
-    <td class='bv_abbrev'><%-abbrev%></td>
-    <td class='bv_molFormula'><%-molFormula%></td>
-    <td class='bv_molWeight'><%-molWeight%></td>
-    <td class='bv_charge'><%-charge%></td>
-</script>
-
-<script type="text/template" id="SaltSummaryTableView" xmlns="http://www.w3.org/1999/html">
-    <table class="table table-bordered table-striped table-hover" style="margin: 0px; padding: 0px; border: 0px; width: 100%; ">
-        <thead style="">
-        <tr>
-            <th style="width: 125px;">Abbreviation</th>
-            <th style="width: 125px;">Salt Name</th>
-            <th style="width: 125px;">Formula</th>
-            <th style="width: 125px;">Molecular Weight</th>
-            <th style="width: 125px;">Charge</th>
-        </tr>
-        </thead>
-        <tbody style="">
-
-        </tbody>
-    </table>
-</script>
-
-<script type="text/template" id="SaltBrowserView" xmlns="http://www.w3.org/1999/html">
-
-    <div class="bv_saltSearchController" style="padding-bottom: 0px;"></div>
-    <div class="" style=" border: 1px solid #d4d4d4; border-top: 0px; margin: 0px; padding: 0px; ">
-
-        <div class="bv_searchSaltsStatusIndicator" style="height: 280px;">
-            <table width="100%">
-                <thead>
-                <tr><td style="display: none;">placeholder</td></tr>
-                </thead>
-                <tbody>
-                <tr>
-                    <td style="text-align: center; width: 100%; align-content: center; height: 250px;">
-                        <h5 class="bv_noMatchingSaltsFoundMessage hide">No Matching Salts Found</h5>
-                        <h5 class="bv_moreSpecificSaltSearchNeeded hide">A more specific search term is required.</h5>
-                        <h5 class="bv_errorOccurredPerformingSearch hide">An error occurred while searching for the salt.</h5>
-
-                        <div class="bv_saltBrowserSearchInstructions">
-                            <i class="icon-search bv_doSearchIcon"></i>
-                            Salt Browser
-                        </div>
-                        <div class="hide bv_searchingSaltsMessage" style="margin: auto;">
-                            <h5>Searching for Salts containing text "<i class="bv_exptSearchTerm"></i>"</h5>
-                            <div class="progress progress-striped active " style="width: 90%; margin: auto;">
-                                <div class="bar" style="width: 100%; margin: auto;"></div>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-                </tbody>
-                </tbody>
-            </table>
-        </div>
-
-        <div class="bv_saltTableController hide" style="margin:0px; padding:10px; overflow: auto; overflow: auto;"></div>
-    </div>
-    <div class="well well-small bv_saltControllerContainer hide" style="margin-top: 10px;">
-        <div>
-            <button class="btn btn-danger bv_deleteSalt">Delete</button>
-            <button class="btn bv_editSalt pull-right">Edit</button>
-        </div>
-        <hr style="margin-top:40px;"/>
-        <div class="row-fluid">
-            <div class="bv_saltController hide"></div>
-        </div>
-    </div>
-
     <!-- CREATE SALT SECTION -->
-    <div class="modal hide bv_createSalt">
-        <div class="modal-header">
+    <div class="hide bv_createSalt">
+        <div class="header">
             <h3>Register New Salt</h3>
         </div>
-        <div class="modal-body">
+        <div class="body">
             <!-- Input Salt Section-->
             <div class="bv_chemicalStructureForm">
             </div>
@@ -121,8 +125,9 @@
             <input type="text" id="abbrevName" name="abbrevName" class="bv_abbrevName"><br>
             <label for="saltName">Name:</label><br>
             <input type="text" id="saltName" name="saltName" class="bv_saltName">
+            <br>
         </div>
-        <div class="modal-footer">
+        <div class="footer">
 		    <span class="bv_createButtons">
 		      <a href="#" class="btn btn-primary bv_cancelCreate">Back</a>
 		      <a href="#" class="btn btn-danger bv_confirmCreateSaltButton">Next</a>
@@ -133,11 +138,11 @@
         </div>
     </div>
     <!-- Confirmation of Values Section -->
-    <div class="modal hide bv_confirmCreateSalt">
-        <div class="modal-header">
+    <div class="hide bv_confirmCreateSalt">
+        <div class="header">
             <h3>Confirm Register of New Salt</h3>
         </div>
-        <div class="modal-body">
+        <div class="body">
             <label for="abbrevName">Abbreviation: </label><br>
             <input type="text" id="abbrevName" name="abbrevName" class="bv_abbrevNameConfirm">
             <label for="saltName">Name: </label><br>
@@ -151,7 +156,7 @@
             <label for="saltStruct">Structure: </label><br>
             <div class="bv_saltStructConfirm"></div>
         </div>
-        <div class="modal-footer">
+        <div class="footer">
 		    <span class="bv_createConfirmButtons">
 		      <a href="#" class="btn btn-primary bv_backConfirmCreate">Back</a>
               <a href="#" class="btn btn-danger bv_cancelConfirmCreate">Cancel</a>
@@ -182,11 +187,11 @@
 
 
     <!-- Edit Salt Section: Change Values-->
-    <div class="modal hide bv_editSaltWindow">
-        <div class="modal-header">
+    <div class="hide bv_editSaltWindow">
+        <div class="header">
             <h3>Edit Salt</h3>
         </div>
-        <div class="modal-body">
+        <div class="body">
             <div class="bv_editChemicalStructureForm">
             </div>
             <p><i>Use the sketcher to sepcify the molecular structure of the salt. Pay close attention to charges as they will be used in calculating Lot Molecular Weight. Use the + and - buttons to add positive or negative charges</i></p>
@@ -196,8 +201,9 @@
             <input type="text" id="abbrevNameEdit" name="abbrevNameEdit" class="bv_abbrevNameEdit"><br>
             <label for="saltName">Name:</label><br>
             <input type="text" id="saltNameEdit" name="saltNameEdit" class="bv_saltNameEdit">
+            <br>
         </div>
-        <div class="modal-footer">
+        <div class="footer">
             <span class="bv_createButtons">
                 <a href="#" class="btn btn-primary bv_cancelEdit">Back</a>
                 <a href="#" class="btn btn-danger bv_confirmEditSaltButton">Next</a>
@@ -205,11 +211,11 @@
         </div>
     </div>
     <!-- Edit Salt Section: Confirm Changes-->
-    <div class="modal hide bv_confirmEditSalt">
-        <div class="modal-header">
+    <div class="hide bv_confirmEditSalt">
+        <div class="header">
             <h3>Edit Salt: Review Dependencies</h3>
         </div>
-        <div class="modal-body">
+        <div class="body">
             <label for="abbrevName">Abbreviation: </label><br>
             <input type="text" id="abbrevName" name="abbrevName" class="bv_abbrevNameEditConfirm" readonly><br>
             <label for="saltName">Name: </label><br>
@@ -223,8 +229,14 @@
             <label for="saltStruct">Structure: </label><br>
             <div class="bv_saltStructEditConfirm"></div>
             <br>
+            <br>
+            <br>
             <h5>Dependencies, Warnings, and Errors:</h5>
-            <div class="bv_saltDependencies"></div>
+            <div class='bv_notifications row span7' style="padding: 10px;"></div>
+            <br>
+            <br>
+            <br>
+            <br>
         </div>
         <!-- Edit Status Indicator -->
         <div class="bv_editStatusIndicator hide">
@@ -238,7 +250,7 @@
                 </td>
             </tr>
         </div>
-        <div class="modal-footer">
+        <div class="footer">
 		    <span class="bv_editConfirmButtons">
 		      <a href="#" class="btn btn-primary bv_backConfirmEdit">Back</a>
               <a href="#" class="btn btn-danger bv_cancelConfirmEdit">Cancel</a>
@@ -246,8 +258,8 @@
 			  </span>
         </div>
     </div>
-    <div class="modal hide bv_editSaltStatus">
-        <div class="modal-body">
+    <div class="hide bv_editSaltStatus">
+        <div class="body">
             <!-- Successful Edit Message -->
             <div class="bv_saltEditedSuccessfullyMessage hide">
                 <p>Salt <span class="bv_saltCodeName"></span> has successfully been edited</p>
@@ -256,8 +268,9 @@
             <div class="bv_errorEditingSaltMessage hide">
                 <p>An error occured editing Salt <span class="bv_saltCodeName"></span>.  Please contact support for additional help.</p>
             </div>
+            <br>
         </div>
-        <div class="modal-footer">
+        <div class="footer">
 		    <span class="bv_editConfirmButtons">
               <a href="#" class="btn btn-danger bv_okayEditButton hide">Okay</a>
 			  </span>
