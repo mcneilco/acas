@@ -5,8 +5,6 @@ Add this line to public/src/modules/ModuleMenus/src/client/ModuleMenusConfigurat
 
 ###
 
-path = require 'path'
-
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/experimentsForProtocol/:protocolCode', loginRoutes.ensureAuthenticated, exports.experimentsForProtocol
