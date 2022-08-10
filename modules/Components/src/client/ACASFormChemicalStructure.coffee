@@ -170,6 +170,9 @@ class MarvinJSChemicalStructureController extends Backbone.View
 		, (error) =>
 			alert("Cannot retrieve MarvinSketch sketcher instance from iframe:"+error);
 
+	getMol: -> 
+		@getMolAsync
+
 	getMolAsync: (callback) ->
 		@marvinSketcherInstance.exportStructure(@exportFormat).then (molecule) =>
 			console.dir molecule, depth: 3

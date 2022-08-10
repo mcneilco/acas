@@ -198,25 +198,36 @@ class SaltBrowserController extends Backbone.View
 				@$('.bv_structureHolder').html pngImage 
 
 				@$('.bv_editSalt').show()
-				if window.conf.salt?.editingRoles?
-					editingRoles = window.conf.salt.editingRoles.split(",")
-					if !UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, editingRoles)
+				if window.conf.salt?.adminRoles?
+					adminRoles = window.conf.salt.adminRoles.split(",")
+					if !UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, adminRoles)
 						@$('.bv_editSalt').hide()
 
 				@$('.bv_deleteSalt').show()
-				if window.conf.salt?.deletingRoles?
-					deletingRoles= window.conf.salt.deletingRoles.split(",")
-					if !UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, deletingRoles)
+				if window.conf.salt?.adminRoles?
+					adminRoles= window.conf.salt.adminRoles.split(",")
+					if !UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, adminRoles)
 						@$('.bv_deleteSalt').hide()
 			error: (result) =>
 				console.log(result)
 		)
 
+
 	handleCreateSaltClicked: =>
 		@$('.bv_createSalt').show()
-		@chemicalStructureController = new KetcherChemicalStructureController 
+
+		# Chemical Structure Controller Set by Sketcher Config Setting 
+		@chemicalStructureController = null
+		if window.conf.cmpdreg.sketcher == 'marvin'
+			@chemicalStructureController = new MarvinJSChemicalStructureController
+		else if  window.conf.cmpdreg.sketcher  == 'ketcher'
+			@chemicalStructureController = new KetcherChemicalStructureController 
+		else if window.conf.cmpdreg.sketcher == 'maestro'
+			@chemicalStructureController = new ACASFormChemicalStructureController
+		else 
+			console.log("No Chemical Sketcher Configured!")
+			alert("Please contact your ACAS System Admin. There is no chemical sketcher configured.")
 		$('.bv_chemicalStructureForm').html @chemicalStructureController.render().el
-		# Sketcher should be controlled by CReg sketcher settings!
 
 	handleConfirmCreateSaltClicked: =>
 		fieldsFilled = true
@@ -232,6 +243,10 @@ class SaltBrowserController extends Backbone.View
 		if (saltStruct == "" || saltStruct == null)
 			fieldsFilled = false
 		
+		if (!fieldsFilled)
+			console.log("User Attempted to Pass Empty Fields")
+			# Need to Alert User of Empty Fields Somehow 
+			alert('Please fill in name, abbrev, and structure fields!')
 		if (fieldsFilled)
 			saltDict = 
 			{
@@ -426,7 +441,18 @@ class SaltBrowserController extends Backbone.View
 
 		molStr = @saltController.model.get("molStructure")
 
-		@chemicalStructureController = new KetcherChemicalStructureController 
+		# Chemical Structure Controller Set by Sketcher Config Setting 
+		@chemicalStructureController = null
+		if window.conf.cmpdreg.sketcher == 'marvin'
+			@chemicalStructureController = new MarvinJSChemicalStructureController
+		else if  window.conf.cmpdreg.sketcher  == 'ketcher'
+			@chemicalStructureController = new KetcherChemicalStructureController 
+		else if window.conf.cmpdreg.sketcher == 'maestro'
+			@chemicalStructureController = new ACASFormChemicalStructureController
+		else 
+			console.log("No Chemical Sketcher Configured!")
+			alert("Please contact your ACAS System Admin. There is no chemical sketcher configured.")
+			
 		$('.bv_editChemicalStructureForm').html @chemicalStructureController.render().el
 		@chemicalStructureController.on('sketcherLoaded', =>
 			@chemicalStructureController.setMol(molStr)
