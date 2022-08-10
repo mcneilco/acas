@@ -322,7 +322,7 @@ $(function() {
 	    deleteLotRequest: function () {
 		    this.trigger('clearErrors', "MetaLotController");
 		    this.trigger('clearErrors', "LotController");
-			this.delegateEvents({}); // stop listening to buttons
+		    this.delegateEvents({}); // stop listening to buttons
 		    $(this.el).empty();
 		    this.deleteLotController = new DeleteLotController({
 			    el: $(this.el),
