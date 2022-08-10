@@ -144,24 +144,21 @@ exports.isUserAdmin = (user) ->
 exports.findByUsername = (username, fn) ->
 	return exports.getUser username, fn
 
-formatSystemRolesFromSSOGroups = (ssoGroups) =>
-	# Formats the sso roles into ACAS roles
-	# Case insensitive check for "CMPDREG" in the name assigned the role to the lsKind 'CmpdReg'
-	# if not matched, it assigns to role to the lsKind 'ACAS'
-	roles = []
-	if ssoGroups?
-		if typeof ssoGroups == "string"
-			groups = [ssoGroups]
-		for group in ssoGroups
-			roleName = group.toUpperCase()
-			lsKind = 'ACAS'
-			if roleName.indexOf("CMPDREG") > -1
-				lsKind = 'CmpdReg'
-			roles.push
-				lsType: 'System'
-				lsKind: lsKind
-				roleName: "ROLE_#{roleName}"
+formatSystemRolesFromSSOProfile = (profile) =>
+	# Map Profile Attributes to ACAS/CmpdReg System Roles
+	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 	
+	# Parse the config which maps the profile attributes to system roles
+	profileGroupToACASRoles = JSON.parse(config.all.server.security.saml.profileAttributeToSystemRoles)
+	lsType = 'System'
+	roles = []
+	for profileGroup in profileGroupToACASRoles
+		if profile[profileGroup.ssoName]?
+			roles.push({
+				lsType: lsType
+				lsKind: profileGroup.lsKind
+				roleName: profileGroup.roleName
+			})
 	return roles
 
 exports.ssoLoginStrategy = (req, profile, callback) ->
@@ -183,7 +180,6 @@ exports.ssoLoginStrategy = (req, profile, callback) ->
 	newFirstName = profile[config.all.server.security.saml.firstNameAttribute]
 	newLastName = profile[config.all.server.security.saml.lastNameAttribute]
 	newEmail = profile[config.all.server.security.saml.emailAttribute]
-	ssoGroups = profile[config.all.server.security.saml.groupAttribute]
 
 	# Check if author exists
 	[err, savedAuthor] = await serverUtilityFunctions.promisifyRequestResponseStatus(authorRoutes.getAuthorByUsernameInternal, [userName])
@@ -248,7 +244,7 @@ exports.ssoLoginStrategy = (req, profile, callback) ->
 		console.log "Checking for roles to sync"
 
 		# Format sso groups into ACAS system roles [{roleName: , lsType: 'System', lsKind: 'ACAS'/'CmpdReg'}]
-		ssoSystemRoles = formatSystemRolesFromSSOGroups(ssoGroups)
+		ssoSystemRoles = formatSystemRolesFromSSOProfile(profile)
 		console.log("Found #{ssoSystemRoles.length} 'ACAS'/'CMPDREG' roles in sso profile for author #{savedAuthor.userName}, #{JSON.stringify(ssoSystemRoles)}")
 
 		# Automatically sync all SSO roles to ACAS roles
