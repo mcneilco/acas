@@ -360,9 +360,7 @@ class ExperimentBrowserController extends Backbone.View
 	downloadFiles: =>
 		#extract the experiment data from the summary table
 		experimentMetadata = @experimentSummaryTable.collection.models
-		#console.log experimentMetadata
-		#console.log JSON.stringify(experimentMetadata)
-
+		
 		#collect the codes of the experiments that are currently shown
 		table = $(".bv_experimentTableController .dataTables_wrapper .table").dataTable()
 		filteredExperimentCodes = []
