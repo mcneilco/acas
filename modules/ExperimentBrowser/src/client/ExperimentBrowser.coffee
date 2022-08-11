@@ -161,6 +161,7 @@ class ExperimentSimpleSearchController extends AbstractFormController
 		$(@el).empty()
 		$(@el).html @template()
 
+
 	updateExperimentSearchTerm: (e) =>
 		ENTER_KEY = 13
 		experimentSearchTerm = $.trim(@$(".bv_experimentSearchTerm").val())
@@ -210,8 +211,6 @@ class ExperimentSimpleSearchController extends AbstractFormController
 					# re-enable the search text field regardless of if any results found
 					@$(".bv_experimentSearchTerm").attr "disabled", false
 					@$(".bv_doSearch").attr "disabled", false
-
-
 
 class ExperimentRowSummaryController extends Backbone.View
 	tagName: 'tr'
@@ -345,6 +344,7 @@ class ExperimentBrowserController extends Backbone.View
 		"click .bv_duplicateExperiment": "handleDuplicateExperimentClicked"
 		"click .bv_confirmDeleteExperimentButton": "handleConfirmDeleteExperimentClicked"
 		"click .bv_cancelDelete": "handleCancelDeleteClicked"
+		'click .bv_downloadFiles': 'downloadFiles'
 
 	initialize: ->
 		template = _.template( $("#ExperimentBrowserView").html(),  {includeDuplicateAndEdit: @includeDuplicateAndEdit} );
@@ -356,6 +356,73 @@ class ExperimentBrowserController extends Backbone.View
 			includeDuplicateAndEdit: @includeDuplicateAndEdit
 		@searchController.render()
 		@searchController.on "searchReturned", @setupExperimentSummaryTable.bind(@)
+
+	downloadFiles: =>
+		#extract the experiment data from the summary table
+		experimentMetadata = @experimentSummaryTable.collection.models
+		
+		#collect the codes of the experiments that are currently shown
+		table = $(".bv_experimentTableController .dataTables_wrapper .table").dataTable()
+		filteredExperimentCodes = []
+		for filteredExperiments in table._('tr', {'filter': 'applied'})
+			filteredExperimentCodes.push filteredExperiments[0]
+		
+		#create an array to store all the experiment's files
+		experimentFiles = []
+		for experimentData in experimentMetadata
+			#if the experiment code is in the filtered codes, search for associated files
+			if experimentData.attributes.codeName in filteredExperimentCodes
+				for experimentLsState in experimentData.attributes.lsStates.models
+					if experimentLsState.attributes.lsKind == "experiment metadata"
+						for experimentLsValue in experimentLsState.attributes.lsValues.models
+							if experimentLsValue.attributes.fileValue
+								#add files to experimentFiles
+								experimentFiles.push "dataFiles/" + experimentLsValue.attributes.fileValue
+
+		#Get today's date to timestamp any experiment file exports
+		today = new Date
+		dd = today.getDate()
+		mm = today.getMonth() + 1
+		yyyy = today.getFullYear()
+		if dd < 10
+			dd = '0' + dd
+		if mm < 10
+			mm = '0' + mm
+		today = '_' + mm + '_' + dd + '_' + yyyy
+
+		#construct request
+		dataToPost =
+			fileName: "experiment_files" + today
+			mappings: JSON.parse(JSON.stringify(experimentFiles))
+			userName: window.AppLaunchParams.loginUser.username 
+
+		#send all experiment filenames to backend to zip up
+		$.ajax
+			type: 'POST'
+			url: "/api/exportExperimentFiles"
+			data: dataToPost
+			timeout: 6000000
+			success: (response) =>
+				#Since we can't directly send the .zip file to download it...
+				#...we create a hidden link with the download path and automatically click on it
+				a = document.createElement('a');
+				a.style.display = 'none';
+				a.href = "dataFiles/" + response;
+				document.body.appendChild(a);
+				a.click();
+
+				#Update GUI to indicate succesful download
+				$(".bv_downloadWarning").hide()
+				$(".bv_downloadSuccess").show()
+
+			error: (err) =>
+				console.log "Could not download files" + err
+
+				#Update GUI to indicate files could not be downloaded
+				$(".bv_downloadSuccess").hide()
+				$(".bv_downloadWarning").show()
+				@serviceReturn = null
+			dataType: 'json'
 
 	setupExperimentSummaryTable: (experiments) =>
 		@destroyExperimentSummaryTable()
