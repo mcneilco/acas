@@ -958,17 +958,7 @@ class FileRowSummaryController extends Backbone.View
 			#remove special characters from the links to prevent errors, but not from the displayed names
 			fileLink: window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" + encodeURIComponent(fileName)
 			reportLink: window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" + encodeURIComponent(reportName)
-		$(@el).html(@template(toDisplay))
-
-		#Check whether lots in the bulk file have been updated since they were registered
-		$.ajax
-			type: 'GET'
-			url: "/api/cmpdRegBulkLoader/checkForBulkLoadFileModifications/" + reportID
-			dataType: "json"
-			success: (response) =>
-				@$('.bv_bulkFileUpdated').html response
-			error: (err) =>
-				@$('.bv_bulkFileUpdated').html "N/A"
+		$(@el).html(@template(toDisplay))		
 		@
 
 class FileSummaryTableController extends Backbone.View
