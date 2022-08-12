@@ -102,7 +102,17 @@ class Protocol extends BaseEntity
 			maxY.set numericValue: 120.0
 
 		maxY
+			
+	getStrictEndpointMatching: ->
+		strictEndpointMatching = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "protocol metadata", "codeValue", "strict endpoint matching"
+		if strictEndpointMatching.get('codeValue') is undefined or strictEndpointMatching.get('codeValue') is ""
+			strictEndpointMatching.set codeValue: "false"
+			strictEndpointMatching.set codeType: "boolean"
+			strictEndpointMatching.set codeKind: "boolean"
+			strictEndpointMatching.set codeOrigin: "ACAS DDICT"
 
+		strictEndpointMatching
+		
 	validate: (attrs) ->
 		errors = super(attrs)
 		if !errors?
@@ -193,6 +203,7 @@ class ProtocolBaseController extends BaseEntityController
 			"click .bv_closeDeleteProtocolModal": "handleCloseProtocolModal"
 			"click .bv_confirmDeleteProtocolButton": "handleConfirmDeleteProtocolClicked"
 			"click .bv_cancelDelete": "handleCancelDeleteClicked"
+			"click .bv_strictEndpointMatchingCheckbox": "handleStrictEndpointMatchingChanged"
 
 		)
 
@@ -290,6 +301,7 @@ class ProtocolBaseController extends BaseEntityController
 			@$('.bv_creationDate').val UtilityFunctions::convertMSToYMDDate(@model.getCreationDate().get('dateValue'))
 		@$('.bv_assayTreeRule').val @model.getAssayTreeRule().get('stringValue')
 		@$('.bv_assayPrinciple').val @model.getAssayPrinciple().get('clobValue')
+		@$('.bv_strictEndpointMatchingCheckbox input').val(@model.getStrictEndpointMatching().get('codeValue'))
 		showCurveDisplayParams = true
 		if window.conf.protocol?.showCurveDisplayParams?
 			showCurveDisplayParams = window.conf.protocol.showCurveDisplayParams
@@ -499,3 +511,6 @@ class ProtocolBaseController extends BaseEntityController
 			value = parseFloat value
 		@handleValueChanged "CurveDisplayMin", value
 
+	handleStrictEndpointMatchingChanged: =>
+		value = $('bv_strictEndpointMatchingCheckbox input').is(":checked")
+		@handleValueChanged "strictEndpointMatching", value
