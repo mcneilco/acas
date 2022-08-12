@@ -155,6 +155,11 @@ class SaltBrowserController extends Backbone.View
 			showPreview: false
 		@$('.bv_notifications').hide()
 
+		@createNotificationController = new LSNotificationController
+			el: @$('.bv_createNotifications')
+			showPreview: false
+		@$('.bv_createNotifications').hide()
+
 	setupSaltSummaryTable: (salts) =>
 		@destroySaltSummaryTable()
 
@@ -221,6 +226,12 @@ class SaltBrowserController extends Backbone.View
 
 
 	handleCreateSaltClicked: =>
+		@createNotificationController.clearAllNotificiations()
+
+		# Want to Clear Form Fields Here 
+		@$('.bv_abbrevName').val ""
+		@$('.bv_saltName').val ""
+
 		@$('.bv_saltBrowserCoreContainer').hide()
 		@$('bv_saltBrowserCore').hide()
 		@$('.bv_createSalt').show()
@@ -239,6 +250,7 @@ class SaltBrowserController extends Backbone.View
 		$('.bv_chemicalStructureForm').html @chemicalStructureController.render().el
 
 	handleConfirmCreateSaltClicked: =>
+
 		fieldsFilled = true
 		saltAbbrev = UtilityFunctions::getTrimmedInput @$('.bv_abbrevName')
 		if (saltAbbrev == "" || saltAbbrev == null)
@@ -274,39 +286,47 @@ class SaltBrowserController extends Backbone.View
 				contentType: 'application/json'
 				dataType: 'json'
 				success: (result) => # Result Success Should Be JSON of Salt
-					@$('.bv_createSalt').hide()
-					@$('.bv_confirmCreateSalt').show()
+					console.log(result)
+					console.log(result.length)
+					if result.length > 1 # If there's an error / warning and no salt 
+						@$('.bv_createNotifications').show()
+						@createNotificationController.clearAllNotificiations()
+						for feedback in result
+							@createNotificationController.addNotifications(@errorOwnerName, [{"errorLevel": feedback.level, "message":feedback.message}])
+					else 
+						@$('.bv_createNotifications').hide()
+						# Need to Parse Result Values Into Form Fields 
+						@$('.bv_createSalt').hide()
+						@$('.bv_confirmCreateSalt').show()
 
-					# Need to Parse Result Values Into Form Fields 
+						@$('.bv_abbrevNameConfirm').val result.abbrev
+						@$('.bv_saltNameConfirm').val result.name
+						@$('.bv_saltFormulaConfirm').val result.formula
+						@$('.bv_saltWeightConfirm').val "#{result.molWeight}"
+						@$('.bv_saltChargeConfirm').val "#{result.charge}"
 
-					@$('.bv_abbrevNameConfirm').val result.abbrev
-					@$('.bv_saltNameConfirm').val result.name
-					@$('.bv_saltFormulaConfirm').val result.formula
-					@$('.bv_saltWeightConfirm').val "#{result.molWeight}"
-					@$('.bv_saltChargeConfirm').val "#{result.charge}"
+						# Need to Render Preview of Structure 
+						requestJSON = {
+							"molStructure" : result.molStructure,
+							"height" : 200, 
+							"width" : 200, 
+							"format" : "png"
+						}
 
-					# Need to Render Preview of Structure 
-					requestJSON = {
-						"molStructure" : result.molStructure,
-						"height" : 200, 
-						"width" : 200, 
-						"format" : "png"
-					}
-
-					# Render Image
-					$.ajax(
-						type: 'POST'
-						url: "/api/chemStructure/renderMolStructureBase64"
-						contentType: 'application/json'
-						dataType: 'text'
-						data: JSON.stringify(requestJSON)
-						success: (base64ImagePNG) => # Rendered Image Should Be Displayed on Sever
-							pngSrc = "data:image/png;base64," + base64ImagePNG
-							pngImage = '<img src="' + pngSrc + '" />'
-							@$('.bv_saltStructConfirm').html pngImage 
-						error: (result) =>
-							console.log(result)
-							@$('.bv_saltStructConfirm').hide()
+						# Render Image
+						$.ajax(
+							type: 'POST'
+							url: "/api/chemStructure/renderMolStructureBase64"
+							contentType: 'application/json'
+							dataType: 'text'
+							data: JSON.stringify(requestJSON)
+							success: (base64ImagePNG) => # Rendered Image Should Be Displayed on Sever
+								pngSrc = "data:image/png;base64," + base64ImagePNG
+								pngImage = '<img src="' + pngSrc + '" />'
+								@$('.bv_saltStructConfirm').html pngImage 
+							error: (result) =>
+								console.log(result)
+								@$('.bv_saltStructConfirm').hide()
 
 					)
 
@@ -320,6 +340,7 @@ class SaltBrowserController extends Backbone.View
 	handleBackConfirmCreateClicked: => 
 		@$('.bv_confirmCreateSalt').hide()
 		@$('.bv_createSalt').show()
+		@$('.bv_createNotifications').hide()
 
 	handleCancelConfirmCreateClicked: => 
 		@$('.bv_confirmCreateSalt').hide()
@@ -367,11 +388,13 @@ class SaltBrowserController extends Backbone.View
 					@$('bv_saltBrowserCore').show()
 					# Reload Search
 					@searchController.doSearch("*")
+					@$('.bv_createNotifications').hide()
 				error: (errorMsg) =>
 					console.log(errorMsg)
 					@$('.bv_confirmCreateSalt').hide()
 					@$('.bv_errorCreatingSaltMessage').show()
 					@$('.bv_createSaltErrorMessageHolder') errorMsg
+					@$('.bv_createNotifications').hide()
 			)
 
 
