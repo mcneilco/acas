@@ -41,7 +41,7 @@ class ACASFormChemicalStructureExampleController extends Backbone.View
 	render: =>
 		$(@el).empty()
 		$(@el).html @template()
-#		@sketcher = new ACASFormChemicalStructureController
+#		@sketcher = new MaestroChemicalStructureController
 		@sketcher = new KetcherChemicalStructureController
 #		@sketcher = new MarvinJSChemicalStructureController
 			searchMode: false
@@ -64,9 +64,9 @@ class ACASFormChemicalStructureExampleController extends Backbone.View
 		mol = @sketcher.getChemDoodleJSON()
 		alert mol
 
-class ACASFormChemicalStructureController extends Backbone.View
+class MaestroChemicalStructureController extends Backbone.View
 	tagName: "DIV"
-	template: _.template($("#ACASFormChemicalStructureControllerView").html())
+	template: _.template($("#MaestroChemicalStructureControllerView").html())
 
 	initialize: (options) ->
 		@options = options

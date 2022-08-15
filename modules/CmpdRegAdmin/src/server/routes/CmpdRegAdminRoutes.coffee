@@ -282,6 +282,11 @@ exports.deleteCmpdRegEntity = (req, resp) ->
 			resp.statusCode = response.statusCode
 			resp.setHeader('Content-Type', 'application/json')
 			resp.json json
+		if response.statusCode == 409
+			console.log "Conflict! something is preventing CmpdRegEntity to be removed."
+			resp.statusCode = response.statusCode
+			resp.setHeader('Content-Type', 'application/json')
+			resp.json json
 		else
 			resp.statusCode = 404
 			console.log "got ajax error trying to delete #{entityType}"

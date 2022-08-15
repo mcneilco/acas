@@ -211,13 +211,13 @@ class SaltBrowserController extends Backbone.View
 
 				@$('.bv_editSalt').show()
 				if window.conf.salt?.adminRoles?
-					adminRoles = window.conf.salt.adminRoles.split(",")
+					adminRoles = window.conf.roles.cmpdreg.adminRole.split(",")
 					if !UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, adminRoles)
 						@$('.bv_editSalt').hide()
 
 				@$('.bv_deleteSalt').show()
 				if window.conf.salt?.adminRoles?
-					adminRoles= window.conf.salt.adminRoles.split(",")
+					adminRoles= window.conf.roles.cmpdreg.adminRole.split(",")
 					if !UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, adminRoles)
 						@$('.bv_deleteSalt').hide()
 			error: (result) =>
@@ -243,7 +243,7 @@ class SaltBrowserController extends Backbone.View
 		else if  window.conf.cmpdreg.sketcher  == 'ketcher'
 			@chemicalStructureController = new KetcherChemicalStructureController 
 		else if window.conf.cmpdreg.sketcher == 'maestro'
-			@chemicalStructureController = new ACASFormChemicalStructureController
+			@chemicalStructureController = new MaestroChemicalStructureController
 		else 
 			console.log("No Chemical Sketcher Configured!")
 			alert("Please contact your ACAS System Admin. There is no chemical sketcher configured.")
@@ -457,8 +457,9 @@ class SaltBrowserController extends Backbone.View
 			error: (errorMsg) =>
 				@$(".bv_deleteSaltStatus").show()
 				@$(".bv_deletingStatusIndicator").hide()
+				@$(".bv_deleteErrorMessage").html errorMsg.responseText
 				@$(".bv_errorDeletingSaltMessage").show()
-				@$(".bv_deleteErrorMessage").html errorMsg
+
 		)
 
 	handleCancelDeleteClicked: =>
@@ -490,7 +491,7 @@ class SaltBrowserController extends Backbone.View
 		else if  window.conf.cmpdreg.sketcher  == 'ketcher'
 			@chemicalStructureController = new KetcherChemicalStructureController 
 		else if window.conf.cmpdreg.sketcher == 'maestro'
-			@chemicalStructureController = new ACASFormChemicalStructureController
+			@chemicalStructureController = new MaestroChemicalStructureController
 		else 
 			console.log("No Chemical Sketcher Configured!")
 			alert("Please contact your ACAS System Admin. There is no chemical sketcher configured.")
