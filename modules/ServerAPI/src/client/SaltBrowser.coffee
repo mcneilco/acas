@@ -266,6 +266,9 @@ class SaltBrowserController extends Backbone.View
 		
 		if (!fieldsFilled)
 			console.log("User Attempted to Pass Empty Fields")
+			console.log(saltAbbrev)
+			console.log(saltName)
+			console.log(saltStruct)
 			# Need to Alert User of Empty Fields Somehow 
 			alert('Please fill in name, abbrev, and structure fields!')
 		if (fieldsFilled)
@@ -280,7 +283,7 @@ class SaltBrowserController extends Backbone.View
 			dryrun = true
 
 			$.ajax(
-				url: "/api/cmpdRegAdmin/salts/" + dryrun, 
+				url: "/api/cmpdRegAdmin/salts?dryrun=" + dryrun, 
 				type: 'POST', 
 				data: JSON.stringify(saltDict)
 				contentType: 'application/json'
@@ -377,7 +380,7 @@ class SaltBrowserController extends Backbone.View
 
 
 			$.ajax(
-				url: "/api/cmpdRegAdmin/salts/" + dryrun,
+				url: "/api/cmpdRegAdmin/salts?dryrun=" + dryrun,
 				type: 'POST', 
 				data: JSON.stringify(saltDict)
 				contentType: 'application/json'
@@ -521,7 +524,7 @@ class SaltBrowserController extends Backbone.View
 
 		$.ajax(
 			# This AJAX Call is Used to Collect Warnings and Errors If Salt is Edited 
-			url: "/api/cmpdRegAdmin/salts/edit/#{@saltController.model.get("id")}/" + dryrun,
+			url: "/api/cmpdRegAdmin/salts/edit/#{@saltController.model.get("id")}?dryrun=" + dryrun,
 			type: 'PUT',
 			data: JSON.stringify(saltDict)
 			contentType: 'application/json'
@@ -535,7 +538,7 @@ class SaltBrowserController extends Backbone.View
 
 				# This AJAX Call is Used to Collect Calculations of Newly Proposed Salt
 				$.ajax(
-					url: "/api/cmpdRegAdmin/salts/" + dryrun,
+					url: "/api/cmpdRegAdmin/salts?dryrun=" + dryrun,
 					type: 'POST', 
 					data: JSON.stringify(saltDict)
 					contentType: 'application/json'
@@ -607,7 +610,7 @@ class SaltBrowserController extends Backbone.View
 
 		# AJAX Call to Register New Edited Salt
 		$.ajax(
-			url: "/api/cmpdRegAdmin/salts/edit/#{@saltController.model.get("id")}/" + dryrun, 
+			url: "/api/cmpdRegAdmin/salts/edit/#{@saltController.model.get("id")}?dryrun=" + dryrun, 
 			type: 'PUT',
 			data: JSON.stringify(saltDict)
 			contentType: 'application/json'
