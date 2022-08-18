@@ -240,7 +240,9 @@ $(function() {
 			    }
 			    if (!this.model.get('lot').get("acls").write) {
 				    this.$('.saveButton').hide();
-				    this.$('.deleteButton').hide();
+				}
+				if (!this.model.get('lot').get("acls").delete) {
+					this.$('.deleteButton').hide();
 			    } else {
 					this.$('.deleteButton').html(lisb ? 'Delete Batch...' : 'Delete Lot...');
 			    }
