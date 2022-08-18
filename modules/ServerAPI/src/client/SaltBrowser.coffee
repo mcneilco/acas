@@ -535,6 +535,8 @@ class SaltBrowserController extends Backbone.View
 				
 				for feedback in result
 					@notificationController.addNotifications(@errorOwnerName, [{"errorLevel": feedback.level, "message":feedback.message}])
+					if feedback.level == "error"
+						@$(".bv_editSaltButton").hide()
 
 				# This AJAX Call is Used to Collect Calculations of Newly Proposed Salt
 				$.ajax(
@@ -595,6 +597,8 @@ class SaltBrowserController extends Backbone.View
 		)
 	
 	handleEditSaltButtonClicked: =>
+		@notificationController.clearAllNotificiations() 
+		
 		# Get Mol
 		saltStruct = @chemicalStructureController.getMol()
 
@@ -639,11 +643,13 @@ class SaltBrowserController extends Backbone.View
 		@$('bv_saltBrowserCore').show()
 
 	handleBackConfirmEditClicked: => 
+		@$(".bv_editSaltButton").show()
 		@$('.bv_notifications').hide()
 		@$('.bv_confirmEditSalt').hide()
 		@$('.bv_editSaltWindow').show()
 
 	handleCancelConfirmEditClicked: =>
+		@$(".bv_editSaltButton").show()
 		@$('.bv_confirmEditSalt').hide()
 		@$('.bv_editSaltWindow').hide()
 		@$('.bv_notifications').hide()
@@ -651,6 +657,7 @@ class SaltBrowserController extends Backbone.View
 		@$('bv_saltBrowserCore').show()
 
 	handleCancelEditSaltClicked: =>
+		@$(".bv_editSaltButton").show()
 		@$(".bv_editSaltWindow").hide()
 		@$('.bv_notifications').hide()
 		@$('.bv_saltBrowserCoreContainer').show()
