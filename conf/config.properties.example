@@ -697,6 +697,7 @@ client.cmpdreg.metaLot.showTareWeight=false
 client.cmpdreg.metaLot.showTotalAmountStored=false
 client.cmpdreg.metaLot.disableAliasEdit=false
 client.cmpdreg.metaLot.showLotInventory=false
+client.cmpdreg.metaLot.disableDeleteMyLots=true
 client.cmpdreg.metaLot.disableEditMyLots=false
 client.cmpdreg.metaLot.disableEditMyParents=true
 client.cmpdreg.metaLot.requireLotNumber=false
