@@ -70,6 +70,12 @@ class DeleteLotController extends Backbone.View
 
 		# Show the summary
 		@$(".bv_dependencySummary").show();
+
+		# Show the delete button if user can delete
+		if data.lot?.acls?.delete
+			@$('.deleteLotButton').show()
+		else
+			@$('.deleteLotButton').hide()
 		
 	handleBackToCregButtonClicked: ->
 		window.location.href = 	window.configuration.serverConnection.baseServerURL
@@ -171,12 +177,13 @@ class DeleteLotController extends Backbone.View
 			containerSummary += "</ul>"
 
 		errorSummary = "<h3>Errors</h3><ul>"
-		if linkedExperiments && (unreadableExperimentsCount > 0 || undeletableExperiments.length > 0)
-			@$('.deleteLotButton').hide()
-			errorSummary += "<li>You do not have the necessary permissions to delete associated experimental results. Please contact your Administrator for assistance.</li>"
-		else
-			@$('.deleteLotButton').show()
+		if data.lot?.acls?.delete
 			errorSummary += "<li>None</li>"
+		else
+			errorSummary += "<li>You do not have the permissions to delete this lot. Please contact your Administrator for assistance.</li>"
+			if linkedExperiments && (unreadableExperimentsCount > 0 || undeletableExperiments.length > 0)
+				errorSummary += "<li>You do not have the permissions to delete associated experimental results.</li>"
+
 		errorSummary += "</ul>"
 
 		warningSummary = "<h3>Warnings</h3><ul>"

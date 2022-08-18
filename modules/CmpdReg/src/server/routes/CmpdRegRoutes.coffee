@@ -242,7 +242,7 @@ exports.getMetaLotDependencies = (req, resp, next) ->
 		return
 
 	# Get the meta lot
-	[err, metaLot, statusCode] = await exports.getMetaLotInternal(req.params.lotCorpName, req.user, allowedProjects, getDeleteAcl=false)
+	[err, metaLot, statusCode] = await exports.getMetaLotInternal(req.params.lotCorpName, req.user, allowedProjects, getDeleteAcl=true)
 	if err?
 		console.log "User #{req.user.username} does not have permission to check dependencies for lot #{req.params.lotCorpName}"
 		resp.statusCode = statusCode
@@ -495,17 +495,23 @@ exports.getLotAcls = (lot, user, allowedProjects, checkDelete=true) ->
 
 	if lotAcls.getRead() && lotAcls.getWrite() && checkDelete
 		console.log "Checking delete acl for lot #{lot.corpName}"
-		# Do not need to fetch linked lots here because they do not matter when considering delete acls (linked lots are purely informational)
-		dependencies = await exports.getLotDependenciesInternal(lot, user, allowedProjects, false)
-		canDelete = true
-		for experiment in dependencies.linkedExperiments
-			console.log "experiment"
-			console.log experiment
-			if !experiment.acls.getDelete()
-				canDelete = false
-				break
-		if canDelete
-			lotAcls.setDelete(true)
+
+		# If disableDeleteMyLots is true then being the owner does not infer delete permission
+		if config.all.client.cmpdreg.metaLot.disableDeleteMyLots == true && !isCmpdRegAdmin
+			console.log "Disable delete my lots is true and user is not a cmpd reg admin so user #{user.username} cannot delete lot #{lot.corpName}"
+			lotAcls.setDelete(false)
+		else
+			# Do not need to fetch linked lots here because they do not matter when considering delete acls (linked lots are purely informational)
+			dependencies = await exports.getLotDependenciesInternal(lot, user, allowedProjects, false)
+			canDelete = true
+			for experiment in dependencies.linkedExperiments
+				console.log "experiment"
+				console.log experiment
+				if !experiment.acls.getDelete()
+					canDelete = false
+					break
+			if canDelete
+				lotAcls.setDelete(true)
 
 	console.log "User #{user.username} lot #{lot.corpName} lot acls #{JSON.stringify(lotAcls)}"
 	return lotAcls
