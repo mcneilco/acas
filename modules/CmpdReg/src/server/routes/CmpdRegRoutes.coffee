@@ -242,7 +242,7 @@ exports.getMetaLotDependencies = (req, resp, next) ->
 		return
 
 	# Get the meta lot
-	[err, metaLot, statusCode] = await exports.getMetaLotInternal(req.params.lotCorpName, req.user, allowedProjects, getDeleteAcl=false)
+	[err, metaLot, statusCode] = await exports.getMetaLotInternal(req.params.lotCorpName, req.user, allowedProjects, getDeleteAcl=true)
 	if err?
 		console.log "User #{req.user.username} does not have permission to check dependencies for lot #{req.params.lotCorpName}"
 		resp.statusCode = statusCode

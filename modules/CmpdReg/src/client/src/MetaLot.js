@@ -240,11 +240,9 @@ $(function() {
 			    }
 			    if (!this.model.get('lot').get("acls").write) {
 				    this.$('.saveButton').hide();
-			    }
-			    if (!this.model.get('lot').get("acls").delete) {
 				    this.$('.deleteButton').hide();
 			    } else {
-				    this.$('.deleteButton').html(lisb ? 'Delete Batch...' : 'Delete Lot...');
+					this.$('.deleteButton').html(lisb ? 'Delete Batch...' : 'Delete Lot...');
 			    }
 			    console.log("about to load inventory");
 			    console.log(window.configuration.metaLot.showLotInventory);
