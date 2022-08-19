@@ -3046,10 +3046,12 @@ subjectDataToDoseResponsePoints <- function(subjectData, modelFitTransformation)
   setnames(dt1, keepColumns, c("curveId", "rowID", "responseKind", "response", "responseUnits", "dose", "doseUnits"))
 
   dt2 <- subjectData[stateKind == 'preprocess flag' & valueType == "codeValue", c("linkID", "valueKind", "codeValue", "rowID"), with = FALSE]
+  # If there are flagged points, then pivot them into the correct data structure
   if(nrow(dt2) > 0) {
     dt2 <- dcast.data.table(dt2, "linkID+rowID ~ valueKind", value.var = "codeValue")
     setnames(dt2, c("linkID", "flag cause", "flag observation", "flag status"), c("curveId", "preprocessFlagCause", "preprocessFlagObservation", "preprocessFlagStatus"))
   } else {
+    # Otherwise manually create the correct data structure to be merged into the points data table later on
     dt2 <- data.table(rowID=integer(), "curveId"=integer(), "preprocessFlagCause"=character(), "preprocessFlagObservation"=character(), "preprocessFlagStatus"=character())
   }
 
