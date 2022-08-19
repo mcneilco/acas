@@ -3002,7 +3002,7 @@ getFitDataFromUploadOrganizedResults <- function(calculatedResults) {
         # We decided not to throw errors as this would be a breaking change for some workflows
         if(length(missing) > 0) {
             dt[ , missingParameters := TRUE]
-            missingParametersMessage <- paste0("The following numeric parameters were not found for curve id '", dt$curveId, "'.  Please provide numeric values for these parameters so that curves are drawn properly: ", paste(reportedParamLsKinds[missing], collapse = ", "))
+            missingParametersMessage <- paste0("The following numeric parameters were not found for curve id '", dt$curveId, "': ",paste(reportedParamLsKinds[missing], collapse = ", "), ". Please provide numeric values for these parameters so that curves are drawn properly.")
             warnUser(missingParametersMessage)
 
             # Attach the message to the row so we can reuse it in dose response summary table
@@ -3046,8 +3046,12 @@ subjectDataToDoseResponsePoints <- function(subjectData, modelFitTransformation)
   setnames(dt1, keepColumns, c("curveId", "rowID", "responseKind", "response", "responseUnits", "dose", "doseUnits"))
 
   dt2 <- subjectData[stateKind == 'preprocess flag' & valueType == "codeValue", c("linkID", "valueKind", "codeValue", "rowID"), with = FALSE]
-  dt2 <- dcast.data.table(dt2, "linkID+rowID ~ valueKind", value.var = "codeValue")    
-  setnames(dt2, c("linkID", "flag cause", "flag observation", "flag status"), c("curveId", "preprocessFlagCause", "preprocessFlagObservation", "preprocessFlagStatus"))
+  if(nrow(dt2) > 0) {
+    dt2 <- dcast.data.table(dt2, "linkID+rowID ~ valueKind", value.var = "codeValue")
+    setnames(dt2, c("linkID", "flag cause", "flag observation", "flag status"), c("curveId", "preprocessFlagCause", "preprocessFlagObservation", "preprocessFlagStatus"))
+  } else {
+    dt2 <- data.table(rowID=integer(), "curveId"=integer(), "preprocessFlagCause"=character(), "preprocessFlagObservation"=character(), "preprocessFlagStatus"=character())
+  }
 
   dt3 <- subjectData[stateKind == 'preprocess flag' & valueKind == "comment", c("linkID", "rowID", "stringValue"), with = FALSE]
   setnames(dt3, c("curveId", "rowID", "prepreprocessFlagComment"))
