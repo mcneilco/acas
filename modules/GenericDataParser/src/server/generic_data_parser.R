@@ -2986,10 +2986,10 @@ getFitDataFromUploadOrganizedResults <- function(calculatedResults) {
         # Get a list of the "fixed parameters", and describe if they are missing or not, and also produce a pretty value to be rendered later in the html summary
         for(p in 1:length(modelFit$paramNames)) {
             fixedParams[[modelFit$paramNames[p]]] <- list(value= NA_real_, formattedValue = NA_character_, missing = FALSE, ls_kind = reportedParamLsKinds[p])
-            if (paramOverrideColumns[p] %in% names(dt)) {
+            if (paramOverrideColumns[p] %in% names(dt) && class(dt[[paramOverrideColumns[p]]]) == "numeric") {
               fixedParams[[modelFit$paramNames[p]]]$value <- dt[[paramOverrideColumns[p]]]
               fixedParams[[modelFit$paramNames[p]]]$formattedValue <- format(dt[[paramOverrideColumns[p]]], digits = 4)
-            } else if (modelFit$paramNames[p] %in% names(dt)) {
+            } else if (modelFit$paramNames[p] %in% names(dt) && class(dt[[modelFit$paramNames[p]]]) == "numeric") {
               fixedParams[[modelFit$paramNames[p]]]$value <- dt[[modelFit$paramNames[p]]]
               fixedParams[[modelFit$paramNames[p]]]$formattedValue <- format(dt[[modelFit$paramNames[p]]], digits = 4)
             } else {
@@ -3002,7 +3002,7 @@ getFitDataFromUploadOrganizedResults <- function(calculatedResults) {
         # We decided not to throw errors as this would be a breaking change for some workflows
         if(length(missing) > 0) {
             dt[ , missingParameters := TRUE]
-            missingParametersMessage <- paste0("The following parameters were not found for curve id '", dt$curveId, "'.  Please provide values for these parameters so that curves are drawn properly: ", paste(reportedParamLsKinds[missing], collapse = ", "))
+            missingParametersMessage <- paste0("The following numeric parameters were not found for curve id '", dt$curveId, "': ",paste(reportedParamLsKinds[missing], collapse = ", "), ". Please provide numeric values for these parameters so that curves are drawn properly.")
             warnUser(missingParametersMessage)
 
             # Attach the message to the row so we can reuse it in dose response summary table
@@ -3046,8 +3046,14 @@ subjectDataToDoseResponsePoints <- function(subjectData, modelFitTransformation)
   setnames(dt1, keepColumns, c("curveId", "rowID", "responseKind", "response", "responseUnits", "dose", "doseUnits"))
 
   dt2 <- subjectData[stateKind == 'preprocess flag' & valueType == "codeValue", c("linkID", "valueKind", "codeValue", "rowID"), with = FALSE]
-  dt2 <- dcast.data.table(dt2, "linkID+rowID ~ valueKind", value.var = "codeValue")    
-  setnames(dt2, c("linkID", "flag cause", "flag observation", "flag status"), c("curveId", "preprocessFlagCause", "preprocessFlagObservation", "preprocessFlagStatus"))
+  # If there are flagged points, then pivot them into the correct data structure
+  if(nrow(dt2) > 0) {
+    dt2 <- dcast.data.table(dt2, "linkID+rowID ~ valueKind", value.var = "codeValue")
+    setnames(dt2, c("linkID", "flag cause", "flag observation", "flag status"), c("curveId", "preprocessFlagCause", "preprocessFlagObservation", "preprocessFlagStatus"))
+  } else {
+    # Otherwise manually create the correct data structure to be merged into the points data table later on
+    dt2 <- data.table(rowID=integer(), "curveId"=integer(), "preprocessFlagCause"=character(), "preprocessFlagObservation"=character(), "preprocessFlagStatus"=character())
+  }
 
   dt3 <- subjectData[stateKind == 'preprocess flag' & valueKind == "comment", c("linkID", "rowID", "stringValue"), with = FALSE]
   setnames(dt3, c("curveId", "rowID", "prepreprocessFlagComment"))
