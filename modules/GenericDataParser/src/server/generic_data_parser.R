@@ -2986,10 +2986,10 @@ getFitDataFromUploadOrganizedResults <- function(calculatedResults) {
         # Get a list of the "fixed parameters", and describe if they are missing or not, and also produce a pretty value to be rendered later in the html summary
         for(p in 1:length(modelFit$paramNames)) {
             fixedParams[[modelFit$paramNames[p]]] <- list(value= NA_real_, formattedValue = NA_character_, missing = FALSE, ls_kind = reportedParamLsKinds[p])
-            if (paramOverrideColumns[p] %in% names(dt)) {
+            if (paramOverrideColumns[p] %in% names(dt) && class(dt[[paramOverrideColumns[p]]]) == "numeric") {
               fixedParams[[modelFit$paramNames[p]]]$value <- dt[[paramOverrideColumns[p]]]
               fixedParams[[modelFit$paramNames[p]]]$formattedValue <- format(dt[[paramOverrideColumns[p]]], digits = 4)
-            } else if (modelFit$paramNames[p] %in% names(dt)) {
+            } else if (modelFit$paramNames[p] %in% names(dt) && class(dt[[modelFit$paramNames[p]]]) == "numeric") {
               fixedParams[[modelFit$paramNames[p]]]$value <- dt[[modelFit$paramNames[p]]]
               fixedParams[[modelFit$paramNames[p]]]$formattedValue <- format(dt[[modelFit$paramNames[p]]], digits = 4)
             } else {
@@ -3002,7 +3002,7 @@ getFitDataFromUploadOrganizedResults <- function(calculatedResults) {
         # We decided not to throw errors as this would be a breaking change for some workflows
         if(length(missing) > 0) {
             dt[ , missingParameters := TRUE]
-            missingParametersMessage <- paste0("The following parameters were not found for curve id '", dt$curveId, "'.  Please provide values for these parameters so that curves are drawn properly: ", paste(reportedParamLsKinds[missing], collapse = ", "))
+            missingParametersMessage <- paste0("The following numeric parameters were not found for curve id '", dt$curveId, "'.  Please provide numeric values for these parameters so that curves are drawn properly: ", paste(reportedParamLsKinds[missing], collapse = ", "))
             warnUser(missingParametersMessage)
 
             # Attach the message to the row so we can reuse it in dose response summary table
