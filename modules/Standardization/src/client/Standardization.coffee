@@ -1,4 +1,4 @@
-class window.StandardizationCurrentSettingsController extends Backbone.View
+class StandardizationCurrentSettingsController extends Backbone.View
 	template: _.template($("#StandardizationCurrentSettingsView").html())
 
 	initialize: ->
@@ -33,7 +33,7 @@ class window.StandardizationCurrentSettingsController extends Backbone.View
 			bPaginate: false
 			bSort: false
 
-class window.DownloadDryResultsController extends Backbone.View
+class DownloadDryResultsController extends Backbone.View
 	template: _.template($("#DownloadDryRunResultsView").html())
 
 
@@ -85,7 +85,7 @@ class window.DownloadDryResultsController extends Backbone.View
 
 
 
-class window.StandardizationHistoryRowSummaryController extends Backbone.View
+class StandardizationHistoryRowSummaryController extends Backbone.View
 	tagName: 'tr'
 	className: 'dataTableRow'
 
@@ -148,7 +148,7 @@ class window.StandardizationHistoryRowSummaryController extends Backbone.View
 		$(@el).html(@template(toDisplay))
 		@
 
-class window.StandardizationHistorySummaryTableController extends Backbone.View
+class StandardizationHistorySummaryTableController extends Backbone.View
 
 	render: =>
 		@template = _.template($("#StandardizationHistorySummaryTableView").html())
@@ -182,7 +182,7 @@ class window.StandardizationHistorySummaryTableController extends Backbone.View
 	handleStandardizationHistoryModalClose: ->
 		@$('.bv_standardizationHistoryModal').modal 'hide'
 
-class window.StandardizationDryRunReportStatsController extends Backbone.View
+class StandardizationDryRunReportStatsController extends Backbone.View
 	template: _.template($("#StandardizationDryRunReportStatsView").html())
 
 	initialize: ->
@@ -237,7 +237,7 @@ class window.StandardizationDryRunReportStatsController extends Backbone.View
 	handleDryRunResultsModalClose: ->
 		@$('.bv_dryRunResultsModal').modal 'hide'
 
-class window.StandardizationDryRunReportRowSummaryController extends Backbone.View
+class StandardizationDryRunReportRowSummaryController extends Backbone.View
 	tagName: 'tr'
 	className: 'dataTableRow'
 
@@ -406,7 +406,7 @@ class StandardizationDryRunReportSearchController extends Backbone.View
 			return @searchCount
 		)
 	
-class window.StandardizationDryRunReportSummaryController extends Backbone.View
+class StandardizationDryRunReportSummaryController extends Backbone.View
 	template: _.template($("#StandardizationDryRunReportSummaryView").html())
 
 	events: ->
@@ -470,7 +470,7 @@ class window.StandardizationDryRunReportSummaryController extends Backbone.View
 		
 		
 
-class window.StandardizationDryRunReportSummaryTableController extends Backbone.View
+class StandardizationDryRunReportSummaryTableController extends Backbone.View
 
 	events: ->
 		"click .selectBox": "handleDropDownClicked"
@@ -603,7 +603,7 @@ class window.StandardizationDryRunReportSummaryTableController extends Backbone.
 		@updateColumnVisibility()
 		@
 
-class window.StandardizationController extends Backbone.View
+class StandardizationController extends Backbone.View
 	moduleLaunchName: "standardization"
 	template: _.template($("#StandardizationView").html())
 
@@ -778,7 +778,7 @@ class window.StandardizationController extends Backbone.View
 		@$('.bv_executeDryRun').attr 'disabled', 'disabled'
 		@$('.bv_executeStandardization').attr 'disabled', 'disabled'
 		
-class window.StandardizationReasonPanelController extends Backbone.View
+class StandardizationReasonPanelController extends Backbone.View
 	template: _.template($("#StandardizationReasonPanelView").html())
 
 	render: =>
