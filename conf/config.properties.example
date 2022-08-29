@@ -363,7 +363,7 @@ server.security.saml.entryPoint=https://<organization>.okta.com/app/<appName>/<i
 server.security.saml.issuer=http://www.okta.com/<issuerID>
 # Embedded cert needs \\n in string to escape properly
 server.security.saml.cert=-----BEGIN CERTIFICATE-----\\nABC\\nXYZ\\n-----END CERTIFICATE-----
-server.security.saml.groupAttribute=group
+server.security.saml.profileAttributeToSystemRoles=[{"ssoName":"ACASUser","lsKind":"ACAS","roleName":"ROLE_ACAS-USERS"},{"ssoName":"ACASAdmin","lsKind":"ACAS","roleName":"ROLE_ACAS-ADMINS"},{"ssoName":"CmpdRegUser","lsKind":"CmpdReg","roleName":"ROLE_CMPDREG-USERS"},{"ssoName":"CmpdRegAdmin","lsKind":"CmpdReg","roleName":"ROLE_CMPDREG-ADMINS"},{"ssoName":"CmpdRegReadOnlyUser","lsKind":"CmpdReg","roleName":"ROLE_CMPDREG-READONLY"},{"ssoName":"ACASCrossProjectLoaderUser","lsKind":"ACAS","roleName":"ROLE_ACAS-CROSS-PROJECT-LOADER"}]
 server.security.saml.userNameAttribute=nameID
 server.security.saml.firstNameAttribute=firstName
 server.security.saml.lastNameAttribute=lastName
@@ -379,7 +379,7 @@ client.security.syncLdapAuthRoles=${server.security.syncLdapAuthRoles}
 client.scientistCodeOrigin=ACAS authors
 client.molecularTargetCodeOrigin=ACAS DDICT
 
-client.roles.loginRole=ROLE_ACAS-USERS,ROLE_CMPDREG-USERS
+client.roles.loginRole=ROLE_ACAS-USERS,ROLE_CMPDREG-USERS,ROLE_CMPDREG-READONLY
 client.roles.cmpdreg.chemistRole=ROLE_CMPDREG-USERS
 client.roles.cmpdreg.adminRole=ROLE_CMPDREG-ADMINS
 client.roles.acas.userRole=ROLE_ACAS-USERS
