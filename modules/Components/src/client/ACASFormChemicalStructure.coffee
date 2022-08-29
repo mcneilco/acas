@@ -41,7 +41,7 @@ class ACASFormChemicalStructureExampleController extends Backbone.View
 	render: =>
 		$(@el).empty()
 		$(@el).html @template()
-#		@sketcher = new ACASFormChemicalStructureController
+#		@sketcher = new MaestroChemicalStructureController
 		@sketcher = new KetcherChemicalStructureController
 #		@sketcher = new MarvinJSChemicalStructureController
 			searchMode: false
@@ -64,9 +64,9 @@ class ACASFormChemicalStructureExampleController extends Backbone.View
 		mol = @sketcher.getChemDoodleJSON()
 		alert mol
 
-class ACASFormChemicalStructureController extends Backbone.View
+class MaestroChemicalStructureController extends Backbone.View
 	tagName: "DIV"
-	template: _.template($("#ACASFormChemicalStructureControllerView").html())
+	template: _.template($("#MaestroChemicalStructureControllerView").html())
 
 	initialize: (options) ->
 		@options = options
@@ -78,9 +78,10 @@ class ACASFormChemicalStructureController extends Backbone.View
 		@$('.bv_sketcherIFrame').on 'load', @startSketcher
 
 		searchFrameURL = "/components/ACASFormChemicalRegStructure"
-		if @options.searchMode?
-			if @options.searchMode
-				searchFrameURL = "/components/ACASFormChemicalSearchStructure"
+		if @options?
+			if @options.searchMode?
+				if @options.searchMode
+					searchFrameURL = "/components/ACASFormChemicalSearchStructure"
 
 		@$('.bv_sketcherIFrame').attr 'src', searchFrameURL
 
@@ -129,7 +130,7 @@ class KetcherChemicalStructureController extends Backbone.View
 		@windowObj.ketcher.getMolfile();
 
 	setMol: (molStr) ->
-		molStruct = @windowObj.ketcher.setMolecule molStr
+		@windowObj.ketcher.setMolecule molStr
 
 
 
@@ -168,6 +169,9 @@ class MarvinJSChemicalStructureController extends Backbone.View
 			@trigger 'sketcherLoaded'
 		, (error) =>
 			alert("Cannot retrieve MarvinSketch sketcher instance from iframe:"+error);
+
+	getMol: -> 
+		@getMolAsync
 
 	getMolAsync: (callback) ->
 		@marvinSketcherInstance.exportStructure(@exportFormat).then (molecule) =>
