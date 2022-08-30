@@ -616,7 +616,15 @@ exports.saveMetaLot = (req, resp) ->
 	)
 
 exports.saveSalts = (req, resp) ->
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/salts'
+
+	# Check if dry run is set in the request params and default to true if not set
+	# the default
+	if req.query.dryrun? 
+		dryRun = req.query.dryrun
+	else 
+		dryRun = true
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/salts?dryrun=' + dryRun
+
 	request(
 		method: 'POST'
 		url: cmpdRegCall
