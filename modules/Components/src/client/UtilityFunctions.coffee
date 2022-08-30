@@ -120,3 +120,11 @@ class UtilityFunctions
 			console.log "can't find entry in pickLists hash for: "+value.get('lsKind')
 			console.dir pickLists
 			return "not found"
+
+	openURL: (url) ->
+		a = document.createElement 'a'
+		a.style.display = 'none'
+		a.target = '_blank'
+		a.href = url;
+		document.body.appendChild a
+		a.click()
