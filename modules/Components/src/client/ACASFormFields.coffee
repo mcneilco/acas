@@ -867,9 +867,9 @@ class ACASFormLSFileValueFieldController extends ACASFormAbstractFieldController
 			if !displayText?
 				displayText = fileValue
 			if @displayInline
-				@$('.bv_file').html '<img src="'+window.conf.datafiles.downloadurl.prefix+fileValue+'" alt="'+ displayText+'">'
+				@$('.bv_file').html '<img src="'+encodeURI(window.conf.datafiles.downloadurl.prefix+fileValue)+'" alt="'+ displayText+'">'
 			else
-				@$('.bv_file').html '<a href="'+window.conf.datafiles.downloadurl.prefix+fileValue+'">'+displayText+'</a>'
+				@$('.bv_file').html '<a href="'+encodeURI(window.conf.datafiles.downloadurl.prefix+fileValue)+'">'+displayText+'</a>'
 			@$('.bv_deleteSavedFile').show()
 
 	createNewFileChooser: ->
