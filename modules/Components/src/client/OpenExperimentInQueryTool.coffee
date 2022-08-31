@@ -33,7 +33,7 @@ class OpenExperimentInQueryToolController extends Backbone.View
                 success: (response) => 
                     # Take Away Generating Progress Mask 
                     @$('.bv_generatingLink').hide()
-                    window.open(response,'_blank')
+                    UtilityFunctions::openURL(response)
                 error: (err) =>
                     # Take Away Generating Progress Mask 
                     @$('.bv_generatingLink').hide()
