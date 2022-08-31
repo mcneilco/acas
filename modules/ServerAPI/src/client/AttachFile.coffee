@@ -107,9 +107,9 @@ class BasicFileController extends AbstractFormController
 			@createNewFileChooser()
 		else
 			if urlValue?
-				@$('.bv_uploadFile').html '<div style="margin-top:5px;margin-left:4px;"> <a href="'+ urlValue+'">'+urlValue+'</a></div>'
+				@$('.bv_uploadFile').html '<div style="margin-top:5px;margin-left:4px;"> <a href="'+ encodeURI(urlValue)+'">'+urlValue+'</a></div>'
 			else
-				@$('.bv_uploadFile').html '<div style="margin-top:5px;margin-left:4px;"> <a href="'+window.conf.datafiles.downloadurl.prefix+fileValue+'">'+@model.escape('comments')+'</a></div>'
+				@$('.bv_uploadFile').html '<div style="margin-top:5px;margin-left:4px;"> <a href="'+encodeURI(window.conf.datafiles.downloadurl.prefix+fileValue)+'">'+@model.escape('comments')+'</a></div>'
 			@$('.bv_recordedBy').html @model.escape("recordedBy")
 			@$('.bv_recordedDate').html UtilityFunctions::convertMSToYMDDate @model.get("recordedDate")
 		@
@@ -249,7 +249,7 @@ class AttachFileController extends BasicFileController
 		if fileValue is null or fileValue is "" or fileValue is undefined
 			@createNewFileChooser()
 		else
-			@$('.bv_uploadFile').html '<div style="margin-top:5px;margin-left:4px;"> <a href="'+window.conf.datafiles.downloadurl.prefix+fileValue+'" target="_blank">'+@model.get('comments')+'</a></div>'
+			@$('.bv_uploadFile').html '<div style="margin-top:5px;margin-left:4px;"> <a href="'+encodeURI(window.conf.datafiles.downloadurl.prefix+fileValue)+'" target="_blank">'+@model.get('comments')+'</a></div>'
 
 		uneditableFileTypes = window.conf.experiment.uneditableFileTypes
 		unless uneditableFileTypes?
