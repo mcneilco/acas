@@ -593,25 +593,27 @@ class EndpointController extends AbstractFormController
 		$(@el).html @template()
 
 		@setupDataTypeController()
-
-		@editablePickListList = new PickListList()
-		
-		# @editablePickListList.url = "/api/projects"
-
-		#Try to render an editable pick list for testing
-		# FIXME: We should make editable picklists for Result Type and Units, but Data Type should be non-editable
-		@editablePickListController3 = new EditablePickListSelect2Controller
-			el: @$('.bv_unitsPickList')
-			collection: @editablePickListList
-			selectedCode: @dataTypeValue.get("stringValue")
-			parameter: "projects"
-			codeType: "protocolMetadata"
-			codeKind: "projects"
-			roles: [window.conf.roles.acas.userRole]
-
-		@editablePickListController3.render()
+		@setupUnitsController()
 
 		@
+	
+	setupUnitsController: =>
+		codeType = "data column"
+		codeKind = "column units"
+		@unitsPickListList = new PickListList()
+		@unitsPickListList.url = "/api/codetables/#{codeType}/#{codeKind}"
+		@unitsController = new EditablePickListSelect2Controller
+			el: @$('.bv_unitsPickList')
+			collection: @unitsPickListList
+			selectedCode: @unitsValue.get("stringValue")
+			parameter: "units"
+			codeType: codeType
+			codeKind: codeKind
+			autoSave: true
+			roles = [window.conf.roles.acas.userRole]
+		
+		@unitsController.render()
+
 	
 	setupDataTypeController: =>
 		codeType = "data column"
