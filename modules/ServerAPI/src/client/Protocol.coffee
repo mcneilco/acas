@@ -581,9 +581,7 @@ class EndpointController extends AbstractFormController
 		@dataTypeValue = @lsState.getOrCreateValueByTypeAndKind "stringValue", "column type"
 		@columnNameValue = @lsState.getOrCreateValueByTypeAndKind "stringValue", "column name"
 		@unitsValue = @lsState.getOrCreateValueByTypeAndKind "stringValue", "column units"
-		console.log "dataType: #{@dataTypeValue.get("stringValue")}"
-		console.log "columnName: #{@columnNameValue.get("stringValue")}"
-		console.log "units: #{@unitsValue.get("stringValue")}"
+		# TODO remaining values
 		super()
 
 
@@ -644,8 +642,17 @@ class EndpointListController extends AbstractFormController
 	events:
 		"click .bv_addEndpoint": "handleAddEndpointPressed"
 	
+	rowNumberKind: "column order"
+	
 	initialize: (options) =>
 		@model = options.model
+
+		# Sort the collection by the "column order" values
+		@collection = @collection.sort (stateA, stateB) =>
+			rnA = @getRowNumberForState(stateA)
+			rnB = @getRowNumberForState(stateB)
+			return rnA - rnB
+
 
 	render: => 
 		$(@el).empty()
@@ -671,10 +678,30 @@ class EndpointListController extends AbstractFormController
 		rowController.render()
 		# Add this controller to our list so we can access it later
 		@endpointControllers.push rowController
+	
+	getRowNumberForState: (state) =>
+		rowValues = state.getValuesByTypeAndKind 'numericValue', @rowNumberKind
+		if rowValues.length == 1
+			return rowValues[0].get('numericValue')
+		else
+			return 0
+	
+	getNextRowNumber: =>
+		row_nums = @collection.map @.getRowNumberForState
+		if row_nums.length > 0
+			return Math.max(...row_nums) + 1
+		else
+			return 1
 
 	handleAddEndpointPressed: =>
 		# Create a new LsState
 		lsState = @model.get("lsStates").createStateByTypeAndKind "metadata", "data column order"
+		# Set column order value
+		rowNum = @.getNextRowNumber()
+		rowNumValue = lsState.getOrCreateValueByTypeAndKind 'numericValue', @rowNumberKind
+		rowNumValue.set("numericValue", rowNum)
+		# Add the state to the collection
+		@collection.push lsState
 		@.addOne(lsState)
 
 			

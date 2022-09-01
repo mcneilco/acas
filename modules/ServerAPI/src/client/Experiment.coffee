@@ -793,5 +793,6 @@ class ExperimentBaseController extends BaseEntityController
 		@endpointListController = new EndpointListController
 			el: @$('.bv_endpointTable')
 			collection: endpointStates
+			model: @model
 
 		@endpointListController.render()
