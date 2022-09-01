@@ -575,6 +575,14 @@ class EndpointController extends AbstractFormController
 
 	initialize: (options) =>
 		@endpointData = options.endpointData
+		# Parse out endpointData
+		@lsState = @endpointData
+		@dataTypeValue = @lsState.getOrCreateValueByTypeAndKind "stringValue", "column type"
+		@columnNameValue = @lsState.getOrCreateValueByTypeAndKind "stringValue", "column name"
+		@unitsValue = @lsState.getOrCreateValueByTypeAndKind "stringValue", "column units"
+		console.log "dataType: #{@dataTypeValue.get("stringValue")}"
+		console.log "columnName: #{@columnNameValue.get("stringValue")}"
+		console.log "units: #{@unitsValue.get("stringValue")}"
 		super()
 
 
@@ -591,7 +599,7 @@ class EndpointController extends AbstractFormController
 		@editablePickListController3 = new EditablePickListSelect2Controller
 			el: @$('.bv_dataTypePickListParent')
 			collection: @editablePickListList
-			selectedCode: "unassigned"
+			selectedCode: @dataTypeValue.get("stringValue")
 			parameter: "projects"
 			codeType: "protocolMetadata"
 			codeKind: "projects"
