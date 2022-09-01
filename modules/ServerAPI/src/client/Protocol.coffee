@@ -622,6 +622,9 @@ class EndpointController extends AbstractFormController
 			el: @$('.bv_dataTypePickList')
 			collection: @dataTypePickListList
 			selectedCode: @dataTypeValue.get("stringValue")
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Data Type"
 		
 		@dataTypeController.render()
 
