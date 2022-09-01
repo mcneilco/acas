@@ -247,6 +247,18 @@
 			,
 				typeName: "data column"
 				kindName: "column type"
+			,
+				typeName: "data column"
+				kindName: "column units"
+			,
+				typeName: "data column"
+				kindName: "column name"
+			,
+				typeName: "data column"
+				kindName: "column conc units"
+			,
+				typeName: "data column"
+				kindName: "column time units"
 			]
 
 		codetables:
