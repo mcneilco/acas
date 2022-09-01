@@ -294,12 +294,14 @@ class ProtocolBaseController extends BaseEntityController
 			el: @$('.bv_endpointTableExample')
 		@endpointListControllerExample.render()
 
-
+		# Mocking up the states list for now
+		endpointStates = @model.get("lsStates").getStatesByTypeAndKind "metadata", "data column order"
 
 		@endpointListController = new EndpointListController
 			el: @$('.bv_endpointTable')
-			collection: ["one", "two", "three", "four"]
-			#collection: ["one"]
+			#collection: ["one", "two", "three", "four"]
+			collection: endpointStates
+			model: @model
 
 		@endpointListController.render()
 
@@ -574,9 +576,8 @@ class EndpointController extends AbstractFormController
 
 
 	initialize: (options) =>
-		@endpointData = options.endpointData
+		@lsState = options.lsState
 		# Parse out endpointData
-		@lsState = @endpointData
 		@dataTypeValue = @lsState.getOrCreateValueByTypeAndKind "stringValue", "column type"
 		@columnNameValue = @lsState.getOrCreateValueByTypeAndKind "stringValue", "column name"
 		@unitsValue = @lsState.getOrCreateValueByTypeAndKind "stringValue", "column units"
@@ -592,7 +593,7 @@ class EndpointController extends AbstractFormController
 		$(@el).html @template()
 
 		@editablePickListList = new PickListList()
-		@editablePickListList.url = "/api/projects"
+		# @editablePickListList.url = "/api/projects"
 
 		#Try to render an editable pick list for testing
 		# FIXME: We should make editable picklists for Result Type and Units, but Data Type should be non-editable
@@ -623,7 +624,10 @@ class EndpointListController extends AbstractFormController
 	template: _.template($("#EndpointListView").html())
 
 	events:
-		"click .bv_addEndpoint": "addOne"
+		"click .bv_addEndpoint": "handleAddEndpointPressed"
+	
+	initialize: (options) =>
+		@model = options.model
 
 	render: => 
 		$(@el).empty()
@@ -632,11 +636,11 @@ class EndpointListController extends AbstractFormController
 		#Placeholder until we update the protocol data structure
 		# Create a list to hold the endpoint controllers in, so we can iterate through them later
 		@endpointControllers = []
-		for endpointData in @collection
-			@.addOne(endpointData)
+		for lsState in @collection
+			@.addOne(lsState)
 		@
 	
-	addOne: (endpointData) =>
+	addOne: (lsState) =>
 		# create a new table row
 		tr = document.createElement('tr')
 		# Add that row into the table
@@ -645,11 +649,15 @@ class EndpointListController extends AbstractFormController
 		# Pass the row we just created for the EndpointController to render into
 		rowController = new EndpointController
 			el: tr
-			endpointData: endpointData
+			lsState: lsState
 		rowController.render()
 		# Add this controller to our list so we can access it later
 		@endpointControllers.push rowController
 
+	handleAddEndpointPressed: =>
+		# Create a new LsState
+		lsState = @model.get("lsStates").createStateByTypeAndKind "metadata", "data column order"
+		@.addOne(lsState)
 
 			
 
