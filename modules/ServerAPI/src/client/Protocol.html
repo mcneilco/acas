@@ -112,14 +112,29 @@
 
         </div>
     </div>
+
+    <h3>Endpoints</h3>
     
     <div class="bv_strictEndpointMatchingCheckbox">
-        <input type="checkbox" id="strictEndpointMatchingCheckbox" name="strictEndpointMatchingCheckbox">
-        <span>Strict Endpoint Matching</span>
+        <input class= "bv_strictEndpointMatchingInputCheckbox" type="checkbox" id="strictEndpointMatchingCheckbox" name="strictEndpointMatchingCheckbox">
+        <span style="display: inline-block; position: relative; bottom: -3px;">Strict Endpoint Matching</span>
+        <br/>
+        <br/>
         <p><i>When Strict Endpoint Matching is enabled, experiment uploads that try to use columns not defined below will be rejected with an error. When this option is disabled, ACAS will simply give warnings about these columns but allow them to proceed, and they'll appear in the list below after upload.</i></p>
         <br/>
     </div>
-
+    <div class="bv_endpointTable">
+    </div>
+    <br/>
+    <br/>
+    <div class="bv_endpointTableExample">
+    </div>
+    <div class="bv_pickListExample">
+    </div>
+    <div class="bv_pickListExample2">
+    </div>
+    <br/>
+    <br/>
     
 
     <div class="bv_group_shortDescription">
@@ -232,6 +247,153 @@
 			    <a href="#" class="btn bv_closeDeleteProtocolModal">Okay</a>
 		    </span>
         </div>
+    </div>
+
+</script>
+
+<script type="text/template" id="TestView" xmlns="http://www.w3.org/1999/html">
+    <p>Test View</p>
+</script>
+
+<script type="text/template" id="TestView2" xmlns="http://www.w3.org/1999/html">
+    <p>Test View 2</p>
+</script>
+
+<script type="text/template" id="EndpointRowView" xmlns="http://www.w3.org/1999/html">
+    <tr>
+        <td style="vertical-align: middle;">
+            <div class="control-group bv_group_tags" style="">
+                <div class="controls">
+                    <select class="bv_resultTypeList" style="width:100%;margin:auto;"></select>
+                </div>
+            </div>
+        </td>
+        <td style="vertical-align:middle;">
+            <div class="control-group bv_group_tags" style="">
+                <div class="controls">
+                    <select class="bv_unitsList" style="width:100%;margin:auto;"></select>
+                </div>
+            </div>
+        </td>
+        <td style="vertical-align:middle;">
+            <div class="control-group bv_group_tags" style="">
+                <div class="controls">
+                    <select class="bv_dataTypeList" style="width:100%;margin:auto;"></select>
+                </div>
+            </div>
+        </td>
+        <td style="text-align:center;vertical-align:middle;"><input class= "" type="checkbox" id="" name=""></td>
+        <td style="text-align:center;vertical-align:middle;"><input class= "" type="checkbox" id="" name=""></td>
+        <td style="text-align:center;vertical-align:middle;"><button type="button" class="btn btn-danger bv_remove pull-center" style="margin-right:5px;margin-left:5px;">Remove</button></td>
+    </tr>
+</script>
+
+
+<script type="text/template" id="EndpointRowView2" xmlns="http://www.w3.org/1999/html">
+    <tr>
+        <td style="vertical-align: middle;">
+            <div class="bv_resultTypePickList">Placeholder</div>
+        </td>
+        <td style="vertical-align:middle;">
+            <div class="bv_unitsPickList">Placeholder</div>
+        </td>
+        <td style="vertical-align:middle;" class="bv_dataTypePickListParent">
+            <div class="bv_dataTypePickList"></div>
+        </td>
+        <td style="text-align:center;vertical-align:middle;"><input class= "" type="checkbox" id="" name=""></td>
+        <td style="text-align:center;vertical-align:middle;"><input class= "" type="checkbox" id="" name=""></td>
+        <td style="text-align:center;vertical-align:middle;"><button type="button" class="btn btn-danger bv_remove pull-center" style="margin-right:5px;margin-left:5px;">Remove</button></td>
+    </tr>
+</script>
+
+
+
+
+
+
+
+<script type="text/template" id="EndpointListView" xmlns="http://www.w3.org/1999/html">
+    <table class="table table-bordered table-striped table-hover endpointTable" style="margin: 0px; padding: 0px; border: 0px; width: 100%; border: 0.5px solid; border-color: grey;">
+        <thead style="">
+            <tr>
+                <th>Result Type</th>
+                <th>Units</th>
+                <th>Data Type</th>
+                <th>Hidden</th>
+                <th>Condition</th>
+                <th>Remove</th>
+            </tr>
+        </thead>
+        <tbody class="bv_endpointRows">
+        </tbody>
+        <div class="bv_endpointInfo"></div>
+        <div class="bv_selectTest"></div>
+        
+    </table>
+    <br/>
+    <br/>
+    <span class="" style="margin-bottom:15px;margin-left:60px;">
+        <!--<span class="span5"></span>-->
+        <button type="button" class="btn bv_addDbProperty pull-right">Add Endpoint</button>
+    </span>
+
+</script>
+
+
+<script type="text/template" id="ProtocolEndpointRowSummaryView" xmlns="http://www.w3.org/1999/html">
+    <td class='bv_resultType'><a href='<%-fileLink%>'><%-fileName%></a></td>
+    <td class='bv_units'><%-loadDate%></td>
+    <td class='bv_dataType'><%-loadUser%></td>
+    <td class="bv_hidden"><input class= "" type="checkbox" id="" name=""></td>
+    <td class="bv_condition"><input class= "" type="checkbox" id="" name=""></td>
+    <td class='bv_remove'><a href='<%-reportLink%>'>Remove</a></td>
+</script>
+
+
+<script type="text/template" id="ProtocolEndpointTableView" xmlns="http://www.w3.org/1999/html">
+    <table class="table table-bordered table-striped table-hover" style="margin: 0px; padding: 0px; border: 0px; width: 100%; ">
+        <thead style="">
+            <tr>
+                <th>Result Type</th>
+                <th>Units</th>
+                <th>Data Type</th>
+                <th>Hidden</th>
+                <th>Condition</th>
+                <th>Remove</th>
+            </tr>
+        </thead>
+        <tbody style="">
+            <tr>
+                <td>
+                    <div class="control-group bv_group_tags" style="">
+                        <div class="controls">
+                            <select class="bv_resultTypeList" style="width:100%"></select>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="control-group bv_group_tags" style="">
+                        <div class="controls">
+                            <select class="bv_unitsList" style="width:100%"></select>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="control-group bv_group_tags" style="">
+                        <div class="controls">
+                            <select class="bv_dataTypeList" style="width:100%"></select>
+                        </div>
+                    </div>
+                </td>
+                <td><input class= "" type="checkbox" id="" name="" style="text-align: center; vertical-align: middle;"></td>
+                <td><input class= "" type="checkbox" id="" name="" style="text-align: center; vertical-align: middle;"></td>
+                <td><button type="button" class="btn btn-danger bv_remove pull-center" style="margin-right:5px;margin-left:5px;">Remove</button></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="" style="margin-bottom:15px;margin-left:60px;margin-top: 20px;">
+        <button type="button" class="btn bv_addEndpoint pull-right">Add Endpoint</button>
     </div>
 
 </script>

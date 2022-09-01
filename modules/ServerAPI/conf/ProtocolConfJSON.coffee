@@ -142,6 +142,9 @@
 			,
 				typeName: "codeValue"
 				kindName: "required entity type"
+			,
+				typeName: "codeValue"
+				kindName: "strict endpoint matching"
 			]
 
 		labeltypes:

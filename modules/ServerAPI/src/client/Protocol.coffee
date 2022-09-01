@@ -289,6 +289,49 @@ class ProtocolBaseController extends BaseEntityController
 		@model.getStatus().on 'change', @updateEditable.bind(@)
 #		@trigger 'amClean' #so that module starts off clean when initialized
 
+		#TODO - Add in the endpoint table controller
+		@endpointListControllerExample = new EndpointControllerExample
+			el: @$('.bv_endpointTableExample')
+		@endpointListControllerExample.render()
+
+
+
+		@endpointListController = new EndpointListController
+			el: @$('.bv_endpointTable')
+			collection: ["one", "two", "three", "four"]
+			#collection: ["one"]
+
+		@endpointListController.render()
+
+		@editablePickListList = new PickListList()
+		@editablePickListList.url = "/api/projects"
+
+
+		#Try to render an editable pick list for testing
+		@editablePickListController = new EditablePickListSelect2Controller
+			el: @$('.bv_pickListExample')
+			collection: @editablePickListList
+			selectedCode: "unassigned"
+			parameter: "projects"
+			codeType: "protocolMetadata"
+			codeKind: "projects"
+			roles: ["admins", "users"]
+		@editablePickListController.render()
+
+		#Try to render an editable pick list for testing
+		@editablePickListController2 = new EditablePickListSelect2Controller
+			el: @$('.bv_pickListExample2')
+			collection: @editablePickListList
+			selectedCode: "unassigned"
+			parameter: "projects"
+			codeType: "protocolMetadata"
+			codeKind: "projects"
+			roles: ["admins", "users"]
+		@editablePickListController2.render()
+
+
+
+
 	render: =>
 		unless @model?
 			@model = new Protocol()
@@ -301,7 +344,7 @@ class ProtocolBaseController extends BaseEntityController
 			@$('.bv_creationDate').val UtilityFunctions::convertMSToYMDDate(@model.getCreationDate().get('dateValue'))
 		@$('.bv_assayTreeRule').val @model.getAssayTreeRule().get('stringValue')
 		@$('.bv_assayPrinciple').val @model.getAssayPrinciple().get('clobValue')
-		@$('.bv_strictEndpointMatchingCheckbox input').val(@model.getStrictEndpointMatching().get('codeValue'))
+		@$('.bv_strictEndpointMatchingInputCheckbox').prop("checked", @model.getStrictEndpointMatching().get('codeValue'));
 		showCurveDisplayParams = true
 		if window.conf.protocol?.showCurveDisplayParams?
 			showCurveDisplayParams = window.conf.protocol.showCurveDisplayParams
@@ -512,5 +555,82 @@ class ProtocolBaseController extends BaseEntityController
 		@handleValueChanged "CurveDisplayMin", value
 
 	handleStrictEndpointMatchingChanged: =>
-		value = $('bv_strictEndpointMatchingCheckbox input').is(":checked")
-		@handleValueChanged "strictEndpointMatching", value
+		value = $('.bv_strictEndpointMatchingInputCheckbox').is(":checked")
+		@handleValueChanged "StrictEndpointMatching", value
+
+
+class EndpointControllerExample extends AbstractFormController
+	template: _.template($("#TestView").html())
+
+	render: => 
+		$(@el).empty()
+		$(@el).html @template()
+
+class EndpointController extends AbstractFormController
+	template: _.template($("#EndpointRowView2").html())
+
+
+
+
+	#TODO - based on AssignedPropertyController in CmpdRegBulkLoader.coffee (line 223)
+	render: =>
+		$(@el).empty()
+		$(@el).html @template()
+
+		
+
+		#@editablePickListList = new PickListList()
+		#@editablePickListList.url = "/api/projects"
+
+
+		#Try to render an editable pick list for testing
+		#@editablePickListController3 = new EditablePickListSelect2Controller
+		#	el: @$('.bv_dataTypePickListParent')
+		#	collection: @editablePickListList
+		#	selectedCode: "unassigned"
+		#	parameter: "projects"
+		#	codeType: "protocolMetadata"
+		#	codeKind: "projects"
+		#	roles: ["admins"]
+
+		@$('.bv_dataTypePickListParent').append 'hello'
+		#@$('.bv_dataTypePickListParent').append @editablePickListController3.render()
+
+		#making any modification to this seems to erase the content of the template... ????
+		#@editablePickListController3.render()
+
+		@
+
+		#@$('.bv_dataTypePickListParent').append @editablePickListController3.render()
+
+				
+
+		
+
+
+
+class EndpointListController extends AbstractFormController
+	template: _.template($("#EndpointListView").html())
+
+	#events:
+	#	"click .bv_addDbProperty": "addNewProperty"
+
+	render: => 
+		$(@el).empty()
+		$(@el).html @template()
+		
+		#Placeholder until we update the protocol data structure
+		for endpointData in @collection
+			testObj = new EndpointController()
+			#only load the inside elements, not the <div></div> parent, which disrupts the table
+			@$('.bv_endpointRows').append testObj.render()#.contents()
+			
+			
+			
+			#@$('endpointTable').insertRow(-1).html testObj.render()
+
+			#@$('.bv_endpointRows').append endpointData
+
+
+			
+
