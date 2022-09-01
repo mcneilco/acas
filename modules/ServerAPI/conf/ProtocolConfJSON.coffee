@@ -175,6 +175,8 @@
 				typeName: "analysis parameter"
 			,
 				typeName: "protocol metadata"
+			,
+				typeName: "data column"
 
 			]
 
@@ -242,6 +244,9 @@
 			,
 				typeName: "model fit"
 				kindName: "transformation units"
+			,
+				typeName: "data column"
+				kindName: "column type"
 			]
 
 		codetables:
@@ -478,6 +483,34 @@
 				codeOrigin: "ACAS DDICT"
 				code: "%"
 				name: "%"
+				ignored: false
+			,
+				codeType: "data column"
+				codeKind: "column type"
+				codeOrigin: "ACAS DDICT"
+				code: "stringValue"
+				name: "Text"
+				ignored: false
+			,
+				codeType: "data column"
+				codeKind: "column type"
+				codeOrigin: "ACAS DDICT"
+				code: "numericValue"
+				name: "Number"
+				ignored: false
+			,
+				codeType: "data column"
+				codeKind: "column type"
+				codeOrigin: "ACAS DDICT"
+				code: "dateValue"
+				name: "Date"
+				ignored: false
+			,
+				codeType: "data column"
+				codeKind: "column type"
+				codeOrigin: "ACAS DDICT"
+				code: "inlineFileValue"
+				name: "Image File"
 				ignored: false
 			]
 

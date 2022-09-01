@@ -592,13 +592,16 @@ class EndpointController extends AbstractFormController
 		$(@el).empty()
 		$(@el).html @template()
 
+		@setupDataTypeController()
+
 		@editablePickListList = new PickListList()
+		
 		# @editablePickListList.url = "/api/projects"
 
 		#Try to render an editable pick list for testing
 		# FIXME: We should make editable picklists for Result Type and Units, but Data Type should be non-editable
 		@editablePickListController3 = new EditablePickListSelect2Controller
-			el: @$('.bv_dataTypePickListParent')
+			el: @$('.bv_unitsPickList')
 			collection: @editablePickListList
 			selectedCode: @dataTypeValue.get("stringValue")
 			parameter: "projects"
@@ -609,6 +612,19 @@ class EndpointController extends AbstractFormController
 		@editablePickListController3.render()
 
 		@
+	
+	setupDataTypeController: =>
+		codeType = "data column"
+		codeKind = "column type"
+		@dataTypePickListList = new PickListList()
+		@dataTypePickListList.url = "/api/codetables/#{codeType}/#{codeKind}"
+		@dataTypeController = new PickListSelectController
+			el: @$('.bv_dataTypePickList')
+			collection: @dataTypePickListList
+			selectedCode: @dataTypeValue.get("stringValue")
+		
+		@dataTypeController.render()
+
 	
 	removeRow: =>
 		@el.remove()
