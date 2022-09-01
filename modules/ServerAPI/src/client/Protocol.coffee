@@ -570,6 +570,9 @@ class EndpointController extends AbstractFormController
 	template: _.template($("#EndpointRowView2").html())
 
 
+	initialize: (options) =>
+		@endpointData = options.endpointData
+		super()
 
 
 	#TODO - based on AssignedPropertyController in CmpdRegBulkLoader.coffee (line 223)
@@ -577,31 +580,23 @@ class EndpointController extends AbstractFormController
 		$(@el).empty()
 		$(@el).html @template()
 
-		
-
-		#@editablePickListList = new PickListList()
-		#@editablePickListList.url = "/api/projects"
-
+		@editablePickListList = new PickListList()
+		@editablePickListList.url = "/api/projects"
 
 		#Try to render an editable pick list for testing
-		#@editablePickListController3 = new EditablePickListSelect2Controller
-		#	el: @$('.bv_dataTypePickListParent')
-		#	collection: @editablePickListList
-		#	selectedCode: "unassigned"
-		#	parameter: "projects"
-		#	codeType: "protocolMetadata"
-		#	codeKind: "projects"
-		#	roles: ["admins"]
-
-		@$('.bv_dataTypePickListParent').append 'hello'
-		#@$('.bv_dataTypePickListParent').append @editablePickListController3.render()
+		@editablePickListController3 = new EditablePickListSelect2Controller
+			el: @$('.bv_dataTypePickListParent')
+			collection: @editablePickListList
+			selectedCode: "unassigned"
+			parameter: "projects"
+			codeType: "protocolMetadata"
+			codeKind: "projects"
+			roles: ["ROLE_ACAS-ADMINS"]
 
 		#making any modification to this seems to erase the content of the template... ????
-		#@editablePickListController3.render()
+		@editablePickListController3.render()
 
 		@
-
-		#@$('.bv_dataTypePickListParent').append @editablePickListController3.render()
 
 				
 
@@ -620,16 +615,22 @@ class EndpointListController extends AbstractFormController
 		$(@el).html @template()
 		
 		#Placeholder until we update the protocol data structure
+		# Create a list to hold the endpoint controllers in, so we can iterate through them later
+		@endpointControllers = []
 		for endpointData in @collection
-			testObj = new EndpointController()
-			#only load the inside elements, not the <div></div> parent, which disrupts the table
-			@$('.bv_endpointRows').append testObj.render()#.contents()
-			
-			
-			
-			#@$('endpointTable').insertRow(-1).html testObj.render()
-
-			#@$('.bv_endpointRows').append endpointData
+			# create a new table row
+			tr = document.createElement('tr')
+			# Add that row into the table
+			@$('.bv_endpointRows').append tr
+			# Create a new EndpointController, which manages a row
+			# Pass the row we just created for the EndpointController to render into
+			rowController = new EndpointController
+				el: tr
+				endpointData: endpointData
+			rowController.render()
+			# Add this controller to our list so we can access it later
+			@endpointControllers.push rowController
+		@
 
 
 			
