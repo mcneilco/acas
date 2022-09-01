@@ -569,6 +569,9 @@ class EndpointControllerExample extends AbstractFormController
 class EndpointController extends AbstractFormController
 	template: _.template($("#EndpointRowView2").html())
 
+	events:
+		"click .bv_remove": "removeRow"
+
 
 	initialize: (options) =>
 		@endpointData = options.endpointData
@@ -584,6 +587,7 @@ class EndpointController extends AbstractFormController
 		@editablePickListList.url = "/api/projects"
 
 		#Try to render an editable pick list for testing
+		# FIXME: We should make editable picklists for Result Type and Units, but Data Type should be non-editable
 		@editablePickListController3 = new EditablePickListSelect2Controller
 			el: @$('.bv_dataTypePickListParent')
 			collection: @editablePickListList
@@ -591,12 +595,15 @@ class EndpointController extends AbstractFormController
 			parameter: "projects"
 			codeType: "protocolMetadata"
 			codeKind: "projects"
-			roles: ["ROLE_ACAS-ADMINS"]
+			roles: [window.conf.roles.acas.userRole]
 
-		#making any modification to this seems to erase the content of the template... ????
 		@editablePickListController3.render()
 
 		@
+	
+	removeRow: =>
+		@el.remove()
+		# TODO figure out how to remove this controller from the parent controller's "endpointControllers"
 
 				
 
@@ -607,8 +614,8 @@ class EndpointController extends AbstractFormController
 class EndpointListController extends AbstractFormController
 	template: _.template($("#EndpointListView").html())
 
-	#events:
-	#	"click .bv_addDbProperty": "addNewProperty"
+	events:
+		"click .bv_addEndpoint": "addOne"
 
 	render: => 
 		$(@el).empty()
@@ -618,19 +625,22 @@ class EndpointListController extends AbstractFormController
 		# Create a list to hold the endpoint controllers in, so we can iterate through them later
 		@endpointControllers = []
 		for endpointData in @collection
-			# create a new table row
-			tr = document.createElement('tr')
-			# Add that row into the table
-			@$('.bv_endpointRows').append tr
-			# Create a new EndpointController, which manages a row
-			# Pass the row we just created for the EndpointController to render into
-			rowController = new EndpointController
-				el: tr
-				endpointData: endpointData
-			rowController.render()
-			# Add this controller to our list so we can access it later
-			@endpointControllers.push rowController
+			@.addOne(endpointData)
 		@
+	
+	addOne: (endpointData) =>
+		# create a new table row
+		tr = document.createElement('tr')
+		# Add that row into the table
+		@$('.bv_endpointRows').append tr
+		# Create a new EndpointController, which manages a row
+		# Pass the row we just created for the EndpointController to render into
+		rowController = new EndpointController
+			el: tr
+			endpointData: endpointData
+		rowController.render()
+		# Add this controller to our list so we can access it later
+		@endpointControllers.push rowController
 
 
 			
