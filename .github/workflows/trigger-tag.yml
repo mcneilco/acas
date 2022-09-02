@@ -38,7 +38,7 @@ jobs:
               workflow_id: "tagger.yml",
               ref: "${{env.BRANCH_NAME}}",
               inputs: {
-                branch-name: "${{env.BRANCH_NAME}}",
-                tag-name: "${{env.NEXT_TAG}}"
+                "branch-name": "${{env.BRANCH_NAME}}",
+                "tag-name": "${{env.NEXT_TAG}}"
               }
             });
