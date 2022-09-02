@@ -289,10 +289,6 @@ class ProtocolBaseController extends BaseEntityController
 		@model.getStatus().on 'change', @updateEditable.bind(@)
 #		@trigger 'amClean' #so that module starts off clean when initialized
 
-		#TODO - Add in the endpoint table controller
-		@endpointListControllerExample = new EndpointControllerExample
-			el: @$('.bv_endpointTableExample')
-		@endpointListControllerExample.render()
 
 		# Mocking up the states list for now
 		endpointStates = @model.get("lsStates").getStatesByTypeAndKind "metadata", "data column order"
@@ -304,35 +300,6 @@ class ProtocolBaseController extends BaseEntityController
 			model: @model
 
 		@endpointListController.render()
-
-		@editablePickListList = new PickListList()
-		@editablePickListList.url = "/api/projects"
-
-
-		#Try to render an editable pick list for testing
-		@editablePickListController = new EditablePickListSelect2Controller
-			el: @$('.bv_pickListExample')
-			collection: @editablePickListList
-			selectedCode: "unassigned"
-			parameter: "projects"
-			codeType: "protocolMetadata"
-			codeKind: "projects"
-			roles: ["admins", "users"]
-		@editablePickListController.render()
-
-		#Try to render an editable pick list for testing
-		@editablePickListController2 = new EditablePickListSelect2Controller
-			el: @$('.bv_pickListExample2')
-			collection: @editablePickListList
-			selectedCode: "unassigned"
-			parameter: "projects"
-			codeType: "protocolMetadata"
-			codeKind: "projects"
-			roles: ["admins", "users"]
-		@editablePickListController2.render()
-
-
-
 
 	render: =>
 		unless @model?
@@ -561,13 +528,6 @@ class ProtocolBaseController extends BaseEntityController
 		@handleValueChanged "StrictEndpointMatching", value
 
 
-class EndpointControllerExample extends AbstractFormController
-	template: _.template($("#TestView").html())
-
-	render: => 
-		$(@el).empty()
-		$(@el).html @template()
-
 class EndpointController extends AbstractFormController
 	template: _.template($("#EndpointRowView2").html())
 
@@ -581,6 +541,9 @@ class EndpointController extends AbstractFormController
 		@dataTypeValue = @lsState.getOrCreateValueByTypeAndKind "stringValue", "column type"
 		@columnNameValue = @lsState.getOrCreateValueByTypeAndKind "stringValue", "column name"
 		@unitsValue = @lsState.getOrCreateValueByTypeAndKind "stringValue", "column units"
+		@dataTypeValue.set "value", @dataTypeValue.get "stringValue"
+		@columnNameValue.set "value", @columnNameValue.get "stringValue"
+		@unitsValue.set "value", @unitsValue.get "stringValue"
 		console.log "dataType: #{@dataTypeValue.get("stringValue")}"
 		console.log "columnName: #{@columnNameValue.get("stringValue")}"
 		console.log "units: #{@unitsValue.get("stringValue")}"
@@ -595,9 +558,62 @@ class EndpointController extends AbstractFormController
 
 		@setupDataTypeController()
 		@setupUnitsController()
+		@setupColumnNameController()
 
 		@
 	
+	setupColumnNameController: =>
+		codeType = "data column"
+		codeKind = "column name"
+		opts =
+				modelKey: "name"
+				# inputClass: field.fieldSettings.inputClass
+				formLabel: ''
+				# formLabelOrientation: field.fieldSettings.formLabelOrientation
+				# formLabelTooltip: field.fieldSettings.formLabelTooltip
+				# placeholder: field.fieldSettings.placeholder
+				# required: field.fieldSettings.required
+				url: "/api/codetables/#{codeType}/#{codeKind}"
+				thingRef: @columnNameValue
+				# insertUnassigned: field.fieldSettings.insertUnassigned
+				# firstSelectText: field.fieldSettings.firstSelectText
+				# modelDefaults: field.modelDefaults
+				# allowedFileTypes: field.fieldSettings.allowedFileTypes
+				# maxFileSize: field.fieldSettings.maxFileSize
+				# displayInline: field.fieldSettings.displayInline
+				# extendedLabel: field.fieldSettings.extendedLabel
+				# sorter: field.fieldSettings.sorter
+				# tabIndex: field.fieldSettings.tabIndex
+				# toFixed: field.fieldSettings.toFixed
+				# pickList: field.fieldSettings.pickList
+				# showDescription: field.fieldSettings.showDescription
+				editablePicklist: true
+				autoSavePickListItem: true
+				editablePicklistRoles: [window.conf.roles.acas.userRole]
+
+		@columnNameController = new ACASFormLSCodeValueFieldController opts
+
+		@$(".bv_columnNamePickList").append @columnNameController.render().el
+		@columnNameController.renderModelContent()
+
+		#--- (Start): Previous Code for Column Name Controller --- 
+		#@columnNamePickListList = new PickListList()
+		#@columnNamePickListList.url = "/api/codetables/#{codeType}/#{codeKind}"
+		#@columnNameController = new EditablePickListSelect2Controller
+		#	el: @$('.bv_columnNamePickList')
+		#	collection: @columnNamePickListList
+		#	selectedCode: @columnNameValue.get("stringValue")
+		#	parameter: "column name"
+		#	codeType: codeType
+		#	codeKind: codeKind
+		#	autoSave: true
+		#	roles = [window.conf.roles.acas.userRole]
+		#@columnNameController.render()
+		#--- (End) --- 
+
+
+		
+
 	setupUnitsController: =>
 		codeType = "data column"
 		codeKind = "column units"
@@ -626,6 +642,13 @@ class EndpointController extends AbstractFormController
 				editablePicklist: true
 				autoSavePickListItem: true
 				editablePicklistRoles: [window.conf.roles.acas.userRole]
+		
+		@unitsController = new ACASFormLSCodeValueFieldController opts
+
+		@$(".bv_unitsPickList").append @unitsController.render().el
+		@unitsController.renderModelContent()
+
+		#--- (Start): Previous Code for Units Pick List --- 
 		# @unitsPickListList = new PickListList()
 		# @unitsPickListList.url = "/api/codetables/#{codeType}/#{codeKind}"
 		# @unitsController = new EditablePickListSelect2Controller
@@ -637,27 +660,56 @@ class EndpointController extends AbstractFormController
 		# 	codeKind: codeKind
 		# 	autoSave: true
 		# 	roles = [window.conf.roles.acas.userRole]
-		@unitsController = new ACASFormLSCodeValueFieldController opts
-
-		@$(".bv_unitsPickList").append @unitsController.render().el
-		
 		# @unitsController.render()
+		#--- (End) --- 
+
 
 	
 	setupDataTypeController: =>
 		codeType = "data column"
 		codeKind = "column type"
-		@dataTypePickListList = new PickListList()
-		@dataTypePickListList.url = "/api/codetables/#{codeType}/#{codeKind}"
-		@dataTypeController = new PickListSelectController
-			el: @$('.bv_dataTypePickList')
-			collection: @dataTypePickListList
-			selectedCode: @dataTypeValue.get("stringValue")
-			insertFirstOption: new PickList
-				code: "unassigned"
-				name: "Select Data Type"
+		opts =
+				modelKey: "type"
+				# inputClass: field.fieldSettings.inputClass
+				formLabel: ''
+				# formLabelOrientation: field.fieldSettings.formLabelOrientation
+				# formLabelTooltip: field.fieldSettings.formLabelTooltip
+				# placeholder: field.fieldSettings.placeholder
+				# required: field.fieldSettings.required
+				url: "/api/codetables/#{codeType}/#{codeKind}"
+				thingRef: @dataTypeValue
+				# insertUnassigned: field.fieldSettings.insertUnassigned
+				# firstSelectText: field.fieldSettings.firstSelectText
+				# modelDefaults: field.modelDefaults
+				# allowedFileTypes: field.fieldSettings.allowedFileTypes
+				# maxFileSize: field.fieldSettings.maxFileSize
+				# displayInline: field.fieldSettings.displayInline
+				# extendedLabel: field.fieldSettings.extendedLabel
+				# sorter: field.fieldSettings.sorter
+				# tabIndex: field.fieldSettings.tabIndex
+				# toFixed: field.fieldSettings.toFixed
+				# pickList: field.fieldSettings.pickList
+				# showDescription: field.fieldSettings.showDescription
+				editablePicklist: false
+				autoSavePickListItem: true
+				editablePicklistRoles: [window.conf.roles.acas.userRole]
+		@dataTypeController = new ACASFormLSCodeValueFieldController opts
+		@$(".bv_dataTypePickList").append @dataTypeController.render().el
+		@dataTypeController.renderModelContent()
+
+		#--- (Start): Previous Code for Data Type Pick List --- 
+		#@dataTypePickListList = new PickListList()
+		#@dataTypePickListList.url = "/api/codetables/#{codeType}/#{codeKind}"
+		#@dataTypeController = new PickListSelectController
+		#	el: @$('.bv_dataTypePickList')
+		#	collection: @dataTypePickListList
+		#	selectedCode: @dataTypeValue.get("stringValue")
+		#	insertFirstOption: new PickList
+		#		code: "unassigned"
+		#		name: "Select Data Type"
 		
-		@dataTypeController.render()
+		#@dataTypeController.render()
+		#--- (End) ---
 
 	
 	removeRow: =>
