@@ -1,0 +1,55 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Tag ACAS Repos
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push events but only for the "release/2022.1.x" branch
+  #push:
+  #  branches: [ "release/2022.1.x" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+    inputs:
+      branch-name:
+        description: "Release branch to apply tag to (must exist in all repos)"
+        required: true
+        type: string
+      tag-name:
+       description: "Git tag name, i.e. 2022.1.0.dev5"
+       required: true
+       type: string
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  apply-tags:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        acas-repo: [ acas, acasclient, racas, acas-roo-server ]
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: Set ACAS_REF to the current to input branch or github.ref
+        run: |
+          INPUT_BRANCH_NAME=${{ github.event.inputs.branch-name }}
+          NAME=${INPUT_BRANCH_NAME:-"${{ github.ref }}"}
+          if [ -z "${{ github.event.inputs.branch-name }}" ]; then
+            echo "ACAS_REF=$(echo ${{ github.ref }} | sed 's/refs\/heads\///g')" >> $GITHUB_ENV
+          else
+            echo "ACAS_REF=$(echo $INPUT_BRANCH_NAME)" >> $GITHUB_ENV
+          fi 
+      - name: Get the latest commit of ${{ env.ACAS_REF }} and apply tag ${{ github.event.inputs.tag-name }}
+        uses: actions/github-script@v5
+        with:
+          script: |
+            releaseBranchRef = await github.rest.git.getRef({
+                owner: 'mcneilco',
+                repo: "${{ matrix.acas-repo }}",
+                ref: "/heads/${{ env.ACAS_REF }}"
+              })
+            github.rest.git.createRef({
+              owner: 'mcneilco',
+              repo: ${{ matrix.acas-repo }},
+              ref: 'refs/tags/${{ github.event.inputs.tag-name }}',
+              sha: releaseBranchRef.data.object.sha
+            })
