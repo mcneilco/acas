@@ -44,13 +44,13 @@ jobs:
           github-token: ${{ secrets.ACAS_WORKFLOWS_TOKEN }}
           script: |
             releaseBranchRef = await github.rest.git.getRef({
-                owner: 'mcneilco',
+                owner: "mcneilco",
                 repo: "${{ matrix.acas-repo }}",
                 ref: "/heads/${{ env.ACAS_REF }}"
               })
             github.rest.git.createRef({
-              owner: 'mcneilco',
-              repo: '${{ matrix.acas-repo }}'',
-              ref: 'refs/tags/${{ github.event.inputs.tag-name }}',
+              owner: "mcneilco",
+              repo: "${{ matrix.acas-repo }}",
+              ref: "refs/tags/${{ github.event.inputs.tag-name }}",
               sha: releaseBranchRef.data.object.sha
             })
