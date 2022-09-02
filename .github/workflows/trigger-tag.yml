@@ -12,6 +12,8 @@ jobs:
       # Checkout this repo
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       # Get branch name
       - name: Set BRANCH_NAME to the current branch ${{ github.ref }}
         run: |
