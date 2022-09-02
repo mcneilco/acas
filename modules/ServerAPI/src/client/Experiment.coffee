@@ -449,6 +449,10 @@ class ExperimentBaseController extends BaseEntityController
 			@setupProjectSelect()
 		@setupAttachFileListController()
 		@setupCustomExperimentMetadataController()
+		# Parse "data column order" states and setup controllers
+		# TODO uncomment
+		# if @readOnly
+		@setupEndpointsController()
 		@render()
 		@listenTo @model, 'sync', @modelSyncCallback.bind(@)
 		@listenTo @model, 'change', @modelChangeCallback.bind(@)
@@ -782,3 +786,13 @@ class ExperimentBaseController extends BaseEntityController
 	displayInReadOnlyMode: =>
 		super()
 		@$('.bv_openInQueryToolWrapper').hide()
+	
+	setupEndpointsController: =>
+		# Parse data column order states
+		endpointStates = @model.get("lsStates").getStatesByTypeAndKind "metadata", "data column order"
+		@endpointListController = new EndpointListController
+			el: @$('.bv_endpointTable')
+			collection: endpointStates
+			model: @model
+
+		@endpointListController.render()
