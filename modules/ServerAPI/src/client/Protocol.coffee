@@ -581,6 +581,9 @@ class EndpointController extends AbstractFormController
 		@dataTypeValue = @lsState.getOrCreateValueByTypeAndKind "stringValue", "column type"
 		@columnNameValue = @lsState.getOrCreateValueByTypeAndKind "stringValue", "column name"
 		@unitsValue = @lsState.getOrCreateValueByTypeAndKind "stringValue", "column units"
+		console.log "dataType: #{@dataTypeValue.get("stringValue")}"
+		console.log "columnName: #{@columnNameValue.get("stringValue")}"
+		console.log "units: #{@unitsValue.get("stringValue")}"
 		# TODO remaining values
 		super()
 
@@ -598,19 +601,47 @@ class EndpointController extends AbstractFormController
 	setupUnitsController: =>
 		codeType = "data column"
 		codeKind = "column units"
-		@unitsPickListList = new PickListList()
-		@unitsPickListList.url = "/api/codetables/#{codeType}/#{codeKind}"
-		@unitsController = new EditablePickListSelect2Controller
-			el: @$('.bv_unitsPickList')
-			collection: @unitsPickListList
-			selectedCode: @unitsValue.get("stringValue")
-			parameter: "units"
-			codeType: codeType
-			codeKind: codeKind
-			autoSave: true
-			roles = [window.conf.roles.acas.userRole]
+		opts =
+				modelKey: "units"
+				# inputClass: field.fieldSettings.inputClass
+				formLabel: ''
+				# formLabelOrientation: field.fieldSettings.formLabelOrientation
+				# formLabelTooltip: field.fieldSettings.formLabelTooltip
+				# placeholder: field.fieldSettings.placeholder
+				# required: field.fieldSettings.required
+				url: "/api/codetables/#{codeType}/#{codeKind}"
+				thingRef: @unitsValue
+				# insertUnassigned: field.fieldSettings.insertUnassigned
+				# firstSelectText: field.fieldSettings.firstSelectText
+				# modelDefaults: field.modelDefaults
+				# allowedFileTypes: field.fieldSettings.allowedFileTypes
+				# maxFileSize: field.fieldSettings.maxFileSize
+				# displayInline: field.fieldSettings.displayInline
+				# extendedLabel: field.fieldSettings.extendedLabel
+				# sorter: field.fieldSettings.sorter
+				# tabIndex: field.fieldSettings.tabIndex
+				# toFixed: field.fieldSettings.toFixed
+				# pickList: field.fieldSettings.pickList
+				# showDescription: field.fieldSettings.showDescription
+				editablePicklist: true
+				autoSavePickListItem: true
+				editablePicklistRoles: [window.conf.roles.acas.userRole]
+		# @unitsPickListList = new PickListList()
+		# @unitsPickListList.url = "/api/codetables/#{codeType}/#{codeKind}"
+		# @unitsController = new EditablePickListSelect2Controller
+		# 	el: @$('.bv_unitsPickList')
+		# 	collection: @unitsPickListList
+		# 	selectedCode: @unitsValue.get("stringValue")
+		# 	parameter: "units"
+		# 	codeType: codeType
+		# 	codeKind: codeKind
+		# 	autoSave: true
+		# 	roles = [window.conf.roles.acas.userRole]
+		@unitsController = new ACASFormLSCodeValueFieldController opts
+
+		@$(".bv_unitsPickList").append @unitsController.render().el
 		
-		@unitsController.render()
+		# @unitsController.render()
 
 	
 	setupDataTypeController: =>
