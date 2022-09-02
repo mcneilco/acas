@@ -1,0 +1,42 @@
+name: Trigger Dev Tag
+
+on:
+  # Trigger on new commits to release branches
+  push:
+   branches: [ "release/**" ]
+
+jobs:
+  trigger-tag:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout this repo
+      - name: Checkout
+        uses: actions/checkout@v3
+      # Get branch name
+      - name: Set BRANCH_NAME to the current branch ${{ github.ref }}
+        run: |
+          echo "BRANCH_NAME=$(echo ${{ github.ref }} | sed 's/refs\/heads\///g')" >> $GITHUB_ENV
+      # Get next dev tag name on this branch
+      # First command lists all tags on the branch, filters to those containing '.dev', then grabs the last one
+      # Second command increments the final digit after dev, so 2022.1.1.dev1 will become 2022.1.1.dev2
+      # and 2022.1.1.dev9 will become 2022.1.1.dev10
+      - name: Get next dev tag name
+        run: |
+          LAST_TAG=$(git tag --merged ${{ env.BRANCH_NAME }} | grep '.dev' | tail -1)
+          echo "NEXT_TAG=$(echo $LAST_TAG | awk -F.dev -v OFS=.dev '{$NF += 1 ; print}')" >> $GITHUB_ENV
+      # Trigger the build
+      - name: Trigger the tagger workflow with branch ${{env.BRANCH_NAME}} and tag ${{ env.NEXT_TAG }}
+        uses: actions/github-script@v5
+        with:
+          github-token: ${{ secrets.ACAS_WORKFLOWS_TOKEN }}
+          script: |
+            github.rest.actions.createWorkflowDispatch({
+              owner: "mcneilco",
+              repo: "acas",
+              workflow_id: "tagger.yml",
+              ref: "${{env.BRANCH_NAME}}",
+              inputs: {
+                branch-name: "${{env.BRANCH_NAME}}",
+                tag-name: "${{env.NEXT_TAG"
+              }
+            });
