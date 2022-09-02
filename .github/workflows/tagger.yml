@@ -50,7 +50,7 @@ jobs:
               })
             github.rest.git.createRef({
               owner: 'mcneilco',
-              repo: ${{ matrix.acas-repo }},
+              repo: '${{ matrix.acas-repo }}'',
               ref: 'refs/tags/${{ github.event.inputs.tag-name }}',
               sha: releaseBranchRef.data.object.sha
             })
