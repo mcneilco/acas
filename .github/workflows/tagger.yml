@@ -41,6 +41,7 @@ jobs:
       - name: Get the latest commit of ${{ env.ACAS_REF }} and apply tag ${{ github.event.inputs.tag-name }}
         uses: actions/github-script@v5
         with:
+          github-token: ${{ secrets.ACAS_WORKFLOWS_TOKEN }}
           script: |
             releaseBranchRef = await github.rest.git.getRef({
                 owner: 'mcneilco',
