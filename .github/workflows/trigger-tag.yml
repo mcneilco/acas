@@ -37,6 +37,6 @@ jobs:
               ref: "${{env.BRANCH_NAME}}",
               inputs: {
                 branch-name: "${{env.BRANCH_NAME}}",
-                tag-name: "${{env.NEXT_TAG"
+                tag-name: "${{env.NEXT_TAG}}"
               }
             });
