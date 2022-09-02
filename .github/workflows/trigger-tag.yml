@@ -1,4 +1,4 @@
-name: Trigger Tag
+name: Trigger Dev Tag
 
 on:
   # Trigger on new commits to release branches
