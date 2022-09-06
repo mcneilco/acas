@@ -206,7 +206,7 @@ exports.renderMolStructureBase64 = (req, resp) ->
 			else
 				console.log '--- line 153:   got ajax error trying to render molStructure'
 				console.log error
-				console.log json
+				console.log output
 				console.log response
 				resp.statusCode = 500
 				resp.end JSON.stringify "render molStructure failed"
