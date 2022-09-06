@@ -230,7 +230,7 @@ class SaltBrowserController extends Backbone.View
 
 		# Want to Clear Form Fields Here 
 		@$('.bv_abbrevName').val ""
-		@$('.bv_saltName').val ""
+		@$('.bv_saltNameCreate').val ""
 
 		@$('.bv_saltBrowserCoreContainer').hide()
 		@$('bv_saltBrowserCore').hide()
@@ -256,7 +256,7 @@ class SaltBrowserController extends Backbone.View
 		if (saltAbbrev == "" || saltAbbrev == null)
 			fieldsFilled = false
 
-		saltName = UtilityFunctions::getTrimmedInput @$('.bv_saltName')
+		saltName = UtilityFunctions::getTrimmedInput @$('.bv_saltNameCreate')
 		if (saltName == "" || saltName == null)
 			fieldsFilled = false
 
