@@ -57,6 +57,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/cmpdReg/parentLot/getAllAuthorizedLots', loginRoutes.ensureAuthenticated, exports.getAllAuthorizedLots
 	app.get '/cmpdReg/allowCmpdRegistration', loginRoutes.ensureAuthenticated, exports.allowCmpdRegistration
 	app.get '/cmpdReg/export/corpName/:lotCorpName', loginRoutes.ensureAuthenticated, exports.exportLotToSDF
+	app.post '/api/cmpdReg/renderMolStructureBase64', loginRoutes.ensureAuthenticated, exports.renderMolStructureBase64CmpdReg
 
 _ = require 'underscore'
 request = require 'request'
@@ -1143,3 +1144,31 @@ exports.allowCmpdRegistration = (req, resp) ->
 					allowCmpdRegistration: allowCmpdRegistration
 					message: message
 				resp.json response
+
+exports.renderMolStructureBase64CmpdReg = (req, resp) ->
+	molecule = req.body.molStructure
+	height = 200
+	width = 200
+	format = "png"
+	if req.body.height?
+		height = req.body.height
+	if req.body.width?
+		width = req.body.width
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"structureimage/convertMol/base64?hsize=#{height}&wsize=#{width}&format=#{format}"
+	request = require 'request'
+	request(
+		method: 'POST'
+		url: baseurl
+		body: molecule
+		json: true
+	, (error, response, output) =>
+		if !error && response.statusCode == 200
+			resp.end output
+		else
+			console.log error
+			console.log output
+			console.log response
+			resp.statusCode = 500
+			resp.end JSON.stringify "render molStructure base64 CmpdReg failed"
+	)
