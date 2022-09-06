@@ -31,6 +31,8 @@ exports.requiredScripts = [
 	// '/CmpdReg/marvinjs/gui/lib/promise-1.0.0.min.js',
 	// '/CmpdReg/marvinjs/js/marvinjslauncher.js',
 	// '/CmpdReg/client/custom/marvinStructureTemplate.js',
+	// The following line is for the Maestro sketcher
+	'/CmpdReg/client/schrodinger/maestrosketcher/maestrosketcherlauncher.js',
 	'/socket.io/socket.io.js',
 	'/lib/blockUI.js'
 ];

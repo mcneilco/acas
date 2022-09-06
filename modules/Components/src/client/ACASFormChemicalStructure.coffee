@@ -75,33 +75,25 @@ class MaestroChemicalStructureController extends Backbone.View
 		$(@el).empty()
 		$(@el).html @template()
 
-		@$('.bv_sketcherIFrame').on 'load', @startSketcher
-
-		searchFrameURL = "/components/ACASFormChemicalRegStructure"
-		if @options?
-			if @options.searchMode?
-				if @options.searchMode
-					searchFrameURL = "/components/ACASFormChemicalSearchStructure"
-
+		searchFrameURL = "/CmpdReg/maestrosketcher/wasm_shell.html"
+		@maestroIFrameID = "maestroSketcher_" + new Date().getMilliseconds()
+		@$('.bv_sketcherIFrame').attr 'id', @maestroIFrameID
 		@$('.bv_sketcherIFrame').attr 'src', searchFrameURL
+		@$('.bv_sketcherIFrame').on 'load', @startSketcher
 
 		@
 
 	startSketcher: =>
-		@windowObj = @$('.bv_sketcherIFrame')[0].contentWindow
-		@trigger 'sketcherLoaded'
+		MaestroJSUtil.getSketcher("##{@maestroIFrameID}").then (maestro) =>
+			@maestro = maestro
+			@trigger 'sketcherLoaded'
+		
 
 	getMol: ->
-		mol = @windowObj.sketcher.getMolecule();
-		@windowObj.ChemDoodle.writeMOL(mol)
+		@maestro.sketcherExportMolBlock()
 
 	setMol: (molStr) ->
-		molStruct = @windowObj.ChemDoodle.readMOL molStr
-		@windowObj.sketcher.loadMolecule(molStruct);
-
-	getChemDoodleJSON: ->
-		mol = @windowObj.sketcher.getMolecule();
-		@windowObj.ChemDoodle.writeJSON([mol],[])
+		@maestro.sketcherImportText molStr
 
 
 #TODO Why is it making a call to WebHQ outside our server, and make it stop
