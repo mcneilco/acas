@@ -295,7 +295,6 @@ class ProtocolBaseController extends BaseEntityController
 
 		@endpointListController = new EndpointListController
 			el: @$('.bv_endpointTable')
-			#collection: ["one", "two", "three", "four"]
 			collection: endpointStates
 			model: @model
 
@@ -739,6 +738,7 @@ class EndpointListController extends AbstractFormController
 			rnB = @getRowNumberForState(stateB)
 			return rnA - rnB
 
+		#TODO - set the template depending if it is read-only or not (experiment page )
 
 	render: => 
 		$(@el).empty()
@@ -791,4 +791,22 @@ class EndpointListController extends AbstractFormController
 		@.addOne(lsState)
 
 			
+class EndpointListControllerReadOnly extends EndpointListController
+	template: _.template($("#EndpointListViewReadOnly").html())
 
+	addOne: (lsState) =>
+		# create a new table row
+		tr = document.createElement('tr')
+		# Add that row into the table
+		@$('.bv_endpointRows').append tr
+		# Create a new EndpointController, which manages a row
+		# Pass the row we just created for the EndpointController to render into
+		rowController = new EndpointControllerReadOnly
+			el: tr
+			lsState: lsState
+		rowController.render()
+		# Add this controller to our list so we can access it later
+		@endpointControllers.push rowController
+
+class EndpointControllerReadOnly extends EndpointController
+	template: _.template($("#EndpointRowViewReadOnly").html())

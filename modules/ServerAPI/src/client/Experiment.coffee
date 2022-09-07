@@ -790,7 +790,7 @@ class ExperimentBaseController extends BaseEntityController
 	setupEndpointsController: =>
 		# Parse data column order states
 		endpointStates = @model.get("lsStates").getStatesByTypeAndKind "metadata", "data column order"
-		@endpointListController = new EndpointListController
+		@endpointListController = new EndpointListControllerReadOnly
 			el: @$('.bv_endpointTable')
 			collection: endpointStates
 			model: @model

@@ -297,6 +297,19 @@
     <td style="text-align:center;vertical-align:middle;"><button type="button" class="btn btn-danger bv_remove pull-center" style="margin-right:5px;margin-left:5px;">Remove</button></td>
 </script>
 
+<script type="text/template" id="EndpointRowViewReadOnly" xmlns="http://www.w3.org/1999/html">
+    <td style="vertical-align: middle;">
+        <div class="bv_columnNamePickList"></div>
+    </td>
+    <td style="vertical-align:middle;">
+        <div class="bv_unitsPickList"></div>
+    </td>
+    <td style="vertical-align:middle;" class="bv_dataTypePickListParent">
+        <div class="bv_dataTypePickList"></div>
+    </td>
+    <td style="text-align:center;vertical-align:middle;"><input class= "" type="checkbox" id="" name=""></td>
+    <td style="text-align:center;vertical-align:middle;"><input class= "" type="checkbox" id="" name=""></td>
+</script>
 
 
 
@@ -329,6 +342,29 @@
     </span>
 
 </script>
+
+<script type="text/template" id="EndpointListViewReadOnly" xmlns="http://www.w3.org/1999/html">
+    <table class="table table-bordered table-striped table-hover endpointTable" style="margin: 0px; padding: 0px; border: 0px; width: 100%; border: 0.5px solid; border-color: grey;">
+        <thead style="">
+            <tr>
+                <th>Column Name</th>
+                <th>Units</th>
+                <th>Data Type</th>
+                <th>Hidden</th>
+                <th>Condition</th>
+            </tr>
+        </thead>
+        <tbody class="bv_endpointRows">
+        </tbody>
+        <div class="bv_endpointInfo"></div>
+        <div class="bv_selectTest"></div>
+        
+    </table>
+    <br/>
+    <br/>
+</script>
+
+
 
 
 <script type="text/template" id="ProtocolEndpointRowSummaryView" xmlns="http://www.w3.org/1999/html">
