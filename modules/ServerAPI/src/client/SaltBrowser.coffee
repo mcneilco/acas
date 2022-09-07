@@ -199,7 +199,7 @@ class SaltBrowserController extends Backbone.View
 
 		$.ajax(
 			type: 'POST'
-			url: "/api/chemStructure/renderMolStructureBase64"
+			url: "/api/cmpdReg/renderMolStructureBase64"
 			contentType: 'application/json'
 			dataType: 'text'
 
@@ -230,7 +230,7 @@ class SaltBrowserController extends Backbone.View
 
 		# Want to Clear Form Fields Here 
 		@$('.bv_abbrevName').val ""
-		@$('.bv_saltName').val ""
+		@$('.bv_saltNameCreate').val ""
 
 		@$('.bv_saltBrowserCoreContainer').hide()
 		@$('bv_saltBrowserCore').hide()
@@ -256,7 +256,7 @@ class SaltBrowserController extends Backbone.View
 		if (saltAbbrev == "" || saltAbbrev == null)
 			fieldsFilled = false
 
-		saltName = UtilityFunctions::getTrimmedInput @$('.bv_saltName')
+		saltName = UtilityFunctions::getTrimmedInput @$('.bv_saltNameCreate')
 		if (saltName == "" || saltName == null)
 			fieldsFilled = false
 
@@ -319,7 +319,7 @@ class SaltBrowserController extends Backbone.View
 						# Render Image
 						$.ajax(
 							type: 'POST'
-							url: "/api/chemStructure/renderMolStructureBase64"
+							url: "/api/cmpdReg/renderMolStructureBase64"
 							contentType: 'application/json'
 							dataType: 'text'
 							data: JSON.stringify(requestJSON)
@@ -565,7 +565,7 @@ class SaltBrowserController extends Backbone.View
 						# AJAX Call to Generate Picture of New Structure
 						$.ajax(
 							type: 'POST'
-							url: "/api/chemStructure/renderMolStructureBase64"
+							url: "/api/cmpdReg/renderMolStructureBase64"
 							contentType: 'application/json'
 							dataType: 'text'
 							data: JSON.stringify(requestJSON)
