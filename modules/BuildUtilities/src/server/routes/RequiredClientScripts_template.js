@@ -43,6 +43,8 @@ exports.applicationScripts = [
 	'/javascripts/src/Components/LSErrorNotification.js',
 	'/javascripts/src/Components/AbstractFormController.js',
 	'/javascripts/src/Components/AbstractParserFormController.js',
+	'/javascripts/src/Components/ACASFormFields.js',
+	'/javascripts/src/Components/ACASFormStateTable.js',
 	'/javascripts/src/Components/BasicFileValidateAndSave.js',
 	'/javascripts/src/Components/BasicFileValidateReviewAndSave.js',
 	'/javascripts/src/Components/ACASThingBrowser.js',
