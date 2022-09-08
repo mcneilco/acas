@@ -623,6 +623,7 @@ class EndpointListController extends AbstractFormController
 
 	events:
 		"click .bv_addEndpoint": "handleAddEndpointPressed"
+		"rowRemoved": "handleRowRemoved"
 	
 	rowNumberKind: "column order"
 	
@@ -656,11 +657,11 @@ class EndpointListController extends AbstractFormController
 		# Create a new EndpointController, which manages a row
 		# We get the row number from the state which was passed in
 		rowNumber = @getRowNumberForState(state)
-		# TODO uncomment if the rest of this starts working
-		# if @stateTableFormControllersCollection[rowNumber]?
-		# 	@stateTableFormControllersCollection[rowNumber].remove()
-		# 	@stateTableFormControllersCollection[rowNumber].unbind()
-		rowController = new ACASFormStateTableFormController
+		# Start tracking the controllers based on their row numbers
+		if @endpointControllers[rowNumber]?
+			@endpointControllers[rowNumber].remove()
+			@endpointControllers[rowNumber].unbind()
+		rowController = new EndpointController
 			el: tr
 			thingRef: @model
 			valueDefs: EndpointsValuesConf
@@ -668,9 +669,8 @@ class EndpointListController extends AbstractFormController
 			stateKind: 'data column order'
 			rowNumber: rowNumber
 			rowNumberKind: @rowNumberKind
-		#rowController.render()
-		# Add this controller to our list so we can access it later
-		@endpointControllers.push rowController
+		# Add this controller to our tracking dictionary so we can access it later
+		@endpointControllers[rowNumber] = rowController
 	
 	getRowNumberForState: (state) =>
 		rowValues = state.getValuesByTypeAndKind 'numericValue', @rowNumberKind
@@ -696,6 +696,12 @@ class EndpointListController extends AbstractFormController
 		# Add the state to the collection
 		@collection.push lsState
 		@.addOne(lsState)
+	
+	handleRowRemoved: (rowNumber) =>
+		if @endpointControllers[rowNumber]?
+			@endpointControllers[rowNumber].remove()
+			@endpointControllers[rowNumber].unbind()
+			@endpointControllers[rowNumber].el.remove()
 
 			
 class EndpointListControllerReadOnly extends EndpointListController
