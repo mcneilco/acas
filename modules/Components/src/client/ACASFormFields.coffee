@@ -38,7 +38,7 @@ class ACASFormAbstractFieldController extends Backbone.View
 		@$('.label-tooltip').tooltip()
 
 	getModel: ->
-		if @thingRef instanceof Thing
+		if @thingRef instanceof Thing or @thingRef instanceof BaseEntity
 			return @thingRef.get @modelKey
 		else
 			return @thingRef
