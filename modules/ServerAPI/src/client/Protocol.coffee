@@ -529,7 +529,7 @@ class ProtocolBaseController extends BaseEntityController
 		@handleValueChanged "StrictEndpointMatching", value
 
 
-class EndpointController extends AbstractFormController
+class EndpointController extends ACASFormStateTableFormController
 	template: _.template($("#EndpointRowView2").html())
 
 	events:
@@ -537,184 +537,23 @@ class EndpointController extends AbstractFormController
 
 
 	initialize: (options) =>
-		@lsState = options.lsState
-		# Parse out endpointData
-		@dataTypeValue = @lsState.getOrCreateValueByTypeAndKind "stringValue", "column type"
-		@columnNameValue = @lsState.getOrCreateValueByTypeAndKind "stringValue", "column name"
-		@unitsValue = @lsState.getOrCreateValueByTypeAndKind "stringValue", "column units"
-		@dataTypeValue.set "value", @dataTypeValue.get "stringValue"
-		@columnNameValue.set "value", @columnNameValue.get "stringValue"
-		@unitsValue.set "value", @unitsValue.get "stringValue"
-		console.log "dataType: #{@dataTypeValue.get("stringValue")}"
-		console.log "columnName: #{@columnNameValue.get("stringValue")}"
-		console.log "units: #{@unitsValue.get("stringValue")}"
-		# TODO remaining values
-		super()
-
-
-	#TODO - based on AssignedPropertyController in CmpdRegBulkLoader.coffee (line 223)
-	render: =>
 		$(@el).empty()
 		$(@el).html @template()
-
-		@setupDataTypeController()
-		@setupUnitsController()
-		@setupColumnNameController()
-
-		@
-	
-	setupColumnNameController: =>
-		codeType = "data column"
-		codeKind = "column name"
-		opts =
-				modelKey: "name"
-				# inputClass: field.fieldSettings.inputClass
-				formLabel: ''
-				# formLabelOrientation: field.fieldSettings.formLabelOrientation
-				# formLabelTooltip: field.fieldSettings.formLabelTooltip
-				# placeholder: field.fieldSettings.placeholder
-				# required: field.fieldSettings.required
-				url: "/api/codetables/#{codeType}/#{codeKind}"
-				thingRef: @columnNameValue
-				# insertUnassigned: field.fieldSettings.insertUnassigned
-				# firstSelectText: field.fieldSettings.firstSelectText
-				# modelDefaults: field.modelDefaults
-				# allowedFileTypes: field.fieldSettings.allowedFileTypes
-				# maxFileSize: field.fieldSettings.maxFileSize
-				# displayInline: field.fieldSettings.displayInline
-				# extendedLabel: field.fieldSettings.extendedLabel
-				# sorter: field.fieldSettings.sorter
-				# tabIndex: field.fieldSettings.tabIndex
-				# toFixed: field.fieldSettings.toFixed
-				# pickList: field.fieldSettings.pickList
-				# showDescription: field.fieldSettings.showDescription
-				editablePicklist: true
-				autoSavePickListItem: true
-				editablePicklistRoles: [window.conf.roles.acas.userRole]
-
-		@columnNameController = new ACASFormLSCodeValueFieldController opts
-
-		@$(".bv_columnNamePickList").append @columnNameController.render().el
-		@columnNameController.renderModelContent()
-
-		#--- (Start): Previous Code for Column Name Controller --- 
-		#@columnNamePickListList = new PickListList()
-		#@columnNamePickListList.url = "/api/codetables/#{codeType}/#{codeKind}"
-		#@columnNameController = new EditablePickListSelect2Controller
-		#	el: @$('.bv_columnNamePickList')
-		#	collection: @columnNamePickListList
-		#	selectedCode: @columnNameValue.get("stringValue")
-		#	parameter: "column name"
-		#	codeType: codeType
-		#	codeKind: codeKind
-		#	autoSave: true
-		#	roles = [window.conf.roles.acas.userRole]
-		#@columnNameController.render()
-		#--- (End) --- 
-
-
-		
-
-	setupUnitsController: =>
-		codeType = "data column"
-		codeKind = "column units"
-		opts =
-				modelKey: "units"
-				# inputClass: field.fieldSettings.inputClass
-				formLabel: ''
-				# formLabelOrientation: field.fieldSettings.formLabelOrientation
-				# formLabelTooltip: field.fieldSettings.formLabelTooltip
-				# placeholder: field.fieldSettings.placeholder
-				# required: field.fieldSettings.required
-				url: "/api/codetables/#{codeType}/#{codeKind}"
-				thingRef: @unitsValue
-				# insertUnassigned: field.fieldSettings.insertUnassigned
-				# firstSelectText: field.fieldSettings.firstSelectText
-				# modelDefaults: field.modelDefaults
-				# allowedFileTypes: field.fieldSettings.allowedFileTypes
-				# maxFileSize: field.fieldSettings.maxFileSize
-				# displayInline: field.fieldSettings.displayInline
-				# extendedLabel: field.fieldSettings.extendedLabel
-				# sorter: field.fieldSettings.sorter
-				# tabIndex: field.fieldSettings.tabIndex
-				# toFixed: field.fieldSettings.toFixed
-				# pickList: field.fieldSettings.pickList
-				# showDescription: field.fieldSettings.showDescription
-				editablePicklist: true
-				autoSavePickListItem: true
-				editablePicklistRoles: [window.conf.roles.acas.userRole]
-		
-		@unitsController = new ACASFormLSCodeValueFieldController opts
-
-		@$(".bv_unitsPickList").append @unitsController.render().el
-		@unitsController.renderModelContent()
-
-		#--- (Start): Previous Code for Units Pick List --- 
-		# @unitsPickListList = new PickListList()
-		# @unitsPickListList.url = "/api/codetables/#{codeType}/#{codeKind}"
-		# @unitsController = new EditablePickListSelect2Controller
-		# 	el: @$('.bv_unitsPickList')
-		# 	collection: @unitsPickListList
-		# 	selectedCode: @unitsValue.get("stringValue")
-		# 	parameter: "units"
-		# 	codeType: codeType
-		# 	codeKind: codeKind
-		# 	autoSave: true
-		# 	roles = [window.conf.roles.acas.userRole]
-		# @unitsController.render()
-		#--- (End) --- 
-
-
-	
-	setupDataTypeController: =>
-		codeType = "data column"
-		codeKind = "column type"
-		opts =
-				modelKey: "type"
-				# inputClass: field.fieldSettings.inputClass
-				formLabel: ''
-				# formLabelOrientation: field.fieldSettings.formLabelOrientation
-				# formLabelTooltip: field.fieldSettings.formLabelTooltip
-				# placeholder: field.fieldSettings.placeholder
-				# required: field.fieldSettings.required
-				url: "/api/codetables/#{codeType}/#{codeKind}"
-				thingRef: @dataTypeValue
-				# insertUnassigned: field.fieldSettings.insertUnassigned
-				# firstSelectText: field.fieldSettings.firstSelectText
-				# modelDefaults: field.modelDefaults
-				# allowedFileTypes: field.fieldSettings.allowedFileTypes
-				# maxFileSize: field.fieldSettings.maxFileSize
-				# displayInline: field.fieldSettings.displayInline
-				# extendedLabel: field.fieldSettings.extendedLabel
-				# sorter: field.fieldSettings.sorter
-				# tabIndex: field.fieldSettings.tabIndex
-				# toFixed: field.fieldSettings.toFixed
-				# pickList: field.fieldSettings.pickList
-				# showDescription: field.fieldSettings.showDescription
-				editablePicklist: false
-				autoSavePickListItem: true
-				editablePicklistRoles: [window.conf.roles.acas.userRole]
-		@dataTypeController = new ACASFormLSCodeValueFieldController opts
-		@$(".bv_dataTypePickList").append @dataTypeController.render().el
-		@dataTypeController.renderModelContent()
-
-		#--- (Start): Previous Code for Data Type Pick List --- 
-		#@dataTypePickListList = new PickListList()
-		#@dataTypePickListList.url = "/api/codetables/#{codeType}/#{codeKind}"
-		#@dataTypeController = new PickListSelectController
-		#	el: @$('.bv_dataTypePickList')
-		#	collection: @dataTypePickListList
-		#	selectedCode: @dataTypeValue.get("stringValue")
-		#	insertFirstOption: new PickList
-		#		code: "unassigned"
-		#		name: "Select Data Type"
-		
-		#@dataTypeController.render()
-		#--- (End) ---
-
+		# TODO remaining values
+		super(options)
 	
 	removeRow: =>
+		# Remove UI element
 		@el.remove()
+		# Ignore the state
+		state = @getStateForRow()
+		state.set 
+			ignored: true
+			modifiedBy: window.AppLaunchParams.loginUser.username
+			modifiedDate: new Date().getTime()
+			isDirty: true
+		# Alert the parent controller to destroy this controller
+		@trigger 'rowRemoved', @rowNumber
 		# TODO figure out how to remove this controller from the parent controller's "endpointControllers"
 
 				
@@ -814,15 +653,8 @@ class EndpointListController extends AbstractFormController
 		tr = document.createElement('tr')
 		# Add that row into the table
 		@$('.bv_endpointRows').append tr
-		# Hack to render template into the tr
-		#tr.empty()
-		template = $("#EndpointRowView2").html()
-		tr.innerHTML = template
 		# Create a new EndpointController, which manages a row
-		# Pass the row we just created for the EndpointController to render into
-		# rowController = new EndpointController
-		# 	el: tr
-		# 	lsState: lsState
+		# We get the row number from the state which was passed in
 		rowNumber = @getRowNumberForState(state)
 		# TODO uncomment if the rest of this starts working
 		# if @stateTableFormControllersCollection[rowNumber]?
