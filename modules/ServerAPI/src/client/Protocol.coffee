@@ -591,7 +591,7 @@ EndpointsValuesConf = [
 		formLabel: ''
 		fieldWrapper: 'bv_unitsPickList'
 		insertUnassigned: true
-		firstSelectText: "Select Column Units"
+		firstSelectText: "(unitless)"
 		required: false
 		editablePicklist: true
 		autoSavePickListItem: true
@@ -610,7 +610,7 @@ EndpointsValuesConf = [
 		formLabel: ''
 		fieldWrapper: 'bv_dataTypePickList'
 		insertUnassigned: true
-		firstSelectText: ""
+		firstSelectText: "Select Column Type"
 		required: false
 		editablePicklist: false
 ]
