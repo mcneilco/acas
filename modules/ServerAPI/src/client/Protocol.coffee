@@ -573,7 +573,7 @@ EndpointsValuesConf = [
 		fieldWrapper: 'bv_columnNamePickList'
 		insertUnassigned: true
 		firstSelectText: "Select Column Name"
-		required: false
+		required: true
 		editablePicklist: true
 		autoSavePickListItem: true
 		editablePicklistRoles: [window.conf.roles.acas.userRole]
@@ -611,7 +611,7 @@ EndpointsValuesConf = [
 		fieldWrapper: 'bv_dataTypePickList'
 		insertUnassigned: true
 		firstSelectText: "Select Column Type"
-		required: false
+		required: true
 		editablePicklist: false
 ]
 		
