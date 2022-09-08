@@ -289,6 +289,8 @@ class ProtocolBaseController extends BaseEntityController
 		@model.getStatus().on 'change', @updateEditable.bind(@)
 #		@trigger 'amClean' #so that module starts off clean when initialized
 
+		# Hack to see if we can get this working with Thing-based ACASFormStateTable
+		@model.lsProperties = {'defaultValues': []}
 
 		# Mocking up the states list for now
 		endpointStates = @model.get("lsStates").getStatesByTypeAndKind "metadata", "data column order"
@@ -716,7 +718,63 @@ class EndpointController extends AbstractFormController
 		# TODO figure out how to remove this controller from the parent controller's "endpointControllers"
 
 				
-
+# Protocol Endpoints definition
+EndpointsValuesConf = [
+	key: 'column name'
+	modelDefaults:
+		type: 'stringValue'
+		kind: 'column name'
+		codeType: 'data column'
+		codeKind: 'column name'
+		codeOrigin: 'ACAS DDict'
+		value: null
+	fieldSettings:
+		fieldType: 'codeValue'
+		formLabel: ''
+		fieldWrapper: 'bv_columnNamePickList'
+		insertUnassigned: true
+		firstSelectText: "Select Column Name"
+		required: false
+		editablePicklist: true
+		autoSavePickListItem: true
+		editablePicklistRoles: [window.conf.roles.acas.userRole]
+,
+	key: 'column units'
+	modelDefaults:
+		type: 'stringValue'
+		kind: 'column units'
+		codeType: 'data column'
+		codeKind: 'column units'
+		codeOrigin: 'ACAS DDict'
+		value: null
+	fieldSettings:
+		fieldType: 'codeValue'
+		formLabel: ''
+		fieldWrapper: 'bv_unitsPickList'
+		insertUnassigned: true
+		firstSelectText: "Select Column Units"
+		required: false
+		editablePicklist: true
+		autoSavePickListItem: true
+		editablePicklistRoles: [window.conf.roles.acas.userRole]
+,
+	key: 'column type'
+	modelDefaults:
+		type: 'stringValue'
+		kind: 'column type'
+		codeType: 'data column'
+		codeKind: 'column type'
+		codeOrigin: 'ACAS DDict'
+		value: null
+	fieldSettings:
+		fieldType: 'codeValue'
+		formLabel: ''
+		fieldWrapper: 'bv_dataTypePickList'
+		insertUnassigned: true
+		firstSelectText: ""
+		required: false
+		editablePicklist: false
+]
 		
 
 
@@ -751,17 +809,34 @@ class EndpointListController extends AbstractFormController
 			@.addOne(lsState)
 		@
 	
-	addOne: (lsState) =>
+	addOne: (state) =>
 		# create a new table row
 		tr = document.createElement('tr')
 		# Add that row into the table
 		@$('.bv_endpointRows').append tr
+		# Hack to render template into the tr
+		#tr.empty()
+		template = $("#EndpointRowView2").html()
+		tr.innerHTML = template
 		# Create a new EndpointController, which manages a row
 		# Pass the row we just created for the EndpointController to render into
-		rowController = new EndpointController
+		# rowController = new EndpointController
+		# 	el: tr
+		# 	lsState: lsState
+		rowNumber = @getRowNumberForState(state)
+		# TODO uncomment if the rest of this starts working
+		# if @stateTableFormControllersCollection[rowNumber]?
+		# 	@stateTableFormControllersCollection[rowNumber].remove()
+		# 	@stateTableFormControllersCollection[rowNumber].unbind()
+		rowController = new ACASFormStateTableFormController
 			el: tr
-			lsState: lsState
-		rowController.render()
+			thingRef: @model
+			valueDefs: EndpointsValuesConf
+			stateType: 'metadata'
+			stateKind: 'data column order'
+			rowNumber: rowNumber
+			rowNumberKind: @rowNumberKind
+		#rowController.render()
 		# Add this controller to our list so we can access it later
 		@endpointControllers.push rowController
 	
