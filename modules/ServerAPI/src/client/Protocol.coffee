@@ -289,12 +289,12 @@ class ProtocolBaseController extends BaseEntityController
 		@model.getStatus().on 'change', @updateEditable.bind(@)
 #		@trigger 'amClean' #so that module starts off clean when initialized
 
-		# Hack to see if we can get this working with Thing-based ACASFormStateTable
+		# Hack to get Protocol working with Thing-based ACASFormStateTable classes
 		@model.lsProperties = {'defaultValues': []}
-
-		# Mocking up the states list for now
+		# The 'data column order' states are a StateTable
+		# Get any existing states with that type & kind
 		endpointStates = @model.get("lsStates").getStatesByTypeAndKind "metadata", "data column order"
-
+		# Create the controller for the Endpoints table which manages all the states
 		@endpointListController = new EndpointListController
 			el: @$('.bv_endpointTable')
 			collection: endpointStates

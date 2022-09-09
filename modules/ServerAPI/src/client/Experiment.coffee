@@ -788,9 +788,13 @@ class ExperimentBaseController extends BaseEntityController
 		@$('.bv_openInQueryToolWrapper').hide()
 	
 	setupEndpointsController: =>
-		# Parse data column order states
+		# Hack to get Protocol working with Thing-based ACASFormStateTable classes
+		@model.lsProperties = {'defaultValues': []}
+		# The 'data column order' states are a StateTable
+		# Get any existing states with that type & kind
 		endpointStates = @model.get("lsStates").getStatesByTypeAndKind "metadata", "data column order"
-		@endpointListController = new EndpointListControllerReadOnly
+		# Create the controller for the Endpoints table which manages all the states
+		@endpointListController = new EndpointListController
 			el: @$('.bv_endpointTable')
 			collection: endpointStates
 			model: @model
