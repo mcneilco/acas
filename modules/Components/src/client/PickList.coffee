@@ -673,20 +673,24 @@ class EditablePickListSelectController extends Backbone.View
 
 class EditablePickListSelect2Controller extends EditablePickListSelectController
 	setupEditablePickList: ->
-		parameterNameWithSpaces = @options.parameter.replace /([A-Z])/g,' $1'
-		pascalCaseParameterName = (parameterNameWithSpaces).charAt(0).toUpperCase() + (parameterNameWithSpaces).slice(1)
-
+		plOptions =
+			el: @$('.bv_parameterSelectList')
+			collection: @collection
+			selectedCode: @options.selectedCode
+			filters: filters
+		if @options.insertFirstOption
+			plOptions.insertFirstOption = @options.insertFirstOption
+		else if @options.parameter?
+			# The parameter field gives a default first option based on the model key
+			parameterNameWithSpaces = @options.parameter.replace /([A-Z])/g,' $1'
+			pascalCaseParameterName = (parameterNameWithSpaces).charAt(0).toUpperCase() + (parameterNameWithSpaces).slice(1)
+			plOptions.insertFirstOption = new PickList
+				code: "unassigned"
+				name: "Select "+pascalCaseParameterName
 		if @pickListController?
 			filters = @pickListController.filters
 			@pickListController.remove()
-		@pickListController = new PickListSelect2Controller
-			el: @$('.bv_parameterSelectList')
-			collection: @collection
-			insertFirstOption: new PickList
-				code: "unassigned"
-				name: "Select "+pascalCaseParameterName
-			selectedCode: @options.selectedCode
-			filters: filters
+		@pickListController = new PickListSelect2Controller plOptions
 
 class ThingLabelComboBoxController extends PickListSelect2Controller
 
