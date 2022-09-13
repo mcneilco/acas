@@ -252,38 +252,7 @@
 
 </script>
 
-
 <script type="text/template" id="EndpointRowView" xmlns="http://www.w3.org/1999/html">
-    <tr>
-        <td style="vertical-align: middle;">
-            <div class="control-group bv_group_tags" style="">
-                <div class="controls">
-                    <select class="bv_resultTypeList" style="width:100%;margin:auto;"></select>
-                </div>
-            </div>
-        </td>
-        <td style="vertical-align:middle;">
-            <div class="control-group bv_group_tags" style="">
-                <div class="controls">
-                    <select class="bv_unitsList" style="width:100%;margin:auto;"></select>
-                </div>
-            </div>
-        </td>
-        <td style="vertical-align:middle;">
-            <div class="control-group bv_group_tags" style="">
-                <div class="controls">
-                    <select class="bv_dataTypeList" style="width:100%;margin:auto;"></select>
-                </div>
-            </div>
-        </td>
-        <td style="text-align:center;vertical-align:middle;"><input class= "" type="checkbox" id="" name=""></td>
-        <td style="text-align:center;vertical-align:middle;"><input class= "" type="checkbox" id="" name=""></td>
-        <td style="text-align:center;vertical-align:middle;" class="bv_remove_row"><button type="button" class="btn btn-danger bv_remove pull-center" style="margin-right:5px;margin-left:5px;">Remove</button></td>
-    </tr>
-</script>
-
-
-<script type="text/template" id="EndpointRowView2" xmlns="http://www.w3.org/1999/html">
     <td style="vertical-align: middle;">
         <div class="bv_columnNamePickList"></div>
     </td>
@@ -297,25 +266,6 @@
     <td style="text-align:center;vertical-align:middle;"><input class= "" type="checkbox" id="" name=""></td>
     <td style="text-align:center;vertical-align:middle;"class="bv_remove_row"><button type="button" class="btn btn-danger bv_remove pull-center" style="margin-right:5px;margin-left:5px;">Remove</button></td>
 </script>
-
-<script type="text/template" id="EndpointRowViewReadOnly" xmlns="http://www.w3.org/1999/html">
-    <td style="vertical-align: middle;">
-        <div class="bv_columnNamePickList"></div>
-    </td>
-    <td style="vertical-align:middle;">
-        <div class="bv_unitsPickList"></div>
-    </td>
-    <td style="vertical-align:middle;" class="bv_dataTypePickListParent">
-        <div class="bv_dataTypePickList"></div>
-    </td>
-    <td style="text-align:center;vertical-align:middle;"><input class= "" type="checkbox" id="" name=""></td>
-    <td style="text-align:center;vertical-align:middle;"><input class= "" type="checkbox" id="" name=""></td>
-</script>
-
-
-
-
-
 
 <script type="text/template" id="EndpointListView" xmlns="http://www.w3.org/1999/html">
     <table class="table table-bordered table-striped table-hover endpointTable" style="margin: 0px; padding: 0px; border: 0px; width: 100%; border: 0.5px solid; border-color: grey;">
@@ -343,30 +293,6 @@
     </span>
 
 </script>
-
-<script type="text/template" id="EndpointListViewReadOnly" xmlns="http://www.w3.org/1999/html">
-    <table class="table table-bordered table-striped table-hover endpointTable" style="margin: 0px; padding: 0px; border: 0px; width: 100%; border: 0.5px solid; border-color: grey;">
-        <thead style="">
-            <tr>
-                <th>Column Name</th>
-                <th>Units</th>
-                <th>Data Type</th>
-                <th>Hidden</th>
-                <th>Condition</th>
-            </tr>
-        </thead>
-        <tbody class="bv_endpointRows">
-        </tbody>
-        <div class="bv_endpointInfo"></div>
-        <div class="bv_selectTest"></div>
-        
-    </table>
-    <br/>
-    <br/>
-</script>
-
-
-
 
 <script type="text/template" id="ProtocolEndpointRowSummaryView" xmlns="http://www.w3.org/1999/html">
     <td class='bv_resultType'><a href='<%-fileLink%>'><%-fileName%></a></td>

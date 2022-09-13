@@ -559,7 +559,7 @@ class ProtocolBaseController extends BaseEntityController
 
 
 class EndpointController extends ACASFormStateTableFormController
-	template: _.template($("#EndpointRowView2").html())
+	template: _.template($("#EndpointRowView").html())
 
 	events:
 		"click .bv_remove": "removeRow"
