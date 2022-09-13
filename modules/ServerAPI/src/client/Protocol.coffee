@@ -310,25 +310,33 @@ class ProtocolBaseController extends BaseEntityController
 		
 		#TODO - Add in the experiment browser 
 		#TODO - Step 1: Find all experiments that match the protocol
-		protocolCode = @model.escape('codeName')
-
+		protocolCode = @model.escape('codeName')		
 		$.ajax
 				type: 'GET'
-			#url: "api/experiments/protocolCodename/#{protocolCode}"
-				url: "/api/experimentsForProtocol/#{protocolCode}"
-				data:
-					testMode: false
-					fullObject: true
+				#there are two similar routes in ExperimentBrowserRoutes.coffee and ExperimentServiceRoutes.coffee
+				#url: "/api/experimentsForProtocol/#{protocolCode}" #ExperimentBrowserRoutes.coffee route
+				url: "/api/experiments/protocolCodename/#{protocolCode}" #ExperimentServiceRoutes.coffee route
 				success: (experiments) =>
-					for experiment in experiments
-						console.log "---Start---"
-						console.log experiment.codeName
-						console.log "---End---"
-					#@setupExperimentSummaryTable experiments
+					@setupExperimentSummaryTable experiments
 
 		
 		#@experimentController = new experimentSummaryTable
 
+	#Function brought over from experiment.coffee 
+	setupExperimentSummaryTable: (experiments) =>
+		#@$(".bv_searchStatusIndicator").addClass "hide"
+		$(".bv_experimentTableController").removeClass "hide"
+		if window.conf.experiment?.mainControllerClassName? and window.conf.experiment.mainControllerClassName is "EnhancedExperimentBaseController"
+			experimentListClass = "EnhancedExperimentList"
+		else
+			experimentListClass = "ExperimentList"
+		@experimentSummaryTable = new ExperimentSummaryTableController
+			el: $(".bv_experimentTableController")
+			collection: new window[experimentListClass] experiments
+
+		@experimentSummaryTable.on "selectedRowUpdated", @selectedExperimentUpdated
+
+		@experimentSummaryTable.render()
 
 
 	render: =>
@@ -713,11 +721,7 @@ class EndpointListController extends AbstractFormController
 			readOnly: @options.readOnly
 		# Add this controller to our tracking dictionary so we can access it later
 		@endpointControllers[rowNumber] = rowController
-		#	lsState: lsState
-		#	readOnly: @readOnly
-		#rowController.render()
-		# Add this controller to our list so we can access it later
-		#@endpointControllers.push rowController
+
 	
 	getRowNumberForState: (state) =>
 		rowValues = state.getValuesByTypeAndKind 'numericValue', @rowNumberKind
