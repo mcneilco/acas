@@ -135,8 +135,9 @@
     </div>
     <br/>
     <br/>
-    
-
+    <div class="bv_experimentBrowserTest">
+    <br/>
+    <br/>
     <div class="bv_group_shortDescription">
         <div class="span10" style="margin-bottom:5px;">Short Description</div>
         <textarea rows="2" class="bv_shortDescription" style="width:650px;resize:none;margin-bottom:20px;" placeholder="Short Description"></textarea>
@@ -277,7 +278,7 @@
         </td>
         <td style="text-align:center;vertical-align:middle;"><input class= "" type="checkbox" id="" name=""></td>
         <td style="text-align:center;vertical-align:middle;"><input class= "" type="checkbox" id="" name=""></td>
-        <td style="text-align:center;vertical-align:middle;"><button type="button" class="btn btn-danger bv_remove pull-center" style="margin-right:5px;margin-left:5px;">Remove</button></td>
+        <td style="text-align:center;vertical-align:middle;" class="bv_remove_row"><button type="button" class="btn btn-danger bv_remove pull-center" style="margin-right:5px;margin-left:5px;">Remove</button></td>
     </tr>
 </script>
 
@@ -294,7 +295,7 @@
     </td>
     <td style="text-align:center;vertical-align:middle;"><input class= "" type="checkbox" id="" name=""></td>
     <td style="text-align:center;vertical-align:middle;"><input class= "" type="checkbox" id="" name=""></td>
-    <td style="text-align:center;vertical-align:middle;"><button type="button" class="btn btn-danger bv_remove pull-center" style="margin-right:5px;margin-left:5px;">Remove</button></td>
+    <td style="text-align:center;vertical-align:middle;"class="bv_remove_row"><button type="button" class="btn btn-danger bv_remove pull-center" style="margin-right:5px;margin-left:5px;">Remove</button></td>
 </script>
 
 <script type="text/template" id="EndpointRowViewReadOnly" xmlns="http://www.w3.org/1999/html">
@@ -325,7 +326,7 @@
                 <th>Data Type</th>
                 <th>Hidden</th>
                 <th>Condition</th>
-                <th>Remove</th>
+                <th class="bv_endpointColumnRemove">Remove</th>
             </tr>
         </thead>
         <tbody class="bv_endpointRows">

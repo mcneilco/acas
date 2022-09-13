@@ -9,7 +9,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/experimentsForProtocol/:protocolCode', loginRoutes.ensureAuthenticated, exports.experimentsForProtocol
 
 exports.experimentsForProtocol = (req, resp) ->
-	fixturesData = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
+	#fixturesData = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
 	config = require '../conf/compiled/conf.js'
 
 

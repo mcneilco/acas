@@ -293,14 +293,43 @@ class ProtocolBaseController extends BaseEntityController
 		@model.lsProperties = {'defaultValues': []}
 		# The 'data column order' states are a StateTable
 		# Get any existing states with that type & kind
+
 		endpointStates = @model.get("lsStates").getStatesByTypeAndKind "metadata", "data column order"
 		# Create the controller for the Endpoints table which manages all the states
 		@endpointListController = new EndpointListController
 			el: @$('.bv_endpointTable')
 			collection: endpointStates
 			model: @model
+			readOnly: false
 
 		@endpointListController.render()
+
+		#using window.AppLaunchParams.moduleLaunchParams.code is only good if we spawn a new window...need something else to get the code
+		#instead we can use @model.escape('codeName')
+		
+		
+		#TODO - Add in the experiment browser 
+		#TODO - Step 1: Find all experiments that match the protocol
+		protocolCode = @model.escape('codeName')
+
+		$.ajax
+				type: 'GET'
+			#url: "api/experiments/protocolCodename/#{protocolCode}"
+				url: "/api/experimentsForProtocol/#{protocolCode}"
+				data:
+					testMode: false
+					fullObject: true
+				success: (experiments) =>
+					for experiment in experiments
+						console.log "---Start---"
+						console.log experiment.codeName
+						console.log "---End---"
+					#@setupExperimentSummaryTable experiments
+
+		
+		#@experimentController = new experimentSummaryTable
+
+
 
 	render: =>
 		unless @model?
@@ -641,12 +670,24 @@ class EndpointListController extends AbstractFormController
 	render: => 
 		$(@el).empty()
 		$(@el).html @template()
+
+		#If the table is read-only, hide the remove or add buttons
+		if @options.readOnly == true
+			#remove column
+			$(".bv_endpointColumnRemove").hide()
+			#remove add endpoint button
+			$(".bv_addEndpoint").hide()
+
 		
 		#Placeholder until we update the protocol data structure
 		# Create a list to hold the endpoint controllers in, so we can iterate through them later
 		@endpointControllers = []
 		for lsState in @collection
 			@.addOne(lsState)
+			if @options.readOnly == true
+				#hide remove buttons
+				@$(".bv_remove_row").hide()
+
 		@
 	
 	addOne: (state) =>
@@ -669,8 +710,14 @@ class EndpointListController extends AbstractFormController
 			stateKind: 'data column order'
 			rowNumber: rowNumber
 			rowNumberKind: @rowNumberKind
+			readOnly: @options.readOnly
 		# Add this controller to our tracking dictionary so we can access it later
 		@endpointControllers[rowNumber] = rowController
+		#	lsState: lsState
+		#	readOnly: @readOnly
+		#rowController.render()
+		# Add this controller to our list so we can access it later
+		#@endpointControllers.push rowController
 	
 	getRowNumberForState: (state) =>
 		rowValues = state.getValuesByTypeAndKind 'numericValue', @rowNumberKind
@@ -702,24 +749,3 @@ class EndpointListController extends AbstractFormController
 			@endpointControllers[rowNumber].remove()
 			@endpointControllers[rowNumber].unbind()
 			@endpointControllers[rowNumber].el.remove()
-
-			
-class EndpointListControllerReadOnly extends EndpointListController
-	template: _.template($("#EndpointListViewReadOnly").html())
-
-	addOne: (lsState) =>
-		# create a new table row
-		tr = document.createElement('tr')
-		# Add that row into the table
-		@$('.bv_endpointRows').append tr
-		# Create a new EndpointController, which manages a row
-		# Pass the row we just created for the EndpointController to render into
-		rowController = new EndpointControllerReadOnly
-			el: tr
-			lsState: lsState
-		rowController.render()
-		# Add this controller to our list so we can access it later
-		@endpointControllers.push rowController
-
-class EndpointControllerReadOnly extends EndpointController
-	template: _.template($("#EndpointRowViewReadOnly").html())

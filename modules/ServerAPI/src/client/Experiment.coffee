@@ -798,5 +798,6 @@ class ExperimentBaseController extends BaseEntityController
 			el: @$('.bv_endpointTable')
 			collection: endpointStates
 			model: @model
+			readOnly: true
 
 		@endpointListController.render()
