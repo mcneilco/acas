@@ -304,41 +304,6 @@ class ProtocolBaseController extends BaseEntityController
 
 		@endpointListController.render()
 
-		#using window.AppLaunchParams.moduleLaunchParams.code is only good if we spawn a new window...need something else to get the code
-		#instead we can use @model.escape('codeName')
-		
-		
-		#TODO - Add in the experiment browser 
-		#TODO - Step 1: Find all experiments that match the protocol
-		protocolCode = @model.escape('codeName')		
-		$.ajax
-				type: 'GET'
-				#there are two similar routes in ExperimentBrowserRoutes.coffee and ExperimentServiceRoutes.coffee
-				#url: "/api/experimentsForProtocol/#{protocolCode}" #ExperimentBrowserRoutes.coffee route
-				url: "/api/experiments/protocolCodename/#{protocolCode}" #ExperimentServiceRoutes.coffee route
-				success: (experiments) =>
-					@setupExperimentSummaryTable experiments
-
-		
-		#@experimentController = new experimentSummaryTable
-
-	#Function brought over from experiment.coffee 
-	setupExperimentSummaryTable: (experiments) =>
-		#@$(".bv_searchStatusIndicator").addClass "hide"
-		$(".bv_experimentTableController").removeClass "hide"
-		if window.conf.experiment?.mainControllerClassName? and window.conf.experiment.mainControllerClassName is "EnhancedExperimentBaseController"
-			experimentListClass = "EnhancedExperimentList"
-		else
-			experimentListClass = "ExperimentList"
-		@experimentSummaryTable = new ExperimentSummaryTableController
-			el: $(".bv_experimentTableController")
-			collection: new window[experimentListClass] experiments
-
-		@experimentSummaryTable.on "selectedRowUpdated", @selectedExperimentUpdated
-
-		@experimentSummaryTable.render()
-
-
 	render: =>
 		unless @model?
 			@model = new Protocol()
@@ -661,6 +626,7 @@ class EndpointListController extends AbstractFormController
 	events:
 		"click .bv_addEndpoint": "handleAddEndpointPressed"
 		"rowRemoved": "handleRowRemoved"
+		"click .bv_endpointRow": "handleEndpointRowPressed"
 	
 	rowNumberKind: "column order"
 	
@@ -696,13 +662,85 @@ class EndpointListController extends AbstractFormController
 				#hide remove buttons
 				@$(".bv_remove_row").hide()
 
+		protocolCode = @model.escape('codeName')		
+		$.ajax
+			type: 'GET'
+			#there are two similar routes in ExperimentBrowserRoutes.coffee and ExperimentServiceRoutes.coffee
+			#url: "/api/experimentsForProtocol/#{protocolCode}" #ExperimentBrowserRoutes.coffee route
+			url: "/api/experiments/protocolCodename/#{protocolCode}" #ExperimentServiceRoutes.coffee route
+			success: (experiments) =>
+				#TODO - if there are no experiments it should say so instead of leaving the table blank. 
+				@setupExperimentSummaryTable experiments
+
 		@
 	
+	handleEndpointRowPressed: =>
+		#When an endpoint row is pressed, we want to filter the experiment summary table so it only displays the experiments...
+		#...with protocols that contain the endpoint, so we'll need to find the row's endpoint name and regenerate the table
+
+		#since any element within the row could be clicked on, we need to first find the parent row div and move down from there
+		element = $(event.target)
+		for x in [0..20] #allow it to search up to 20 parent elements up for the table row (usually takes 10 or less)
+			#if the element is a table row, exit the loop
+			if element[0].nodeName == "TR"
+				tr = element
+				break
+			#if the element is not a table row, move up to the next parent element
+			else
+				element = element.parent()
+
+		#once the row div is found, extract the endpoint name from it
+		rowEndpointName = tr[0].querySelector("span.select2-selection__rendered").title
+				
+		#next we need to regenerate the experiment summary table
+		protocolCode = @model.escape('codeName')		
+		$.ajax
+			type: 'GET'
+			#there are two similar routes in ExperimentBrowserRoutes.coffee and ExperimentServiceRoutes.coffee
+			#url: "/api/experimentsForProtocol/#{protocolCode}" #ExperimentBrowserRoutes.coffee route
+			url: "/api/experiments/protocolCodename/#{protocolCode}" #ExperimentServiceRoutes.coffee route
+			success: (experiments) =>
+				filtered_experiments = []
+				#we'll need to filter out experiments that don't contain the endpoint 
+				console.log "FLAG HERE"
+				for experiment in experiments
+					experiment_hit = false 
+					for i in experiment.lsStates
+						if experiment_hit == true
+							break
+						else
+							if i.lsKind == 'data column order' and i.ignored == false
+								for j in i.lsValues
+									if j.lsKind == "column name" and j.ignored == false
+										if j.stringValue == rowEndpointName
+											experiment_hit = true
+											filtered_experiments.push experiment
+											break
+										#console.log j.stringValue
+				console.log filtered_experiments
+				#TODO - if there are no experiments it should say so instead of leaving the table blank. 
+				$(".bv_experimentTableController").empty()
+				@setupExperimentSummaryTable filtered_experiments
+
+		@
+
+		#console.log "Endpoint Row Pressed!"
+		#need to extract the column name out of the endpoint row that was pressed 
+
+		#console.log  $(event.target).context
+		#console.log $(event.target).parent()[0].nodeName
+
+
+		#TODO - once you have the event.target, you can loop through to find the row...
+		#Then from the row you can narrow down to the column name input... 
+		#get parent()[0].nodeName 
+
 	addOne: (state) =>
 		# create a new table row
 		tr = document.createElement('tr')
 		# Add that row into the table
 		@$('.bv_endpointRows').append tr
+		@$('.bv_endpointRows tr' ).addClass('bv_endpointRow')
 		# Create a new EndpointController, which manages a row
 		# We get the row number from the state which was passed in
 		rowNumber = @getRowNumberForState(state)
@@ -753,3 +791,25 @@ class EndpointListController extends AbstractFormController
 			@endpointControllers[rowNumber].remove()
 			@endpointControllers[rowNumber].unbind()
 			@endpointControllers[rowNumber].el.remove()
+
+		
+
+		
+
+	#Function brought over from experiment.coffee 
+	setupExperimentSummaryTable: (experiments) =>
+		#TODO - if there are no experiments it should say so instead of leaving the table blank. 
+		#@$(".bv_searchStatusIndicator").addClass "hide"
+		$(".bv_experimentTableController").removeClass "hide"
+		if window.conf.experiment?.mainControllerClassName? and window.conf.experiment.mainControllerClassName is "EnhancedExperimentBaseController"
+			experimentListClass = "EnhancedExperimentList"
+		else
+			experimentListClass = "ExperimentList"
+		@experimentSummaryTable = new ExperimentSummaryTableController
+			el: $(".bv_experimentTableController")
+			collection: new window[experimentListClass] experiments
+
+		@experimentSummaryTable.on "selectedRowUpdated", @selectedExperimentUpdated
+
+		@experimentSummaryTable.render()
+
