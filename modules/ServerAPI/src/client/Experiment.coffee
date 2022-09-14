@@ -454,6 +454,8 @@ class ExperimentBaseController extends BaseEntityController
 		# if @readOnly
 		@setupEndpointsController()
 		@render()
+		$(".bv_endpointTable .bv_parameterSelectList").attr("disabled", true) #disable the endpoint table drop downs 
+		$(".bv_endpointTable input").attr("disabled", true) #disable the endpoint table checkboxes
 		@listenTo @model, 'sync', @modelSyncCallback.bind(@)
 		@listenTo @model, 'change', @modelChangeCallback.bind(@)
 		@model.getStatus().on 'change', @updateEditable.bind(@)
