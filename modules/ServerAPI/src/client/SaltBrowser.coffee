@@ -160,6 +160,11 @@ class SaltBrowserController extends Backbone.View
 			showPreview: false
 		@$('.bv_createNotifications').hide()
 
+		@editFieldNotificationController = new LSNotificationController
+			el: @$('.bv_fieldNotifications')
+			showPreview: false
+		@$('.bv_fieldNotifications').hide()
+
 	setupSaltSummaryTable: (salts) =>
 		@destroySaltSummaryTable()
 
@@ -261,7 +266,7 @@ class SaltBrowserController extends Backbone.View
 			fieldsFilled = false
 
 		saltStruct = @chemicalStructureController.getMol()
-		if (saltStruct == "" || saltStruct == null)
+		if (@chemicalStructureController.isEmptyMol(saltStruct))
 			fieldsFilled = false
 		
 		if (!fieldsFilled)
@@ -479,7 +484,7 @@ class SaltBrowserController extends Backbone.View
 		@$(".bv_deleteSaltStatus").hide()
 
 	handleEditSaltClicked: =>
-		@notificationController.clearAllNotificiations()
+		@editFieldNotificationController.clearAllNotificiations()
 		@$('.bv_saltBrowserCoreContainer').hide()
 		@$('bv_saltBrowserCore').hide()
 		@$()
@@ -513,94 +518,102 @@ class SaltBrowserController extends Backbone.View
 
 
 	handleConfirmEditSaltClicked: =>
-		@$('.bv_notifications').show()
+		@$('.bv_fieldNotifications').show()
 
 		# Get Mol
 		saltStruct = @chemicalStructureController.getMol()
 
-		saltDict = 
-		{
-			"abbrev": @$('.bv_abbrevNameEdit').val(),
-			"name":  @$('.bv_saltNameEdit').val(),
-			"molStructure": saltStruct,
-			"cdId":  @saltController.model.get("cdId"),
-		}
+		if (@chemicalStructureController.isEmptyMol(saltStruct))
+			@editFieldNotificationController.clearAllNotificiations() 
+			@editFieldNotificationController.addNotifications(@errorOwnerName, [{"errorLevel": "error", "message":"Structure cannot be empty. Please enter a salt with at least 1 atom."}])
+		else
+			saltDict = 
+			{
+				"abbrev": @$('.bv_abbrevNameEdit').val(),
+				"name":  @$('.bv_saltNameEdit').val(),
+				"molStructure": saltStruct,
+				"cdId":  @saltController.model.get("cdId"),
+			}
 
-		dryrun = true
+			dryrun = true
 
-		$.ajax(
-			# This AJAX Call is Used to Collect Warnings and Errors If Salt is Edited 
-			url: "/api/cmpdRegAdmin/salts/edit/#{@saltController.model.get("id")}?dryrun=" + dryrun,
-			type: 'PUT',
-			data: JSON.stringify(saltDict)
-			contentType: 'application/json'
-			dataType: 'json'
-			success: (result) =>
-				@$(".bv_editSaltWindow").hide()
-				@$(".bv_confirmEditSalt").show()
-				
-				for feedback in result
-					@notificationController.addNotifications(@errorOwnerName, [{"errorLevel": feedback.level, "message":feedback.message}])
-					if feedback.level == "error"
-						@$(".bv_editSaltButton").hide()
+			@$('.bv_fieldNotifications').hide()
+			@$('.bv_notifications').show()
+			@notificationController.clearAllNotificiations() 
 
-				# This AJAX Call is Used to Collect Calculations of Newly Proposed Salt
-				$.ajax(
-					url: "/api/cmpdRegAdmin/salts?dryrun=" + dryrun,
-					type: 'POST', 
-					data: JSON.stringify(saltDict)
-					contentType: 'application/json'
-					dataType: 'json'
-					success: (result) =>
-						# Need to Parse Result Values Into Form Fields 
+			$.ajax(
+				# This AJAX Call is Used to Collect Warnings and Errors If Salt is Edited 
+				url: "/api/cmpdRegAdmin/salts/edit/#{@saltController.model.get("id")}?dryrun=" + dryrun,
+				type: 'PUT',
+				data: JSON.stringify(saltDict)
+				contentType: 'application/json'
+				dataType: 'json'
+				success: (result) =>
+					@$(".bv_editSaltWindow").hide()
+					@$(".bv_confirmEditSalt").show()
+					
+					for feedback in result
+						@notificationController.addNotifications(@errorOwnerName, [{"errorLevel": feedback.level, "message":feedback.message}])
+						if feedback.level == "error"
+							@$(".bv_editSaltButton").hide()
 
-						@$('.bv_abbrevNameEditConfirm').val result.abbrev
-						@$('.bv_saltNameEditConfirm').val result.name
-						@$('.bv_saltFormulaEditConfirm').val result.formula
-						@$('.bv_saltWeightEditConfirm').val "#{result.molWeight}"
-						@$('.bv_saltChargeEditConfirm').val "#{result.charge}"
+					# This AJAX Call is Used to Collect Calculations of Newly Proposed Salt
+					$.ajax(
+						url: "/api/cmpdRegAdmin/salts?dryrun=" + dryrun,
+						type: 'POST', 
+						data: JSON.stringify(saltDict)
+						contentType: 'application/json'
+						dataType: 'json'
+						success: (result) =>
+							# Need to Parse Result Values Into Form Fields 
 
-						# Need to Render Preview of Structure 
-						requestJSON = {
-							"molStructure" : result.molStructure,
-							"height" : 200, 
-							"width" : 200, 
-							"format" : "png"
-						}
+							@$('.bv_abbrevNameEditConfirm').val result.abbrev
+							@$('.bv_saltNameEditConfirm').val result.name
+							@$('.bv_saltFormulaEditConfirm').val result.formula
+							@$('.bv_saltWeightEditConfirm').val "#{result.molWeight}"
+							@$('.bv_saltChargeEditConfirm').val "#{result.charge}"
 
-						# AJAX Call to Generate Picture of New Structure
-						$.ajax(
-							type: 'POST'
-							url: "/api/cmpdReg/renderMolStructureBase64"
-							contentType: 'application/json'
-							dataType: 'text'
-							data: JSON.stringify(requestJSON)
-							success: (base64ImagePNG) => # Rendered Image Should Be Displayed on Sever
-								pngSrc = "data:image/png;base64," + base64ImagePNG
-								pngImage = '<img src="' + pngSrc + '" />'
-								@$('.bv_saltStructEditConfirm').html pngImage 
-							error: (result) =>
-								console.log(result)
-								@$(".bv_okayEditButton").show()
-								@$(".bv_editSaltWindow").hide()
-								@$(".bv_errorEditingSaltMessage").show()
-								@$(".bv_errorEditingSaltMessage").html result
+							# Need to Render Preview of Structure 
+							requestJSON = {
+								"molStructure" : result.molStructure,
+								"height" : 200, 
+								"width" : 200, 
+								"format" : "png"
+							}
 
-						)
-					errors: (result) =>
-						console.log(result)
-						@$(".bv_okayEditButton").show()
-						@$(".bv_editSaltWindow").hide()
-						@$(".bv_errorEditingSaltMessage").show()
-						@$(".bv_errorEditingSaltMessage").html result
-				)
+							# AJAX Call to Generate Picture of New Structure
+							$.ajax(
+								type: 'POST'
+								url: "/api/cmpdReg/renderMolStructureBase64"
+								contentType: 'application/json'
+								dataType: 'text'
+								data: JSON.stringify(requestJSON)
+								success: (base64ImagePNG) => # Rendered Image Should Be Displayed on Sever
+									pngSrc = "data:image/png;base64," + base64ImagePNG
+									pngImage = '<img src="' + pngSrc + '" />'
+									@$('.bv_saltStructEditConfirm').html pngImage 
+								error: (result) =>
+									console.log(result)
+									@$(".bv_okayEditButton").show()
+									@$(".bv_editSaltWindow").hide()
+									@$(".bv_errorEditingSaltMessage").show()
+									@$(".bv_errorEditingSaltMessage").html result
 
-			error: (result) =>
-				@$(".bv_okayEditButton").show()
-				@$(".bv_editSaltWindow").hide()
-				@$(".bv_errorEditingSaltMessage").show()
-				@$(".bv_errorEditingSaltMessage").html result
-		)
+							)
+						errors: (result) =>
+							console.log(result)
+							@$(".bv_okayEditButton").show()
+							@$(".bv_editSaltWindow").hide()
+							@$(".bv_errorEditingSaltMessage").show()
+							@$(".bv_errorEditingSaltMessage").html result
+					)
+
+				error: (result) =>
+					@$(".bv_okayEditButton").show()
+					@$(".bv_editSaltWindow").hide()
+					@$(".bv_errorEditingSaltMessage").show()
+					@$(".bv_errorEditingSaltMessage").html result
+			)
 	
 	handleEditSaltButtonClicked: =>
 		@notificationController.clearAllNotificiations() 
