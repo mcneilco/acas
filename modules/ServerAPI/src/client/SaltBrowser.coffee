@@ -270,7 +270,9 @@ class SaltBrowserController extends Backbone.View
 			console.log(saltName)
 			console.log(saltStruct)
 			# Need to Alert User of Empty Fields Somehow 
-			alert('Please fill in name, abbrev, and structure fields!')
+			@$('.bv_createNotifications').show()
+			@createNotificationController.clearAllNotificiations()
+			@createNotificationController.addNotifications(@errorOwnerName, [{"errorLevel": "error", "message": "Please fill in structure, name, and abbrev fields!" }])
 		if (fieldsFilled)
 			saltDict = 
 			{
@@ -296,6 +298,10 @@ class SaltBrowserController extends Backbone.View
 						@createNotificationController.clearAllNotificiations()
 						for feedback in result
 							@createNotificationController.addNotifications(@errorOwnerName, [{"errorLevel": feedback.level, "message":feedback.message}])
+					else if result["formula"] == ""
+						@$('.bv_createNotifications').show()
+						@createNotificationController.clearAllNotificiations()
+						@createNotificationController.addNotifications(@errorOwnerName, [{"errorLevel": "error", "message": "No salt structure provided!" }])
 					else 
 						@$('.bv_createNotifications').hide()
 						# Need to Parse Result Values Into Form Fields 
