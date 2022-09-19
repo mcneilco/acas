@@ -594,7 +594,6 @@ class SaltBrowserController extends Backbone.View
 									@$('.bv_saltStructEditConfirm').html pngImage 
 								error: (result) =>
 									console.log(result)
-									@$(".bv_okayEditButton").show()
 									@$(".bv_editSaltWindow").hide()
 									@$(".bv_errorEditingSaltMessage").show()
 									@$(".bv_errorEditingSaltMessage").html result
@@ -602,14 +601,12 @@ class SaltBrowserController extends Backbone.View
 							)
 						errors: (result) =>
 							console.log(result)
-							@$(".bv_okayEditButton").show()
 							@$(".bv_editSaltWindow").hide()
 							@$(".bv_errorEditingSaltMessage").show()
 							@$(".bv_errorEditingSaltMessage").html result
 					)
 
 				error: (result) =>
-					@$(".bv_okayEditButton").show()
 					@$(".bv_editSaltWindow").hide()
 					@$(".bv_errorEditingSaltMessage").show()
 					@$(".bv_errorEditingSaltMessage").html result
@@ -643,14 +640,12 @@ class SaltBrowserController extends Backbone.View
 				@$('.bv_notifications').hide()
 				@$(".bv_editSaltStatus").show()
 				@$(".bv_saltEditedSuccessfullyMessage").show()
-				@$(".bv_okayEditButton").show()
 				@$('.bv_saltBrowserCoreContainer').show()
 				@$('bv_saltBrowserCore').show()
 				@searchController.doSearch("*")
 			error: (result) =>
 				@$(".bv_confirmEditSalt").hide()
 				@$(".bv_editSaltStatus").show()
-				@$(".bv_okayEditButton").show()
 				@$(".bv_errorEditingSaltMessage").show()
 				@$(".bv_errorEditingSaltMessage").html result
 		)
@@ -666,6 +661,7 @@ class SaltBrowserController extends Backbone.View
 		@$('.bv_notifications').hide()
 		@$('.bv_confirmEditSalt').hide()
 		@$('.bv_editSaltWindow').show()
+		
 
 	handleCancelConfirmEditClicked: =>
 		@$(".bv_editSaltButton").show()
