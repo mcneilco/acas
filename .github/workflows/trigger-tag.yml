@@ -24,7 +24,7 @@ jobs:
       # and 2022.1.1.dev9 will become 2022.1.1.dev10
       - name: Get next dev tag name
         run: |
-          LAST_TAG=$(git tag --merged ${{ env.BRANCH_NAME }} | grep '.dev' | tail -1)
+          LAST_TAG=$(git tag --sort=committerdate --merged ${{ env.BRANCH_NAME }} | grep '.dev' | tail -1)
           echo "NEXT_TAG=$(echo $LAST_TAG | awk -F.dev -v OFS=.dev '{$NF += 1 ; print}')" >> $GITHUB_ENV
       # Trigger the build
       - name: Trigger the tagger workflow with branch ${{env.BRANCH_NAME}} and tag ${{ env.NEXT_TAG }}
