@@ -618,7 +618,9 @@ exports.saveMetaLot = (req, resp) ->
 	)
 
 exports.saveSalts = (req, resp) ->
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/salts?dryrun=' + req.query.dryrun
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/salts'
+	if req.query?.dryrun?
+		cmpdRegCall += "?dryrun=" + req.query.dryrun
 	request(
 		method: 'POST'
 		url: cmpdRegCall
