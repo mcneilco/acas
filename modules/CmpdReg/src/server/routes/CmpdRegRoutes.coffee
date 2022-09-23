@@ -14,6 +14,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/cmpdReg/units', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
 	app.get '/cmpdReg/solutionUnits', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
 	app.get '/cmpdReg/salts', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
+	app.get '/cmpdReg/salts/sdf', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
 	app.get '/cmpdReg/isotopes', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
 	app.get '/cmpdReg/stereoCategories', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
 	app.get '/cmpdReg/compoundTypes', loginRoutes.ensureAuthenticated, exports.getAPICmpdReg
@@ -618,6 +619,8 @@ exports.saveMetaLot = (req, resp) ->
 
 exports.saveSalts = (req, resp) ->
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/salts'
+	if req.query?.dryrun?
+		cmpdRegCall += "?dryrun=" + req.query.dryrun
 	request(
 		method: 'POST'
 		url: cmpdRegCall

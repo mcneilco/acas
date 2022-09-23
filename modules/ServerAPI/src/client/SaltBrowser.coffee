@@ -212,19 +212,13 @@ class SaltBrowserController extends Backbone.View
 			success: (base64ImagePNG) => # Rendered Image Should Be Displayed on Sever
 				pngSrc = "data:image/png;base64," + base64ImagePNG
 				pngImage = '<img src="' + pngSrc + '" />'
-				@$('.bv_structureHolder').html pngImage 
+				@$('.bv_structureHolder').html pngImage
 
-				@$('.bv_editSalt').show()
-				if window.conf.salt?.adminRoles?
+				if window.conf.roles.cmpdreg.adminRole?
 					adminRoles = window.conf.roles.cmpdreg.adminRole.split(",")
-					if !UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, adminRoles)
-						@$('.bv_editSalt').hide()
-
-				@$('.bv_deleteSalt').show()
-				if window.conf.salt?.adminRoles?
-					adminRoles= window.conf.roles.cmpdreg.adminRole.split(",")
-					if !UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, adminRoles)
-						@$('.bv_deleteSalt').hide()
+					if UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, adminRoles)
+						@$('.bv_editSalt').show()
+						@$('.bv_deleteSalt').show()
 			error: (result) =>
 				console.log(result)
 		)
@@ -290,7 +284,7 @@ class SaltBrowserController extends Backbone.View
 			dryrun = true
 
 			$.ajax(
-				url: "/api/cmpdRegAdmin/salts?dryrun=" + dryrun, 
+				url: "/cmpdReg/salts?dryrun=" + dryrun, 
 				type: 'POST', 
 				data: JSON.stringify(saltDict)
 				contentType: 'application/json'
@@ -391,7 +385,7 @@ class SaltBrowserController extends Backbone.View
 
 
 			$.ajax(
-				url: "/api/cmpdRegAdmin/salts?dryrun=" + dryrun,
+				url: "/cmpdReg/salts?dryrun=" + dryrun,
 				type: 'POST', 
 				data: JSON.stringify(saltDict)
 				contentType: 'application/json'
@@ -421,7 +415,7 @@ class SaltBrowserController extends Backbone.View
 		# Calls Custom Route to Download SDF of All Salts Registered 
 		$.ajax(
 				type: 'GET'
-				url: "/api/cmpdRegAdmin/salts/sdf" 
+				url: "/cmpdReg/salts/sdf" 
 				success: (salts) =>
 					# Server should've returned salts in correct formatting
 					@downloadSDF("allSalts.sdf", salts)
@@ -480,7 +474,7 @@ class SaltBrowserController extends Backbone.View
 		@$(".bv_confirmDeleteSalt").modal('hide')
 
 	handleOkayDeleteButtonClicked: =>
-		@$(".bv_confirmDeleteSalt").hide()
+		@$(".bv_confirmDeleteSalt").modal('hide')
 		@$(".bv_deleteSaltStatus").hide()
 
 	handleEditSaltClicked: =>
