@@ -283,7 +283,7 @@ class SaltBrowserController extends Backbone.View
 			dryrun = true
 
 			$.ajax(
-				url: "/api/cmpdRegAdmin/salts?dryrun=" + dryrun, 
+				url: "/cmpdReg/salts?dryrun=" + dryrun, 
 				type: 'POST', 
 				data: JSON.stringify(saltDict)
 				contentType: 'application/json'
@@ -380,7 +380,7 @@ class SaltBrowserController extends Backbone.View
 
 
 			$.ajax(
-				url: "/api/cmpdRegAdmin/salts?dryrun=" + dryrun,
+				url: "/cmpdReg/salts?dryrun=" + dryrun,
 				type: 'POST', 
 				data: JSON.stringify(saltDict)
 				contentType: 'application/json'
@@ -410,7 +410,7 @@ class SaltBrowserController extends Backbone.View
 		# Calls Custom Route to Download SDF of All Salts Registered 
 		$.ajax(
 				type: 'GET'
-				url: "/api/cmpdRegAdmin/salts/sdf" 
+				url: "/cmpdReg/salts/sdf" 
 				success: (salts) =>
 					# Server should've returned salts in correct formatting
 					@downloadSDF("allSalts.sdf", salts)
