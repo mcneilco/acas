@@ -207,19 +207,13 @@ class SaltBrowserController extends Backbone.View
 			success: (base64ImagePNG) => # Rendered Image Should Be Displayed on Sever
 				pngSrc = "data:image/png;base64," + base64ImagePNG
 				pngImage = '<img src="' + pngSrc + '" />'
-				@$('.bv_structureHolder').html pngImage 
+				@$('.bv_structureHolder').html pngImage
 
-				@$('.bv_editSalt').show()
-				if window.conf.salt?.adminRoles?
+				if window.conf.roles.cmpdreg.adminRole?
 					adminRoles = window.conf.roles.cmpdreg.adminRole.split(",")
-					if !UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, adminRoles)
-						@$('.bv_editSalt').hide()
-
-				@$('.bv_deleteSalt').show()
-				if window.conf.salt?.adminRoles?
-					adminRoles= window.conf.roles.cmpdreg.adminRole.split(",")
-					if !UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, adminRoles)
-						@$('.bv_deleteSalt').hide()
+					if UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, adminRoles)
+						@$('.bv_editSalt').show()
+						@$('.bv_deleteSalt').show()
 			error: (result) =>
 				console.log(result)
 		)
