@@ -95,6 +95,12 @@ class MaestroChemicalStructureController extends Backbone.View
 	setMol: (molStr) ->
 		@maestro.sketcherImportText molStr
 
+	isEmptyMol: (molStr) ->
+		if (molStr.indexOf("M  V30 COUNTS 0 0 0 0 0") > -1)
+			return true 
+		else 
+			return false
+
 
 #TODO Why is it making a call to WebHQ outside our server, and make it stop
 
@@ -123,6 +129,12 @@ class KetcherChemicalStructureController extends Backbone.View
 
 	setMol: (molStr) ->
 		@windowObj.ketcher.setMolecule molStr
+	
+	isEmptyMol: (molStr) ->
+		if (molStr.indexOf("  0  0  0     1  0            999") > -1)
+			return true 
+		else 
+			return false
 
 
 
@@ -179,6 +191,11 @@ class MarvinJSChemicalStructureController extends Backbone.View
 			alert("Molecule export failed from search sketcher:"+error)
 			callback null
 
-
 	setMol: (molStr) ->
 		@marvinSketcherInstance.importStructure("mol", molStr)
+
+	isEmptyMol: (molStr) ->
+		if (molStr.indexOf("M  V30 COUNTS 0 0 0 0 0") > -1)
+			return true 
+		else 
+			return false

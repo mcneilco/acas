@@ -1586,6 +1586,19 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
   # Turn result values to numeric values
   longResults$"numericValue" <-  as.numeric(gsub(",","",gsub(matchExpression,"",longResults$"numericValue")))
   
+  # Check the Number values are finite
+  numericValues <- longResults$"numericValue"[which(longResults$Class=="Number")]
+  nonNaNumericValues <- na.omit(numericValues)
+  infiniteNumbersIndexes <- which(!is.finite(nonNaNumericValues))
+  if(length(infiniteNumbersIndexes) > 0) {
+    unParsedNonNaNumericValues <- longResults$UnparsedValue[which(longResults$Class=="Number")]
+    naNumericValueIndexes <- which(is.na(numericValues))
+    if(length(naNumericValueIndexes) > 0) {
+      unParsedNonNaNumericValues[-naNumericValueIndexes]
+    }
+    addError(paste0("The following values are expected to be numbers but are: '", paste(unique(unParsedNonNaNumericValues[infiniteNumbersIndexes]), collapse = "', '"), "'. Please represent large number values using operators. For example, > 10000 or < -10000."), errorEnv)
+  }
+  
   ### For the results marked as "Text":
   #   Set the stringValue to the original value
   #   Clear the other categories
