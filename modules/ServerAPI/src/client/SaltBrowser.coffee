@@ -469,7 +469,7 @@ class SaltBrowserController extends Backbone.View
 		@$(".bv_confirmDeleteSalt").modal('hide')
 
 	handleOkayDeleteButtonClicked: =>
-		@$(".bv_confirmDeleteSalt").hide()
+		@$(".bv_confirmDeleteSalt").modal('hide')
 		@$(".bv_deleteSaltStatus").hide()
 
 	handleEditSaltClicked: =>
