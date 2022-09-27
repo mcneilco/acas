@@ -69,16 +69,39 @@ class ThingSimpleSearchController extends AbstractFormController
 					values: [
 
 					]
-
+				returnDTO: [
+					
+				]
+									
 			queryTerms = @getQueryTerms(defaultQueryTerms, thingSearchTerm)
+
+			for queryValue in @configs
+				valDef = @model.getValueInfo(queryValue.key)
+				if valDef?
+					queryTerms.returnDTO.push	
+						stateType: valDef.stateType
+						stateKind: valDef.stateKind
+						valueType: valDef.type
+						valueKind: valDef.kind
+						key: queryValue.key
+				else
+					# If the key is an ls label
+					labDef = @model.getLabelInfo(queryValue.key)
+					if labDef?
+						queryTerms.returnDTO.push	
+							labelType: labDef.type
+							labelKind: labDef.kind
+							key: queryValue.key
+
+
 			$.ajax
 				type: 'POST'
-				url: "#{@genericSearchUrl}#{@model.get("lsType")}/#{@model.get("lsKind")}?format=nestedfull"
+				url: "#{@genericSearchUrl}#{@model.get("lsType")}/#{@model.get("lsKind")}?format=flat"
 				dataType: 'json',
 				contentType: 'application/json'
 				data: JSON.stringify(queryTerms)
-				success: (thing) =>
-					@trigger "searchReturned", thing.results
+				success: (response) =>
+					@trigger "searchReturned", response.results
 				error: (result) =>
 					@trigger "searchReturned", null
 				complete: =>
@@ -336,23 +359,22 @@ class ACASThingBrowserController extends Backbone.View
 		@searchController.on "searchReturned", @setupThingSummaryTable.bind(@)
 		@$('.bv_queryToolDisplayName').html window.conf.service.result.viewer.displayName
 
-	setupThingSummaryTable: (things) =>
+	setupThingSummaryTable: (flattenedThings) =>
 		@destroyThingSummaryTable()
 
 		@$(".bv_searchingThingsMessage").addClass "hide"
-		if things is null
+		if flattenedThings is null
 			@$(".bv_errorOccurredPerformingSearch").removeClass "hide"
 
-		else if things.length is 0
+		else if flattenedThings.length is 0
 			@$(".bv_noMatchingThingsFoundMessage").removeClass "hide"
 			@$(".bv_thingTableController").html ""
 		else
 			@$(".bv_searchThingsStatusIndicator").addClass "hide"
 			@$(".bv_thingTableController").removeClass "hide"
-			thingCollection =  Backbone.Collection.extend 
-				model: @modelClass
+
 			@thingSummaryTable = new ThingSummaryTableController
-				collection: new thingCollection things
+				collection: new Backbone.Collection flattenedThings
 				configs: @configs
 				columnFilters: @columnFilters
 
@@ -362,11 +384,27 @@ class ACASThingBrowserController extends Backbone.View
 	selectedThingUpdated: (thing) =>
 		@$('.bv_thingControllerWrapper').append("<div class='bv_thingController'></div>")
 		@trigger "selectedThingUpdated"
-		@thingController = new @controllerClass
-			el: @$('.bv_thingController')
-			model: thing
-			readOnly: true
 
+		# If thing is thing class then we pass it to the thing controller, if not then we fetch it from the server and pass it to the thing controller
+		if thing instanceof Thing
+			@thingController = new @controllerClass
+				model: thing
+				configs: @configs
+				el: @$('.bv_thingController')
+			@renderController()
+		else
+			c = new @modelClass(thing.attributes)
+			c.fetch
+				success: (model, response, options) =>
+					@thingController = new @controllerClass
+						model: model
+						configs: @configs
+						el: @$('.bv_thingController')
+					@renderController()
+				error: (model, response, options) =>
+					@$('.bv_thingController').html "Error fetching thing"
+
+	renderController: () =>
 		@thingController.render()
 		@$(".bv_thingController").removeClass("hide")
 		@$(".bv_thingControllerContainer").removeClass("hide")
@@ -381,6 +419,7 @@ class ACASThingBrowserController extends Backbone.View
 			deletingRoles= window.conf.thing.deletingRoles.split(",")
 			if !UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, deletingRoles)
 				@$('.bv_deleteThing').hide()
+			
 
 	handleDeleteThingClicked: =>
 		@$(".bv_thingUserName").html @thingController.model.get("codeName")
