@@ -6,7 +6,7 @@ class ThingSearch extends Backbone.Model
 class ThingSimpleSearchController extends AbstractFormController
 	template: _.template($("#ThingSimpleSearchView").html())
 	genericSearchUrl: '/api/advancedSearch/things/'
-
+	thingAttributeReservedWords: ["codeName", "id", "recordedBy", "recordedDate", "modifiedBy", "modifiedDate", "lsType", "lsKind", "lsTransaction"]
 	events:
 		'keyup .bv_thingSearchTerm': 'updateThingSearchTerm'
 		'click .bv_doSearch': 'handleDoSearchClicked'
@@ -69,16 +69,25 @@ class ThingSimpleSearchController extends AbstractFormController
 					values: [
 
 					]
-				returnDTO: [
-					
-				]
+				returnDTO: {
+					thingValues: []
+					thingAttributes: ["id", "codeName"]
+				}
 									
 			queryTerms = @getQueryTerms(defaultQueryTerms, thingSearchTerm)
 
 			for queryValue in @configs
 				valDef = @model.getValueInfo(queryValue.key)
+
+				# Anything that is in the reserved words list is not a value but rather an lsthing attribute so we just add it to the thingAttributes list
+				if queryValue.key in @thingAttributeReservedWords
+					# Only add it to the thingattributes if it is not already there
+					if queryValue.key not in queryTerms.returnDTO.thingAttributes
+						queryTerms.returnDTO.thingAttributes.push(queryValue.key)
+					continue
+
 				if valDef?
-					queryTerms.returnDTO.push	
+					queryTerms.returnDTO.thingValues.push	
 						stateType: valDef.stateType
 						stateKind: valDef.stateKind
 						valueType: valDef.type
@@ -88,7 +97,7 @@ class ThingSimpleSearchController extends AbstractFormController
 					# If the key is an ls label
 					labDef = @model.getLabelInfo(queryValue.key)
 					if labDef?
-						queryTerms.returnDTO.push	
+						queryTerms.returnDTO.thingValues.push	
 							labelType: labDef.type
 							labelKind: labDef.kind
 							key: queryValue.key
@@ -112,7 +121,7 @@ class ThingSimpleSearchController extends AbstractFormController
 	getQueryTerms: (queryTerms, searchTerm) ->
 		for queryValue in @configs
 			# Code Name and Recorded By are part of the defaults set them as isSearchable false
-			if ["codeName", "recordedBy"].includes(queryValue.key)
+			if @thingAttributeReservedWords.includes(queryValue.key)
 				queryValue.isSearchable = false
 	
 			# Default is all display values are searchable so if the attribute is missing or set to
@@ -186,16 +195,33 @@ class ACASThingBrowserCellController extends Backbone.View
 	render: =>
 		$(@el).empty()
 
+		# The model could be a thing or just a backbone model with key value pairs
 		value = @model.get(@configs.key)
+		# Render Thing Value
 		if value instanceof Value
-			content = value.escape("value")
 			if value.get("lsType") == "dateValue"  && !@configs.formatter?
-				content = UtilityFunctions::convertMSToYMDDate(content)
+				content = UtilityFunctions::convertMSToYMDDate(value.get("value"))
+			else
+				content = value.get("value")
+				# If it's a string then escape it
+				if typeof(content) == "string"
+					content = value.escape(content)
+		# Render Thing Label
 		else if value instanceof Label
 			content = value.escape("labelText")
-		else
-			content =  @model.escape(@configs.key)
-		
+		# Render key value backbone model
+		else 
+			# This is not a Thing Value or Label so assume it's just a backbone model with key/value pairs
+			# If the thing model class was passed in then we can use it to determine if this is a date value we should parse
+			content = @model.get(@configs.key)
+			if typeof(content) == "string"
+				content = @model.escape(@configs.key)
+			if @options.thingModelClass?
+				newModel = new @options.thingModelClass
+				modelValue = newModel.get(@configs.key)
+				if modelValue instanceof Value && modelValue.get("lsType") == "dateValue" && !@configs.formatter?
+					content = UtilityFunctions::convertMSToYMDDate(content)
+
 		if @configs.formatter?
 			content = @configs.formatter content
 
@@ -224,6 +250,7 @@ class ACASThingBrowserRowSummaryController extends Backbone.View
 			cellController = new ACASThingBrowserCellController
 				configs: config
 				model: @model
+				thingModelClass: @options.thingModelClass
 
 			$(@el).append cellController.render().el
 		@
@@ -254,9 +281,10 @@ class ThingSummaryTableController extends Backbone.View
 			# display message indicating no results were found
 		else
 			@$(".bv_noMatchingThingsFoundMessage").addClass "hide"
-			@collection.each (thing) =>
+			@collection.each (flattenedThing) =>
 				prsc = new ACASThingBrowserRowSummaryController
-					model: thing
+					model: flattenedThing
+					thingModelClass: @options.thingModelClass
 					configs: @configs
 				prsc.on "gotClick", @selectedRowChanged
 				@$("tbody").append prsc.render().el
@@ -375,6 +403,7 @@ class ACASThingBrowserController extends Backbone.View
 
 			@thingSummaryTable = new ThingSummaryTableController
 				collection: new Backbone.Collection flattenedThings
+				thingModelClass: @modelClass
 				configs: @configs
 				columnFilters: @columnFilters
 

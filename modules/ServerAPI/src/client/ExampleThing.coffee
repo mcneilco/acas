@@ -542,6 +542,12 @@ class ExampleThingBrowserController extends ACASThingBrowserController
 			name: "Scientist"
 			key: "scientist"
 		,
+			name: "My Color"
+			key: "color"
+		,
+			name: "Completion Date"
+			key: 'completion date'
+		,
 			name: "Recorded By"
 			key: "recordedBy"
 			filter: false
