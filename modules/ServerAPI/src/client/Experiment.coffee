@@ -484,6 +484,7 @@ class ExperimentBaseController extends BaseEntityController
 				@$('.bv_openInQueryToolWrapper').show()
 			@$('.bv_queryToolDisplayName').html _.escape(window.conf.service.result.viewer.displayName)
 			@$('.bv_openInQueryToolLink').attr 'href', "/openExptInQueryTool?experiment="+@model.get('codeName')
+		@endpointListController.render()
 		@
 
 	modelSyncCallback: =>
@@ -801,5 +802,3 @@ class ExperimentBaseController extends BaseEntityController
 			collection: endpointStates
 			model: @model
 			readOnly: true
-
-		@endpointListController.render()

@@ -638,19 +638,17 @@ class EndpointListController extends AbstractFormController
 			rnA = @getRowNumberForState(stateA)
 			rnB = @getRowNumberForState(stateB)
 			return rnA - rnB
-
-		#TODO - set the template depending if it is read-only or not (experiment page )
-
+		
 	render: => 
 		$(@el).empty()
 		$(@el).html @template()
 
-		#If the table is read-only, hide the remove or add buttons
+		#If the table is read-only, remove the remove and add buttons
 		if @options.readOnly == true
 			#remove column
-			$(".bv_endpointColumnRemove").hide()
+			@$(".bv_endpointColumnRemove").remove()
 			#remove add endpoint button
-			$(".bv_addEndpoint").hide()
+			@$(".bv_addEndpoint").remove()
 		
 		#Placeholder until we update the protocol data structure
 		# Create a list to hold the endpoint controllers in, so we can iterate through them later
@@ -690,23 +688,21 @@ class EndpointListController extends AbstractFormController
 				else
 					element = element.parent()
 
-			# -- START: Work on coloring rows when they are selected (WIP) -- 
-			#reset background color for other rows
-			#for row in tr.parent()[0].childNodes
-			#	for elmnt in row.childNodes
-			#		try
-			#			elmnt.style.background = ""
-			#		catch
-			#			#nothing
+			#first reset the background color of all the rows
+			for elm in tr.parent()[0].childNodes
+				for subelm in elm.childNodes
+					try
+						subelm.style.background = "#F9F9F9"
+					catch
+						#not all elements can be styled, so do nothing
 
-			#TODO - need to make it so when you hover over it, the background for the row doesn't vanish...
-
-			#set the background color for the row
-			#tr[0].style.backgroundColor = "#D9EDF7"
-			#this only works with every other row due to some shading already in there, need to do it at a <td> level
-			#for td in tr
-			#	td.style.background = "#D9EDF7"
-			# -- END -- 
+			#apply highlighting to the selected rows
+			for trElements in tr
+				for td in trElements.childNodes
+					try
+						td.style.background = "#D9EDF7"
+					catch
+						#not all elements can be styled, so do nothing
 
 			#once the row div is found, extract the endpoint name from it
 			rowEndpointName = tr[0].querySelector("span.select2-selection__rendered").title
