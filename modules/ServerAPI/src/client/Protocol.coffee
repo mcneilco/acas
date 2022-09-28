@@ -615,10 +615,80 @@ EndpointsValuesConf = [
 		firstSelectText: "Select Column Type"
 		required: true
 		editablePicklist: false
+,
+	key: 'column time'
+	modelDefaults:
+		type: 'numericValue'
+		kind: 'column time'
+		codeType: 'data column'
+		codeKind: 'column time'
+		codeOrigin: 'ACAS DDict'
+		value: null
+	fieldSettings:
+		fieldType: 'numericValue'
+		formLabel: ''
+		fieldWrapper: 'bv_columnTimePickList'
+		insertUnassigned: true
+		firstSelectText: "Input Column Time"
+		required: true
+		editablePicklist: false
+,
+	key: 'column time units'
+	modelDefaults:
+		type: 'stringValue'
+		kind: 'column time units'
+		codeType: 'data column'
+		codeKind: 'column time units'
+		codeOrigin: 'ACAS DDict'
+		value: null
+	fieldSettings:
+		fieldType: 'codeValue'
+		formLabel: ''
+		fieldWrapper: 'bv_columnTimeUnitsPickList'
+		insertUnassigned: true
+		firstSelectText: "Select Column Time Units"
+		required: true
+		editablePicklist: true
+		autoSavePickListItem: true
+		editablePicklistRoles: [window.conf.roles.acas.userRole]
+,
+	key: 'column concentration'
+	modelDefaults:
+		type: 'numericValue'
+		kind: 'column concentration'
+		codeType: 'data column'
+		codeKind: 'column concentration'
+		codeOrigin: 'ACAS DDict'
+		value: null
+	fieldSettings:
+		fieldType: 'numericValue'
+		formLabel: ''
+		fieldWrapper: 'bv_columnConcentrationPickList'
+		insertUnassigned: true
+		firstSelectText: "Input Column Concentration"
+		required: true
+		editablePicklist: false
+,
+	key: 'column concentration units'
+	modelDefaults:
+		type: 'stringValue'
+		kind: 'column concentration units'
+		codeType: 'data column'
+		codeKind: 'column concentration units'
+		codeOrigin: 'ACAS DDict'
+		value: null
+	fieldSettings:
+		fieldType: 'codeValue'
+		formLabel: ''
+		fieldWrapper: 'bv_columnConcentrationUnitsPickList'
+		insertUnassigned: true
+		firstSelectText: "Select Column Concentration Units"
+		required: true
+		editablePicklist: true
+		autoSavePickListItem: true
+		editablePicklistRoles: [window.conf.roles.acas.userRole]
 ]
 		
-
-
 
 class EndpointListController extends AbstractFormController
 	template: _.template($("#EndpointListView").html())
@@ -666,6 +736,10 @@ class EndpointListController extends AbstractFormController
 		@
 	
 	getExperimentSummaryTable: =>
+		#hide previously shown warnings/success text
+		$(".bv_downloadSuccess").hide()
+		$(".bv_downloadWarning").hide()
+
 		protocolCode = @model.escape('codeName')		
 		$.ajax
 			type: 'GET'
@@ -748,13 +822,14 @@ class EndpointListController extends AbstractFormController
 					endpointRowDataTypeMatch = true
 				else
 					endpintRowDataTypeMatch = false
-
-				#TODO - make it so that it needs to clear each one separately, instead of a count...
-				# a counter could be fooled if the ignored tag fails. 
-				#TODO - figure out how to dynamically pick how many of them are required...
+				
+				#TODO - construct table title name
 
 				#next we need to regenerate the experiment summary table
 				protocolCode = @model.escape('codeName')
+				#hide previously shown warnings/success text associated w/ previous table
+				$(".bv_downloadSuccess").hide()
+				$(".bv_downloadWarning").hide()
 				$.ajax
 					type: 'GET'
 					#there are two similar routes in ExperimentBrowserRoutes.coffee and ExperimentServiceRoutes.coffee
@@ -792,17 +867,6 @@ class EndpointListController extends AbstractFormController
 						$(".bv_experimentTableControllerTitle").html "Experiments using " + protocolCode + " containing '" + rowEndpointName + " (" + rowUnits + ")' data:"
 
 			@
-
-			#console.log "Endpoint Row Pressed!"
-			#need to extract the column name out of the endpoint row that was pressed 
-
-			#console.log  $(event.target).context
-			#console.log $(event.target).parent()[0].nodeName
-
-
-			#TODO - once you have the event.target, you can loop through to find the row...
-			#Then from the row you can narrow down to the column name input... 
-			#get parent()[0].nodeName 
 
 	addOne: (state) =>
 		# create a new table row
@@ -861,9 +925,6 @@ class EndpointListController extends AbstractFormController
 			@endpointControllers[rowNumber].unbind()
 			@endpointControllers[rowNumber].el.remove()
 
-		
-
-		
 
 	#Function brought over from experiment.coffee 
 	setupExperimentSummaryTable: (experiments) =>

@@ -249,15 +249,28 @@
 </script>
 
 <script type="text/template" id="EndpointRowView" xmlns="http://www.w3.org/1999/html">
-    <td style="vertical-align: middle;">
+    <td style="vertical-align: middle;" class="bv_columnNamePickListParent">
         <div class="bv_columnNamePickList"></div>
     </td>
-    <td style="vertical-align:middle;">
+    <td style="vertical-align:middle;" class="bv_unitsPickListParent">
         <div class="bv_unitsPickList"></div>
     </td>
     <td style="vertical-align:middle;" class="bv_dataTypePickListParent">
         <div class="bv_dataTypePickList"></div>
     </td>
+    <td style="vertical-align:middle;" class="bv_dataTypePickListParent">
+        <input class="bv_columnTimeInput" type="text" style="width:77px;"/>
+    </td>
+    <td style="vertical-align:middle;" class="bv_columnTimeUnitsPickListParent">
+        <div class="bv_columnTimeUnitsPickList"></div>
+    </td>
+    <td style="vertical-align:middle;" class="bv_columnConcentrationInputParent">
+        <input class="bv_columnConcentrationInput" type="text" style="width:77px;"/>
+    </td>
+    <td style="vertical-align:middle;" class="bv_columnConcentrationUnitsPickListParent">
+        <div class="bv_columnConcentrationUnitsPickList"></div>
+    </td>
+
     <td style="text-align:center;vertical-align:middle;"><input class= "" type="checkbox" id="" name=""></td>
     <td style="text-align:center;vertical-align:middle;"><input class= "" type="checkbox" id="" name=""></td>
     <td style="text-align:center;vertical-align:middle;"class="bv_remove_row"><button type="button" class="btn btn-danger bv_remove pull-center" style="margin-right:5px;margin-left:5px;">Remove</button></td>
@@ -270,6 +283,10 @@
                 <th>Column Name</th>
                 <th>Units</th>
                 <th>Data Type</th>
+                <th>Time</th>
+                <th>Time Units</th>
+                <th>Concentration</th>
+                <th>Concentration Unit</th>
                 <th>Hidden</th>
                 <th>Condition</th>
                 <th class="bv_endpointColumnRemove">Remove</th>
