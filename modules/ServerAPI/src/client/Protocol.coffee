@@ -661,19 +661,23 @@ class EndpointListController extends AbstractFormController
 				@$(".bv_remove_row").hide()
 				
 		if @options.readOnly == false 	#Don't render associated experiments if it is readOnly
-			protocolCode = @model.escape('codeName')		
-			$.ajax
-				type: 'GET'
-				#there are two similar routes in ExperimentBrowserRoutes.coffee and ExperimentServiceRoutes.coffee
-				#url: "/api/experimentsForProtocol/#{protocolCode}" #ExperimentBrowserRoutes.coffee route
-				url: "/api/experiments/protocolCodename/#{protocolCode}" #ExperimentServiceRoutes.coffee route
-				success: (experiments) =>
-					#TODO - if there are no experiments it should say so instead of leaving the table blank. 
-					@setupExperimentSummaryTable experiments
-					$(".bv_experimentTableControllerTitle").html "Experiments using " + protocolCode + ":"
+			@getExperimentSummaryTable()
 
 		@
 	
+	getExperimentSummaryTable: =>
+		protocolCode = @model.escape('codeName')		
+		$.ajax
+			type: 'GET'
+			#there are two similar routes in ExperimentBrowserRoutes.coffee and ExperimentServiceRoutes.coffee
+			#url: "/api/experimentsForProtocol/#{protocolCode}" #ExperimentBrowserRoutes.coffee route
+			url: "/api/experiments/protocolCodename/#{protocolCode}" #ExperimentServiceRoutes.coffee route
+			success: (experiments) =>
+				#TODO - if there are no experiments it should say so instead of leaving the table blank. 
+				@setupExperimentSummaryTable experiments
+				$(".bv_experimentTableControllerTitle").html "Experiments using " + protocolCode + ":"
+
+
 	handleEndpointRowPressed: =>
 		if @options.readOnly == false #disable logic if endpoint list controller is read only (since there won't be an experiment controller)
 			#When an endpoint row is pressed, we want to filter the experiment summary table so it only displays the experiments...
@@ -689,6 +693,12 @@ class EndpointListController extends AbstractFormController
 				#if the element is not a table row, move up to the next parent element
 				else
 					element = element.parent()
+			
+			#we need to detect if the element we have clicked on is the previously selected element
+			if "selectedEndpointRow" in tr[0].classList
+				previouslySelectedRow = true
+			else
+				previouslySelectedRow = false
 
 			#first reset the background color of all the rows
 			for elm in tr.parent()[0].childNodes
@@ -698,80 +708,88 @@ class EndpointListController extends AbstractFormController
 					catch
 						#not all elements can be styled, so do nothing
 
-			#apply highlighting to the selected rows
-			for trElements in tr
-				for td in trElements.childNodes
-					try
-						td.style.background = "#D9EDF7"
-					catch
-						#not all elements can be styled, so do nothing
+			#remove class marking whether a row was previously selected 
+			$(".selectedEndpointRow").removeClass "selectedEndpointRow"
 
-			#once the row div is found, extract the endpoint values from it from it
-			endpointRowValues = tr[0].querySelectorAll("span.select2-selection__rendered")
-			rowEndpointName = endpointRowValues[0].title
-			rowUnits = endpointRowValues[1].title
-			rowDataType = endpointRowValues[2].title
 
-			#TODO - need to redo this so that it needs to hit all three of the values in order to pass. 
-			#set the threshold of number of fields that need to be matched given how many valid columns there are
-			if endpointRowValues == "Select Column Name"
-				endpointRowValueMatch = true
+			#if the row was previously selected, load table for just experiments associated with protocol, no filtering by endpoint
+			if previouslySelectedRow == true
+				@getExperimentSummaryTable()
+		
+			#if the row was not previously selected, load table with associated experiments filtered by endpoint and highlight endpoint row
 			else
-				endpointRowValueMatch = false
-			if rowUnits == "(unitless)"
-				endpointRowUnitsMatch = true
-			else
-				endpointRowUnitsMatch = false
-			if rowDataType == "Select Column Type"
-				endpointRowDataTypeMatch = true
-			else
-				endpintRowDataTypeMatch = false
+				#mark the selected row
+				tr.addClass('selectedEndpointRow')
 
-			#TODO - make it so that it needs to clear each one separately, instead of a count...
-			# a counter could be fooled if the ignored tag fails. 
-			#TODO - figure out how to dynamically pick how many of them are required...
+				#apply highlighting to the selected rows
+				for trElements in tr
+					for td in trElements.childNodes
+						try
+							td.style.background = "#D9EDF7"
+						catch
+							#not all elements can be styled, so do nothing
 
-			#next we need to regenerate the experiment summary table
-			protocolCode = @model.escape('codeName')
-			$.ajax
-				type: 'GET'
-				#there are two similar routes in ExperimentBrowserRoutes.coffee and ExperimentServiceRoutes.coffee
-				#url: "/api/experimentsForProtocol/#{protocolCode}" #ExperimentBrowserRoutes.coffee route
-				url: "/api/experiments/protocolCodename/#{protocolCode}" #ExperimentServiceRoutes.coffee route
-				success: (experiments) =>
-					filtered_experiments = [] #keep track of the filtered experiments
-					#we'll need to filter out experiments that don't contain the endpoint 
-					for experiment in experiments
-						experiment_hit = false #variable to keep track of whether the experiment has the endpoint
-						for i in experiment.lsStates
-							#if the experiment contains the endpoint, move on to the next one
-							if experiment_hit == true
-								break
-							else
-								#go through the experiment data to check if the endpoint is there
-								if i.lsKind == 'data column order' and i.ignored == false
-									for j in i.lsValues
-										#only looking at the column names in the data that are not ignored
-										if j.lsKind == "column name" and j.ignored == false
-											if j.stringValue == rowEndpointName
-												#if the column name matches the endpoint name, add it to the filtered experiments
-												experiment_hit = true
-												filtered_experiments.push experiment
-												break
-											#console.log j.stringValue
-										#if j.lsKind == "column units" and j.ignored == false
-										#	if j.stringValue == rowUnits
-										#		#pass
-										#if j.lsKind == "column type" and j.ignored == false
-										#	if j.stringValue == rowDataType
-												#pass
-										
+				#once the row div is found, extract the endpoint values from it from it
+				endpointRowValues = tr[0].querySelectorAll("span.select2-selection__rendered")
+				rowEndpointName = endpointRowValues[0].title
+				rowUnits = endpointRowValues[1].title
+				rowDataType = endpointRowValues[2].title
 
-					#TODO - if there are no experiments it should say so instead of leaving the table blank. 
-					$(".bv_experimentTableController").empty() #remove the last experimentTableController
-					@setupExperimentSummaryTable filtered_experiments #add a new one with the filtered experiments
-					#generate a title for the experiment table controller 
-					$(".bv_experimentTableControllerTitle").html "Experiments using " + protocolCode + " containing '" + rowEndpointName + " (" + rowUnits + ")' data:"
+				#if the endpoint doesn't have a value for it, don't filter by it?
+				if endpointRowValues == "Select Column Name"
+					endpointRowValueMatch = true
+				else
+					endpointRowValueMatch = false
+				if rowUnits == "(unitless)"
+					endpointRowUnitsMatch = true
+				else
+					endpointRowUnitsMatch = false
+				if rowDataType == "Select Column Type"
+					endpointRowDataTypeMatch = true
+				else
+					endpintRowDataTypeMatch = false
+
+				#TODO - make it so that it needs to clear each one separately, instead of a count...
+				# a counter could be fooled if the ignored tag fails. 
+				#TODO - figure out how to dynamically pick how many of them are required...
+
+				#next we need to regenerate the experiment summary table
+				protocolCode = @model.escape('codeName')
+				$.ajax
+					type: 'GET'
+					#there are two similar routes in ExperimentBrowserRoutes.coffee and ExperimentServiceRoutes.coffee
+					#url: "/api/experimentsForProtocol/#{protocolCode}" #ExperimentBrowserRoutes.coffee route
+					url: "/api/experiments/protocolCodename/#{protocolCode}" #ExperimentServiceRoutes.coffee route
+					success: (experiments) =>
+						filtered_experiments = [] #keep track of the filtered experiments
+						#we'll need to filter out experiments that don't contain the endpoint
+						for experiment in experiments
+							for i in experiment.lsStates
+								#if the experiment contains the endpoint (and all its values), record it and move on to the next one
+								if endpointRowValueMatch == true && endpointRowUnitsMatch == true && endpointRowDataTypeMatch == true
+									filtered_experiments.push experiment
+									break 
+								else
+									#go through the experiment data to check if the endpoint data is there
+									if i.lsKind == 'data column order' and i.ignored == false
+										for j in i.lsValues
+											#only looking at the data that is not ignored
+											if j.lsKind == "column name" and j.ignored == false
+												if j.stringValue == rowEndpointName
+													endpointRowValueMatch = true
+											if j.lsKind == "column units" and j.ignored == false
+												if j.stringValue == rowUnits
+													endpointRowUnitsMatch = true
+											if j.lsKind == "column type" and j.ignored == false
+												if j.stringValue == rowDataType
+													endpointRowDataTypeMatch = true
+											
+
+						#TODO - if there are no experiments it should say so instead of leaving the table blank. 
+						$(".bv_experimentTableController").empty() #remove the last experimentTableController
+						@setupExperimentSummaryTable filtered_experiments #add a new one with the filtered experiments
+						#generate a title for the experiment table controller 
+						$(".bv_experimentTableControllerTitle").html "Experiments using " + protocolCode + " containing '" + rowEndpointName + " (" + rowUnits + ")' data:"
 
 			@
 
