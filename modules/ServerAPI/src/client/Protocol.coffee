@@ -627,6 +627,7 @@ class EndpointListController extends AbstractFormController
 		"click .bv_addEndpoint": "handleAddEndpointPressed"
 		"rowRemoved": "handleRowRemoved"
 		"click .bv_endpointRow": "handleEndpointRowPressed"
+		"click .bv_downloadFiles": "downloadFiles"
 	
 	rowNumberKind: "column order"
 	
@@ -669,6 +670,7 @@ class EndpointListController extends AbstractFormController
 				success: (experiments) =>
 					#TODO - if there are no experiments it should say so instead of leaving the table blank. 
 					@setupExperimentSummaryTable experiments
+					$(".bv_experimentTableControllerTitle").html "Experiments using " + protocolCode + ":"
 
 		@
 	
@@ -704,11 +706,33 @@ class EndpointListController extends AbstractFormController
 					catch
 						#not all elements can be styled, so do nothing
 
-			#once the row div is found, extract the endpoint name from it
-			rowEndpointName = tr[0].querySelector("span.select2-selection__rendered").title
-					
+			#once the row div is found, extract the endpoint values from it from it
+			endpointRowValues = tr[0].querySelectorAll("span.select2-selection__rendered")
+			rowEndpointName = endpointRowValues[0].title
+			rowUnits = endpointRowValues[1].title
+			rowDataType = endpointRowValues[2].title
+
+			#TODO - need to redo this so that it needs to hit all three of the values in order to pass. 
+			#set the threshold of number of fields that need to be matched given how many valid columns there are
+			if endpointRowValues == "Select Column Name"
+				endpointRowValueMatch = true
+			else
+				endpointRowValueMatch = false
+			if rowUnits == "(unitless)"
+				endpointRowUnitsMatch = true
+			else
+				endpointRowUnitsMatch = false
+			if rowDataType == "Select Column Type"
+				endpointRowDataTypeMatch = true
+			else
+				endpintRowDataTypeMatch = false
+
+			#TODO - make it so that it needs to clear each one separately, instead of a count...
+			# a counter could be fooled if the ignored tag fails. 
+			#TODO - figure out how to dynamically pick how many of them are required...
+
 			#next we need to regenerate the experiment summary table
-			protocolCode = @model.escape('codeName')		
+			protocolCode = @model.escape('codeName')
 			$.ajax
 				type: 'GET'
 				#there are two similar routes in ExperimentBrowserRoutes.coffee and ExperimentServiceRoutes.coffee
@@ -735,10 +759,19 @@ class EndpointListController extends AbstractFormController
 												filtered_experiments.push experiment
 												break
 											#console.log j.stringValue
+										#if j.lsKind == "column units" and j.ignored == false
+										#	if j.stringValue == rowUnits
+										#		#pass
+										#if j.lsKind == "column type" and j.ignored == false
+										#	if j.stringValue == rowDataType
+												#pass
+										
 
 					#TODO - if there are no experiments it should say so instead of leaving the table blank. 
 					$(".bv_experimentTableController").empty() #remove the last experimentTableController
 					@setupExperimentSummaryTable filtered_experiments #add a new one with the filtered experiments
+					#generate a title for the experiment table controller 
+					$(".bv_experimentTableControllerTitle").html "Experiments using " + protocolCode + " containing '" + rowEndpointName + " (" + rowUnits + ")' data:"
 
 			@
 
@@ -816,7 +849,6 @@ class EndpointListController extends AbstractFormController
 
 	#Function brought over from experiment.coffee 
 	setupExperimentSummaryTable: (experiments) =>
-		#TODO - if there are no experiments it should say so instead of leaving the table blank. 
 		#@$(".bv_searchStatusIndicator").addClass "hide"
 		$(".bv_experimentTableController").removeClass "hide"
 		if window.conf.experiment?.mainControllerClassName? and window.conf.experiment.mainControllerClassName is "EnhancedExperimentBaseController"
@@ -835,4 +867,78 @@ class EndpointListController extends AbstractFormController
 		if experiments.length == 0
 			$(".bv_experimentTableController").empty() 
 			$(".bv_experimentTableController").append "There are no matching experiments using this protocol and endpoint."
+			$(".bv_downloadFiles").hide()
+		else
+			$(".bv_downloadFiles").show()
+	
+	
+	downloadFiles: => 
+		#copied from downloadFiles in ExperimentBrowser.coffee
+
+		#extract the experiment data from the summary table
+		experimentMetadata = @experimentSummaryTable.collection.models
+
+		#collect the codes of the experiments that are currently shown
+		table = $(".bv_experimentTableController .dataTables_wrapper .table").dataTable()
+		filteredExperimentCodes = []
+		for filteredExperiments in table._('tr', {'filter': 'applied'})
+			filteredExperimentCodes.push filteredExperiments[0]
+
+		#create an array to store all the experiment's files
+		experimentFiles = []
+		for experimentData in experimentMetadata
+			#if the experiment code is in the filtered codes, search for associated files
+			if experimentData.attributes.codeName in filteredExperimentCodes
+				for experimentLsState in experimentData.attributes.lsStates.models
+					if experimentLsState.attributes.lsKind == "experiment metadata"
+						for experimentLsValue in experimentLsState.attributes.lsValues.models
+							if experimentLsValue.attributes.fileValue
+								#add files to experimentFiles
+								experimentFiles.push "dataFiles/" + experimentLsValue.attributes.fileValue
+
+		#Get today's date to timestamp any experiment file exports
+		today = new Date
+		dd = today.getDate()
+		mm = today.getMonth() + 1
+		yyyy = today.getFullYear()
+		if dd < 10
+			dd = '0' + dd
+		if mm < 10
+			mm = '0' + mm
+		today = '_' + mm + '_' + dd + '_' + yyyy
+
+		#construct request
+		dataToPost =
+			fileName: "experiment_files" + today
+			mappings: JSON.parse(JSON.stringify(experimentFiles))
+			userName: window.AppLaunchParams.loginUser.username 
+
+		console.log dataToPost
+		#send all experiment filenames to backend to zip up
+		$.ajax
+			type: 'POST'
+			url: "/api/exportExperimentFiles"
+			data: dataToPost
+			timeout: 6000000
+			success: (response) =>
+				#Since we can't directly send the .zip file to download it...
+				#...we create a hidden link with the download path and automatically click on it
+				a = document.createElement('a');
+				a.style.display = 'none';
+				a.href = "dataFiles/" + response;
+				document.body.appendChild(a);
+				a.click();
+
+				#Update GUI to indicate succesful download
+				$(".bv_downloadWarning").hide()
+				$(".bv_downloadSuccess").show()
+
+			error: (err) =>
+				console.log "Could not download files" + err
+
+				#Update GUI to indicate files could not be downloaded
+				$(".bv_downloadSuccess").hide()
+				$(".bv_downloadWarning").show()
+				@serviceReturn = null
+			dataType: 'json'
 
