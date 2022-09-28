@@ -410,9 +410,9 @@ class ACASThingBrowserController extends Backbone.View
 		if response.maxResults <= response.numberOfResults
 			msg = "Browser results were limited to the first " + response.maxResults + " entries out of " + response.numberOfResults + " results"
 			@$('.bv_maxThingBrowserSearchResultsReached').html msg
-			@$("bv_maxThingBrowserSearchResultsReached").removeClass("hide")
+			@$(".bv_maxThingBrowserSearchResultsReached").removeClass("hide")
 		else 
-			@$("bv_maxSearchResultsLimited").addClass("hide")
+			@$(".bv_maxThingBrowserSearchResultsReached").addClass("hide")
 
 		if results is null
 			@showOne("bv_errorOccurredPerformingSearch")
