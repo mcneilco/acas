@@ -593,7 +593,7 @@ server.curveRender.curveLwd=1.5
 server.curveRender.plotPointsOnOverlay=false
 
 # Restrict experiment search by project
-server.service.projects.restrictExperiments=false
+server.service.projects.restrictExperiments=true
 
 server.flyway.location=com.labsynch.labseer.db.migration.postgres,db/migration/postgres,db/migration/indigo/postgres
 
