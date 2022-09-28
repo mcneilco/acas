@@ -32,20 +32,13 @@ class ThingSimpleSearchController extends AbstractFormController
 			@$(".bv_doSearch").attr("disabled", true)
 
 	handleDoSearchClicked: =>
-		@$(".bv_thingTableController").addClass "hide"
-		@$(".bv_errorOccurredPerformingSearch").addClass "hide"
 		thingSearchTerm = $.trim(@$(".bv_thingSearchTerm").val())
 		@$(".bv_exptSearchTerm").val ""
 		if thingSearchTerm isnt ""
-			@$(".bv_noMatchingThingsFoundMessage").addClass "hide"
-			@$(".bv_thingBrowserSearchInstructions").addClass "hide"
-			@$(".bv_searchThingsStatusIndicator").removeClass "hide"
 			if !window.conf.browser.enableSearchAll and thingSearchTerm is "*"
-				@$(".bv_moreSpecificThingSearchNeeded").removeClass "hide"
+				@trigger "moreSpecificSearchRequired"
 			else
-				@$(".bv_searchingThingsMessage").removeClass "hide"
 				@$(".bv_exptSearchTerm").html _.escape(thingSearchTerm)
-				@$(".bv_moreSpecificThingSearchNeeded").addClass "hide"
 				@doSearch thingSearchTerm
 
 	doSearch: (thingSearchTerm) =>
@@ -57,6 +50,7 @@ class ThingSimpleSearchController extends AbstractFormController
 			defaultQueryTerms =
 				queryString: "#{thingSearchTerm}"
 				queryDTO:
+					maxResults: 1000000000
 					lsType: @model.get("lsType")
 					lsKind: @model.get("lsKind")
 					recordedBy: "#{thingSearchTerm}"
@@ -110,7 +104,7 @@ class ThingSimpleSearchController extends AbstractFormController
 				contentType: 'application/json'
 				data: JSON.stringify(queryTerms)
 				success: (response) =>
-					@trigger "searchReturned", response.results
+					@trigger "searchReturned", response
 				error: (result) =>
 					@trigger "searchReturned", null
 				complete: =>
@@ -195,33 +189,35 @@ class ACASThingBrowserCellController extends Backbone.View
 	render: =>
 		$(@el).empty()
 
-		# The model could be a thing or just a backbone model with key value pairs
-		value = @model.get(@configs.key)
-		# Render Thing Value
-		if value instanceof Value
-			if value.get("lsType") == "dateValue"  && !@configs.formatter?
-				content = UtilityFunctions::convertMSToYMDDate(value.get("value"))
-			else
+		if @model instanceof Backbone.Model
+
+			# The model could be a thing or just a backbone model with key value pairs
+			value = @model.get(@configs.key)
+			# Render Thing Value
+			if value instanceof Value
 				content = value.get("value")
 				# If it's a string then escape it
 				if typeof(content) == "string"
 					content = value.escape(content)
-		# Render Thing Label
-		else if value instanceof Label
-			content = value.escape("labelText")
-		# Render key value backbone model
-		else 
-			# This is not a Thing Value or Label so assume it's just a backbone model with key/value pairs
-			# If the thing model class was passed in then we can use it to determine if this is a date value we should parse
-			content = @model.get(@configs.key)
-			if typeof(content) == "string"
-				content = @model.escape(@configs.key)
-			if @options.thingModelClass?
-				newModel = new @options.thingModelClass
-				modelValue = newModel.get(@configs.key)
-				if modelValue instanceof Value && modelValue.get("lsType") == "dateValue" && !@configs.formatter?
-					content = UtilityFunctions::convertMSToYMDDate(content)
+			# Render Thing Label
+			else if value instanceof Label
+				content = value.escape("labelText")
+			# Render key value backbone model
+			else 
+				# This is not a Thing Value or Label so assume it's just a backbone model with key/value pairs
+				# If the thing model class was passed in then we can use it to determine if this is a date value we should parse
+				content = @model.get(@configs.key)
+				if typeof(content) == "string"
+					content = @model.escape(@configs.key)
+		else
+			# This is strictly a key/pair object
+			content = @model[@configs.key]
 
+		if @options.thingModelExample?
+			modelValue = this.options.thingModelExample.get(@configs.key)
+			if modelValue instanceof Value && modelValue.get("lsType") == "dateValue" && !@configs.formatter?
+				content = UtilityFunctions::convertMSToYMDDate(content)
+		
 		if @configs.formatter?
 			content = @configs.formatter content
 
@@ -250,7 +246,7 @@ class ACASThingBrowserRowSummaryController extends Backbone.View
 			cellController = new ACASThingBrowserCellController
 				configs: config
 				model: @model
-				thingModelClass: @options.thingModelClass
+				thingModelExample: @options.thingModelExample
 
 			$(@el).append cellController.render().el
 		@
@@ -276,15 +272,16 @@ class ThingSummaryTableController extends Backbone.View
 				filterClass = "bv_filter_" + config.key.replace(/\s/g, '')
 				@$(".bv_colFilters").append("<th style=\"width: 125px;\" class=\"bv_thingBrowserFilter "+filterClass+"\"></th>")
 		
-		if @collection.models.length is 0
+		if @collection.length is 0
 			@$(".bv_noMatchingThingsFoundMessage").removeClass "hide"
 			# display message indicating no results were found
 		else
 			@$(".bv_noMatchingThingsFoundMessage").addClass "hide"
-			@collection.each (flattenedThing) =>
+			exampleModel = new @options.thingModelClass()
+			@collection.forEach (flattenedThing) =>
 				prsc = new ACASThingBrowserRowSummaryController
 					model: flattenedThing
-					thingModelClass: @options.thingModelClass
+					thingModelExample: exampleModel
 					configs: @configs
 				prsc.on "gotClick", @selectedRowChanged
 				@$("tbody").append prsc.render().el
@@ -385,24 +382,47 @@ class ACASThingBrowserController extends Backbone.View
 			el: @$('.bv_thingSearchController')
 		@searchController.render()
 		@searchController.on "searchReturned", @setupThingSummaryTable.bind(@)
+		@searchController.on "find", @searchingStarted.bind(@)
+		@searchController.on "moreSpecificSearchRequired", @moreSpecificSearchRequired.bind(@)
 		@$('.bv_queryToolDisplayName').html window.conf.service.result.viewer.displayName
 
-	setupThingSummaryTable: (flattenedThings) =>
+	showOne: (cl) =>
+		cls = ["bv_noMatchingThingsFoundMessage", "bv_moreSpecificThingSearchNeeded", "bv_errorOccurredPerformingSearch", "bv_thingBrowserSearchInstructions", "bv_searchingThingsMessage"]
+		for c in cls
+			@$("." + c).addClass("hide")
+		if cl?
+			@$("." + cl).removeClass("hide")
+		@$(".bv_thingTableController").addClass("hide")
+		@$(".bv_searchThingsStatusIndicator").removeClass("hide")
+
+	moreSpecificSearchRequired: =>
+		@showOne("bv_moreSpecificThingSearchNeeded")
+
+	searchingStarted: =>
 		@destroyThingSummaryTable()
+		@showOne("bv_searchingThingsMessage")
 
-		@$(".bv_searchingThingsMessage").addClass "hide"
-		if flattenedThings is null
-			@$(".bv_errorOccurredPerformingSearch").removeClass "hide"
+	setupThingSummaryTable: (response) =>
+		results = response.results
 
-		else if flattenedThings.length is 0
-			@$(".bv_noMatchingThingsFoundMessage").removeClass "hide"
-			@$(".bv_thingTableController").html ""
+		if response.maxResults <= response.numberOfResults
+			msg = "Browser results were limited to the first " + response.maxResults + " entries out of " + response.numberOfResults + " results"
+			@$('.bv_maxThingBrowserSearchResultsReached').html msg
+			@$("bv_maxThingBrowserSearchResultsReached").removeClass("hide")
+		else 
+			@$("bv_maxSearchResultsLimited").addClass("hide")
+
+		if results is null
+			@showOne("bv_errorOccurredPerformingSearch")
+
+		else if results.length is 0
+			@showOne("bv_noMatchingThingsFoundMessage")
 		else
 			@$(".bv_searchThingsStatusIndicator").addClass "hide"
-			@$(".bv_thingTableController").removeClass "hide"
+			@$(".bv_thingTableController").removeClass "hide" 
 
 			@thingSummaryTable = new ThingSummaryTableController
-				collection: new Backbone.Collection flattenedThings
+				collection: results
 				thingModelClass: @modelClass
 				configs: @configs
 				columnFilters: @columnFilters
