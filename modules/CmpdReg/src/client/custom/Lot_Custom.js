@@ -256,6 +256,7 @@ $(function () {
         if (this.autoPopulateNextLotNumber | this.allowManualLotNumber | this.requireLotNumber) {
           _.bindAll(this, 'handleLotNumbersPopulated');
           this.model.bind('change:lotNumbers', this.handleLotNumbersPopulated);
+          this.model.set({'allowManualLotNumber': this.allowManualLotNumber}, { silent: true });
           this.populateModelWithCurrentLotNumbers();
 
         } else {
