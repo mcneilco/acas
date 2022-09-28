@@ -8,6 +8,11 @@ Add this line to public/src/modules/ModuleMenus/src/client/ModuleMenusConfigurat
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/experimentsForProtocol/:protocolCode', loginRoutes.ensureAuthenticated, exports.experimentsForProtocol
 
+###
+This appears to be a redundant route, similar to api/experiments/protocolCodename/:protocolcode in ExperimentServiceRoutes.coffee
+This function appears to return a list of experiment codes, while the other returns experiment objects
+As of 9/2022, using the other route is preferred although this one is not being deleted to prevent issues with current users.
+###
 exports.experimentsForProtocol = (req, resp) ->
 	#fixturesData = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
 	config = require '../conf/compiled/conf.js'
