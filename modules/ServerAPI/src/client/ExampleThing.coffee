@@ -531,6 +531,7 @@ class ExampleThingBrowserController extends ACASThingBrowserController
 	controllerClass: ExampleThingController
 	modelClass: ExampleThingParent
 	columnFilters: true
+	maxResults: 100000
 	configs: [
 			name: "Code Name"
 			key: "codeName"

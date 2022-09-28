@@ -50,7 +50,7 @@ class ThingSimpleSearchController extends AbstractFormController
 			defaultQueryTerms =
 				queryString: "#{thingSearchTerm}"
 				queryDTO:
-					maxResults: 1000000000
+					maxResults: @options.maxResults
 					lsType: @model.get("lsType")
 					lsKind: @model.get("lsKind")
 					recordedBy: "#{thingSearchTerm}"
@@ -255,6 +255,7 @@ class ThingSummaryTableController extends Backbone.View
 	initialize: (options)->
 		@configs = options.configs
 		@columnFilters = options.columnFilters
+		@maxResults = options.maxResults
 
 	selectedRowChanged: (row) =>
 		@trigger "selectedRowUpdated", row
@@ -379,6 +380,7 @@ class ACASThingBrowserController extends Backbone.View
 			model: thingModel
 			query: @query
 			configs: @configs
+			maxResults: @maxResults
 			el: @$('.bv_thingSearchController')
 		@searchController.render()
 		@searchController.on "searchReturned", @setupThingSummaryTable.bind(@)
@@ -426,6 +428,7 @@ class ACASThingBrowserController extends Backbone.View
 				thingModelClass: @modelClass
 				configs: @configs
 				columnFilters: @columnFilters
+				maxResults: @maxResults
 
 			@thingSummaryTable.on "selectedRowUpdated", @selectedThingUpdated
 			@$(".bv_thingTableController").html @thingSummaryTable.render().el
