@@ -484,7 +484,8 @@ class ExperimentBaseController extends BaseEntityController
 				@$('.bv_openInQueryToolWrapper').show()
 			@$('.bv_queryToolDisplayName').html _.escape(window.conf.service.result.viewer.displayName)
 			@$('.bv_openInQueryToolLink').attr 'href', "/openExptInQueryTool?experiment="+@model.get('codeName')
-		@endpointListController.render()
+			#we don't want to render the endpoint controller if the experiment is new, so we only load it on existing experiments
+			@endpointListController.render()
 		@
 
 	modelSyncCallback: =>
