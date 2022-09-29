@@ -4,14 +4,14 @@
 	<div class="labelCorpName">
 		<label>Name: </label>
 		<span class="corpName" />
-        <span class="labelBuid" style="display:none">
-            <label>BUID: </label>
-            <span class="buid" />
-        </span>
+		<span class="labelBuid" style="display:none">
+			<label>BUID: </label>
+			<span class="buid" />
+		</span>
 	</div>
 	<div class="MetaLotViewButtons">
 		<a class="editLotButton" href="#" onclick="this.blur(); return false;"></a>
-        <a class="newLotButton" href="#" onclick="this.blur(); return false;"></a>
+		<a class="newLotButton" href="#" onclick="this.blur(); return false;"></a>
 		<a class="closeButton" href="#" onclick="this.blur(); return false;"></a>
 	</div>
 </script>

@@ -1,11 +1,11 @@
 <script type="text/template" id="SearchFormView_template">
 
-    <div class="StructureMain">
+	<div class="StructureMain">
 		<h2><label class="QueryStructure">Query Structure:</label></h2>
 		<div class="marvinContainer">
 			<iframe  id="searchMarvinSketch" class="sketcher-frame" data-toolbars="search"></iframe>
 		</div>
-	    <div class="registrationSearchMarvinSize"></div>
+		<div class="registrationSearchMarvinSize"></div>
 	</div>
 
 	<div class="CSfields">

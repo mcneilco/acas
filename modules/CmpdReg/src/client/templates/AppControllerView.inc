@@ -23,7 +23,7 @@
 		<div class="RegistrationView"></div>
 		<div class="SearchView"></div>
 		<div class="MetaLotView"></div>
-        <div class="bottomPad"></div>
+		<div class="bottomPad"></div>
 
 		<div class="ErrrorNotificationListView"></div>
 

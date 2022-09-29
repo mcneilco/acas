@@ -1,13 +1,13 @@
 <script type="text/template" id="LotForm_ParentView_template">
 
-    <div class="radioWrapper">
-        <label><input id="newLot" type="radio" name="regPick" class="regPick" ></input>New <span class="lotOrBatch"></span> <span class="corpName"></span></label>
-        
-        <select class="FormInput saltFormCorpNames"></select>
-    </div>
+	<div class="radioWrapper">
+		<label><input id="newLot" type="radio" name="regPick" class="regPick" ></input>New <span class="lotOrBatch"></span> <span class="corpName"></span></label>
+		
+		<select class="FormInput saltFormCorpNames"></select>
+	</div>
 
 	<div class="reparentLotWrapper hide">
-        <label><input id="reparentLot" type="radio" name="reparentLotPick" class="reparentLotPick" ></input>Reparent <span class="lotOrBatch"></span> to <span class="corpName"></span></label>
+		<label><input id="reparentLot" type="radio" name="reparentLotPick" class="reparentLotPick" ></input>Reparent <span class="lotOrBatch"></span> to <span class="corpName"></span></label>
 	</div>
 
 	<div><h2>Parent Structure:</h2></div>
@@ -29,15 +29,15 @@
 	  <div class="bv_aliasesContainer">
 
 	  </div>
-        <div>
-            <input type="checkbox" class="isMixture"/>
-            Is Mixture
-        </div>
+		<div>
+			<input type="checkbox" class="isMixture"/>
+			Is Mixture
+		</div>
 
-        <div class="row3 bv_labelPrefix">
-        			<label class="FormLabel2">*Prefix:</label>
-        			<select class="FormInput labelPrefix"></select>
-        </div>
+		<div class="row3 bv_labelPrefix">
+					<label class="FormLabel2">*Prefix:</label>
+					<select class="FormInput labelPrefix"></select>
+		</div>
 
 	 	<div class="row4">
 			<label class="FormLabel2">*Stereo Category:</label>
@@ -101,37 +101,37 @@
 </script>
 
 <script type="text/template" id="ValidateParentErrorsPanel_template">
-    <div class="floatingPanel ">
-        <h2 class="form_title">Invalid Parent Compound</h2>
-        <hr />
-        <h3 class="validateParentErrorsMsg">The parent is invalid due to the following reasons. Please fix the errors before attempting to update the parent again.</h3>
-        <div class="parentErrors"></div>
-        <div class="closeValidateParentErrors"></div>
-    </div>
+	<div class="floatingPanel ">
+		<h2 class="form_title">Invalid Parent Compound</h2>
+		<hr />
+		<h3 class="validateParentErrorsMsg">The parent is invalid due to the following reasons. Please fix the errors before attempting to update the parent again.</h3>
+		<div class="parentErrors"></div>
+		<div class="closeValidateParentErrors"></div>
+	</div>
 </script>
 
 <script type="text/template" id="ConfirmEditParentPanel_template">
 
-    <div class="floatingPanel ">
-        <h2 class="form_title">Confirm Update</h2>
-        <hr />
-        <h3 class="confirmUpdateParentMessage lotsAffected"></h3>
-        <h3 class="confirmUpdateParentMessage">Are you sure you want to update this parent?</h3>
-        <div class="confirmUpdateParent"></div>
-        <div class="cancelUpdateParent"></div>
-    </div>
+	<div class="floatingPanel ">
+		<h2 class="form_title">Confirm Update</h2>
+		<hr />
+		<h3 class="confirmUpdateParentMessage lotsAffected"></h3>
+		<h3 class="confirmUpdateParentMessage">Are you sure you want to update this parent?</h3>
+		<div class="confirmUpdateParent"></div>
+		<div class="cancelUpdateParent"></div>
+	</div>
 
 
 </script>
 
 <script type="text/template" id="ParentUpdatedPanel_template">
 
-    <div class="floatingPanel ">
-        <h2 class="form_title">Parent Updated Successfully</h2>
-        <hr />
-        <h3 class="updatedLotsMessage"></h3>
-        <div class="closeParentUpdatedPanel"></div>
-    </div>
+	<div class="floatingPanel ">
+		<h2 class="form_title">Parent Updated Successfully</h2>
+		<hr />
+		<h3 class="updatedLotsMessage"></h3>
+		<div class="closeParentUpdatedPanel"></div>
+	</div>
 
 
 </script>
