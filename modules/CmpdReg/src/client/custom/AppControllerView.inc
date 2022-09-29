@@ -22,10 +22,10 @@
 		<div class="RegistrationView"></div>
 		<div class="SearchView"></div>
 		<div class="MetaLotView"></div>
-        <div class="bottomPad"></div>
+		<div class="bottomPad"></div>
 	
 		<div class="ErrrorNotificationListView"></div>
-        
+		
 	</div>
 
 	<div id="footer"><p>&#169; 2011-2014 John McNeil & Co., Inc.</p></div>

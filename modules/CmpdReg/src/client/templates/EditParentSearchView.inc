@@ -15,6 +15,6 @@
 		<a class="cancelEditButton" href="#" onclick="this.blur(); return false;"><span></span></a>
 	</div>
 
-    <div class="editParentSearchMarvinSize"></div>
+	<div class="editParentSearchMarvinSize"></div>
 
 </script>
