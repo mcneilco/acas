@@ -116,7 +116,8 @@ class DetectSdfPropertiesController extends Backbone.View
 
 	handleFileUploaded: (file) =>
 		@fileName = file.name
-		@trigger 'fileChanged', @fileName
+		@originalFileName = file.originalName
+		@trigger 'fileChanged', file
 		@getProperties()
 
 	getProperties: =>
@@ -475,8 +476,13 @@ class AssignSdfPropertiesController extends Backbone.View
 					ignored: false
 				@assignedPropertiesList.add newAssignedProp
 
-	handleFileChanged: (newFileName) ->
-		@fileName = newFileName
+	handleFileChanged: (newFile) ->
+		if !newFile?
+			@fileName = null
+			@originalFileName = null
+		else
+			@fileName = newFile.name
+			@originalFileName = newFile.originalName
 
 	handleDbProjectChanged: ->
 		#this function only gets called if project select is shown in the configuration part of the GUI
@@ -721,6 +727,7 @@ class AssignSdfPropertiesController extends Backbone.View
 			@addProjectToMappingsPayLoad()
 		dataToPost =
 			fileName: @fileName
+			originalFileName: @originalFileName
 			mappings: JSON.parse(JSON.stringify(@assignedPropertiesListController.collection.models))
 			userName: window.AppLaunchParams.loginUser.username
 		if window.AppLaunchParams.cmpdRegConfig.serverSettings.corpParentFormat? and window.AppLaunchParams.cmpdRegConfig.serverSettings.corpParentFormat == 'ACASLabelSequence'
@@ -748,6 +755,7 @@ class AssignSdfPropertiesController extends Backbone.View
 			@addProjectToMappingsPayLoad()
 		dataToPost =
 			fileName: @fileName
+			originalFileName: @originalFileName
 			mappings: JSON.parse(JSON.stringify(@assignedPropertiesListController.collection.models))
 			userName: window.AppLaunchParams.loginUser.username
 		if window.AppLaunchParams.cmpdRegConfig.serverSettings.corpParentFormat? and window.AppLaunchParams.cmpdRegConfig.serverSettings.corpParentFormat == 'ACASLabelSequence'
@@ -830,8 +838,8 @@ class BulkRegCmpdsController extends Backbone.View
 	setupAssignSdfPropertiesController: =>
 		@assignSdfPropertiesController = new AssignSdfPropertiesController
 			el: @$('.bv_assignSdfProperties')
-		@detectSdfPropertiesController.on 'fileChanged', (newFileName) =>
-			@assignSdfPropertiesController.handleFileChanged newFileName
+		@detectSdfPropertiesController.on 'fileChanged', (newFile) =>
+			@assignSdfPropertiesController.handleFileChanged newFile
 		@assignSdfPropertiesController.on 'templateChanged', (templateName, mappings) =>
 			@detectSdfPropertiesController.handleTemplateChanged(templateName, mappings)
 		@assignSdfPropertiesController.on 'saveComplete', (saveSummary) =>
