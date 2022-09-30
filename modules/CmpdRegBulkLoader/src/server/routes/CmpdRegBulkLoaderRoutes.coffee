@@ -174,7 +174,8 @@ exports.registerCmpds = (req, resp) ->
 		#remove .sdf from fileName and originalFileName
 		fileName = fileName.substring(0, fileName.length-4)
 		originalFileName = originalFileName.substring(0, originalFileName.length-4)
-		zipFileName = originalFileName+".zip"
+		zipFileName = fileName+".zip"
+		zipFileDisplayName = originalFileName+".zip"
 		fs = require 'fs'
 		JSZip = require 'jszip'
 		zip = new JSZip()
@@ -194,7 +195,7 @@ exports.registerCmpds = (req, resp) ->
 		fstream = zip.generateNodeStream({type:"nodebuffer", streamFiles:true}).pipe(fs.createWriteStream(zipFilePath))
 		fstream.on 'finish', ->
 			console.log "finished create write stream"
-			resp.json [json, zipFileName]
+			resp.json [json, zipFileName, zipFileDisplayName]
 		fstream.on 'error', (err) ->
 			console.log "error writing stream for zip"
 			console.log err
@@ -210,7 +211,6 @@ exports.registerCmpds = (req, resp) ->
 				fileName = req.body.fileName
 				originalFileName = req.body.originalFileName
 				delete req.body.fileName
-				delete req.body.originalFileName
 
 				# get a list of scientists that are allowed to be registered chemists
 				exports.getScientistsInternal (authors) =>

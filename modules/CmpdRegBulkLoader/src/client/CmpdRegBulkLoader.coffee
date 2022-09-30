@@ -1189,12 +1189,14 @@ class CmpdRegBulkLoaderAppController extends Backbone.View
 			@setupBulkRegCmpdsSummaryController(summary[0])
 			downloadUrl = window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" + encodeURIComponent(summary[1])
 			@$('.bv_downloadSummary').attr "href", downloadUrl
+			@$('.bv_downloadSummary').attr "download", summary[2]
 		@regCmpdsController.on 'validateComplete', (summary) =>
 			@$('.bv_bulkReg').hide()
 			@$('.bv_bulkValSummary').show()
 			@setupBulkValCmpdsSummaryController(summary[0])
 			downloadUrl = window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" + encodeURIComponent(summary[1])
 			@$('.bv_downloadSummary').attr "href", downloadUrl
+			@$('.bv_downloadSummary').attr "download", summary[2]
 
 	setupBulkRegCmpdsSummaryController: (summary) ->
 		if @regCmpdsSummaryController?
