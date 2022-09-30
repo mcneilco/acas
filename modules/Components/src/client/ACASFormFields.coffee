@@ -380,12 +380,17 @@ class ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldController
 
 	setupSelect: ->
 		mdl = @getModel()
+		if @options.parameter?
+			parameter = @options.parameter
+		else
+			parameter = @options.modelKey
+
 		if @pickList?
 			plOptions =
 				el: @$('.bv_editablePicklist')
 				collection: @pickList
 				selectedCode: mdl.get('value')
-				parameter: @options.modelKey
+				parameter: parameter
 				autoFetch: false
 		else
 			@pickList = new PickListList()
@@ -397,7 +402,7 @@ class ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldController
 				el: @$('.bv_editablePicklist')
 				collection: @pickList
 				selectedCode: mdl.get('value')
-				parameter: @options.modelKey
+				parameter: parameter
 				codeType: mdl.get 'codeType'
 				codeKind: mdl.get 'codeKind'
 

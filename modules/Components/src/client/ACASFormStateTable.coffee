@@ -819,6 +819,7 @@ class ACASFormStateTableFormController extends Backbone.View
 				showDescription: field.fieldSettings.showDescription
 				editablePicklist: field.fieldSettings.editablePicklist
 				editablePicklistRoles: field.fieldSettings.editablePicklistRoles
+				parameter: field.fieldSettings.parameter
 				# Additional opts specific to StateTables
 				rowNumber: @rowNumber
 				rowNumberKind: @rowNumberKind

@@ -579,6 +579,7 @@ EndpointsValuesConf = [
 		editablePicklist: true
 		autoSavePickListItem: true
 		editablePicklistRoles: [window.conf.roles.acas.userRole]
+		parameter: 'Column Name'
 ,
 	key: 'column units'
 	modelDefaults:
@@ -598,6 +599,7 @@ EndpointsValuesConf = [
 		editablePicklist: true
 		autoSavePickListItem: true
 		editablePicklistRoles: [window.conf.roles.acas.userRole]
+		parameter: 'Column Units'
 ,
 	key: 'column type'
 	modelDefaults:
@@ -615,23 +617,21 @@ EndpointsValuesConf = [
 		firstSelectText: "Select Column Type"
 		required: true
 		editablePicklist: false
+		parameter: 'Column Type'
 ,
 	key: 'column time'
 	modelDefaults:
 		type: 'numericValue'
 		kind: 'column time'
-		codeType: 'data column'
-		codeKind: 'column time'
-		codeOrigin: 'ACAS DDict'
 		value: null
+		unitType: null
+		unitKind: null
 	fieldSettings:
 		fieldType: 'numericValue'
-		formLabel: ''
-		fieldWrapper: 'bv_columnTimePickList'
-		insertUnassigned: true
-		firstSelectText: "Input Column Time"
-		required: true
-		editablePicklist: false
+		fieldWrapper: "bv_columnTimeInput"
+		formLabel: ""
+		format: "0.00"
+		required: false
 ,
 	key: 'column time units'
 	modelDefaults:
@@ -647,34 +647,32 @@ EndpointsValuesConf = [
 		fieldWrapper: 'bv_columnTimeUnitsPickList'
 		insertUnassigned: true
 		firstSelectText: "Select Column Time Units"
-		required: true
+		required: false
 		editablePicklist: true
 		autoSavePickListItem: true
 		editablePicklistRoles: [window.conf.roles.acas.userRole]
+		parameter: 'Column Time Units'
 ,
 	key: 'column concentration'
 	modelDefaults:
 		type: 'numericValue'
 		kind: 'column concentration'
-		codeType: 'data column'
-		codeKind: 'column concentration'
-		codeOrigin: 'ACAS DDict'
 		value: null
+		unitType: null
+		unitKind: null
 	fieldSettings:
 		fieldType: 'numericValue'
-		formLabel: ''
-		fieldWrapper: 'bv_columnConcentrationPickList'
-		insertUnassigned: true
-		firstSelectText: "Input Column Concentration"
-		required: true
-		editablePicklist: false
+		fieldWrapper: 'bv_columnConcentrationInput'
+		formLabel: ""
+		format: "0.00"
+		required: false
 ,
-	key: 'column concentration units'
+	key: 'column conc units'
 	modelDefaults:
 		type: 'stringValue'
-		kind: 'column concentration units'
+		kind: 'column conc units'
 		codeType: 'data column'
-		codeKind: 'column concentration units'
+		codeKind: 'column conc units'
 		codeOrigin: 'ACAS DDict'
 		value: null
 	fieldSettings:
@@ -683,10 +681,11 @@ EndpointsValuesConf = [
 		fieldWrapper: 'bv_columnConcentrationUnitsPickList'
 		insertUnassigned: true
 		firstSelectText: "Select Column Concentration Units"
-		required: true
+		required: false
 		editablePicklist: true
 		autoSavePickListItem: true
 		editablePicklistRoles: [window.conf.roles.acas.userRole]
+		parameter: 'Column Concentration Units'
 ]
 		
 
@@ -841,7 +840,8 @@ class EndpointListController extends AbstractFormController
 						for experiment in experiments
 							for i in experiment.lsStates
 								#if the experiment contains the endpoint (and all its values), record it and move on to the next one
-								if endpointRowValueMatch == true && endpointRowUnitsMatch == true && endpointRowDataTypeMatch == true
+								#if endpointRowValueMatch == true && endpointRowUnitsMatch == true && endpointRowDataTypeMatch == true
+								if endpointRowValueMatch == true 
 									filtered_experiments.push experiment
 									break 
 								else
@@ -892,6 +892,8 @@ class EndpointListController extends AbstractFormController
 			readOnly: @options.readOnly
 		# Add this controller to our tracking dictionary so we can access it later
 		@endpointControllers[rowNumber] = rowController
+
+		# TODO - every time a new row is rendered, should resize the selects
 
 	
 	getRowNumberForState: (state) =>

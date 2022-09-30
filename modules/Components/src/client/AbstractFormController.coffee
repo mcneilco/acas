@@ -161,6 +161,7 @@ class AbstractThingFormController extends AbstractFormController
 				showDescription: field.fieldSettings.showDescription
 				editablePicklist: field.fieldSettings.editablePicklist
 				editablePicklistRoles: field.fieldSettings.editablePicklistRoles
+				parameter: field.fieldSettings.parameter
 
 			switch field.fieldSettings.fieldType
 				when 'label'
