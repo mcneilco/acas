@@ -261,11 +261,11 @@
 </script>
 
 <script type="text/template" id="FileRowSummaryView" xmlns="http://www.w3.org/1999/html">
-    <td class='bv_fileName'><a href='<%-fileLink%>'><%-fileName%></a></td>
+    <td class='bv_fileName'><a href='<%-fileLink%>'download="<%-originalFileName%>" ><%-originalFileName%></a></td>
     <td class='bv_loadDate'><%-loadDate%></td>
     <td class='bv_loadUser'><%-loadUser%></td>
     <td class="bv_currentSDF"><a href=<%-currentFileLink%> download="<%-currentFileName%>">Download</a></td>
-    <td class='bv_Report'><a href='<%-reportLink%>'><%-reportName%></a></td>
+    <td class='bv_Report'><a href='<%-reportLink%>' download="<%-reportName%>"><%-reportName%></a></td>
 </script>
 
 <script type="text/template" id="FileSummaryTableView" xmlns="http://www.w3.org/1999/html">

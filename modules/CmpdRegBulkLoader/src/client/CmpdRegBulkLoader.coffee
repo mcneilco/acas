@@ -938,6 +938,7 @@ class FileRowSummaryController extends Backbone.View
 		#To get the current state, we need the bulk file ID to get lots and then generate the updated SDF file
 		reportID = @model.get('id')
 		fileName = @model.get('fileName')
+		originalFileName = @model.get('originalFileName')
 
 		#Get today's date to timestamp any updated SDF files
 		today = new Date
@@ -951,18 +952,20 @@ class FileRowSummaryController extends Backbone.View
 		today = '_' + mm + '_' + dd + '_' + yyyy
 
 		# Rename the SDF file representing the current
-		currentFileName = fileName.replace "\.sdf", today + "_current_state.sdf"
+		currentFileName = originalFileName.replace "\.sdf", today + "_current_state.sdf"
     
 		# Replace .sdf with .zip since the report file shares the same name 
 		reportName = fileName.replace "\.sdf", ".zip"
+		reportDisplayName = originalFileName.replace "\.sdf", ".zip"
 
 		toDisplay =
 			fileName: fileName
+			originalFileName: originalFileName
 			loadDate: fileDate
 			loadUser: @model.get('recordedBy')
 			currentFileLink: "/api/cmpdRegBulkLoader/getSDFFromBulkLoadFileID/" + reportID
 			currentFileName: currentFileName
-			reportName: reportName
+			reportName: reportDisplayName
 			#remove special characters from the links to prevent errors, but not from the displayed names
 			fileLink: window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" + encodeURIComponent(fileName)
 			reportLink: window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" + encodeURIComponent(reportName)
