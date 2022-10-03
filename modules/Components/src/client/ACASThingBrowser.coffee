@@ -442,6 +442,7 @@ class ACASThingBrowserController extends Backbone.View
 			@thingController = new @controllerClass
 				model: thing
 				configs: @configs
+				readOnly: true
 				el: @$('.bv_thingController')
 			@renderController()
 		else
@@ -451,6 +452,7 @@ class ACASThingBrowserController extends Backbone.View
 					@thingController = new @controllerClass
 						model: model
 						configs: @configs
+						readOnly: true
 						el: @$('.bv_thingController')
 					@renderController()
 				error: (model, response, options) =>
