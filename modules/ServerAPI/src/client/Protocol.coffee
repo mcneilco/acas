@@ -725,6 +725,15 @@ class EndpointListController extends AbstractFormController
 		
 		if @options.newProtocol == true
 			@$(".bv_downloadFiles").hide()
+
+		#if time/units or concentration/units are disabled, remove the columns from the endpoint coontroller
+		if window.conf.entity.protocolEndpoint.time == false
+			@$(".bv_endpointColumnTime").remove()
+			@$(".bv_endpointColumnTimeUnits").remove()
+
+		if window.conf.entity.protocolEndpoint.concentration == false
+			@$(".bv_endpointColumnConcentration").remove()
+			@$(".bv_endpointColumnConcentrationUnits").remove()
 		
 		#Placeholder until we update the protocol data structure
 		# Create a list to hold the endpoint controllers in, so we can iterate through them later
@@ -734,20 +743,6 @@ class EndpointListController extends AbstractFormController
 			if @options.readOnly == true
 				#hide remove buttons
 				@$(".bv_remove_row").hide()
-
-			#if time/units are disabled, remove rows and columns
-			if window.conf.entity.protocolEndpoint.time == false
-				@$(".bv_endpointColumnTime").remove()
-				@$(".bv_endpointColumnTimeUnits").remove()
-				@$(".bv_timeUnitsPickListParent").remove()
-				@$(".bv_timeInputParent").remove()
-			
-			#if concentration/units are disabled, remove rows and columns
-			if window.conf.entity.protocolEndpoint.concentration == false
-				@$(".bv_endpointColumnConcentration").remove()
-				@$(".bv_endpointColumnConcentrationUnits").remove()
-				@$(".bv_concentrationUnitsPickListParent").remove()
-				@$(".bv_concentrationInputParent").remove()
 
 
 		if @options.readOnly == false || @options.newProtocol == true 	#Don't render associated experiments if protocol is new or readOnly
@@ -823,7 +818,7 @@ class EndpointListController extends AbstractFormController
 						catch
 							#not all elements can be styled, so do nothing
 
-				#once the row div is found, extract the endpoint values from it from it
+				#once the row is found, extract the endpoint values from it from it
 				endpointRowValues = tr[0].querySelectorAll("span.select2-selection__rendered")
 				rowEndpointName = endpointRowValues[0].title
 				rowUnits = endpointRowValues[1].title
@@ -839,7 +834,7 @@ class EndpointListController extends AbstractFormController
 				else if rowDataType == "Date"
 					rowDataType = "dateValue"
 
-				#if the endpoint doesn't have a value for it, don't filter by it?
+				#if the endpoint doesn't have a value for it, don't filter by it.
 				if endpointRowValues == "Select Column Name"
 					endpointRowValueMatch = true
 				else
@@ -851,9 +846,8 @@ class EndpointListController extends AbstractFormController
 				if rowDataType == "Select Column Type"
 					endpointRowDataTypeMatch = true
 				else
-					endpintRowDataTypeMatch = false
+					endpintRowDataTypeMatch = false				
 				
-				#TODO - construct table title name
 
 				#next we need to regenerate the experiment summary table
 				protocolCode = @model.escape('codeName')
@@ -922,6 +916,16 @@ class EndpointListController extends AbstractFormController
 			readOnly: @options.readOnly
 		# Add this controller to our tracking dictionary so we can access it later
 		@endpointControllers[rowNumber] = rowController
+
+		#if time/units are disabled, remove cells
+		if window.conf.entity.protocolEndpoint.time == false
+			@$(".bv_timeUnitsPickListParent").remove()
+			@$(".bv_timeInputParent").remove()
+		
+		#if concentration/units are disabled, remove the cells
+		if window.conf.entity.protocolEndpoint.concentration == false
+			@$(".bv_concentrationUnitsPickListParent").remove()
+			@$(".bv_concentrationInputParent").remove()
 
 
 	
