@@ -865,14 +865,17 @@ class EndpointListController extends AbstractFormController
 					endpointRowValueMatch = true
 				else
 					endpointRowValueMatch = false
+					endpointRowValues = "any column name"
 				if rowUnits == "(unitless)"
 					endpointRowUnitsMatch = true
+					rowUnits = "any units"
 				else
 					endpointRowUnitsMatch = false
 				if rowDataType == "Select Column Type"
 					endpointRowDataTypeMatch = true
 				else
-					endpintRowDataTypeMatch = false				
+					endpintRowDataTypeMatch = false
+					rowDataType = "any data type"		
 				
 
 				#next we need to regenerate the experiment summary table
