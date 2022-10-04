@@ -170,10 +170,12 @@ exports.validateCmpds = (req, resp) ->
 
 exports.registerCmpds = (req, resp) ->
 	req.connection.setTimeout 6000000
-	createSummaryZip = (fileName, json) ->
-		#remove .sdf from fileName
+	createSummaryZip = (fileName, originalFileName, json) ->
+		#remove .sdf from fileName and originalFileName
 		fileName = fileName.substring(0, fileName.length-4)
+		originalFileName = originalFileName.substring(0, originalFileName.length-4)
 		zipFileName = fileName+".zip"
+		zipFileDisplayName = originalFileName+".zip"
 		fs = require 'fs'
 		JSZip = require 'jszip'
 		zip = new JSZip()
@@ -184,6 +186,8 @@ exports.registerCmpds = (req, resp) ->
 			splitNames = rFile.split (path.sep+"cmpdreg_bulkload"+path.sep)
 			rFileName = splitNames[1]
 			rFileName = rFileName.replace(path.sep, '');
+			# rename to use the original name rather than the actual on disk name
+			rFileName = rFileName.replace(fileName, originalFileName)
 			zip.file(rFileName, fs.readFileSync(rFile))
 		origUploadsPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path
 		zipFilePath = origUploadsPath + "cmpdreg_bulkload" + path.sep + zipFileName
@@ -191,7 +195,7 @@ exports.registerCmpds = (req, resp) ->
 		fstream = zip.generateNodeStream({type:"nodebuffer", streamFiles:true}).pipe(fs.createWriteStream(zipFilePath))
 		fstream.on 'finish', ->
 			console.log "finished create write stream"
-			resp.json [json, zipFileName]
+			resp.json [json, zipFileName, zipFileDisplayName]
 		fstream.on 'error', (err) ->
 			console.log "error writing stream for zip"
 			console.log err
@@ -205,6 +209,7 @@ exports.registerCmpds = (req, resp) ->
 				resp.end JSON.stringify "Registration Summary here"
 			else
 				fileName = req.body.fileName
+				originalFileName = req.body.originalFileName
 				delete req.body.fileName
 
 				# get a list of scientists that are allowed to be registered chemists
@@ -242,7 +247,7 @@ exports.registerCmpds = (req, resp) ->
 								json: true
 							, (error, response, json) =>
 								if !error && response.statusCode == 200 && json.reportFiles?
-									createSummaryZip fileName, json
+									createSummaryZip fileName, originalFileName, json
 								else
 									console.log 'got ajax error trying to register compounds'
 									console.log error

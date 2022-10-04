@@ -116,7 +116,8 @@ class DetectSdfPropertiesController extends Backbone.View
 
 	handleFileUploaded: (file) =>
 		@fileName = file.name
-		@trigger 'fileChanged', @fileName
+		@originalFileName = file.originalName
+		@trigger 'fileChanged', file
 		@getProperties()
 
 	getProperties: =>
@@ -475,8 +476,13 @@ class AssignSdfPropertiesController extends Backbone.View
 					ignored: false
 				@assignedPropertiesList.add newAssignedProp
 
-	handleFileChanged: (newFileName) ->
-		@fileName = newFileName
+	handleFileChanged: (newFile) ->
+		if !newFile?
+			@fileName = null
+			@originalFileName = null
+		else
+			@fileName = newFile.name
+			@originalFileName = newFile.originalName
 
 	handleDbProjectChanged: ->
 		#this function only gets called if project select is shown in the configuration part of the GUI
@@ -721,6 +727,7 @@ class AssignSdfPropertiesController extends Backbone.View
 			@addProjectToMappingsPayLoad()
 		dataToPost =
 			fileName: @fileName
+			originalFileName: @originalFileName
 			mappings: JSON.parse(JSON.stringify(@assignedPropertiesListController.collection.models))
 			userName: window.AppLaunchParams.loginUser.username
 		if window.AppLaunchParams.cmpdRegConfig.serverSettings.corpParentFormat? and window.AppLaunchParams.cmpdRegConfig.serverSettings.corpParentFormat == 'ACASLabelSequence'
@@ -748,6 +755,7 @@ class AssignSdfPropertiesController extends Backbone.View
 			@addProjectToMappingsPayLoad()
 		dataToPost =
 			fileName: @fileName
+			originalFileName: @originalFileName
 			mappings: JSON.parse(JSON.stringify(@assignedPropertiesListController.collection.models))
 			userName: window.AppLaunchParams.loginUser.username
 		if window.AppLaunchParams.cmpdRegConfig.serverSettings.corpParentFormat? and window.AppLaunchParams.cmpdRegConfig.serverSettings.corpParentFormat == 'ACASLabelSequence'
@@ -830,8 +838,8 @@ class BulkRegCmpdsController extends Backbone.View
 	setupAssignSdfPropertiesController: =>
 		@assignSdfPropertiesController = new AssignSdfPropertiesController
 			el: @$('.bv_assignSdfProperties')
-		@detectSdfPropertiesController.on 'fileChanged', (newFileName) =>
-			@assignSdfPropertiesController.handleFileChanged newFileName
+		@detectSdfPropertiesController.on 'fileChanged', (newFile) =>
+			@assignSdfPropertiesController.handleFileChanged newFile
 		@assignSdfPropertiesController.on 'templateChanged', (templateName, mappings) =>
 			@detectSdfPropertiesController.handleTemplateChanged(templateName, mappings)
 		@assignSdfPropertiesController.on 'saveComplete', (saveSummary) =>
@@ -930,6 +938,7 @@ class FileRowSummaryController extends Backbone.View
 		#To get the current state, we need the bulk file ID to get lots and then generate the updated SDF file
 		reportID = @model.get('id')
 		fileName = @model.get('fileName')
+		originalFileName = @model.get('originalFileName')
 
 		#Get today's date to timestamp any updated SDF files
 		today = new Date
@@ -943,18 +952,20 @@ class FileRowSummaryController extends Backbone.View
 		today = '_' + mm + '_' + dd + '_' + yyyy
 
 		# Rename the SDF file representing the current
-		currentFileName = fileName.replace "\.sdf", today + "_current_state.sdf"
+		currentFileName = originalFileName.replace "\.sdf", today + "_current_state.sdf"
     
 		# Replace .sdf with .zip since the report file shares the same name 
 		reportName = fileName.replace "\.sdf", ".zip"
+		reportDisplayName = originalFileName.replace "\.sdf", ".zip"
 
 		toDisplay =
 			fileName: fileName
+			originalFileName: originalFileName
 			loadDate: fileDate
 			loadUser: @model.get('recordedBy')
 			currentFileLink: "/api/cmpdRegBulkLoader/getSDFFromBulkLoadFileID/" + reportID
 			currentFileName: currentFileName
-			reportName: reportName
+			reportName: reportDisplayName
 			#remove special characters from the links to prevent errors, but not from the displayed names
 			fileLink: window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" + encodeURIComponent(fileName)
 			reportLink: window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" + encodeURIComponent(reportName)
@@ -1181,12 +1192,14 @@ class CmpdRegBulkLoaderAppController extends Backbone.View
 			@setupBulkRegCmpdsSummaryController(summary[0])
 			downloadUrl = window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" + encodeURIComponent(summary[1])
 			@$('.bv_downloadSummary').attr "href", downloadUrl
+			@$('.bv_downloadSummary').attr "download", summary[2]
 		@regCmpdsController.on 'validateComplete', (summary) =>
 			@$('.bv_bulkReg').hide()
 			@$('.bv_bulkValSummary').show()
 			@setupBulkValCmpdsSummaryController(summary[0])
 			downloadUrl = window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" + encodeURIComponent(summary[1])
 			@$('.bv_downloadSummary').attr "href", downloadUrl
+			@$('.bv_downloadSummary').attr "download", summary[2]
 
 	setupBulkRegCmpdsSummaryController: (summary) ->
 		if @regCmpdsSummaryController?
