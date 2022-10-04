@@ -861,11 +861,11 @@ class EndpointListController extends AbstractFormController
 					rowDataType = "dateValue"
 
 				#if the endpoint doesn't have a value for it, don't filter by it.
-				if endpointRowValues == "Select Column Name"
+				if rowEndpointName == "Select Column Name"
 					endpointRowValueMatch = true
+					rowEndpointName = "any column name"
 				else
 					endpointRowValueMatch = false
-					endpointRowValues = "any column name"
 				if rowUnits == "(unitless)"
 					endpointRowUnitsMatch = true
 					rowUnits = "any units"
