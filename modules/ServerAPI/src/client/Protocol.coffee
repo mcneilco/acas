@@ -241,8 +241,11 @@ class ProtocolBaseController extends BaseEntityController
 				@completeInitialization()
 
 	completeInitialization: =>
-		unless @model?
+		if !@model?
 			@model = new Protocol()
+			newProtocol = true 
+		else
+			newProtocol = false
 		@errorOwnerName = 'ProtocolBaseController'
 		@setBindings()
 		if @options.readOnly?
@@ -301,6 +304,7 @@ class ProtocolBaseController extends BaseEntityController
 			collection: endpointStates
 			model: @model
 			readOnly: false
+			newProtocol: newProtocol
 
 		@endpointListController.render()
 
@@ -556,7 +560,6 @@ class EndpointController extends ACASFormStateTableFormController
 			isDirty: true
 		# Alert the parent controller to destroy this controller
 		@trigger 'rowRemoved', @rowNumber
-		# TODO figure out how to remove this controller from the parent controller's "endpointControllers"
 
 				
 # Protocol Endpoints definition
@@ -720,6 +723,9 @@ class EndpointListController extends AbstractFormController
 			#remove add endpoint button
 			@$(".bv_addEndpoint").remove()
 		
+		if @options.newProtocol == true
+			@$(".bv_downloadFiles").hide()
+		
 		#Placeholder until we update the protocol data structure
 		# Create a list to hold the endpoint controllers in, so we can iterate through them later
 		@endpointControllers = []
@@ -729,7 +735,7 @@ class EndpointListController extends AbstractFormController
 				#hide remove buttons
 				@$(".bv_remove_row").hide()
 				
-		if @options.readOnly == false 	#Don't render associated experiments if it is readOnly
+		if @options.readOnly == false || @options.newProtocol == true 	#Don't render associated experiments if protocol is new or readOnly
 			@getExperimentSummaryTable()
 
 		@
@@ -893,7 +899,6 @@ class EndpointListController extends AbstractFormController
 		# Add this controller to our tracking dictionary so we can access it later
 		@endpointControllers[rowNumber] = rowController
 
-		# TODO - every time a new row is rendered, should resize the selects
 
 	
 	getRowNumberForState: (state) =>
