@@ -829,6 +829,16 @@ class EndpointListController extends AbstractFormController
 				rowUnits = endpointRowValues[1].title
 				rowDataType = endpointRowValues[2].title
 
+				#convert the input into the data type for matching when we search the experiment metadata
+				if rowDataType == "Number"
+					rowDataType = "numericValue"
+				else if rowDataType == "Text"
+					rowDataType = "stringValue"
+				else if rowDataType == "Image File"
+					rowDataType = "inlineFileValue" 
+				else if rowDataType == "Date"
+					rowDataType = "dateValue"
+
 				#if the endpoint doesn't have a value for it, don't filter by it?
 				if endpointRowValues == "Select Column Name"
 					endpointRowValueMatch = true
@@ -861,8 +871,7 @@ class EndpointListController extends AbstractFormController
 						for experiment in experiments
 							for i in experiment.lsStates
 								#if the experiment contains the endpoint (and all its values), record it and move on to the next one
-								#if endpointRowValueMatch == true && endpointRowUnitsMatch == true && endpointRowDataTypeMatch == true
-								if endpointRowValueMatch == true 
+								if endpointRowValueMatch == true && endpointRowUnitsMatch == true && endpointRowDataTypeMatch == true
 									filtered_experiments.push experiment
 									break 
 								else
@@ -877,7 +886,7 @@ class EndpointListController extends AbstractFormController
 												if j.stringValue == rowUnits
 													endpointRowUnitsMatch = true
 											if j.lsKind == "column type" and j.ignored == false
-												if j.stringValue == rowDataType
+												if j.stringValue == rowDataType 
 													endpointRowDataTypeMatch = true
 											
 
@@ -885,7 +894,7 @@ class EndpointListController extends AbstractFormController
 						$(".bv_experimentTableController").empty() #remove the last experimentTableController
 						@setupExperimentSummaryTable filtered_experiments #add a new one with the filtered experiments
 						#generate a title for the experiment table controller 
-						$(".bv_experimentTableControllerTitle").html "Experiments using " + protocolCode + " containing '" + rowEndpointName + " (" + rowUnits + ")' data:"
+						$(".bv_experimentTableControllerTitle").html "Experiments using " + protocolCode + " containing '" + rowEndpointName + " (" + rowUnits + " , " + rowDataType + ")' data:"
 
 			@
 
