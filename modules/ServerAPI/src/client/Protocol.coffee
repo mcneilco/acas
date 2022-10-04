@@ -689,6 +689,32 @@ EndpointsValuesConf = [
 		autoSavePickListItem: true
 		editablePicklistRoles: [window.conf.roles.acas.userRole]
 		parameter: 'Column Concentration Units'
+,
+	key: 'hide column'
+	modelDefaults:
+		type: 'stringValue'
+		kind: 'hide column'
+		codeType: 'boolean'
+		codeKind: 'boolean'
+		codeOrigin: 'ACAS DDict'
+		value: null
+	fieldSettings:
+		fieldType: 'booleanValue'
+		formLabel: ''
+		fieldWrapper: "bv_endpointHiddenCheckbox"
+,
+	key: 'condition column'
+	modelDefaults:
+		type: 'stringValue'
+		kind: 'condition column'
+		codeType: 'boolean'
+		codeKind: 'boolean'
+		codeOrigin: 'ACAS DDict'
+		value: null
+	fieldSettings:
+		fieldType: 'booleanValue'
+		formLabel: ''
+		fieldWrapper: "bv_endpointConditionCheckbox"
 ]
 		
 
@@ -959,7 +985,6 @@ class EndpointListController extends AbstractFormController
 			@endpointControllers[rowNumber].remove()
 			@endpointControllers[rowNumber].unbind()
 			@endpointControllers[rowNumber].el.remove()
-
 
 	#Function brought over from experiment.coffee 
 	setupExperimentSummaryTable: (experiments) =>
