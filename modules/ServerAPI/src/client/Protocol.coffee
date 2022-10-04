@@ -773,6 +773,8 @@ class EndpointListController extends AbstractFormController
 
 		if @options.readOnly == false || @options.newProtocol == true 	#Don't render associated experiments if protocol is new or readOnly
 			@getExperimentSummaryTable()
+		else #if the table isn't rendered, don't render the download files button either
+			$(".bv_downloadFiles").hide() 
 
 		@
 	
