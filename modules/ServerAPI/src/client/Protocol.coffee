@@ -734,7 +734,22 @@ class EndpointListController extends AbstractFormController
 			if @options.readOnly == true
 				#hide remove buttons
 				@$(".bv_remove_row").hide()
-				
+
+			#if time/units are disabled, remove rows and columns
+			if window.conf.entity.protocolEndpoint.time == false
+				@$(".bv_endpointColumnTime").remove()
+				@$(".bv_endpointColumnTimeUnits").remove()
+				@$(".bv_timeUnitsPickListParent").remove()
+				@$(".bv_timeInputParent").remove()
+			
+			#if concentration/units are disabled, remove rows and columns
+			if window.conf.entity.protocolEndpoint.concentration == false
+				@$(".bv_endpointColumnConcentration").remove()
+				@$(".bv_endpointColumnConcentrationUnits").remove()
+				@$(".bv_concentrationUnitsPickListParent").remove()
+				@$(".bv_concentrationInputParent").remove()
+
+
 		if @options.readOnly == false || @options.newProtocol == true 	#Don't render associated experiments if protocol is new or readOnly
 			@getExperimentSummaryTable()
 

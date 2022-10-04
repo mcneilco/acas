@@ -458,6 +458,10 @@ client.entity.scientist.editable=true
 #Config for default protocol/experiment status
 client.entity.status.default=created
 
+#Config for whether to display concentration and time endpoint columns in the protocol browser
+client.entity.protocolEndpoint.concentration=false
+client.entity.protocolEndpoint.time=false
+
 # Protocols and experiments which should be hidden (to non-admin users) in the protocol/expt browser when the status is in the config below
 client.entity.hideStatuses=["deleted"]
 
