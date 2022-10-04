@@ -37,43 +37,45 @@ class ACASToast extends Backbone.View
             title: @title
             text: @text
             iconType: @iconType
-        toastElem = parser.parseFromString(txt, 'text/html').querySelector('.toast')
+        @toastElem = parser.parseFromString(txt, 'text/html').querySelector('.toast')
         # append toast message to it
-        @toastContainer.appendChild(toastElem)
+        @toastContainer.appendChild(@toastElem)
         # wait just a bit to add active class to the message to trigger animation
-        setTimeout(() ->                 
-            toastElem.classList.add('active');
+        setTimeout(() =>                 
+            @toastElem.classList.add('active');
         , 1)
         # grab the close button
-        closeElem = toastElem.querySelector('.t-close')
+        closeElem = @toastElem.querySelector('.t-close')
         # Bind close event to close toast message
-        closeElem.addEventListener('click', @handleCloseToastClicked)
+        closeElem.addEventListener('click', @handleCloseToastClicked.bind(@))
         # check duration. if duration is 0, toast message will not be closed
         if @duration > 0
             setTimeout( () =>
 
-                @closeToast(toastElem)
+                @closeToast()
             , @duration)
         
 
     getToastContainer: -> 
         # Get toast container based on position
         @toastContainer = document.querySelector(".toast-container.#{@position}")
+        return @toastContainer
     
     handleCloseToastClicked: (el) ->
-        # get toast element
-        toastElement = el.target.parentElement;
         # remove active class from it to trigger css animation with duration of 300ms
-        toastElement.classList.remove('active');
+        @toastElem.classList.remove('active');
         # wait for 350ms and then remove element
-        setTimeout( () ->                 
-            toastElement.remove();
+        setTimeout( () =>                 
+            @toastElem.remove();
         , 350)
     
-    closeToast: (toastElement) ->
+    closeToast: () ->
         # remove active class from it to trigger css animation with duration of 300ms
-        toastElement.classList.remove('active');
+        @toastElem.classList.remove('active');
         # wait for 350ms and then remove element
-        setTimeout( () ->                 
-            toastElement.remove();
+        setTimeout( () =>                 
+            @toastElem.remove();
         , 350)
+
+    isActive: () ->
+        $(@.toastElem).hasClass("active")
