@@ -88,8 +88,50 @@ class ModuleMenusController extends Backbone.View
 		if window.AppLaunchParams.deployMode?
 			unless window.AppLaunchParams.deployMode.toUpperCase() =="PROD"
 				@$('.bv_deployMode h1').html(_.escape(window.AppLaunchParams.deployMode.toUpperCase()))
-
+		@heartbeat()
 		@
+
+	heartbeat: =>
+		## Fetch /api/about endpoint, if 401, then notify user they have been logged out
+		## If another error then try something else
+		setInterval =>
+				originalStatus = @status
+				try
+					response = await fetch("/api/about", method: 'GET')
+					@status = response.status
+					@statusText = response.statusText
+				catch error
+					@status = "error"
+					@statusText = "Response error"
+				
+
+				# Check if the heartbeat notification exists and is active/visible
+				active = @heartbeatToast? && @heartbeatToast.isActive()
+
+				# If we aren't showing the heartbeat notification or the status has changed, then update/show the heartbeat notification
+				if !active || originalStatus != @status
+					if @heartbeatToast?
+						@heartbeatToast.closeToast()
+						@heartbeatToast.remove()
+					
+					if @status == 401
+						@heartbeatToast = new ACASToast
+							type: "error"
+							title: "Logged out"
+							text: "You have been logged out. You must log back in to continue."
+							position: "bottom-right"
+							duration: 50000
+							onClose: =>
+								# Reload the page if the user clicks the close button on the heartbeat notification
+								location.reload()
+					else if @status != 200
+						@heartbeatToast = new ACASToast
+							type: "error"
+							title: "Unable to communicate with ACAS: #{@statusText}"
+							text: "You may have been disconnected. Please refresh."
+							position: "bottom-right"
+							duration: 50000
+		, 10000		
 
 	handleHome: =>
 		$('.bv_mainModuleWrapper').hide()
