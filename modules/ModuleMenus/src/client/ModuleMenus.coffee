@@ -118,9 +118,12 @@ class ModuleMenusController extends Backbone.View
 						@heartbeatToast = new ACASToast
 							type: "error"
 							title: "Logged out"
-							text: "You have been logged out. Please login again."
+							text: "You have been logged out. You must log back in to continue."
 							position: "bottom-right"
 							duration: 50000
+							onClose: =>
+								# Reload the page if the user clicks the close button on the heartbeat notification
+								location.reload()
 					else if @status != 200
 						@heartbeatToast = new ACASToast
 							type: "error"

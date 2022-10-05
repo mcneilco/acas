@@ -7,6 +7,8 @@ class ACASToast extends Backbone.View
         @type = options.type
         @title = options.title
         @text = options.text
+        # On close function to be run if user initiates close
+        @onClose = options.onClose
         # Duration is in milliseconds
         @duration = options.duration
         # Supported positions are: top-right, top-center, top-left, bottom-right, bottom-center, bottom-left
@@ -67,6 +69,8 @@ class ACASToast extends Backbone.View
         # wait for 350ms and then remove element
         setTimeout( () =>                 
             @toastElem.remove();
+            if @onClose?
+                @onClose()
         , 350)
     
     closeToast: () ->
