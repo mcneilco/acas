@@ -1071,7 +1071,8 @@ class EndpointListController extends AbstractFormController
 				#...we create a hidden link with the download path and automatically click on it
 				a = document.createElement('a');
 				a.style.display = 'none';
-				a.href = "dataFiles/" + response;
+				a.href = "/dataFiles/" + response;
+				a.setAttribute('target', '_blank')
 				document.body.appendChild(a);
 				a.click();
 
