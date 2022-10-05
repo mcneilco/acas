@@ -753,11 +753,11 @@ class EndpointListController extends AbstractFormController
 			@$(".bv_downloadFiles").hide()
 
 		#if time/units or concentration/units are disabled, remove the columns from the endpoint coontroller
-		if window.conf.entity.protocolEndpoint.time == false
+		if window.conf.protocol.endpointManager.showTime == false
 			@$(".bv_endpointColumnTime").remove()
 			@$(".bv_endpointColumnTimeUnits").remove()
 
-		if window.conf.entity.protocolEndpoint.concentration == false
+		if window.conf.protocol.endpointManager.showConcentration == false
 			@$(".bv_endpointColumnConcentration").remove()
 			@$(".bv_endpointColumnConcentrationUnits").remove()
 		
@@ -951,12 +951,12 @@ class EndpointListController extends AbstractFormController
 		@endpointControllers[rowNumber] = rowController
 
 		#if time/units are disabled, remove cells
-		if window.conf.entity.protocolEndpoint.time == false
+		if window.conf.protocol.endpointManager.showTime == false
 			@$(".bv_timeUnitsPickListParent").remove()
 			@$(".bv_timeInputParent").remove()
 		
 		#if concentration/units are disabled, remove the cells
-		if window.conf.entity.protocolEndpoint.concentration == false
+		if window.conf.protocol.endpointManager.showConcentration == false
 			@$(".bv_concentrationUnitsPickListParent").remove()
 			@$(".bv_concentrationInputParent").remove()
 
