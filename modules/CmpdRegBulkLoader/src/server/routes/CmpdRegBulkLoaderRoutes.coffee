@@ -209,7 +209,10 @@ exports.registerCmpds = (req, resp) ->
 				resp.end JSON.stringify "Registration Summary here"
 			else
 				fileName = req.body.fileName
-				originalFileName = req.body.originalFileName
+				if req.body.originalFileName?
+					originalFileName = req.body.originalFileName
+				else
+					originalFileName = fileName
 				delete req.body.fileName
 
 				# get a list of scientists that are allowed to be registered chemists
