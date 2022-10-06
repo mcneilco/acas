@@ -259,7 +259,7 @@ class SaltBrowserController extends Backbone.View
 		if (saltName == "" || saltName == null)
 			fieldsFilled = false
 
-		saltStruct = @chemicalStructureController.getMol()
+		saltStruct = await @chemicalStructureController.getMol()
 		if (@chemicalStructureController.isEmptyMol(saltStruct))
 			fieldsFilled = false
 		
@@ -368,7 +368,7 @@ class SaltBrowserController extends Backbone.View
 			fieldsFilled = false
 			console.log("Salt Name Was Empty! Cannot Register!")
 
-		saltStruct = @chemicalStructureController.getMol()
+		saltStruct = await @chemicalStructureController.getMol()
 		if (saltStruct == "" || saltStruct == null)
 			fieldsFilled = false
 			console.log("Salt Structure Was Empty! Cannot Register!")
@@ -515,7 +515,7 @@ class SaltBrowserController extends Backbone.View
 		@$('.bv_fieldNotifications').show()
 
 		# Get Mol
-		saltStruct = @chemicalStructureController.getMol()
+		saltStruct = await @chemicalStructureController.getMol()
 
 		if (@chemicalStructureController.isEmptyMol(saltStruct))
 			@editFieldNotificationController.clearAllNotificiations() 
@@ -610,7 +610,7 @@ class SaltBrowserController extends Backbone.View
 		@notificationController.clearAllNotificiations() 
 		
 		# Get Mol
-		saltStruct = @chemicalStructureController.getMol()
+		saltStruct = await @chemicalStructureController.getMol()
 
 		saltDict = 
 		{

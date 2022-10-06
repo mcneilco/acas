@@ -21,8 +21,7 @@
 		<div class="disableCmpdRegistrationMessage hide"></div>
 	</div>
 
-	<div class="marvinWrapper hide"> <!--dependent? change name...-->
-		<iframe src="/CmpdReg/marvinjs/editorws.html" id="editParentMarvinSketch" class="sketcher-frame"></iframe>
+	<div class="marvinWrapper hide">
 	</div>
 
   <div class="parentStructureForm">

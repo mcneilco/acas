@@ -27,19 +27,6 @@ $(function() {
 			_.bindAll(this, 'next', 'cancel', 'render', 'validationError');
             this.valid = false;
 			this.sketcherLoaded = false;
-			this.exportFormat = "mol";
-			if(window.configuration.sketcher == 'marvin') {
-				this.useMarvin = true;
-				if (window.configuration.marvin.exportFormat) {
-					this.exportFormat = window.configuration.marvin.exportFormat;
-				}
-			} else if(window.configuration.sketcher == 'ketcher') {
-				this.useKetcher = true;
-			} else if(window.configuration.sketcher == 'maestro') {
-				this.useMaestro = true;
-			} else {
-				alert("No registration sketcher configured");
-			}
 			this.hide();
 		},
 
@@ -54,38 +41,13 @@ $(function() {
 
 			this.hide();
 			var self = this;
-
-			if (this.useMarvin) {
-				this.$('#registrationSearchMarvinSketch').attr('src',"/CmpdReg/marvinjs/editorws.html");
-				MarvinJSUtil.getEditor("#registrationSearchMarvinSketch").then(function (sketcherInstance) {
-					self.marvinSketcherInstance = sketcherInstance;
-					if (typeof window.marvinStructureTemplates !== 'undefined') {
-						for (i = 0; i < window.marvinStructureTemplates.length; i++) {
-							sketcherInstance.addTemplate(window.marvinStructureTemplates[i]);
-						}
-					}
-					self.show();
-					self.sketcherLoaded = true;
-				}, function (error) {
-					alert("Cannot retrieve registrationSearchMarvinSketch sketcher instance from iframe:" + error);
-				});
-
-			} else if (this.useKetcher) {
-				this.$('#registrationSearchMarvinSketch').attr('src',"/lib/ketcher-2.0.0-alpha.3_custom/ketcher.html?api_path=/api/cmpdReg/ketcher/");
-				this.$('#registrationSearchMarvinSketch').on('load', function () {
-					self.ketcher = self.$('#registrationSearchMarvinSketch')[0].contentWindow.ketcher;
-				});
-			} else if (this.useMaestro) {
-				this.$('#registrationSearchMarvinSketch').attr('src',"/CmpdReg/maestrosketcher/wasm_shell.html");
-                MaestroJSUtil.getSketcher('#registrationSearchMarvinSketch').then(function (maestro) {
-					self.maestro = maestro;
-					self.show();
-					self.sketcherLoaded = true;
-				});
-			} else {
-				alert("No registration sketcher configured");
-			}
-
+			var sketcher = window.configuration.sketcher
+			this.chemicalStructureController = UtilityFunctions.prototype.getNewSystemChemicalSketcherController(sketcher)
+			this.$('.marvinWrapper').html(this.chemicalStructureController.render().el)
+			this.chemicalStructureController.bind('sketcherLoaded', function() {
+				self.show();
+				self.sketcherLoaded = true;
+			});
 			return this;
 		},
 
@@ -100,17 +62,11 @@ $(function() {
 		cancel: function() {
             this.hide();
             this.$('.corpName').val('');
-			if (this.useMarvin) {
-				this.marvinSketcherInstance.clear()
-			} else if (this.useKetcher) {
-				mol = this.ketcher.setMolecule("");
-			} else if (this.useMaestro) {
-				mol = this.maestro.clearSketcher()
-			}
+			this.chemicalStructureController.clear();
 			if(appController) {appController.reset();}
 		},
 				
-		next: function() {
+		next: async function() {
             this.clearValidationErrors();
             var regSearch = new RegistrationSearch();
             regSearch.bind('error',  this.validationError);
@@ -118,54 +74,15 @@ $(function() {
 
 			var self = this;
 
-			if (this.useMarvin) {
-				this.marvinSketcherInstance.exportStructure(this.exportFormat).then(function (molecule) {
-					if (molecule.indexOf("0  0  0  0  0  0  0  0  0  0999") > -1)
-						mol = null;
-					else if (molecule.indexOf("M  V30 COUNTS 0 0 0 0 0") > -1)
-						mol = null;
-					else
-						mol = molecule;
-					regSearch.set({
-						molStructure: mol,
-						corpName: jQuery.trim(self.$('.corpName').val())
-					});
-
-					if ( self.isValid() ) {
-						self.trigger('registrationSearchNext', regSearch);
-						self.hide();
-					}
-				}, function (error) {
-					alert("Molecule export failed from search sketcher:" + error);
-				});
-			} else if (this.useKetcher) {
-				mol = this.ketcher.getMolfile();
-				if (mol.indexOf("  0  0  0     1  0            999") > -1) mol = null;
-				regSearch.set({
-					molStructure: mol,
-					corpName: jQuery.trim(self.$('.corpName').val())
-				});
-				console.log(self.$('.corpName').val());
-				console.log(mol);
-				console.log(regSearch);
-				if ( this.isValid() ) {
-					this.trigger('registrationSearchNext', regSearch);
-					this.hide();
-				}
-			} else if (this.useMaestro) {
-				mol = this.maestro.sketcherExportMolBlock();
-				if (mol.indexOf("M  V30 COUNTS 0 0 0 0 0") > -1)
-					mol = null;
-				regSearch.set({
-					molStructure: mol,
-					corpName: jQuery.trim(self.$('.corpName').val())
-				});
-				if ( this.isValid() ) {
-					this.trigger('registrationSearchNext', regSearch);
-					this.hide();
-				}
-			} else {
-				alert("No registration sketcher configured in search action");
+			mol = await this.chemicalStructureController.getMol()
+			if (this.chemicalStructureController.isEmptyMol(mol))  mol = null;
+			regSearch.set({
+				molStructure: mol,
+				corpName: jQuery.trim(self.$('.corpName').val())
+			});
+			if ( this.isValid() ) {
+				this.trigger('registrationSearchNext', regSearch);
+				this.hide();
 			}
 
 		},

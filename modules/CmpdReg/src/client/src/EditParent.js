@@ -27,16 +27,6 @@ $(function () {
             this.valid = false;
             this.sketcherLoaded = false;
             this.exportFormat = "mol";
-	        if(window.configuration.sketcher == 'marvin') {
-		        this.useMarvin = true;
-		        if (window.configuration.marvin.exportFormat) {
-			        this.exportFormat = window.configuration.marvin.exportFormat;
-		        }
-	        } else if(window.configuration.sketcher == 'ketcher') {
-		        this.useKetcher = true;
-	        } else if(window.configuration.sketcher == 'maestro') {
-		        this.useMaestro = true;
-	        }
             this.hide();
         },
 
@@ -50,44 +40,16 @@ $(function () {
 
             this.hide();
             var self = this;
-	        if (this.useMarvin) {
-		        this.$('#editParentMarvinSketch').attr('src',"/CmpdReg/marvinjs/editorws.html");
-		        MarvinJSUtil.getEditor("#editParentMarvinSketch").then(function (sketcherInstance) {
-			        self.marvinSketcherInstance = sketcherInstance;
-			        if (typeof window.marvinStructureTemplates !== 'undefined') {
-				        for (i = 0; i < window.marvinStructureTemplates.length; i++) {
-					        sketcherInstance.addTemplate(window.marvinStructureTemplates[i]);
-				        }
-						var pastePromise = sketcherInstance.importStructure(null, self.options.parentModel.get('molStructure'));
-						pastePromise.then(function() {}, function(error) {
-							alert(error);
-						});
-			        }
-			        self.show();
-			        self.sketcherLoaded = true;
-		        }, function (error) {
-			        alert("Cannot retrieve searchMarvinSketch sketcher instance from iframe:" + error);
-		        });
-
-	        } else if (this.useKetcher) {
-		        this.$('#editParentMarvinSketch').attr('src',"/lib/ketcher-2.0.0-alpha.3_custom/ketcher.html?api_path=/api/cmpdReg/ketcher/");
-		        this.$('#editParentMarvinSketch').on('load', function () {
-			        self.ketcher = self.$('#editParentMarvinSketch')[0].contentWindow.ketcher;
-					self.ketcher.setMolecule(self.options.parentModel.get('molStructure'));
-		        });
-			} else if (this.useMaestro) {
-				this.$('#editParentMarvinSketch').attr('src',"/CmpdReg/maestrosketcher/wasm_shell.html");
-                MaestroJSUtil.getSketcher('#editParentMarvinSketch').then(function (maestro) {
-					self.maestro = maestro;
-                    if(self.options.parentModel.get('molStructure') != null && self.options.parentModel.get('molStructure') != "") {
-						self.maestro.sketcherImportText(self.options.parentModel.get('molStructure'));
-                    }
-			        self.show();
-			        self.sketcherLoaded = true;
-				});
-			} else {
-		        alert("No edit parent sketcher configured");
-	        }
+            var sketcher = window.configuration.sketcher
+            this.chemicalStructureController = UtilityFunctions.prototype.getNewSystemChemicalSketcherController(sketcher)
+            this.$('.marvinWrapper').html(this.chemicalStructureController.render().el)
+            this.chemicalStructureController.bind('sketcherLoaded', function() {
+                if(self.options.parentModel.get('molStructure') != null && self.options.parentModel.get('molStructure') != "") {
+                    self.chemicalStructureController.setMol(self.options.parentModel.get('molStructure'));
+                }
+                self.show();
+                self.sketcherLoaded = true;
+            });
 
             return this;
 
@@ -105,54 +67,21 @@ $(function () {
             window.location.reload();
         },
 
-        next: function() {
+        next: async function() {
             this.clearValidationErrors();
             var editParentSearch = new EditParentSearch();
             editParentSearch.bind('error',  this.validationError);
             var mol;
 
             var self = this;
-            if (this.useMarvin) {
-		        this.marvinSketcherInstance.exportStructure(this.exportFormat).then(function (molecule) {
-			        if (molecule.indexOf("0  0  0  0  0  0  0  0  0  0999") > -1)
-				        mol = null;
-					else if (molecule.indexOf("M  V30 COUNTS 0 0 0 0 0") > -1)
-						mol = null;
-			        else
-				        mol = molecule;
-			        editParentSearch.set({
-				        molStructure: mol,
-				        corpName: jQuery.trim(self.$('.corpName').val())
-			        });
-                    self.checkEditParentSearchNext(editParentSearch);
-		        }, function(error) {
-			        alert("Molecule export failed from search sketcher:"+error);
-		        });
+            mol = await this.chemicalStructureController.getMol()
+            if (this.chemicalStructureController.isEmptyMol(mol))  mol = null;
+            editParentSearch.set({
+                molStructure: mol,
+                corpName: jQuery.trim(self.$('.corpName').val())
+            });
 
-	        } else if (this.useKetcher) {
-		        mol = this.ketcher.getMolfile();
-				if (mol.indexOf("  0  0  0     1  0            999") > -1) mol = null;
-		        editParentSearch.set({
-			        molStructure: mol,
-			        corpName: jQuery.trim(self.$('.corpName').val())
-		        });
-
-                self.checkEditParentSearchNext(editParentSearch);
-
-
-	        } else if (this.useMaestro) {
-				mol = this.maestro.sketcherExportMolBlock();
-				if (mol.indexOf("M  V30 COUNTS 0 0 0 0 0") > -1) mol = null;
-		        editParentSearch.set({
-			        molStructure: mol,
-			        corpName: jQuery.trim(self.$('.corpName').val())
-		        });
-
-                self.checkEditParentSearchNext(editParentSearch);
-            } else {
-		        alert("No edit parent sketcher configured in search action");
-	        }
-
+            self.checkEditParentSearchNext(editParentSearch);
         },
 
         searchForParentCorpName: async function(corpName) {
