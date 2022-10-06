@@ -154,7 +154,6 @@ $(function() {
 			_.bindAll(this, 'validationError', 'saveSalt', 'render');
 			$(this.el).html(this.template());
 			this.exportFormat = "mol";
-			this.useMaestro = true;
 
 			this.sketcherLoaded = false;
 		},

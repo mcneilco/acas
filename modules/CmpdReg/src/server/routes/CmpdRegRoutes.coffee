@@ -547,15 +547,9 @@ exports.regSearch = (req, resp) ->
 	)
 
 exports.getMarvinJSLicense = (req, resp) ->
-	fs = require 'fs'
 	cmpdRegCall = (config.all.client.service.cmpdReg.persistence.basepath).replace '\/acas', "/"
 	licensePath = cmpdRegCall + 'marvin4js-license.cxl'
-	licensePath = "http://localhost:3001/dataFiles/marvin4js-license.cxl"
-	stream = fs.createReadStream("/home/runner/build/privateUploads/marvin4js-license.cxl");
-	stream.pipe(resp);
-	# console.log licensePath
-
-	# Get the file from the license path
+	console.log licensePath
 	req.pipe(request(licensePath)).pipe(resp)
 
 exports.getMultipleFilePicker = (req, resp) ->
