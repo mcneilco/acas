@@ -748,9 +748,11 @@ class EndpointListController extends AbstractFormController
 			@$(".bv_endpointColumnRemove").remove()
 			#remove add endpoint button
 			@$(".bv_addEndpoint").remove()
+			$(".bv_endpointManagerInstructions").hide()
 		
 		if @options.newProtocol == true
 			@$(".bv_downloadFiles").hide()
+			$(".bv_endpointManagerInstructions").hide()
 
 		#if time/units or concentration/units are disabled, remove the columns from the endpoint coontroller
 		if window.conf.protocol.endpointManager.showTime == false
@@ -917,7 +919,6 @@ class EndpointListController extends AbstractFormController
 													endpointRowDataTypeMatch = true
 											
 
-						#TODO - if there are no experiments it should say so instead of leaving the table blank. 
 						$(".bv_experimentTableController").empty() #remove the last experimentTableController
 						@setupExperimentSummaryTable filtered_experiments #add a new one with the filtered experiments
 						#generate a title for the experiment table controller 
