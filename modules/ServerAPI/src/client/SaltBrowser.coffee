@@ -236,7 +236,7 @@ class SaltBrowserController extends Backbone.View
 		@$('.bv_createSalt').show()
 
 		# Chemical Structure Controller Set by Sketcher Config Setting 
- 		@chemicalStructureController = UtilityFunctions::getNewSystemChemicalSketcherController(window.configuration.sketcher)
+		@chemicalStructureController = UtilityFunctions::getNewSystemChemicalSketcherController(window.configuration.sketcher)
 		$('.bv_chemicalStructureForm').html @chemicalStructureController.render().el
 
 	handleConfirmCreateSaltClicked: =>
@@ -484,7 +484,7 @@ class SaltBrowserController extends Backbone.View
 		molStr = @saltController.model.get("molStructure")
 
 		# Chemical Structure Controller Set by Sketcher Config Setting 
- 		@chemicalStructureController = UtilityFunctions::getNewSystemChemicalSketcherController(window.configuration.sketcher)
+		@chemicalStructureController = UtilityFunctions::getNewSystemChemicalSketcherController(window.configuration.sketcher)
 
 		$('.bv_editChemicalStructureForm').html @chemicalStructureController.render().el
 		@chemicalStructureController.on('sketcherLoaded', =>
