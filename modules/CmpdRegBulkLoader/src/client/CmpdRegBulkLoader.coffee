@@ -1117,7 +1117,8 @@ class PurgeFilesController extends Backbone.View
 		@$('.bv_purgeSummary').html response.summary
 		downloadUrl = window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" + response.fileName
 		@$('.bv_purgedFileName').attr "href", downloadUrl
-		@$('.bv_purgedFileName').html response.fileName
+		@$('.bv_purgedFileName').attr "download", response.originalFileName
+		@$('.bv_purgedFileName').html response.originalFileName
 		@$('.bv_purgeSummaryWrapper .bv_downloadPurgedFile').show()
 		@$('.bv_purgeSummaryWrapper').show()
 		@fileInfoToPurge = null
