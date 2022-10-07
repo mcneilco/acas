@@ -938,6 +938,7 @@ class FileRowSummaryController extends Backbone.View
 		#To get the current state, we need the bulk file ID to get lots and then generate the updated SDF file
 		reportID = @model.get('id')
 		fileName = @model.get('fileName')
+		originalFileName = @model.get('originalFileName')
 
 		#Get today's date to timestamp any updated SDF files
 		today = new Date
@@ -954,6 +955,9 @@ class FileRowSummaryController extends Backbone.View
 		#we need to replace ONLY the last .sdf in the file with ".zip" or "{current_date}_current_state.sdf", so we can't use replace which will replace the first
 		fileNameLength = fileName.length #we have to assign this first since for some reason simply using fileName.length - 4 just wont work in line below? 
 		fileNameBase = fileName.slice 0, (fileNameLength)-4 
+		#do the same logic for originalFileName
+		originalFileNameLength = originalFileName.length
+		originalFileName =  originalFileName.slice 0, (originalFileName)-4 
 	
 		# Rename the SDF file representing the current data
 		currentFileName = fileNameBase + today + "_current_state.sdf"
@@ -963,6 +967,7 @@ class FileRowSummaryController extends Backbone.View
 
 		toDisplay =
 			fileName: fileName
+			originalFileName: originalFileName
 			loadDate: fileDate
 			loadUser: @model.get('recordedBy')
 			currentFileLink: "/api/cmpdRegBulkLoader/getSDFFromBulkLoadFileID/" + reportID
