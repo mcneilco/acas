@@ -94,10 +94,21 @@ class MaestroChemicalStructureController extends Backbone.View
 
 	getMol: ->
 		mol = await new Promise (resolve, reject) =>
-			resolve @maestro.sketcherExportMolBlock()
+			# To be backwards comatable we test for the presence of the new sketcher_export_text function
+			if @maestro.sketcher_export_text?
+				resolve @maestro.sketcher_export_text(@maestro.Format.MDL_MOLV3000)
+			else
+				# Older versions of maestro
+				resolve @maestro.sketcherExportMolBlock()
+		return mol
 
 	setMol: (molStr) ->
-		@maestro.sketcherImportText molStr
+			# To be backwards comatable we test for the presence of the new sketcher_import_text function
+		if @maestro.sketcher_import_text?
+			@maestro.sketcher_import_text(molStr)
+		else
+			# Older versions of maestro
+			@maestro.sketcherImportMolBlock(molStr)
 
 	clear: ->
 		@maestro.clearSketcher()
