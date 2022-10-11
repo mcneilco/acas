@@ -129,3 +129,17 @@ class UtilityFunctions
 		document.body.appendChild a
 		a.click()
 		document.body.removeChild a
+
+	getNewSystemChemicalSketcherController: (sketcher) ->
+		# Chemical Structure Controller Set by Sketcher Config Setting 
+		chemicalStructureController = null
+		if sketcher == 'marvin'
+			chemicalStructureController = new MarvinJSChemicalStructureController
+		else if  sketcher  == 'ketcher'
+			chemicalStructureController = new KetcherChemicalStructureController 
+		else if sketcher == 'maestro'
+			chemicalStructureController = new MaestroChemicalStructureController
+		else 
+			console.log("No Chemical Sketcher Configured!")
+			alert("Please contact your ACAS System Admin. There is no chemical sketcher configured.")
+		return chemicalStructureController

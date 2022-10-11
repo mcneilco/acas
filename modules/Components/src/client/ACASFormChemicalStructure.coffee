@@ -60,6 +60,9 @@ class ACASFormChemicalStructureExampleController extends Backbone.View
 	setMol: =>
 		@sketcher.setMol @molToSet
 
+	clear: ->
+		@sketcher.setMolecule("");
+
 	getChemDoodleJSON: =>
 		mol = @sketcher.getChemDoodleJSON()
 		alert mol
@@ -90,10 +93,14 @@ class MaestroChemicalStructureController extends Backbone.View
 		
 
 	getMol: ->
-		@maestro.sketcherExportMolBlock()
+		mol = await new Promise (resolve, reject) =>
+			resolve @maestro.sketcherExportMolBlock()
 
 	setMol: (molStr) ->
 		@maestro.sketcherImportText molStr
+
+	clear: ->
+		@maestro.clearSketcher()
 
 	isEmptyMol: (molStr) ->
 		if (molStr.indexOf("M  V30 COUNTS 0 0 0 0 0") > -1)
@@ -125,11 +132,15 @@ class KetcherChemicalStructureController extends Backbone.View
 		@trigger 'sketcherLoaded'
 
 	getMol: ->
-		@windowObj.ketcher.getMolfile();
+		mol = await new Promise (resolve, reject) =>
+			resolve @windowObj.ketcher.getMolfile();
 
 	setMol: (molStr) ->
 		@windowObj.ketcher.setMolecule molStr
-	
+
+	clear: ->
+		@windowObj.ketcher.setMolecule("")
+
 	isEmptyMol: (molStr) ->
 		if (molStr.indexOf("  0  0  0     1  0            999") > -1)
 			return true 
@@ -174,25 +185,27 @@ class MarvinJSChemicalStructureController extends Backbone.View
 		, (error) =>
 			alert("Cannot retrieve MarvinSketch sketcher instance from iframe:"+error);
 
-	getMol: -> 
-		@getMolAsync
-
-	getMolAsync: (callback) ->
-		@marvinSketcherInstance.exportStructure(@exportFormat).then (molecule) =>
-			console.dir molecule, depth: 3
-			if molecule.indexOf("0  0  0  0  0  0  0  0  0  0999")>-1
-				mol = ''
-			else if molecule.indexOf("M  V30 COUNTS 0 0 0 0 0")>-1
-				mol = ''
-			else
-				mol = molecule
-			callback mol
-		,(error) =>
-			alert("Molecule export failed from search sketcher:"+error)
-			callback null
+	getMol:  -> 
+		mol = await new Promise (resolve, reject) =>
+			@marvinSketcherInstance.exportStructure(@exportFormat).then (molecule) =>
+				console.dir molecule, depth: 3
+				if molecule.indexOf("0  0  0  0  0  0  0  0  0  0999")>-1
+					mol = ''
+				else if molecule.indexOf("M  V30 COUNTS 0 0 0 0 0")>-1
+					mol = ''
+				else
+					mol = molecule
+				resolve mol
+			,(error) =>
+				alert("Molecule export failed from search sketcher:"+error)
+				reject null
+		return mol
 
 	setMol: (molStr) ->
 		@marvinSketcherInstance.importStructure("mol", molStr)
+
+	clear: ->
+		@marvinSketcherInstance.clear()
 
 	isEmptyMol: (molStr) ->
 		if (molStr.indexOf("M  V30 COUNTS 0 0 0 0 0") > -1)

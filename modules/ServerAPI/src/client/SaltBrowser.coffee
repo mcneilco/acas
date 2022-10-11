@@ -236,16 +236,7 @@ class SaltBrowserController extends Backbone.View
 		@$('.bv_createSalt').show()
 
 		# Chemical Structure Controller Set by Sketcher Config Setting 
-		@chemicalStructureController = null
-		if window.conf.cmpdreg.sketcher == 'marvin'
-			@chemicalStructureController = new MarvinJSChemicalStructureController
-		else if  window.conf.cmpdreg.sketcher  == 'ketcher'
-			@chemicalStructureController = new KetcherChemicalStructureController 
-		else if window.conf.cmpdreg.sketcher == 'maestro'
-			@chemicalStructureController = new MaestroChemicalStructureController
-		else 
-			console.log("No Chemical Sketcher Configured!")
-			alert("Please contact your ACAS System Admin. There is no chemical sketcher configured.")
+		@chemicalStructureController = UtilityFunctions::getNewSystemChemicalSketcherController(window.conf.cmpdreg.sketcher)
 		$('.bv_chemicalStructureForm').html @chemicalStructureController.render().el
 
 	handleConfirmCreateSaltClicked: =>
@@ -259,7 +250,7 @@ class SaltBrowserController extends Backbone.View
 		if (saltName == "" || saltName == null)
 			fieldsFilled = false
 
-		saltStruct = @chemicalStructureController.getMol()
+		saltStruct = await @chemicalStructureController.getMol()
 		if (@chemicalStructureController.isEmptyMol(saltStruct))
 			fieldsFilled = false
 		
@@ -368,7 +359,7 @@ class SaltBrowserController extends Backbone.View
 			fieldsFilled = false
 			console.log("Salt Name Was Empty! Cannot Register!")
 
-		saltStruct = @chemicalStructureController.getMol()
+		saltStruct = await @chemicalStructureController.getMol()
 		if (saltStruct == "" || saltStruct == null)
 			fieldsFilled = false
 			console.log("Salt Structure Was Empty! Cannot Register!")
@@ -493,16 +484,7 @@ class SaltBrowserController extends Backbone.View
 		molStr = @saltController.model.get("molStructure")
 
 		# Chemical Structure Controller Set by Sketcher Config Setting 
-		@chemicalStructureController = null
-		if window.conf.cmpdreg.sketcher == 'marvin'
-			@chemicalStructureController = new MarvinJSChemicalStructureController
-		else if  window.conf.cmpdreg.sketcher  == 'ketcher'
-			@chemicalStructureController = new KetcherChemicalStructureController 
-		else if window.conf.cmpdreg.sketcher == 'maestro'
-			@chemicalStructureController = new MaestroChemicalStructureController
-		else 
-			console.log("No Chemical Sketcher Configured!")
-			alert("Please contact your ACAS System Admin. There is no chemical sketcher configured.")
+		@chemicalStructureController = UtilityFunctions::getNewSystemChemicalSketcherController(window.conf.cmpdreg.sketcher)
 
 		$('.bv_editChemicalStructureForm').html @chemicalStructureController.render().el
 		@chemicalStructureController.on('sketcherLoaded', =>
@@ -515,7 +497,7 @@ class SaltBrowserController extends Backbone.View
 		@$('.bv_fieldNotifications').show()
 
 		# Get Mol
-		saltStruct = @chemicalStructureController.getMol()
+		saltStruct = await @chemicalStructureController.getMol()
 
 		if (@chemicalStructureController.isEmptyMol(saltStruct))
 			@editFieldNotificationController.clearAllNotificiations() 
@@ -610,7 +592,7 @@ class SaltBrowserController extends Backbone.View
 		@notificationController.clearAllNotificiations() 
 		
 		# Get Mol
-		saltStruct = @chemicalStructureController.getMol()
+		saltStruct = await @chemicalStructureController.getMol()
 
 		saltDict = 
 		{

@@ -50,18 +50,6 @@ $(function() {
 			_.bindAll(this, 'search', 'cancel', 'validationError', 'updatePercentSimilarityDisabled','chemistsLoaded');
             this.valid = false;
 			this.sketcherLoaded = false;
-			this.exportFormat = "mol";
-			if(window.configuration.sketcher == 'marvin') {
-				this.useMarvin = true;
-				if (window.configuration.marvin.exportFormat) {
-					this.exportFormat = window.configuration.marvin.exportFormat;
-				}
-			} else if(window.configuration.sketcher == 'ketcher') {
-				this.useKetcher = true;
-			} else if(window.configuration.sketcher == 'maestro') {
-				this.useMaestro = true;
-			}
-
 		},
 
 		render: function () {
@@ -91,38 +79,18 @@ $(function() {
             this.chemistCodeController.collection.bind('reset', this.chemistsLoaded);
 
 			var self = this;
-			if (this.useMarvin) {
-				this.$('#searchMarvinSketch').attr('src',"/CmpdReg/marvinjs/editorws.html");
-				MarvinJSUtil.getEditor("#searchMarvinSketch").then(function (sketcherInstance) {
-					self.marvinSketcherInstance = sketcherInstance;
-					if (typeof window.marvinStructureTemplates !== 'undefined') {
-						for (i = 0; i < window.marvinStructureTemplates.length; i++) {
-							sketcherInstance.addTemplate(window.marvinStructureTemplates[i]);
-						}
-					}
-					self.show();
-					self.sketcherLoaded = true;
-				}, function (error) {
-					alert("Cannot retrieve searchMarvinSketch sketcher instance from iframe:" + error);
-				});
 
-			} else if (this.useKetcher) {
-				this.$('#searchMarvinSketch').attr('src',"/lib/ketcher-2.0.0-alpha.3_custom/ketcher.html?api_path=/api/cmpdReg/ketcher/");
-				this.$('#searchMarvinSketch').on('load', function () {
-					self.ketcher = self.$('#searchMarvinSketch')[0].contentWindow.ketcher;
-				});
-			} else if (this.useMaestro) {
-				// Maestro deployments don't support similarity search currently so hide the option
+			var sketcher = window.configuration.sketcher
+			this.chemicalStructureController = UtilityFunctions.prototype.getNewSystemChemicalSketcherController(sketcher)
+			this.$('.marvinContainer').html(this.chemicalStructureController.render().el)
+			this.chemicalStructureController.bind('sketcherLoaded', function() {
+				self.show();
+				self.sketcherLoaded = true;
+			});
+			
+			// Maestro deployments don't support similarity search currently so hide the option
+			if(sketcher == "maestro") {
 				$('.bv_similaritySearchGroup').hide();
-				
-				this.$('#searchMarvinSketch').attr('src',"/CmpdReg/maestrosketcher/wasm_shell.html");
-				MaestroJSUtil.getSketcher('#searchMarvinSketch').then(function (maestro) {
-					self.maestro = maestro;
-					self.show();
-					self.sketcherLoaded = true;
-				})
-			} else {
-				alert("No search sketcher configured");
 			}
 
 			return this;
@@ -150,44 +118,16 @@ $(function() {
             if(appController) {appController.reset();}
 		},
 
-		search: function() {
-			var self = this;
-			if (this.useMarvin) {
-				this.marvinSketcherInstance.exportStructure(this.exportFormat).then(function (molecule) {
-					if (molecule.indexOf("0  0  0  0  0  0  0  0  0  0999") > -1)
-						mol = '';
-					else if (molecule.indexOf("M  V30 COUNTS 0 0 0 0 0") > -1)
-						mol = '';
-					else
-						mol = molecule;
-					var sf = self.makeSearchFormModel(mol);
-					if (self.isValid()) {
-						self.trigger('searchNext', sf);
-						self.hide();
-					}
-				}, function (error) {
-					alert("Molecule export failed from search sketcher:" + error);
-				});
-			} else if (this.useKetcher) {
-				mol = this.ketcher.getMolfile();
-				if (mol.indexOf("  0  0  0     1  0            999") > -1) mol = '';
-				var sf = this.makeSearchFormModel(mol);
-				if (this.isValid()) {
-					this.trigger('searchNext', sf);
-					this.hide();
-				}
-			} else if (this.useMaestro) {
-				mol = this.maestro.sketcherExportMolBlock();
-				if (mol.indexOf("M  V30 COUNTS 0 0 0 0 0") > -1) mol = '';
-				var sf = this.makeSearchFormModel(mol);
-				if (this.isValid()) {
-					this.trigger('searchNext', sf);
-					this.hide();
-				}
-			} else {
-				alert("No search sketcher configured in search action");
+		search: async function() {
+			mol = await this.chemicalStructureController.getMol()
+			if (this.chemicalStructureController.isEmptyMol(mol))  mol = '';
+			var sf = this.makeSearchFormModel(mol);
+			if (this.isValid()) {
+				this.trigger('searchNext', sf);
+				this.hide();
 			}
 		},
+
         makeSearchFormModel: function(molecule) {
             this.clearValidationErrors();
             var searchForm = new SearchForm();
@@ -216,9 +156,11 @@ $(function() {
             return searchForm;
 
         },
+
         isValid: function() {
             return this.valid;
         },
+
         validationError: function(model, errors) {
 			this.clearValidationErrors();
 			var self = this;

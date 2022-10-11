@@ -85,20 +85,7 @@ $(function() {
 			this.isEditable = this.options.isEditable;
 
 			this.sketcherLoaded = false; // load on demand, not default, to make testing more reliable and fast
-			this.exportFormat = "mol";
-			if(window.configuration.sketcher == 'marvin') {
-				this.useMarvin = true;
-				if (window.configuration.marvin.exportFormat) {
-					this.exportFormat = window.configuration.marvin.exportFormat;
-				}
-			} else if(window.configuration.sketcher == 'ketcher') {
-				this.useKetcher = true;
-			} else if(window.configuration.sketcher == 'maestro') {
-				this.useMaestro = true;
-			} else {
-				alert("No registration sketcher configured");
-			}
-
+			
 			if ( this.isEditable ) {
 				var isList = this.model.get('isosalts');
 		var saltCount = 0;
@@ -156,7 +143,7 @@ $(function() {
 
 		},
 
-		updateModel: function(callback) {
+		updateModel: async function(callback) {
 			this.clearValidationErrors();
 			this.model.set({
 				casNumber: jQuery.trim(this.$('.casNumber').val())
@@ -167,31 +154,10 @@ $(function() {
 
 				var mol = '';
 				if (this.sketcherLoaded && this.$('.structureWrapper').is(':visible')) {
-					if (this.useMarvin) {
-						self = this;
-						this.marvinSketcherInstance.exportStructure(this.exportFormat).then(function (molecule) {
-							if (molecule.indexOf("0  0  0  0  0  0  0  0  0  0999") > -1)
-								mol = '';
-							else if (molecule.indexOf("M  V30 COUNTS 0 0 0 0 0") > -1)
-								mol = '';
-							else
-								mol = molecule;
-							self.model.set({molStructure: mol});
-							callback();
-						}, function (error) {
-							alert("Molecule export failed from search sketcher:" + error);
-						});
-					}else if (this.useKetcher) {
-						mol = this.ketcher.getMolfile();
-						if (mol.indexOf("  0  0  0     1  0            999") > -1) mol = '';
-						this.model.set({molStructure: mol});
-						callback();
-					}else if (this.useMaestro) {
-						mol = this.maestro.sketcherExportMolBlock();
-						if (mol.indexOf("M  V30 COUNTS 0 0 0 0 0") > -1) mol = '';
-						this.model.set({molStructure: mol});
-						callback();
-					}
+					mol = await this.chemicalStructureController.getMol();
+					if (this.chemicalStructureController.isEmptyMol(mol))  mol = '';
+					this.model.set({molStructure: mol});
+					callback();
 				} else {
 					this.model.set({molStructure: mol});
 					callback();

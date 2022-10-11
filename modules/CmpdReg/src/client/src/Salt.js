@@ -154,66 +154,24 @@ $(function() {
 			_.bindAll(this, 'validationError', 'saveSalt', 'render');
 			$(this.el).html(this.template());
 			this.exportFormat = "mol";
-			if(window.configuration.sketcher == 'marvin') {
-				this.useMarvin = true;
-				if (window.configuration.marvin.exportFormat) {
-					this.exportFormat = window.configuration.marvin.exportFormat;
-				}
-			} else if(window.configuration.sketcher == 'ketcher') {
-				this.useKetcher = true;
-			} else if(window.configuration.sketcher == 'maestro') {
-				this.useMaestro = true;
-			} else {
-				alert("No registration sketcher configured");
-			}
 
 			this.sketcherLoaded = false;
 		},
 
 		render: function () {
 			var self = this;
-			if (this.useMarvin) {
-				this.$('#newSaltMarvinSketch').attr('src',"/CmpdReg/marvinjs/editorws.html");
-				MarvinJSUtil.getEditor("#newSaltMarvinSketch").then(function (sketcherInstance) {
-					self.marvinSketcherInstance = sketcherInstance;
-					if (typeof window.marvinStructureTemplates !== 'undefined') {
-						for (i = 0; i < window.marvinStructureTemplates.length; i++) {
-							sketcherInstance.addTemplate(window.marvinStructureTemplates[i]);
-						}
-					}
-					self.sketcherLoaded = true;
-				}, function (error) {
-					alert("Cannot retrieve newSaltMarvinSketch sketcher instance from iframe:" + error);
-				});
-
-			} else if (this.useKetcher) {
-				this.$('#newSaltMarvinSketch').attr('src',"/lib/ketcher-2.0.0-alpha.3_custom/ketcher.html?api_path=/api/cmpdReg/ketcher/");
-				this.$('#newSaltMarvinSketch').on('load', function () {
-					self.ketcher = self.$('#newSaltMarvinSketch')[0].contentWindow.ketcher;
-					self.sketcherLoaded = true;
-				});
-			} else if (this.useMaestro) {
-				this.$('#newSaltMarvinSketch').attr('src',"/CmpdReg/maestrosketcher/wasm_shell.html");
-                MaestroJSUtil.getSketcher('#newSaltMarvinSketch').then(function (maestro) {
-					self.maestro = maestro;
-					self.sketcherLoaded = true;
-				});
-			} else {
-				alert("No registration sketcher configured");
-			}
-
+			var sketcher = window.configuration.sketcher
+			this.chemicalStructureController = UtilityFunctions.prototype.getNewSystemChemicalSketcherController(sketcher)
+			this.$('.marvinWrapper').html(this.chemicalStructureController.render().el)
+			this.chemicalStructureController.bind('sketcherLoaded', function() {
+				self.sketcherLoaded = true;
+			});
 			this.hide();
 			return this;
 		},
 
 		show: function() {
-			if (this.useMarvin) {
-				this.marvinSketcherInstance.clear()
-			} else if (this.useKetcher) {
-				mol = this.ketcher.setMolecule("");
-			} else if (this.useMaestro) {
-				mol = this.maestro.clearSketcher()
-			}
+			this.chemicalStructureController.clear();
 			$(this.el).show();
 		},
 
@@ -227,7 +185,7 @@ $(function() {
 			this.hide();
 		},
 
-		saveSalt: function() {
+		saveSalt: async function() {
             this.trigger('clearErrors', "NewSaltController");
 
             var salt = new Salt();
@@ -238,14 +196,11 @@ $(function() {
 			if(this.sketcherLoaded) {
 				self.exportStructComplete = false;
 
-				var gotMol = function (molecule) {
-					//Maestro doesn't use the counts line so skip this check when useMaestro is true
-					if (!self.useMaestro && molecule.indexOf("0  0  0  0  0  0  0  0  0  0999") > -1)
-						mol = '';
-					else if (molecule.indexOf("M  V30 COUNTS 0 0 0 0 0") > -1)
-						mol = '';
-					else
-						mol = molecule;
+				var gotMol = function (mol) {
+					if(self.chemicalStructureController.isEmptyMol(mol)) {
+						mol = ''
+					}
+					
 					self.exportStructComplete = true; // for spec support
 
 					var saltSetSucceeded = salt.set({
@@ -284,24 +239,8 @@ $(function() {
 					}
 				}
 
-				if (this.useMarvin) {
-					this.marvinSketcherInstance.exportStructure(this.exportFormat).then(
-						gotMol,
-						function (error) {
-							alert("Molecule export failed from search sketcher:"+error);
-						}
-					);
-
-				} else if (this.useKetcher) {
-					mol = this.ketcher.getMolfile();
-					if (mol.indexOf("  0  0  0     1  0            999") > -1) mol = '';
-					gotMol(mol);
-				} else if (this.useMaestro) {
-					mol = this.maestro.sketcherExportMolBlock();
-					gotMol(mol);
-				} else {
-					alert("No new salt sketcher configured");
-				}
+				mol = await this.chemicalStructureController.getMol()
+				gotMol(mol);
 
 			}
 

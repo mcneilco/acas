@@ -619,7 +619,7 @@ div {
     height: 27px;
     width: 90px;
     position: absolute;
-    left: 760px;
+    left: 680px;
     top: 560px;
 }
 .RegistrationSearchView a.cancelButton, .EditParentSearchView a.cancelEditButton {
@@ -627,7 +627,7 @@ div {
     height: 27px;
     width: 90px;
     position: absolute;
-    left: 665px;
+    left: 580px;
     top: 560px;
 }
 /****** REGISTRATION STEP 2 ******/
