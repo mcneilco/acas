@@ -30,7 +30,7 @@
 					deepLink: "project"
 				relatedFilesRelativePath: "entities/projects"
 			THING:
-				entityName: "example thing"
+				entityName: "things/example thing"
 				"Example Thing":
 					deepLink: "example_thing"
 				relatedFilesRelativePath: "entities/exampleThings"

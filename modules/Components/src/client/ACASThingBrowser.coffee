@@ -446,7 +446,7 @@ class ACASThingBrowserController extends Backbone.View
 				el: @$('.bv_thingController')
 			@renderController()
 		else
-			c = new @modelClass(thing.attributes)
+			c = new @modelClass(thing)
 			c.fetch
 				success: (model, response, options) =>
 					@thingController = new @controllerClass

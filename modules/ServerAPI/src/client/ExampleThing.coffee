@@ -344,7 +344,8 @@ class ExampleThingController extends AbstractThingFormController
 		@$('.bv_updatingThing').hide()
 		@trigger 'amClean'
 		@trigger 'thingSaved'
-		@socket.emit 'editLockEntity', @errorOwnerName, @model.get(@lockEditingForSessionKey)
+		if !@options.readOnly?
+			@socket.emit 'editLockEntity', @errorOwnerName, @model.get(@lockEditingForSessionKey)
 		@renderModelContent()
 
 		@auditTableController = new ExampleTableAuditController
