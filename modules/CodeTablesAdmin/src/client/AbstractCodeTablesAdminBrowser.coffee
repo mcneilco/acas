@@ -300,7 +300,7 @@ class AbstractCodeTablesAdminBrowserController extends Backbone.View
 					# Grabbing the first (and assumingly only) error and displaying the message in placeholder element 
 					@$('.bv_deleteCodeTablesAdminErrorMessageHolder').html errorJSON[0].message
 				else
-					noServerMessage = "There is no error message from the server."
+					noServerMessage = "The server has no error message. Please contact support for additional help."
 					@$('.bv_deleteCodeTablesAdminErrorMessageHolder').html noServerMessage
 		)
 
