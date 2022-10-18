@@ -792,7 +792,6 @@ class EndpointListController extends AbstractFormController
 			#url: "/api/experimentsForProtocol/#{protocolCode}" #ExperimentBrowserRoutes.coffee route
 			url: "/api/experiments/protocolCodename/#{protocolCode}" #ExperimentServiceRoutes.coffee route
 			success: (experiments) =>
-				#TODO - if there are no experiments it should say so instead of leaving the table blank. 
 				@setupExperimentSummaryTable experiments
 				$(".bv_experimentTableControllerTitle").html "Experiments using " + protocolCode + ":"
 

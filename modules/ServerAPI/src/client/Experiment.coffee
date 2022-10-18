@@ -450,7 +450,6 @@ class ExperimentBaseController extends BaseEntityController
 		@setupAttachFileListController()
 		@setupCustomExperimentMetadataController()
 		# Parse "data column order" states and setup controllers
-		# TODO uncomment
 		# if @readOnly
 		@setupEndpointsController()
 		@render()
