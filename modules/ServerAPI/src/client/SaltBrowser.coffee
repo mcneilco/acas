@@ -406,7 +406,7 @@ class SaltBrowserController extends Backbone.View
 		# Calls Custom Route to Download SDF of All Salts Registered 
 		$.ajax(
 				type: 'GET'
-				url: "/cmpdReg/salts/sdf" 
+				url: "/api/cmpdRegAdmin/salts/sdf" 
 				success: (salts) =>
 					# Server should've returned salts in correct formatting
 					@downloadSDF("allSalts.sdf", salts)
