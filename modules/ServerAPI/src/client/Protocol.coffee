@@ -898,27 +898,24 @@ class EndpointListController extends AbstractFormController
 						#we'll need to filter out experiments that don't contain the endpoint
 						for experiment in experiments
 							for i in experiment.lsStates
-								#if the experiment contains the endpoint (and all its values), end the loop early
-								if endpointRowValueMatch == true && endpointRowUnitsMatch == true && endpointRowDataTypeMatch == true
-									break 
-								else
-									#go through the experiment data to check if the endpoint data is there
-									if i.lsKind == 'data column order' and i.ignored == false
-										for j in i.lsValues
-											#only looking at the data that is not ignored
-											if j.lsKind == "column name" and j.ignored == false
-												if j.stringValue == rowEndpointName
-													endpointRowValueMatch = true
-											if j.lsKind == "column units" and j.ignored == false
-												if j.stringValue == rowUnits
-													endpointRowUnitsMatch = true
-											if j.lsKind == "column type" and j.ignored == false
-												if j.stringValue == rowDataType 
-													endpointRowDataTypeMatch = true
+								#go through the experiment data to check if the endpoint data is there
+								if i.lsKind == 'data column order' and i.ignored == false
+									for j in i.lsValues
+										#only looking at the data that is not ignored
+										if j.lsKind == "column name" and j.ignored == false
+											if j.stringValue == rowEndpointName
+												endpointRowValueMatch = true
+										if j.lsKind == "column units" and j.ignored == false
+											if j.stringValue == rowUnits
+												endpointRowUnitsMatch = true
+										if j.lsKind == "column type" and j.ignored == false
+											if j.stringValue == rowDataType 
+												endpointRowDataTypeMatch = true
 
-							#if all the criteria pass, record the experiment
-							if endpointRowValueMatch == true && endpointRowUnitsMatch == true && endpointRowDataTypeMatch == true
-								filtered_experiments.push experiment
+								#if all the criteria pass, record the experiment, end the loop early & move on to the next one
+								if endpointRowValueMatch == true && endpointRowUnitsMatch == true && endpointRowDataTypeMatch == true
+									filtered_experiments.push experiment
+									break
 																		
 						$(".bv_experimentTableController").empty() #remove the last experimentTableController
 						@setupExperimentSummaryTable filtered_experiments #add a new one with the filtered experiments
