@@ -104,9 +104,12 @@ class Protocol extends BaseEntity
 		maxY
 			
 	getStrictEndpointMatching: ->
-		strictEndpointMatching = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "protocol metadata", "codeValue", "strict endpoint matching"
+		strictEndpointMatching = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "protocol metadata", "codeValue", "strict endpoint matching"		
 		if strictEndpointMatching.get('codeValue') is undefined or strictEndpointMatching.get('codeValue') is ""
-			strictEndpointMatching.set codeValue: "false"
+			if window.conf.protocol.strictEndpointMatchingDefault == false 
+				strictEndpointMatching.set codeValue: "false"
+			else 
+				strictEndpointMatching.set codeValue: "true"
 			strictEndpointMatching.set codeType: "boolean"
 			strictEndpointMatching.set codeKind: "boolean"
 			strictEndpointMatching.set codeOrigin: "ACAS DDICT"
@@ -320,7 +323,13 @@ class ProtocolBaseController extends BaseEntityController
 			@$('.bv_creationDate').val UtilityFunctions::convertMSToYMDDate(@model.getCreationDate().get('dateValue'))
 		@$('.bv_assayTreeRule').val @model.getAssayTreeRule().get('stringValue')
 		@$('.bv_assayPrinciple').val @model.getAssayPrinciple().get('clobValue')
-		@$('.bv_strictEndpointMatchingInputCheckbox').prop("checked", @model.getStrictEndpointMatching().get('codeValue'));
+		#@model.getStrictEndpointMatching().get('codeValue') gives us a string that needs to be converted to a boolean...
+		#Using Boolean() will give us true even if we pass "false", so we have to use an if...else... logic to convert it manually. 
+		if @model.getStrictEndpointMatching().get('codeValue') == "false"
+			strictEndpointMatchingCode = false
+		else
+			strictEndpointMatchingCode = true
+		@$('.bv_strictEndpointMatchingInputCheckbox').prop("checked", strictEndpointMatchingCode);
 		showCurveDisplayParams = true
 		if window.conf.protocol?.showCurveDisplayParams?
 			showCurveDisplayParams = window.conf.protocol.showCurveDisplayParams
