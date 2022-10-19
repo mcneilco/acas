@@ -545,7 +545,6 @@ class EndpointController extends ACASFormStateTableFormController
 	initialize: (options) =>
 		$(@el).empty()
 		$(@el).html @template()
-		# TODO remaining values
 		super(options)
 	
 	removeRow: =>
@@ -763,7 +762,6 @@ class EndpointListController extends AbstractFormController
 			@$(".bv_endpointColumnConcentration").remove()
 			@$(".bv_endpointColumnConcentrationUnits").remove()
 		
-		#Placeholder until we update the protocol data structure
 		# Create a list to hold the endpoint controllers in, so we can iterate through them later
 		@endpointControllers = []
 		for lsState in @collection
