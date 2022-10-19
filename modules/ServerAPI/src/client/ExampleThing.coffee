@@ -344,7 +344,8 @@ class ExampleThingController extends AbstractThingFormController
 		@$('.bv_updatingThing').hide()
 		@trigger 'amClean'
 		@trigger 'thingSaved'
-		@socket.emit 'editLockEntity', @errorOwnerName, @model.get(@lockEditingForSessionKey)
+		if !@options.readOnly?
+			@socket.emit 'editLockEntity', @errorOwnerName, @model.get(@lockEditingForSessionKey)
 		@renderModelContent()
 
 		@auditTableController = new ExampleTableAuditController
@@ -531,6 +532,7 @@ class ExampleThingBrowserController extends ACASThingBrowserController
 	controllerClass: ExampleThingController
 	modelClass: ExampleThingParent
 	columnFilters: true
+	maxResults: 100000
 	configs: [
 			name: "Code Name"
 			key: "codeName"
@@ -541,6 +543,12 @@ class ExampleThingBrowserController extends ACASThingBrowserController
 		,
 			name: "Scientist"
 			key: "scientist"
+		,
+			name: "My Color"
+			key: "color"
+		,
+			name: "Completion Date"
+			key: 'completion date'
 		,
 			name: "Recorded By"
 			key: "recordedBy"
