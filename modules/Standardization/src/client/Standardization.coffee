@@ -53,7 +53,6 @@ class DownloadDryResultsController extends Backbone.View
 		@$('.bv_download').addClass("disabled")
 		url = "/cmpdReg/standardizationDryRunSearchExport"
 		modelData = @options.searchModel.toJSON()
-		delete modelData.maxResults
 		fileName = "download.sdf"
 		fetch(url, {
 			method: 'POST'
