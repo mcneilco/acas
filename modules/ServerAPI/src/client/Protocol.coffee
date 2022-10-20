@@ -295,21 +295,23 @@ class ProtocolBaseController extends BaseEntityController
 		@model.getStatus().on 'change', @updateEditable.bind(@)
 #		@trigger 'amClean' #so that module starts off clean when initialized
 
-		# Hack to get Protocol working with Thing-based ACASFormStateTable classes
-		@model.lsProperties = {'defaultValues': []}
-		# The 'data column order' states are a StateTable
-		# Get any existing states with that type & kind
+		#if endpoint manager is enabled, render the endpoint table 
+		if window.conf.protocol.endpointManager.enabled == true
+			# Hack to get Protocol working with Thing-based ACASFormStateTable classes
+			@model.lsProperties = {'defaultValues': []}
+			# The 'data column order' states are a StateTable
+			# Get any existing states with that type & kind
 
-		endpointStates = @model.get("lsStates").getStatesByTypeAndKind "metadata", "data column order"
-		# Create the controller for the Endpoints table which manages all the states
-		@endpointListController = new EndpointListController
-			el: @$('.bv_endpointTable')
-			collection: endpointStates
-			model: @model
-			readOnly: false
-			newProtocol: newProtocol
+			endpointStates = @model.get("lsStates").getStatesByTypeAndKind "metadata", "data column order"
+			# Create the controller for the Endpoints table which manages all the states
+			@endpointListController = new EndpointListController
+				el: @$('.bv_endpointTable')
+				collection: endpointStates
+				model: @model
+				readOnly: false
+				newProtocol: newProtocol
 
-		@endpointListController.render()
+			@endpointListController.render()
 
 	render: =>
 		unless @model?
@@ -323,13 +325,18 @@ class ProtocolBaseController extends BaseEntityController
 			@$('.bv_creationDate').val UtilityFunctions::convertMSToYMDDate(@model.getCreationDate().get('dateValue'))
 		@$('.bv_assayTreeRule').val @model.getAssayTreeRule().get('stringValue')
 		@$('.bv_assayPrinciple').val @model.getAssayPrinciple().get('clobValue')
-		#@model.getStrictEndpointMatching().get('codeValue') gives us a string that needs to be converted to a boolean...
-		#Using Boolean() will give us true even if we pass "false", so we have to use an if...else... logic to convert it manually. 
-		if @model.getStrictEndpointMatching().get('codeValue') == "false"
-			strictEndpointMatchingCode = false
+
+		#If the endpoint manager is disabled, remove it
+		if window.conf.protocol.endpointManager.enabled == false
+			@$(".bv_endpointManagerSection").remove()
 		else
-			strictEndpointMatchingCode = true
-		@$('.bv_strictEndpointMatchingInputCheckbox').prop("checked", strictEndpointMatchingCode);
+			#@model.getStrictEndpointMatching().get('codeValue') gives us a string that needs to be converted to a boolean...
+			#Using Boolean() will give us true even if we pass "false", so we have to use an if...else... logic to convert it manually. 
+			if @model.getStrictEndpointMatching().get('codeValue') == "false"
+				strictEndpointMatchingCode = false
+			else
+				strictEndpointMatchingCode = true
+			@$('.bv_strictEndpointMatchingInputCheckbox').prop("checked", strictEndpointMatchingCode);
 		showCurveDisplayParams = true
 		if window.conf.protocol?.showCurveDisplayParams?
 			showCurveDisplayParams = window.conf.protocol.showCurveDisplayParams

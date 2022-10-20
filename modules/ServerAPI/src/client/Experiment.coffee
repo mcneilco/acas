@@ -451,7 +451,9 @@ class ExperimentBaseController extends BaseEntityController
 		@setupCustomExperimentMetadataController()
 		# Parse "data column order" states and setup controllers
 		# if @readOnly
-		@setupEndpointsController()
+		# If endpoint controller is enabled, set it up
+		if window.conf.protocol.endpointManager.enabled == true
+			@setupEndpointsController()
 		@render()
 		$(".bv_endpointTable .bv_parameterSelectList").attr("disabled", true) #disable the endpoint table drop downs 
 		$(".bv_endpointTable input").attr("disabled", true) #disable the endpoint table checkboxes
@@ -484,7 +486,9 @@ class ExperimentBaseController extends BaseEntityController
 			@$('.bv_queryToolDisplayName').html _.escape(window.conf.service.result.viewer.displayName)
 			@$('.bv_openInQueryToolLink').attr 'href', "/openExptInQueryTool?experiment="+@model.get('codeName')
 			#we don't want to render the endpoint controller if the experiment is new, so we only load it on existing experiments
-			@endpointListController.render()
+			#we also only want to load it if it is enabled
+			if window.conf.protocol.endpointManager.enabled == true
+				@endpointListController.render()
 		@
 
 	modelSyncCallback: =>
