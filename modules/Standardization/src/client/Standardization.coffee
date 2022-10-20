@@ -246,14 +246,14 @@ class StandardizationDryRunReportRowSummaryController extends Backbone.View
 
 	render: =>
 		toDisplay =
-			corpName: @model.get('corpName')
+			corpName: @model.get('parent').corpName
 			changedStructure: @model.get('changedStructure')
 			displayChange: @model.get('displayChange')
 			newDuplicates: @model.get('newDuplicates')
 			existingDuplicates: @model.get('existingDuplicates')
-			deltaMolWeight: @roundToTwo(@model.get('newMolWeight')- @model.get('oldMolWeight'))
+			deltaMolWeight: @roundToTwo(@model.get('deltaMolWeight'))
 			newMolWeight: @model.get('newMolWeight')
-			oldMolWeight: @model.get('oldMolWeight')
+			oldMolWeight: @model.get('parent').molWeight
 			asDrawnDisplayChange: @model.get('asDrawnDisplayChange')
 			standardizationStatus: @model.get('standardizationStatus')
 			standardizationComment: @model.get('standardizationComment')
