@@ -820,17 +820,9 @@ class EndpointListController extends AbstractFormController
 		#Otherwise, when an endpoint row is pressed, we want to filter the experiment summary table so it only displays the experiments...
 		#...with protocols that contain the endpoint, so we'll need to find the row's endpoint name and regenerate the table
 
-		#since any element within the row could be clicked on, we need to first find the parent row div and move down from there
-		element = $(event.target)
-		for x in [0..20] #allow it to search up to 20 parent elements up for the table row (usually takes 10 or less)
-			#if the element is a table row, exit the loop
-			if element[0].nodeName == "TR"
-				tr = element
-				break
-			#if the element is not a table row, move up to the next parent element
-			else
-				element = element.parent()
-		
+		#since any element within the row could be clicked on, we want to find find the parent row div
+		tr = $(event.target).closest("tr")
+
 		#we need to detect if the element we have clicked on is the previously selected element
 		if "selectedEndpointRow" in tr[0].classList
 			previouslySelectedRow = true
