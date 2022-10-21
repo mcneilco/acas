@@ -302,11 +302,9 @@ class ProtocolBaseController extends BaseEntityController
 			# The 'data column order' states are a StateTable
 			# Get any existing states with that type & kind
 
-			endpointStates = @model.get("lsStates").getStatesByTypeAndKind "metadata", "data column order"
 			# Create the controller for the Endpoints table which manages all the states
 			@endpointListController = new EndpointListController
 				el: @$('.bv_endpointTable')
-				collection: endpointStates
 				model: @model
 				readOnly: false
 				newProtocol: newProtocol
@@ -747,8 +745,10 @@ class EndpointListController extends AbstractFormController
 	initialize: (options) =>
 		@model = options.model
 
+		endpointStates = @model.get("lsStates").getStatesByTypeAndKind "metadata", "data column order"
+
 		# Sort the collection by the "column order" values
-		@collection = @collection.sort (stateA, stateB) =>
+		@collection = endpointStates.sort (stateA, stateB) =>
 			rnA = @getRowNumberForState(stateA)
 			rnB = @getRowNumberForState(stateB)
 			return rnA - rnB
