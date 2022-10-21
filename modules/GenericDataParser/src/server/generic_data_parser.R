@@ -1901,7 +1901,7 @@ getPreferredProtocolName <- function(protocol, protocolName = NULL) {
   }
   return(preferredName)
 }
-createNewProtocol <- function(metaData, lsTransaction, recordedBy) {
+createNewProtocol <- function(metaData, lsTransaction, recordedBy, columnOrderStates) {
   # creates a protocol with the protocol name and scientist in the metaData
   # 
   # Args:
@@ -1969,6 +1969,12 @@ createNewProtocol <- function(metaData, lsTransaction, recordedBy) {
                                                                           recordedBy=recordedBy, 
                                                                           lsType="metadata", 
                                                                           lsKind="protocol metadata")
+
+  # Adding in the column order states from the experiment
+  if(!is.null(columnOrderStates)) {
+    protocolStates <- c(protocolStates, columnOrderStates)
+  }
+
   # Add a label for the name
   protocolLabels <- list()
   protocolLabels[[length(protocolLabels)+1]] <- createProtocolLabel(lsTransaction = lsTransaction, 
@@ -3441,10 +3447,14 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     validatedCustomMetaDataStates <- NULL
     customExperimentMetaDataValues <- NULL
   }
+
+  ## SEL column order info
+  columnOrderStates <- createColumnOrderStates(selColumnOrderInfo, errorEnv, recordedBy, lsTransaction)
+ 
   
   # when not on a dry run, create protocol and experiment if they do not exist
   if (!dryRun && newProtocol && errorFree) {
-    protocol <- createNewProtocol(metaData = validatedMetaData, lsTransaction, recordedBy)
+    protocol <- createNewProtocol(metaData = validatedMetaData, lsTransaction, recordedBy, columnOrderStates)
   }
 
   useExistingExperiment <- inputFormat %in% c("Use Existing Experiment", "Precise For Existing Experiment")
@@ -3474,9 +3484,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     deletedExperimentCodes <- deleteOldData(experiment, useExistingExperiment)
   }
 
-  ## SEL column oder info
-  columnOrderStates <- createColumnOrderStates(selColumnOrderInfo, errorEnv, recordedBy, lsTransaction)
- 
+  
   if (!dryRun && errorFree) {
     if(!useExistingExperiment) {
       experiment <- createNewExperiment(metaData = validatedMetaData, protocol, lsTransaction, fullPathToFile, 
