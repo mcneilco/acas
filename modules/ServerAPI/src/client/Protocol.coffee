@@ -741,11 +741,13 @@ class EndpointListController extends AbstractFormController
 		"click .bv_downloadFiles": "downloadFiles"
 	
 	rowNumberKind: "column order"
+	stateType: "metadata"
+	stateKind: "data column order"
 	
 	initialize: (options) =>
 		@model = options.model
 
-		endpointStates = @model.get("lsStates").getStatesByTypeAndKind "metadata", "data column order"
+		endpointStates = @model.get("lsStates").getStatesByTypeAndKind @stateType, @stateKind
 
 		# Sort the collection by the "column order" values
 		@collection = endpointStates.sort (stateA, stateB) =>
