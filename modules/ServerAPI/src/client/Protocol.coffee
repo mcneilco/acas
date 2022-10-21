@@ -811,14 +811,47 @@ class EndpointListController extends AbstractFormController
 				@setupExperimentSummaryTable experiments
 				$(".bv_experimentTableControllerTitle").html "Experiments using " + protocolCode + ":"
 
-	resetBackgroundColor: (nodes) => 
-		# Reset the background color of all nodes
-		for elm in nodes
+	resetBackgroundColor: (tr) => 
+		# Reset the background color of all rows
+		for elm in tr.parent()[0].childNodes
 			for subelm in elm.childNodes
 				try
 					subelm.style.background = "#F9F9F9"
 				catch
 					#not all elements can be styled, so do nothing
+	
+	setBackgroundColor: (tr) =>
+		# Highlight the background color of the cells within the selected row 
+		for elm in tr
+			for subelm in elm.childNodes
+				try
+					subelm.style.background = "#D9EDF7"
+				catch
+					#not all elements can be styled, so do nothing
+
+	getRowData: (tr) =>
+		endpointRowValues = tr[0].querySelectorAll("span.select2-selection__rendered")
+		rowEndpointName = endpointRowValues[0].title
+		rowUnits = endpointRowValues[1].title
+		rowDataType = endpointRowValues[2].title
+
+		#convert the input into the data type for matching when we search the experiment metadata
+		if rowDataType == "Number"
+			rowDataType = "numericValue"
+		else if rowDataType == "Text"
+			rowDataType = "stringValue"
+		else if rowDataType == "Image File"
+			rowDataType = "inlineFileValue" 
+		else if rowDataType == "Date"
+			rowDataType = "dateValue"
+		
+		return {
+			rowEndpointName: rowEndpointName,
+			rowUnits: rowUnits,
+			rowDataType: rowDataType
+		}
+
+
 
 
 	handleEndpointRowPressed: =>
@@ -833,7 +866,7 @@ class EndpointListController extends AbstractFormController
 		tr = $(event.target).closest("tr")
 
 		#First, reset the background color of all the rows before highlighting a new row
-		@resetBackgroundColor(tr.parent()[0].childNodes)
+		@resetBackgroundColor(tr)
 
 		#we need to detect if the element we have clicked on is the previously selected element
 		if "selectedEndpointRow" in tr[0].classList
@@ -841,7 +874,7 @@ class EndpointListController extends AbstractFormController
 		else
 			previouslySelectedRow = false
 		
-		#remove class marking whether a row was previously selected 
+		#remove class marking whether a row was previously selected
 		$(".selectedEndpointRow").removeClass "selectedEndpointRow"
 
 		#if the row was previously selected, load table for just experiments associated with protocol, no filtering by endpoint
@@ -850,32 +883,17 @@ class EndpointListController extends AbstractFormController
 	
 		#if the row was not previously selected, load table with associated experiments filtered by endpoint and highlight endpoint row
 		else
-			#mark the selected row
+			#mark the selected row (this is part of unhighlighting/unselecting a row if it is clicked twice)
 			tr.addClass('selectedEndpointRow')
 
 			#apply highlighting to the selected rows
-			for trElements in tr
-				for td in trElements.childNodes
-					try
-						td.style.background = "#D9EDF7"
-					catch
-						#not all elements can be styled, so do nothing
+			@setBackgroundColor(tr)
 
-			#once the row is found, extract the endpoint values from it from it
-			endpointRowValues = tr[0].querySelectorAll("span.select2-selection__rendered")
-			rowEndpointName = endpointRowValues[0].title
-			rowUnits = endpointRowValues[1].title
-			rowDataType = endpointRowValues[2].title
-
-			#convert the input into the data type for matching when we search the experiment metadata
-			if rowDataType == "Number"
-				rowDataType = "numericValue"
-			else if rowDataType == "Text"
-				rowDataType = "stringValue"
-			else if rowDataType == "Image File"
-				rowDataType = "inlineFileValue" 
-			else if rowDataType == "Date"
-				rowDataType = "dateValue"
+			#extract the endpoint values from the selected row
+			rowData = @getRowData(tr)
+			rowEndpointName =  rowData.rowEndpointName
+			rowUnits = rowData.rowUnits
+			rowDataType =  rowData.rowDataType
 
 			#if the endpoint doesn't have a value for it, don't filter by it.
 			if rowEndpointName == "Select Column Name"
