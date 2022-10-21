@@ -811,6 +811,15 @@ class EndpointListController extends AbstractFormController
 				@setupExperimentSummaryTable experiments
 				$(".bv_experimentTableControllerTitle").html "Experiments using " + protocolCode + ":"
 
+	resetBackgroundColor: (nodes) => 
+		# Reset the background color of all nodes
+		for elm in nodes
+			for subelm in elm.childNodes
+				try
+					subelm.style.background = "#F9F9F9"
+				catch
+					#not all elements can be styled, so do nothing
+
 
 	handleEndpointRowPressed: =>
 		#disable logic if endpoint list controller is read only (since there won't be an experiment controller)
@@ -823,23 +832,17 @@ class EndpointListController extends AbstractFormController
 		#since any element within the row could be clicked on, we want to find find the parent row div
 		tr = $(event.target).closest("tr")
 
+		#First, reset the background color of all the rows before highlighting a new row
+		@resetBackgroundColor(tr.parent()[0].childNodes)
+
 		#we need to detect if the element we have clicked on is the previously selected element
 		if "selectedEndpointRow" in tr[0].classList
 			previouslySelectedRow = true
 		else
 			previouslySelectedRow = false
-
-		#first reset the background color of all the rows
-		for elm in tr.parent()[0].childNodes
-			for subelm in elm.childNodes
-				try
-					subelm.style.background = "#F9F9F9"
-				catch
-					#not all elements can be styled, so do nothing
-
+		
 		#remove class marking whether a row was previously selected 
 		$(".selectedEndpointRow").removeClass "selectedEndpointRow"
-
 
 		#if the row was previously selected, load table for just experiments associated with protocol, no filtering by endpoint
 		if previouslySelectedRow == true
