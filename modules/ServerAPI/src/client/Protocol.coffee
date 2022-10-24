@@ -771,14 +771,8 @@ class EndpointListController extends AbstractFormController
 			@$(".bv_downloadFiles").hide()
 			$(".bv_endpointManagerInstructions").hide()
 
-		#if time/units or concentration/units are disabled, remove the columns from the endpoint coontroller
-		if window.conf.protocol.endpointManager.showTime == false
-			@$(".bv_endpointColumnTime").remove()
-			@$(".bv_endpointColumnTimeUnits").remove()
-
-		if window.conf.protocol.endpointManager.showConcentration == false
-			@$(".bv_endpointColumnConcentration").remove()
-			@$(".bv_endpointColumnConcentrationUnits").remove()
+		#check whether or not to display time and concentration columns in the endpoint table
+		@showTimeAndConcentration()
 		
 		# Create a list to hold the endpoint controllers in, so we can iterate through them later
 		@endpointControllers = []
@@ -796,6 +790,20 @@ class EndpointListController extends AbstractFormController
 
 		@
 	
+	showTimeAndConcentration: =>
+		#if time/units or concentration/units are disabled, remove the columns and cells from the endpoint controller whenever table is made or a row added
+		if window.conf.protocol.endpointManager.showTime == false
+			@$(".bv_endpointColumnTime").remove()
+			@$(".bv_endpointColumnTimeUnits").remove()
+			@$(".bv_timeUnitsPickListParent").remove()
+			@$(".bv_timeInputParent").remove()
+
+		if window.conf.protocol.endpointManager.showConcentration == false
+			@$(".bv_endpointColumnConcentration").remove()
+			@$(".bv_endpointColumnConcentrationUnits").remove()
+			@$(".bv_concentrationUnitsPickListParent").remove()
+			@$(".bv_concentrationInputParent").remove()
+
 	getExperimentSummaryTable: =>
 		#hide previously shown warnings/success text
 		$(".bv_downloadSuccess").hide()
@@ -982,15 +990,8 @@ class EndpointListController extends AbstractFormController
 		# Add this controller to our tracking dictionary so we can access it later
 		@endpointControllers[rowNumber] = rowController
 
-		#if time/units are disabled, remove cells
-		if window.conf.protocol.endpointManager.showTime == false
-			@$(".bv_timeUnitsPickListParent").remove()
-			@$(".bv_timeInputParent").remove()
-		
-		#if concentration/units are disabled, remove the cells
-		if window.conf.protocol.endpointManager.showConcentration == false
-			@$(".bv_concentrationUnitsPickListParent").remove()
-			@$(".bv_concentrationInputParent").remove()
+		#check whether or not to display time and concentration cells in the row
+		@showTimeAndConcentration()
 
 
 	
