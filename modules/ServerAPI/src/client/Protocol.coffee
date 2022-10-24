@@ -830,6 +830,7 @@ class EndpointListController extends AbstractFormController
 					#not all elements can be styled, so do nothing
 
 	getRowData: (tr) =>
+		# Extract and convert the values for a given row
 		endpointRowValues = tr[0].querySelectorAll("span.select2-selection__rendered")
 		rowEndpointName = endpointRowValues[0].title
 		rowUnits = endpointRowValues[1].title
@@ -851,8 +852,66 @@ class EndpointListController extends AbstractFormController
 			rowDataType: rowDataType
 		}
 
+	getFilteredExperimentTable: (rowData, protocolCode) =>
+		rowEndpointName =  rowData.rowEndpointName
+		rowUnits = rowData.rowUnits
+		rowDataType =  rowData.rowDataType
 
+		#if the endpoint doesn't have a value for it, don't filter by it.
+		if rowEndpointName == "Select Column Name"
+			endpointRowValueMatch = true
+			rowEndpointName = "any column name"
+		else
+			endpointRowValueMatch = false
+		
+		if rowUnits == "(unitless)"
+			endpointRowUnitsMatch = true
+			rowUnits = "any units"
+		else
+			endpointRowUnitsMatch = false
 
+		if rowDataType == "Select Column Type"
+			endpointRowDataTypeMatch = true
+			rowDataType = "any data type"
+		else
+			endpintRowDataTypeMatch = false	
+
+		#hide previously shown warnings/success text associated w/ previous table
+		$(".bv_downloadSuccess").hide()
+		$(".bv_downloadWarning").hide()
+		$.ajax
+			type: 'GET'
+			#there are two similar routes in ExperimentBrowserRoutes.coffee and ExperimentServiceRoutes.coffee
+			#url: "/api/experimentsForProtocol/#{protocolCode}" #ExperimentBrowserRoutes.coffee route
+			url: "/api/experiments/protocolCodename/#{protocolCode}" #ExperimentServiceRoutes.coffee route
+			success: (experiments) =>
+				filtered_experiments = [] #keep track of the filtered experiments
+				#we'll need to filter out experiments that don't contain the endpoint
+				for experiment in experiments
+					for i in experiment.lsStates
+						#go through the experiment data to check if the endpoint data is there
+						if i.lsKind == 'data column order' and i.ignored == false
+							for j in i.lsValues
+								#only looking at the data that is not ignored
+								if j.lsKind == "column name" and j.ignored == false
+									if j.stringValue == rowEndpointName
+										endpointRowValueMatch = true
+								if j.lsKind == "column units" and j.ignored == false
+									if j.stringValue == rowUnits
+										endpointRowUnitsMatch = true
+								if j.lsKind == "column type" and j.ignored == false
+									if j.stringValue == rowDataType 
+										endpointRowDataTypeMatch = true
+
+						#if all the criteria pass, record the experiment, end the loop early & move on to the next one
+						if endpointRowValueMatch == true && endpointRowUnitsMatch == true && endpointRowDataTypeMatch == true
+							filtered_experiments.push experiment
+							break
+				$(".bv_experimentTableController").empty() #remove the last experimentTableController
+				@setupExperimentSummaryTable filtered_experiments #add a new one with the filtered experiments
+				#generate a title for the experiment table controller 
+				$(".bv_experimentTableControllerTitle").html "Experiments using " + protocolCode + " containing '" + rowEndpointName + " (" + rowUnits + " , " + rowDataType + ")' data:"
+				
 
 	handleEndpointRowPressed: =>
 		#disable logic if endpoint list controller is read only (since there won't be an experiment controller)
@@ -891,68 +950,10 @@ class EndpointListController extends AbstractFormController
 
 			#extract the endpoint values from the selected row
 			rowData = @getRowData(tr)
-			rowEndpointName =  rowData.rowEndpointName
-			rowUnits = rowData.rowUnits
-			rowDataType =  rowData.rowDataType
-
-			#if the endpoint doesn't have a value for it, don't filter by it.
-			if rowEndpointName == "Select Column Name"
-				endpointRowValueMatch = true
-				rowEndpointName = "any column name"
-			else
-				endpointRowValueMatch = false
-			
-			if rowUnits == "(unitless)"
-				endpointRowUnitsMatch = true
-				rowUnits = "any units"
-			else
-				endpointRowUnitsMatch = false
-
-			if rowDataType == "Select Column Type"
-				endpointRowDataTypeMatch = true
-				rowDataType = "any data type"
-			else
-				endpintRowDataTypeMatch = false		
-			
-
-			#next we need to regenerate the experiment summary table
 			protocolCode = @model.escape('codeName')
-			#hide previously shown warnings/success text associated w/ previous table
-			$(".bv_downloadSuccess").hide()
-			$(".bv_downloadWarning").hide()
-			$.ajax
-				type: 'GET'
-				#there are two similar routes in ExperimentBrowserRoutes.coffee and ExperimentServiceRoutes.coffee
-				#url: "/api/experimentsForProtocol/#{protocolCode}" #ExperimentBrowserRoutes.coffee route
-				url: "/api/experiments/protocolCodename/#{protocolCode}" #ExperimentServiceRoutes.coffee route
-				success: (experiments) =>
-					filtered_experiments = [] #keep track of the filtered experiments
-					#we'll need to filter out experiments that don't contain the endpoint
-					for experiment in experiments
-						for i in experiment.lsStates
-							#go through the experiment data to check if the endpoint data is there
-							if i.lsKind == 'data column order' and i.ignored == false
-								for j in i.lsValues
-									#only looking at the data that is not ignored
-									if j.lsKind == "column name" and j.ignored == false
-										if j.stringValue == rowEndpointName
-											endpointRowValueMatch = true
-									if j.lsKind == "column units" and j.ignored == false
-										if j.stringValue == rowUnits
-											endpointRowUnitsMatch = true
-									if j.lsKind == "column type" and j.ignored == false
-										if j.stringValue == rowDataType 
-											endpointRowDataTypeMatch = true
 
-							#if all the criteria pass, record the experiment, end the loop early & move on to the next one
-							if endpointRowValueMatch == true && endpointRowUnitsMatch == true && endpointRowDataTypeMatch == true
-								filtered_experiments.push experiment
-								break
-																	
-					$(".bv_experimentTableController").empty() #remove the last experimentTableController
-					@setupExperimentSummaryTable filtered_experiments #add a new one with the filtered experiments
-					#generate a title for the experiment table controller 
-					$(".bv_experimentTableControllerTitle").html "Experiments using " + protocolCode + " containing '" + rowEndpointName + " (" + rowUnits + " , " + rowDataType + ")' data:"
+			#get table with matching experiments given the endpoint data and the protocolCode
+			@getFilteredExperimentTable(rowData, protocolCode)
 
 			@
 
