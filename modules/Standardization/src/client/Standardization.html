@@ -85,7 +85,7 @@
 
 <script type="text/template" id="StandardizationCurrentSettingsView" xmlns="http://www.w3.org/1999/html">
     <h4>Current Settings</h4>
-    <table class="table table-bordered table-striped table-hover bv_currentSettingsTable" style="margin: 0px; width: 400px; ">
+    <table class="table table-bordered table-striped table-hover bv_currentSettingsTable" style="margin: 0px; ">
     </table>
     <div class="alert bv_getCurrentSettingsError">
         There was an error getting the current standardization settings. Please contact an administrator.
@@ -531,12 +531,13 @@
 </script>
 
 <script type="text/template" id="StandardizationReasonPanelView" xmlns="http://www.w3.org/1999/html">
-    <div class="modal bv_standardizationReasonPanel hide">
+    <div class="modal bv_standardizationReasonPanel hide" style="width:900px";>
         <div class="modal-header">
             <h4>Standardization Reason</h4>
         </div>
         <div class="controls modal-body">
-            Reason for standardization: <textarea rows="2" class="bv_reasonForStandardization" style="width:500px;height:140px;" placeholder=""></textarea>
+            <label>Reason for standardization:</label>
+            <textarea rows="2" class="bv_reasonForStandardization" style="width:800px;height:140px;" placeholder=""></textarea>
 
         </div>
         <div class="modal-footer">

@@ -19,19 +19,25 @@ class StandardizationCurrentSettingsController extends Backbone.View
 				@$('.bv_getCurrentSettingsError').show()
 
 	setupCurrentSettingsTable: (settings) ->
+		if settings.reasons?
+			reasons = settings.reasons.replace(/(?:\r\n|\r|\n)/g, '<br>')
+		else
+			reasons = null
 		@$('.bv_currentSettingsTable').dataTable
 			"aaData": [
 				[ "Needs standardization", settings.needsStandardization],
+				[ "Reasons", reasons],
 				[ "Time modified", UtilityFunctions::convertMSToYMDTimeDate(settings.modifiedDate, "12hr")]
 			]
 			"aoColumns": [
-				{ "sTitle": "Name" },
-				{ "sTitle": "Value" }
+				{ "sTitle": "Name", "sWidth": "20%" },
+				{ "sTitle": "Value",  "sWidth": "80%" }
 			]
 			bFilter: false
 			bInfo: false
 			bPaginate: false
 			bSort: false
+		@trigger 'ready', reasons
 
 class DownloadDryResultsController extends Backbone.View
 	template: _.template($("#DownloadDryRunResultsView").html())
@@ -682,6 +688,10 @@ class StandardizationController extends Backbone.View
 			@currentSettingsController.undelegateEvents()
 		@currentSettingsController = new StandardizationCurrentSettingsController
 			el: @$('.bv_currentSettings')
+		@currentSettingsController.on 'ready', @setDefaultReasons.bind(@)
+
+	setDefaultReasons : (reasons) =>
+		@standardizationReasonPanel.setDefaultReasons reasons
 
 	getStandardizationHistory: ->
 		$.ajax
@@ -814,3 +824,8 @@ class StandardizationReasonPanelController extends Backbone.View
 		@$('.bv_standardizationReasonPanel').modal "hide"
 		@trigger 'executionCancelled'
 
+	setDefaultReasons: (reasons) =>
+		# Set the reason in the text area bv_reasonForStandardization
+		if reasons? and reasons.length > 0
+			@$('.bv_reasonForStandardization')[0].value = reasons
+			@handleReasonChanged()
