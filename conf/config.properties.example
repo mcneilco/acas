@@ -745,6 +745,8 @@ client.cmpdreg.marvin.sketchBondLength=20
 client.cmpdreg.marvin.delayShowStep2Next=750
 client.cmpdreg.marvin.exportFormat=mol:V3
 client.cmpdreg.serverSettings.liveDesign.preprocessorSettings=
+client.cmpdreg.serverSettings.liveDesign.url=http://localhost:8010/ld-chem
+
 client.cmpdreg.serverSettings.maxStandardizationDisplay=20000
 
 
