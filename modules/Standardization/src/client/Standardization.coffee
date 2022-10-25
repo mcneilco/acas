@@ -711,6 +711,8 @@ class StandardizationController extends Backbone.View
 				@$('.bv_getStandardizationHistoryError').show()
 
 	isDryRunOrStandardizationInProgress: (mostRecentHistoryEntry) ->
+		if !mostRecentHistoryEntry?
+			return false
 		dryRunStatus = mostRecentHistoryEntry.dryRunStatus
 		standardizationStatus = mostRecentHistoryEntry.standardizationStatus
 		if dryRunStatus is 'running'
@@ -734,20 +736,20 @@ class StandardizationController extends Backbone.View
 		@$(".bv_standardizationHistory").html @standardizationHistorySummaryTableController.render().el
 
 	setupExecuteButtons: (mostRecentHistory) ->
-		dryRunStatus = mostRecentHistory.dryRunStatus
-		standardizationStatus = mostRecentHistory.standardizationStatus
-		#Execution Dry-run Disabled when most recent history dryRunStatus is running or standardizationStatus running
-		if dryRunStatus is "running" or standardizationStatus is "running"
-			@$('.bv_executeDryRun').attr 'disabled', 'disabled'
-		#Execute Standardization Disabled when most recent history dryRunStatus != "complete" or standardizationStatus == "running" or standardization == "complete"
-		if dryRunStatus != 'complete' or standardizationStatus is 'running' or standardizationStatus is 'complete'
+		if mostRecentHistory?
+			dryRunStatus = mostRecentHistory.dryRunStatus
+			standardizationStatus = mostRecentHistory.standardizationStatus
+			#Execution Dry-run Disabled when most recent history dryRunStatus is running or standardizationStatus running
+			if dryRunStatus is "running" or standardizationStatus is "running"
+				@$('.bv_executeDryRun').attr 'disabled', 'disabled'
+			#Execute Standardization Disabled when most recent history dryRunStatus != "complete" or standardizationStatus == "running" or standardization == "complete"
+			if dryRunStatus != 'complete' or standardizationStatus is 'running' or standardizationStatus is 'complete'
+				@$('.bv_executeStandardization').attr 'disabled', 'disabled'
+		else
 			@$('.bv_executeStandardization').attr 'disabled', 'disabled'
 
-
 	setupLastDryRunReportSummary: (mostRecentHistory)->		
-		standardizationStatus = mostRecentHistory.standardizationStatus
-		dryRunStatus = mostRecentHistory.dryRunStatus
-		if dryRunStatus == "complete" and standardizationStatus != "complete"
+		if mostRecentHistory? and mostRecentHistory.dryRunStatus == "complete" and mostRecentHistory.standardizationStatus != "complete"
 			@setupLastDryRunReportStatsSummaryTable()
 			@$(".bv_standardizationDryRunReportStats").show()
 			@standardizationDryRunReportSummaryController = new StandardizationDryRunReportSummaryController
@@ -820,7 +822,6 @@ class StandardizationReasonPanelController extends Backbone.View
 		@trigger 'readyForExecution', @$('.bv_reasonForStandardization')[0].value
 
 	handleCancelClicked: =>
-		console.log 'hiasdf'
 		@$('.bv_standardizationReasonPanel').modal "hide"
 		@trigger 'executionCancelled'
 
