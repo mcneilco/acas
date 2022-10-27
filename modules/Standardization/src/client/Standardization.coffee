@@ -19,14 +19,28 @@ class StandardizationCurrentSettingsController extends Backbone.View
 				@$('.bv_getCurrentSettingsError').show()
 
 	setupCurrentSettingsTable: (settings) ->
-		if settings.reasons?
-			reasons = settings.reasons.replace(/(?:\r\n|\r|\n)/g, '<br>')
+		if settings.reasons? && settings.reasons != ""
+			# Convert new line seperated string into ul list
+			reasonsHtml = settings.reasons.replace(/\n/g, "</li><li>")
+			reasonsHtml = "<ul><li>" + reasonsHtml + "</li></ul>"
+			reasons = settings.reasons
 		else
+			reasonsHtml = null
 			reasons = null
+		if settings.suggestedConfigurationChanges? && settings.suggestedConfigurationChanges != ""
+			msg = "Your standardizer settings are incomplete and have been automatically interpreted.<br>Please update your standardizer configuration with the following to avoid ambiguity:"
+			suggestedConfigurationChangesHtml = settings.suggestedConfigurationChanges.replace(/\n/g, "</li><li>")
+			suggestedConfigurationChangesHtml = "<ul><li>" + suggestedConfigurationChangesHtml + "</li></ul>"
+			suggestedConfigurationChangesHtml = "<b>#{msg}</b><br>#{suggestedConfigurationChangesHtml}"
+			suggestedConfigurationChanges = settings.suggestedConfigurationChanges
+		else
+			suggestedConfigurationChangesHtml = null
+			suggestedConfigurationChanges = null
 		@$('.bv_currentSettingsTable').dataTable
 			"aaData": [
 				[ "Needs standardization", settings.needsStandardization],
-				[ "Reasons", reasons],
+				[ "Reasons for standardization", reasonsHtml],
+				[ "Suggested configuration changes", suggestedConfigurationChangesHtml],
 				[ "Time modified", UtilityFunctions::convertMSToYMDTimeDate(settings.modifiedDate, "12hr")]
 			]
 			"aoColumns": [
