@@ -19,27 +19,37 @@ class StandardizationCurrentSettingsController extends Backbone.View
 				@$('.bv_getCurrentSettingsError').show()
 
 	setupCurrentSettingsTable: (settings) ->
-		if settings.reasons? && settings.reasons != ""
+
+		if settings.invalidReasons? && settings.invalidReasons != ""
 			# Convert new line seperated string into ul list
-			reasonsHtml = settings.reasons.replace(/\n/g, "</li><li>")
-			reasonsHtml = "<ul><li>" + reasonsHtml + "</li></ul>"
-			reasons = settings.reasons
+			invalidReasonsHtml = settings.invalidReasons.replace(/\n/g, "</li><li>")
+			invalidReasonsHtml = "<ul><li>" + invalidReasonsHtml + "</li></ul>"
 		else
-			reasonsHtml = null
-			reasons = null
+			invalidReasonsHtml = null
+
+		if settings.needsRestandardizationReasons? && settings.needsRestandardizationReasons != ""
+			# Convert new line seperated string into ul list
+			needsRestandardizationReasonsHtml = settings.needsRestandardizationReasons.replace(/\n/g, "</li><li>")
+			needsRestandardizationReasonsHtml = "<ul><li>" + needsRestandardizationReasonsHtml + "</li></ul>"
+			needsStandardizationReasons = settings.needsRestandardizationReasons
+		else
+			needsRestandardizationReasonsHtml = null
+			needsStandardizationReasons = null
+
 		if settings.suggestedConfigurationChanges? && settings.suggestedConfigurationChanges != ""
 			msg = "Your standardizer settings are incomplete and have been automatically interpreted.<br>Please update your standardizer configuration with the following to avoid ambiguity:"
 			suggestedConfigurationChangesHtml = settings.suggestedConfigurationChanges.replace(/\n/g, "</li><li>")
 			suggestedConfigurationChangesHtml = "<ul><li>" + suggestedConfigurationChangesHtml + "</li></ul>"
 			suggestedConfigurationChangesHtml = "<b>#{msg}</b><br>#{suggestedConfigurationChangesHtml}"
-			suggestedConfigurationChanges = settings.suggestedConfigurationChanges
 		else
 			suggestedConfigurationChangesHtml = null
-			suggestedConfigurationChanges = null
+	
 		@$('.bv_currentSettingsTable').dataTable
 			"aaData": [
+				[ "Settings Valid", settings.valid],
+				[ "Settings Invalid Reasons", invalidReasonsHtml],
 				[ "Needs standardization", settings.needsStandardization],
-				[ "Reasons for standardization", reasonsHtml],
+				[ "Reasons for needing standardization", needsRestandardizationReasonsHtml],
 				[ "Suggested configuration changes", suggestedConfigurationChangesHtml],
 				[ "Time modified", UtilityFunctions::convertMSToYMDTimeDate(settings.modifiedDate, "12hr")]
 			]
