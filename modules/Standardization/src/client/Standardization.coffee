@@ -43,16 +43,22 @@ class StandardizationCurrentSettingsController extends Backbone.View
 			suggestedConfigurationChangesHtml = "<b>#{msg}</b><br>#{suggestedConfigurationChangesHtml}"
 		else
 			suggestedConfigurationChangesHtml = null
+
+
+		settingsTableData = [[ "Settings valid", settings.valid]]
+		if !settings.valid
+			# Only show invalid reasons if the settings are not valid
+			settingsTableData.push [ "Settings invalid reasons", invalidReasonsHtml]
+		settingsTableData.push [ "Needs standardization", settings.needsStandardization]
+		if settings.needsStandardization
+			# Only show reasons for needing standardization if the needsStandardization is true
+			settingsTableData.push [ "Reasons for needing standardization", needsRestandardizationReasonsHtml]
+		if settings.valid && settings.suggestedConfigurationChangesHtml != null
+			# Only show suggestions for config changes if the settings are valid
+			settingsTableData.push [ "Suggested configuration changes", suggestedConfigurationChangesHtml]
 	
 		@$('.bv_currentSettingsTable').dataTable
-			"aaData": [
-				[ "Settings valid", settings.valid],
-				[ "Settings invalid reasons", invalidReasonsHtml],
-				[ "Needs standardization", settings.needsStandardization],
-				[ "Reasons for needing standardization", needsRestandardizationReasonsHtml],
-				[ "Suggested configuration changes", suggestedConfigurationChangesHtml],
-				[ "Time modified", UtilityFunctions::convertMSToYMDTimeDate(settings.modifiedDate, "12hr")]
-			]
+			"aaData": settingsTableData
 			"aoColumns": [
 				{ "sTitle": "Name", "sWidth": "20%" },
 				{ "sTitle": "Value",  "sWidth": "80%" }
