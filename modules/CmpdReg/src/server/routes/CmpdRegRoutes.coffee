@@ -1138,7 +1138,7 @@ exports.allowCmpdRegistration = (req, resp) ->
 					message: "Compounds can not be registered at this time due to an error getting current standardization settings. Please contact an administrator for help."
 				resp.json response
 			else
-				allowCmpdRegistration = !getStandardizationSettingsResp.needsStandardization && !getStandardizationSettingsResp.valid
+				allowCmpdRegistration = !getStandardizationSettingsResp.needsStandardization && getStandardizationSettingsResp.valid
 				if allowCmpdRegistration
 					message = "Compounds can be registered"
 				else
@@ -1147,7 +1147,7 @@ exports.allowCmpdRegistration = (req, resp) ->
 					if !getStandardizationSettingsResp.valid
 						reasons.push "the standardization settings are invalid"
 					if getStandardizationSettingsResp.needsStandardization
-						reasons.push "the registed compounds require standardization"
+						reasons.push "the registered compounds require standardization"
 					message += reasons.join(" and ")
 					message += ". Please contact an administrator for help."
 				response =

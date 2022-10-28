@@ -46,8 +46,8 @@ class StandardizationCurrentSettingsController extends Backbone.View
 	
 		@$('.bv_currentSettingsTable').dataTable
 			"aaData": [
-				[ "Settings Valid", settings.valid],
-				[ "Settings Invalid Reasons", invalidReasonsHtml],
+				[ "Settings valid", settings.valid],
+				[ "Settings invalid reasons", invalidReasonsHtml],
 				[ "Needs standardization", settings.needsStandardization],
 				[ "Reasons for needing standardization", needsRestandardizationReasonsHtml],
 				[ "Suggested configuration changes", suggestedConfigurationChangesHtml],
@@ -61,7 +61,7 @@ class StandardizationCurrentSettingsController extends Backbone.View
 			bInfo: false
 			bPaginate: false
 			bSort: false
-		@trigger 'ready', reasons
+		@trigger 'ready', settings
 
 class DownloadDryResultsController extends Backbone.View
 	template: _.template($("#DownloadDryRunResultsView").html())
@@ -660,7 +660,6 @@ class StandardizationController extends Backbone.View
 
 		@standardizationReasonPanel.render()
 		# @$('.bv_standardizationReasonPanel').hide()
-		@getStandardizationHistory()
 		@setupCurrentSettingsController()
 
 	openStandardizationControllerSocket: ->
@@ -712,10 +711,12 @@ class StandardizationController extends Backbone.View
 			@currentSettingsController.undelegateEvents()
 		@currentSettingsController = new StandardizationCurrentSettingsController
 			el: @$('.bv_currentSettings')
-		@currentSettingsController.on 'ready', @setDefaultReasons.bind(@)
+		@currentSettingsController.on 'ready', @handleCurrentSettingsControllerReady.bind(@)
 
-	setDefaultReasons : (reasons) =>
-		@standardizationReasonPanel.setDefaultReasons reasons
+	handleCurrentSettingsControllerReady : (settings) =>
+		@settings = settings
+		@getStandardizationHistory()
+		@standardizationReasonPanel.setDefaultReasons settings.needsRestandardizationReasons
 
 	getStandardizationHistory: ->
 		$.ajax
@@ -760,7 +761,7 @@ class StandardizationController extends Backbone.View
 		@$(".bv_standardizationHistory").html @standardizationHistorySummaryTableController.render().el
 
 	setupExecuteButtons: (mostRecentHistory) ->
-		if mostRecentHistory?
+		if mostRecentHistory? && @settings.valid == true
 			dryRunStatus = mostRecentHistory.dryRunStatus
 			standardizationStatus = mostRecentHistory.standardizationStatus
 			#Execution Dry-run Disabled when most recent history dryRunStatus is running or standardizationStatus running
@@ -770,6 +771,8 @@ class StandardizationController extends Backbone.View
 			if dryRunStatus != 'complete' or standardizationStatus is 'running' or standardizationStatus is 'complete'
 				@$('.bv_executeStandardization').attr 'disabled', 'disabled'
 		else
+			if @settings.valid != true
+				@$('.bv_executeDryRun').attr 'disabled', 'disabled'
 			@$('.bv_executeStandardization').attr 'disabled', 'disabled'
 
 	setupLastDryRunReportSummary: (mostRecentHistory)->		
