@@ -223,6 +223,78 @@ validateMetaData <- function(metaData, configList, username, formatSettings = li
 
   return(list(validatedMetaData=validatedMetaData, duplicateExperimentNamesAllowed=duplicateExperimentNamesAllowed, useExisting=useExisting))
 }
+
+
+# Do we have pipes %>% in ACAS R? 
+saveIncomingEndpointData <- function(codes, codeKind) {
+  library(dplyr)
+  # Saves incoming column data into their codetable / data dictionaries
+  # set up for endpoint manager data, only looking at "column name", "column units", "concentration units", "time units" for now... 
+  # We are going off just starting to just take one input columnName to save
+
+
+  # TEST IF UNITS 
+
+  # TODO - ADD NA Handling if codes is empty (or a list of NAs)
+
+  # we don't want to work with other codeKinds (for endpoint manager only right now... )
+  validCodeKinds = c("column name", "column units", "concentration units", "time units")
+
+  #Before we save the incoming code, we need to check if the code/codeKind pair already exists... 
+  #get relevant ddict data
+  ddictLists = getDDictValuesByTypeKindFormat(lsKind = codeKind, lsType = "data column")
+  print(ddictLists)
+  #ddictLists <- lapply(lsKinds = codeKind, getDDictValuesByTypeKindFormat, lsType = "data column", format = "json")
+  ddictValues <- rbindlist(lapply(ddictLists, jsonlite::fromJSON))
+
+  #if there are no codes for the codeKind, you can ignore it.. 
+
+  #TODO - remove codeExists logic
+  codeExists = FALSE
+  if(nrow(ddictValues) == 0) {
+    codeExists = FALSE 
+  } else {
+    #extract all the codes for a given codeKind
+    codesForCodeKind = ddictValues %>% filter(lsKind == codeKind) %>% pull(codeName)
+
+    #if the length of the codes for that codeKind is zero, we consider that there is no code there
+    if (length(codesForCodeKind) == 0) {
+      codeExists = FALSE
+    } else {
+      #if the code is in the list of codes for that codeKind, we can say it already exists
+      #TODO - REPLACE WITH SETDIFF() function 
+      codesToSave <- c()
+      for (code in codes)
+        if (!code %in% codesForCodeKind) {
+          codesToSave <- c(codesToSave, code)
+        } 
+    }
+  }
+
+  codeKindArray <- c()
+  codeTypeArray <- c()
+  for (x in codesToSave) {
+    codeKindArray <- c(codeKindArray, codeKind)
+    codeTypeArray <- c(codeTypeArray, "data column")
+
+  }
+
+  if (codeExists == FALSE) {
+    if (codeKind %in% validCodeKinds) {
+      newDdictValuesDF <- data.table(c(codesToSave), c(codesToSave), codeKindArray, codeTypeArray)
+      setnames(newDdictValuesDF, c("code", "name", "codeKind", "codeType"))
+      createCodeTablesFromJsonArray(newDdictValuesDF)
+    } else {
+      #TODO - work on error message 
+      return ("Invalid codeKind")
+    }
+  
+  } else {
+    #Do nothing, code already exists, dont add to the database
+  }
+
+}
+
 validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction, dryRun, configList) {
   # Valides the custom meta data section
   #
@@ -298,6 +370,7 @@ validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction
   
   # warn user if select list options don't exist
   lsKinds <-  selectListItems$lsKind
+  # (Hansen) - how does this function work? 
   ddictLists <- lapply(lsKinds, getDDictValuesByTypeKindFormat, lsType = customExperimentMetaDataDdictType, format = "json")
   ddictValues <- rbindlist(lapply(ddictLists, jsonlite::fromJSON))
   if(nrow(ddictValues) == 0) {
@@ -3448,7 +3521,14 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     customExperimentMetaDataValues <- NULL
   }
 
+  # Save endpoint data codes
+  saveIncomingEndpointData(selColumnOrderInfo$Units, "column units")
+  saveIncomingEndpointData(selColumnOrderInfo$valueKind, "column name")
+  saveIncomingEndpointData(selColumnOrderInfo$concUnits, "concentration units")
+  saveIncomingEndpointData(selColumnOrderInfo$timeUnit, "time units")
+
   ## SEL column order info
+  #saveSession('insideselColumnOrderInfo.RData')
   columnOrderStates <- createColumnOrderStates(selColumnOrderInfo, errorEnv, recordedBy, lsTransaction)
  
   
