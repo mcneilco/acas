@@ -19,19 +19,55 @@ class StandardizationCurrentSettingsController extends Backbone.View
 				@$('.bv_getCurrentSettingsError').show()
 
 	setupCurrentSettingsTable: (settings) ->
+
+		invalidReasonsHtml = ""
+		if settings.invalidReasons? && settings.invalidReasons.length > 0
+			# Convert array to a ul li list
+			invalidReasonsHtml = "<ul>"
+			for reason in settings.invalidReasons
+				invalidReasonsHtml += "<li>" + reason + "</li>"
+			invalidReasonsHtml += "</ul>"
+
+		needsRestandardizationReasonsHtml = ""
+		if settings.needsRestandardizationReasons? && settings.needsRestandardizationReasons.length > 0
+			# Convert array to a ul li list
+			needsRestandardizationReasonsHtml = "<ul>"
+			for reason in settings.needsRestandardizationReasons
+				needsRestandardizationReasonsHtml += "<li>" + reason + "</li>"
+			needsRestandardizationReasonsHtml += "</ul>"
+
+		suggestedConfigurationChangesHtml = ""
+		if settings.suggestedConfigurationChanges? && settings.suggestedConfigurationChanges != ""
+			# Convert array to a ul li list
+			suggestedConfigurationChangesHtml = "<ul>"
+			for reason in settings.suggestedConfigurationChanges
+				suggestedConfigurationChangesHtml += "<li>" + reason + "</li>"
+			suggestedConfigurationChangesHtml += "</ul>"
+
+
+		settingsTableData = [[ "Settings valid", settings.valid]]
+		if !settings.valid
+			# Only show invalid reasons if the settings are not valid
+			settingsTableData.push [ "Settings invalid reasons", invalidReasonsHtml]
+		settingsTableData.push [ "Needs standardization", settings.needsRestandardization]
+		if settings.needsRestandardization
+			# Only show reasons for needing standardization if the needsRestandardization is true
+			settingsTableData.push [ "Reasons for needing standardization", needsRestandardizationReasonsHtml]
+		if settings.valid && settings.suggestedConfigurationChangesHtml != null
+			# Only show suggestions for config changes if the settings are valid
+			settingsTableData.push [ "Suggested configuration changes", suggestedConfigurationChangesHtml]
+	
 		@$('.bv_currentSettingsTable').dataTable
-			"aaData": [
-				[ "Needs standardization", settings.needsStandardization],
-				[ "Time modified", UtilityFunctions::convertMSToYMDTimeDate(settings.modifiedDate, "12hr")]
-			]
+			"aaData": settingsTableData
 			"aoColumns": [
-				{ "sTitle": "Name" },
-				{ "sTitle": "Value" }
+				{ "sTitle": "Name", "sWidth": "20%" },
+				{ "sTitle": "Value",  "sWidth": "80%" }
 			]
 			bFilter: false
 			bInfo: false
 			bPaginate: false
 			bSort: false
+		@trigger 'ready', settings
 
 class DownloadDryResultsController extends Backbone.View
 	template: _.template($("#DownloadDryRunResultsView").html())
@@ -629,7 +665,6 @@ class StandardizationController extends Backbone.View
 
 		@standardizationReasonPanel.render()
 		# @$('.bv_standardizationReasonPanel').hide()
-		@getStandardizationHistory()
 		@setupCurrentSettingsController()
 
 	openStandardizationControllerSocket: ->
@@ -681,6 +716,12 @@ class StandardizationController extends Backbone.View
 			@currentSettingsController.undelegateEvents()
 		@currentSettingsController = new StandardizationCurrentSettingsController
 			el: @$('.bv_currentSettings')
+		@currentSettingsController.on 'ready', @handleCurrentSettingsControllerReady.bind(@)
+
+	handleCurrentSettingsControllerReady : (settings) =>
+		@settings = settings
+		@getStandardizationHistory()
+		@standardizationReasonPanel.setDefaultReasons settings.needsRestandardizationReasons
 
 	getStandardizationHistory: ->
 		$.ajax
@@ -700,6 +741,8 @@ class StandardizationController extends Backbone.View
 				@$('.bv_getStandardizationHistoryError').show()
 
 	isDryRunOrStandardizationInProgress: (mostRecentHistoryEntry) ->
+		if !mostRecentHistoryEntry?
+			return false
 		dryRunStatus = mostRecentHistoryEntry.dryRunStatus
 		standardizationStatus = mostRecentHistoryEntry.standardizationStatus
 		if dryRunStatus is 'running'
@@ -723,20 +766,22 @@ class StandardizationController extends Backbone.View
 		@$(".bv_standardizationHistory").html @standardizationHistorySummaryTableController.render().el
 
 	setupExecuteButtons: (mostRecentHistory) ->
-		dryRunStatus = mostRecentHistory.dryRunStatus
-		standardizationStatus = mostRecentHistory.standardizationStatus
-		#Execution Dry-run Disabled when most recent history dryRunStatus is running or standardizationStatus running
-		if dryRunStatus is "running" or standardizationStatus is "running"
-			@$('.bv_executeDryRun').attr 'disabled', 'disabled'
-		#Execute Standardization Disabled when most recent history dryRunStatus != "complete" or standardizationStatus == "running" or standardization == "complete"
-		if dryRunStatus != 'complete' or standardizationStatus is 'running' or standardizationStatus is 'complete'
+		if mostRecentHistory? && @settings.valid == true
+			dryRunStatus = mostRecentHistory.dryRunStatus
+			standardizationStatus = mostRecentHistory.standardizationStatus
+			#Execution Dry-run Disabled when most recent history dryRunStatus is running or standardizationStatus running
+			if dryRunStatus is "running" or standardizationStatus is "running"
+				@$('.bv_executeDryRun').attr 'disabled', 'disabled'
+			#Execute Standardization Disabled when most recent history dryRunStatus != "complete" or standardizationStatus == "running" or standardization == "complete"
+			if dryRunStatus != 'complete' or standardizationStatus is 'running' or standardizationStatus is 'complete'
+				@$('.bv_executeStandardization').attr 'disabled', 'disabled'
+		else
+			if @settings.valid != true
+				@$('.bv_executeDryRun').attr 'disabled', 'disabled'
 			@$('.bv_executeStandardization').attr 'disabled', 'disabled'
 
-
 	setupLastDryRunReportSummary: (mostRecentHistory)->		
-		standardizationStatus = mostRecentHistory.standardizationStatus
-		dryRunStatus = mostRecentHistory.dryRunStatus
-		if dryRunStatus == "complete" and standardizationStatus != "complete"
+		if mostRecentHistory? and mostRecentHistory.dryRunStatus == "complete" and mostRecentHistory.standardizationStatus != "complete"
 			@setupLastDryRunReportStatsSummaryTable()
 			@$(".bv_standardizationDryRunReportStats").show()
 			@standardizationDryRunReportSummaryController = new StandardizationDryRunReportSummaryController
@@ -809,7 +854,11 @@ class StandardizationReasonPanelController extends Backbone.View
 		@trigger 'readyForExecution', @$('.bv_reasonForStandardization')[0].value
 
 	handleCancelClicked: =>
-		console.log 'hiasdf'
 		@$('.bv_standardizationReasonPanel').modal "hide"
 		@trigger 'executionCancelled'
 
+	setDefaultReasons: (reasons) =>
+		# Set the reason in the text area bv_reasonForStandardization
+		if reasons? and reasons.length > 0
+			@$('.bv_reasonForStandardization')[0].value = reasons
+			@handleReasonChanged()
