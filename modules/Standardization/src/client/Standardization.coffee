@@ -20,38 +20,38 @@ class StandardizationCurrentSettingsController extends Backbone.View
 
 	setupCurrentSettingsTable: (settings) ->
 
-		if settings.invalidReasons? && settings.invalidReasons != ""
-			# Convert new line seperated string into ul list
-			invalidReasonsHtml = settings.invalidReasons.replace(/\n/g, "</li><li>")
-			invalidReasonsHtml = "<ul><li>" + invalidReasonsHtml + "</li></ul>"
-		else
-			invalidReasonsHtml = null
+		invalidReasonsHtml = ""
+		if settings.invalidReasons? && settings.invalidReasons.length > 0
+			# Convert array to a ul li list
+			invalidReasonsHtml = "<ul>"
+			for reason in settings.invalidReasons
+				invalidReasonsHtml += "<li>" + reason + "</li>"
+			invalidReasonsHtml += "</ul>"
 
-		if settings.needsRestandardizationReasons? && settings.needsRestandardizationReasons != ""
-			# Convert new line seperated string into ul list
-			needsRestandardizationReasonsHtml = settings.needsRestandardizationReasons.replace(/\n/g, "</li><li>")
-			needsRestandardizationReasonsHtml = "<ul><li>" + needsRestandardizationReasonsHtml + "</li></ul>"
-			needsStandardizationReasons = settings.needsRestandardizationReasons
-		else
-			needsRestandardizationReasonsHtml = null
-			needsStandardizationReasons = null
+		needsRestandardizationReasonsHtml = ""
+		if settings.needsRestandardizationReasons? && settings.needsRestandardizationReasons.length > 0
+			# Convert array to a ul li list
+			needsRestandardizationReasonsHtml = "<ul>"
+			for reason in settings.needsRestandardizationReasons
+				needsRestandardizationReasonsHtml += "<li>" + reason + "</li>"
+			needsRestandardizationReasonsHtml += "</ul>"
 
+		suggestedConfigurationChangesHtml = ""
 		if settings.suggestedConfigurationChanges? && settings.suggestedConfigurationChanges != ""
-			msg = "Your standardizer settings are incomplete and have been automatically interpreted.<br>Please update your standardizer configuration with the following to avoid ambiguity:"
-			suggestedConfigurationChangesHtml = settings.suggestedConfigurationChanges.replace(/\n/g, "</li><li>")
-			suggestedConfigurationChangesHtml = "<ul><li>" + suggestedConfigurationChangesHtml + "</li></ul>"
-			suggestedConfigurationChangesHtml = "<b>#{msg}</b><br>#{suggestedConfigurationChangesHtml}"
-		else
-			suggestedConfigurationChangesHtml = null
+			# Convert array to a ul li list
+			suggestedConfigurationChangesHtml = "<ul>"
+			for reason in settings.suggestedConfigurationChanges
+				suggestedConfigurationChangesHtml += "<li>" + reason + "</li>"
+			suggestedConfigurationChangesHtml += "</ul>"
 
 
 		settingsTableData = [[ "Settings valid", settings.valid]]
 		if !settings.valid
 			# Only show invalid reasons if the settings are not valid
 			settingsTableData.push [ "Settings invalid reasons", invalidReasonsHtml]
-		settingsTableData.push [ "Needs standardization", settings.needsStandardization]
-		if settings.needsStandardization
-			# Only show reasons for needing standardization if the needsStandardization is true
+		settingsTableData.push [ "Needs standardization", settings.needsRestandardization]
+		if settings.needsRestandardization
+			# Only show reasons for needing standardization if the needsRestandardization is true
 			settingsTableData.push [ "Reasons for needing standardization", needsRestandardizationReasonsHtml]
 		if settings.valid && settings.suggestedConfigurationChangesHtml != null
 			# Only show suggestions for config changes if the settings are valid
