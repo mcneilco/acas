@@ -271,16 +271,16 @@ saveIncomingEndpointData <- function(codes, codeKind) {
     }
   }
 
-  codeKindArray <- c()
-  codeTypeArray <- c()
-  for (x in codesToSave) {
-    codeKindArray <- c(codeKindArray, codeKind)
-    codeTypeArray <- c(codeTypeArray, "data column")
-  }
-
+  #if the input codeKind is valid, save the codes to the database
   if (codeKind %in% validCodeKinds) {
-    newDdictValuesDF <- data.table(c(codesToSave), c(codesToSave), codeKindArray, codeTypeArray)
-    setnames(newDdictValuesDF, c("code", "name", "codeKind", "codeType"))
+    #--- construct the input dataframe needed to save the codes --- 
+    newDdictValuesDF <- data.table(c(codesToSave), c(codesToSave))
+    setnames(newDdictValuesDF, c("code", "name"))
+
+    #set the codeKind/codeType values to the dataframe
+    newDdictValuesDF$codeKind <- codeKind
+    newDdictValuesDF$codeType <- "data column"
+
     createCodeTablesFromJsonArray(newDdictValuesDF)
   } else {
     return ("Invalid codeKind")
