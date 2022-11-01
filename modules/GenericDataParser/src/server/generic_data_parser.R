@@ -243,7 +243,7 @@ saveIncomingEndpointData <- function(codes, codeKind) {
   library(dplyr)
 
   # Remove NAs from the codes
-  codes<-codes[!is.na(codes)]
+  codes <- codes[!is.na(codes)]
 
   # If there are no codes after removing NAs, end the script early
   if (length(codes) == 0) {
@@ -2043,6 +2043,18 @@ createNewProtocol <- function(metaData, lsTransaction, recordedBy, columnOrderSt
       stringValue = metaData$"Assay Tree Rule"[1],
       lsTransaction= lsTransaction)
   }
+
+  protocolValues[[length(protocolValues)+1]] <- createStateValue(
+    recordedBy = recordedBy,
+    lsType = "codeValue",
+    lsKind = "strict endpoint matching",
+    codeValue = racas::applicationSettings$client.protocol.strictEndpointMatchingDefault,
+    codeType = "boolean",
+    codeKind = "boolean",
+    codeOrigin = "ACAS DDICT",
+    lsTransaction= lsTransaction)
+
+
   protocolStates[[length(protocolStates)+1]] <- createProtocolState(protocolValues=protocolValues,
                                                                           lsTransaction = lsTransaction, 
                                                                           recordedBy=recordedBy, 
