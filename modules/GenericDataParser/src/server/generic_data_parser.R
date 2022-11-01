@@ -239,8 +239,16 @@ saveIncomingEndpointData <- function(codes, codeKind) {
   #   N/A
 
   # TEST IF UNITS 
-  # TODO - ADD NA Handling if codes is empty (or a list of NAs)
+  # TODO - Fix codesToSave error when there are no codes that already exist
   library(dplyr)
+
+  # Remove NAs from the codes
+  codes<-codes[!is.na(codes)]
+
+  # If there are no codes after removing NAs, end the script early
+  if (length(codes) == 0) {
+    return (NULL)
+  }
 
   # we don't want to work with other codeKinds (for endpoint manager only right now... )
   validCodeKinds = c("column name", "column units", "concentration units", "time units")
