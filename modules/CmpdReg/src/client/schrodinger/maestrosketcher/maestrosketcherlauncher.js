@@ -6,7 +6,7 @@ $(function() {
             function waitForReady (resolve, reject) {
                 var _a;
                 maestro = $(el)[0].contentWindow.Module;
-                const sketcherImportText = (_a = this.maestro) === null || _a === void 0 ? void 0 : _a.sketcher_import_text;
+                const sketcherImportText = (_a = this.maestro) === null || _a === void 0 ? void 0 : (_a.sketcher_import_text || _a.sketcherImportText);
                 // Wait until sketcher is initialized
                 if (!sketcherImportText) {
                     self = this;
