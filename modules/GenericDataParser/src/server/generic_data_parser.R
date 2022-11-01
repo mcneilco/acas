@@ -249,35 +249,38 @@ saveIncomingEndpointData <- function(codes, codeKind) {
   #get relevant ddict data
   ddictLists = getDDictValuesByTypeKindFormat(lsKind = codeKind, lsType = "data column")
   ddictValues <- rbindlist(lapply(ddictLists, jsonlite::fromJSON))
+  #codesToSave <- codes
+  #print("---Start---")
+  #print(codesToSave)
+  #print("---End---")
 
   #if there are no codes for the codeKind, you can ignore it.. 
 
+  #WAIT - this will result in cases with no codes not saving any new codes... 
   if(nrow(ddictValues) == 0) {
-    #if there are no existing codes, we can save all the input codes
-    codesToSave <- codes 
+    #codesToSave <- codes
+    return (NULL)
   } else {
-    #if there are existing codes, we need to check to see if the input codes already exist
-    
     #extract all the codes for a given codeKind
     codesForCodeKind = ddictValues %>% filter(lsKind == codeKind) %>% pull(codeName)
 
+    #if the length of the codes for that codeKind is zero, we consider that there is no code there
     if (length(codesForCodeKind) == 0) {
-      #if the length of the codes for that codeKind is zero, we consider that there are...
-      #..no matching codes and we can save all the input codes 
-      codesToSave <- codes
+      return (NULL)
+      #codesToSave <- codes
     } else {
-      #If there are existing codes, we only save the new codes not in the database
+      #we only want to save the new codes not already in the database
       codesToSave <- setdiff(codes, codesForCodeKind)
     }
   }
 
   #if the input codeKind is valid, save the codes to the database
   if (codeKind %in% validCodeKinds) {
-    #--- construct the input dataframe needed to save the codes --- 
+    #--- construct the input dataframe needed to save the codes 
     newDdictValuesDF <- data.table(c(codesToSave), c(codesToSave))
     setnames(newDdictValuesDF, c("code", "name"))
 
-    #set the codeKind/codeType values to the dataframe
+    #set the codeKind/codeType values
     newDdictValuesDF$codeKind <- codeKind
     newDdictValuesDF$codeType <- "data column"
 
