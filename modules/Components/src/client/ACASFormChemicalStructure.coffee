@@ -108,7 +108,7 @@ class MaestroChemicalStructureController extends Backbone.View
 			@maestro.sketcher_import_text(molStr)
 		else
 			# Older versions of maestro
-			@maestro.sketcherImportMolBlock(molStr)
+			@maestro.sketcherImportText(molStr)
 
 	clear: ->
 		@maestro.clearSketcher()
