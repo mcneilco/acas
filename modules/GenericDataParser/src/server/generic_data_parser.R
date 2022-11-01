@@ -253,16 +253,20 @@ saveIncomingEndpointData <- function(codes, codeKind) {
   #if there are no codes for the codeKind, you can ignore it.. 
 
   if(nrow(ddictValues) == 0) {
-    return (NULL)
+    #if there are no existing codes, we can save all the input codes
+    codesToSave <- codes 
   } else {
+    #if there are existing codes, we need to check to see if the input codes already exist
+    
     #extract all the codes for a given codeKind
     codesForCodeKind = ddictValues %>% filter(lsKind == codeKind) %>% pull(codeName)
 
-    #if the length of the codes for that codeKind is zero, we consider that there is no code there
     if (length(codesForCodeKind) == 0) {
-      return (NULL)
+      #if the length of the codes for that codeKind is zero, we consider that there are...
+      #..no matching codes and we can save all the input codes 
+      codesToSave <- codes
     } else {
-      #we only want to save the new codes not already in the database
+      #If there are existing codes, we only save the new codes not in the database
       codesToSave <- setdiff(codes, codesForCodeKind)
     }
   }
