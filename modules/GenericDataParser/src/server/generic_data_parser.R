@@ -3518,6 +3518,139 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
       addError(paste0("Caught an error trying to validate dose response data. Please contact your administrator.: ", e$message))
     })
   }
+
+  # TODO - make a function that will perform this...
+  # If the experiment is associate with an existing protocol, validate column headers against it
+  if (!newProtocol) {
+    workingProtocol <- protocol
+    #find out if the protocol has strict endpoint matching enabled or not 
+    for (lsState in workingProtocol$lsStates) {
+      tryCatch( {      
+        if (lsState[['lsKind']] == "protocol metadata") {
+          for (value in lsState[['lsValues']]) {
+            if (value[['lsKind']] == "strict endpoint matching" & value[['ignored']] == FALSE) {
+              if (value[['codeValue']] == "true") {
+                protocolHasStrictEndpointMatching = TRUE
+              } else {
+                protocolHasStrictEndpointMatching = FALSE
+              }   
+            }
+          }
+        }
+
+      }, error = function(error_message) {
+        addError(paste0("There was an error fetching protocol data", error_message))
+      })
+     
+    }
+
+
+    if (protocolHasStrictEndpointMatching == TRUE) {
+
+      #we create a dataframe of the endpoint data associated with the protocol 
+      protocolEndpointDataFrame <- data.frame(
+        columnName=character(),
+        units=character(),
+        dataType=character()
+      )
+
+      #go through the protocol data to wrangle the endpoint data into the dataframe
+      for (lsState in workingProtocol$lsStates) {
+        if (lsState[['lsKind']] == "data column order") {
+
+          #if the name/units/data type cant be found, submit a NA
+          columnNameEntry = NA
+          unitsEntry = NA
+          dataTypeEntry = NA
+
+          for (value in lsState[['lsValues']]) {
+            #if the lsValue is ignored, skip it 
+            if (value[['ignored']] == FALSE) {
+
+              #depending on what the lsKind is, record the data
+              if (value[['lsKind']] == "column name") {
+                columnNameEntry = value[['stringValue']]
+              } else if (value[['lsKind']] == "column units") {
+                unitsEntry = value[['stringValue']]
+              } else if (value[['lsKind']] == "column type") {
+                dataTypeEntry = value[['stringValue']]
+              }
+              
+            }
+          }
+
+          #add the endpoint to the dataframe
+          dataEntry <- list(columnName = columnNameEntry, units = unitsEntry, dataType= dataTypeEntry)
+          protocolEndpointDataFrame = rbind(protocolEndpointDataFrame, dataEntry, stringsAsFactors=FALSE)
+
+        }
+      }
+
+      #want to take a look at what is inside this thing...
+      #saveSession('nov_2_2022_test_session.RData')
+
+      # TODO - need to check if time/concentration units is enabled for this ACAS
+
+      # TODO - Should "Assay Comment" be ignored??? 
+      for (experimentRowNum in nrow(selColumnOrderInfo)) {
+        experimentRowData <- selColumnOrderInfo[experimentRowNum,]
+        experimentRowName = experimentRowData$valueKind
+        experimentRowUnits = experimentRowData$Units
+        experimentRowDataType = experimentRowData$valueType
+        
+        #If the column is the "Assay Comment", we ignore it
+        if (experimentRowName != "Assay Comment") {
+          #the experiment column must match at least one endpoint in the protocol to pass 
+          experimentRowMatchesEndpoint = FALSE
+
+          # we need to check if the experiment row data matches any one of the protocol endpoints
+          for (protocolRowNum in nrow(protocolEndpointDataFrame)) {
+            # if a protocol value is NA, we consider it a match (since any value is acceptable)
+            # if the experiment values also match the protocol values, we consider it a match
+            # all three (rowNamesMatch, rowUnitsMatch, and rowTypesMatch) must be true
+            protocolRowData <- protocolEndpointDataFrame[protocolRowNum,]
+
+            protocolRowName = protocolEndpointDataFrame$columnName
+            if (is.na(protocolRowName) | experimentRowName == protocolRowName) {
+              rowNamesMatch = TRUE 
+            } else {
+              rowNamesMatch = FALSE
+            }
+
+            protocolRowUnits = protocolEndpointDataFrame$units
+            if (is.na(protocolRowUnits) | experimentRowUnits == protocolRowUnits) {
+              rowUnitsMatch = TRUE 
+            } else {
+              rowUnitsMatch = FALSE
+            }
+
+            protocolRowDataType = protocolEndpointDataFrame$dataType
+            if (is.na(protocolRowDataType) | experimentRowDataType == protocolRowDataType) {
+              rowTypesMatch = TRUE 
+            } else {
+              rowTypesMatch = FALSE
+            }
+
+            #if the experiment column matches one of the endpoints for the protocol, record it and move onto the next column
+            if (rowNamesMatch & rowUnitsMatch & rowTypesMatch) {
+              experimentRowMatchesEndpoint = TRUE
+              break 
+            }
+
+          }
+
+          if (experimentRowMatchesEndpoint == FALSE) {
+            addError(paste0("Experiment column data not found in corresponding protocol that has strict endpoint matching enabled:", experimentRowName, experimentRowUnits, experimentRowDataType))
+          }
+        }
+
+        
+      }
+
+    }
+
+    
+  } # End of validation step 
   
   # If there are errors, do not allow an upload
   errorFree <- length(messenger()$errors)==0
@@ -3538,7 +3671,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     validatedCustomMetaDataStates <- NULL
     customExperimentMetaDataValues <- NULL
   }
-
+  
   # Save endpoint data codes
   saveIncomingEndpointData(selColumnOrderInfo$Units, "column units")
   saveIncomingEndpointData(selColumnOrderInfo$valueKind, "column name")
