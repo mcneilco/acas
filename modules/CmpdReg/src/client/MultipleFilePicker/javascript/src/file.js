@@ -26,6 +26,7 @@ $(function () {
                 this.set({name: file.name});
                 this.set({size: file.size});
                 this.set({type: file.type});
+                this.set({writeup: file.writeup})
                 this.set({file: file});
                 this.set({url: ''});
 
@@ -356,7 +357,7 @@ $(function () {
                 if(false){
                     this.$('form .fileInputTable').append('<tr class="fileInputRow"><td class="fileInput"><input type="file" class="file-upload" name="file[]"/></td><td class="fileType"><select class="ie-description" name="description[]"></select></td><td></td></tr>');
                 } else {
-                    this.$('form .fileInputTable').append('<tr class="fileInputRow"><td class="fileInput"><input type="file" class="file-upload" name="file[]"/></td><td class="fileType"><select class="ie-description" name="description[]"></select></td><td class="cancel">cancel</td></tr>');
+                    this.$('form .fileInputTable').append('<tr class="fileInputRow"><td class="fileInput"><input type="file" class="file-upload" name="file[]"/></td><td class="fileType"><select class="ie-description" name="description[]"></select></td><td class="writeupWrapper"><textarea class="writeup" name="writeup[]"/></td><td class="cancel">cancel</td></tr>');
                 }
                 var desController = this.setupCodeController(this.$('.ie-description:last'), 'fileTypes', 'description');
             }
