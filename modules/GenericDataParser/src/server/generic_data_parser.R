@@ -225,7 +225,6 @@ validateMetaData <- function(metaData, configList, username, formatSettings = li
 }
 
 
-# Do we have pipes %>% in ACAS R? 
 saveIncomingEndpointData <- function(codes, codeKind) {
   # Saves incoming column data into their codetable / data dictionaries
   # set up for endpoint manager data, only looking at "column name", "column units", "concentration units", "time units" for now... 
@@ -238,8 +237,6 @@ saveIncomingEndpointData <- function(codes, codeKind) {
   # Returns:
   #   N/A
 
-  # TEST IF UNITS 
-  # TODO - Fix codesToSave error when there are no codes that already exist
   library(dplyr)
 
   # Remove NAs from the codes
@@ -257,16 +254,11 @@ saveIncomingEndpointData <- function(codes, codeKind) {
   #get relevant ddict data
   ddictLists = getDDictValuesByTypeKindFormat(lsKind = codeKind, lsType = "data column")
   ddictValues <- rbindlist(lapply(ddictLists, jsonlite::fromJSON))
-  #codesToSave <- codes
-  #print("---Start---")
-  #print(codesToSave)
-  #print("---End---")
 
   #if there are no codes for the codeKind, you can ignore it.. 
-
-  #WAIT - this will result in cases with no codes not saving any new codes... 
+  #TODO - this will result in cases with no codes not saving any new codes... 
   if(nrow(ddictValues) == 0) {
-    #codesToSave <- codes
+    #TODO - codesToSave <- codes
     return (NULL)
   } else {
     #extract all the codes for a given codeKind
@@ -275,7 +267,7 @@ saveIncomingEndpointData <- function(codes, codeKind) {
     #if the length of the codes for that codeKind is zero, we consider that there is no code there
     if (length(codesForCodeKind) == 0) {
       return (NULL)
-      #codesToSave <- codes
+      #TODO - codesToSave <- codes
     } else {
       #we only want to save the new codes not already in the database
       codesToSave <- setdiff(codes, codesForCodeKind)
@@ -376,7 +368,6 @@ validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction
   
   # warn user if select list options don't exist
   lsKinds <-  selectListItems$lsKind
-  # (Hansen) - how does this function work? 
   ddictLists <- lapply(lsKinds, getDDictValuesByTypeKindFormat, lsType = customExperimentMetaDataDdictType, format = "json")
   ddictValues <- rbindlist(lapply(ddictLists, jsonlite::fromJSON))
   if(nrow(ddictValues) == 0) {
