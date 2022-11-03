@@ -37,11 +37,11 @@ class CurveCuratorAppController extends Backbone.View
 	loadCurvesForExptCode: (exptCode, curveID) =>
 		UtilityFunctions::showProgressModal @$('.bv_loadCurvesModal')
 		@ccc.setupCurator(exptCode, curveID)
-		resultViewerURL = "/openExptInQueryTool?experiment="+exptCode
-		@$('.bv_resultViewerBtn').attr('href',resultViewerURL)
-		@$('.bv_resultViewerBtn').html('Open in '+window.conf.service.result.viewer.displayName)
-		@$('.bv_resultViewerBtn').show()
 
+		@openExperimentInQueryToolController = new OpenExperimentInQueryToolController
+			code: exptCode 
+			experimentStatus: 'approved'
+		$('.bv_openExperimentInQueryToolPlaceholder').html @openExperimentInQueryToolController.render().el
 
 	hideLoadCurvesModal: =>
 		UtilityFunctions::hideProgressModal @$('.bv_loadCurvesModal')
