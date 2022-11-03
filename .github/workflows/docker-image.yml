@@ -75,8 +75,8 @@ jobs:
       - name: Run docker-compose up - assumes racas-oss:${{ env.ACAS_TAG }} and acas-roo-server-oss:${{ env.ACAS_TAG }}-indigo exist and are up to date
         id: dockerComposeUp
         run: |
-          echo ::set-output name=docker_compose_pull_failure::false
-          docker-compose -f "docker-compose.yml" up -d || echo ::set-output name=docker_compose_pull_failure::true
+          echo "docker_compose_pull_failure=false" >> $GITHUB_OUTPUT
+          docker-compose -f "docker-compose.yml" up -d || echo "docker_compose_pull_failure=true" >> $GITHUB_OUTPUT
       - name: Get docker images fallback tag name
         run: |
           echo "DEFAULT_BRANCH_ACAS_TAG=$(echo ${{ github.event.repository.default_branch }} | sed -e 's/\//-/g')" >> $GITHUB_ENV
