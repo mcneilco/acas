@@ -3640,7 +3640,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
           }
 
           if (experimentRowMatchesEndpoint == FALSE) {
-            addError(paste0("Experiment column data not found in corresponding protocol that has strict endpoint matching enabled:", experimentRowName, experimentRowUnits, experimentRowDataType))
+            addError(paste0("The result type '", experimentRowName, "' with data type '", experimentRowDataType, "' and units '", experimentRowUnits, "' is not one of the allowed result types for this protocol. Please revise your file or contact an ACAS administrator to update the allowed result types for this protocol."))
           }
         }
 
