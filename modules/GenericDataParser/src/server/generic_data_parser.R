@@ -3520,30 +3520,12 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   }
 
   # TODO - make a function that will perform this...
+
   # If the experiment is associate with an existing protocol, validate column headers against it
   if (!newProtocol) {
     workingProtocol <- protocol
-    #find out if the protocol has strict endpoint matching enabled or not 
-    for (lsState in workingProtocol$lsStates) {
-      tryCatch( {      
-        if (lsState[['lsKind']] == "protocol metadata") {
-          for (value in lsState[['lsValues']]) {
-            if (value[['lsKind']] == "strict endpoint matching" & value[['ignored']] == FALSE) {
-              if (value[['codeValue']] == "true") {
-                protocolHasStrictEndpointMatching = TRUE
-              } else {
-                protocolHasStrictEndpointMatching = FALSE
-              }   
-            }
-          }
-        }
 
-      }, error = function(error_message) {
-        addError(paste0("There was an error fetching protocol data", error_message))
-      })
-     
-    }
-
+    protocolHasStrictEndpointMatching <- checkProtocolStrictEndpointMatching(protocol)
 
     if (protocolHasStrictEndpointMatching == TRUE) {
 
@@ -3586,12 +3568,6 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
         }
       }
 
-      #want to take a look at what is inside this thing...
-      #saveSession('nov_2_2022_test_session.RData')
-
-      # TODO - need to check if time/concentration units is enabled for this ACAS
-
-      # TODO - Should "Assay Comment" be ignored??? 
       for (experimentRowNum in nrow(selColumnOrderInfo)) {
         experimentRowData <- selColumnOrderInfo[experimentRowNum,]
         experimentRowName = experimentRowData$valueKind
@@ -4190,6 +4166,25 @@ getFormatParameters <- function(rawOnlyFormat, customFormatSettings, inputFormat
     o$splitSubjects <- NULL
   }
   return(o)
+}
+
+checkProtocolStrictEndpointMatching <- function(protocol) {
+  # Check whether the protocol has strict endpoint matching set or not 
+  # Returns true or false
+
+  for (lsState in protocol$lsStates) {
+    if (lsState[['lsKind']] == "protocol metadata") {
+      for (value in lsState[['lsValues']]) {
+        if (value[['lsKind']] == "strict endpoint matching" & value[['ignored']] == FALSE) {
+          if (value[['codeValue']] == "true") {
+            return(TRUE)
+          } else {
+            return(FALSE)
+          }   
+        }
+      }
+    }
+  }
 }
 
 getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calculatedResults, inputFormat, mainCode, formatParameters, errorEnv) {
