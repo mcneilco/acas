@@ -9,7 +9,7 @@ body {
 
 div#upload-app {
     /* ORIGINAL WIDTH width: 510px;*/
-    width: 625px;
+    width: 825px;
 
     position: fixed;
     bottom: 60px; important!
@@ -45,7 +45,7 @@ span.drop-text {
 }
 #drop-view {
     /* ORIGINAL WIDTH width: 500px;*/
-    width: 615px;
+    width: 815px;
     height: 200px;
     overflow: auto;
 }
@@ -57,6 +57,10 @@ div.hover {
 }
 .fileTable .description {
     width: 90px;
+}
+.fileTable .writeup {
+    width: 200px;
+    height: 50px;
 }
 .notuploaded {
     color: #ffcccc;
@@ -82,10 +86,14 @@ select.ie-description {
 
 }
 .fileInputTable .fileInput {
-    width: 364px;
+    width: 353px;
 }
 .fileInputTable .fileType {
-    width: 185px;
+    width: 184px;
+}
+.fileInputTable .writeup {
+    width: 200px;
+    height: 50px;
 }
 .fileInputTable .cancel {
     /*    width: 110px;*/
@@ -147,7 +155,10 @@ input.cancelBtn.btn, input.reset.btn, input.upload.btn {
     width: 100px;
 }
 .statusHead {
-    width: 70px;
+    width: 80px;
+}
+.writeupHead {
+    width: 200px;
 }
 .removeHead {
     width: 40px;
