@@ -28,7 +28,7 @@ jobs:
           echo "NEXT_TAG=$(echo $LAST_TAG | awk -F-dev -v OFS=-dev '{$NF += 1 ; print}')" >> $GITHUB_ENV
       # Trigger the build
       - name: Trigger the tagger workflow with branch ${{env.BRANCH_NAME}} and tag ${{ env.NEXT_TAG }}
-        uses: actions/github-script@v5
+        uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.ACAS_WORKFLOWS_TOKEN }}
           script: |
