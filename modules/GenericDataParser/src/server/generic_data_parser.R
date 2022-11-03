@@ -3529,6 +3529,8 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
 
     if (protocolHasStrictEndpointMatching == TRUE) {
 
+      protocolEndpointDataFrame <- getProtocolEndpointDataFrame(protocol)
+
       #we create a dataframe of the endpoint data associated with the protocol 
       protocolEndpointDataFrame <- data.frame(
         columnName=character(),
@@ -4166,6 +4168,51 @@ getFormatParameters <- function(rawOnlyFormat, customFormatSettings, inputFormat
     o$splitSubjects <- NULL
   }
   return(o)
+}
+
+getProtocolEndpointDataFrame <- function(protocol) {
+  # Collects all the endpoint values in the protocol object and returns a data frame of them
+
+  # First, we create an empty dataframe for the endpoint data associated with the protocol 
+  protocolEndpointDataFrame <- data.frame(
+    columnName=character(),
+    units=character(),
+    dataType=character()
+  )
+
+  #go through the protocol data to wrangle the endpoint data into the dataframe
+  for (lsState in protocol$lsStates) {
+    if (lsState[['lsKind']] == "data column order") {
+
+      #if the name/units/data type cant be found, submit a NA
+      columnNameEntry = NA
+      unitsEntry = NA
+      dataTypeEntry = NA
+
+      for (value in lsState[['lsValues']]) {
+        #if the lsValue is ignored, skip it 
+        if (value[['ignored']] == FALSE) {
+
+          #depending on what the lsKind is, record the data
+          if (value[['lsKind']] == "column name") {
+            columnNameEntry = value[['stringValue']]
+          } else if (value[['lsKind']] == "column units") {
+            unitsEntry = value[['stringValue']]
+          } else if (value[['lsKind']] == "column type") {
+            dataTypeEntry = value[['stringValue']]
+          }
+          
+        }
+      }
+
+      #add the endpoint to the dataframe
+      dataEntry <- list(columnName = columnNameEntry, units = unitsEntry, dataType= dataTypeEntry)
+      protocolEndpointDataFrame = rbind(protocolEndpointDataFrame, dataEntry, stringsAsFactors=FALSE)
+
+    }
+  }
+
+  return(protocolEndpointDataFrame)
 }
 
 checkProtocolStrictEndpointMatching <- function(protocol) {
