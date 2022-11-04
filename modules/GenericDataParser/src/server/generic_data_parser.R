@@ -4130,21 +4130,21 @@ validateExperimentColumns <- function(selColumnOrderInfo, protocolEndpointDataFr
         # all three (rowNamesMatch, rowUnitsMatch, and rowTypesMatch) must be true
         protocolRowData <- protocolEndpointDataFrame[protocolRowNum,]
 
-        protocolRowName = protocolEndpointDataFrame$columnName
+        protocolRowName = protocolRowData$columnName
         if (is.na(protocolRowName) | experimentRowName == protocolRowName) {
           rowNamesMatch = TRUE 
         } else {
           rowNamesMatch = FALSE
         }
 
-        protocolRowUnits = protocolEndpointDataFrame$units
+        protocolRowUnits = protocolRowData$units
         if (is.na(protocolRowUnits) | experimentRowUnits == protocolRowUnits) {
           rowUnitsMatch = TRUE 
         } else {
           rowUnitsMatch = FALSE
         }
 
-        protocolRowDataType = protocolEndpointDataFrame$dataType
+        protocolRowDataType = protocolRowData$dataType
         if (is.na(protocolRowDataType) | experimentRowDataType == protocolRowDataType) {
           rowTypesMatch = TRUE 
         } else {
