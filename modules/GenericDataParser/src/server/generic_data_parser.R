@@ -255,19 +255,19 @@ saveIncomingEndpointData <- function(codes, codeKind) {
   ddictLists = getDDictValuesByTypeKindFormat(lsKind = codeKind, lsType = "data column")
   ddictValues <- rbindlist(lapply(ddictLists, jsonlite::fromJSON))
 
-  #if there are no codes for the codeKind, you can ignore it.. 
-  #TODO - this will result in cases with no codes not saving any new codes... 
+  # if the object is empty, we assume that no codes exist yet, so we will save all the input codes
   if(nrow(ddictValues) == 0) {
-    #TODO - codesToSave <- codes
-    return (NULL)
+    codesToSave <- codes
+
+  #if the object is not empty, we will check to see which of the existing codes overlap with our input codes
   } else {
     #extract all the codes for a given codeKind
     codesForCodeKind = ddictValues %>% filter(lsKind == codeKind) %>% pull(codeName)
 
-    #if the length of the codes for that codeKind is zero, we consider that there is no code there
+    #if the length of the codes for that codeKind is zero, we consider that there are no existing codes
     if (length(codesForCodeKind) == 0) {
-      return (NULL)
-      #TODO - codesToSave <- codes
+      # we can then treat all the codes as if they are new, and save them
+      codesToSave <- codes
     } else {
       #we only want to save the new codes not already in the database
       codesToSave <- setdiff(codes, codesForCodeKind)
@@ -280,10 +280,11 @@ saveIncomingEndpointData <- function(codes, codeKind) {
     newDdictValuesDF <- data.table(c(codesToSave), c(codesToSave))
     setnames(newDdictValuesDF, c("code", "name"))
 
-    #set the codeKind/codeType values
+    # set the codeKind/codeType values
     newDdictValuesDF$codeKind <- codeKind
     newDdictValuesDF$codeType <- "data column"
 
+    # save the values 
     createCodeTablesFromJsonArray(newDdictValuesDF)
   } else {
     return ("Invalid codeKind")
