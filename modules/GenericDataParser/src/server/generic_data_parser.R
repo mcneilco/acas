@@ -4113,7 +4113,7 @@ validateExperimentColumns <- function(selColumnOrderInfo, protocolEndpointDataFr
   # Raises errors if an experiment column is not valid 
   # Only used for protocols with strict endpoint enabled
 
-  for (experimentRowNum in nrow(selColumnOrderInfo)) {
+  for (experimentRowNum in seq(1, nrow(selColumnOrderInfo))) {
     experimentRowData <- selColumnOrderInfo[experimentRowNum,]
     experimentRowName = experimentRowData$valueKind
     experimentRowUnits = experimentRowData$Units
@@ -4125,7 +4125,7 @@ validateExperimentColumns <- function(selColumnOrderInfo, protocolEndpointDataFr
       experimentRowMatchesEndpoint = FALSE
 
       # we need to check if the experiment row data matches any one of the protocol endpoints
-      for (protocolRowNum in nrow(protocolEndpointDataFrame)) {
+      for (protocolRowNum in seq(1,nrow(protocolEndpointDataFrame))) {
         # if a protocol value is NA, we consider it a match (since any value is acceptable)
         # if the experiment values also match the protocol values, we consider it a match
         # all three (rowNamesMatch, rowUnitsMatch, and rowTypesMatch) must be true
