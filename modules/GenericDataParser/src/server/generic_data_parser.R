@@ -4119,50 +4119,47 @@ validateExperimentColumns <- function(selColumnOrderInfo, protocolEndpointDataFr
     experimentRowUnits = experimentRowData$Units
     experimentRowDataType = experimentRowData$valueType
     
-    #If the column is the "Assay Comment", we ignore it
-    if (experimentRowName != "Assay Comment") {
-      #the experiment column must match at least one endpoint in the protocol to pass 
-      experimentRowMatchesEndpoint = FALSE
+    #the experiment column must match at least one endpoint in the protocol to pass 
+    experimentRowMatchesEndpoint = FALSE
 
-      # we need to check if the experiment row data matches any one of the protocol endpoints
-      for (protocolRowNum in seq(1,nrow(protocolEndpointDataFrame))) {
-        # if a protocol value is NA, we consider it a match (since any value is acceptable)
-        # if the experiment values also match the protocol values, we consider it a match
-        # all three (rowNamesMatch, rowUnitsMatch, and rowTypesMatch) must be true
-        protocolRowData <- protocolEndpointDataFrame[protocolRowNum,]
+    # we need to check if the experiment row data matches any one of the protocol endpoints
+    for (protocolRowNum in seq(1,nrow(protocolEndpointDataFrame))) {
+      # if a protocol value is NA, we consider it a match (since any value is acceptable)
+      # if the experiment values also match the protocol values, we consider it a match
+      # all three (rowNamesMatch, rowUnitsMatch, and rowTypesMatch) must be true
+      protocolRowData <- protocolEndpointDataFrame[protocolRowNum,]
 
-        protocolRowName = protocolRowData$columnName
-        if (is.na(protocolRowName) | experimentRowName == protocolRowName) {
-          rowNamesMatch = TRUE 
-        } else {
-          rowNamesMatch = FALSE
-        }
-
-        protocolRowUnits = protocolRowData$units
-        if (is.na(protocolRowUnits) | experimentRowUnits == protocolRowUnits) {
-          rowUnitsMatch = TRUE 
-        } else {
-          rowUnitsMatch = FALSE
-        }
-
-        protocolRowDataType = protocolRowData$dataType
-        if (is.na(protocolRowDataType) | experimentRowDataType == protocolRowDataType) {
-          rowTypesMatch = TRUE 
-        } else {
-          rowTypesMatch = FALSE
-        }
-
-        #if the experiment column matches one of the endpoints for the protocol, record it and move onto the next column
-        if (rowNamesMatch & rowUnitsMatch & rowTypesMatch) {
-          experimentRowMatchesEndpoint = TRUE
-          break 
-        }
-
+      protocolRowName = protocolRowData$columnName
+      if (is.na(protocolRowName) | experimentRowName == protocolRowName) {
+        rowNamesMatch = TRUE 
+      } else {
+        rowNamesMatch = FALSE
       }
 
-      if (experimentRowMatchesEndpoint == FALSE) {
-        addError(paste0("The result type '", experimentRowName, "' with data type '", experimentRowDataType, "' and units '", experimentRowUnits, "' is not one of the allowed result types for this protocol. Please revise your file or contact an ACAS administrator to update the allowed result types for this protocol."))
+      protocolRowUnits = protocolRowData$units
+      if (is.na(protocolRowUnits) | experimentRowUnits == protocolRowUnits) {
+        rowUnitsMatch = TRUE 
+      } else {
+        rowUnitsMatch = FALSE
       }
+
+      protocolRowDataType = protocolRowData$dataType
+      if (is.na(protocolRowDataType) | experimentRowDataType == protocolRowDataType) {
+        rowTypesMatch = TRUE 
+      } else {
+        rowTypesMatch = FALSE
+      }
+
+      #if the experiment column matches one of the endpoints for the protocol, record it and move onto the next column
+      if (rowNamesMatch & rowUnitsMatch & rowTypesMatch) {
+        experimentRowMatchesEndpoint = TRUE
+        break 
+      }
+
+    }
+
+    if (experimentRowMatchesEndpoint == FALSE) {
+      addError(paste0("The result type '", experimentRowName, "' with data type '", experimentRowDataType, "' and units '", experimentRowUnits, "' is not one of the allowed result types for this protocol. Please revise your file or contact an ACAS administrator to update the allowed result types for this protocol."))
     }
   }
 
