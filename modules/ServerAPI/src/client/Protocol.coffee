@@ -765,11 +765,11 @@ class EndpointListController extends AbstractFormController
 			@$(".bv_endpointColumnRemove").remove()
 			#remove add endpoint button
 			@$(".bv_addEndpoint").remove()
-			$(".bv_endpointManagerInstructions").hide()
+			@$(".bv_endpointManagerInstructions").hide()
 		
 		if @options.newProtocol == true
 			@$(".bv_downloadFiles").hide()
-			$(".bv_endpointManagerInstructions").hide()
+			@$(".bv_endpointManagerInstructions").hide()
 
 		#check whether or not to display time and concentration columns in the endpoint table
 		@showTimeAndConcentration()
@@ -783,10 +783,10 @@ class EndpointListController extends AbstractFormController
 				@$(".bv_remove_row").hide()
 
 
-		if @options.readOnly == false || @options.newProtocol == true 	#Don't render associated experiments if protocol is new or readOnly
+		if @options.readOnly == false || @options.newProtocol == false 	#Don't render associated experiments if protocol is new or readOnly
 			@getExperimentSummaryTable()
 		else #if the table isn't rendered, don't render the download files button either
-			$(".bv_downloadFiles").hide() 
+			@$(".bv_downloadFiles").hide() 
 
 		@
 	
@@ -806,8 +806,8 @@ class EndpointListController extends AbstractFormController
 
 	getExperimentSummaryTable: =>
 		#hide previously shown warnings/success text
-		$(".bv_downloadSuccess").hide()
-		$(".bv_downloadWarning").hide()
+		@$(".bv_downloadSuccess").hide()
+		@$(".bv_downloadWarning").hide()
 
 		protocolCode = @model.escape('codeName')		
 		$.ajax
@@ -817,7 +817,7 @@ class EndpointListController extends AbstractFormController
 			url: "/api/experiments/protocolCodename/#{protocolCode}" #ExperimentServiceRoutes.coffee route
 			success: (experiments) =>
 				@setupExperimentSummaryTable experiments
-				$(".bv_experimentTableControllerTitle").html "Experiments using " + protocolCode + ":"
+				@$(".bv_experimentTableControllerTitle").html "Experiments using " + protocolCode + ":"
 
 	resetBackgroundColor: (tr) => 
 		# Reset the background color of all rows
@@ -885,8 +885,8 @@ class EndpointListController extends AbstractFormController
 			endpintRowDataTypeMatch = false	
 
 		#hide previously shown warnings/success text associated w/ previous table
-		$(".bv_downloadSuccess").hide()
-		$(".bv_downloadWarning").hide()
+		@$(".bv_downloadSuccess").hide()
+		@$(".bv_downloadWarning").hide()
 		$.ajax
 			type: 'GET'
 			#there are two similar routes in ExperimentBrowserRoutes.coffee and ExperimentServiceRoutes.coffee
@@ -915,10 +915,10 @@ class EndpointListController extends AbstractFormController
 						if endpointRowValueMatch == true && endpointRowUnitsMatch == true && endpointRowDataTypeMatch == true
 							filtered_experiments.push experiment
 							break
-				$(".bv_experimentTableController").empty() #remove the last experimentTableController
+				@$(".bv_experimentTableController").empty() #remove the last experimentTableController
 				@setupExperimentSummaryTable filtered_experiments #add a new one with the filtered experiments
 				#generate a title for the experiment table controller 
-				$(".bv_experimentTableControllerTitle").html "Experiments using " + protocolCode + " containing '" + rowEndpointName + " (" + rowUnits + " , " + rowDataType + ")' data:"
+				@$(".bv_experimentTableControllerTitle").html "Experiments using " + protocolCode + " containing '" + rowEndpointName + " (" + rowUnits + " , " + rowDataType + ")' data:"
 				
 
 	handleEndpointRowPressed: =>
@@ -1042,13 +1042,12 @@ class EndpointListController extends AbstractFormController
 
 		@experimentSummaryTable.render()
 		
-		#TODO - should there be a title over the table with the endpoint that is being searched for? 
 		if experiments.length == 0
-			$(".bv_experimentTableController").empty() 
-			$(".bv_experimentTableController").append "There are no matching experiments using this protocol and endpoint."
-			$(".bv_downloadFiles").hide()
+			@$(".bv_experimentTableController").empty() 
+			@$(".bv_experimentTableController").append "There are no matching experiments using this protocol and endpoint."
+			@$(".bv_downloadFiles").hide()
 		else
-			$(".bv_downloadFiles").show()
+			@$(".bv_downloadFiles").show()
 	
 	
 	downloadFiles: => 
@@ -1109,15 +1108,15 @@ class EndpointListController extends AbstractFormController
 				a.click();
 
 				#Update GUI to indicate succesful download
-				$(".bv_downloadWarning").hide()
-				$(".bv_downloadSuccess").show()
+				@$(".bv_downloadWarning").hide()
+				@$(".bv_downloadSuccess").show()
 
 			error: (err) =>
 				console.log "Could not download files" + err
 
 				#Update GUI to indicate files could not be downloaded
-				$(".bv_downloadSuccess").hide()
-				$(".bv_downloadWarning").show()
+				@$(".bv_downloadSuccess").hide()
+				@$(".bv_downloadWarning").show()
 				@serviceReturn = null
 			dataType: 'json'
 
