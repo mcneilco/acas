@@ -120,7 +120,7 @@
             <span style="display: inline-block; position: relative; bottom: -3px;">Strict Endpoint Matching</span>
             <br/>
             <br/>
-            <p><i>When Strict Endpoint Matching is enabled, experiment uploads that try to use columns not defined below will be rejected with an error. When this option is disabled, ACAS will simply give warnings about these columns but allow them to proceed, and they'll appear in the list below after upload.</i></p>
+            <p><i>When Strict Endpoint Matching is enabled, <%- window.conf.experiment.label %> uploads that try to use columns not defined below will be rejected with an error. When this option is disabled, ACAS will simply give warnings about these columns but allow them to proceed, and they'll appear in the list below after upload.</i></p>
             <br/>
         </div>
         <div class="bv_endpointTable">
@@ -272,7 +272,7 @@
 
 <script type="text/template" id="EndpointListView" xmlns="http://www.w3.org/1999/html">
     <table class="table table-bordered table-striped table-hover endpointTable" style="margin: 0px; padding: 0px; border: 0px; width: 100%; border: 0.5px solid; border-color: grey;">
-        <p class="bv_endpointManagerInstructions"><i>Click on a row to view experiments using protocols with that data.</i></p>
+        <p class="bv_endpointManagerInstructions"><i>Click on a row to view <%- window.conf.experiment.label %>s using <%- window.conf.protocol.label %>s with that data.</i></p>
         <thead style="">
             <tr>
                 <th>Column Name</th>
