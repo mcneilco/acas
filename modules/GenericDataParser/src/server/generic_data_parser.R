@@ -4182,8 +4182,8 @@ getProtocolStrictEndpointMatching <- function(protocol) {
     }
   }
 
-  # TODO - remove this after database migration
-  return(FALSE)
+  # If the protocol doesn't have a value, use the default setting in the conf 
+  return(racas::applicationSettings$client.protocol.strictEndpointMatchingDefault)
 }
 
 getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calculatedResults, inputFormat, mainCode, formatParameters, errorEnv) {
