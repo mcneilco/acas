@@ -4159,7 +4159,7 @@ validateExperimentColumns <- function(selColumnOrderInfo, protocolEndpointDataFr
     }
 
     if (experimentRowMatchesEndpoint == FALSE) {
-      addError(paste0("The result type '", experimentRowName, "' with data type '", experimentRowDataType, "' and units '", experimentRowUnits, "' is not one of the allowed result types for this protocol. Please revise your file or contact an ACAS administrator to update the allowed result types for this protocol."))
+      addError(paste0("The result type '", experimentRowName, "' with data type '", experimentRowDataType, "' and units '", experimentRowUnits, "' is not one of the allowed result types for this protocol. Please revise your file or contact an ACAS administrator to update the allowed result types for this ", racas::applicationSettings$client.protol.label, "."))
     }
   }
 
