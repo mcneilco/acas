@@ -4089,13 +4089,23 @@ getProtocolEndpointData <- function(protocol) {
             unitsEntry = value[['stringValue']]
           } else if (value[['lsKind']] == "column type") {
             dataTypeEntry = value[['stringValue']]
+          } else if (value[['lsKind']] == "column concentration") {
+            concEntry = value[['codeValue']]
+          } else if (value[['lsKind']] == "column conc units") {
+            concUnitsEntry = value[['codeValue']]
           }
           
         }
       }
 
       #add the endpoint to the dataframe
-      dataEntry <- list(columnName = columnNameEntry, units = unitsEntry, dataType= dataTypeEntry)
+      dataEntry <- list(
+        columnName = columnNameEntry, 
+        units = unitsEntry, 
+        dataType = dataTypeEntry, 
+        conc = concEntry, 
+        concUnits = concUnitsEntry)
+
       protocolEndpointDataFrame = rbind(protocolEndpointDataFrame, dataEntry, stringsAsFactors=FALSE)
 
     }
@@ -4114,6 +4124,8 @@ validateExperimentColumns <- function(selColumnOrderInfo, protocolEndpointDataFr
     experimentRowName = experimentRowData$valueKind
     experimentRowUnits = experimentRowData$Units
     experimentRowDataType = experimentRowData$valueType
+    experimentRowConc = experimentRowData$Conc
+    experimentRowConcUnits = experimentRowData$ConcUnits
     
     #the experiment column must match at least one endpoint in the protocol to pass 
     experimentRowMatchesEndpoint = FALSE
@@ -4125,6 +4137,7 @@ validateExperimentColumns <- function(selColumnOrderInfo, protocolEndpointDataFr
       # all three (rowNamesMatch, rowUnitsMatch, and rowTypesMatch) must be true
       protocolRowData <- protocolEndpointDataFrame[protocolRowNum,]
 
+      # check if column name matches
       protocolRowName = protocolRowData$columnName
       if (is.na(protocolRowName) | experimentRowName == protocolRowName) {
         rowNamesMatch = TRUE 
@@ -4132,6 +4145,7 @@ validateExperimentColumns <- function(selColumnOrderInfo, protocolEndpointDataFr
         rowNamesMatch = FALSE
       }
 
+      # check if units match
       protocolRowUnits = protocolRowData$units
       if (is.na(protocolRowUnits) | experimentRowUnits == protocolRowUnits) {
         rowUnitsMatch = TRUE 
@@ -4139,15 +4153,32 @@ validateExperimentColumns <- function(selColumnOrderInfo, protocolEndpointDataFr
         rowUnitsMatch = FALSE
       }
 
+      # check if data type matches
       protocolRowDataType = protocolRowData$dataType
       if (is.na(protocolRowDataType) | experimentRowDataType == protocolRowDataType) {
         rowTypesMatch = TRUE 
       } else {
         rowTypesMatch = FALSE
       }
+    
+      # check if concentration matches  
+      protocolRowConc = protocolRowData$conc
+      if (is.na(protocolRowConc) | experimentRowConc == protocolRowConc) {
+        concMatch = TRUE 
+      } else {
+        concMatch = FALSE
+      }
+
+      # check if concentration units match
+      protocolRowConcUnits = protocolRowData$concUnits
+      if (is.na(protocolRowConcUnits) | experimentRowConcUnits == protocolRowConcUnits) {
+        concUnitsMatch = TRUE 
+      } else {
+        concUnitsMatch = FALSE
+      }
 
       #if the experiment column matches one of the endpoints for the protocol, record it and move onto the next column
-      if (rowNamesMatch & rowUnitsMatch & rowTypesMatch) {
+      if (rowNamesMatch & rowUnitsMatch & rowTypesMatch & concMatch & concUnitsMatch) {
         experimentRowMatchesEndpoint = TRUE
         break 
       }
