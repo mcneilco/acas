@@ -227,8 +227,6 @@ validateMetaData <- function(metaData, configList, username, formatSettings = li
 
 saveEndpointCodeTables <- function(codes, codeKind) {
   # Saves incoming column data into their codetable / data dictionaries
-  # set up for endpoint manager data, only looking at "column name", "column units", "concentration units", "time units" for now... 
-  # We are going off just starting to just take one input columnName to save
   # 
   # Args:
   #   codes:      array of the names of the endpoint values
@@ -247,7 +245,7 @@ saveEndpointCodeTables <- function(codes, codeKind) {
     return (NULL)
   }
 
-  # we don't want to work with other codeKinds (for endpoint manager only right now... )
+  # we don't want to work with other codeKinds (this is set up for endpoint manager only right now... )
   validCodeKinds = c("column name", "column units", "concentration units", "time units")
 
   #Before we save the incoming code, we need to check if the code/codeKind pair already exists... 
@@ -3549,8 +3547,6 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   saveEndpointCodeTables(selColumnOrderInfo$concUnits, "concentration units")
   saveEndpointCodeTables(selColumnOrderInfo$timeUnit, "time units")
 
-  ## SEL column order info
-  #saveSession('insideselColumnOrderInfo.RData')
   columnOrderStates <- createColumnOrderStates(selColumnOrderInfo, errorEnv, recordedBy, lsTransaction)
  
   
