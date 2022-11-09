@@ -261,6 +261,7 @@ saveEndpointCodeTables <- function(codes, codeKind) {
   } else {
     #extract all the codes for a given codeKind
     codesForCodeKind = ddictValues %>% filter(lsKind == codeKind) %>% pull(codeName)
+    saveSession('insideDdictValues.RData')
 
     #if the length of the codes for that codeKind is zero, we consider that there are no existing codes
     if (length(codesForCodeKind) == 0) {
@@ -4077,6 +4078,8 @@ getProtocolEndpointData <- function(protocol) {
       columnNameEntry = NA
       unitsEntry = NA
       dataTypeEntry = NA
+      concEntry = NA
+      concUnitsEntry = NA
 
       for (value in lsState[['lsValues']]) {
         #if the lsValue is ignored, skip it 
@@ -4090,9 +4093,9 @@ getProtocolEndpointData <- function(protocol) {
           } else if (value[['lsKind']] == "column type") {
             dataTypeEntry = value[['stringValue']]
           } else if (value[['lsKind']] == "column concentration") {
-            concEntry = value[['codeValue']]
+            concEntry = value[['stringValue']]
           } else if (value[['lsKind']] == "column conc units") {
-            concUnitsEntry = value[['codeValue']]
+            concUnitsEntry = value[['stringValue']]
           }
           
         }
