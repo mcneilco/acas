@@ -3,5 +3,6 @@
 		<td class="size"><%= size %> bytes</td>
 		<td><select class="description" ></select></td>
 		<td class="<%= uploaded ? '' : 'not' %>uploaded"><%= uploaded ? '' : 'not ' %>uploaded</td>
+		<td><textarea disabled class="writeup" ><%= writeup %></textarea></td>
 		<td><input type="button" class="delete" value="remove"></td>
 </script>
