@@ -1,6 +1,7 @@
 """
 Interface for fetching data for ACAS API
 """
+import re
 from ldclient.client import LDClient
 from ldclient.api.requester import SUPPORTED_SERVER_VERSION
 from ldclient.base import version_str_as_tuple
@@ -108,7 +109,29 @@ def ld_user_to_acas_user_code_table(ld_user):
     }
     return acas_user
 
-def get_users(client, ls_type = None, ls_kind = None, role_name = None):
+def get_acas_only_acl_group_permissions(groups, projects):
+    # Gets permissions for groups that are formatted like "ACAS_ONLY_ACL_GROUP_ProjectX"
+    # These groups are used to grant project access to users to ACAS but not to Live Design
+    acas_acl_group_permissions = []
+    GROUP_NAME_REGEX = "ACAS_ONLY_ACL_GROUP_(.*)"
+    for g in groups:
+        acas_only_acl_group_match = re.match(GROUP_NAME_REGEX, g["name"])
+        if acas_only_acl_group_match is not None:
+            project_name = acas_only_acl_group_match.group(1)
+            # Get the matching project id from the project name
+            project_id = None
+            for p in projects:
+                if p.name == project_name:
+                    project_id = p.id
+                    break
+            if project_id is not None:
+                acas_acl_group_permissions.append({
+                    "project_id": project_id,
+                    "group_id": g["id"]
+                })
+    return acas_acl_group_permissions
+
+def get_users(client, ls_type = None, ls_kind = None, role_name = None, use_acas_only_acl_groups = True):
     # ld_users = client.list_users()
     ld_users = client.client.get("/users?include_permissions=false", '')
     if ls_type == None and ls_kind == None and role_name == None:
@@ -118,6 +141,10 @@ def get_users(client, ls_type = None, ls_kind = None, role_name = None):
         permissions = client.list_permissions()
         memberships = client.list_memberships()
         projects = client.projects()
+    
+        if use_acas_only_acl_groups == "true":
+            permissions.extend(get_acas_only_acl_group_permissions(groups, projects))
+
         user_projects = {}
         for p in permissions:
             for g in groups:
@@ -167,12 +194,16 @@ def get_users_roles(client, users):
         users.append(user)
     return users
 
-def get_user(client, username):
+def get_user(client, username, use_acas_only_acl_groups = True):
     user = client.get_user(username)
     permissions = client.list_permissions()
     memberships = client.list_memberships()
     projects = client.projects()
     groups = client.list_groups()
+
+    if use_acas_only_acl_groups == "true":
+        permissions.extend(get_acas_only_acl_group_permissions(groups, projects))
+
     user_memberships = [m for m in memberships if m['user_id'] == user['id']]
     user_groups = [next(g for g in groups if g["id"]==m["group_id"]) for m in user_memberships]
     user_projects = {}
