@@ -225,7 +225,7 @@ validateMetaData <- function(metaData, configList, username, formatSettings = li
 }
 
 
-saveIncomingEndpointData <- function(codes, codeKind) {
+saveEndpointCodeTables <- function(codes, codeKind) {
   # Saves incoming column data into their codetable / data dictionaries
   # set up for endpoint manager data, only looking at "column name", "column units", "concentration units", "time units" for now... 
   # We are going off just starting to just take one input columnName to save
@@ -3544,10 +3544,10 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   }
   
   # Save endpoint data codes
-  saveIncomingEndpointData(selColumnOrderInfo$Units, "column units")
-  saveIncomingEndpointData(selColumnOrderInfo$valueKind, "column name")
-  saveIncomingEndpointData(selColumnOrderInfo$concUnits, "concentration units")
-  saveIncomingEndpointData(selColumnOrderInfo$timeUnit, "time units")
+  saveEndpointCodeTables(selColumnOrderInfo$Units, "column units")
+  saveEndpointCodeTables(selColumnOrderInfo$valueKind, "column name")
+  saveEndpointCodeTables(selColumnOrderInfo$concUnits, "concentration units")
+  saveEndpointCodeTables(selColumnOrderInfo$timeUnit, "time units")
 
   ## SEL column order info
   #saveSession('insideselColumnOrderInfo.RData')
