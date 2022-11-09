@@ -782,8 +782,7 @@ class EndpointListController extends AbstractFormController
 				#hide remove buttons
 				@$(".bv_remove_row").hide()
 
-
-		if @options.readOnly == false || @options.newProtocol == false 	#Don't render associated experiments if protocol is new or readOnly
+		if @options.readOnly == false && @options.newProtocol == false 	#Only render experiments if the protocol is not new and is not read only 
 			@getExperimentSummaryTable()
 		else #if the table isn't rendered, don't render the download files button either
 			@$(".bv_downloadFiles").hide() 
@@ -923,7 +922,8 @@ class EndpointListController extends AbstractFormController
 
 	handleEndpointRowPressed: =>
 		#disable logic if endpoint list controller is read only (since there won't be an experiment controller)
-		if @options.readOnly
+		#disable logic if the endpoint list is for a new protocol too
+		if @options.readOnly == true || @options.newProtocol == true
 			return @
 		
 		#Otherwise, when an endpoint row is pressed, we want to filter the experiment summary table so it only displays the experiments...
