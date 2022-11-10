@@ -2243,7 +2243,7 @@ validateProject <- function(projectName, configList, username, protocolName = NU
             projectCode <- systemProjectsDT[name == projectName]$code
             if(nrow(protocolProjectMatches) == 0) {
               protocolProjectExists <- FALSE
-              addError(paste0("The project that this ",racas::applicationSettings$client.protocol.label," belongs to is no longer available please contact your administrator or if you have the appropriate privileges re-assign the ",racas::applicationSettings$client.protocol.label," to a new project"), errorEnv = errorEnv)
+              addError("The project that this ",racas::applicationSettings$client.protocol.label," belongs to is no longer available please contact your administrator or if you have the appropriate privileges re-assign the ",racas::applicationSettings$client.protocol.label," to a new project", errorEnv = errorEnv)
             } else {
               protocolProjectExists <- TRUE
             }
@@ -2259,7 +2259,7 @@ validateProject <- function(projectName, configList, username, protocolName = NU
             userProjectDT <- rbindlist(lapply(projectList, rmNullObs), fill = TRUE)
             userHasAccess <- nrow(userProjectDT[code == protocolProject & ignored == FALSE]) > 0
             if(!userHasAccess) {
-              addError(paste0("The ",racas::applicationSettings$client.protocol.label," you entered is being used in a project that you do not have access to."), errorEnv = errorEnv)
+              addError("The ",racas::applicationSettings$client.protocol.label," you entered is being used in a project that you do not have access to.", errorEnv = errorEnv)
             }
           }
         }
