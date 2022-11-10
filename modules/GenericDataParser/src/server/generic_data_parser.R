@@ -4117,6 +4117,27 @@ getProtocolEndpointData <- function(protocol) {
   return(protocolEndpointDataFrame)
 }
 
+checkIfEndpointsMatch <- function(protocolValue, experimentValue) {
+  # Checks if the protocol value matches the experiment value
+  # Has handling for cases where one or both are NA
+  
+  if (is.na(protocolValue)) {
+    # if the protocol is NA, then anything is acceptable, automatically return a match
+    endpointsMatch = TRUE
+  } else if (length(experimentValue) == 0) {
+    # if the value is empty, it is not a match,
+    # we also have to handle it separately before running operators or it will break the logic 
+    # and throw a "argument is of length zero" error 
+    endpointsMatch = FALSE
+  } else if (experimentValue == protocolValue) {
+    # if protocol and experiment match, then we return a match...
+    endpointsMatch = TRUE 
+  } else {
+    # if they don't match then we say it failed
+    endpointsMatch = FALSE
+  }
+}
+
 validateExperimentColumns <- function(selColumnOrderInfo, protocolEndpointDataFrame) {
   # Checks if the experiment columns names/units/data type are found in the protocol endpoint data
   # Raises errors if an experiment column is not valid 
@@ -4140,45 +4161,12 @@ validateExperimentColumns <- function(selColumnOrderInfo, protocolEndpointDataFr
       # all three (rowNamesMatch, rowUnitsMatch, and rowTypesMatch) must be true
       protocolRowData <- protocolEndpointDataFrame[protocolRowNum,]
 
-      # check if column name matches
-      protocolRowName = protocolRowData$columnName
-      if (is.na(protocolRowName) | experimentRowName == protocolRowName) {
-        rowNamesMatch = TRUE 
-      } else {
-        rowNamesMatch = FALSE
-      }
-
-      # check if units match
-      protocolRowUnits = protocolRowData$units
-      if (is.na(protocolRowUnits) | experimentRowUnits == protocolRowUnits) {
-        rowUnitsMatch = TRUE 
-      } else {
-        rowUnitsMatch = FALSE
-      }
-
-      # check if data type matches
-      protocolRowDataType = protocolRowData$dataType
-      if (is.na(protocolRowDataType) | experimentRowDataType == protocolRowDataType) {
-        rowTypesMatch = TRUE 
-      } else {
-        rowTypesMatch = FALSE
-      }
-    
-      # check if concentration matches  
-      protocolRowConc = protocolRowData$conc
-      if (is.na(protocolRowConc) | experimentRowConc == protocolRowConc) {
-        concMatch = TRUE 
-      } else {
-        concMatch = FALSE
-      }
-
-      # check if concentration units match
-      protocolRowConcUnits = protocolRowData$concUnits
-      if (is.na(protocolRowConcUnits) | experimentRowConcUnits == protocolRowConcUnits) {
-        concUnitsMatch = TRUE 
-      } else {
-        concUnitsMatch = FALSE
-      }
+      rowNamesMatch = checkIfEndpointsMatch(protocolValue = protocolRowData$columnName, experimentValue = experimentRowName)
+      rowUnitsMatch = checkIfEndpointsMatch(protocolValue = protocolRowData$units, experimentValue = experimentRowUnits)
+      rowTypesMatch = checkIfEndpointsMatch(protocolValue = protocolRowData$dataType, experimentValue = experimentRowDataType)
+      concMatch = checkIfEndpointsMatch(protocolValue = protocolRowData$conc, experimentValue = experimentRowConc)
+      # TODO only check if concentration is enabled in the conf 
+      concUnitsMatch = checkIfEndpointsMatch(protocolValue = protocolRowData$concUnits, experimentValue = experimentRowConcUnits)
 
       #if the experiment column matches one of the endpoints for the protocol, record it and move onto the next column
       if (rowNamesMatch & rowUnitsMatch & rowTypesMatch & concMatch & concUnitsMatch) {
