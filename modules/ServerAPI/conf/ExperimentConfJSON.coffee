@@ -153,31 +153,31 @@
 				typeName: "numericValue"
 				kindName: "column order"
 			,
-				typeName: "stringValue"
+				typeName: "codeValue"
 				kindName: "column name"
 			,
-				typeName: "stringValue"
+				typeName: "codeValue"
 				kindName: "column units"
 			,
-				typeName: "stringValue"
+				typeName: "codeValue"
 				kindName: "column type"
 			,
-				typeName: "stringValue"
+				typeName: "codeValue"
 				kindName: "hide column"	
 			,
 				typeName: "numericValue"
 				kindName: "column concentration"	
 			,
-				typeName: "stringValue"
+				typeName: "codeValue"
 				kindName: "column conc units"	
 			,
 				typeName: "numericValue"
 				kindName: "column time"	
 			,
-				typeName: "stringValue"
+				typeName: "codeValue"
 				kindName: "column time units"	
 			,
-				typeName: "stringValue"
+				typeName: "codeValue"
 				kindName: "condition column"	
 			,
 				typeName: "codeValue"

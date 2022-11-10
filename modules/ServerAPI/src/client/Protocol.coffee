@@ -581,7 +581,7 @@ class EndpointController extends ACASFormStateTableFormController
 EndpointsValuesConf = [
 	key: 'column name'
 	modelDefaults:
-		type: 'stringValue'
+		type: 'codeValue'
 		kind: 'column name'
 		codeType: 'data column'
 		codeKind: 'column name'
@@ -601,7 +601,7 @@ EndpointsValuesConf = [
 ,
 	key: 'column units'
 	modelDefaults:
-		type: 'stringValue'
+		type: 'codeValue'
 		kind: 'column units'
 		codeType: 'data column'
 		codeKind: 'column units'
@@ -621,7 +621,7 @@ EndpointsValuesConf = [
 ,
 	key: 'column type'
 	modelDefaults:
-		type: 'stringValue'
+		type: 'codeValue'
 		kind: 'column type'
 		codeType: 'data column'
 		codeKind: 'column type'
@@ -653,7 +653,7 @@ EndpointsValuesConf = [
 ,
 	key: 'column time units'
 	modelDefaults:
-		type: 'stringValue'
+		type: 'codeValue'
 		kind: 'column time units'
 		codeType: 'data column'
 		codeKind: 'column time units'
@@ -687,7 +687,7 @@ EndpointsValuesConf = [
 ,
 	key: 'column conc units'
 	modelDefaults:
-		type: 'stringValue'
+		type: 'codeValue'
 		kind: 'column conc units'
 		codeType: 'data column'
 		codeKind: 'column conc units'
@@ -707,7 +707,7 @@ EndpointsValuesConf = [
 ,
 	key: 'hide column'
 	modelDefaults:
-		type: 'stringValue'
+		type: 'codeValue'
 		kind: 'hide column'
 		codeType: 'boolean'
 		codeKind: 'boolean'
@@ -720,7 +720,7 @@ EndpointsValuesConf = [
 ,
 	key: 'condition column'
 	modelDefaults:
-		type: 'stringValue'
+		type: 'codeValue'
 		kind: 'condition column'
 		codeType: 'boolean'
 		codeKind: 'boolean'
@@ -917,13 +917,13 @@ class EndpointListController extends AbstractFormController
 									for j in i.lsValues
 										#only looking at the data that is not ignored
 										if j.lsKind == "column name" and j.ignored == false
-											if j.stringValue == rowEndpointName
+											if j.codeValue == rowEndpointName
 												endpointRowValueMatch = true
 										if j.lsKind == "column units" and j.ignored == false
-											if j.stringValue == rowUnits
+											if j.codeValue == rowUnits
 												endpointRowUnitsMatch = true
 										if j.lsKind == "column type" and j.ignored == false
-											if j.stringValue == rowDataType 
+											if j.codeValue == rowDataType 
 												endpointRowDataTypeMatch = true
 
 								#if all the criteria pass, record the experiment, end the loop early & move on to the next one

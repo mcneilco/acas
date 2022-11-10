@@ -4087,15 +4087,15 @@ getProtocolEndpointData <- function(protocol) {
 
           #depending on what the lsKind is, record the data
           if (value[['lsKind']] == "column name") {
-            columnNameEntry = value[['stringValue']]
+            columnNameEntry = value[['codeValue']]
           } else if (value[['lsKind']] == "column units") {
-            unitsEntry = value[['stringValue']]
+            unitsEntry = value[['codeValue']]
           } else if (value[['lsKind']] == "column type") {
-            dataTypeEntry = value[['stringValue']]
+            dataTypeEntry = value[['codeValue']]
           } else if (value[['lsKind']] == "column concentration") {
-            concEntry = value[['stringValue']]
+            concEntry = value[['codeValue']]
           } else if (value[['lsKind']] == "column conc units") {
-            concUnitsEntry = value[['stringValue']]
+            concUnitsEntry = value[['codeValue']]
           }
           
         }
@@ -4442,11 +4442,13 @@ generateExptColStateValues <- function(dataRow, recordedBy, lsTransaction){
                                   numericValue = dataRow$order
     )}
   if (!is.null(dataRow$valueKind) && !is.na(dataRow$valueKind)) {
-	values[[length(values)+1]] <- createStateValue(lsType = "stringValue",
+	values[[length(values)+1]] <- createStateValue(lsType = "codeValue",
                                   lsKind = "column name",
                                   lsTransaction = lsTransaction,
                                   recordedBy = recordedBy,
-                                  stringValue = dataRow$valueKind
+                                  codeValue = dataRow$valueKind,
+                                  codeType = "data column",
+                                  codeKind = "column name" 
     )}
   if (!is.null(dataRow$Conc) && !is.na(dataRow$Conc)) {
   	values[[length(values)+1]] <- createStateValue(lsType = "numericValue",
@@ -4456,11 +4458,13 @@ generateExptColStateValues <- function(dataRow, recordedBy, lsTransaction){
                                     numericValue = as.numeric(dataRow$Conc)
       )}
   if (!is.null(dataRow$concUnits) && !is.na(dataRow$concUnits)) {
-  	values[[length(values)+1]] <- createStateValue(lsType = "stringValue",
+  	values[[length(values)+1]] <- createStateValue(lsType = "codeValue",
                                     lsKind = "column conc units",
                                     lsTransaction = lsTransaction,
                                     recordedBy = recordedBy,
-                                    stringValue = as.character(dataRow$concUnits)
+                                    codeValue = as.character(dataRow$concUnits),
+                                    codeType = "data column",
+                                    codeKind = "column conc units" 
       )}          
   if (!is.null(dataRow$time) && !is.na(dataRow$time)) {
   	values[[length(values)+1]] <- createStateValue(lsType = "numericValue",
@@ -4470,39 +4474,50 @@ generateExptColStateValues <- function(dataRow, recordedBy, lsTransaction){
                                     numericValue = as.numeric(dataRow$time)
       )}
   if (!is.null(dataRow$timeUnit) && !is.na(dataRow$timeUnit)) {
-  	values[[length(values)+1]] <- createStateValue(lsType = "stringValue",
+  	values[[length(values)+1]] <- createStateValue(lsType = "codeValue",
                                     lsKind = "column time units",
                                     lsTransaction = lsTransaction,
                                     recordedBy = recordedBy,
-                                    stringValue = as.character(dataRow$timeUnit)
+                                    codeValue = as.character(dataRow$timeUnit),
+                                    codeType = "data column",
+                                    codeKind = "column time units" 
       )}  
   if (!is.null(dataRow$Units) && !is.na(dataRow$Units)) {
-	values[[length(values)+1]] <- createStateValue(lsType = "stringValue",
+	values[[length(values)+1]] <- createStateValue(lsType = "codeValue",
                                   lsKind = "column units",
                                   lsTransaction = lsTransaction,
                                   recordedBy = recordedBy,
-                                  stringValue = as.character(dataRow$Units)
+                                  codeValue = as.character(dataRow$Units),
+                                  codeType = "data column",
+                                  codeKind = "column units" 
     )}
   if (!is.null(dataRow$valueType) && !is.na(dataRow$valueType)) {
-	values[[length(values)+1]] <- createStateValue(lsType = "stringValue",
+	values[[length(values)+1]] <- createStateValue(lsType = "codeValue",
                                   lsKind = "column type",
                                   lsTransaction = lsTransaction,
                                   recordedBy = recordedBy,
-                                  stringValue = dataRow$valueType
+                                  codeValue = dataRow$valueType,
+                                  codeType = "data column",
+                                  codeKind = "column type" 
     )}
   if (!is.null(dataRow$hideColumn) && !is.na(dataRow$hideColumn)) {
-	values[[length(values)+1]] <- createStateValue(lsType = "stringValue",
+	values[[length(values)+1]] <- createStateValue(lsType = "codeValue",
                                   lsKind = "hide column",
                                   lsTransaction = lsTransaction,
                                   recordedBy = recordedBy,
-                                  stringValue = as.character(dataRow$hideColumn)
+                                  codeValue = as.character(dataRow$hideColumn),
+                                  codeType = "boolean",
+                                  codeKind = "boolean" 
     )}
   if (!is.null(dataRow$conditionColumn) && !is.na(dataRow$conditionColumn)) {
-  	values[[length(values)+1]] <- createStateValue(lsType = "stringValue",
+  	values[[length(values)+1]] <- createStateValue(lsType = "codeValue",
                                     lsKind = "condition column",
                                     lsTransaction = lsTransaction,
                                     recordedBy = recordedBy,
-                                    stringValue = as.character(dataRow$conditionColumn)
+                                    codeValue = as.character(dataRow$conditionColumn),
+                                    codeType = "boolean",
+                                    codeKind = "boolean" 
+
       )}
 #	return(removeEmptyValues_DV(values))
 	return(values)
