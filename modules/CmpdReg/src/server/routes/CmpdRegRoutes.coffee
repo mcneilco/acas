@@ -600,7 +600,9 @@ exports.saveMetaLot = (req, resp) ->
 	, (error, response, json) =>
 		if !error
 			console.log JSON.stringify json
-			if JSON.stringify(json).indexOf("Duplicate") != -1
+			if JSON.stringify(json).indexOf("Duplicate") != -1 
+				resp.statusCode = 409
+			else if JSON.stringify(json).indexOf("must be globally unique") != -1 
 				resp.statusCode = 409
 			else
 				resp.statusCode = response.statusCode
