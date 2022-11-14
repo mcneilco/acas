@@ -486,13 +486,13 @@ exports.getLotAcls = (lot, user, allowedProjects, checkDelete=true) ->
 			lotAcls.setWrite(false)
 		else
 			# If the user is not a cmpd reg admin, then they can only write the lot if disableEditMyLots is false
-			# and they are either the chemist or the lot registerdBy
+			# and they are either the chemist or the lot registeredBy
 			if config.all.client.cmpdreg.metaLot.disableEditMyLots == false
-				canWrite = (lot.chemist? && lot.chemist == user.username) || (lot.registerdBy? && lot.registerdBy == user.username)
+				canWrite = (lot.chemist? && lot.chemist == user.username) || (lot.registeredBy? && lot.registeredBy == user.username)
 				if canWrite
 					lotAcls.setWrite(true)
 				else
-					console.log "User #{user.username} does not have permission to edit lot #{lot.corpName} which is not their lot (registerdBy: #{lot.registerdBy}, chemist: #{lot.chemist})"
+					console.log "User #{user.username} does not have permission to edit lot #{lot.corpName} which is not their lot (registeredBy: #{lot.registeredBy}, chemist: #{lot.chemist})"
 					lotAcls.setWrite(false)
 
 	if lotAcls.getRead() && lotAcls.getWrite() && checkDelete
