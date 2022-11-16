@@ -4232,20 +4232,14 @@ getProtocolStrictEndpointMatching <- function(protocol) {
   # Check whether the protocol has strict endpoint matching set or not 
   # Returns true or false
 
-  # TODO - This may cause errors in existing protocols that do not have strict endpoint matching already set
-  # To prevent those errors, we will automatically return false for now. 
-
-  for (lsState in protocol$lsStates) {
-    if (lsState[['lsKind']] == "protocol metadata") {
-      for (value in lsState[['lsValues']]) {
-        if (value[['lsKind']] == "strict endpoint matching" & value[['ignored']] == FALSE) {
-          if (value[['codeValue']] == "true") {
-            return(TRUE)
-          } else {
-            return(FALSE)
-          }   
-        }
-      }
+  protocolStates = getStatesByTypeAndKind(protocol, "metadata_protocol metadata")
+  for (value in protocolStates[[1]][['lsValues']]) {
+    if (value[['lsKind']] == "strict endpoint matching" & value[['ignored']] == FALSE) {
+      if (value[['codeValue']] == "true") {
+        return(TRUE)
+      } else {
+        return(FALSE)
+      }   
     }
   }
 
