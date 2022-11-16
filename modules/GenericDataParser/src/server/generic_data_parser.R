@@ -4233,18 +4233,25 @@ getProtocolStrictEndpointMatching <- function(protocol) {
   # Returns true or false
 
   protocolStates = getStatesByTypeAndKind(protocol, "metadata_protocol metadata")
-  for (value in protocolStates[[1]][['lsValues']]) {
-    if (value[['lsKind']] == "strict endpoint matching" & value[['ignored']] == FALSE) {
-      if (value[['codeValue']] == "true") {
-        return(TRUE)
-      } else {
-        return(FALSE)
-      }   
+  strictEndpointMatchingValues = getValuesByTypeAndKind(protocolStates[[1]], "codeValue_strict endpoint matching")
+  
+  # if there is no value for the protocol, the length will be zero 
+  if (length(strictEndpointMatchingValues) == 0) {
+    # If the protocol doesn't have a value, use the default setting in the conf 
+    return(racas::applicationSettings$client.protocol.strictEndpointMatchingDefault)
+  } else {
+    # go through each matching value (need to make sure we dont extract an ignored value)
+    for (valueIndex in seq(1, length(strictEndpointMatchingValues))) {
+      if (strictEndpointMatchingValues[valueIndex][[1]]$ignored == FALSE) {
+        if (strictEndpointMatchingValues[valueIndex][[1]]$codeValue == "true") {
+          return(TRUE)
+        } else {
+          return(FALSE)
+        }
+      }
     }
   }
 
-  # If the protocol doesn't have a value, use the default setting in the conf 
-  return(racas::applicationSettings$client.protocol.strictEndpointMatchingDefault)
 }
 
 getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calculatedResults, inputFormat, mainCode, formatParameters, errorEnv) {
