@@ -3517,7 +3517,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     #extract the endpoint data from the protocol object to check against
     protocolEndpointData <- getProtocolEndpointData(protocol)
     #Check the experiment columns against the protocolEndpointData
-    validateExperimentColumns(selColumnOrderInfo, protocolEndpointData, getProtocolStrictEndpointMatching(protocol))
+    validateExperimentColumns(selColumnOrderInfo, protocolEndpointData, getProtocolStrictEndpointMatching(protocol), protocol$lsLabels[[1]]$labelText)
   }
   
   # If there are errors, do not allow an upload
@@ -4114,7 +4114,7 @@ getProtocolEndpointData <- function(protocol) {
       protocolEndpointDataFrame = bind_rows(protocolEndpointDataFrame, dataEntry)
     }
   }
-  
+
   return(protocolEndpointDataFrame)
 }
 
@@ -4139,7 +4139,34 @@ checkIfEndpointsMatch <- function(protocolValue, experimentValue) {
   }
 }
 
-validateExperimentColumns <- function(selColumnOrderInfo, protocolEndpointDataFrame, protocolStrictEndpointMatchingEnabled) {
+checkForConcentrationData <- function(experimentRowConc, experimentRowConcUnits) {
+  # Checks if there is any concentration data in the experiment, returns TRUE/FALSE
+  # If the value is NA or character(0), we consider it as empty 
+  # We have to add additional logic to check for artifact character(0) values, which will break a simple is.na(x)
+  # (this is also found in checkIfEndpointsMatch(), where we check if the variable is character(0) by using "length(x) == 0")
+
+  # check if the concentration value is character(0)
+  if (length(experimentRowConc) != 0) {
+    # check if it is NA
+    if (!is.na(experimentRowConc)) {
+      # if it is not NA, it has a value, we can end the function and say there is data
+      return(TRUE)
+    }
+  } 
+  # repeat with concentration units...
+  # check if the value is character(0)
+  if (length(experimentRowConcUnits) != 0) {
+    # check if it is NA
+    if (!is.na(experimentRowConcUnits)) {
+      # if it is not NA, it has a value, we can end the function and say there is data
+      return(TRUE)
+    }
+  } 
+
+  return(FALSE)
+}
+
+validateExperimentColumns <- function(selColumnOrderInfo, protocolEndpointDataFrame, protocolStrictEndpointMatchingEnabled, protocolName) {
   # Checks if the experiment columns names/units/data type are found in the protocol endpoint data
   # Raises errors if an experiment column is not valid 
   # Only used for protocols with strict endpoint enabled
@@ -4165,9 +4192,22 @@ validateExperimentColumns <- function(selColumnOrderInfo, protocolEndpointDataFr
       rowNamesMatch = checkIfEndpointsMatch(protocolValue = protocolRowData$columnName, experimentValue = experimentRowName)
       rowUnitsMatch = checkIfEndpointsMatch(protocolValue = protocolRowData$units, experimentValue = experimentRowUnits)
       rowTypesMatch = checkIfEndpointsMatch(protocolValue = protocolRowData$dataType, experimentValue = experimentRowDataType)
-      concMatch = checkIfEndpointsMatch(protocolValue = protocolRowData$conc, experimentValue = experimentRowConc)
-      # TODO only check if concentration is enabled in the conf 
-      concUnitsMatch = checkIfEndpointsMatch(protocolValue = protocolRowData$concUnits, experimentValue = experimentRowConcUnits)
+      
+      # only check if concentration/units match if it is enabled 
+      if (racas::applicationSettings$client.protocol.endpointManager.showConcentration == TRUE) {
+        concMatch = checkIfEndpointsMatch(protocolValue = protocolRowData$conc, experimentValue = experimentRowConc)
+        concUnitsMatch = checkIfEndpointsMatch(protocolValue = protocolRowData$concUnits, experimentValue = experimentRowConcUnits)
+      } else {
+        # if it is not enabled, automatically pass matching
+        concMatch = TRUE
+        concUnitsMatch = TRUE
+
+        # check if there is concentration data in the experiment upload to warn user
+        if (checkForConcentrationData(experimentRowConc, experimentRowConcUnits) == TRUE) {
+          warnUser(paste0("The column you're uploading ", experimentRowName, "at concentration ", experimentRowConc, " ", experimentRowConcUnits, "cannot be fully validated against protocol ", protocolName, "because this ACAS server is not configured to track concentration in the Protocol Endpoints. To enable complete checking including concentration, please contact your administrator and ask them to enable 'client.protocol.endpointManager.showConcentration'."))
+        }
+      }
+      
 
       #if the experiment column matches one of the endpoints for the protocol, record it and move onto the next column
       if (rowNamesMatch & rowUnitsMatch & rowTypesMatch & concMatch & concUnitsMatch) {
