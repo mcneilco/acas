@@ -4221,7 +4221,7 @@ validateExperimentColumns <- function(selColumnOrderInfo, protocolEndpointDataFr
       if (protocolStrictEndpointMatchingEnabled == TRUE) {
         addError(paste0("The result type '", experimentRowName, "' with data type '", experimentRowDataType, "' and units '", experimentRowUnits, "' is not one of the allowed result types for this ", racas::applicationSettings$client.protocol.label, ". Please revise your file or contact an ACAS administrator to update the allowed result types for this ", racas::applicationSettings$client.protocol.label, "."))
       } else if (protocolStrictEndpointMatchingEnabled == FALSE) {
-        warnUser(paste0("This Experiment file ontains result type(s): '", experimentRowName, "', '", experimentRowDataType, "', '", experimentRowUnits, "' that are not configured for this ",racas::applicationSettings$client.protocol.label, ". If this is expected, you may proceed with the upload. Otherwise contact an ACAS Administrator to update the configured result types for this ", racas::applicationSettings$client.protocol.label ,"."))
+        warnUser(paste0("The result type '", experimentRowName, "' with data type '", experimentRowDataType, "' and units '", experimentRowUnits, "' is not configured for this ", racas::applicationSettings$client.protocol.label, ". If this is expected, you may proceed with the upload. Otherwise contact an ACAS Administrator to update the configured result types for this ", racas::applicationSettings$client.protocol.label ,"."))
       } 
     }
       
