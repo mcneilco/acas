@@ -3512,14 +3512,12 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
 
   # Validate Experiment Columns against Protocol Endpoints
   # only proceed if it associated with an existing protocol (the protocol is not new)
-  if (!newProtocol) {
-    #if the protocol has strict endpoint matching enabled, proceed with validation
-    if (getProtocolStrictEndpointMatching(protocol) == TRUE) {
-      #extract the endpoint data from the protocol object to check against
-      protocolEndpointData <- getProtocolEndpointData(protocol)
-      #Check the experiment columns against the protocolEndpointData
-      validateExperimentColumns(selColumnOrderInfo, protocolEndpointData)
-    } 
+  # also, only proceed if endpoint manager is enabled
+  if (!newProtocol && racas::applicationSettings$client.protocol.endpointManager.enabled) {
+    #extract the endpoint data from the protocol object to check against
+    protocolEndpointData <- getProtocolEndpointData(protocol)
+    #Check the experiment columns against the protocolEndpointData
+    validateExperimentColumns(selColumnOrderInfo, protocolEndpointData, getProtocolStrictEndpointMatching(protocol))
   }
   
   # If there are errors, do not allow an upload
@@ -4061,13 +4059,16 @@ getFormatParameters <- function(rawOnlyFormat, customFormatSettings, inputFormat
 }
 
 getProtocolEndpointData <- function(protocol) {
+  library(dplyr)
   # Collects all the endpoint values in the protocol object and returns a data frame of them
 
   # First, we create an empty dataframe for the endpoint data associated with the protocol 
   protocolEndpointDataFrame <- data.frame(
     columnName=character(),
     units=character(),
-    dataType=character()
+    dataType=character(),
+    conc = character(),
+    concUnits = character()
   )
 
   #go through the protocol data to wrangle the endpoint data into the dataframe
@@ -4108,12 +4109,12 @@ getProtocolEndpointData <- function(protocol) {
         dataType = dataTypeEntry, 
         conc = concEntry, 
         concUnits = concUnitsEntry)
-
-      protocolEndpointDataFrame = rbind(protocolEndpointDataFrame, dataEntry, stringsAsFactors=FALSE)
-
+      
+      
+      protocolEndpointDataFrame = bind_rows(protocolEndpointDataFrame, dataEntry)
     }
   }
-
+  
   return(protocolEndpointDataFrame)
 }
 
@@ -4138,7 +4139,7 @@ checkIfEndpointsMatch <- function(protocolValue, experimentValue) {
   }
 }
 
-validateExperimentColumns <- function(selColumnOrderInfo, protocolEndpointDataFrame) {
+validateExperimentColumns <- function(selColumnOrderInfo, protocolEndpointDataFrame, protocolStrictEndpointMatchingEnabled) {
   # Checks if the experiment columns names/units/data type are found in the protocol endpoint data
   # Raises errors if an experiment column is not valid 
   # Only used for protocols with strict endpoint enabled
@@ -4177,10 +4178,15 @@ validateExperimentColumns <- function(selColumnOrderInfo, protocolEndpointDataFr
     }
 
     if (experimentRowMatchesEndpoint == FALSE) {
-      addError(paste0("The result type '", experimentRowName, "' with data type '", experimentRowDataType, "' and units '", experimentRowUnits, "' is not one of the allowed result types for this protocol. Please revise your file or contact an ACAS administrator to update the allowed result types for this ", racas::applicationSettings$client.protol.label, "."))
+      # If strict endpoint matching is enabled, we throw an error, otherwise we throw a warning
+      if (protocolStrictEndpointMatchingEnabled == TRUE) {
+        addError(paste0("The result type '", experimentRowName, "' with data type '", experimentRowDataType, "' and units '", experimentRowUnits, "' is not one of the allowed result types for this ", racas::applicationSettings$client.protocol.label, ". Please revise your file or contact an ACAS administrator to update the allowed result types for this ", racas::applicationSettings$client.protocol.label, "."))
+      } else if (protocolStrictEndpointMatchingEnabled == FALSE) {
+        warnUser(paste0("The result type '", experimentRowName, "' with data type '", experimentRowDataType, "' and units '", experimentRowUnits, "' is not one of the defined result types for this ", racas::applicationSettings$client.protocol.label, ". You may want to revise your file to update the allowed result types for this ", racas::applicationSettings$client.protocol.label, "."))
+      } 
     }
+      
   }
-
 }
 
 getProtocolStrictEndpointMatching <- function(protocol) {
