@@ -260,8 +260,7 @@ saveEndpointCodeTables <- function(codes, codeKind) {
   #if the object is not empty, we will check to see which of the existing codes overlap with our input codes
   } else {
     #extract all the codes for a given codeKind
-    codesForCodeKind = ddictValues %>% filter(lsKind == codeKind) %>% pull(codeName)
-    saveSession('insideDdictValues.RData')
+    codesForCodeKind = ddictValues %>% filter(lsKind == codeKind) %>% pull(shortName)
 
     #if the length of the codes for that codeKind is zero, we consider that there are no existing codes
     if (length(codesForCodeKind) == 0) {
