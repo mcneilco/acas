@@ -3544,22 +3544,18 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     customExperimentMetaDataValues <- NULL
   }
   
-  # Save endpoint data codes if it passed validation OR if it is a new protocol
-  # (columns don't conflict with protocol endpoints when strict endpoint matching is enabled)
-  if (experimentPassedEndpointValidation == TRUE | newProtocol == TRUE) {
-    saveEndpointCodeTables(selColumnOrderInfo$Units, "column units")
-    saveEndpointCodeTables(selColumnOrderInfo$valueKind, "column name")
-    saveEndpointCodeTables(selColumnOrderInfo$concUnits, "concentration units")
-    saveEndpointCodeTables(selColumnOrderInfo$timeUnit, "time units")
-  }
-  
-
   columnOrderStates <- createColumnOrderStates(selColumnOrderInfo, errorEnv, recordedBy, lsTransaction)
  
   
   # when not on a dry run, create protocol and experiment if they do not exist
   if (!dryRun && newProtocol && errorFree) {
     protocol <- createNewProtocol(metaData = validatedMetaData, lsTransaction, recordedBy, columnOrderStates)
+
+    # also save the new endpoints of the protocol 
+    saveEndpointCodeTables(selColumnOrderInfo$Units, "column units")
+    saveEndpointCodeTables(selColumnOrderInfo$valueKind, "column name")
+    saveEndpointCodeTables(selColumnOrderInfo$concUnits, "concentration units")
+    saveEndpointCodeTables(selColumnOrderInfo$timeUnit, "time units")
   }
 
   useExistingExperiment <- inputFormat %in% c("Use Existing Experiment", "Precise For Existing Experiment")
