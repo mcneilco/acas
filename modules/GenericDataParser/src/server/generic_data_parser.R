@@ -3512,11 +3512,16 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   # Validate Experiment Columns against Protocol Endpoints
   # only proceed if it associated with an existing protocol (the protocol is not new)
   # also, only proceed if endpoint manager is enabled
+
+  # We create experimentPassedEndpointValidation holding variable in case it is a new protocol and it is not assigned
+  # (Since we can't check if an empty variable is true or false later)
+  experimentPassedEndpointValidation <- FALSE 
+
   if (!newProtocol && racas::applicationSettings$client.protocol.endpointManager.enabled) {
-    #extract the endpoint data from the protocol object to check against
+    # extract the endpoint data from the protocol object to check against
     protocolEndpointData <- getProtocolEndpointData(protocol)
-    #Check the experiment columns against the protocolEndpointData
-    validateExperimentColumns(selColumnOrderInfo, protocolEndpointData, getProtocolStrictEndpointMatching(protocol), protocol$lsLabels[[1]]$labelText)
+    # Check the experiment columns against the protocolEndpointData
+    experimentPassedEndpointValidation <- validateExperimentColumns(selColumnOrderInfo, protocolEndpointData, getProtocolStrictEndpointMatching(protocol), protocol$lsLabels[[1]]$labelText)
   }
   
   # If there are errors, do not allow an upload
@@ -3539,18 +3544,18 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     customExperimentMetaDataValues <- NULL
   }
   
-  # Save endpoint data codes
-  saveEndpointCodeTables(selColumnOrderInfo$Units, "column units")
-  saveEndpointCodeTables(selColumnOrderInfo$valueKind, "column name")
-  saveEndpointCodeTables(selColumnOrderInfo$concUnits, "concentration units")
-  saveEndpointCodeTables(selColumnOrderInfo$timeUnit, "time units")
-
   columnOrderStates <- createColumnOrderStates(selColumnOrderInfo, errorEnv, recordedBy, lsTransaction)
  
   
   # when not on a dry run, create protocol and experiment if they do not exist
   if (!dryRun && newProtocol && errorFree) {
     protocol <- createNewProtocol(metaData = validatedMetaData, lsTransaction, recordedBy, columnOrderStates)
+
+    # also save the new endpoints of the protocol 
+    saveEndpointCodeTables(selColumnOrderInfo$Units, "column units")
+    saveEndpointCodeTables(selColumnOrderInfo$valueKind, "column name")
+    saveEndpointCodeTables(selColumnOrderInfo$concUnits, "concentration units")
+    saveEndpointCodeTables(selColumnOrderInfo$timeUnit, "time units")
   }
 
   useExistingExperiment <- inputFormat %in% c("Use Existing Experiment", "Precise For Existing Experiment")
@@ -4169,6 +4174,9 @@ validateExperimentColumns <- function(selColumnOrderInfo, protocolEndpointDataFr
   # Checks if the experiment columns names/units/data type are found in the protocol endpoint data
   # Raises errors if an experiment column is not valid 
   # Only used for protocols with strict endpoint enabled
+  # Returns TRUE/FALSE (whether the experiment passed validation)
+
+  experimentPassedValidation = TRUE
 
   for (experimentRowNum in seq(1, nrow(selColumnOrderInfo))) {
     experimentRowData <- selColumnOrderInfo[experimentRowNum,]
@@ -4220,12 +4228,18 @@ validateExperimentColumns <- function(selColumnOrderInfo, protocolEndpointDataFr
       # If strict endpoint matching is enabled, we throw an error, otherwise we throw a warning
       if (protocolStrictEndpointMatchingEnabled == TRUE) {
         addError(paste0("The result type '", experimentRowName, "' with data type '", experimentRowDataType, "' and units '", experimentRowUnits, "' is not one of the allowed result types for this ", racas::applicationSettings$client.protocol.label, ". Please revise your file or contact an ACAS administrator to update the allowed result types for this ", racas::applicationSettings$client.protocol.label, "."))
+
+        # we also record that the experiment did not pass validation, so we know not to upload the codes to the database
+        experimentPassedValidation = FALSE
+
       } else if (protocolStrictEndpointMatchingEnabled == FALSE) {
         warnUser(paste0("The result type '", experimentRowName, "' with data type '", experimentRowDataType, "' and units '", experimentRowUnits, "' is not configured for this ", racas::applicationSettings$client.protocol.label, ". If this is expected, you may proceed with the upload. Otherwise contact an ACAS Administrator to update the configured result types for this ", racas::applicationSettings$client.protocol.label ,"."))
       } 
     }
       
   }
+
+  return(experimentPassedValidation)
 }
 
 getProtocolStrictEndpointMatching <- function(protocol) {
