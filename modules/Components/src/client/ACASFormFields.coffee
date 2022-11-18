@@ -1034,7 +1034,7 @@ class ACASFormLSBooleanFieldController extends ACASFormAbstractFieldController
 
 	renderModelContent: =>
 		# If value is anything other than true (i.e. null), then default to unchecked
-		if @getModel().get('value').toLowerCase() is "true"
+		if @getModel().get('value')? && @getModel().get('value').toLowerCase() is "true"
 			@$('input').attr 'checked', 'checked'
 		else
 			@$('input').removeAttr 'checked'
