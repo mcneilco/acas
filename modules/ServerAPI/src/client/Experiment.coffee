@@ -489,6 +489,8 @@ class ExperimentBaseController extends BaseEntityController
 			#we also only want to load it if it is enabled
 			if window.conf.protocol.endpointManager.enabled == true
 				@endpointListController.render()
+				# we want to hide the associated experiment section to avoid excessive spacing
+				@$(".bv_associatedExperimentSection").hide()
 		@
 
 	modelSyncCallback: =>
