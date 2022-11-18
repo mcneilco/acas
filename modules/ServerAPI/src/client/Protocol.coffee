@@ -579,7 +579,7 @@ class EndpointController extends ACASFormStateTableFormController
 EndpointsValuesConf = [
 	key: 'column name'
 	modelDefaults:
-		type: 'stringValue'
+		type: 'codeValue'
 		kind: 'column name'
 		codeType: 'data column'
 		codeKind: 'column name'
@@ -599,7 +599,7 @@ EndpointsValuesConf = [
 ,
 	key: 'column units'
 	modelDefaults:
-		type: 'stringValue'
+		type: 'codeValue'
 		kind: 'column units'
 		codeType: 'data column'
 		codeKind: 'column units'
@@ -619,7 +619,7 @@ EndpointsValuesConf = [
 ,
 	key: 'column type'
 	modelDefaults:
-		type: 'stringValue'
+		type: 'codeValue'
 		kind: 'column type'
 		codeType: 'data column'
 		codeKind: 'column type'
@@ -651,7 +651,7 @@ EndpointsValuesConf = [
 ,
 	key: 'column time units'
 	modelDefaults:
-		type: 'stringValue'
+		type: 'codeValue'
 		kind: 'column time units'
 		codeType: 'data column'
 		codeKind: 'column time units'
@@ -685,7 +685,7 @@ EndpointsValuesConf = [
 ,
 	key: 'column conc units'
 	modelDefaults:
-		type: 'stringValue'
+		type: 'codeValue'
 		kind: 'column conc units'
 		codeType: 'data column'
 		codeKind: 'column conc units'
@@ -705,7 +705,7 @@ EndpointsValuesConf = [
 ,
 	key: 'hide column'
 	modelDefaults:
-		type: 'stringValue'
+		type: 'codeValue'
 		kind: 'hide column'
 		codeType: 'boolean'
 		codeKind: 'boolean'
@@ -718,7 +718,7 @@ EndpointsValuesConf = [
 ,
 	key: 'condition column'
 	modelDefaults:
-		type: 'stringValue'
+		type: 'codeValue'
 		kind: 'condition column'
 		codeType: 'boolean'
 		codeKind: 'boolean'

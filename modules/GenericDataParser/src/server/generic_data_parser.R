@@ -223,6 +223,75 @@ validateMetaData <- function(metaData, configList, username, formatSettings = li
 
   return(list(validatedMetaData=validatedMetaData, duplicateExperimentNamesAllowed=duplicateExperimentNamesAllowed, useExisting=useExisting))
 }
+
+
+saveEndpointCodeTables <- function(codes, codeKind) {
+  # Saves incoming column data into their codetable / data dictionaries
+  # 
+  # Args:
+  #   codes:      array of the names of the endpoint values
+  #   codeKind:   codeKind that this is for (valid options: column name, column units, concentration units, time units)
+  #
+  # Returns:
+  #   N/A
+
+  library(dplyr)
+
+  # Remove NAs from the codes
+  codes <- codes[!is.na(codes)]
+
+  # If there are no codes after removing NAs, end the script early
+  if (length(codes) == 0) {
+    return (NULL)
+  }
+
+  # we don't want to work with other codeKinds (this is set up for endpoint manager only right now... )
+  validCodeKinds = c("column name", "column units", "concentration units", "time units")
+
+  #Before we save the incoming code, we need to check if the code/codeKind pair already exists... 
+  #get relevant ddict data
+  ddictLists = getDDictValuesByTypeKindFormat(lsKind = codeKind, lsType = "data column")
+  ddictValues <- rbindlist(lapply(ddictLists, jsonlite::fromJSON))
+
+  # if the object is empty, we assume that no codes exist yet, so we will save all the input codes
+  if(nrow(ddictValues) == 0) {
+    codesToSave <- codes
+
+  #if the object is not empty, we will check to see which of the existing codes overlap with our input codes
+  } else {
+    #extract all the codes for a given codeKind
+    codesForCodeKind = ddictValues %>% filter(lsKind == codeKind) %>% pull(shortName)
+
+    #if the length of the codes for that codeKind is zero, we consider that there are no existing codes
+    if (length(codesForCodeKind) == 0) {
+      # we can then treat all the codes as if they are new, and save them
+      codesToSave <- codes
+    } else {
+      #we only want to save the new codes not already in the database
+      codesToSave <- setdiff(codes, codesForCodeKind)
+    }
+  }
+
+  #if the input codeKind is valid, save the codes to the database
+  if (codeKind %in% validCodeKinds) {
+    #--- construct the input dataframe needed to save the codes 
+    newDdictValuesDF <- data.table(c(codesToSave), c(codesToSave))
+    setnames(newDdictValuesDF, c("code", "name"))
+
+    # set the codeKind/codeType values
+    newDdictValuesDF$codeKind <- codeKind
+    newDdictValuesDF$codeType <- "data column"
+
+    # save the values 
+    createCodeTablesFromJsonArray(newDdictValuesDF)
+  } else {
+    return ("Invalid codeKind")
+  }
+
+
+
+}
+
 validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction, dryRun, configList) {
   # Valides the custom meta data section
   #
@@ -1901,7 +1970,7 @@ getPreferredProtocolName <- function(protocol, protocolName = NULL) {
   }
   return(preferredName)
 }
-createNewProtocol <- function(metaData, lsTransaction, recordedBy) {
+createNewProtocol <- function(metaData, lsTransaction, recordedBy, columnOrderStates) {
   # creates a protocol with the protocol name and scientist in the metaData
   # 
   # Args:
@@ -1964,11 +2033,29 @@ createNewProtocol <- function(metaData, lsTransaction, recordedBy) {
       stringValue = metaData$"Assay Tree Rule"[1],
       lsTransaction= lsTransaction)
   }
+
+  protocolValues[[length(protocolValues)+1]] <- createStateValue(
+    recordedBy = recordedBy,
+    lsType = "codeValue",
+    lsKind = "strict endpoint matching",
+    codeValue = racas::applicationSettings$client.protocol.strictEndpointMatchingDefault,
+    codeType = "boolean",
+    codeKind = "boolean",
+    codeOrigin = "ACAS DDICT",
+    lsTransaction= lsTransaction)
+
+
   protocolStates[[length(protocolStates)+1]] <- createProtocolState(protocolValues=protocolValues,
                                                                           lsTransaction = lsTransaction, 
                                                                           recordedBy=recordedBy, 
                                                                           lsType="metadata", 
                                                                           lsKind="protocol metadata")
+
+  # Adding in the column order states from the experiment
+  if(!is.null(columnOrderStates)) {
+    protocolStates <- c(protocolStates, columnOrderStates)
+  }
+
   # Add a label for the name
   protocolLabels <- list()
   protocolLabels[[length(protocolLabels)+1]] <- createProtocolLabel(lsTransaction = lsTransaction, 
@@ -3421,6 +3508,21 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
       addError(paste0("Caught an error trying to validate dose response data. Please contact your administrator.: ", e$message))
     })
   }
+
+  # Validate Experiment Columns against Protocol Endpoints
+  # only proceed if it associated with an existing protocol (the protocol is not new)
+  # also, only proceed if endpoint manager is enabled
+
+  # We create experimentPassedEndpointValidation holding variable in case it is a new protocol and it is not assigned
+  # (Since we can't check if an empty variable is true or false later)
+  experimentPassedEndpointValidation <- FALSE 
+
+  if (!newProtocol && racas::applicationSettings$client.protocol.endpointManager.enabled) {
+    # extract the endpoint data from the protocol object to check against
+    protocolEndpointData <- getProtocolEndpointData(protocol)
+    # Check the experiment columns against the protocolEndpointData
+    experimentPassedEndpointValidation <- validateExperimentColumns(selColumnOrderInfo, protocolEndpointData, getProtocolStrictEndpointMatching(protocol), protocol$lsLabels[[1]]$labelText)
+  }
   
   # If there are errors, do not allow an upload
   errorFree <- length(messenger()$errors)==0
@@ -3442,9 +3544,18 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     customExperimentMetaDataValues <- NULL
   }
   
+  columnOrderStates <- createColumnOrderStates(selColumnOrderInfo, errorEnv, recordedBy, lsTransaction)
+ 
+  
   # when not on a dry run, create protocol and experiment if they do not exist
   if (!dryRun && newProtocol && errorFree) {
-    protocol <- createNewProtocol(metaData = validatedMetaData, lsTransaction, recordedBy)
+    protocol <- createNewProtocol(metaData = validatedMetaData, lsTransaction, recordedBy, columnOrderStates)
+
+    # also save the new endpoints of the protocol 
+    saveEndpointCodeTables(selColumnOrderInfo$Units, "column units")
+    saveEndpointCodeTables(selColumnOrderInfo$valueKind, "column name")
+    saveEndpointCodeTables(selColumnOrderInfo$concUnits, "concentration units")
+    saveEndpointCodeTables(selColumnOrderInfo$timeUnit, "time units")
   }
 
   useExistingExperiment <- inputFormat %in% c("Use Existing Experiment", "Precise For Existing Experiment")
@@ -3474,9 +3585,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     deletedExperimentCodes <- deleteOldData(experiment, useExistingExperiment)
   }
 
-  ## SEL column oder info
-  columnOrderStates <- createColumnOrderStates(selColumnOrderInfo, errorEnv, recordedBy, lsTransaction)
- 
+  
   if (!dryRun && errorFree) {
     if(!useExistingExperiment) {
       experiment <- createNewExperiment(metaData = validatedMetaData, protocol, lsTransaction, fullPathToFile, 
@@ -3953,6 +4062,212 @@ getFormatParameters <- function(rawOnlyFormat, customFormatSettings, inputFormat
   return(o)
 }
 
+getProtocolEndpointData <- function(protocol) {
+  library(dplyr)
+  # Collects all the endpoint values in the protocol object and returns a data frame of them
+
+  # First, we create an empty dataframe for the endpoint data associated with the protocol 
+  protocolEndpointDataFrame <- data.frame(
+    columnName=character(),
+    units=character(),
+    dataType=character(),
+    conc = character(),
+    concUnits = character()
+  )
+
+  #go through the protocol data to wrangle the endpoint data into the dataframe
+  for (lsState in protocol$lsStates) {
+    if (lsState[['lsKind']] == "data column order") {
+
+      #if the name/units/data type cant be found, submit a NA
+      columnNameEntry = NA
+      unitsEntry = NA
+      dataTypeEntry = NA
+      concEntry = NA
+      concUnitsEntry = NA
+
+      for (value in lsState[['lsValues']]) {
+        #if the lsValue is ignored, skip it 
+        if (value[['ignored']] == FALSE) {
+
+          #depending on what the lsKind is, record the data
+          if (value[['lsKind']] == "column name") {
+            columnNameEntry = value[['codeValue']]
+          } else if (value[['lsKind']] == "column units") {
+            unitsEntry = value[['codeValue']]
+          } else if (value[['lsKind']] == "column type") {
+            dataTypeEntry = value[['codeValue']]
+          } else if (value[['lsKind']] == "column concentration") {
+            concEntry = value[['codeValue']]
+          } else if (value[['lsKind']] == "column conc units") {
+            concUnitsEntry = value[['codeValue']]
+          }
+          
+        }
+      }
+
+      #add the endpoint to the dataframe
+      dataEntry <- list(
+        columnName = columnNameEntry, 
+        units = unitsEntry, 
+        dataType = dataTypeEntry, 
+        conc = concEntry, 
+        concUnits = concUnitsEntry)
+      
+      
+      protocolEndpointDataFrame = bind_rows(protocolEndpointDataFrame, dataEntry)
+    }
+  }
+
+  return(protocolEndpointDataFrame)
+}
+
+checkIfEndpointsMatch <- function(protocolValue, experimentValue) {
+  # Checks if the protocol value matches the experiment value
+  # Has handling for cases where one or both are NA
+  
+  if (is.na(protocolValue)) {
+    # if the protocol is NA, then anything is acceptable, automatically return a match
+    endpointsMatch = TRUE
+  } else if (length(experimentValue) == 0) {
+    # if the value is empty, it is not a match,
+    # we also have to handle it separately before running operators or it will break the logic 
+    # and throw a "argument is of length zero" error 
+    endpointsMatch = FALSE
+  } else if (experimentValue == protocolValue) {
+    # if protocol and experiment match, then we return a match...
+    endpointsMatch = TRUE 
+  } else {
+    # if they don't match then we say it failed
+    endpointsMatch = FALSE
+  }
+}
+
+checkForConcentrationData <- function(experimentRowConc, experimentRowConcUnits) {
+  # Checks if there is any concentration data in the experiment, returns TRUE/FALSE
+  # If the value is NA or character(0), we consider it as empty 
+  # We have to add additional logic to check for artifact character(0) values, which will break a simple is.na(x)
+  # (this is also found in checkIfEndpointsMatch(), where we check if the variable is character(0) by using "length(x) == 0")
+
+  # check if the concentration value is character(0)
+  if (length(experimentRowConc) != 0) {
+    # check if it is NA
+    if (!is.na(experimentRowConc)) {
+      # if it is not NA, it has a value, we can end the function and say there is data
+      return(TRUE)
+    }
+  } 
+  # repeat with concentration units...
+  # check if the value is character(0)
+  if (length(experimentRowConcUnits) != 0) {
+    # check if it is NA
+    if (!is.na(experimentRowConcUnits)) {
+      # if it is not NA, it has a value, we can end the function and say there is data
+      return(TRUE)
+    }
+  } 
+
+  return(FALSE)
+}
+
+validateExperimentColumns <- function(selColumnOrderInfo, protocolEndpointDataFrame, protocolStrictEndpointMatchingEnabled, protocolName) {
+  # Checks if the experiment columns names/units/data type are found in the protocol endpoint data
+  # Raises errors if an experiment column is not valid 
+  # Only used for protocols with strict endpoint enabled
+  # Returns TRUE/FALSE (whether the experiment passed validation)
+
+  experimentPassedValidation = TRUE
+
+  for (experimentRowNum in seq(1, nrow(selColumnOrderInfo))) {
+    experimentRowData <- selColumnOrderInfo[experimentRowNum,]
+    experimentRowName = experimentRowData$valueKind
+    experimentRowUnits = experimentRowData$Units
+    experimentRowDataType = experimentRowData$valueType
+    experimentRowConc = experimentRowData$Conc
+    experimentRowConcUnits = experimentRowData$ConcUnits
+    
+    #the experiment column must match at least one endpoint in the protocol to pass 
+    experimentRowMatchesEndpoint = FALSE
+
+    # we need to check if the experiment row data matches any one of the protocol endpoints
+    for (protocolRowNum in seq(1,nrow(protocolEndpointDataFrame))) {
+      # if a protocol value is NA, we consider it a match (since any value is acceptable)
+      # if the experiment values also match the protocol values, we consider it a match
+      # all three (rowNamesMatch, rowUnitsMatch, and rowTypesMatch) must be true
+      protocolRowData <- protocolEndpointDataFrame[protocolRowNum,]
+
+      rowNamesMatch = checkIfEndpointsMatch(protocolValue = protocolRowData$columnName, experimentValue = experimentRowName)
+      rowUnitsMatch = checkIfEndpointsMatch(protocolValue = protocolRowData$units, experimentValue = experimentRowUnits)
+      rowTypesMatch = checkIfEndpointsMatch(protocolValue = protocolRowData$dataType, experimentValue = experimentRowDataType)
+      
+      # only check if concentration/units match if it is enabled 
+      if (racas::applicationSettings$client.protocol.endpointManager.showConcentration == TRUE) {
+        concMatch = checkIfEndpointsMatch(protocolValue = protocolRowData$conc, experimentValue = experimentRowConc)
+        concUnitsMatch = checkIfEndpointsMatch(protocolValue = protocolRowData$concUnits, experimentValue = experimentRowConcUnits)
+      } else {
+        # if it is not enabled, automatically pass matching
+        concMatch = TRUE
+        concUnitsMatch = TRUE
+
+        # check if there is concentration data in the experiment upload to warn user
+        if (checkForConcentrationData(experimentRowConc, experimentRowConcUnits) == TRUE) {
+          warnUser(paste0("The column you're uploading ", experimentRowName, "at concentration ", experimentRowConc, " ", experimentRowConcUnits, "cannot be fully validated against protocol ", protocolName, "because this ACAS server is not configured to track concentration in the Protocol Endpoints. To enable complete checking including concentration, please contact your administrator and ask them to enable 'client.protocol.endpointManager.showConcentration'."))
+        }
+      }
+      
+
+      #if the experiment column matches one of the endpoints for the protocol, record it and move onto the next column
+      if (rowNamesMatch & rowUnitsMatch & rowTypesMatch & concMatch & concUnitsMatch) {
+        experimentRowMatchesEndpoint = TRUE
+        break 
+      }
+
+    }
+
+    if (experimentRowMatchesEndpoint == FALSE) {
+      # If strict endpoint matching is enabled, we throw an error, otherwise we throw a warning
+      if (protocolStrictEndpointMatchingEnabled == TRUE) {
+        addError(paste0("The result type '", experimentRowName, "' with data type '", experimentRowDataType, "' and units '", experimentRowUnits, "' is not one of the allowed result types for this ", racas::applicationSettings$client.protocol.label, ". Please revise your file or contact an ACAS administrator to update the allowed result types for this ", racas::applicationSettings$client.protocol.label, "."))
+
+        # we also record that the experiment did not pass validation, so we know not to upload the codes to the database
+        experimentPassedValidation = FALSE
+
+      } else if (protocolStrictEndpointMatchingEnabled == FALSE) {
+        warnUser(paste0("The result type '", experimentRowName, "' with data type '", experimentRowDataType, "' and units '", experimentRowUnits, "' is not configured for this ", racas::applicationSettings$client.protocol.label, ". If this is expected, you may proceed with the upload. Otherwise contact an ACAS Administrator to update the configured result types for this ", racas::applicationSettings$client.protocol.label ,"."))
+      } 
+    }
+      
+  }
+
+  return(experimentPassedValidation)
+}
+
+getProtocolStrictEndpointMatching <- function(protocol) {
+  # Check whether the protocol has strict endpoint matching set or not 
+  # Returns true or false
+
+  protocolStates = getStatesByTypeAndKind(protocol, "metadata_protocol metadata")
+  strictEndpointMatchingValues = getValuesByTypeAndKind(protocolStates[[1]], "codeValue_strict endpoint matching")
+  
+  # if there is no value for the protocol, the length will be zero 
+  if (length(strictEndpointMatchingValues) == 0) {
+    # If the protocol doesn't have a value, use the default setting in the conf 
+    return(racas::applicationSettings$client.protocol.strictEndpointMatchingDefault)
+  } else {
+    # go through each matching value (need to make sure we dont extract an ignored value)
+    for (valueIndex in seq(1, length(strictEndpointMatchingValues))) {
+      if (strictEndpointMatchingValues[valueIndex][[1]]$ignored == FALSE) {
+        if (strictEndpointMatchingValues[valueIndex][[1]]$codeValue == "true") {
+          return(TRUE)
+        } else {
+          return(FALSE)
+        }
+      }
+    }
+  }
+
+}
+
 getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calculatedResults, inputFormat, mainCode, formatParameters, errorEnv) {
   # turns Raw Results section into subjectData and treatmentGroupData data.frames
   # Returns a list of two data.frames
@@ -4175,11 +4490,13 @@ generateExptColStateValues <- function(dataRow, recordedBy, lsTransaction){
                                   numericValue = dataRow$order
     )}
   if (!is.null(dataRow$valueKind) && !is.na(dataRow$valueKind)) {
-	values[[length(values)+1]] <- createStateValue(lsType = "stringValue",
+	values[[length(values)+1]] <- createStateValue(lsType = "codeValue",
                                   lsKind = "column name",
                                   lsTransaction = lsTransaction,
                                   recordedBy = recordedBy,
-                                  stringValue = dataRow$valueKind
+                                  codeValue = dataRow$valueKind,
+                                  codeType = "data column",
+                                  codeKind = "column name" 
     )}
   if (!is.null(dataRow$Conc) && !is.na(dataRow$Conc)) {
   	values[[length(values)+1]] <- createStateValue(lsType = "numericValue",
@@ -4189,11 +4506,13 @@ generateExptColStateValues <- function(dataRow, recordedBy, lsTransaction){
                                     numericValue = as.numeric(dataRow$Conc)
       )}
   if (!is.null(dataRow$concUnits) && !is.na(dataRow$concUnits)) {
-  	values[[length(values)+1]] <- createStateValue(lsType = "stringValue",
+  	values[[length(values)+1]] <- createStateValue(lsType = "codeValue",
                                     lsKind = "column conc units",
                                     lsTransaction = lsTransaction,
                                     recordedBy = recordedBy,
-                                    stringValue = as.character(dataRow$concUnits)
+                                    codeValue = as.character(dataRow$concUnits),
+                                    codeType = "data column",
+                                    codeKind = "column conc units" 
       )}          
   if (!is.null(dataRow$time) && !is.na(dataRow$time)) {
   	values[[length(values)+1]] <- createStateValue(lsType = "numericValue",
@@ -4203,39 +4522,50 @@ generateExptColStateValues <- function(dataRow, recordedBy, lsTransaction){
                                     numericValue = as.numeric(dataRow$time)
       )}
   if (!is.null(dataRow$timeUnit) && !is.na(dataRow$timeUnit)) {
-  	values[[length(values)+1]] <- createStateValue(lsType = "stringValue",
+  	values[[length(values)+1]] <- createStateValue(lsType = "codeValue",
                                     lsKind = "column time units",
                                     lsTransaction = lsTransaction,
                                     recordedBy = recordedBy,
-                                    stringValue = as.character(dataRow$timeUnit)
+                                    codeValue = as.character(dataRow$timeUnit),
+                                    codeType = "data column",
+                                    codeKind = "column time units" 
       )}  
   if (!is.null(dataRow$Units) && !is.na(dataRow$Units)) {
-	values[[length(values)+1]] <- createStateValue(lsType = "stringValue",
+	values[[length(values)+1]] <- createStateValue(lsType = "codeValue",
                                   lsKind = "column units",
                                   lsTransaction = lsTransaction,
                                   recordedBy = recordedBy,
-                                  stringValue = as.character(dataRow$Units)
+                                  codeValue = as.character(dataRow$Units),
+                                  codeType = "data column",
+                                  codeKind = "column units" 
     )}
   if (!is.null(dataRow$valueType) && !is.na(dataRow$valueType)) {
-	values[[length(values)+1]] <- createStateValue(lsType = "stringValue",
+	values[[length(values)+1]] <- createStateValue(lsType = "codeValue",
                                   lsKind = "column type",
                                   lsTransaction = lsTransaction,
                                   recordedBy = recordedBy,
-                                  stringValue = dataRow$valueType
+                                  codeValue = dataRow$valueType,
+                                  codeType = "data column",
+                                  codeKind = "column type" 
     )}
   if (!is.null(dataRow$hideColumn) && !is.na(dataRow$hideColumn)) {
-	values[[length(values)+1]] <- createStateValue(lsType = "stringValue",
+	values[[length(values)+1]] <- createStateValue(lsType = "codeValue",
                                   lsKind = "hide column",
                                   lsTransaction = lsTransaction,
                                   recordedBy = recordedBy,
-                                  stringValue = as.character(dataRow$hideColumn)
+                                  codeValue = as.character(dataRow$hideColumn),
+                                  codeType = "boolean",
+                                  codeKind = "boolean" 
     )}
   if (!is.null(dataRow$conditionColumn) && !is.na(dataRow$conditionColumn)) {
-  	values[[length(values)+1]] <- createStateValue(lsType = "stringValue",
+  	values[[length(values)+1]] <- createStateValue(lsType = "codeValue",
                                     lsKind = "condition column",
                                     lsTransaction = lsTransaction,
                                     recordedBy = recordedBy,
-                                    stringValue = as.character(dataRow$conditionColumn)
+                                    codeValue = as.character(dataRow$conditionColumn),
+                                    codeType = "boolean",
+                                    codeKind = "boolean" 
+
       )}
 #	return(removeEmptyValues_DV(values))
 	return(values)
