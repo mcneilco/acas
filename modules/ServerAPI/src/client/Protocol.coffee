@@ -1137,7 +1137,9 @@ class EndpointListController extends AbstractFormController
 			url: "/api/experiments/protocolCodename/#{protocolCode}" #ExperimentServiceRoutes.coffee route
 
 			success: (experiments) =>
-				filtered_experiments = [] #keep track of the filtered experiments
+
+				# Part 1: Find all unique endpoints across experiments that use this protocol code
+
 				#we'll need to filter out experiments that don't contain the endpoint
 				endpointNames = []
 				endpointUnits = []
@@ -1197,16 +1199,23 @@ class EndpointListController extends AbstractFormController
 								endpointTime.push endpointTimeEntry
 								endpointTimeUnits.push endpointTimeUnitsEntry
 
+				# Part 2: create a CSV file with the endpoints
 
-				console.log endpointStrings
-												
+				csvContent = "data:text/csv;charset=utf-8,"
+				csvContent = csvContent + "\n hello, world, text"
 
-					
+				encodedUri = encodeURI(csvContent)
+				a = document.createElement('a');
+				a.style.display = 'none';
+				a.href = encodedUri;
+				a.setAttribute('target', '_blank')
+				document.body.appendChild(a);
+				a.click();
 
 
 				
-							
-				
+
+
 
 		
 		
