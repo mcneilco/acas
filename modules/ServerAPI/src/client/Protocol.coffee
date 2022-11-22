@@ -739,6 +739,7 @@ class EndpointListController extends AbstractFormController
 		"rowRemoved": "handleRowRemoved"
 		"click .bv_endpointRow": "handleEndpointRowPressed"
 		"click .bv_downloadFiles": "downloadFiles"
+		"click .bv_downloadSELFile": "downloadSELFile"
 	
 	rowNumberKind: "column order"
 	stateType: "metadata"
@@ -1120,3 +1121,92 @@ class EndpointListController extends AbstractFormController
 				@serviceReturn = null
 			dataType: 'json'
 
+	downloadSELFile: =>
+		# First, we want to find all experiments that are using this protocol
+		# Second, we want to get the endpoints for all those experiments
+		# Third, remove duplicates
+		# Fourth, format the endpoints into a .csv file and return it to the user
+
+
+		protocolCode = @model.escape('codeName')
+
+		$.ajax
+			type: 'GET'
+			#there are two similar routes in ExperimentBrowserRoutes.coffee and ExperimentServiceRoutes.coffee
+			#url: "/api/experimentsForProtocol/#{protocolCode}" #ExperimentBrowserRoutes.coffee route
+			url: "/api/experiments/protocolCodename/#{protocolCode}" #ExperimentServiceRoutes.coffee route
+
+			success: (experiments) =>
+				filtered_experiments = [] #keep track of the filtered experiments
+				#we'll need to filter out experiments that don't contain the endpoint
+				endpointNames = []
+				endpointUnits = []
+				endpointDataTypes = []
+				endpointConc = []
+				endpointConcUnits = []
+				endpointTime = []
+				endpointTimeUnits = []
+
+				endpointStrings = []
+
+				for experiment in experiments
+					for i in experiment.lsStates
+						#go through the experiment data to check if the endpoint data is there
+						if i.lsKind == 'data column order' and i.ignored == false
+
+							# create NAs for each entry in case we don't find a variable, we'll plug these in instead
+							endpointNamesEntry = "NA"
+							endpointUnitsEntry = "NA"
+							endpointDataTypeEntry = "NA"
+							endpointConcEntry = "NA"
+							endpointConcUnitsEntry = "NA"
+							endpointTimeEntry = "NA"
+							endpointTimeUnitsEntry = "NA"
+
+							for j in i.lsValues
+								# only looking at the data that is not ignored
+								# TODO - add try/catch 
+								if j.lsKind == "column name" and j.ignored == false
+									endpointNamesEntry = j.codeValue
+								if j.lsKind == "column units" and j.ignored == false
+									endpointUnitsEntry = j.codeValue
+								if j.lsKind == "column type" and j.ignored == false
+									endpointDataTypeEntry = j.codeValue
+								if j.lsKind == "column concentration" and j.ignored == false
+									endpointConcEntry = j.numericValue
+								if j.lsKind == "column conc units" and j.ignored == false
+									endpointConcUnitsEntry = j.codeValue
+								if j.lsKind = "column time" and j.ignored == false
+									endpointTimeEntry = j.numericValue
+								if j.lsKind == "column time units" and j.ignored == false
+									endpointTimeUnitsEntry = j.codeValue
+							
+							# create a string of all the different sections put together to identify duplicates
+							endpointString = endpointNamesEntry + endpointUnitsEntry + endpointDataTypeEntry + String(endpointConcEntry) + endpointConcUnitsEntry + String(endpointTimeEntry) + endpointTimeUnitsEntry
+							
+							# if the endpoint is not already in there, record it
+							if endpointString not in endpointStrings
+								endpointStrings.push endpointString							
+
+								# record the endpoints 
+								endpointNames.push endpointNamesEntry
+								endpointUnits.push endpointUnitsEntry
+								endpointDataTypes.push endpointDataTypeEntry
+								endpointConc.push endpointConcEntry
+								endpointConcUnits.push endpointConcUnitsEntry
+								endpointTime.push endpointTimeEntry
+								endpointTimeUnits.push endpointTimeUnitsEntry
+
+
+				console.log endpointStrings
+												
+
+					
+
+
+				
+							
+				
+
+		
+		
