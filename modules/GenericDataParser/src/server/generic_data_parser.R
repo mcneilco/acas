@@ -240,6 +240,9 @@ saveEndpointCodeTables <- function(codes, codeKind) {
   # Remove NAs from the codes
   codes <- codes[!is.na(codes)]
 
+  # Remove blanks from the codes
+  codes <- codes[codes != ""]
+
   # If there are no codes after removing NAs, end the script early
   if (length(codes) == 0) {
     return (NULL)

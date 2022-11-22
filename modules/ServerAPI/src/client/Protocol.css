@@ -5,3 +5,11 @@
 .bv_endpointTable .bv_number {
     width: 50px !important;
 }
+
+.bv_endpointTable .bv_editablePicklist {
+    display: flex !important;
+}
+
+.bv_endpointTable span.help-inline {
+    position: absolute !important;
+}
