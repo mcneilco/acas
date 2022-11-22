@@ -142,7 +142,7 @@ def get_users(client, ls_type = None, ls_kind = None, role_name = None, use_acas
         memberships = client.list_memberships()
         projects = client.projects()
     
-        if use_acas_only_acl_groups == "true":
+        if bool(use_acas_only_acl_groups) == True:
             permissions.extend(get_acas_only_acl_group_permissions(groups, projects))
 
         user_projects = {}
@@ -201,7 +201,7 @@ def get_user(client, username, use_acas_only_acl_groups = True):
     projects = client.projects()
     groups = client.list_groups()
 
-    if use_acas_only_acl_groups == "true":
+    if bool(use_acas_only_acl_groups) == True:
         permissions.extend(get_acas_only_acl_group_permissions(groups, projects))
 
     user_memberships = [m for m in memberships if m['user_id'] == user['id']]
