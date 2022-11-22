@@ -12,6 +12,21 @@ import os, sys
 import locale
 from functools import cmp_to_key
 
+# log to stderr console
+import logging
+import sys
+root = logging.getLogger()
+root.setLevel(logging.DEBUG)
+
+handler = logging.StreamHandler(sys.stderr)
+handler.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+root.addHandler(handler)
+
+logger = logging.getLogger(f"acasldclient")
+logger.setLevel(logging.DEBUG)
+
 def get_parser():
     """
     @return:
@@ -112,27 +127,32 @@ def ld_user_to_acas_user_code_table(ld_user):
 def get_acas_only_acl_group_permissions(groups, projects):
     # Gets permissions for groups that are formatted like "ACAS_ONLY_ACL_GROUP_ProjectX"
     # These groups are used to grant project access to users to ACAS but not to Live Design
+    logger.info("getting acas acl group permissions")
     acas_acl_group_permissions = []
     GROUP_NAME_REGEX = "ACAS_ONLY_ACL_GROUP_(.*)"
     for g in groups:
         acas_only_acl_group_match = re.match(GROUP_NAME_REGEX, g["name"])
         if acas_only_acl_group_match is not None:
             project_name = acas_only_acl_group_match.group(1)
+            logger.info(f"Found matching group matching {GROUP_NAME_REGEX}: {g['name']}")
             # Get the matching project id from the project name
             project_id = None
             for p in projects:
                 if p.name == project_name:
                     project_id = p.id
+                    logger.info(f"Found matching project id {p.id} for group project {project_name}")
                     break
             if project_id is not None:
                 acas_acl_group_permissions.append({
                     "project_id": project_id,
                     "group_id": g["id"]
                 })
+    logger.info(f"ACAS acl group permissions: {json.dumps(acas_acl_group_permissions)}")
     return acas_acl_group_permissions
 
 def get_users(client, ls_type = None, ls_kind = None, role_name = None, use_acas_only_acl_groups = True):
     # ld_users = client.list_users()
+    logger.info(f"get_users with filters ls_type={ls_type}, ls_kind={ls_kind}, role_name={role_name} and use_acas_only_acl_groups={use_acas_only_acl_groups}")
     ld_users = client.client.get("/users?include_permissions=false", '')
     if ls_type == None and ls_kind == None and role_name == None:
         acas_users = list(map(ld_user_to_acas_user_code_table, ld_users))
@@ -142,7 +162,7 @@ def get_users(client, ls_type = None, ls_kind = None, role_name = None, use_acas
         memberships = client.list_memberships()
         projects = client.projects()
     
-        if use_acas_only_acl_groups == "true":
+        if bool(use_acas_only_acl_groups) == True:
             permissions.extend(get_acas_only_acl_group_permissions(groups, projects))
 
         user_projects = {}
@@ -195,13 +215,14 @@ def get_users_roles(client, users):
     return users
 
 def get_user(client, username, use_acas_only_acl_groups = True):
+    logger.info(f"get_user {username} use_acas_only_acl_groups={use_acas_only_acl_groups}")
     user = client.get_user(username)
     permissions = client.list_permissions()
     memberships = client.list_memberships()
     projects = client.projects()
     groups = client.list_groups()
 
-    if use_acas_only_acl_groups == "true":
+    if bool(use_acas_only_acl_groups) == True:
         permissions.extend(get_acas_only_acl_group_permissions(groups, projects))
 
     user_memberships = [m for m in memberships if m['user_id'] == user['id']]
@@ -218,6 +239,7 @@ def get_user(client, username, use_acas_only_acl_groups = True):
                             user_projects[proj.name] = {"id":proj.id, "granting_groups": [g["name"]]}
     roles = []
     for proj, data in user_projects.items():
+        description = "Permission to Project granted by Live Design group(s): "+', '.join("'{0}'".format(g) for g in data["granting_groups"])
         roles.append({
             "id": data["id"], 
             "roleEntry": {
@@ -225,15 +247,17 @@ def get_user(client, username, use_acas_only_acl_groups = True):
                 'lsType': 'Project',
                 'lsKind': proj,
                 'lsTypeAndKind':  "Project_" + proj,
-                'roleDescription': "Permission to Project granted by Live Design group(s): "+', '.join("'{0}'".format(g) for g in data["granting_groups"]),
+                'roleDescription': description,
                 'roleName': "User",
                 'version': 0
             }
         })
+        logger.info(description)
     acas_user = ld_user_to_acas_user(user, roles)
     return acas_user
 
 def get_projects(client):
+    logger.info("get_projects")
     ld_projects = client.projects()      
 
     projects = list(map(ld_project_to_acas, ld_projects))
@@ -258,7 +282,15 @@ def ld_project_to_acas(ld_project):
 def main():
     parser = get_parser()
     args = parser.parse_args()
+    args_string = ""
+    for arg in vars(args):
+        if arg != "password":
+            args_string += f"{arg}={getattr(args, arg)} "
+        else:
+            args_string += f"{arg}=******** "
+    logger.info(f"acas_ld_client.py called with {args_string}")
     endpoint = "{0}/api".format(args.ld_server)
+    
     if args.method != "auth_check":
         client = LDClient(host=endpoint, username=args.username, password=args.password, compatibility_mode=version_str_as_tuple(SUPPORTED_SERVER_VERSION))
         method = eval(args.method)
