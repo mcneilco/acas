@@ -2259,7 +2259,7 @@ validateProject <- function(projectName, configList, username, protocolName = NU
             userProjectDT <- rbindlist(lapply(projectList, rmNullObs), fill = TRUE)
             userHasAccess <- nrow(userProjectDT[code == protocolProject & ignored == FALSE]) > 0
             if(!userHasAccess) {
-              addError("The ",racas::applicationSettings$client.protocol.label," you entered is being used in a project that you do not have access to.", errorEnv = errorEnv)
+              addError(paste0("The ",racas::applicationSettings$client.protocol.label," you entered is being used in a project that you do not have access to."), errorEnv = errorEnv)
             }
           }
         }
