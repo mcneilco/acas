@@ -1161,6 +1161,7 @@ class EndpointListController extends AbstractFormController
 				endpointConcUnits = []
 				endpointTime = []
 				endpointTimeUnits = []
+				endpointHidden = []
 
 				endpointStrings = []
 
@@ -1177,7 +1178,8 @@ class EndpointListController extends AbstractFormController
 							endpointConcUnitsEntry = "NA"
 							endpointTimeEntry = "NA"
 							endpointTimeUnitsEntry = "NA"
-
+							endpointHiddenEntry = "NA"
+							
 							for j in i.lsValues
 								# only looking at the data that is not ignored
 								# TODO - add try/catch 
@@ -1195,6 +1197,8 @@ class EndpointListController extends AbstractFormController
 									endpointTimeEntry = j.numericValue
 								if j.lsKind == "column time units" and j.ignored == false
 									endpointTimeUnitsEntry = j.codeValue
+								if j.lsTypeAndKind == "codeValue_hide column" and j.ignored == false
+									endpointHiddenEntry = j.codeValue
 							
 							# create a string of all the different sections put together to identify duplicates
 							endpointString = endpointNamesEntry + endpointUnitsEntry + endpointDataTypeEntry + String(endpointConcEntry) + endpointConcUnitsEntry + String(endpointTimeEntry) + endpointTimeUnitsEntry
@@ -1211,6 +1215,7 @@ class EndpointListController extends AbstractFormController
 								endpointConcUnits.push endpointConcUnitsEntry
 								endpointTime.push endpointTimeEntry
 								endpointTimeUnits.push endpointTimeUnitsEntry
+								endpointHidden.push endpointHiddenEntry
 
 				# Part 2: create a CSV file with the endpoints	
 				blankElements = ["NA", "undefined", "", null, undefined]
@@ -1218,45 +1223,57 @@ class EndpointListController extends AbstractFormController
 				endpointNameRowString = "Corporate Batch ID,"
 				dataTypeRowString = "Datatype,"
 				for indexNum in [0..endpointNames.length]
-					endpointEntry = ""
+					endpointRowEntry = ""
 					dataTypeEntry = ""
 
 					endpointHasNoValues = true
+
 					if endpointNames[indexNum] not in blankElements
-						endpointEntry = endpointEntry + endpointNames[indexNum] + " "
+						endpointRowEntry = endpointRowEntry + endpointNames[indexNum] + " "
 						endpointHasNoValues = false
 					if endpointUnits[indexNum] not in blankElements
-						endpointEntry = endpointEntry + "(" + endpointUnits[indexNum] + ") "
+						endpointRowEntry = endpointRowEntry + "(" + endpointUnits[indexNum] + ") "
 						endpointHasNoValues = false
+
+					# construct a different string for concentration depending on which combination of conc and conc units are present or not
 					if endpointConc[indexNum] not in blankElements && endpointConcUnits[indexNum] not in blankElements
-						endpointEntry = endpointEntry + "[" + endpointConc[indexNum] + " " + endpointConcUnits[indexNum] + "] "
+						endpointRowEntry = endpointRowEntry + "[" + endpointConc[indexNum] + " " + endpointConcUnits[indexNum] + "] "
 						endpointHasNoValues = false
 					if endpointConc[indexNum] in blankElements && endpointConcUnits[indexNum] not in blankElements
-						endpointEntry = endpointEntry + "[" + endpointConcUnits[indexNum] + "] "
+						endpointRowEntry = endpointRowEntry + "[" + endpointConcUnits[indexNum] + "] "
 						endpointHasNoValues = false
 					if endpointConc[indexNum] not in blankElements && endpointConcUnits[indexNum] in blankElements
-						endpointEntry = endpointEntry + "[" + endpointConc[indexNum] + "] "
+						endpointRowEntry = endpointRowEntry + "[" + endpointConc[indexNum] + "] "
 						endpointHasNoValues = false
+
+					# construct a different string for time depending on which combination of time and time units are present or not
 					if endpointTime[indexNum] not in blankElements && endpointTimeUnits[indexNum] not in blankElements
-						endpointEntry = endpointEntry + "{" + endpointTime[indexNum] + " " + endpointTimeUnits[indexNum] + "} " 
+						endpointRowEntry = endpointRowEntry + "{" + endpointTime[indexNum] + " " + endpointTimeUnits[indexNum] + "} " 
 						endpointHasNoValues = false
 					if endpointTime[indexNum] not in blankElements && endpointTimeUnits[indexNum] in blankElements
-						endpointEntry = endpointEntry + "{" + endpointTime[indexNum] + "} "
+						endpointRowEntry = endpointRowEntry + "{" + endpointTime[indexNum] + "} "
 						endpointHasNoValues = false
 					if endpointTime[indexNum] in blankElements && endpointTimeUnits[indexNum] not in blankElements
-						endpointEntry = endpointEntry + "{" + endpointTimeUnits[indexNum] + "} "
+						endpointRowEntry = endpointRowEntry + "{" + endpointTimeUnits[indexNum] + "} "
 						endpointHasNoValues = false
 
 					# only attach the endpoint to the csv if it has any values 
 					if endpointHasNoValues == false
-						endpointNameRowString = endpointNameRowString + endpointEntry + ","
+						endpointNameRowString = endpointNameRowString + endpointRowEntry + ","
 						
-						# record the data type value if the other endpoint values are not empty 
-						#TODO - find out if it is hidden or not, add that in. 
+						# we only record the data type value if the other endpoint values are not empty 
 						if endpointDataTypes[indexNum] == "numericValue"
-							dataTypeRowString = dataTypeRowString + "Number,"
+							dataTypeRowEntry = "Number "					
 						else if endpointDataTypes[indexNum] == "stringValue"
-							dataTypeRowString = dataTypeRowString + "Text,"
+							dataTypeRowEntry = "Text "
+
+						# mark if the endpoint is hidden or not
+						if endpointHidden[indexNum] == "TRUE"
+							dataTypeRowEntry = dataTypeRowEntry + "(Hidden),"
+						else
+							dataTypeRowEntry = dataTypeRowEntry + ","	
+					
+						dataTypeRowString = dataTypeRowString + dataTypeRowEntry
 					
 					
 				# marking the file as a .csv
