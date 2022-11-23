@@ -1898,7 +1898,7 @@ getExperimentByNameCheck <- function(experimentName, protocol, configList, dupli
       }
     } else {
       warnUser(paste0(racas::applicationSettings$client.experiment.label," '",experimentName,"' already exists, so the loader will delete its current data and replace it with your new upload.",
-                     " If you do not intend to delete and reload data, enter a new ",racas::applicationSettings$client.experiment.label," Name."), priority = "high")
+                     " If you do not intend to delete and reload data, enter a new ",racas::applicationSettings$client.experiment.label," Name."), highPriority = TRUE)
       experiment <- experimentList[[1]]
     }
   }
