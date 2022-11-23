@@ -1050,7 +1050,6 @@ class EndpointListController extends AbstractFormController
 		else
 			@$(".bv_downloadFiles").show()
 	
-	
 	downloadFiles: => 
 		#copied from downloadFiles in ExperimentBrowser.coffee
 
@@ -1127,9 +1126,23 @@ class EndpointListController extends AbstractFormController
 		# Third, remove duplicates
 		# Fourth, format the endpoints into a .csv file and return it to the user
 
-
+		# extract the protocol metadata (name, scientist, notebook, page, date, project)
 		protocolCode = @model.escape('codeName')
+		protocolName = @model.attributes.lsLabels.models[0].attributes.labelText
+		protocolScientist = window.AppLaunchParams.loginUser.username
+		todayDate = new Date()
+		protocolDate = todayDate.getMonth() + 1 + "/" + todayDate.getDate() + "/" + String(todayDate.getFullYear())[2..4]
+		protocolProject = ""
 
+		# Get the protocol project
+		for lsState in @model.attributes.lsStates.models
+			if lsState.attributes.lsKind == "protocol metadata"
+				for lsValue in lsState.attributes.lsValues.models
+					if lsValue.attributes.lsKind == "project" && lsValue.attributes.ignored == false 
+						if lsValue.attributes.codeValue != "unassigned" # we leave it as an empty string instead of recording "unassigned"
+							protocolProject = lsValue.attributes.codeValue
+
+		# Get all the experiments that use this protocol
 		$.ajax
 			type: 'GET'
 			#there are two similar routes in ExperimentBrowserRoutes.coffee and ExperimentServiceRoutes.coffee
@@ -1140,7 +1153,7 @@ class EndpointListController extends AbstractFormController
 
 				# Part 1: Find all unique endpoints across experiments that use this protocol code
 
-				#we'll need to filter out experiments that don't contain the endpoint
+				# arrays for recording endpoint data
 				endpointNames = []
 				endpointUnits = []
 				endpointDataTypes = []
@@ -1190,7 +1203,7 @@ class EndpointListController extends AbstractFormController
 							if endpointString not in endpointStrings
 								endpointStrings.push endpointString							
 
-								# record the endpoints 
+								# record the endpoint data
 								endpointNames.push endpointNamesEntry
 								endpointUnits.push endpointUnitsEntry
 								endpointDataTypes.push endpointDataTypeEntry
@@ -1199,11 +1212,62 @@ class EndpointListController extends AbstractFormController
 								endpointTime.push endpointTimeEntry
 								endpointTimeUnits.push endpointTimeUnitsEntry
 
-				# Part 2: create a CSV file with the endpoints
+				# Part 2: create a CSV file with the endpoints	
+				blankElements = ["NA", "undefined", "", null, undefined]
 
-				csvContent = "data:text/csv;charset=utf-8,"
-				csvContent = csvContent + "\n hello, world, text"
+				endpointNameRowString = "Corporate Batch ID,"
+				dataTypeRowString = "Datatype,"
+				for indexNum in [0..endpointNames.length]
+					endpointEntry = ""
+					dataTypeEntry = ""
 
+					endpointHasNoValues = true
+					if endpointNames[indexNum] not in blankElements
+						endpointEntry = endpointEntry + endpointNames[indexNum] + " "
+						endpointHasNoValues = false
+					if endpointUnits[indexNum] not in blankElements
+						endpointEntry = endpointEntry + "(" + endpointUnits[indexNum] + ") "
+						endpointHasNoValues = false
+					if endpointConc[indexNum] not in blankElements && endpointConcUnits[indexNum] not in blankElements
+						endpointEntry = endpointEntry + "[" + endpointConc[indexNum] + " " + endpointConcUnits[indexNum] + "] "
+						endpointHasNoValues = false
+					if endpointConc[indexNum] in blankElements && endpointConcUnits[indexNum] not in blankElements
+						endpointEntry = endpointEntry + "[" + endpointConcUnits[indexNum] + "] "
+						endpointHasNoValues = false
+					if endpointConc[indexNum] not in blankElements && endpointConcUnits[indexNum] in blankElements
+						endpointEntry = endpointEntry + "[" + endpointConc[indexNum] + "] "
+						endpointHasNoValues = false
+					if endpointTime[indexNum] not in blankElements && endpointTimeUnits[indexNum] not in blankElements
+						endpointEntry = endpointEntry + "{" + endpointTime[indexNum] + " " + endpointTimeUnits[indexNum] + "} " 
+						endpointHasNoValues = false
+					if endpointTime[indexNum] not in blankElements && endpointTimeUnits[indexNum] in blankElements
+						endpointEntry = endpointEntry + "{" + endpointTime[indexNum] + "} "
+						endpointHasNoValues = false
+					if endpointTime[indexNum] in blankElements && endpointTimeUnits[indexNum] not in blankElements
+						endpointEntry = endpointEntry + "{" + endpointTimeUnits[indexNum] + "} "
+						endpointHasNoValues = false
+
+					# only attach the endpoint to the csv if it has any values 
+					if endpointHasNoValues == false
+						endpointNameRowString = endpointNameRowString + endpointEntry + ","
+						
+						# record the data type value if the other endpoint values are not empty 
+						#TODO - find out if it is hidden or not, add that in. 
+						if endpointDataTypes[indexNum] == "numericValue"
+							dataTypeRowString = dataTypeRowString + "Number,"
+						else if endpointDataTypes[indexNum] == "stringValue"
+							dataTypeRowString = dataTypeRowString + "Text,"
+					
+					
+				# marking the file as a .csv
+				csvContent = "data:text/csv;charset=utf-8," 
+
+				# adding the SEL content
+				csvContent = csvContent + "Experiment Metadata\nFormat,Generic\nProtocol Name," + protocolName + 
+				"\nExperiment Name,,\nScientist," + protocolScientist + "\nNotebook,,\nPage,,\nAssay Date," + protocolDate +
+				"\nProject," + protocolProject + "\n\nCalculated Results,\n" + dataTypeRowString + "\n" + endpointNameRowString
+				
+				# exporting and downloading the file to the user
 				encodedUri = encodeURI(csvContent)
 				a = document.createElement('a');
 				a.style.display = 'none';
