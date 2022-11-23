@@ -1893,7 +1893,7 @@ getExperimentByNameCheck <- function(experimentName, protocol, configList, dupli
         warnUser(paste0(racas::applicationSettings$client.experiment.label," '",experimentName,
                         "' does not exist in the ",racas::applicationSettings$client.protocol.label," that you entered, but it does exist in '", 
                         getPreferredProtocolName(protocolOfExperiment), 
-                        "'. Reloading the file will update the data and change the ",racas::applicationSettings$client.protocol.label,"."))
+                        "'. Reloading the file will update the data and change the ",racas::applicationSettings$client.protocol.label,"."), highPriority = TRUE)
         experiment <- experimentList[[1]]
       }
     } else {
