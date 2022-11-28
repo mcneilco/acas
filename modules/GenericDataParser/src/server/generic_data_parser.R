@@ -3019,6 +3019,8 @@ getFitDataFromUploadOrganizedResults <- function(calculatedResults) {
 
             # Attach the message to the row so we can reuse it in dose response summary table
             dt[ , missingParametersMsg := missingParametersMessage]
+        } else {
+            dt[ , missingParametersMsg := NA_character_]
         }
       } else {
         fixedParams <- list()
