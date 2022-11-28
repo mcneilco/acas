@@ -102,7 +102,20 @@ class Protocol extends BaseEntity
 			maxY.set numericValue: 120.0
 
 		maxY
+			
+	getStrictEndpointMatching: ->
+		strictEndpointMatching = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "protocol metadata", "codeValue", "strict endpoint matching"		
+		if strictEndpointMatching.get('codeValue') is undefined or strictEndpointMatching.get('codeValue') is ""
+			if window.conf.protocol.strictEndpointMatchingDefault == false 
+				strictEndpointMatching.set codeValue: "false"
+			else 
+				strictEndpointMatching.set codeValue: "true"
+			strictEndpointMatching.set codeType: "boolean"
+			strictEndpointMatching.set codeKind: "boolean"
+			strictEndpointMatching.set codeOrigin: "ACAS DDICT"
 
+		strictEndpointMatching
+		
 	validate: (attrs) ->
 		errors = super(attrs)
 		if !errors?
@@ -193,6 +206,7 @@ class ProtocolBaseController extends BaseEntityController
 			"click .bv_closeDeleteProtocolModal": "handleCloseProtocolModal"
 			"click .bv_confirmDeleteProtocolButton": "handleConfirmDeleteProtocolClicked"
 			"click .bv_cancelDelete": "handleCancelDeleteClicked"
+			"click .bv_strictEndpointMatchingCheckbox": "handleStrictEndpointMatchingChanged"
 
 		)
 
@@ -230,8 +244,11 @@ class ProtocolBaseController extends BaseEntityController
 				@completeInitialization()
 
 	completeInitialization: =>
-		unless @model?
+		if !@model?
 			@model = new Protocol()
+			newProtocol = true 
+		else
+			newProtocol = false
 		@errorOwnerName = 'ProtocolBaseController'
 		@setBindings()
 		if @options.readOnly?
@@ -278,6 +295,22 @@ class ProtocolBaseController extends BaseEntityController
 		@model.getStatus().on 'change', @updateEditable.bind(@)
 #		@trigger 'amClean' #so that module starts off clean when initialized
 
+		#if endpoint manager is enabled, render the endpoint table 
+		if window.conf.protocol.endpointManager.enabled == true
+			# Hack to get Protocol working with Thing-based ACASFormStateTable classes
+			@model.lsProperties = {'defaultValues': []}
+			# The 'data column order' states are a StateTable
+			# Get any existing states with that type & kind
+
+			# Create the controller for the Endpoints table which manages all the states
+			@endpointListController = new EndpointListController
+				el: @$('.bv_endpointTable')
+				model: @model
+				readOnly: false
+				newProtocol: newProtocol
+
+			@endpointListController.render()
+
 	render: =>
 		unless @model?
 			@model = new Protocol()
@@ -290,6 +323,18 @@ class ProtocolBaseController extends BaseEntityController
 			@$('.bv_creationDate').val UtilityFunctions::convertMSToYMDDate(@model.getCreationDate().get('dateValue'))
 		@$('.bv_assayTreeRule').val @model.getAssayTreeRule().get('stringValue')
 		@$('.bv_assayPrinciple').val @model.getAssayPrinciple().get('clobValue')
+
+		#If the endpoint manager is disabled, remove it
+		if window.conf.protocol.endpointManager.enabled == false
+			@$(".bv_endpointManagerSection").remove()
+		else
+			#@model.getStrictEndpointMatching().get('codeValue') gives us a string that needs to be converted to a boolean...
+			#Using Boolean() will give us true even if we pass "false", so we have to use an if...else... logic to convert it manually. 
+			if @model.getStrictEndpointMatching().get('codeValue') == "false"
+				strictEndpointMatchingCode = false
+			else
+				strictEndpointMatchingCode = true
+			@$('.bv_strictEndpointMatchingInputCheckbox').prop("checked", strictEndpointMatchingCode);
 		showCurveDisplayParams = true
 		if window.conf.protocol?.showCurveDisplayParams?
 			showCurveDisplayParams = window.conf.protocol.showCurveDisplayParams
@@ -498,4 +543,580 @@ class ProtocolBaseController extends BaseEntityController
 		unless value is ""
 			value = parseFloat value
 		@handleValueChanged "CurveDisplayMin", value
+
+	handleStrictEndpointMatchingChanged: =>
+		value = $('.bv_strictEndpointMatchingInputCheckbox').is(":checked")
+		@handleValueChanged "StrictEndpointMatching", value
+
+
+class EndpointController extends ACASFormStateTableFormController
+	template: _.template($("#EndpointRowView").html())
+
+	events:
+		"click .bv_remove": "removeRow"
+
+
+	initialize: (options) =>
+		$(@el).empty()
+		$(@el).html @template()
+		super(options)
+	
+	removeRow: =>
+		# Remove UI element
+		@el.remove()
+		# Ignore the state
+		state = @getStateForRow()
+		state.set 
+			ignored: true
+			modifiedBy: window.AppLaunchParams.loginUser.username
+			modifiedDate: new Date().getTime()
+			isDirty: true
+		# Alert the parent controller to destroy this controller
+		@trigger 'rowRemoved', @rowNumber
+
+				
+# Protocol Endpoints definition
+EndpointsValuesConf = [
+	key: 'column name'
+	modelDefaults:
+		type: 'codeValue'
+		kind: 'column name'
+		codeType: 'data column'
+		codeKind: 'column name'
+		codeOrigin: 'ACAS DDict'
+		value: null
+	fieldSettings:
+		fieldType: 'codeValue'
+		formLabel: ''
+		fieldWrapper: 'bv_columnNamePickList'
+		insertUnassigned: true
+		firstSelectText: "Select Column Name"
+		required: true
+		editablePicklist: true
+		autoSavePickListItem: true
+		editablePicklistRoles: [window.conf.roles.acas.userRole]
+		parameter: 'Column Name'
+,
+	key: 'column units'
+	modelDefaults:
+		type: 'codeValue'
+		kind: 'column units'
+		codeType: 'data column'
+		codeKind: 'column units'
+		codeOrigin: 'ACAS DDict'
+		value: null
+	fieldSettings:
+		fieldType: 'codeValue'
+		formLabel: ''
+		fieldWrapper: 'bv_unitsPickList'
+		insertUnassigned: true
+		firstSelectText: "(unitless)"
+		required: false
+		editablePicklist: true
+		autoSavePickListItem: true
+		editablePicklistRoles: [window.conf.roles.acas.userRole]
+		parameter: 'Column Units'
+,
+	key: 'column type'
+	modelDefaults:
+		type: 'codeValue'
+		kind: 'column type'
+		codeType: 'data column'
+		codeKind: 'column type'
+		codeOrigin: 'ACAS DDict'
+		value: null
+	fieldSettings:
+		fieldType: 'codeValue'
+		formLabel: ''
+		fieldWrapper: 'bv_dataTypePickList'
+		insertUnassigned: true
+		firstSelectText: "Select Column Type"
+		required: true
+		editablePicklist: false
+		parameter: 'Column Type'
+,
+	key: 'column time'
+	modelDefaults:
+		type: 'numericValue'
+		kind: 'column time'
+		value: null
+		unitType: null
+		unitKind: null
+	fieldSettings:
+		fieldType: 'numericValue'
+		fieldWrapper: "bv_columnTimeInput"
+		formLabel: ""
+		format: "0.00"
+		required: false
+,
+	key: 'column time units'
+	modelDefaults:
+		type: 'codeValue'
+		kind: 'column time units'
+		codeType: 'data column'
+		codeKind: 'column time units'
+		codeOrigin: 'ACAS DDict'
+		value: null
+	fieldSettings:
+		fieldType: 'codeValue'
+		formLabel: ''
+		fieldWrapper: 'bv_columnTimeUnitsPickList'
+		insertUnassigned: true
+		firstSelectText: "Select Column Time Units"
+		required: false
+		editablePicklist: true
+		autoSavePickListItem: true
+		editablePicklistRoles: [window.conf.roles.acas.userRole]
+		parameter: 'Column Time Units'
+,
+	key: 'column concentration'
+	modelDefaults:
+		type: 'numericValue'
+		kind: 'column concentration'
+		value: null
+		unitType: null
+		unitKind: null
+	fieldSettings:
+		fieldType: 'numericValue'
+		fieldWrapper: 'bv_columnConcentrationInput'
+		formLabel: ""
+		format: "0.00"
+		required: false
+,
+	key: 'column conc units'
+	modelDefaults:
+		type: 'codeValue'
+		kind: 'column conc units'
+		codeType: 'data column'
+		codeKind: 'column conc units'
+		codeOrigin: 'ACAS DDict'
+		value: null
+	fieldSettings:
+		fieldType: 'codeValue'
+		formLabel: ''
+		fieldWrapper: 'bv_columnConcentrationUnitsPickList'
+		insertUnassigned: true
+		firstSelectText: "Select Column Concentration Units"
+		required: false
+		editablePicklist: true
+		autoSavePickListItem: true
+		editablePicklistRoles: [window.conf.roles.acas.userRole]
+		parameter: 'Column Concentration Units'
+,
+	key: 'hide column'
+	modelDefaults:
+		type: 'codeValue'
+		kind: 'hide column'
+		codeType: 'boolean'
+		codeKind: 'boolean'
+		codeOrigin: 'ACAS DDict'
+		value: null
+	fieldSettings:
+		fieldType: 'booleanValue'
+		formLabel: ''
+		fieldWrapper: "bv_endpointHiddenCheckbox"
+,
+	key: 'condition column'
+	modelDefaults:
+		type: 'codeValue'
+		kind: 'condition column'
+		codeType: 'boolean'
+		codeKind: 'boolean'
+		codeOrigin: 'ACAS DDict'
+		value: null
+	fieldSettings:
+		fieldType: 'booleanValue'
+		formLabel: ''
+		fieldWrapper: "bv_endpointConditionCheckbox"
+]
+		
+
+class EndpointListController extends AbstractFormController
+	template: _.template($("#EndpointListView").html())
+
+	events:
+		"click .bv_addEndpoint": "handleAddEndpointPressed"
+		"rowRemoved": "handleRowRemoved"
+		"click .bv_endpointRow": "handleEndpointRowPressed"
+		"click .bv_downloadFiles": "downloadFiles"
+	
+	rowNumberKind: "column order"
+	stateType: "metadata"
+	stateKind: "data column order"
+	
+	initialize: (options) =>
+		@model = options.model
+
+		endpointStates = @model.get("lsStates").getStatesByTypeAndKind @stateType, @stateKind
+
+		# Sort the collection by the "column order" values
+		@collection = endpointStates.sort (stateA, stateB) =>
+			rnA = @getRowNumberForState(stateA)
+			rnB = @getRowNumberForState(stateB)
+			return rnA - rnB
+		
+	render: => 
+		$(@el).empty()
+		$(@el).html @template()
+
+		#If the table is read-only, remove the remove and add buttons
+		if @options.readOnly == true
+			#remove column
+			@$(".bv_endpointColumnRemove").remove()
+			#remove add endpoint button
+			@$(".bv_addEndpoint").remove()
+			@$(".bv_endpointManagerInstructions").hide()
+		
+		if @options.newProtocol == true
+			@$(".bv_downloadFiles").hide()
+			@$(".bv_endpointManagerInstructions").hide()
+
+		#check whether or not to display time and concentration columns in the endpoint table
+		@showTimeAndConcentration()
+		
+		# Create a list to hold the endpoint controllers in, so we can iterate through them later
+		@endpointControllers = []
+		for lsState in @collection
+			@.addOne(lsState)
+			if @options.readOnly == true
+				#hide remove buttons
+				@$(".bv_remove_row").hide()
+
+		if @options.readOnly == false && @options.newProtocol == false 	#Only render experiments if the protocol is not new and is not read only 
+			@getExperimentSummaryTable()
+		else #if the table isn't rendered, don't render the download files button either
+			@$(".bv_downloadFiles").hide() 
+
+		@
+	
+	showTimeAndConcentration: =>
+		#if time/units or concentration/units are disabled, remove the columns and cells from the endpoint controller whenever table is made or a row added
+		if window.conf.protocol.endpointManager.showTime == false
+			@$(".bv_endpointColumnTime").remove()
+			@$(".bv_endpointColumnTimeUnits").remove()
+			@$(".bv_timeUnitsPickListParent").remove()
+			@$(".bv_timeInputParent").remove()
+
+		if window.conf.protocol.endpointManager.showConcentration == false
+			@$(".bv_endpointColumnConcentration").remove()
+			@$(".bv_endpointColumnConcentrationUnits").remove()
+			@$(".bv_concentrationUnitsPickListParent").remove()
+			@$(".bv_concentrationInputParent").remove()
+
+	getExperimentSummaryTable: =>
+		#hide previously shown warnings/success text
+		@$(".bv_downloadSuccess").hide()
+		@$(".bv_downloadWarning").hide()
+
+		protocolCode = @model.escape('codeName')		
+		$.ajax
+			type: 'GET'
+			#there are two similar routes in ExperimentBrowserRoutes.coffee and ExperimentServiceRoutes.coffee
+			#url: "/api/experimentsForProtocol/#{protocolCode}" #ExperimentBrowserRoutes.coffee route
+			url: "/api/experiments/protocolCodename/#{protocolCode}" #ExperimentServiceRoutes.coffee route
+			success: (experiments) =>
+				@setupExperimentSummaryTable experiments
+				@$(".bv_experimentTableControllerTitle").html "Experiments using " + protocolCode + ":"
+
+	resetBackgroundColor: (tr) => 
+		# Reset the background color of all rows
+		for elm in tr.parent()[0].childNodes
+			for subelm in elm.childNodes
+				try
+					subelm.style.background = "#F9F9F9"
+				catch
+					#not all elements can be styled, so do nothing
+	
+	setBackgroundColor: (tr) =>
+		# Highlight the background color of the cells within the selected row 
+		for elm in tr
+			for subelm in elm.childNodes
+				try
+					subelm.style.background = "#D9EDF7"
+				catch
+					#not all elements can be styled, so do nothing
+
+	getRowData: (tr) =>
+		# Extract and convert the values for a given row
+		endpointRowValues = tr[0].querySelectorAll("span.select2-selection__rendered")
+		rowEndpointName = endpointRowValues[0].title
+		rowUnits = endpointRowValues[1].title
+		rowDataType = endpointRowValues[2].title
+
+		#convert the input into the data type for matching when we search the experiment metadata
+		if rowDataType == "Number"
+			rowDataType = "numericValue"
+		else if rowDataType == "Text"
+			rowDataType = "stringValue"
+		else if rowDataType == "Image File"
+			rowDataType = "inlineFileValue" 
+		else if rowDataType == "Date"
+			rowDataType = "dateValue"
+		
+		return {
+			rowEndpointName: rowEndpointName,
+			rowUnits: rowUnits,
+			rowDataType: rowDataType
+		}
+
+	getFilteredExperimentTable: (rowData, protocolCode) =>
+		rowEndpointName =  rowData.rowEndpointName
+		rowUnits = rowData.rowUnits
+		rowDataType =  rowData.rowDataType
+
+		#if the endpoint doesn't have a value for it, don't filter by it.
+		if rowEndpointName == "Select Column Name"
+			endpointRowValueMatch = true
+			rowEndpointName = "any column name"
+		else
+			endpointRowValueMatch = false
+		
+		if rowUnits == "(unitless)"
+			endpointRowUnitsMatch = true
+			rowUnits = "any units"
+		else
+			endpointRowUnitsMatch = false
+
+		if rowDataType == "Select Column Type"
+			endpointRowDataTypeMatch = true
+			rowDataType = "any data type"
+		else
+			endpintRowDataTypeMatch = false	
+
+		#hide previously shown warnings/success text associated w/ previous table
+		@$(".bv_downloadSuccess").hide()
+		@$(".bv_downloadWarning").hide()
+		$.ajax
+			type: 'GET'
+			#there are two similar routes in ExperimentBrowserRoutes.coffee and ExperimentServiceRoutes.coffee
+			#url: "/api/experimentsForProtocol/#{protocolCode}" #ExperimentBrowserRoutes.coffee route
+			url: "/api/experiments/protocolCodename/#{protocolCode}" #ExperimentServiceRoutes.coffee route
+			success: (experiments) =>
+				filtered_experiments = [] #keep track of the filtered experiments
+				#we'll need to filter out experiments that don't contain the endpoint
+				for experiment in experiments
+					for i in experiment.lsStates
+						#go through the experiment data to check if the endpoint data is there
+						if i.lsKind == 'data column order' and i.ignored == false
+							for j in i.lsValues
+								#only looking at the data that is not ignored
+								if j.lsKind == "column name" and j.ignored == false
+									if j.stringValue == rowEndpointName
+										endpointRowValueMatch = true
+								if j.lsKind == "column units" and j.ignored == false
+									if j.stringValue == rowUnits
+										endpointRowUnitsMatch = true
+								if j.lsKind == "column type" and j.ignored == false
+									if j.stringValue == rowDataType 
+										endpointRowDataTypeMatch = true
+
+						#if all the criteria pass, record the experiment, end the loop early & move on to the next one
+						if endpointRowValueMatch == true && endpointRowUnitsMatch == true && endpointRowDataTypeMatch == true
+							filtered_experiments.push experiment
+							break
+				@$(".bv_experimentTableController").empty() #remove the last experimentTableController
+				@setupExperimentSummaryTable filtered_experiments #add a new one with the filtered experiments
+				#generate a title for the experiment table controller 
+				@$(".bv_experimentTableControllerTitle").html "Experiments using " + protocolCode + " containing '" + rowEndpointName + " (" + rowUnits + " , " + rowDataType + ")' data:"
+				
+
+	handleEndpointRowPressed: =>
+		#disable logic if endpoint list controller is read only (since there won't be an experiment controller)
+		#disable logic if the endpoint list is for a new protocol too
+		if @options.readOnly == true || @options.newProtocol == true
+			return @
+		
+		#Otherwise, when an endpoint row is pressed, we want to filter the experiment summary table so it only displays the experiments...
+		#...with protocols that contain the endpoint, so we'll need to find the row's endpoint name and regenerate the table
+
+		#since any element within the row could be clicked on, we want to find find the parent row div
+		tr = $(event.target).closest("tr")
+
+		#First, reset the background color of all the rows before highlighting a new row
+		@resetBackgroundColor(tr)
+
+		#we need to detect if the element we have clicked on is the previously selected element
+		if "selectedEndpointRow" in tr[0].classList
+			previouslySelectedRow = true
+		else
+			previouslySelectedRow = false
+		
+		#remove class marking whether a row was previously selected
+		$(".selectedEndpointRow").removeClass "selectedEndpointRow"
+
+		#if the row was previously selected, load table for just experiments associated with protocol, no filtering by endpoint
+		if previouslySelectedRow == true
+			@getExperimentSummaryTable()
+	
+		#if the row was not previously selected, load table with associated experiments filtered by endpoint and highlight endpoint row
+		else
+			#mark the selected row (this is part of unhighlighting/unselecting a row if it is clicked twice)
+			tr.addClass('selectedEndpointRow')
+
+			#apply highlighting to the selected rows
+			@setBackgroundColor(tr)
+
+			#extract the endpoint values from the selected row
+			rowData = @getRowData(tr)
+			protocolCode = @model.escape('codeName')
+
+			#get table with matching experiments given the endpoint data and the protocolCode
+			@getFilteredExperimentTable(rowData, protocolCode)
+
+			@
+
+	addOne: (state) =>
+		# create a new table row
+		tr = document.createElement('tr')
+		# Add that row into the table
+		@$('.bv_endpointRows').append tr
+		@$('.bv_endpointRows tr' ).addClass('bv_endpointRow')
+		# Create a new EndpointController, which manages a row
+		# We get the row number from the state which was passed in
+		rowNumber = @getRowNumberForState(state)
+		# Start tracking the controllers based on their row numbers
+		if @endpointControllers[rowNumber]?
+			@endpointControllers[rowNumber].remove()
+			@endpointControllers[rowNumber].unbind()
+		rowController = new EndpointController
+			el: tr
+			thingRef: @model
+			valueDefs: EndpointsValuesConf
+			stateType: 'metadata'
+			stateKind: 'data column order'
+			rowNumber: rowNumber
+			rowNumberKind: @rowNumberKind
+			readOnly: @options.readOnly
+		# Add this controller to our tracking dictionary so we can access it later
+		@endpointControllers[rowNumber] = rowController
+
+		#check whether or not to display time and concentration cells in the row
+		@showTimeAndConcentration()
+
+
+	
+	getRowNumberForState: (state) =>
+		rowValues = state.getValuesByTypeAndKind 'numericValue', @rowNumberKind
+		if rowValues.length == 1
+			return rowValues[0].get('numericValue')
+		else
+			return 0
+	
+	getNextRowNumber: =>
+		row_nums = @collection.map @.getRowNumberForState
+		if row_nums.length > 0
+			return Math.max(...row_nums) + 1
+		else
+			return 1
+
+	handleAddEndpointPressed: =>
+		# Create a new LsState
+		lsState = @model.get("lsStates").createStateByTypeAndKind "metadata", "data column order"
+		# Set column order value
+		rowNum = @.getNextRowNumber()
+		rowNumValue = lsState.getOrCreateValueByTypeAndKind 'numericValue', @rowNumberKind
+		rowNumValue.set("numericValue", rowNum)
+		# Add the state to the collection
+		@collection.push lsState
+		@.addOne(lsState)
+	
+	handleRowRemoved: (rowNumber) =>
+		if @endpointControllers[rowNumber]?
+			@endpointControllers[rowNumber].remove()
+			@endpointControllers[rowNumber].unbind()
+			@endpointControllers[rowNumber].el.remove()
+
+	#Function brought over from experiment.coffee 
+	setupExperimentSummaryTable: (experiments) =>
+		#@$(".bv_searchStatusIndicator").addClass "hide"
+		$(".bv_experimentTableController").removeClass "hide"
+		if window.conf.experiment?.mainControllerClassName? and window.conf.experiment.mainControllerClassName is "EnhancedExperimentBaseController"
+			experimentListClass = "EnhancedExperimentList"
+		else
+			experimentListClass = "ExperimentList"
+		@experimentSummaryTable = new ExperimentSummaryTableController
+			el: $(".bv_experimentTableController")
+			collection: new window[experimentListClass] experiments
+
+		@experimentSummaryTable.on "selectedRowUpdated", @selectedExperimentUpdated
+
+		@experimentSummaryTable.render()
+		
+		if experiments.length == 0
+			@$(".bv_experimentTableController").empty() 
+			@$(".bv_experimentTableController").append "There are no matching experiments using this protocol and endpoint."
+			@$(".bv_downloadFiles").hide()
+		else
+			@$(".bv_downloadFiles").show()
+	
+	
+	downloadFiles: => 
+		#copied from downloadFiles in ExperimentBrowser.coffee
+
+		#extract the experiment data from the summary table
+		experimentMetadata = @experimentSummaryTable.collection.models
+
+		#collect the codes of the experiments that are currently shown
+		table = $(".bv_experimentTableController .dataTables_wrapper .table").dataTable()
+		filteredExperimentCodes = []
+		for filteredExperiments in table._('tr', {'filter': 'applied'})
+			filteredExperimentCodes.push filteredExperiments[0]
+
+		#create an array to store all the experiment's files
+		experimentFiles = []
+		for experimentData in experimentMetadata
+			#if the experiment code is in the filtered codes, search for associated files
+			if experimentData.attributes.codeName in filteredExperimentCodes
+				for experimentLsState in experimentData.attributes.lsStates.models
+					if experimentLsState.attributes.lsKind == "experiment metadata"
+						for experimentLsValue in experimentLsState.attributes.lsValues.models
+							if experimentLsValue.attributes.fileValue
+								#add files to experimentFiles
+								experimentFiles.push "dataFiles/" + experimentLsValue.attributes.fileValue
+
+		#Get today's date to timestamp any experiment file exports
+		today = new Date
+		dd = today.getDate()
+		mm = today.getMonth() + 1
+		yyyy = today.getFullYear()
+		if dd < 10
+			dd = '0' + dd
+		if mm < 10
+			mm = '0' + mm
+		today = '_' + mm + '_' + dd + '_' + yyyy
+
+		#construct request
+		dataToPost =
+			fileName: "experiment_files" + today
+			mappings: JSON.parse(JSON.stringify(experimentFiles))
+			userName: window.AppLaunchParams.loginUser.username 
+
+		#send all experiment filenames to backend to zip up
+		$.ajax
+			type: 'POST'
+			url: "/api/exportExperimentFiles"
+			data: dataToPost
+			timeout: 6000000
+			success: (response) =>
+				#Since we can't directly send the .zip file to download it...
+				#...we create a hidden link with the download path and automatically click on it
+				a = document.createElement('a');
+				a.style.display = 'none';
+				a.href = "/dataFiles/" + response;
+				a.setAttribute('target', '_blank')
+				document.body.appendChild(a);
+				a.click();
+
+				#Update GUI to indicate succesful download
+				@$(".bv_downloadWarning").hide()
+				@$(".bv_downloadSuccess").show()
+
+			error: (err) =>
+				console.log "Could not download files" + err
+
+				#Update GUI to indicate files could not be downloaded
+				@$(".bv_downloadSuccess").hide()
+				@$(".bv_downloadWarning").show()
+				@serviceReturn = null
+			dataType: 'json'
 

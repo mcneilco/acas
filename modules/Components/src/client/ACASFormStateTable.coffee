@@ -809,12 +809,18 @@ class ACASFormStateTableFormController extends Backbone.View
 				firstSelectText: field.fieldSettings.firstSelectText
 				modelDefaults: field.modelDefaults
 				allowedFileTypes: field.fieldSettings.allowedFileTypes
+				maxFileSize: field.fieldSettings.maxFileSize
+				displayInline: field.fieldSettings.displayInline
 				extendedLabel: field.fieldSettings.extendedLabel
 				sorter: field.fieldSettings.sorter
 				tabIndex: field.fieldSettings.tabIndex
 				toFixed: field.fieldSettings.toFixed
 				pickList: field.fieldSettings.pickList
 				showDescription: field.fieldSettings.showDescription
+				editablePicklist: field.fieldSettings.editablePicklist
+				editablePicklistRoles: field.fieldSettings.editablePicklistRoles
+				parameter: field.fieldSettings.parameter
+				# Additional opts specific to StateTables
 				rowNumber: @rowNumber
 				rowNumberKind: @rowNumberKind
 				stateType: @stateType

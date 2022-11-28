@@ -1,0 +1,15 @@
+.bv_endpointTable .select2, .select2-container, .select2-container--default {
+    width: 150px !important;
+}
+
+.bv_endpointTable .bv_number {
+    width: 50px !important;
+}
+
+.bv_endpointTable .bv_editablePicklist {
+    display: flex !important;
+}
+
+.bv_endpointTable span.help-inline {
+    position: absolute !important;
+}

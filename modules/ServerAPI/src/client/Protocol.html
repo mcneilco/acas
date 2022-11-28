@@ -112,7 +112,22 @@
 
         </div>
     </div>
-
+    <div class="bv_endpointManagerSection">
+        <h3>Endpoints</h3>
+        
+        <div class="bv_strictEndpointMatchingCheckbox">
+            <input class= "bv_strictEndpointMatchingInputCheckbox" type="checkbox" id="strictEndpointMatchingCheckbox" name="strictEndpointMatchingCheckbox">
+            <span style="display: inline-block; position: relative; bottom: -3px;">Strict Endpoint Matching</span>
+            <br/>
+            <br/>
+            <p><i>When Strict Endpoint Matching is enabled, <%- window.conf.experiment.label %> uploads that try to use columns not defined below will be rejected with an error. When this option is disabled, ACAS will simply give warnings about these columns but allow them to proceed, and they'll appear in the list below after upload.</i></p>
+            <br/>
+        </div>
+        <div class="bv_endpointTable">
+        </div>
+    </div>
+    <br/>
+    <br/>
     <div class="bv_group_shortDescription">
         <div class="span10" style="margin-bottom:5px;">Short Description</div>
         <textarea rows="2" class="bv_shortDescription" style="width:650px;resize:none;margin-bottom:20px;" placeholder="Short Description"></textarea>
@@ -226,3 +241,75 @@
     </div>
 
 </script>
+
+<script type="text/template" id="EndpointRowView" xmlns="http://www.w3.org/1999/html">
+    <td style="vertical-align: middle;" class="bv_columnNamePickListParent">
+        <div class="bv_columnNamePickList"></div>
+    </td>
+    <td style="vertical-align:middle;" class="bv_unitsPickListParent">
+        <div class="bv_unitsPickList"></div>
+    </td>
+    <td style="vertical-align:middle;" class="bv_dataTypePickListParent">
+        <div class="bv_dataTypePickList"></div>
+    </td>
+    <td style="vertical-align:middle;" class="bv_timeInputParent">
+        <div class="bv_columnTimeInput" type="text" style="width:77px;"/>
+    </td>
+    <td style="vertical-align:middle;" class="bv_timeUnitsPickListParent">
+        <div class="bv_columnTimeUnitsPickList"></div>
+    </td>
+    <td style="vertical-align:middle;" class="bv_concentrationInputParent">
+        <div class="bv_columnConcentrationInput" type="text" style="width:77px;"/>
+    </td>
+    <td style="vertical-align:middle;" class="bv_concentrationUnitsPickListParent">
+        <div class="bv_columnConcentrationUnitsPickList"></div>
+    </td>
+
+    <td style="text-align:center;vertical-align:middle;" class="bv_endpointHiddenCheckbox"></td>
+    <td style="text-align:center;vertical-align:middle;" class="bv_endpointConditionCheckbox"></td>
+    <td style="text-align:center;vertical-align:middle;"class="bv_remove_row"><button type="button" class="btn btn-danger bv_remove pull-center" style="margin-right:5px;margin-left:5px;">Remove</button></td>
+</script>
+
+<script type="text/template" id="EndpointListView" xmlns="http://www.w3.org/1999/html">
+    <table class="table table-bordered table-striped table-hover endpointTable" style="margin: 0px; padding: 0px; border: 0px; width: 100%; border: 0.5px solid; border-color: grey;">
+        <p class="bv_endpointManagerInstructions"><i>Click on a row to view <%- window.conf.experiment.label %>s using <%- window.conf.protocol.label %>s with that data.</i></p>
+        <thead style="">
+            <tr>
+                <th>Column Name</th>
+                <th>Units</th>
+                <th>Data Type</th>
+                <th class="bv_endpointColumnTime">Time</th>
+                <th class="bv_endpointColumnTimeUnits">Time Units</th>
+                <th class="bv_endpointColumnConcentration">Concentration</th>
+                <th class="bv_endpointColumnConcentrationUnits">Concentration Units</th>
+                <th>Hidden</th>
+                <th>Condition</th>
+                <th class="bv_endpointColumnRemove">Remove</th>
+            </tr>
+        </thead>
+        <tbody class="bv_endpointRows">
+        </tbody>
+        <div class="bv_endpointInfo"></div>
+        <div class="bv_selectTest"></div>
+        
+    </table>
+    <div class="bv_associatedExperimentSection">
+        <br/>
+        <br/>
+        <span class="" style="margin-bottom:15px;margin-left:60px;">
+            <button type="button" class="btn bv_addEndpoint pull-right">Add Endpoint</button>
+        </span>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <h5 class="bv_experimentTableControllerTitle"></h5>
+        <button class="btn bv_downloadFiles" style="float: right; margin-top: auto; margin-bottom: auto;">Download All Files</button>
+        <div class="bv_downloadWarning hide" style="color: red; font-size: 12px; text-align: right;">Could not download files</div>
+        <div class="bv_downloadSuccess hide" style="color: green; font-size: 12px; text-align: right;">Downloaded successfully</div>
+        <div class="bv_experimentTableController hide" style="margin:0px; padding:10px; overflow: auto; overflow: auto;"></div>
+    </div>
+    <br/>
+    <br/>
+</script>
+

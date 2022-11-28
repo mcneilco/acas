@@ -38,7 +38,7 @@ class ACASFormAbstractFieldController extends Backbone.View
 		@$('.label-tooltip').tooltip()
 
 	getModel: ->
-		if @thingRef instanceof Thing
+		if @thingRef instanceof Thing or @thingRef instanceof BaseEntity
 			return @thingRef.get @modelKey
 		else
 			return @thingRef
@@ -380,12 +380,17 @@ class ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldController
 
 	setupSelect: ->
 		mdl = @getModel()
+		if @options.parameter?
+			parameter = @options.parameter
+		else
+			parameter = @options.modelKey
+
 		if @pickList?
 			plOptions =
 				el: @$('.bv_editablePicklist')
 				collection: @pickList
 				selectedCode: mdl.get('value')
-				parameter: @options.modelKey
+				parameter: parameter
 				autoFetch: false
 		else
 			@pickList = new PickListList()
@@ -397,7 +402,7 @@ class ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldController
 				el: @$('.bv_editablePicklist')
 				collection: @pickList
 				selectedCode: mdl.get('value')
-				parameter: @options.modelKey
+				parameter: parameter
 				codeType: mdl.get 'codeType'
 				codeKind: mdl.get 'codeKind'
 
@@ -1029,7 +1034,7 @@ class ACASFormLSBooleanFieldController extends ACASFormAbstractFieldController
 
 	renderModelContent: =>
 		# If value is anything other than true (i.e. null), then default to unchecked
-		if @getModel().get('value') is "true"
+		if @getModel().get('value')? && @getModel().get('value').toLowerCase() is "true"
 			@$('input').attr 'checked', 'checked'
 		else
 			@$('input').removeAttr 'checked'

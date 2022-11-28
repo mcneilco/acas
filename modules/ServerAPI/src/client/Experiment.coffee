@@ -449,7 +449,14 @@ class ExperimentBaseController extends BaseEntityController
 			@setupProjectSelect()
 		@setupAttachFileListController()
 		@setupCustomExperimentMetadataController()
+		# Parse "data column order" states and setup controllers
+		# if @readOnly
+		# If endpoint controller is enabled, set it up
+		if window.conf.protocol.endpointManager.enabled == true
+			@setupEndpointsController()
 		@render()
+		$(".bv_endpointTable .bv_parameterSelectList").attr("disabled", true) #disable the endpoint table drop downs 
+		$(".bv_endpointTable input").attr("disabled", true) #disable the endpoint table checkboxes
 		@listenTo @model, 'sync', @modelSyncCallback.bind(@)
 		@listenTo @model, 'change', @modelChangeCallback.bind(@)
 		@model.getStatus().on 'change', @updateEditable.bind(@)
@@ -478,6 +485,12 @@ class ExperimentBaseController extends BaseEntityController
 				@$('.bv_openInQueryToolWrapper').show()
 			@$('.bv_queryToolDisplayName').html _.escape(window.conf.service.result.viewer.displayName)
 			@$('.bv_openInQueryToolLink').attr 'href', "/openExptInQueryTool?experiment="+@model.get('codeName')
+			#we don't want to render the endpoint controller if the experiment is new, so we only load it on existing experiments
+			#we also only want to load it if it is enabled
+			if window.conf.protocol.endpointManager.enabled == true
+				@endpointListController.render()
+				# we want to hide the associated experiment section to avoid excessive spacing
+				@$(".bv_associatedExperimentSection").hide()
 		@
 
 	modelSyncCallback: =>
@@ -782,3 +795,16 @@ class ExperimentBaseController extends BaseEntityController
 	displayInReadOnlyMode: =>
 		super()
 		@$('.bv_openInQueryToolWrapper').hide()
+	
+	setupEndpointsController: =>
+		# Hack to get Protocol working with Thing-based ACASFormStateTable classes
+		@model.lsProperties = {'defaultValues': []}
+		# The 'data column order' states are a StateTable
+		# Get any existing states with that type & kind
+		endpointStates = @model.get("lsStates").getStatesByTypeAndKind "metadata", "data column order"
+		# Create the controller for the Endpoints table which manages all the states
+		@endpointListController = new EndpointListController
+			el: @$('.bv_endpointTable')
+			collection: endpointStates
+			model: @model
+			readOnly: true
