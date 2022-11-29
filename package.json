@@ -62,7 +62,7 @@
     "properties": "1.2.1",
     "properties-parser": "0.3.1",
     "puppeteer": "^5.5.0",
-    "request": "2.68.0",
+    "request": "2.34.0",
     "request-promise": "4.2.1",
     "serve-favicon": "^2.5.0",
     "semver": "7.3.5",
