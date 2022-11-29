@@ -1965,12 +1965,12 @@ getExperimentByNameCheck <- function(experimentName, protocol, configList, dupli
         warnUser(paste0(racas::applicationSettings$client.experiment.label," '",experimentName,
                         "' does not exist in the ",racas::applicationSettings$client.protocol.label," that you entered, but it does exist in '", 
                         getPreferredProtocolName(protocolOfExperiment), 
-                        "'. Reloading the file will update the data and change the ",racas::applicationSettings$client.protocol.label,"."))
+                        "'. Reloading the file will update the data and change the ",racas::applicationSettings$client.protocol.label,"."), highPriority = TRUE)
         experiment <- experimentList[[1]]
       }
     } else {
       warnUser(paste0(racas::applicationSettings$client.experiment.label," '",experimentName,"' already exists, so the loader will delete its current data and replace it with your new upload.",
-                     " If you do not intend to delete and reload data, enter a new ",racas::applicationSettings$client.experiment.label," Name."))
+                     " If you do not intend to delete and reload data, enter a new ",racas::applicationSettings$client.experiment.label," Name."), highPriority = TRUE)
       experiment <- experimentList[[1]]
     }
   }
@@ -3105,11 +3105,12 @@ getFitDataFromUploadOrganizedResults <- function(calculatedResults) {
         # We decided not to throw errors as this would be a breaking change for some workflows
         if(length(missing) > 0) {
             dt[ , missingParameters := TRUE]
-            missingParametersMessage <- paste0("The following numeric parameters were not found for curve id '", dt$curveId, "': ",paste(reportedParamLsKinds[missing], collapse = ", "), ". Please provide numeric values for these parameters so that curves are drawn properly.")
-            warnUser(missingParametersMessage)
+            missingParametersMessage <- paste0("The following numeric parameters were not found: ",paste(reportedParamLsKinds[missing], collapse = ", "), ". Please provide numeric values for these parameters so that curves are drawn properly.")
 
             # Attach the message to the row so we can reuse it in dose response summary table
             dt[ , missingParametersMsg := missingParametersMessage]
+        } else {
+            dt[ , missingParametersMsg := NA_character_]
         }
       } else {
         fixedParams <- list()
@@ -3138,6 +3139,16 @@ getFitDataFromUploadOrganizedResults <- function(calculatedResults) {
   # but it is required if we want to fit this data as part of validation so we just set it here now.
   parameters[, model.synced := FALSE]
   parameters$recordedDate <- date()
+
+  # Combing all missingParametersMessage into a single message with curve ids
+  parameters[ !is.na(missingParametersMsg), {
+    if(.N > 0) {
+      curveAgg <- paste0("'",paste(name, collapse = "','"), "'")
+      message <- paste0("For curve ids: ", curveAgg, ". ", missingParametersMsg)
+      warnUser(message)
+    }
+  }, by = missingParametersMsg]
+
   return(parameters)
 }
 subjectDataToDoseResponsePoints <- function(subjectData, modelFitTransformation) {
@@ -3224,7 +3235,7 @@ validateGoodnessOfFits <- function(fitData, protocol, defaultRenderingParams) {
   # Get the stats to show in the summary
   
   # Calculate the goodness of fit stats, plot curves, categorize and return an html row for each curve
-  fitData[ ,  c("SSE", "SST", "SSR", "rSquared", "errorLevel", "TR") := {
+  fitData[ ,  c("SSE", "SST", "SSR", "rSquared", "errorLevel", "TR", "errors", "warnings") := {
       fitData <- copy(.SD)
 
       # When looping by a variable it's removed from .SD so we need to add it back in for the plotCurve function to use
@@ -3295,11 +3306,11 @@ validateGoodnessOfFits <- function(fitData, protocol, defaultRenderingParams) {
               # Class tells us what error level this should invoke in the UI and therefore if we should block the user from submitting the data
               class <- names(statThresholds)[r]
 
-              # If the values are filled in then we proceed but if they are empty, then there is no googness of fit to evaluate
+              # If the values are filled in then we proceed but if they are empty, then there is no goodness of fit to evaluate
               if(!is.na(threshold$value) && !is.na(threshold$operator)) {
                 # If the stat value is empty but we don't have missing parameters then something is wrong
                 if(is.na(statValue)) {
-                    msg <- paste0("The ", statName, " for curve id '", name, "' could not be calculated. Please check the curve data.")
+                    msg <- paste0("The ", statName, " could not be calculated. Please check the curve data.")
                     if(class == "error") {
                       errors[[length(errors)+1]] <- msg
                     } else {
@@ -3313,12 +3324,12 @@ validateGoodnessOfFits <- function(fitData, protocol, defaultRenderingParams) {
                     if(tdStyleClass == "" && class == "warning") {
                       # If the curve is missing parameters then the error or warning was captured elsewhere so lets just style the class
                       if(length(missingParameters) == 0) {
-                        warnings[[length(warnings)+1]] <- paste0("The ", statName, " for curve id '", name, "' is ", statValueText, " which is ", threshold$operator, " than the threshold value of ", threshold$value, ".")
+                        warnings[[length(warnings)+1]] <- paste0("The ", statName, " is ", threshold$operator, " than the threshold value of ", threshold$value, ".")
                         titles <- c(titles, paste0(statName," value of ",statValueText, " is ", threshold$operator, " than threshold value ", threshold$value))
                       }
                     } else if(class == "error") {
                       if(length(missingParameters) == 0) {
-                        errors[[length(errors)+1]] <- paste0("The ", statName, " for curve id '", name, "' is ", statValueText, " which is ", threshold$operator, " than the threshold value of ", threshold$value, ".")
+                        errors[[length(errors)+1]] <- paste0("The ", statName, " is ", threshold$operator, " than the threshold value of ", threshold$value, ".")
                         titles <- c(titles, paste0(statName," value of ",statValueText, " is ", threshold$operator, " than threshold value ", threshold$value))
                       }
                     }
@@ -3330,20 +3341,10 @@ validateGoodnessOfFits <- function(fitData, protocol, defaultRenderingParams) {
           if(length(errors) > 0) {
             tdStyleClass <- "error"
             errorLevel <- "error"
-            for(e in errors) {
-              if(!is.na(e)) {
-                addError(e)
-              }
-            }
           } else if(length(warnings) > 0) {
             tdStyleClass <- "warning"
             if(errorLevel == "") {
               errorLevel <- "warning"
-            }
-            for(w in warnings) {
-              if(!is.na(w)) {
-                warnUser(w)
-              }
             }
           }
           title <- ""
@@ -3368,9 +3369,33 @@ validateGoodnessOfFits <- function(fitData, protocol, defaultRenderingParams) {
       tr <- paste0(sprintf('<tr class="%s">', errorLevel), tr)
       tr <- paste0(tr,"</tr>" )
 
-      c(calculatedGoodnessOfFitParameters, errorLevel = errorLevel, tr = tr)
+      warnings <- warnings[!is.na(warnings)]
+      warnings <- ifelse(length(warnings) > 0, paste0(warnings, collapse = " "), NA_character_)
+      errors <- errors[!is.na(errors)]
+      errors <- ifelse(length(errors) > 0, paste0(errors, collapse = " "), NA_character_)
+      c(calculatedGoodnessOfFitParameters, errorLevel = errorLevel, tr = tr, errors = errors, warnings = warnings)
 
   }, by = c("curveId", "batchCode")]
+
+  # Add warnings if any returned
+  fitData[ !is.na(warnings), {
+    if(.N > 0) {
+      curveAgg <- paste0("'",paste(name, collapse = "','"), "'")
+      message <- paste0("For curve ids: ", curveAgg, ". ", warnings)
+      warnUser(message)
+    }
+  }, by = warnings]
+
+  # Add errors if any returned
+  fitData[ !is.na(errors), {
+    if(.N > 0) {
+      curveAgg <- paste0("'",paste(name, collapse = "','"), "'")
+      message <- paste0("For curve ids: ", curveAgg, ". ", errors)
+      addError(message)
+    }
+  }, by = errors]
+
+  
   return(fitData)
 }
 runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
