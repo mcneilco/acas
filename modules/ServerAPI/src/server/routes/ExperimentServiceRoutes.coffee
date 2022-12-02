@@ -139,18 +139,24 @@ exports.experimentByName = (req, resp) ->
 #			serverUtilityFunctions.getFromACASServer(baseurl, resp)
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
-exports.experimentsByProtocolCodename = (request, response) ->
-	console.log request.params.code
-	console.log request.query.testMode
+exports.experimentsByProtocolCodename = (req, resp) ->
+	exports.experimentsByProtocolCodenameInternal req.params.code, req.query.testMode, (status, response) =>
+		resp.statusCode = status
+		resp.json response 
 
-	if request.query.testMode or global.specRunnerTestmode
+exports.experimentsByProtocolCodenameInternal = (code, testMode, callback) ->
+	console.log code
+	console.log testMode
+
+	if testMode or global.specRunnerTestmode
 		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
 		response.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer
 	else
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"experiments/protocol/"+request.params.code
+		baseurl = config.all.client.service.persistence.fullpath+"experiments/protocol/"+code
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
-		serverUtilityFunctions.getFromACASServer(baseurl, response)
+		serverUtilityFunctions.getFromACASServerInternal baseurl, (statusCode, value) ->
+			callback(statusCode, value)
 
 exports.experimentById = (req, resp) ->
 	console.log req.params.id
