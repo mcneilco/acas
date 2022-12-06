@@ -388,8 +388,8 @@ client.experiment.mainControllerClassName=ExperimentBaseController
 # of data loaders.
 # The values are often pluralized by putting an "s" at the end, so whatever values are used
 # should be able to be pluralized with an "s" appended to them.
-client.protocol.label=Assay
-client.experiment.label=Protocol
+client.protocol.label=Protocol
+client.experiment.label=Experiment
 
 client.roles.loginRole=ROLE_ACAS-USERS,ROLE_CMPDREG-USERS,ROLE_CMPDREG-READONLY
 client.roles.cmpdreg.chemistRole=ROLE_CMPDREG-USERS
