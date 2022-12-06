@@ -784,7 +784,6 @@ class EndpointListController extends AbstractFormController
 				@$(".bv_remove_row").hide()
 
 		if @options.readOnly == false && @options.newProtocol == false 	#Only render experiments if the protocol is not new and is not read only 
-			#@getExperimentSummaryTable()
 			@getExperimentsForProtocol()
 		else #if the table isn't rendered, don't render the download files button either
 			@$(".bv_downloadFiles").hide() 
@@ -1128,6 +1127,73 @@ class EndpointListController extends AbstractFormController
 				@serviceReturn = null
 			dataType: 'json'
 
+	getCurrentEndpoints: => 
+		# get the current endpoints and their values for the protocol from @collection
+
+		# create holders for each one we want to collection 
+		endpointNames = []
+		endpointUnits = []
+		endpointDataTypes = []
+		endpointConc = []
+		endpointConcUnits = []
+		endpointTime = []
+		endpointTimeUnits = []
+		endpointHidden = []
+
+		for lsState in @collection 
+
+			# create NAs for each entry in case we don't find a variable, we'll plug these in instead
+			endpointNamesEntry = "NA"
+			endpointUnitsEntry = "NA"
+			endpointDataTypeEntry = "NA"
+			endpointConcEntry = "NA"
+			endpointConcUnitsEntry = "NA"
+			endpointTimeEntry = "NA"
+			endpointTimeUnitsEntry = "NA"
+			endpointHiddenEntry = "NA"
+
+			# extract the endpoint values from each lsState 
+			for lsValue in lsState.attributes.lsValues.models
+				if lsValue.attributes.lsKind == "column name" and lsValue.attributes.ignored == false
+					endpointNamesEntry = lsValue.attributes.codeValue 	
+				if lsValue.attributes.lsKind == "column units" and lsValue.attributes.ignored == false
+					endpointUnitsEntry = lsValue.attributes.codeValue
+				if lsValue.attributes.lsKind == "column type" and lsValue.attributes.ignored == false
+					endpointDataTypeEntry = lsValue.attributes.codeValue
+				if lsValue.attributes.lsKind == "column concentration" and lsValue.attributes.ignored == false
+					endpointConcEntry = lsValue.attributes.numericValue
+				if lsValue.attributes.lsKind == "column conc units" and lsValue.attributes.ignored == false
+					endpointConcUnitsEntry = lsValue.attributes.codeValue
+				if lsValue.attributes.lsKind == "column time" and lsValue.attributes.ignored == false
+					endpointTimeEntry = lsValue.attributes.numericValue
+				if lsValue.attributes.lsKind == "column time units" and lsValue.attributes.ignored == false
+					endpointTimeUnitsEntry = lsValue.attributes.codeValue
+				if lsValue.attributes.lsTypeAndKind == "codeValue_hide column" and lsValue.attributes.ignored == false
+					endpointHiddenEntry = lsValue.attributes.codeValue
+				
+			# record the endpoint data
+			endpointNames.push endpointNamesEntry
+			endpointUnits.push endpointUnitsEntry
+			endpointDataTypes.push endpointDataTypeEntry
+			endpointConc.push endpointConcEntry
+			endpointConcUnits.push endpointConcUnitsEntry
+			endpointTime.push endpointTimeEntry
+			endpointTimeUnits.push endpointTimeUnitsEntry
+			endpointHidden.push endpointHiddenEntry
+		
+		# create object to return 
+		endpointData = 
+			endpointNames: endpointNames
+			endpointUnits: endpointUnits
+			endpointDataTypes: endpointDataTypes
+			endpointConc: endpointConc
+			endpointConcUnits: endpointConcUnits
+			endpointTime: endpointTime
+			endpointTimeUnits: endpointTimeUnits
+			endpointHidden: endpointHidden
+
+		return endpointData 
+
 	downloadSELFile: =>	
 		# Get the protocol project		
 		protocolProject = ""
@@ -1147,6 +1213,7 @@ class EndpointListController extends AbstractFormController
 			protocolScientist: window.AppLaunchParams.loginUser.username
 			protocolDate: todayDate.getMonth() + 1 + "/" + todayDate.getDate() + "/" + String(todayDate.getFullYear())[2..4]
 			protocolProject: protocolProject
+			endpointData: @getEndpointData()
 
 		$.ajax
 			type: 'POST'
