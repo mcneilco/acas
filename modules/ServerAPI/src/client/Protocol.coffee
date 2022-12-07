@@ -1152,7 +1152,7 @@ class EndpointListController extends AbstractFormController
 			endpointTimeUnitsEntry = "NA"
 			endpointHiddenEntry = "NA"
 
-			# extract the endpoint values from each lsState 
+			# extract the valid endpoint values from each lsState 
 			for lsValue in lsState.attributes.lsValues.models
 				if lsValue.attributes.lsKind == "column name" and lsValue.attributes.ignored == false and lsValue.attributes.codeValue != undefined
 					endpointNamesEntry = lsValue.attributes.codeValue 	

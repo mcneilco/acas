@@ -177,6 +177,7 @@ class ProtocolBrowserController extends Backbone.View
 		"click .bv_createExperiment": "handleCreateExperimentClicked"
 		"click .bv_confirmDeleteProtocolButton": "handleConfirmDeleteProtocolClicked"
 		"click .bv_cancelDelete": "handleCancelDeleteClicked"
+		"click .bv_downloadSELFile": "downloadSELFile"
 
 	initialize: ->
 		template = _.template( $("#ProtocolBrowserView").html() );
@@ -441,6 +442,143 @@ class ProtocolBrowserController extends Backbone.View
 		$(".bv_protocolBaseController").addClass("hide")
 		$(".bv_protocolBaseControllerContainer").addClass("hide")
 		$(".bv_noMatchesFoundMessage").addClass("hide")
+
+	downloadSELFile: =>
+		# To generate the SEL file, we need the endpoint data from a different protocol data object we make a request for here: 
+		$.ajax
+			type: 'GET'
+			url: "/api/protocols/codename/" + @protocolController.model.escape('codeName')
+			dataType: 'json'
+			error: (err) =>
+				alert 'Could not get protocol for code in this URL, creating new one'
+			success: (json) =>
+				if json.length == 0
+					alert 'Could not get protocol for code in this URL, creating new one'
+				else
+					lsKind = json.lsKind
+					if lsKind is "default"
+						prot = new Protocol json
+						prot.set prot.parse(prot.attributes)
+						if window.AppLaunchParams.moduleLaunchParams.copy
+							@currentProtocol = prot.duplicateEntity()
+						else
+							@currentProtocol = prot
+
+						# extract the endpoint data from the protocol 
+						@endpointStates = @currentProtocol.get("lsStates").getStatesByTypeAndKind "metadata", "data column order"
+
+						# extract the protocol data 
+						protocolProject = ""
+						for lsState in @currentProtocol.attributes.lsStates.models
+							if lsState.attributes.lsKind == "protocol metadata"
+								for lsValue in lsState.attributes.lsValues.models
+									if lsValue.attributes.lsKind == "project" && lsValue.attributes.ignored == false 
+										if lsValue.attributes.codeValue != "unassigned" # we leave it as an empty string instead of recording "unassigned"
+											protocolProject = lsValue.attributes.codeValue
+						
+						#construct request containing the protocol data and the endpoint data
+						todayDate = new Date()
+						dataToPost =
+							protocolCode: @currentProtocol.escape('codeName')
+							protocolName: @currentProtocol.attributes.lsLabels.models[0].attributes.labelText
+							protocolScientist: window.AppLaunchParams.loginUser.username
+							protocolDate: todayDate.getMonth() + 1 + "/" + todayDate.getDate() + "/" + String(todayDate.getFullYear())[2..4]
+							protocolProject: protocolProject
+							endpointData: @getCurrentEndpoints()
+						
+						# send the request to get a .csv of the SEL template file 
+						$.ajax
+							type: 'POST'
+							url: "/api/getTemplateSELFile"
+							data: dataToPost
+							timeout: 6000000
+							dataType: 'json'
+							success: (response) =>
+								#Since we can't directly send the .csv file to download it...
+								#...we create a hidden link with the download path and automatically click on it
+								# exporting and downloading the file to the user
+								encodedUri = encodeURI(response)
+								a = document.createElement('a');
+								a.style.display = 'none';
+								a.href = encodedUri;
+								a.setAttribute('target', '_blank')
+								document.body.appendChild(a);
+								a.click();
+							error: (err) =>
+								console.log "getTemplateSELFile() error:" + err
+
+					else
+						alert 'Could not get #{window.conf.protocol.label} for code in this URL. Creating new #{window.conf.protocol.label}'
+		
+		
+	
+	getCurrentEndpoints: => 
+		# carried over and modified from Protocol.coffee to use @endpointStates instead of @collection
+		# get the current endpoints and their values for the protocol from @endpointStates
+
+		# create holders for each one we want to collection 
+		endpointNames = []
+		endpointUnits = []
+		endpointDataTypes = []
+		endpointConc = []
+		endpointConcUnits = []
+		endpointTime = []
+		endpointTimeUnits = []
+		endpointHidden = []
+
+		for lsState in @endpointStates 
+
+			# create NAs for each entry in case we don't find a variable, we'll plug these in instead
+			endpointNamesEntry = "NA"
+			endpointUnitsEntry = "NA"
+			endpointDataTypeEntry = "NA"
+			endpointConcEntry = "NA"
+			endpointConcUnitsEntry = "NA"
+			endpointTimeEntry = "NA"
+			endpointTimeUnitsEntry = "NA"
+			endpointHiddenEntry = "NA"
+
+			# extract the valid endpoint values from each lsState 
+			for lsValue in lsState.attributes.lsValues.models
+				if lsValue.attributes.lsKind == "column name" and lsValue.attributes.ignored == false and lsValue.attributes.codeValue != undefined
+					endpointNamesEntry = lsValue.attributes.codeValue 	
+				if lsValue.attributes.lsKind == "column units" and lsValue.attributes.ignored == false and lsValue.attributes.codeValue != undefined
+					endpointUnitsEntry = lsValue.attributes.codeValue
+				if lsValue.attributes.lsKind == "column type" and lsValue.attributes.ignored == false and lsValue.attributes.codeValue != undefined
+					endpointDataTypeEntry = lsValue.attributes.codeValue
+				if lsValue.attributes.lsKind == "column concentration" and lsValue.attributes.ignored == false and lsValue.attributes.numericValue != undefined
+					endpointConcEntry = lsValue.attributes.numericValue
+				if lsValue.attributes.lsKind == "column conc units" and lsValue.attributes.ignored == false and lsValue.attributes.codeValue != undefined
+					endpointConcUnitsEntry = lsValue.attributes.codeValue
+				if lsValue.attributes.lsKind == "column time" and lsValue.attributes.ignored == false and lsValue.attributes.numericValue != undefined
+					endpointTimeEntry = lsValue.attributes.numericValue
+				if lsValue.attributes.lsKind == "column time units" and lsValue.attributes.ignored == false and lsValue.attributes.codeValue != undefined
+					endpointTimeUnitsEntry = lsValue.attributes.codeValue
+				if lsValue.attributes.lsTypeAndKind == "codeValue_hide column" and lsValue.attributes.ignored == false and lsValue.attributes.codeValue != undefined
+					endpointHiddenEntry = lsValue.attributes.codeValue
+				
+			# record the endpoint data
+			endpointNames.push endpointNamesEntry
+			endpointUnits.push endpointUnitsEntry
+			endpointDataTypes.push endpointDataTypeEntry
+			endpointConc.push endpointConcEntry
+			endpointConcUnits.push endpointConcUnitsEntry
+			endpointTime.push endpointTimeEntry
+			endpointTimeUnits.push endpointTimeUnitsEntry
+			endpointHidden.push endpointHiddenEntry
+		
+		# create object to return 
+		endpointData = 
+			endpointNames: endpointNames
+			endpointUnits: endpointUnits
+			endpointDataTypes: endpointDataTypes
+			endpointConc: endpointConc
+			endpointConcUnits: endpointConcUnits
+			endpointTime: endpointTime
+			endpointTimeUnits: endpointTimeUnits
+			endpointHidden: endpointHidden
+
+		return endpointData
 
 	render: =>
 
