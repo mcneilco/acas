@@ -459,10 +459,7 @@ class ProtocolBrowserController extends Backbone.View
 					if lsKind is "default"
 						prot = new Protocol json
 						prot.set prot.parse(prot.attributes)
-						if window.AppLaunchParams.moduleLaunchParams.copy
-							@currentProtocol = prot.duplicateEntity()
-						else
-							@currentProtocol = prot
+						@currentProtocol = prot
 
 						# extract the endpoint data from the protocol 
 						@endpointStates = @currentProtocol.get("lsStates").getStatesByTypeAndKind "metadata", "data column order"
