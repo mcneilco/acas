@@ -1154,21 +1154,21 @@ class EndpointListController extends AbstractFormController
 
 			# extract the endpoint values from each lsState 
 			for lsValue in lsState.attributes.lsValues.models
-				if lsValue.attributes.lsKind == "column name" and lsValue.attributes.ignored == false
+				if lsValue.attributes.lsKind == "column name" and lsValue.attributes.ignored == false and lsValue.attributes.codeValue != undefined
 					endpointNamesEntry = lsValue.attributes.codeValue 	
-				if lsValue.attributes.lsKind == "column units" and lsValue.attributes.ignored == false
+				if lsValue.attributes.lsKind == "column units" and lsValue.attributes.ignored == false and lsValue.attributes.codeValue != undefined
 					endpointUnitsEntry = lsValue.attributes.codeValue
-				if lsValue.attributes.lsKind == "column type" and lsValue.attributes.ignored == false
+				if lsValue.attributes.lsKind == "column type" and lsValue.attributes.ignored == false and lsValue.attributes.codeValue != undefined
 					endpointDataTypeEntry = lsValue.attributes.codeValue
-				if lsValue.attributes.lsKind == "column concentration" and lsValue.attributes.ignored == false
+				if lsValue.attributes.lsKind == "column concentration" and lsValue.attributes.ignored == false and lsValue.attributes.numericValue != undefined
 					endpointConcEntry = lsValue.attributes.numericValue
-				if lsValue.attributes.lsKind == "column conc units" and lsValue.attributes.ignored == false
+				if lsValue.attributes.lsKind == "column conc units" and lsValue.attributes.ignored == false and lsValue.attributes.codeValue != undefined
 					endpointConcUnitsEntry = lsValue.attributes.codeValue
-				if lsValue.attributes.lsKind == "column time" and lsValue.attributes.ignored == false
+				if lsValue.attributes.lsKind == "column time" and lsValue.attributes.ignored == false and lsValue.attributes.numericValue != undefined
 					endpointTimeEntry = lsValue.attributes.numericValue
-				if lsValue.attributes.lsKind == "column time units" and lsValue.attributes.ignored == false
+				if lsValue.attributes.lsKind == "column time units" and lsValue.attributes.ignored == false and lsValue.attributes.codeValue != undefined
 					endpointTimeUnitsEntry = lsValue.attributes.codeValue
-				if lsValue.attributes.lsTypeAndKind == "codeValue_hide column" and lsValue.attributes.ignored == false
+				if lsValue.attributes.lsTypeAndKind == "codeValue_hide column" and lsValue.attributes.ignored == false and lsValue.attributes.codeValue != undefined
 					endpointHiddenEntry = lsValue.attributes.codeValue
 				
 			# record the endpoint data
@@ -1213,7 +1213,7 @@ class EndpointListController extends AbstractFormController
 			protocolScientist: window.AppLaunchParams.loginUser.username
 			protocolDate: todayDate.getMonth() + 1 + "/" + todayDate.getDate() + "/" + String(todayDate.getFullYear())[2..4]
 			protocolProject: protocolProject
-			endpointData: @getEndpointData()
+			endpointData: @getCurrentEndpoints()
 
 		$.ajax
 			type: 'POST'
