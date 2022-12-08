@@ -444,6 +444,7 @@ class ProtocolBrowserController extends Backbone.View
 		$(".bv_noMatchesFoundMessage").addClass("hide")
 
 	downloadSELFile: =>
+		console.log @protocolController
 		# To generate the SEL file, we need the endpoint data from a different protocol data object we make a request for here: 
 		$.ajax
 			type: 'GET'
