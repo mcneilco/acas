@@ -461,10 +461,7 @@ class ProtocolBrowserController extends Backbone.View
 						prot.set prot.parse(prot.attributes)
 						@currentProtocol = prot
 
-						# extract the endpoint data from the protocol 
-						@endpointStates = @currentProtocol.get("lsStates").getStatesByTypeAndKind "metadata", "data column order"
-
-						# extract the protocol data 
+						# extract the protocol project information 
 						protocolProject = ""
 						for lsState in @currentProtocol.attributes.lsStates.models
 							if lsState.attributes.lsKind == "protocol metadata"
@@ -481,7 +478,6 @@ class ProtocolBrowserController extends Backbone.View
 							protocolScientist: window.AppLaunchParams.loginUser.username
 							protocolDate: todayDate.getMonth() + 1 + "/" + todayDate.getDate() + "/" + String(todayDate.getFullYear())[2..4]
 							protocolProject: protocolProject
-							endpointData: @getCurrentEndpoints()
 						
 						# send the request to get a .csv of the SEL template file 
 						$.ajax
@@ -509,73 +505,6 @@ class ProtocolBrowserController extends Backbone.View
 		
 		
 	
-	getCurrentEndpoints: => 
-		# carried over and modified from Protocol.coffee to use @endpointStates instead of @collection
-		# get the current endpoints and their values for the protocol from @endpointStates
-
-		# create holders for each one we want to collection 
-		endpointNames = []
-		endpointUnits = []
-		endpointDataTypes = []
-		endpointConc = []
-		endpointConcUnits = []
-		endpointTime = []
-		endpointTimeUnits = []
-		endpointHidden = []
-
-		for lsState in @endpointStates 
-
-			# create NAs for each entry in case we don't find a variable, we'll plug these in instead
-			endpointNamesEntry = "NA"
-			endpointUnitsEntry = "NA"
-			endpointDataTypeEntry = "NA"
-			endpointConcEntry = "NA"
-			endpointConcUnitsEntry = "NA"
-			endpointTimeEntry = "NA"
-			endpointTimeUnitsEntry = "NA"
-			endpointHiddenEntry = "NA"
-
-			# extract the valid endpoint values from each lsState 
-			for lsValue in lsState.attributes.lsValues.models
-				if lsValue.attributes.lsKind == "column name" and lsValue.attributes.ignored == false and lsValue.attributes.codeValue != undefined
-					endpointNamesEntry = lsValue.attributes.codeValue 	
-				if lsValue.attributes.lsKind == "column units" and lsValue.attributes.ignored == false and lsValue.attributes.codeValue != undefined
-					endpointUnitsEntry = lsValue.attributes.codeValue
-				if lsValue.attributes.lsKind == "column type" and lsValue.attributes.ignored == false and lsValue.attributes.codeValue != undefined
-					endpointDataTypeEntry = lsValue.attributes.codeValue
-				if lsValue.attributes.lsKind == "column concentration" and lsValue.attributes.ignored == false and lsValue.attributes.numericValue != undefined
-					endpointConcEntry = lsValue.attributes.numericValue
-				if lsValue.attributes.lsKind == "column conc units" and lsValue.attributes.ignored == false and lsValue.attributes.codeValue != undefined
-					endpointConcUnitsEntry = lsValue.attributes.codeValue
-				if lsValue.attributes.lsKind == "column time" and lsValue.attributes.ignored == false and lsValue.attributes.numericValue != undefined
-					endpointTimeEntry = lsValue.attributes.numericValue
-				if lsValue.attributes.lsKind == "column time units" and lsValue.attributes.ignored == false and lsValue.attributes.codeValue != undefined
-					endpointTimeUnitsEntry = lsValue.attributes.codeValue
-				if lsValue.attributes.lsTypeAndKind == "codeValue_hide column" and lsValue.attributes.ignored == false and lsValue.attributes.codeValue != undefined
-					endpointHiddenEntry = lsValue.attributes.codeValue
-				
-			# record the endpoint data
-			endpointNames.push endpointNamesEntry
-			endpointUnits.push endpointUnitsEntry
-			endpointDataTypes.push endpointDataTypeEntry
-			endpointConc.push endpointConcEntry
-			endpointConcUnits.push endpointConcUnitsEntry
-			endpointTime.push endpointTimeEntry
-			endpointTimeUnits.push endpointTimeUnitsEntry
-			endpointHidden.push endpointHiddenEntry
-		
-		# create object to return 
-		endpointData = 
-			endpointNames: endpointNames
-			endpointUnits: endpointUnits
-			endpointDataTypes: endpointDataTypes
-			endpointConc: endpointConc
-			endpointConcUnits: endpointConcUnits
-			endpointTime: endpointTime
-			endpointTimeUnits: endpointTimeUnits
-			endpointHidden: endpointHidden
-
-		return endpointData
 
 	render: =>
 
