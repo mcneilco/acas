@@ -663,11 +663,11 @@ exports.getTemplateSELFile = (req, resp) ->
 						endpointNames = []
 						endpointUnits = []
 						endpointDataTypes = []
-						endpointConc = []
+						endpointConcs = []
 						endpointConcUnits = []
-						endpointTime = []
+						endpointTimes = []
 						endpointTimeUnits = []
-						endpointHidden = []
+						endpointHiddens = []
 
 						endpointStrings = []
 
@@ -717,11 +717,11 @@ exports.getTemplateSELFile = (req, resp) ->
 										endpointNames.push endpointNamesEntry
 										endpointUnits.push endpointUnitsEntry
 										endpointDataTypes.push endpointDataTypeEntry
-										endpointConc.push endpointConcEntry
+										endpointConcs.push endpointConcEntry
 										endpointConcUnits.push endpointConcUnitsEntry
-										endpointTime.push endpointTimeEntry
+										endpointTimes.push endpointTimeEntry
 										endpointTimeUnits.push endpointTimeUnitsEntry
-										endpointHidden.push endpointHiddenEntry
+										endpointHiddens.push endpointHiddenEntry
 
 						# Part 2: create a CSV file with the endpoints	
 						blankElements = ["NA", "undefined", "", null, undefined]
@@ -733,34 +733,42 @@ exports.getTemplateSELFile = (req, resp) ->
 							dataTypeEntry = ""
 
 							endpointHasNoValues = true
+							endpointName = endpointNames[indexNum]
+							endpointUnit = endpointUnits[indexNum]
+							endpointDataType = endpointDataTypes[indexNum]
+							endpointConc = endpointConcs[indexNum]
+							endpointConcUnit = endpointConcUnits[indexNum]
+							endpointTime = endpointTimes[indexNum]
+							endpointTimeUnit = endpointTimeUnits[indexNum]
+							endpointHidden = endpointHiddens[indexNum]
 
-							if endpointNames[indexNum] not in blankElements
-								endpointRowEntry = endpointRowEntry + endpointNames[indexNum] + " "
+							if endpointName not in blankElements
+								endpointRowEntry = endpointRowEntry + endpointName + " "
 								endpointHasNoValues = false
-							if endpointUnits[indexNum] not in blankElements
-								endpointRowEntry = endpointRowEntry + "(" + endpointUnits[indexNum] + ") "
+							if endpointUnit not in blankElements
+								endpointRowEntry = endpointRowEntry + "(" + endpointUnit + ") "
 								endpointHasNoValues = false
 
 							# construct a different string for concentration depending on which combination of conc and conc units are present or not
-							if endpointConc[indexNum] not in blankElements && endpointConcUnits[indexNum] not in blankElements
-								endpointRowEntry = endpointRowEntry + "[" + endpointConc[indexNum] + " " + endpointConcUnits[indexNum] + "] "
+							if endpointConc not in blankElements && endpointConcUnit not in blankElements
+								endpointRowEntry = endpointRowEntry + "[" + endpointConc + " " + endpointConcUnit + "] "
 								endpointHasNoValues = false
-							if endpointConc[indexNum] in blankElements && endpointConcUnits[indexNum] not in blankElements
-								endpointRowEntry = endpointRowEntry + "[" + endpointConcUnits[indexNum] + "] "
+							if endpointConc in blankElements && endpointConcUnit not in blankElements
+								endpointRowEntry = endpointRowEntry + "[" + endpointConcUnit + "] "
 								endpointHasNoValues = false
-							if endpointConc[indexNum] not in blankElements && endpointConcUnits[indexNum] in blankElements
-								endpointRowEntry = endpointRowEntry + "[" + endpointConc[indexNum] + "] "
+							if endpointConc not in blankElements && endpointConcUnit in blankElements
+								endpointRowEntry = endpointRowEntry + "[" + endpointConc + "] "
 								endpointHasNoValues = false
 
 							# construct a different string for time depending on which combination of time and time units are present or not
-							if endpointTime[indexNum] not in blankElements && endpointTimeUnits[indexNum] not in blankElements
-								endpointRowEntry = endpointRowEntry + "{" + endpointTime[indexNum] + " " + endpointTimeUnits[indexNum] + "} " 
+							if endpointTime not in blankElements && endpointTimeUnit not in blankElements
+								endpointRowEntry = endpointRowEntry + "{" + endpointTime + " " + endpointTimeUnits + "} " 
 								endpointHasNoValues = false
-							if endpointTime[indexNum] not in blankElements && endpointTimeUnits[indexNum] in blankElements
-								endpointRowEntry = endpointRowEntry + "{" + endpointTime[indexNum] + "} "
+							if endpointTime not in blankElements && endpointTimeUnit in blankElements
+								endpointRowEntry = endpointRowEntry + "{" + endpointTime + "} "
 								endpointHasNoValues = false
-							if endpointTime[indexNum] in blankElements && endpointTimeUnits[indexNum] not in blankElements
-								endpointRowEntry = endpointRowEntry + "{" + endpointTimeUnits[indexNum] + "} "
+							if endpointTime in blankElements && endpointTimeUnit not in blankElements
+								endpointRowEntry = endpointRowEntry + "{" + endpointTimeUnit + "} "
 								endpointHasNoValues = false
 
 							# only attach the endpoint to the csv if it has any values 
@@ -768,13 +776,13 @@ exports.getTemplateSELFile = (req, resp) ->
 								endpointNameRowString = endpointNameRowString + endpointRowEntry + ","
 
 								# we only record the data type value if the other endpoint values are not empty 
-								if endpointDataTypes[indexNum] == "numericValue"
+								if endpointDataType == "numericValue"
 									dataTypeRowEntry = "Number "					
-								else if endpointDataTypes[indexNum] == "stringValue"
+								else if endpointDataType == "stringValue"
 									dataTypeRowEntry = "Text "
 
 								# mark if the endpoint is hidden or not
-								if endpointHidden[indexNum] == "TRUE"
+								if endpointHidden == "TRUE"
 									dataTypeRowEntry = dataTypeRowEntry + "(Hidden),"
 								else
 									dataTypeRowEntry = dataTypeRowEntry + ","	
