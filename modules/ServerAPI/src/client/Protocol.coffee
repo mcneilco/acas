@@ -1171,8 +1171,10 @@ class EndpointListController extends AbstractFormController
 		
 		# TODO - this gets two similar but differently structured formats. 
 
+		# TODO - This wont be needed after ACAS-298 revisions removing getCurrentEndpoint() for @collection
+
 		# needs to figure out if we need to go into attributes or not...
-		if lsState.attributes != undefined
+		if lsState.attributes != undefined #this is used for @collection
 			# TODO rename this
 			format = 1
 			lsValues = lsState.attributes.lsValues.models
@@ -1273,6 +1275,10 @@ class EndpointListController extends AbstractFormController
 		return multipleEndpointData 
 
 	downloadSELFile: =>	
+		console.log "---Start---"
+		console.log @collection
+		console.log "---End---"
+
 		# Get the protocol project		
 		protocolProject = ""
 		for lsState in @model.attributes.lsStates.models
@@ -1369,6 +1375,10 @@ class EndpointListController extends AbstractFormController
 	isEndpointInEndpoints: (endpointData, multipleEndpointData) =>
 		# Helper function that checks if a single endpoint is in a collection of endpoints
 
+		# if all the endpoint values are NA, it does not pass or fresh values will automatically be locked
+		if endpointData.endpointName == "NA" & endpointData.endpointUnits == "NA" & endpointData.endpointDataType == "NA" & endpointData.endpointConc == "NA" & endpointData.endpointConcUnits == "NA" & endpointData.endpointTime == "NA" & endpointData.endpointTimeUnits == "NA" 
+			return false 
+
 		for indexNum in [0..multipleEndpointData.endpointNames.length]
 			endpointNamesMatch = false
 			endpointUnitsMatch = false
@@ -1378,20 +1388,20 @@ class EndpointListController extends AbstractFormController
 			endpointTimeMatch = false
 			endpointTimeUnitsMatch = false
 
-			# if the experiment value is NA, we automatically pass 
-			if endpointData.endpointName == multipleEndpointData.endpointNames[indexNum] | multipleEndpointData.endpointNames[indexNum] == "NA"
+			# if the experiment value or protocol value is NA, we automatically pass 
+			if endpointData.endpointName == multipleEndpointData.endpointNames[indexNum] | multipleEndpointData.endpointNames[indexNum] == "NA" | endpointData.endpointName == "NA"
 				endpointNamesMatch = true 
-			if endpointData.endpointUnits == multipleEndpointData.endpointUnits[indexNum]  | multipleEndpointData.endpointUnits[indexNum] == "NA"
+			if endpointData.endpointUnits == multipleEndpointData.endpointUnits[indexNum]  | multipleEndpointData.endpointUnits[indexNum] == "NA" | endpointData.endpointUnits == "NA"
 				endpointUnitsMatch = true 
-			if endpointData.endpointDataType == multipleEndpointData.endpointDataTypes[indexNum] | multipleEndpointData.endpointDataTypes[indexNum] == "NA"
+			if endpointData.endpointDataType == multipleEndpointData.endpointDataTypes[indexNum] | multipleEndpointData.endpointDataTypes[indexNum] == "NA" | endpointData.endpointDataType == "NA"
 				endpointDataTypesMatch = true 
-			if endpointData.endpointConc == multipleEndpointData.endpointConc[indexNum]  | multipleEndpointData.endpointConc[indexNum] == "NA"
+			if endpointData.endpointConc == multipleEndpointData.endpointConc[indexNum]  | multipleEndpointData.endpointConc[indexNum] == "NA" | endpointData.endpointConc == "NA"
 				endpointConcMatch = true 
-			if endpointData.endpointConcUnits == multipleEndpointData.endpointConcUnits[indexNum]  | multipleEndpointData.endpointConcUnits[indexNum] == "NA"
+			if endpointData.endpointConcUnits == multipleEndpointData.endpointConcUnits[indexNum]  | multipleEndpointData.endpointConcUnits[indexNum] == "NA" | endpointData.endpointConcUnits == "NA"
 				endpointConcUnitsMatch = true 
-			if endpointData.endpointTime == multipleEndpointData.endpointTime[indexNum]  | multipleEndpointData.endpointTime[indexNum] == "NA"
+			if endpointData.endpointTime == multipleEndpointData.endpointTime[indexNum]  | multipleEndpointData.endpointTime[indexNum] == "NA" | endpointData.endpointTime == "NA"
 				endpointTimeMatch = true 
-			if endpointData.endpointTimeUnits == multipleEndpointData.endpointTimeUnits[indexNum]  | multipleEndpointData.endpointTimeUnits[indexNum] == "NA"
+			if endpointData.endpointTimeUnits == multipleEndpointData.endpointTimeUnits[indexNum]  | multipleEndpointData.endpointTimeUnits[indexNum] == "NA" | endpointData.endpointTimeUnits == "NA"
 				endpointTimeUnitsMatch = true 
 			
 			if endpointNamesMatch && endpointUnitsMatch && endpointDataTypesMatch && endpointConcMatch && endpointTimeMatch && endpointTimeUnitsMatch 
