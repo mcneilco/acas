@@ -1209,11 +1209,6 @@ class EndpointListController extends AbstractFormController
 
 		dataToPost =
 			protocolCode: @model.escape('codeName')
-			protocolName: @model.attributes.lsLabels.models[0].attributes.labelText
-			protocolScientist: window.AppLaunchParams.loginUser.username
-			protocolDate: todayDate.getMonth() + 1 + "/" + todayDate.getDate() + "/" + String(todayDate.getFullYear())[2..4]
-			protocolProject: protocolProject
-			endpointData: @getCurrentEndpoints()
 
 		$.ajax
 			type: 'POST'
