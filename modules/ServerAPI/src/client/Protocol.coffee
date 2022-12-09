@@ -561,12 +561,13 @@ class EndpointController extends ACASFormStateTableFormController
 		$(@el).empty()
 		$(@el).html @template()
 
-		if options.readOnly == true
-			#hide remove buttons
-			#@$(".bv_remove_row").hide()
-			@$('.bv_remove_row').hide()
-			@$('.bv_unitsPickList select').attr("disabled", true)
 		super(options)
+
+		if options.readOnly == true
+			# hide remove buttons, disable all fields
+			@$('.bv_remove').attr("disabled", "disabled")
+			@$('input').attr("disabled", "disabled")
+			@$('select').attr("disabled", "disabled")
 	
 	removeRow: =>
 		# Remove UI element
