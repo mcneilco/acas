@@ -32,8 +32,8 @@ renderCurve <- function(getParams, postData) {
   if(is.na(coalesce(fitData[1]$renderingHint))) {
     fitData[ , renderingHint := get_model_fit_classes()[1]$code]
   }
-  
-  # Get rendering for specific rendering hints
+
+  # Get rendering options for specific rendering hints
   fitData[ , renderingOptions := list(list(get_rendering_hint_options(renderingHint))), by = renderingHint]
 
   output <- applyParsedParametersToFitData(fitData, parsedParams, protocol_display_values)
