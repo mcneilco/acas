@@ -28,18 +28,17 @@ renderCurve <- function(getParams, postData) {
   # Get protocol curve min and max
   protocol_display_values <- racas::get_protocol_curve_display_min_and_max_by_curve_id(parsedParams$curveIds[[1]])
 
-  output <- applyParsedParametersToFitData(fitData, parsedParams, protocol_display_values)
-  data <- output$data
-  parsedParams <- output$parsedParams
-
-  fitData[ , renderingOptions := list(list(get_rendering_hint_options(renderingHint))), by = renderingHint]
-
-  data <- list(parameters = as.data.frame(fitData), points = as.data.frame(rbindlist(fitData$points)))
-
   #Retrieve rendering hint parameters
   if(is.na(coalesce(fitData[1]$renderingHint))) {
     fitData[ , renderingHint := get_model_fit_classes()[1]$code]
   }
+  
+  # Get rendering for specific rendering hints
+  fitData[ , renderingOptions := list(list(get_rendering_hint_options(renderingHint))), by = renderingHint]
+
+  output <- applyParsedParametersToFitData(fitData, parsedParams, protocol_display_values)
+  data <- output$data
+  parsedParams <- output$parsedParams
   
   setContentType("image/png")
   setHeader("Content-Disposition", paste0("filename=\"",strtrim(getParams$curveIds,200),".png\""))
