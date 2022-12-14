@@ -1168,23 +1168,9 @@ class EndpointListController extends AbstractFormController
 			dataType: 'json'
 
 	getCurrentEndpoint: (lsState) => 
-		
-		# TODO - this gets two similar but differently structured formats. 
-
-		# TODO - This wont be needed after ACAS-298 revisions removing getCurrentEndpoint() for @collection
-
-		# needs to figure out if we need to go into attributes or not...
-		if lsState.attributes != undefined #this is used for @collection
-			# TODO rename this
-			format = 1
-			lsValues = lsState.attributes.lsValues.models
-		else
-			format = 2
-			lsValues = lsState.lsValues
-
-
 		# gets the endpoint values for a single state
-
+		lsValues = lsState.attributes.lsValues.models
+		
 		# create NAs for each entry in case we don't find a variable, we'll plug these in instead
 		endpointName = "NA"
 		endpointUnits = "NA"
@@ -1197,8 +1183,7 @@ class EndpointListController extends AbstractFormController
 
 		# extract the valid endpoint values from each lsState 
 		for lsValue in lsValues
-			if format == 1
-				lsValue = lsValue.attributes 
+			lsValue = lsValue.attributes 
 
 			if lsValue.lsKind == "column name" and lsValue.ignored == false and lsValue.codeValue != undefined
 				endpointName = lsValue.codeValue 	
@@ -1275,10 +1260,6 @@ class EndpointListController extends AbstractFormController
 		return multipleEndpointData 
 
 	downloadSELFile: =>	
-		console.log "---Start---"
-		console.log @collection
-		console.log "---End---"
-
 		# Get the protocol project		
 		protocolProject = ""
 		for lsState in @model.attributes.lsStates.models
@@ -1330,7 +1311,8 @@ class EndpointListController extends AbstractFormController
 
 		for experiment in @protocolExperiments
 			for lsState in experiment.lsStates
-				if lsState.lsKind == "data column order"
+				lsState = new State lsState
+				if lsState.attributes.lsKind == "data column order"
 					experimentEndpoints = @getCurrentEndpoint(lsState)
 
 					# create a string of all the different endpoint variables to see if one already has been recorded
