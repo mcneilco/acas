@@ -810,9 +810,6 @@ class EndpointListController extends AbstractFormController
 			if @options.view == "experiment"
 				@getEndpointTable()
 
-			# Need to add handling for rendering endpoint table if it is an experiment editor/browser and not a protocol browser. 
-			#@getEndpointTable()
-
 		@
 	
 	showTimeAndConcentration: =>
