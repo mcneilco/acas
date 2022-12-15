@@ -1232,6 +1232,7 @@ class EndpointListController extends AbstractFormController
 			endpointHidden: endpointHidden
 			endpointStr: endpointStr
 		
+		return endpointData
 
 	getCurrentEndpoints: (lsStates) => 
 		# get the current endpoints and their values for the protocol from a collection of lsStates
