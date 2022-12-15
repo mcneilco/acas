@@ -568,6 +568,26 @@ class EndpointController extends ACASFormStateTableFormController
 			@$('.bv_remove').attr("disabled", "disabled")
 			@$('input').attr("disabled", "disabled")
 			@$('select').attr("disabled", "disabled")
+
+			# enable tooltip
+			@$('[data-toggle="tooltip"]').tooltip()
+
+			# set the title for each field to be disabled
+			toolTipMsg = "Endpoint still in use by an experiment."
+			@$(".bv_columnNamePickList").attr("data-original-title", toolTipMsg)
+			@$(".bv_unitsPickList").attr("data-original-title", toolTipMsg)
+			@$(".bv_dataTypePickList").attr("data-original-title", toolTipMsg)
+			@$(".bv_columnTimeInput").attr("data-original-title", toolTipMsg)
+			@$(".bv_columnTimeUnitsPickList").attr("data-original-title", toolTipMsg)
+			@$(".bv_columnConcentrationInput").attr("data-original-title", toolTipMsg)
+			@$(".bv_columnConcentrationUnitsPickList").attr("data-original-title", toolTipMsg)
+			@$(".bv_endpointHiddenCheckbox").attr("data-original-title", toolTipMsg)
+			@$(".bv_endpointConditionCheckbox").attr("data-original-title", toolTipMsg)
+
+			# since buttons are disabled, they aren't interactive so we nest the button it in a <span>,
+			# and have to set style="pointer-events: none" on the disabled button for it to show up
+			@$(".bv_removeRowToolTip").attr("data-original-title", toolTipMsg)
+			@$(".bv_remove").attr("style", "pointer-events: none")
 	
 	removeRow: =>
 		# Remove UI element
@@ -853,7 +873,7 @@ class EndpointListController extends AbstractFormController
 			@.addOne(lsState)
 			if @options.readOnly == true
 				#hide remove buttons
-				@$(".bv_remove_row").hide()
+				@$(".bv_remove_row").hide()				
 
 	resetBackgroundColor: (tr) => 
 		# Reset the background color of all rows
@@ -1012,7 +1032,6 @@ class EndpointListController extends AbstractFormController
 		else
 			rowReadOnly = true
 		
-		console.log rowReadOnly
 		
 		# create a new table row
 		tr = document.createElement('tr')
@@ -1040,8 +1059,6 @@ class EndpointListController extends AbstractFormController
 
 		#check whether or not to display time and concentration cells in the row
 		@showTimeAndConcentration()
-
-
 	
 	getRowNumberForState: (state) =>
 		rowValues = state.getValuesByTypeAndKind 'numericValue', @rowNumberKind
@@ -1170,7 +1187,7 @@ class EndpointListController extends AbstractFormController
 	getCurrentEndpoint: (lsState) => 
 		# gets the endpoint values for a single state
 		lsValues = lsState.attributes.lsValues.models
-		
+
 		# create NAs for each entry in case we don't find a variable, we'll plug these in instead
 		endpointName = "NA"
 		endpointUnits = "NA"
