@@ -474,8 +474,8 @@ client.entity.status.default=created
 #Config for whether to display concentration and time endpoint columns in the protocol browser
 client.protocol.endpointManager.showConcentration=false
 client.protocol.endpointManager.showTime=false
-client.protocol.strictEndpointMatchingDefault=true
-client.protocol.endpointManager.enabled=false
+client.protocol.strictEndpointMatchingDefault=false
+client.protocol.endpointManager.enabled=true
 
 # Protocols and experiments which should be hidden (to non-admin users) in the protocol/expt browser when the status is in the config below
 client.entity.hideStatuses=["deleted"]
