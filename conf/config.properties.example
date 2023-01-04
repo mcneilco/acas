@@ -475,7 +475,7 @@ client.entity.status.default=created
 client.protocol.endpointManager.showConcentration=false
 client.protocol.endpointManager.showTime=false
 client.protocol.strictEndpointMatchingDefault=true
-client.protocol.endpointManager.enabled=true
+client.protocol.endpointManager.enabled=false
 
 # Protocols and experiments which should be hidden (to non-admin users) in the protocol/expt browser when the status is in the config below
 client.entity.hideStatuses=["deleted"]
