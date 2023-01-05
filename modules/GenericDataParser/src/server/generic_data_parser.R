@@ -3777,9 +3777,17 @@ deleteOldData <- function(experiment, useExistingExperiment) {
     deleteAnalysisGroupsByExperiment(experiment)
   } else {
     deletedExperimentCodes <- c(experiment$codeName, getPreviousExperimentCodes(experiment))
-    deleteExperiment(experiment)
+    selDeleteExperiment(experiment)
   }
   return(deletedExperimentCodes)
+}
+selDeleteExperiment <- function(experiment) {
+  url <- paste0(racas::applicationSettings$client.service.persistence.fullpath, "experiments/seldelete/", experiment$id)
+  response <- deleteURLcheckStatus(url, requireJSON = TRUE)
+  if(response!="") {
+    stopUser (paste0("The loader was unable to delete the ", racas::applicationSettings$client.experiment.label, ". Instead, it got this response: ", response))
+  }
+  return(response)
 }
 getPreviousExperimentCodes <- function(experiment) {
   metadataState <- getStatesByTypeAndKind(experiment, "metadata_experiment metadata")[[1]]

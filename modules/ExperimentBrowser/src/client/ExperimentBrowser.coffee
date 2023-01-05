@@ -202,6 +202,8 @@ class ExperimentSimpleSearchController extends AbstractFormController
 				dataType: "json"
 				data:
 					testMode: false
+					# TODO remove hardcoding of includeDeleted
+					includeDeleted: true
 			#fullObject: true
 				success: (experiment) =>
 					@trigger "searchReturned", experiment
