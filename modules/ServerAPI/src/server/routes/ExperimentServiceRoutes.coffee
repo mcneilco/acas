@@ -500,6 +500,16 @@ exports.genericExperimentSearch = (req, res) ->
 		authorRoutes.allowedProjectsInternal req.user, (statusCode, allowedUserProjects) ->
 			_ = require "underscore"
 			allowedProjectCodes = _.pluck(allowedUserProjects, "code")
+
+			# If project codes are specified, filter the allowed projects by the requested projects
+			if req.query.projectCodes?
+				# Split by comma and remove any empty strings
+				requestedProjectCodes = _.filter(req.query.projectCodes.split(","), (code) -> code.length > 0)
+				console.log("Filtering by requested project codes #{requestedProjectCodes}")
+
+				# Filter the allowed projects by the requested projects
+				allowedProjectCodes = _.intersection(allowedProjectCodes, requestedProjectCodes)
+
 			baseurl = config.all.client.service.persistence.fullpath+"experiments/search?q="+req.params.searchTerm+"&projects=#{encodeURIComponent(allowedProjectCodes.join(','))}"
 			console.log "baseurl"
 			console.log baseurl
