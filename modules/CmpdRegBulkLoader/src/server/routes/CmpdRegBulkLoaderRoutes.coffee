@@ -7,6 +7,7 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.get '/api/cmpdRegBulkLoader/getFilesToPurge', exports.getFilesToPurge
 	app.post '/api/cmpdRegBulkLoader/purgeFile', exports.purgeFile
 	app.get '/api/cmpdRegBulkLoader/getSDFFromBulkLoadFileId/:bulkFileID', exports.getSDFFromBulkLoadFileId
+	app.get '/api/cmpdRegBulkLoader/getLotsByBulkLoadFileID/:bulkFileID', exports.getLotsByBulkLoadFileID
 
 
 
@@ -21,6 +22,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/cmpdRegBulkLoader/checkFileDependencies', loginRoutes.ensureAuthenticated, exports.checkFileDependencies
 	app.post '/api/cmpdRegBulkLoader/purgeFile', loginRoutes.ensureAuthenticated, exports.purgeFile
 	app.get '/api/cmpdRegBulkLoader/getSDFFromBulkLoadFileId/:bulkFileID', loginRoutes.ensureAuthenticated, exports.getSDFFromBulkLoadFileId
+	app.get '/api/cmpdRegBulkLoader/getLotsByBulkLoadFileID/:bulkFileID', loginRoutes.ensureAuthenticated, exports.getLotsByBulkLoadFileID
 
 exports.cmpdRegBulkLoaderIndex = (req, res) ->
 	scriptPaths = require './RequiredClientScripts.js'
@@ -362,43 +364,45 @@ class HTTPResponseError extends Error
 		super("HTTP Error Response: #{response.status} #{response.statusText}", ...args)
 		this.response = response
 
+exports.getLotsByBulkLoadFileID = (req, resp) ->
+	req.connection.setTimeout 6000000
+	try
+		lotCorpNames = await exports.getLotsByBulkLoadFileIDInternal req.params.bulkFileID
+		resp.end JSON.stringify lotCorpNames
+	catch error
+		console.error error
+		resp.statusCode = 500
+		resp.end JSON.stringify error
+
+exports.getLotsByBulkLoadFileIDInternal = (bulkFileID) ->
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"bulkload/getLotsByBulkLoadFileID?bulkLoadFileID=" +bulkFileID
+	response = await fetch(baseurl)
+	checkStatus response
+	lotCorpNames = await response.json()
+	return lotCorpNames
+
 exports.getSDFFromBulkLoadFileId = (req, resp) ->
 	req.setTimeout 86400000
 	config = require '../conf/compiled/conf.js'
-	baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"bulkload/getLotsByBulkLoadFileID?bulkLoadFileID=" +req.params.bulkFileID
-	request = require 'request'
-	request(
-		method: 'GET'
-		url: baseurl
-		json: true
-	, (error, response, lotCorpNames) =>
-		if !error && response.statusCode == 200
-			#make a second call using the returned lots to get an SDF file
-			baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"export/lotCorpNames"
-			try
-			# Use fetch to call the service and pipe the response to the client
-				response = await fetch(baseurl,
-					method: 'POST'
-					body: JSON.stringify(lotCorpNames)
-					headers:
-						'Content-Type': 'application/json'
-				)
-				checkStatus response
-				resp.set({
-					"content-length": response.headers.get('content-length'),
-					"content-type": response.headers.get('content-type'),
-				})
-				response.body.pipe(resp);
-			catch err
-				console.log "Error calling service: " + err
-				resp.statusCode = 500
-				resp.json err
+	try
+		lotCorpNames = await exports.getLotsByBulkLoadFileIDInternal req.params.bulkFileID
 
-		else
-			console.log 'got ajax error trying to retrieve lots from bulk file ID'
-			console.log error
-			console.log json
-			console.log response
-			resp.end JSON.stringify "Error"
-	)
-
+		# Use fetch to call the service and pipe the response to the client
+		baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"export/lotCorpNames"
+		response = await fetch(baseurl,
+			method: 'POST'
+			body: JSON.stringify(lotCorpNames)
+			headers:
+				'Content-Type': 'application/json'
+		)
+		checkStatus response
+		resp.set({
+			"content-length": response.headers.get('content-length'),
+			"content-type": response.headers.get('content-type'),
+		})
+		response.body.pipe(resp);
+	catch err
+		console.log "Error calling service: " + err
+		resp.statusCode = 500
+		resp.json err
