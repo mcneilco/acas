@@ -814,7 +814,10 @@ class EndpointListController extends AbstractFormController
 			url: "/api/experiments/protocolCodename/#{protocolCode}" #ExperimentServiceRoutes.coffee route
 			success: (experiments) =>
 				#save the experiments so we don't have to retrieve them again 
-				@protocolExperiments = experiments
+				if window.conf.experiment?.mainControllerClassName? and window.conf.experiment.mainControllerClassName is "EnhancedExperimentBaseController"
+					@protocolExperiments = new EnhancedExperimentList experiments
+				else
+					@protocolExperiments = new ExperimentList experiments
 
 				#set up the initial table 
 				@getExperimentSummaryTable()
@@ -903,31 +906,45 @@ class EndpointListController extends AbstractFormController
 
 		filtered_experiments = [] #keep track of the filtered experiments
 		#we'll need to filter out experiments that don't contain the endpoint
-		for experiment in @protocolExperiments
-			for i in experiment.lsStates
-				#go through the experiment data to check if the endpoint data is there
-				if i.lsKind == 'data column order' and i.ignored == false
-					for j in i.lsValues
-						#only looking at the data that is not ignored
-						if j.lsKind == "column name" and j.ignored == false
-							if j.codeValue == rowEndpointName
-								endpointRowValueMatch = true
-						if j.lsKind == "column units" and j.ignored == false
-							if j.codeValue == rowUnits
-								endpointRowUnitsMatch = true
-						if j.lsKind == "column type" and j.ignored == false
-							if j.codeValue == rowDataType 
-								endpointRowDataTypeMatch = true
+		for experiment in @protocolExperiments.models
+			dataColumnOrderState = experiment.get("lsStates").getStatesByTypeAndKind "metadata", "data column order"
+			for lsState in dataColumnOrderState
+				# get experiment values
+				experimentColumnNameValues = lsState.getValuesByTypeAndKind "codeValue", "column name"
+				experimentColumnUnitValues = lsState.getValuesByTypeAndKind "codeValue", "column units"
+				experimentColumnTypeValues = lsState.getValuesByTypeAndKind "codeValue", "column type"
+				
+				# check if the row value is in the experiment values
+				if @rowValueInExperimentValues(rowEndpointName, experimentColumnNameValues, "codeValue")
+					endpointRowValueMatch = true
 
+				if @rowValueInExperimentValues(rowUnits, experimentColumnUnitValues, "codeValue")
+					endpointRowUnitsMatch = true
+
+				if @rowValueInExperimentValues(rowDataType, experimentColumnTypeValues, "codeValue")
+					endpointRowDataTypeMatch = true
+				
 				#if all the criteria pass, record the experiment, end the loop early & move on to the next one
 				if endpointRowValueMatch == true && endpointRowUnitsMatch == true && endpointRowDataTypeMatch == true
 					filtered_experiments.push experiment
 					break
 		@$(".bv_experimentTableController").empty() #remove the last experimentTableController
-		@setupExperimentSummaryTable filtered_experiments #add a new one with the filtered experiments
+
+		if window.conf.experiment?.mainControllerClassName? and window.conf.experiment.mainControllerClassName is "EnhancedExperimentBaseController"
+			@setupExperimentSummaryTable new EnhancedExperimentList filtered_experiments
+		else
+			@setupExperimentSummaryTable new ExperimentList filtered_experiments
+		
 		#generate a title for the experiment table controller 
 		@$(".bv_experimentTableControllerTitle").html "Experiments using " + protocolCode + " containing '" + rowEndpointName + " (" + rowUnits + " , " + rowDataType + ")' data:"
 				
+	rowValueInExperimentValues: (endpointValue, experimentLsValues, lsType) =>
+		if experimentLsValues.length > 0
+			for experimentLsValue in experimentLsValues
+				if experimentLsValue.get('ignored') == false 
+					if experimentLsValue.get(lsType) == endpointValue
+						return true
+		return false 
 
 	handleEndpointRowPressed: =>
 		#disable logic if endpoint list controller is read only (since there won't be an experiment controller)
@@ -1038,13 +1055,10 @@ class EndpointListController extends AbstractFormController
 	setupExperimentSummaryTable: (experiments) =>
 		#@$(".bv_searchStatusIndicator").addClass "hide"
 		$(".bv_experimentTableController").removeClass "hide"
-		if window.conf.experiment?.mainControllerClassName? and window.conf.experiment.mainControllerClassName is "EnhancedExperimentBaseController"
-			experimentListClass = "EnhancedExperimentList"
-		else
-			experimentListClass = "ExperimentList"
+
 		@experimentSummaryTable = new ExperimentSummaryTableController
 			el: $(".bv_experimentTableController")
-			collection: new window[experimentListClass] experiments
+			collection: experiments
 
 		@experimentSummaryTable.on "selectedRowUpdated", @selectedExperimentUpdated
 
