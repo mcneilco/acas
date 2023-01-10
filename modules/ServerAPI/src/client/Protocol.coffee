@@ -1323,15 +1323,15 @@ class EndpointListController extends AbstractFormController
 				a.click();
 
 				#Update GUI to indicate succesful download
-				$(".bv_downloadWarning").hide()
-				$(".bv_downloadSuccess").show()
+				$(".bv_downloadTemplateWarning").hide()
+				$(".bv_downloadTemplateSuccess").show()
 
 			error: (err) =>
 				console.log "getTemplateSELFile() error:" + err
 				
 				#Update GUI to indicate files could not be downloaded
-				$(".bv_downloadSuccess").hide()
-				$(".bv_downloadWarning").show()
+				$(".bv_downloadTemplateSuccess").hide()
+				$(".bv_downloadTemplateWarning").show()
 				
 
 
@@ -1347,7 +1347,6 @@ class EndpointListController extends AbstractFormController
 		endpointHidden = []
 		endpointStr = []
 
-		# TODO - need to update this since it is no longer the same
 		for experiment in @protocolExperiments.models
 			dataColumnOrderStates = experiment.get("lsStates").getStatesByTypeAndKind "metadata", "data column order"
 
