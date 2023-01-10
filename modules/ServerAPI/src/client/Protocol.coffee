@@ -1228,8 +1228,16 @@ class EndpointListController extends AbstractFormController
 				document.body.appendChild(a);
 				a.click();
 
+				#Update GUI to indicate succesful download
+				$(".bv_downloadWarning").hide()
+				$(".bv_downloadSuccess").show()
+
 			error: (err) =>
 				console.log "getTemplateSELFile() error:" + err
+				
+				#Update GUI to indicate files could not be downloaded
+				$(".bv_downloadSuccess").hide()
+				$(".bv_downloadWarning").show()
 				
 			
 
