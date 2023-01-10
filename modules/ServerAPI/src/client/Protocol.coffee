@@ -1195,42 +1195,27 @@ class EndpointListController extends AbstractFormController
 				@serviceReturn = null
 			dataType: 'json'
 
+	getEndpointValueFromState: (lsState, lsType, lsKind) =>
+		lsValues = lsState.getValuesByTypeAndKind lsType, lsKind
+
+		if lsValues.length > 0
+			for lsValue in lsValues
+				if lsValue.get('ignored') == false 
+					return lsValue.get(lsType)
+						
+		return "NA"
+
 	getCurrentEndpoint: (lsState) => 
-		# gets the endpoint values for a single state
-		lsValues = lsState.attributes.lsValues.models
-
-		# create NAs for each entry in case we don't find a variable, we'll plug these in instead
-		endpointName = "NA"
-		endpointUnits = "NA"
-		endpointDataType = "NA"
-		endpointConc = "NA"
-		endpointConcUnits = "NA"
-		endpointTime = "NA"
-		endpointTimeUnits = "NA"
-		endpointHidden = "NA"
-
-		# extract the valid endpoint values from each lsState 
-		for lsValue in lsValues
-			lsValue = lsValue.attributes 
-
-			if lsValue.lsKind == "column name" and lsValue.ignored == false and lsValue.codeValue != undefined
-				endpointName = lsValue.codeValue 	
-			if lsValue.lsKind == "column units" and lsValue.ignored == false and lsValue.codeValue != undefined
-				endpointUnits = lsValue.codeValue
-			if lsValue.lsKind == "column type" and lsValue.ignored == false and lsValue.codeValue != undefined
-				endpointDataType = lsValue.codeValue
-			if lsValue.lsKind == "column concentration" and lsValue.ignored == false and lsValue.numericValue != undefined
-				endpointConc = lsValue.numericValue
-			if lsValue.lsKind == "column conc units" and lsValue.ignored == false and lsValue.codeValue != undefined
-				endpointConcUnits = lsValue.codeValue
-			if lsValue.lsKind == "column time" and lsValue.ignored == false and lsValue.numericValue != undefined
-				endpointTime = lsValue.numericValue
-			if lsValue.lsKind == "column time units" and lsValue.ignored == false and lsValue.codeValue != undefined
-				endpointTimeUnits = lsValue.codeValue
-			if lsValue.lsTypeAndKind == "codeValue_hide column" and lsValue.ignored == false and lsValue.codeValue != undefined
-				endpointHidden = lsValue.codeValue
+		endpointName = @getEndpointValueFromState(lsState, "codeValue", "column name")
+		endpointUnits = @getEndpointValueFromState(lsState, "codeValue", "column units")
+		endpointDataType = @getEndpointValueFromState(lsState,"codeValue",  "column type")
+		endpointConc = @getEndpointValueFromState(lsState, "numericValue", "column concentration")
+		endpointConcUnits = @getEndpointValueFromState(lsState, "codeValue",  "column conc units")
+		endpointTime = @getEndpointValueFromState(lsState, "numericValue", "column time")
+		endpointTimeUnits = @getEndpointValueFromState(lsState, "codeValue", "column time units")
+		endpointHidden = @getEndpointValueFromState(lsState, "codeValue", "hide column")
 			
-			endpointStr = endpointName + endpointUnits + endpointDataType + String(endpointConc) + endpointConcUnits + String(endpointTime) + endpointTimeUnits + endpointHidden
+		endpointStr = endpointName + endpointUnits + endpointDataType + String(endpointConc) + endpointConcUnits + String(endpointTime) + endpointTimeUnits + endpointHidden
 		
 		endpointData = 
 			endpointName: endpointName
@@ -1394,7 +1379,7 @@ class EndpointListController extends AbstractFormController
 		if endpointData.endpointName == "NA" & endpointData.endpointUnits == "NA" & endpointData.endpointDataType == "NA" & endpointData.endpointConc == "NA" & endpointData.endpointConcUnits == "NA" & endpointData.endpointTime == "NA" & endpointData.endpointTimeUnits == "NA" 
 			return false 
 
-		for indexNum in [0..multipleEndpointData.endpointNames.length]
+		for indexNum in [0..multipleEndpointData.endpointNames.length-1]
 			endpointNamesMatch = false
 			endpointUnitsMatch = false
 			endpointDataTypesMatch = false
