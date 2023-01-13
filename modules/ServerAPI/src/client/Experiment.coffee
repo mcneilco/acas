@@ -808,3 +808,4 @@ class ExperimentBaseController extends BaseEntityController
 			collection: endpointStates
 			model: @model
 			readOnly: true
+			view: "experiment"

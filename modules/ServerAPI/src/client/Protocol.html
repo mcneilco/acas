@@ -244,30 +244,30 @@
 
 <script type="text/template" id="EndpointRowView" xmlns="http://www.w3.org/1999/html">
     <td style="vertical-align: middle;" class="bv_columnNamePickListParent">
-        <div class="bv_columnNamePickList"></div>
+        <div class="bv_columnNamePickList" data-toggle="tooltip" data-placement="top" title=""></div>
     </td>
     <td style="vertical-align:middle;" class="bv_unitsPickListParent">
-        <div class="bv_unitsPickList"></div>
+        <div class="bv_unitsPickList" data-toggle="tooltip" data-placement="top" title=""></div>
     </td>
     <td style="vertical-align:middle;" class="bv_dataTypePickListParent">
-        <div class="bv_dataTypePickList"></div>
+        <div class="bv_dataTypePickList" data-toggle="tooltip" data-placement="top" title=""></div>
     </td>
     <td style="vertical-align:middle;" class="bv_timeInputParent">
-        <div class="bv_columnTimeInput" type="text" style="width:77px;"/>
+        <div class="bv_columnTimeInput" type="text" style="width:77px;" data-toggle="tooltip" data-placement="top" title=""/>
     </td>
     <td style="vertical-align:middle;" class="bv_timeUnitsPickListParent">
-        <div class="bv_columnTimeUnitsPickList"></div>
+        <div class="bv_columnTimeUnitsPickList" data-toggle="tooltip" data-placement="top" title=""></div>
     </td>
     <td style="vertical-align:middle;" class="bv_concentrationInputParent">
-        <div class="bv_columnConcentrationInput" type="text" style="width:77px;"/>
+        <div class="bv_columnConcentrationInput" type="text" style="width:77px;"data-toggle="tooltip" data-placement="top" title="" />
     </td>
     <td style="vertical-align:middle;" class="bv_concentrationUnitsPickListParent">
-        <div class="bv_columnConcentrationUnitsPickList"></div>
+        <div class="bv_columnConcentrationUnitsPickList" data-toggle="tooltip" data-placement="top" title=""></div>
     </td>
 
-    <td style="text-align:center;vertical-align:middle;" class="bv_endpointHiddenCheckbox"></td>
-    <td style="text-align:center;vertical-align:middle;" class="bv_endpointConditionCheckbox"></td>
-    <td style="text-align:center;vertical-align:middle;"class="bv_remove_row"><button type="button" class="btn btn-danger bv_remove pull-center" style="margin-right:5px;margin-left:5px;">Remove</button></td>
+    <td style="text-align:center;vertical-align:middle;" class="bv_endpointHiddenCheckbox" data-toggle="tooltip" data-placement="left" title=""></td>
+    <td style="text-align:center;vertical-align:middle;" class="bv_endpointConditionCheckbox" data-toggle="tooltip" data-placement="left" title=""></td>
+    <td style="text-align:center;vertical-align:middle;"class="bv_remove_row"><span tabindex="0" class="d-inline-block bv_removeRowToolTip" data-toggle="tooltip" data-placement="left" title=""><button type="button" class="btn btn-danger bv_remove pull-center" style="margin-right:5px;margin-left:5px;">Remove</button></span></td>
 </script>
 
 <script type="text/template" id="EndpointListView" xmlns="http://www.w3.org/1999/html">
@@ -297,14 +297,18 @@
         <br/>
         <br/>
         <span class="" style="margin-bottom:15px;margin-left:60px;">
-            <button type="button" class="btn bv_addEndpoint pull-right">Add Endpoint</button>
+            <button type="button" class="btn bv_addEndpoint pull-right" style="margin-left: 0.5em;">Add Endpoint</button>
+            <button type="button" class="btn bv_downloadSELFile pull-right">Download Template</button>
+            <br/>
+            <div class="bv_downloadTemplateWarning hide" style="color: red; font-size: 12px; text-align: right;">Could not download template file</div>
+            <div class="bv_downloadTemplateSuccess hide" style="color: green; font-size: 12px; text-align: right;">Template file downloaded successfully</div>
         </span>
         <br/>
         <br/>
         <br/>
         <br/>
-        <h5 class="bv_experimentTableControllerTitle"></h5>
         <button class="btn bv_downloadFiles" style="float: right; margin-top: auto; margin-bottom: auto;">Download All Files</button>
+        <h5 class="bv_experimentTableControllerTitle"></h5>
         <div class="bv_downloadWarning hide" style="color: red; font-size: 12px; text-align: right;">Could not download files</div>
         <div class="bv_downloadSuccess hide" style="color: green; font-size: 12px; text-align: right;">Downloaded successfully</div>
         <div class="bv_experimentTableController hide" style="margin:0px; padding:10px; overflow: auto; overflow: auto;"></div>

@@ -177,6 +177,7 @@ class ProtocolBrowserController extends Backbone.View
 		"click .bv_createExperiment": "handleCreateExperimentClicked"
 		"click .bv_confirmDeleteProtocolButton": "handleConfirmDeleteProtocolClicked"
 		"click .bv_cancelDelete": "handleCancelDeleteClicked"
+		"click .bv_downloadSELFile": "downloadSELFile"
 
 	initialize: ->
 		template = _.template( $("#ProtocolBrowserView").html() );
@@ -441,6 +442,42 @@ class ProtocolBrowserController extends Backbone.View
 		$(".bv_protocolBaseController").addClass("hide")
 		$(".bv_protocolBaseControllerContainer").addClass("hide")
 		$(".bv_noMatchesFoundMessage").addClass("hide")
+
+	downloadSELFile: =>	
+		dataToPost =
+			protocolCode: @protocolController.model.escape('codeName')
+
+		
+		# send the request to get a .csv of the SEL template file 
+		$.ajax
+			type: 'POST'
+			url: "/api/getTemplateSELFile"
+			data: dataToPost
+			timeout: 6000000
+			dataType: 'json'
+			success: (response) =>
+				#Since we can't directly send the .csv file to download it...
+				#...we create a hidden link with the download path and automatically click on it
+				# exporting and downloading the file to the user
+				encodedUri = encodeURI(response)
+				a = document.createElement('a');
+				a.style.display = 'none';
+				a.href = encodedUri;
+				a.setAttribute('target', '_blank')
+				document.body.appendChild(a);
+				a.click();
+
+				#Update GUI to indicate succesful download
+				$(".bv_downloadWarning").hide()
+				$(".bv_downloadSuccess").show()
+			error: (err) =>
+				console.log "getTemplateSELFile() error:" + err
+				
+				#Update GUI to indicate files could not be downloaded
+				$(".bv_downloadSuccess").hide()
+				$(".bv_downloadWarning").show()
+
+	
 
 	render: =>
 

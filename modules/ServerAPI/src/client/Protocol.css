@@ -13,3 +13,8 @@
 .bv_endpointTable span.help-inline {
     position: absolute !important;
 }
+
+/* This keeps the tooltips aligned correctly with the cell they belong to */ 
+.bv_endpointTable [data-tooltip]::after {
+    display: flex;
+  }

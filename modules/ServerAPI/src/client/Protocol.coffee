@@ -308,6 +308,7 @@ class ProtocolBaseController extends BaseEntityController
 				model: @model
 				readOnly: false
 				newProtocol: newProtocol
+				view: "protocol"
 
 			@endpointListController.render()
 
@@ -559,7 +560,34 @@ class EndpointController extends ACASFormStateTableFormController
 	initialize: (options) =>
 		$(@el).empty()
 		$(@el).html @template()
+
 		super(options)
+
+		if options.readOnly == true
+			# hide remove buttons, disable all fields
+			@$('.bv_remove').attr("disabled", "disabled")
+			@$('input').attr("disabled", "disabled")
+			@$('select').attr("disabled", "disabled")
+
+			# enable tooltip
+			@$('[data-toggle="tooltip"]').tooltip()
+
+			# set the title for each field to be disabled
+			toolTipMsg = "Endpoint still in use by an experiment."
+			@$(".bv_columnNamePickList").attr("data-original-title", toolTipMsg)
+			@$(".bv_unitsPickList").attr("data-original-title", toolTipMsg)
+			@$(".bv_dataTypePickList").attr("data-original-title", toolTipMsg)
+			@$(".bv_columnTimeInput").attr("data-original-title", toolTipMsg)
+			@$(".bv_columnTimeUnitsPickList").attr("data-original-title", toolTipMsg)
+			@$(".bv_columnConcentrationInput").attr("data-original-title", toolTipMsg)
+			@$(".bv_columnConcentrationUnitsPickList").attr("data-original-title", toolTipMsg)
+			@$(".bv_endpointHiddenCheckbox").attr("data-original-title", toolTipMsg)
+			@$(".bv_endpointConditionCheckbox").attr("data-original-title", toolTipMsg)
+
+			# since buttons are disabled, they aren't interactive so we nest the button it in a <span>,
+			# and have to set style="pointer-events: none" on the disabled button for it to show up
+			@$(".bv_removeRowToolTip").attr("data-original-title", toolTipMsg)
+			@$(".bv_remove").attr("style", "pointer-events: none")
 	
 	removeRow: =>
 		# Remove UI element
@@ -729,7 +757,6 @@ EndpointsValuesConf = [
 		formLabel: ''
 		fieldWrapper: "bv_endpointConditionCheckbox"
 ]
-		
 
 class EndpointListController extends AbstractFormController
 	template: _.template($("#EndpointListView").html())
@@ -739,6 +766,7 @@ class EndpointListController extends AbstractFormController
 		"rowRemoved": "handleRowRemoved"
 		"click .bv_endpointRow": "handleEndpointRowPressed"
 		"click .bv_downloadFiles": "downloadFiles"
+		"click .bv_downloadSELFile": "downloadSELFile"
 	
 	rowNumberKind: "column order"
 	stateType: "metadata"
@@ -754,7 +782,7 @@ class EndpointListController extends AbstractFormController
 			rnA = @getRowNumberForState(stateA)
 			rnB = @getRowNumberForState(stateB)
 			return rnA - rnB
-		
+
 	render: => 
 		$(@el).empty()
 		$(@el).html @template()
@@ -774,18 +802,13 @@ class EndpointListController extends AbstractFormController
 		#check whether or not to display time and concentration columns in the endpoint table
 		@showTimeAndConcentration()
 		
-		# Create a list to hold the endpoint controllers in, so we can iterate through them later
-		@endpointControllers = []
-		for lsState in @collection
-			@.addOne(lsState)
-			if @options.readOnly == true
-				#hide remove buttons
-				@$(".bv_remove_row").hide()
 
 		if @options.readOnly == false && @options.newProtocol == false 	#Only render experiments if the protocol is not new and is not read only 
-			@getExperimentSummaryTable()
+			@getExperimentsForProtocol()
 		else #if the table isn't rendered, don't render the download files button either
 			@$(".bv_downloadFiles").hide() 
+			if @options.view == "experiment"
+				@getEndpointTable()
 
 		@
 	
@@ -802,12 +825,9 @@ class EndpointListController extends AbstractFormController
 			@$(".bv_endpointColumnConcentrationUnits").remove()
 			@$(".bv_concentrationUnitsPickListParent").remove()
 			@$(".bv_concentrationInputParent").remove()
-
-	getExperimentSummaryTable: =>
-		#hide previously shown warnings/success text
-		@$(".bv_downloadSuccess").hide()
-		@$(".bv_downloadWarning").hide()
-
+	
+	getExperimentsForProtocol: => 
+		# Get all the experiments associated with the protocol
 		protocolCode = @model.escape('codeName')		
 		$.ajax
 			type: 'GET'
@@ -815,8 +835,45 @@ class EndpointListController extends AbstractFormController
 			#url: "/api/experimentsForProtocol/#{protocolCode}" #ExperimentBrowserRoutes.coffee route
 			url: "/api/experiments/protocolCodename/#{protocolCode}" #ExperimentServiceRoutes.coffee route
 			success: (experiments) =>
-				@setupExperimentSummaryTable experiments
-				@$(".bv_experimentTableControllerTitle").html "Experiments using " + protocolCode + ":"
+				#save the experiments so we don't have to retrieve them again 
+				if window.conf.experiment?.mainControllerClassName? and window.conf.experiment.mainControllerClassName is "EnhancedExperimentBaseController"
+					@protocolExperiments = new EnhancedExperimentList experiments
+				else
+					@protocolExperiments = new ExperimentList experiments
+
+				# set up the initial experiment table 
+				@getExperimentSummaryTable()
+
+				# set up the initial endpoint table
+				@getEndpointTable()
+
+				
+			error: (err) ->
+				console.log "There was an error retrieving experiments for this protocol: " + err
+			
+	getExperimentSummaryTable: =>
+		#hide previously shown warnings/success text
+		@$(".bv_downloadSuccess").hide()
+		@$(".bv_downloadWarning").hide()
+
+		protocolCode = @model.escape('codeName')	
+		@setupExperimentSummaryTable @protocolExperiments
+		
+		@$(".bv_experimentTableControllerTitle").html "Experiments using " + protocolCode + ":"
+	
+	getEndpointTable: =>
+
+		# get all the endpoints being used for all existing experiments (need this to enable/disable rows in endpoint table)
+		if @options.view == "protocol"
+			@experimentEndpoints = @getEndpointsFromExperiments()
+
+		# Create a list to hold the endpoint controllers in, so we can iterate through them later
+		@endpointControllers = []
+		for lsState in @collection
+			@.addOne(lsState)
+			if @options.readOnly == true
+				#hide remove buttons
+				@$(".bv_remove_row").hide()				
 
 	resetBackgroundColor: (tr) => 
 		# Reset the background color of all rows
@@ -859,10 +916,11 @@ class EndpointListController extends AbstractFormController
 			rowDataType: rowDataType
 		}
 
-	getFilteredExperimentTable: (rowData, protocolCode) =>
+	getFilteredExperimentTable: (rowData) =>
 		rowEndpointName =  rowData.rowEndpointName
 		rowUnits = rowData.rowUnits
 		rowDataType =  rowData.rowDataType
+		protocolCode = @model.escape('codeName')	
 
 		#if the endpoint doesn't have a value for it, don't filter by it.
 		if rowEndpointName == "Select Column Name"
@@ -886,39 +944,48 @@ class EndpointListController extends AbstractFormController
 		#hide previously shown warnings/success text associated w/ previous table
 		@$(".bv_downloadSuccess").hide()
 		@$(".bv_downloadWarning").hide()
-		$.ajax
-			type: 'GET'
-			#there are two similar routes in ExperimentBrowserRoutes.coffee and ExperimentServiceRoutes.coffee
-			#url: "/api/experimentsForProtocol/#{protocolCode}" #ExperimentBrowserRoutes.coffee route
-			url: "/api/experiments/protocolCodename/#{protocolCode}" #ExperimentServiceRoutes.coffee route
-			success: (experiments) =>
-				filtered_experiments = [] #keep track of the filtered experiments
-				#we'll need to filter out experiments that don't contain the endpoint
-				for experiment in experiments
-					for i in experiment.lsStates
-						#go through the experiment data to check if the endpoint data is there
-						if i.lsKind == 'data column order' and i.ignored == false
-							for j in i.lsValues
-								#only looking at the data that is not ignored
-								if j.lsKind == "column name" and j.ignored == false
-									if j.stringValue == rowEndpointName
-										endpointRowValueMatch = true
-								if j.lsKind == "column units" and j.ignored == false
-									if j.stringValue == rowUnits
-										endpointRowUnitsMatch = true
-								if j.lsKind == "column type" and j.ignored == false
-									if j.stringValue == rowDataType 
-										endpointRowDataTypeMatch = true
 
-						#if all the criteria pass, record the experiment, end the loop early & move on to the next one
-						if endpointRowValueMatch == true && endpointRowUnitsMatch == true && endpointRowDataTypeMatch == true
-							filtered_experiments.push experiment
-							break
-				@$(".bv_experimentTableController").empty() #remove the last experimentTableController
-				@setupExperimentSummaryTable filtered_experiments #add a new one with the filtered experiments
-				#generate a title for the experiment table controller 
-				@$(".bv_experimentTableControllerTitle").html "Experiments using " + protocolCode + " containing '" + rowEndpointName + " (" + rowUnits + " , " + rowDataType + ")' data:"
+		filtered_experiments = [] #keep track of the filtered experiments
+		#we'll need to filter out experiments that don't contain the endpoint
+		for experiment in @protocolExperiments.models
+			dataColumnOrderState = experiment.get("lsStates").getStatesByTypeAndKind "metadata", "data column order"
+			for lsState in dataColumnOrderState
+				# get experiment values
+				experimentColumnNameValues = lsState.getValuesByTypeAndKind "codeValue", "column name"
+				experimentColumnUnitValues = lsState.getValuesByTypeAndKind "codeValue", "column units"
+				experimentColumnTypeValues = lsState.getValuesByTypeAndKind "codeValue", "column type"
 				
+				# check if the row value is in the experiment values
+				if @rowValueInExperimentValues(rowEndpointName, experimentColumnNameValues, "codeValue")
+					endpointRowValueMatch = true
+
+				if @rowValueInExperimentValues(rowUnits, experimentColumnUnitValues, "codeValue")
+					endpointRowUnitsMatch = true
+
+				if @rowValueInExperimentValues(rowDataType, experimentColumnTypeValues, "codeValue")
+					endpointRowDataTypeMatch = true
+				
+				#if all the criteria pass, record the experiment, end the loop early & move on to the next one
+				if endpointRowValueMatch == true && endpointRowUnitsMatch == true && endpointRowDataTypeMatch == true
+					filtered_experiments.push experiment
+					break
+		@$(".bv_experimentTableController").empty() #remove the last experimentTableController
+
+		if window.conf.experiment?.mainControllerClassName? and window.conf.experiment.mainControllerClassName is "EnhancedExperimentBaseController"
+			@setupExperimentSummaryTable new EnhancedExperimentList filtered_experiments
+		else
+			@setupExperimentSummaryTable new ExperimentList filtered_experiments
+		
+		#generate a title for the experiment table controller 
+		@$(".bv_experimentTableControllerTitle").html "Experiments using " + protocolCode + " containing '" + rowEndpointName + " (" + rowUnits + " , " + rowDataType + ")' data:"
+				
+	rowValueInExperimentValues: (endpointValue, experimentLsValues, lsType) =>
+		if experimentLsValues.length > 0
+			for experimentLsValue in experimentLsValues
+				if experimentLsValue.get('ignored') == false 
+					if experimentLsValue.get(lsType) == endpointValue
+						return true
+		return false 
 
 	handleEndpointRowPressed: =>
 		#disable logic if endpoint list controller is read only (since there won't be an experiment controller)
@@ -958,14 +1025,28 @@ class EndpointListController extends AbstractFormController
 
 			#extract the endpoint values from the selected row
 			rowData = @getRowData(tr)
-			protocolCode = @model.escape('codeName')
 
 			#get table with matching experiments given the endpoint data and the protocolCode
-			@getFilteredExperimentTable(rowData, protocolCode)
+			@getFilteredExperimentTable(rowData)
 
 			@
 
 	addOne: (state) =>
+
+		# need to figure out if the "Remove" button should be disabled or not
+		# If the endpoint is being used by other experiments - it should be disabled 
+		if @options.view == "protocol"
+			rowEndpointData = @getCurrentEndpoint(state)
+
+			# if the endpoint is being used in an experiment, we need to set it to readOnly so that it can't be edited or removed
+			if @options.readOnly == true | @isEndpointInEndpoints(rowEndpointData, @experimentEndpoints)
+				rowReadOnly = true
+			else
+				rowReadOnly = false
+		else
+			rowReadOnly = true
+		
+		
 		# create a new table row
 		tr = document.createElement('tr')
 		# Add that row into the table
@@ -986,14 +1067,12 @@ class EndpointListController extends AbstractFormController
 			stateKind: 'data column order'
 			rowNumber: rowNumber
 			rowNumberKind: @rowNumberKind
-			readOnly: @options.readOnly
+			readOnly: rowReadOnly
 		# Add this controller to our tracking dictionary so we can access it later
 		@endpointControllers[rowNumber] = rowController
 
 		#check whether or not to display time and concentration cells in the row
 		@showTimeAndConcentration()
-
-
 	
 	getRowNumberForState: (state) =>
 		rowValues = state.getValuesByTypeAndKind 'numericValue', @rowNumberKind
@@ -1030,13 +1109,10 @@ class EndpointListController extends AbstractFormController
 	setupExperimentSummaryTable: (experiments) =>
 		#@$(".bv_searchStatusIndicator").addClass "hide"
 		$(".bv_experimentTableController").removeClass "hide"
-		if window.conf.experiment?.mainControllerClassName? and window.conf.experiment.mainControllerClassName is "EnhancedExperimentBaseController"
-			experimentListClass = "EnhancedExperimentList"
-		else
-			experimentListClass = "ExperimentList"
+
 		@experimentSummaryTable = new ExperimentSummaryTableController
 			el: $(".bv_experimentTableController")
-			collection: new window[experimentListClass] experiments
+			collection: experiments
 
 		@experimentSummaryTable.on "selectedRowUpdated", @selectedExperimentUpdated
 
@@ -1048,7 +1124,6 @@ class EndpointListController extends AbstractFormController
 			@$(".bv_downloadFiles").hide()
 		else
 			@$(".bv_downloadFiles").show()
-	
 	
 	downloadFiles: => 
 		#copied from downloadFiles in ExperimentBrowser.coffee
@@ -1119,4 +1194,221 @@ class EndpointListController extends AbstractFormController
 				@$(".bv_downloadWarning").show()
 				@serviceReturn = null
 			dataType: 'json'
+
+	getEndpointValueFromState: (lsState, lsType, lsKind) =>
+		lsValues = lsState.getValuesByTypeAndKind lsType, lsKind
+
+		if lsValues.length > 0
+			for lsValue in lsValues
+				if lsValue.get('ignored') == false 
+					return lsValue.get(lsType)
+						
+		return "NA"
+
+	getCurrentEndpoint: (lsState) => 
+		endpointName = @getEndpointValueFromState(lsState, "codeValue", "column name")
+		endpointUnits = @getEndpointValueFromState(lsState, "codeValue", "column units")
+		endpointDataType = @getEndpointValueFromState(lsState,"codeValue",  "column type")
+		endpointConc = @getEndpointValueFromState(lsState, "numericValue", "column concentration")
+		endpointConcUnits = @getEndpointValueFromState(lsState, "codeValue",  "column conc units")
+		endpointTime = @getEndpointValueFromState(lsState, "numericValue", "column time")
+		endpointTimeUnits = @getEndpointValueFromState(lsState, "codeValue", "column time units")
+		endpointHidden = @getEndpointValueFromState(lsState, "codeValue", "hide column")
+			
+		endpointStr = endpointName + endpointUnits + endpointDataType + String(endpointConc) + endpointConcUnits + String(endpointTime) + endpointTimeUnits + endpointHidden
+		
+		endpointData = 
+			endpointName: endpointName
+			endpointUnits: endpointUnits
+			endpointDataType: endpointDataType
+			endpointConc: endpointConc
+			endpointConcUnits: endpointConcUnits
+			endpointTime: endpointTime
+			endpointTimeUnits: endpointTimeUnits
+			endpointHidden: endpointHidden
+			endpointStr: endpointStr
+		
+		return endpointData
+
+	getCurrentEndpoints: (lsStates) => 
+		# get the current endpoints and their values for the protocol from a collection of lsStates
+
+		# create holders for each one we want to collect 
+		endpointNames = []
+		endpointUnits = []
+		endpointDataTypes = []
+		endpointConc = []
+		endpointConcUnits = []
+		endpointTime = []
+		endpointTimeUnits = []
+		endpointHidden = []
+		endpointStr = []
+
+		for lsState in lsStates 
+			rowEndpointData = @getCurrentEndpoint(lsState)
+				
+			# record the endpoint data
+			endpointNames.push rowEndpointData.endpointName
+			endpointUnits.push rowEndpointData.endpointUnits
+			endpointDataTypes.push rowEndpointData.endpointDataType
+			endpointConc.push rowEndpointData.endpointConc
+			endpointConcUnits.push rowEndpointData.endpointConcUnits
+			endpointTime.push rowEndpointData.endpointTime
+			endpointTimeUnits.push rowEndpointData.endpointTimeUnits
+			endpointHidden.push rowEndpointData.endpointHidden
+			endpointStr.push rowEndpointData.endpointStr
+		
+		# create object to return 
+		multipleEndpointData = 
+			endpointNames: endpointNames
+			endpointUnits: endpointUnits
+			endpointDataTypes: endpointDataTypes
+			endpointConc: endpointConc
+			endpointConcUnits: endpointConcUnits
+			endpointTime: endpointTime
+			endpointTimeUnits: endpointTimeUnits
+			endpointHidden: endpointHidden
+			endpointStr: endpointStr
+		
+
+		return multipleEndpointData 
+
+	downloadSELFile: =>	
+		# Get the protocol project		
+		protocolProject = ""
+		for lsState in @model.attributes.lsStates.models
+			if lsState.attributes.lsKind == "protocol metadata"
+				for lsValue in lsState.attributes.lsValues.models
+					if lsValue.attributes.lsKind == "project" && lsValue.attributes.ignored == false 
+						if lsValue.attributes.codeValue != "unassigned" # we leave it as an empty string instead of recording "unassigned"
+							protocolProject = lsValue.attributes.codeValue
+		
+		#construct request
+		todayDate = new Date()
+
+		dataToPost =
+			protocolCode: @model.escape('codeName')
+
+		$.ajax
+			type: 'POST'
+			url: "/api/getTemplateSELFile"
+			data: dataToPost
+			timeout: 6000000
+			dataType: 'json'
+			success: (response) =>
+				#Since we can't directly send the .csv file to download it...
+				#...we create a hidden link with the download path and automatically click on it
+				# exporting and downloading the file to the user
+				encodedUri = encodeURI(response)
+				a = document.createElement('a');
+				a.style.display = 'none';
+				a.href = encodedUri;
+				a.setAttribute('target', '_blank')
+				document.body.appendChild(a);
+				a.click();
+
+				#Update GUI to indicate succesful download
+				$(".bv_downloadTemplateWarning").hide()
+				$(".bv_downloadTemplateSuccess").show()
+
+			error: (err) =>
+				console.log "getTemplateSELFile() error:" + err
+				
+				#Update GUI to indicate files could not be downloaded
+				$(".bv_downloadTemplateSuccess").hide()
+				$(".bv_downloadTemplateWarning").show()
+				
+
+
+	getEndpointsFromExperiments: =>
+		# get a collection of all the endpoints from the protocols associated experiments
+		endpointNames = []
+		endpointUnits = []
+		endpointDataTypes = []
+		endpointConc = []
+		endpointConcUnits = []
+		endpointTime = []
+		endpointTimeUnits = []
+		endpointHidden = []
+		endpointStr = []
+
+		for experiment in @protocolExperiments.models
+			dataColumnOrderStates = experiment.get("lsStates").getStatesByTypeAndKind "metadata", "data column order"
+
+			for lsState in dataColumnOrderStates
+				experimentEndpoints = @getCurrentEndpoint(lsState)
+
+				# create a string of all the different endpoint variables to see if one already has been recorded
+				endpointStrEntry = experimentEndpoints.endpointName + 
+				experimentEndpoints.endpointUnits + experimentEndpoints.endpointDataType + 
+				String(experimentEndpoints.endpointConc) + experimentEndpoints.endpointConcUnits + 
+				String(experimentEndpoints.endpointTime) + experimentEndpoints.endpointTimeUnits +
+				experimentEndpoints.endpointHidden
+
+				if endpointStrEntry not in endpointStr
+
+					# record the endpoint data
+					endpointNames.push experimentEndpoints.endpointName
+					endpointUnits.push experimentEndpoints.endpointUnits
+					endpointDataTypes.push experimentEndpoints.endpointDataType
+					endpointConc.push experimentEndpoints.endpointConc
+					endpointConcUnits.push experimentEndpoints.endpointConcUnits
+					endpointTime.push experimentEndpoints.endpointTime
+					endpointTimeUnits.push experimentEndpoints.endpointTimeUnits
+					endpointHidden.push experimentEndpoints.endpointHidden
+					endpointStr.push endpointStrEntry # record the string to make sure there are no duplicates 
+		
+		# create object to return 
+		multipleEndpointData = 
+			endpointNames: endpointNames
+			endpointUnits: endpointUnits
+			endpointDataTypes: endpointDataTypes
+			endpointConc: endpointConc
+			endpointConcUnits: endpointConcUnits
+			endpointTime: endpointTime
+			endpointTimeUnits: endpointTimeUnits
+			endpointHidden: endpointHidden
+			endpointStr: endpointStr
+
+		return multipleEndpointData 									
+
+	isEndpointInEndpoints: (endpointData, multipleEndpointData) =>
+		# Helper function that checks if a single endpoint is in a collection of endpoints
+
+		# if all the endpoint values are NA, it does not pass or fresh values will automatically be locked
+		if endpointData.endpointName == "NA" & endpointData.endpointUnits == "NA" & endpointData.endpointDataType == "NA" & endpointData.endpointConc == "NA" & endpointData.endpointConcUnits == "NA" & endpointData.endpointTime == "NA" & endpointData.endpointTimeUnits == "NA" 
+			return false 
+
+		for indexNum in [0..multipleEndpointData.endpointNames.length-1]
+			endpointNamesMatch = false
+			endpointUnitsMatch = false
+			endpointDataTypesMatch = false
+			endpointConcMatch = false
+			endpointConcUnitsMatch = false
+			endpointTimeMatch = false
+			endpointTimeUnitsMatch = false
+
+			# if the experiment value or protocol value is NA, we automatically pass 
+			if endpointData.endpointName == multipleEndpointData.endpointNames[indexNum] | multipleEndpointData.endpointNames[indexNum] == "NA" | endpointData.endpointName == "NA"
+				endpointNamesMatch = true 
+			if endpointData.endpointUnits == multipleEndpointData.endpointUnits[indexNum]  | multipleEndpointData.endpointUnits[indexNum] == "NA" | endpointData.endpointUnits == "NA"
+				endpointUnitsMatch = true 
+			if endpointData.endpointDataType == multipleEndpointData.endpointDataTypes[indexNum] | multipleEndpointData.endpointDataTypes[indexNum] == "NA" | endpointData.endpointDataType == "NA"
+				endpointDataTypesMatch = true 
+			if endpointData.endpointConc == multipleEndpointData.endpointConc[indexNum]  | multipleEndpointData.endpointConc[indexNum] == "NA" | endpointData.endpointConc == "NA"
+				endpointConcMatch = true 
+			if endpointData.endpointConcUnits == multipleEndpointData.endpointConcUnits[indexNum]  | multipleEndpointData.endpointConcUnits[indexNum] == "NA" | endpointData.endpointConcUnits == "NA"
+				endpointConcUnitsMatch = true 
+			if endpointData.endpointTime == multipleEndpointData.endpointTime[indexNum]  | multipleEndpointData.endpointTime[indexNum] == "NA" | endpointData.endpointTime == "NA"
+				endpointTimeMatch = true 
+			if endpointData.endpointTimeUnits == multipleEndpointData.endpointTimeUnits[indexNum]  | multipleEndpointData.endpointTimeUnits[indexNum] == "NA" | endpointData.endpointTimeUnits == "NA"
+				endpointTimeUnitsMatch = true 
+			
+			if endpointNamesMatch && endpointUnitsMatch && endpointDataTypesMatch && endpointConcMatch && endpointTimeMatch && endpointTimeUnitsMatch 
+				return true
+				 
+		# if no match is found, return false (no match)
+		return false 	
+		
+
 
