@@ -369,6 +369,7 @@ class ExperimentBaseController extends BaseEntityController
 			"click .bv_closeDeleteExperimentModal": "handleCloseExperimentModal"
 			"click .bv_confirmDeleteExperimentButton": "handleConfirmDeleteExperimentClicked"
 			"click .bv_cancelDelete": "handleCancelDeleteClicked"
+			"change .bv_status": "handleStatusChanged"
 		)
 
 	initialize: ->
@@ -809,3 +810,23 @@ class ExperimentBaseController extends BaseEntityController
 			model: @model
 			readOnly: true
 			view: "experiment"
+	
+	handleStatusChanged: =>
+		value = @statusListController.getSelectedCode()
+		if (value is "approved" or value is "rejected") and !@isValid()
+			value = value.charAt(0).toUpperCase() + value.substring(1);
+			alert 'All fields must be valid before changing the status to "'+ value + '"'
+			@statusListController.setSelectedCode @model.getStatus().get('codeValue')
+		else if value is "deleted"
+			@handleDeleteStatusChosen()
+		else
+			@handleValueChanged "Status", value
+			# this is required in addition to model change event watcher only for spec. real app works without it
+			@updateEditable()
+			@model.trigger 'change'
+			@model.trigger 'statusChanged'
+		
+		# always disable the endpoint controller fields when status is changed
+		$(".bv_endpointTable input").attr("disabled", true) 
+		$(".bv_endpointTable .bv_parameterSelectList").attr("disabled", true)
+		$(".bv_endpointTable .bv_addOptionBtn").attr("disabled", true)
