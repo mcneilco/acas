@@ -431,7 +431,12 @@ $(function() {
 	    },
 
 	    newLot: function () {
-		    window.open("#register/" + this.lotController.model.get('corpName'));
+			// Need to strip away lot suffix to prevent error on Cmpd ID search 
+			corpName = this.lotController.model.get('corpName'); 
+			corpNameArr = corpName.split("-");
+			corpNameArr.pop(); // Removes lot suffix from array 
+			corpName = corpNameArr.join("-");
+		    window.open("#register/" + corpName);
 	    },
 
 	    downloadLot: function() {

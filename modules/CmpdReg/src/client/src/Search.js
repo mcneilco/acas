@@ -119,8 +119,11 @@ $(function () {
             window.open("#lot/"+corpName);
         },
         newLot: function(corpName) {
-
-            window.open("#register/"+corpName);
+            // Need to strip away lot suffix to prevent error on Cmpd ID search 
+			corpNameArr = corpName.split("-");
+			corpNameArr.pop(); // Removes lot suffix 
+			corpName = corpNameArr.join("-");
+		    window.open("#register/" + corpName);
         },
         registerNewLot: function(id) {
 
