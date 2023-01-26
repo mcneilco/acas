@@ -487,7 +487,7 @@ exports.putExperiment = (req, resp) ->
 #			resp.json putExperimentResp
 
 exports.genericExperimentSearch = (req, res) ->
-	if global.specRunnerTestmode
+	if global.specRunnerTestmode 
 		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
 		if req.params.searchTerm == "no-match"
 			emptyResponse = []
@@ -502,6 +502,19 @@ exports.genericExperimentSearch = (req, res) ->
 			username = req.query.username
 		else
 			username = "none"
+
+		if config.all.client.entity?.viewDeletedRoles?
+			viewDeletedRoles = config.all.client.entity.viewDeletedRoles.split(",")
+		else
+			viewDeletedRoles = []
+		grantedRoles = _.map req.user.roles, (role) ->
+			role.roleEntry.roleName
+		includeDeleted = true
+		if viewDeletedRoles.length > 0
+			includeDeleted = ((_.intersection viewDeletedRoles, grantedRoles).length > 0)
+		else
+			includeDeleted = false
+		
 		authorRoutes = require './AuthorRoutes.js'
 		authorRoutes.allowedProjectsInternal req.user, (statusCode, allowedUserProjects) ->
 			_ = require "underscore"
@@ -516,7 +529,8 @@ exports.genericExperimentSearch = (req, res) ->
 				# Filter the allowed projects by the requested projects
 				allowedProjectCodes = _.intersection(allowedProjectCodes, requestedProjectCodes)
 
-			baseurl = config.all.client.service.persistence.fullpath+"experiments/search?q="+req.params.searchTerm+"&projects=#{encodeURIComponent(allowedProjectCodes.join(','))}"
+			#baseurl = config.all.client.service.persistence.fullpath+"experiments/search?q="+req.params.searchTerm+"&projects=#{encodeURIComponent(allowedProjectCodes.join(','))}"
+			baseurl = config.all.client.service.persistence.fullpath+"experiments/search?q="+req.params.searchTerm+"&includeDeleted="+includeDeleted+"&projects=#{encodeURIComponent(allowedProjectCodes.join(','))}"
 			console.log "baseurl"
 			console.log baseurl
 			serverUtilityFunctions = require './ServerUtilityFunctions.js'
