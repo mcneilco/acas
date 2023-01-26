@@ -35,11 +35,7 @@ $(function() {
         },
         
         newLot: function() {
-            // Need to strip away lot suffix to prevent error on Cmpd ID search 
-            corpName = this.options.corpName;
-			corpNameArr = corpName.split("-");
-			corpNameArr.pop(); // Removes lot suffix 
-			corpName = corpNameArr.join("-");
+            corpName = this.options.parentCorpName;
 	        window.open("#register/"+corpName, '_blank');
             this.closeLot();
             // if(appController) {appController.router.navigate('register/'+this.options.corpName,true);}

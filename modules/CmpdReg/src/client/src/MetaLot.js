@@ -365,6 +365,7 @@ $(function() {
 				var newLotSuccessController = new NewLotSuccessController({
 					el: this.$('.NewLotSuccessView'),
 					corpName: message.metalot.lot.corpName,
+					parentCorpName: message.metalot.lot.parent.corpName, 
 					buid: message.metalot.lot.buid
 				});
 				newLotSuccessController.render();
@@ -431,11 +432,7 @@ $(function() {
 	    },
 
 	    newLot: function () {
-			// Need to strip away lot suffix to prevent error on Cmpd ID search 
-			corpName = this.lotController.model.get('corpName'); 
-			corpNameArr = corpName.split("-");
-			corpNameArr.pop(); // Removes lot suffix from array 
-			corpName = corpNameArr.join("-");
+			corpName = this.model.get('parent').get('corpName');
 		    window.open("#register/" + corpName);
 	    },
 

@@ -74,7 +74,7 @@ $(function() {
 
         newLot: function() {
 	        if ( !window.configuration.metaLot.saltBeforeLot && this.model.get('lotIDs').length==1) {
-		        this.trigger('newLot', this.model.get('lotIDs')[0].corpName);
+		        this.trigger('newLot', this.model.get('corpName'));
 	        } else {
 		        this.trigger('newLot', this.$('.lotSelect').val());
 	        }
