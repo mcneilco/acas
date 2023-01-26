@@ -262,7 +262,7 @@ exports.standardizationExecution = (req, resp) ->
 			resp.json standardizationExecutionInternalResp
 
 exports.standardizationExecutionInternal = (username, reason, callback) ->
-	url = config.all.client.service.cmpdReg.persistence.fullpath + "/standardization/execute?username=#{username}&reason=#{reason}"
+	url = config.all.client.service.cmpdReg.persistence.fullpath + "/standardization/execute?username=#{username}&reason=#{encodeURIComponent(reason)}"
 	console.log url
 	request(
 		method: 'GET'
