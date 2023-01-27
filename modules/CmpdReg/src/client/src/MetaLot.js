@@ -433,7 +433,7 @@ $(function() {
 
 	    newLot: function () {
 			corpName = this.model.get('parent').get('corpName');
-		    window.open("#register/" + corpName);
+			window.open("#register/" + corpName);
 	    },
 
 	    downloadLot: function() {

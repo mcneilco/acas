@@ -36,7 +36,7 @@ $(function() {
         
         newLot: function() {
             corpName = this.options.parentCorpName;
-	        window.open("#register/"+corpName, '_blank');
+            window.open("#register/"+corpName, '_blank');
             this.closeLot();
             // if(appController) {appController.router.navigate('register/'+this.options.corpName,true);}
         },
