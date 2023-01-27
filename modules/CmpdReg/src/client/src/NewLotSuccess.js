@@ -35,7 +35,8 @@ $(function() {
         },
         
         newLot: function() {
-	        window.open("#register/"+this.options.corpName, '_blank');
+            corpName = this.options.parentCorpName;
+            window.open("#register/"+corpName, '_blank');
             this.closeLot();
             // if(appController) {appController.router.navigate('register/'+this.options.corpName,true);}
         },
