@@ -529,7 +529,6 @@ exports.genericExperimentSearch = (req, res) ->
 				# Filter the allowed projects by the requested projects
 				allowedProjectCodes = _.intersection(allowedProjectCodes, requestedProjectCodes)
 
-			#baseurl = config.all.client.service.persistence.fullpath+"experiments/search?q="+req.params.searchTerm+"&projects=#{encodeURIComponent(allowedProjectCodes.join(','))}"
 			baseurl = config.all.client.service.persistence.fullpath+"experiments/search?q="+req.params.searchTerm+"&includeDeleted="+includeDeleted+"&projects=#{encodeURIComponent(allowedProjectCodes.join(','))}"
 			console.log "baseurl"
 			console.log baseurl
