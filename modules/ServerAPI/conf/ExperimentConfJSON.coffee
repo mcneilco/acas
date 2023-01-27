@@ -330,6 +330,14 @@
 				ignored: false
 			,
 				codeType: "experiment"
+				codeKind: "status"
+				codeOrigin: "ACAS DDICT"
+				code: "overwritten"
+				name: "Overwritten"
+				displayOrder: 60
+				ignored: false
+			,
+				codeType: "experiment"
 				codeKind: "review status"
 				codeOrigin: "ACAS DDICT"
 				code: "in progress"
