@@ -9,15 +9,12 @@ class GenericDataParserController extends BasicFileValidateAndSaveController
 		super()
 		@$('.bv_moduleTitle').html("Simple #{window.conf.experiment.label} Loader")
 
-		# set the number of uploads possible to one
-		@$(".fileinput-button input").attr("multiple", false)
-
 	validateParseFile: =>
 		
 		# check the number of files uploaded by checking the number of rows in the table of uploaded files
 		# if it is more than one, we want to block the validation 
 		# it is possible for the user to upload more than one via drag and drop even if the button only allows one upload
-		filesUploaded = @$(".files tr.template-download").length
+		filesUploaded = @$(".files tr").length
 
 		if filesUploaded == 1
 			if @parseFileUploaded and not @$(".bv_next").attr('disabled')
@@ -34,8 +31,4 @@ class GenericDataParserController extends BasicFileValidateAndSaveController
 					error: (err) =>
 						@$('.bv_validateStatusDropDown').modal("hide")
 					dataType: 'json',
-		else
-			# if there are multiple files show warning, clear the table, bring back the upload button
-			@$(".bv_multipleFileWarning").show()
-			@$('.bv_manualFileSelect').css("display", "block")
-			@$(".files").html ""
+
