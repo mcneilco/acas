@@ -3595,14 +3595,17 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
  
   
   # when not on a dry run, create protocol and experiment if they do not exist
-  if (!dryRun && newProtocol && errorFree) {
-    protocol <- createNewProtocol(metaData = validatedMetaData, lsTransaction, recordedBy, columnOrderStates)
-
+  if (!dryRun && errorFree) {
+    
     # also save the new endpoints of the protocol 
     saveEndpointCodeTables(selColumnOrderInfo$Units, "column units")
     saveEndpointCodeTables(selColumnOrderInfo$valueKind, "column name")
     saveEndpointCodeTables(selColumnOrderInfo$concUnits, "concentration units")
     saveEndpointCodeTables(selColumnOrderInfo$timeUnit, "time units")
+
+    if (newProtocol) {
+      protocol <- createNewProtocol(metaData = validatedMetaData, lsTransaction, recordedBy, columnOrderStates)
+    }
   }
 
   useExistingExperiment <- inputFormat %in% c("Use Existing Experiment", "Precise For Existing Experiment")
