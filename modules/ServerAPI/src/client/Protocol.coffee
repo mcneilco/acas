@@ -920,26 +920,9 @@ class EndpointListController extends AbstractFormController
 		rowEndpointName =  rowData.rowEndpointName
 		rowUnits = rowData.rowUnits
 		rowDataType =  rowData.rowDataType
-		protocolCode = @model.escape('codeName')	
+		protocolCode = @model.escape('codeName')
 
-		#if the endpoint doesn't have a value for it, don't filter by it.
-		if rowEndpointName == "Select Column Name"
-			endpointRowValueMatch = true
-			rowEndpointName = "any column name"
-		else
-			endpointRowValueMatch = false
 		
-		if rowUnits == "(unitless)"
-			endpointRowUnitsMatch = true
-			rowUnits = "any units"
-		else
-			endpointRowUnitsMatch = false
-
-		if rowDataType == "Select Column Type"
-			endpointRowDataTypeMatch = true
-			rowDataType = "any data type"
-		else
-			endpintRowDataTypeMatch = false	
 
 		#hide previously shown warnings/success text associated w/ previous table
 		@$(".bv_downloadSuccess").hide()
@@ -948,8 +931,41 @@ class EndpointListController extends AbstractFormController
 		filtered_experiments = [] #keep track of the filtered experiments
 		#we'll need to filter out experiments that don't contain the endpoint
 		for experiment in @protocolExperiments.models
-			dataColumnOrderState = experiment.get("lsStates").getStatesByTypeAndKind "metadata", "data column order"
-			for lsState in dataColumnOrderState
+			console.log "---"
+			console.log experiment.attributes.codeName
+			dataColumnOrderStates = experiment.get("lsStates").getStatesByTypeAndKind "metadata", "data column order"
+
+			for lsState in dataColumnOrderStates
+				console.log "lsState"
+				console.log lsState
+
+
+				console.log "rowUnits:"
+				console.log rowUnits
+
+				# if the endpoint doesn't have a value for it, don't filter by it (automatically match)
+				# we need to reset the match before we check each "for" round or the result from the last round will carry over...
+				if rowEndpointName == "Select Column Name"
+					endpointRowValueMatch = true
+					displayRowEndpointName = "any column name"
+				else
+					endpointRowValueMatch = false
+					displayRowEndpointName = rowEndpointName
+				
+				if rowUnits == "(unitless)"
+					endpointRowUnitsMatch = true
+					displayRowUnits = "any units"
+				else
+					endpointRowUnitsMatch = false
+					displayRowUnits = rowUnits
+
+				if rowDataType == "Select Column Type"
+					endpointRowDataTypeMatch = true
+					displayRowDataType = "any data type"
+				else
+					endpointRowDataTypeMatch = false	
+					displayRowDataType = rowDataType
+				
 				# get experiment values
 				experimentColumnNameValues = lsState.getValuesByTypeAndKind "codeValue", "column name"
 				experimentColumnUnitValues = lsState.getValuesByTypeAndKind "codeValue", "column units"
@@ -957,14 +973,24 @@ class EndpointListController extends AbstractFormController
 				
 				# check if the row value is in the experiment values
 				if @rowValueInExperimentValues(rowEndpointName, experimentColumnNameValues, "codeValue")
+					console.log "rowValueInExperimentValues(): TRUE (NAME)"
 					endpointRowValueMatch = true
+				else
+					console.log "rowValueInExperimentValues(): FALSE (NAME)"
 
 				if @rowValueInExperimentValues(rowUnits, experimentColumnUnitValues, "codeValue")
+					console.log "rowValueInExperimentValues(): TRUE (UNITS)"
 					endpointRowUnitsMatch = true
+				else
+					console.log "rowValueInExperimentValues(): FALSE (UNITS)"
 
 				if @rowValueInExperimentValues(rowDataType, experimentColumnTypeValues, "codeValue")
+					console.log "rowValueInExperimentValues(): TRUE (DATA TYPE)"
 					endpointRowDataTypeMatch = true
+				else
+					console.log "rowValueInExperimentValues(): FALSE (DATA TYPE)"
 				
+
 				#if all the criteria pass, record the experiment, end the loop early & move on to the next one
 				if endpointRowValueMatch == true && endpointRowUnitsMatch == true && endpointRowDataTypeMatch == true
 					filtered_experiments.push experiment
@@ -977,7 +1003,7 @@ class EndpointListController extends AbstractFormController
 			@setupExperimentSummaryTable new ExperimentList filtered_experiments
 		
 		#generate a title for the experiment table controller 
-		@$(".bv_experimentTableControllerTitle").html "Experiments using " + protocolCode + " containing '" + rowEndpointName + " (" + rowUnits + " , " + rowDataType + ")' data:"
+		@$(".bv_experimentTableControllerTitle").html "Experiments using " + protocolCode + " containing '" + displayRowEndpointName + " (" + displayRowUnits + " , " + displayRowDataType + ")' data:"
 				
 	rowValueInExperimentValues: (endpointValue, experimentLsValues, lsType) =>
 		if experimentLsValues.length > 0
