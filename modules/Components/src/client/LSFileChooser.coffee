@@ -148,6 +148,7 @@ class LSFileChooserController extends Backbone.View
 			acceptFileTypes: RegExp('(\\.|\\/)(' + @allowedFileTypes.join('|') + ')$', 'i')
 			autoUpload: self.autoUpload
 			dropZone:  @$('.' + self.dropZoneClassId)
+			maxNumberOfFiles: @maxNumberOfFiles
 		})
 		
 		@$('.' + @dropZoneClassId).bind('mouseover', (e) -> @mouseIsInDropField = true)
@@ -162,5 +163,8 @@ class LSFileChooserController extends Backbone.View
 		@$('.fileupload').bind('fileUploadFailed', @fileUploadComplete)
 		@$('.fileupload').bind('fileuploaddestroyed', @handleDeleteFileUIChanges)
 		#@$('.fileupload').bind('fileuploadstopped', @handleDeleteFileUIChanges)
+
+		if @maxNumberOfFiles == 1
+			@$(".fileinput-button input").attr("multiple", false)
 
 		
