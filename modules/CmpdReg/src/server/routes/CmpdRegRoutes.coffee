@@ -307,7 +307,7 @@ exports.getLotDependenciesInternal = (lot, user, allowedProjects, includeLinkedL
 		console.log "Found #{dependencies.linkedExperiments.length} linked experiments to #{lotCorpName}, checking user acls on each experiment"
 
 		# Get the codes and experiments from the server so we can look up project codes and scientist ownership of the experiments
-		experimentCodeList = _.pluck(dependencies.linkedExperiments, "code")
+		experimentCodeList = _.pluck(dependencies.linkedExperiments, "experimentCode")
 
 		# Unique the list just in case there are duplicates (there should not be)
 		experimentCodeList = _.uniq experimentCodeList
@@ -325,11 +325,11 @@ exports.getLotDependenciesInternal = (lot, user, allowedProjects, includeLinkedL
 
 		# Get the acls for the experiments
 		for experiment in experiments
-			console.log "Checking acls for experiment #{experiment.code}"
+			console.log "Checking acls for experiment #{experiment.experimentCodeName}"
 
 			# This returns the acls (read, write, delete of the experiment for the user and allowed project the user has)
 			acls = await experimentServiceRoutes.getExperimentACL(experiment.experiment, user, allowedProjects)
-			idx = _.findIndex(dependencies.linkedExperiments, { code: experiment.experiment.codeName })
+			idx = _.findIndex(dependencies.linkedExperiments, { experimentCode: experiment.experiment.codeName })
 			
 			# The experiment is not readable by the user, then just return the acls in the array of experiments
 			# This way it'know there are experiments linked that aren't readable
@@ -337,7 +337,7 @@ exports.getLotDependenciesInternal = (lot, user, allowedProjects, includeLinkedL
 				console.log "Experiment #{experiment.experiment.codeName} is not readable by user #{user.username}"
 				# If the experiiment is not readable we just want to include the acls but not the experiment code table
 				# We include the acls so that the user can see that there is an experiment linked that they can't read
-				dependencies.linkedExperiments[idx] = {acls: acls, code: null, name: null, ignored: false}
+				dependencies.linkedExperiments[idx] = {acls: acls, experimentCode: null, experimentName: null, ignored: false}
 			else
 				# The experiment is readable so includ the experiment and acls
 				dependencies.linkedExperiments[idx].acls = acls
