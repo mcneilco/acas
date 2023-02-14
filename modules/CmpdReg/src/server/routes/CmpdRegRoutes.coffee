@@ -282,17 +282,14 @@ exports.getLotDependenciesByCorpNameInternal = (lotCorpName, user, allowedProjec
 	dependencies = await exports.getLotDependenciesInternal(metaLot.lot, user, allowedProjects, includeLinkedLots)
 	return dependencies
 
-exports.getLotDependenciesInternal = (lot, user, allowedProjects, includeLinkedLots=true) ->
-	console.log "Checking lot dependencies for lot #{lot.corpName} with user #{user.username}"
-
-	if !allowedProjects?
-		[err, allowedProjects] = await serverUtilityFunctions.promisifyRequestStatusResponse(authorRoutes.allowedProjectsInternal, [user])
-		if err?
-			throw new InternalServerError "Error checking user projects"
-			return
-
+###*
+# Get the dependencies for the lot. Dependencies will account for user ACLs.
+# @param {string} lotCorpName - Lot corporate name.
+# @param {object} user - User object.
+# @param {array} allowedProjects - Array of projects the user has access to.
+###
+getLotExperimentDependencies = (lot, user, allowedProjects) ->
 	lotCorpName = lot.corpName
-
 	# Get the depdencies from the service which does not cover user ACLS
 	response = await exports.fetchMetaLotDependencies(lotCorpName)
 
@@ -313,7 +310,7 @@ exports.getLotDependenciesInternal = (lot, user, allowedProjects, includeLinkedL
 		experimentCodeList = _.uniq experimentCodeList
 
 		# Get the experiments from the server
-		response = await experimentServiceRoutes.fetchExperimentsByCodeNames(experimentCodeList)
+		response = await experimentServiceRoutes.fetchExperimentsByCodeNames(experimentCodeList, "analysisgroups")
 		experiments = await response.json()
 
 		# It's unexpected that the server would return a list of experiments that are not in the list of codes we asked for, so we check for that and erorr
@@ -325,7 +322,7 @@ exports.getLotDependenciesInternal = (lot, user, allowedProjects, includeLinkedL
 
 		# Get the acls for the experiments
 		for experiment in experiments
-			console.log "Checking acls for experiment #{experiment.code}"
+			console.log "Checking acls for experiment #{experiment.experiment.codeName}"
 
 			# This returns the acls (read, write, delete of the experiment for the user and allowed project the user has)
 			acls = await experimentServiceRoutes.getExperimentACL(experiment.experiment, user, allowedProjects)
@@ -335,14 +332,38 @@ exports.getLotDependenciesInternal = (lot, user, allowedProjects, includeLinkedL
 			# This way it'know there are experiments linked that aren't readable
 			if !acls.getRead()
 				console.log "Experiment #{experiment.experiment.codeName} is not readable by user #{user.username}"
-				# If the experiiment is not readable we just want to include the acls but not the experiment code table
+				# If the experiment is not readable we just want to include the acls but not the experiment code table
 				# We include the acls so that the user can see that there is an experiment linked that they can't read
 				dependencies.linkedExperiments[idx] = {acls: acls, code: null, name: null, ignored: false}
 			else
-				# The experiment is readable so includ the experiment and acls
-				dependencies.linkedExperiments[idx].acls = acls
+				# The experiment is readable so include the experiment and acls
+				linkedExperiment = dependencies.linkedExperiments[idx]
+				linkedExperiment.acls = acls
+		
+		# Add protocol and analysis group codes to user accessible experiments
+		for linkedExperiment in dependencies.linkedExperiments
+			if not linkedExperiment.acls.getRead()
+				continue
+			experiment = _.findWhere(experiments, {experimentCodeName: linkedExperiment.code})
+			linkedExperiment.protocolCode = experiment.experiment.protocol.codeName
+			analysisGroupCodes = _.pluck(experiment.experiment.analysisGroups, "codeName")
+			linkedExperiment.analysisGroupCodes = analysisGroupCodes.sort()
 	else
 		console.log "No experiments linked to #{lotCorpName}"
+	return dependencies
+
+exports.getLotDependenciesInternal = (lot, user, allowedProjects, includeLinkedLots=true) ->
+	console.log "Checking lot dependencies for lot #{lot.corpName} with user #{user.username}"
+
+	if !allowedProjects?
+		[err, allowedProjects] = await serverUtilityFunctions.promisifyRequestStatusResponse(authorRoutes.allowedProjectsInternal, [user])
+		if err?
+			throw new InternalServerError "Error checking user projects"
+			return
+
+	lotCorpName = lot.corpName
+
+	dependencies = getLotExperimentDependencies lot, user, allowedProjects
 
 	# Look up and attach the acls of the linked lots
 	# Don't show any information except acls if the user cannot read the lot

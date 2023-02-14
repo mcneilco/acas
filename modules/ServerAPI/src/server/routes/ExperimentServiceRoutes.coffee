@@ -817,12 +817,11 @@ exports.experimentsByCodeNamesArrayInternal = (codeNamesArray, returnOption, tes
 		callback "Bulk get experiments saveFailed: " + JSON.stringify error, 500
 
 exports.fetchExperimentsByCodeNames = (codeNamesArray, returnOption) ->
-	url = config.all.client.service.persistence.fullpath+"experiments/codename/jsonArray"
+	url = new URL(config.all.client.service.persistence.fullpath + "experiments/codename/jsonArray")
 	# Add params to fetch
-	urlParams = new URLSearchParams()
 	if returnOption?
-		urlParams.append("with", returnOption)
-	response = await fetch(url + urlParams, method: 'POST', body: JSON.stringify(codeNamesArray), headers: {'Content-Type': 'application/json'})
+		url.searchParams.set("with", returnOption)
+	response = await fetch(url.toString(), method: 'POST', body: JSON.stringify(codeNamesArray), headers: {'Content-Type': 'application/json'})
 	return response
 	
 exports.getExperimentACL = (experiment, user, allowedProjects) ->
