@@ -365,6 +365,7 @@ $(function() {
 				var newLotSuccessController = new NewLotSuccessController({
 					el: this.$('.NewLotSuccessView'),
 					corpName: message.metalot.lot.corpName,
+					parentCorpName: message.metalot.lot.parent.corpName, 
 					buid: message.metalot.lot.buid
 				});
 				newLotSuccessController.render();
@@ -431,7 +432,8 @@ $(function() {
 	    },
 
 	    newLot: function () {
-		    window.open("#register/" + this.lotController.model.get('corpName'));
+			corpName = this.model.get('parent').get('corpName');
+			window.open("#register/" + corpName);
 	    },
 
 	    downloadLot: function() {

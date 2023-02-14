@@ -119,8 +119,7 @@ $(function () {
             window.open("#lot/"+corpName);
         },
         newLot: function(corpName) {
-
-            window.open("#register/"+corpName);
+            window.open("#register/" + corpName);
         },
         registerNewLot: function(id) {
 
