@@ -799,8 +799,8 @@ exports.getTemplateSELFile = (req, resp) ->
 						csvContent = "data:text/csv;charset=utf-8," 
 
 						# adding the SEL content
-						csvContent = csvContent + "Experiment Metadata\nFormat,Generic\nProtocol Name," + protocolName + 
-						"\nExperiment Name,,\nScientist," + protocolScientist + "\nNotebook,,\nPage,,\nAssay Date," + protocolDate +
+						csvContent = csvContent + "Experiment Meta Data\nFormat,Generic\nProtocol Name," + protocolName + 
+						"\nExperiment Name,\nScientist," + protocolScientist + "\nNotebook,\nPage,\nAssay Date," + protocolDate +
 						"\nProject," + protocolProject + "\n\nCalculated Results,\n" + dataTypeRowString + "\n" + endpointNameRowString
 
 						resp.json csvContent
