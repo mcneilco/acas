@@ -800,7 +800,7 @@ exports.getTemplateSELFile = (req, resp) ->
 
 						# adding the SEL content
 						csvContent = csvContent + "Experiment Metadata\nFormat,Generic\nProtocol Name," + protocolName + 
-						"\nExperiment Name,,\nScientist," + protocolScientist + "\nNotebook,,\nPage,,\nAssay Date," + protocolDate +
+						"\nExperiment Name,\nScientist," + protocolScientist + "\nNotebook,\nPage,\nAssay Date," + protocolDate +
 						"\nProject," + protocolProject + "\n\nCalculated Results,\n" + dataTypeRowString + "\n" + endpointNameRowString
 
 						resp.json csvContent
