@@ -284,13 +284,13 @@ exports.getLotDependenciesByCorpNameInternal = (lotCorpName, user, allowedProjec
 
 ###*
 # Get the dependencies for the lot. Dependencies will account for user ACLs.
-# @param {string} lotCorpName - Lot corporate name.
+# @param {object} lot - Lot object.
 # @param {object} user - User object.
-# @param {array} allowedProjects - Array of projects the user has access to.
+# @param {array} allowedProjects - Projects the user has access to.
 ###
-getLotExperimentDependencies = (lot, user, allowedProjects) ->
+exports.getLotExperimentDependencies = (lot, user, allowedProjects) ->
 	lotCorpName = lot.corpName
-	# Get the depdencies from the service which does not cover user ACLS
+	# Get the dependencies from the service which does not cover user ACLS
 	response = await exports.fetchMetaLotDependencies(lotCorpName)
 
 	checkStatus response
@@ -363,7 +363,7 @@ exports.getLotDependenciesInternal = (lot, user, allowedProjects, includeLinkedL
 
 	lotCorpName = lot.corpName
 
-	dependencies = getLotExperimentDependencies lot, user, allowedProjects
+	dependencies = exports.getLotExperimentDependencies lot, user, allowedProjects
 
 	# Look up and attach the acls of the linked lots
 	# Don't show any information except acls if the user cannot read the lot
