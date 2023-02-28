@@ -327,9 +327,7 @@ exports.getLotExperimentDependencies = (lot, user, allowedProjects) ->
 			# This returns the acls (read, write, delete of the experiment for the user and allowed project the user has)
 			acls = await experimentServiceRoutes.getExperimentACL(experiment.experiment, user, allowedProjects)
 			idx = _.findIndex(dependencies.linkedExperiments, { code: experiment.experiment.codeName })
-			
-			# The experiment is not readable by the user, then just return the acls in the array of experiments
-			# This way it'know there are experiments linked that aren't readable
+
 			if !acls.getRead()
 				console.log "Experiment #{experiment.experiment.codeName} is not readable by user #{user.username}"
 				# If the experiment is not readable we just want to include the acls but not the experiment code table
