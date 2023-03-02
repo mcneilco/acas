@@ -15,6 +15,7 @@
     "clean": "gulp clean"
   },
   "dependencies": {
+    "@google-cloud/storage": "^6.9.3",
     "archiver": "5.1.0",
     "assert": "~2.0.0",
     "async": "^3.2.0",

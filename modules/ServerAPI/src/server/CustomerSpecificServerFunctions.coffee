@@ -415,6 +415,29 @@ exports.getAllAuthorObjectsInternal = (callback) ->
 		callback statusCode, json
 
 exports.relocateEntityFile = (fileValue, entityCodePrefix, entityCode, callback) ->
+	console.log "relocateEntityFile"
+	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
+	uploadsPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path
+	relEntitiesFolder = serverUtilityFunctions.getRelativeFolderPathForPrefix(entityCodePrefix)
+	if relEntitiesFolder==null
+		callback false
+		return
+	relEntityFolder = relEntitiesFolder + entityCode + "/"
+	oldPath = uploadsPath + fileValue.fileValue
+	if fileValue.comments != undefined and fileValue.comments != null
+		newPath = relEntityFolder + fileValue.comments
+	else
+		newPath = relEntityFolder + fileValue.fileValue
+	
+	file = await exports.uploadToBucket(oldPath, newPath)
+	if fileValue.comments != undefined and fileValue.comments != null
+		fileValue.fileValue = relEntityFolder + fileValue.comments
+	else
+		fileValue.comments = fileValue.fileValue
+		fileValue.fileValue = relEntityFolder + fileValue.fileValue
+	callback true
+
+exports.relocateEntityFileOld = (fileValue, entityCodePrefix, entityCode, callback) ->
 	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 	uploadsPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path
 	oldPath = uploadsPath + fileValue.fileValue
