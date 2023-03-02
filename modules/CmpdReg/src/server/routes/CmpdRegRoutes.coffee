@@ -282,15 +282,39 @@ exports.getLotDependenciesByCorpNameInternal = (lotCorpName, user, allowedProjec
 	dependencies = await exports.getLotDependenciesInternal(metaLot.lot, user, allowedProjects, includeLinkedLots)
 	return dependencies
 
+
+###*
+# Given an array of analysis group objects, return an array of analysis group
+# results that only contain the non batch code values.
+# @param {array} analysisGroups - Array of analysis groups.
+# @return {array} - Array of analysis group values.
+###
+exports.formatAnalysisGroups = (analysisGroups) ->
+	analysisGroupValues = []
+	_.each analysisGroups, (ag) ->
+		values = []
+		_.each ag.lsStates, (ls) ->
+			_.each ls.lsValues, (lv) ->
+				if lv.lsKind != "batch code"
+					# TODO: inlinefilevalue > ServerUtilityFunctions.coffee
+					values.push {
+						id: lv.id
+						lsKind: lv.lsKind
+						lsType: lv.lsType
+						value: lv[lv.lsType]
+					}
+		analysisGroupValues.push {codeName: ag.codeName, values: values}
+	return analysisGroupValues
+
 ###*
 # Get the dependencies for the lot. Dependencies will account for user ACLs.
 # @param {object} lot - Lot object.
 # @param {object} user - User object.
-# @param {array} allowedProjects - Projects the user has access to.
+# @param {array} allowedProjects - Projects user has access to.
 ###
 exports.getLotExperimentDependencies = (lot, user, allowedProjects) ->
 	lotCorpName = lot.corpName
-	# Get the dependencies from the service which does not cover user ACLS
+	# Get the depdencies from the service which does not cover user ACLS
 	response = await exports.fetchMetaLotDependencies(lotCorpName)
 
 	checkStatus response
@@ -310,7 +334,7 @@ exports.getLotExperimentDependencies = (lot, user, allowedProjects) ->
 		experimentCodeList = _.uniq experimentCodeList
 
 		# Get the experiments from the server
-		response = await experimentServiceRoutes.fetchExperimentsByCodeNames(experimentCodeList, "analysisgroups")
+		response = await experimentServiceRoutes.fetchExperimentsByCodeNames(experimentCodeList, "analysisgroupvalues")
 		experiments = await response.json()
 
 		# It's unexpected that the server would return a list of experiments that are not in the list of codes we asked for, so we check for that and erorr
@@ -338,7 +362,14 @@ exports.getLotExperimentDependencies = (lot, user, allowedProjects) ->
 				linkedExperiment = dependencies.linkedExperiments[idx]
 				linkedExperiment.acls = acls
 		
-		# Add protocol and analysis group codes to user accessible experiments
+		# Add analysis group values to user accessible experiments
+		for linkedExperiment in dependencies.linkedExperiments
+			if not linkedExperiment.acls.getRead()
+				continue
+			experiment = _.findWhere(experiments, {experimentCodeName: linkedExperiment.code})
+			analysisGroups = exports.formatAnalysisGroups experiment.experiment.analysisGroups
+			linkedExperiment.analysisGroups = analysisGroups
+
 		for linkedExperiment in dependencies.linkedExperiments
 			if not linkedExperiment.acls.getRead()
 				continue
