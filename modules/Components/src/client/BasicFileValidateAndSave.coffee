@@ -20,7 +20,7 @@ class BasicFileValidateAndSaveController extends Backbone.View
 	template: _.template($("#BasicFileValidateAndSaveView").html())
 
 	events:
-		'click .bv_next' : 'validateParseFile'
+		'click .bv_next' : 'validateParseFile' 
 		'click .bv_save' : 'parseAndSave'
 		'click .bv_back' : 'backToUpload'
 		'click .bv_loadAnother' : 'loadAnother'
@@ -126,8 +126,6 @@ class BasicFileValidateAndSaveController extends Backbone.View
 				error: (err) =>
 					@$('.bv_validateStatusDropDown').modal("hide")
 				dataType: 'json',
-
-
 
 	parseAndSave: =>
 		if @parseFileUploaded and @filePassedValidation

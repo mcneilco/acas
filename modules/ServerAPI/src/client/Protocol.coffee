@@ -835,12 +835,19 @@ class EndpointListController extends AbstractFormController
 			#url: "/api/experimentsForProtocol/#{protocolCode}" #ExperimentBrowserRoutes.coffee route
 			url: "/api/experiments/protocolCodename/#{protocolCode}" #ExperimentServiceRoutes.coffee route
 			success: (experiments) =>
+
+				# want to remove any ignored or deleted experiments
+				validExperiments = []
+				for experiment in experiments
+					if experiment.ignored == false && experiment.deleted == false
+						validExperiments.push experiment
+
 				#save the experiments so we don't have to retrieve them again 
 				if window.conf.experiment?.mainControllerClassName? and window.conf.experiment.mainControllerClassName is "EnhancedExperimentBaseController"
-					@protocolExperiments = new EnhancedExperimentList experiments
+					@protocolExperiments = new EnhancedExperimentList validExperiments
 				else
-					@protocolExperiments = new ExperimentList experiments
-
+					@protocolExperiments = new ExperimentList validExperiments
+				
 				# set up the initial experiment table 
 				@getExperimentSummaryTable()
 
