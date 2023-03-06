@@ -308,7 +308,7 @@ exports.getAnalysisGroupValues = (analysisGroups) ->
 						value: value
 					})
 		analysisGroupValues.push {
-			codeName: analysisGroup.codeName
+			code: analysisGroup.codeName
 			values: values
 		}
 	return analysisGroupValues
