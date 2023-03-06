@@ -67,6 +67,7 @@ serverUtilityFunctions = require './ServerUtilityFunctions.js'
 loginRoutes = require './loginRoutes.js'
 authorRoutes = require './AuthorRoutes.js'
 experimentServiceRoutes = require './ExperimentServiceRoutes.js'
+protocolServiceRoutes = require './ProtocolServiceRoutes.js'
 
 exports.cmpdRegIndex = (req, res) ->
 	scriptPaths = require './RequiredClientScripts.js'
@@ -284,27 +285,70 @@ exports.getLotDependenciesByCorpNameInternal = (lotCorpName, user, allowedProjec
 
 
 ###*
-# Given an array of analysis group objects, return an array of analysis group
-# results that only contain the non batch code values.
-# @param {array} analysisGroups - Array of analysis groups.
-# @return {array} - Array of analysis group values.
-###
-exports.formatAnalysisGroups = (analysisGroups) ->
+ # Extract and return the minimized version of the analysis group values.
+ # @param {array} analysisGroups - Analysis group objects.
+ # @return {array} analysisGroupValues - Minimized analysis group values
+ #	containing id, lsKind, lsType, and value.
+ ###
+exports.getAnalysisGroupValues = (analysisGroups) ->
 	analysisGroupValues = []
-	_.each analysisGroups, (ag) ->
+	for analysisGroup in analysisGroups
 		values = []
-		_.each ag.lsStates, (ls) ->
-			_.each ls.lsValues, (lv) ->
-				if lv.lsKind != "batch code"
-					# TODO: inlinefilevalue > ServerUtilityFunctions.coffee
-					values.push {
-						id: lv.id
-						lsKind: lv.lsKind
-						lsType: lv.lsType
-						value: lv[lv.lsType]
-					}
-		analysisGroupValues.push {codeName: ag.codeName, values: values}
+		for lsState in analysisGroup.lsStates
+			for lsValue in lsState.lsValues
+				if lsValue.lsKind != "batch code"
+					if lsValue.lsType == "inlineFileValue"
+						value = lsValue.fileValue
+					else
+						value = lsValue[lsValue.lsType]
+					values.push({
+						id: lsValue.id
+						lsKind: lsValue.lsKind
+						lsType: lsValue.lsType
+						value: value
+					})
+		analysisGroupValues.push {
+			codeName: analysisGroup.codeName
+			values: values
+		}
 	return analysisGroupValues
+
+
+###*
+ # Get protocol objects for the given codes.
+ # @param {array} codes - Protocol code names.
+ # @return {array} Protocol objects with labels.
+ # @throws {InternalServerError} - If there is an error getting the protocols
+ ###
+exports.getProtocols = (codes) ->
+	codes = _.uniq codes
+	[err, protocols] = await serverUtilityFunctions.promisifyRequestStatusResponse(
+		protocolServiceRoutes.protocolsByCodeNamesArrayInternal,
+		[codes, 'stub', false])
+	if err?
+		throw new InternalServerError "Error getting protocols. #{err}"
+	fetchedCodes = _.pluck protocols, 'protocolCodeName'
+	if _.difference(codes, fetchedCodes).length > 0
+		throw new InternalServerError "Couldn't get #{fetchedCodes} protocols."
+	return protocols
+
+
+###*
+ # Get the protocol code and name for the given protocol.
+ # @param {object} protocol - Protocol object.
+ # @return {object} - Protocol code and name.
+ ###
+exports.getProtocolCodeAndName = (protocol) ->
+	name = null
+	for label in protocol.lsLabels
+		if label.lsType == "name" and label.lsKind == "protocol name"
+			name = label.labelText
+			break
+	return {
+		code: protocol.codeName
+		name: name
+	}
+
 
 ###*
 # Get the dependencies for the lot. Dependencies will account for user ACLs.
@@ -361,25 +405,43 @@ exports.getLotExperimentDependencies = (lot, user, allowedProjects) ->
 				# The experiment is readable so include the experiment and acls
 				linkedExperiment = dependencies.linkedExperiments[idx]
 				linkedExperiment.acls = acls
-		
-		# Add analysis group values to user accessible experiments
-		for linkedExperiment in dependencies.linkedExperiments
-			if not linkedExperiment.acls.getRead()
-				continue
-			experiment = _.findWhere(experiments, {experimentCodeName: linkedExperiment.code})
-			analysisGroups = exports.formatAnalysisGroups experiment.experiment.analysisGroups
-			linkedExperiment.analysisGroups = analysisGroups
 
-		for linkedExperiment in dependencies.linkedExperiments
-			if not linkedExperiment.acls.getRead()
-				continue
-			experiment = _.findWhere(experiments, {experimentCodeName: linkedExperiment.code})
-			linkedExperiment.protocolCode = experiment.experiment.protocol.codeName
-			analysisGroupCodes = _.pluck(experiment.experiment.analysisGroups, "codeName")
-			linkedExperiment.analysisGroupCodes = analysisGroupCodes.sort()
+		codeToExperiment = {}
+		for experiment in experiments
+			codeToExperiment[experiment.experiment.codeName] = experiment.experiment
+
+		# Add analysis group values in linked experiments.
+		for experiment in dependencies.linkedExperiments
+			if experiment.acls.getRead()
+				code = experiment.code
+				analysisGroups = codeToExperiment[code].analysisGroups
+				experiment.analysisGroups = exports.getAnalysisGroupValues analysisGroups
+			else
+				experiment.analysisGroups = []
+
+		# Get protocols for which user has read acess
+		protocolCodes = []
+		for experiment in dependencies.linkedExperiments
+			if experiment.acls.getRead()
+				experiment = codeToExperiment[experiment.code]
+				protocolCodes.push experiment.protocol.codeName
+		protocols = await exports.getProtocols protocolCodes
+		codeToProtocol = {}
+		for protocol in protocols
+			codeToProtocol[protocol.protocolCodeName] = protocol
+
+		# Add protocols in linked experiment.
+		for experiment in dependencies.linkedExperiments
+			if experiment.acls.getRead()
+				code = codeToExperiment[experiment.code].protocol.codeName
+				protocol = codeToProtocol[code]
+				experiment.protocol = exports.getProtocolCodeAndName protocol.protocol
+			else
+				experiment.protocol = []
 	else
 		console.log "No experiments linked to #{lotCorpName}"
 	return dependencies
+
 
 exports.getLotDependenciesInternal = (lot, user, allowedProjects, includeLinkedLots=true) ->
 	console.log "Checking lot dependencies for lot #{lot.corpName} with user #{user.username}"
