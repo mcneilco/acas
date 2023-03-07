@@ -454,8 +454,7 @@ exports.getLotDependenciesInternal = (lot, user, allowedProjects, includeLinkedL
 
 	lotCorpName = lot.corpName
 
-	dependencies = exports.getLotExperimentDependencies lot, user, allowedProjects
-
+	dependencies = await exports.getLotExperimentDependencies lot, user, allowedProjects
 	# Look up and attach the acls of the linked lots
 	# Don't show any information except acls if the user cannot read the lot
 	# This data is purely informational when considering the dependencies of a lot
