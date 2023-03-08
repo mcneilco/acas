@@ -555,9 +555,8 @@ exports.getProtocolByLabelInternal = (label, callback) ->
 	)
 
 exports.protocolsByCodeNamesArray = (req, resp) ->
-	exports.protocolsByCodeNamesArrayInternal req.body.data, req.query.option, req.query.testMode, (returnedProts) ->
-		if returnedProts.indexOf("Failed") > -1
-			resp.statusCode = 500
+	exports.protocolsByCodeNamesArrayInternal req.body.data, req.query.option, req.query.testMode, (status, returnedProts) ->
+		resp.statusCode = statusCode
 		resp.json returnedProts
 
 
@@ -584,11 +583,12 @@ exports.protocolsByCodeNamesArrayInternal = (codeNamesArray, returnOption, testM
 			console.log "response.statusCode"
 			console.log response.statusCode
 			console.log response
+
 			if !error && response.statusCode == 200
-				callback json
+				callback 200, json
 			else
 				console.log "Failed: got error in bulk get of protocols"
-				callback "Bulk get protocols saveFailed: " + JSON.stringify error
+				callback 500, "Bulk get protocols saveFailed: " + JSON.stringify error
 		)
 
 exports.bulkPutProtocols= (req, resp) ->

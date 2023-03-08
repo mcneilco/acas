@@ -67,6 +67,7 @@ serverUtilityFunctions = require './ServerUtilityFunctions.js'
 loginRoutes = require './loginRoutes.js'
 authorRoutes = require './AuthorRoutes.js'
 experimentServiceRoutes = require './ExperimentServiceRoutes.js'
+protocolServiceRoutes = require './ProtocolServiceRoutes.js'
 
 exports.cmpdRegIndex = (req, res) ->
 	scriptPaths = require './RequiredClientScripts.js'
@@ -282,17 +283,81 @@ exports.getLotDependenciesByCorpNameInternal = (lotCorpName, user, allowedProjec
 	dependencies = await exports.getLotDependenciesInternal(metaLot.lot, user, allowedProjects, includeLinkedLots)
 	return dependencies
 
-exports.getLotDependenciesInternal = (lot, user, allowedProjects, includeLinkedLots=true) ->
-	console.log "Checking lot dependencies for lot #{lot.corpName} with user #{user.username}"
 
-	if !allowedProjects?
-		[err, allowedProjects] = await serverUtilityFunctions.promisifyRequestStatusResponse(authorRoutes.allowedProjectsInternal, [user])
-		if err?
-			throw new InternalServerError "Error checking user projects"
-			return
+###*
+ # Extract and return the minimized version of the analysis group values.
+ # @param {array} analysisGroups - Analysis group objects.
+ # @return {array} analysisGroupValues - Minimized analysis group values
+ #	containing id, lsKind, lsType, and value.
+ ###
+exports.getAnalysisGroupValues = (analysisGroups) ->
+	analysisGroupValues = []
+	for analysisGroup in analysisGroups
+		values = []
+		for lsState in analysisGroup.lsStates
+			for lsValue in lsState.lsValues
+				if lsValue.lsKind != "batch code"
+					if lsValue.lsType == "inlineFileValue"
+						value = lsValue.fileValue
+					else
+						value = lsValue[lsValue.lsType]
+					values.push({
+						id: lsValue.id
+						lsKind: lsValue.lsKind
+						lsType: lsValue.lsType
+						value: value
+					})
+		analysisGroupValues.push {
+			code: analysisGroup.codeName
+			values: values
+		}
+	return analysisGroupValues
 
+
+###*
+ # Get protocol objects for the given codes.
+ # @param {array} codes - Protocol code names.
+ # @return {array} Protocol objects with labels.
+ # @throws {InternalServerError} - If there is an error getting the protocols
+ ###
+exports.getProtocols = (codes) ->
+	codes = _.uniq codes
+	[err, protocols] = await serverUtilityFunctions.promisifyRequestStatusResponse(
+		protocolServiceRoutes.protocolsByCodeNamesArrayInternal,
+		[codes, 'stub', false])
+	if err?
+		throw new InternalServerError "Error getting protocols. #{err}"
+	fetchedCodes = _.pluck protocols, 'protocolCodeName'
+	if _.difference(codes, fetchedCodes).length > 0
+		throw new InternalServerError "Couldn't get #{fetchedCodes} protocols."
+	return protocols
+
+
+###*
+ # Get the protocol code and name for the given protocol.
+ # @param {object} protocol - Protocol object.
+ # @return {object} - Protocol code and name.
+ ###
+exports.getProtocolCodeAndName = (protocol) ->
+	name = null
+	for label in protocol.lsLabels
+		if label.lsType == "name" and label.lsKind == "protocol name"
+			name = label.labelText
+			break
+	return {
+		code: protocol.codeName
+		name: name
+	}
+
+
+###*
+# Get the dependencies for the lot. Dependencies will account for user ACLs.
+# @param {object} lot - Lot object.
+# @param {object} user - User object.
+# @param {array} allowedProjects - Projects user has access to.
+###
+exports.getLotExperimentDependencies = (lot, user, allowedProjects) ->
 	lotCorpName = lot.corpName
-
 	# Get the depdencies from the service which does not cover user ACLS
 	response = await exports.fetchMetaLotDependencies(lotCorpName)
 
@@ -313,7 +378,7 @@ exports.getLotDependenciesInternal = (lot, user, allowedProjects, includeLinkedL
 		experimentCodeList = _.uniq experimentCodeList
 
 		# Get the experiments from the server
-		response = await experimentServiceRoutes.fetchExperimentsByCodeNames(experimentCodeList)
+		response = await experimentServiceRoutes.fetchExperimentsByCodeNames(experimentCodeList, "analysisgroupvalues")
 		experiments = await response.json()
 
 		# It's unexpected that the server would return a list of experiments that are not in the list of codes we asked for, so we check for that and erorr
@@ -325,25 +390,71 @@ exports.getLotDependenciesInternal = (lot, user, allowedProjects, includeLinkedL
 
 		# Get the acls for the experiments
 		for experiment in experiments
-			console.log "Checking acls for experiment #{experiment.code}"
+			console.log "Checking acls for experiment #{experiment.experiment.codeName}"
 
 			# This returns the acls (read, write, delete of the experiment for the user and allowed project the user has)
 			acls = await experimentServiceRoutes.getExperimentACL(experiment.experiment, user, allowedProjects)
 			idx = _.findIndex(dependencies.linkedExperiments, { code: experiment.experiment.codeName })
-			
-			# The experiment is not readable by the user, then just return the acls in the array of experiments
-			# This way it'know there are experiments linked that aren't readable
+
 			if !acls.getRead()
 				console.log "Experiment #{experiment.experiment.codeName} is not readable by user #{user.username}"
-				# If the experiiment is not readable we just want to include the acls but not the experiment code table
+				# If the experiment is not readable we just want to include the acls but not the experiment code table
 				# We include the acls so that the user can see that there is an experiment linked that they can't read
 				dependencies.linkedExperiments[idx] = {acls: acls, code: null, name: null, ignored: false}
 			else
-				# The experiment is readable so includ the experiment and acls
-				dependencies.linkedExperiments[idx].acls = acls
+				# The experiment is readable so include the experiment and acls
+				linkedExperiment = dependencies.linkedExperiments[idx]
+				linkedExperiment.acls = acls
+
+		codeToExperiment = {}
+		for experiment in experiments
+			codeToExperiment[experiment.experiment.codeName] = experiment.experiment
+
+		# Add analysis group values in linked experiments.
+		for experiment in dependencies.linkedExperiments
+			if experiment.acls.getRead()
+				code = experiment.code
+				analysisGroups = codeToExperiment[code].analysisGroups
+				experiment.analysisGroups = exports.getAnalysisGroupValues analysisGroups
+			else
+				experiment.analysisGroups = []
+
+		# Get protocols for which user has read acess
+		protocolCodes = []
+		for experiment in dependencies.linkedExperiments
+			if experiment.acls.getRead()
+				experiment = codeToExperiment[experiment.code]
+				protocolCodes.push experiment.protocol.codeName
+		protocols = await exports.getProtocols protocolCodes
+		codeToProtocol = {}
+		for protocol in protocols
+			codeToProtocol[protocol.protocolCodeName] = protocol
+
+		# Add protocols in linked experiment.
+		for experiment in dependencies.linkedExperiments
+			if experiment.acls.getRead()
+				code = codeToExperiment[experiment.code].protocol.codeName
+				protocol = codeToProtocol[code]
+				experiment.protocol = exports.getProtocolCodeAndName protocol.protocol
+			else
+				experiment.protocol = []
 	else
 		console.log "No experiments linked to #{lotCorpName}"
+	return dependencies
 
+
+exports.getLotDependenciesInternal = (lot, user, allowedProjects, includeLinkedLots=true) ->
+	console.log "Checking lot dependencies for lot #{lot.corpName} with user #{user.username}"
+
+	if !allowedProjects?
+		[err, allowedProjects] = await serverUtilityFunctions.promisifyRequestStatusResponse(authorRoutes.allowedProjectsInternal, [user])
+		if err?
+			throw new InternalServerError "Error checking user projects"
+			return
+
+	lotCorpName = lot.corpName
+
+	dependencies = await exports.getLotExperimentDependencies lot, user, allowedProjects
 	# Look up and attach the acls of the linked lots
 	# Don't show any information except acls if the user cannot read the lot
 	# This data is purely informational when considering the dependencies of a lot
