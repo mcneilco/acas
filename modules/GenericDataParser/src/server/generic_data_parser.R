@@ -3595,14 +3595,17 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
  
   
   # when not on a dry run, create protocol and experiment if they do not exist
-  if (!dryRun && newProtocol && errorFree) {
-    protocol <- createNewProtocol(metaData = validatedMetaData, lsTransaction, recordedBy, columnOrderStates)
-
+  if (!dryRun && errorFree) {
+    
     # also save the new endpoints of the protocol 
     saveEndpointCodeTables(selColumnOrderInfo$Units, "column units")
     saveEndpointCodeTables(selColumnOrderInfo$valueKind, "column name")
     saveEndpointCodeTables(selColumnOrderInfo$concUnits, "concentration units")
     saveEndpointCodeTables(selColumnOrderInfo$timeUnit, "time units")
+
+    if (newProtocol) {
+      protocol <- createNewProtocol(metaData = validatedMetaData, lsTransaction, recordedBy, columnOrderStates)
+    }
   }
 
   useExistingExperiment <- inputFormat %in% c("Use Existing Experiment", "Precise For Existing Experiment")
@@ -3777,10 +3780,20 @@ deleteOldData <- function(experiment, useExistingExperiment) {
     deleteAnalysisGroupsByExperiment(experiment)
   } else {
     deletedExperimentCodes <- c(experiment$codeName, getPreviousExperimentCodes(experiment))
-    deleteExperiment(experiment)
+    selDeleteExperiment(experiment)
   }
   return(deletedExperimentCodes)
 }
+
+selDeleteExperiment <- function(experiment) {
+  url <- paste0(racas::applicationSettings$client.service.persistence.fullpath, "experiments/seldelete/", experiment$id)
+  response <- deleteURLcheckStatus(url, requireJSON = TRUE)
+  if(response!="") {
+    stopUser (paste0("The loader was unable to delete the ", racas::applicationSettings$client.experiment.label, ". Instead, it got this response: ", response))
+  }
+  return(response)
+}
+
 getPreviousExperimentCodes <- function(experiment) {
   metadataState <- getStatesByTypeAndKind(experiment, "metadata_experiment metadata")[[1]]
   previousCodeValues <- getValuesByTypeAndKind(metadataState, "codeValue_previous experiment code")

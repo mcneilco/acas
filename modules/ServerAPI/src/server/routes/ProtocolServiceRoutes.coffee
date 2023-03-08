@@ -635,7 +635,12 @@ exports.getTemplateSELFile = (req, resp) ->
 			protocolName = _.where(json.lsLabels, {lsKind: "protocol name", ignored: false})[0].labelText
 			
 			protocolMetadata = _.where(json.lsStates, {lsKind: "protocol metadata", ignored: false})[0]
-			protocolProject = _.where(protocolMetadata.lsValues, {lsKind: "project", ignored: false})[0].codeValue
+
+			# get the protocol project if there is one
+			try
+				protocolProject = _.where(protocolMetadata.lsValues, {lsKind: "project", ignored: false})[0].codeValue
+			catch
+				protocolProject = ""
 			
 			# look up the projects and convert the project code to the actual project name
 			userObject={'user':'username':req.session.passport.user.username}
@@ -794,8 +799,8 @@ exports.getTemplateSELFile = (req, resp) ->
 						csvContent = "data:text/csv;charset=utf-8," 
 
 						# adding the SEL content
-						csvContent = csvContent + "Experiment Metadata\nFormat,Generic\nProtocol Name," + protocolName + 
-						"\nExperiment Name,,\nScientist," + protocolScientist + "\nNotebook,,\nPage,,\nAssay Date," + protocolDate +
+						csvContent = csvContent + "Experiment Meta Data\nFormat,Generic\nProtocol Name," + protocolName + 
+						"\nExperiment Name,\nScientist," + protocolScientist + "\nNotebook,\nPage,\nAssay Date," + protocolDate +
 						"\nProject," + protocolProject + "\n\nCalculated Results,\n" + dataTypeRowString + "\n" + endpointNameRowString
 
 						resp.json csvContent

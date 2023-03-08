@@ -295,7 +295,7 @@ class ExperimentSummaryTableController extends Backbone.View
 			$(".bv_noMatchingExperimentsFoundMessage"+@domSuffix).addClass "hide"
 			@collection.each (exp) =>
 				canViewDeleted = @canViewDeleted(exp)
-				if exp.getStatus().get('codeValue') is 'deleted'
+				if exp.getStatus().get('codeValue') is 'deleted' || exp.getStatus().get('codeValue') is 'overwritten'
 					if canViewDeleted
 						ersc = new ExperimentRowSummaryController
 							model: exp
@@ -492,7 +492,7 @@ class ExperimentBrowserController extends Backbone.View
 		$(".bv_experimentBaseController").removeClass("hide")
 		$(".bv_experimentBaseControllerContainer").removeClass("hide")
 		$('.bv_experimentBaseController').html @experimentController.render().el
-		if experiment.getStatus().get('codeValue') is "deleted"
+		if experiment.getStatus().get('codeValue') is "deleted" || experiment.getStatus().get('codeValue') is "overwritten"
 			@$('.bv_openInQueryTool').hide()
 			@$('.bv_deleteExperiment').hide()
 			@$('.bv_editExperiment').hide() #TODO for future releases, add in hiding duplicateExperiment
