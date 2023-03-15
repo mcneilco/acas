@@ -9,6 +9,14 @@ $(function() {
 	window.PickListList = Backbone.Collection.extend({
 
 		model: PickList,
+
+		comparator: function(model) {
+			var name = model.get('name');
+			if (name) {
+				return name.toLowerCase();
+			}
+			return name;
+		},
 		
 		url: function() {
 			if(window.configuration.serverConnection.connectToServer) {

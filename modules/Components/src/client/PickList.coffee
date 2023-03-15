@@ -3,6 +3,13 @@ class PickList extends Backbone.Model
 class PickListList extends Backbone.Collection
 	model: PickList
 
+	comparator: (model) ->
+		displayOrder = model.get('displayOrder')
+		if displayOrder?
+			displayOrder
+		else
+			model.get("name")?.toLowerCase()
+
 	setType: (type) ->
 		@type = type
 
