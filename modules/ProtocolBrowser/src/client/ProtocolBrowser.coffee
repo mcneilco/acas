@@ -459,23 +459,35 @@ class ProtocolBrowserController extends Backbone.View
 				#Since we can't directly send the .csv file to download it...
 				#...we create a hidden link with the download path and automatically click on it
 				# exporting and downloading the file to the user
-				encodedUri = encodeURI(response)
-				a = document.createElement('a');
-				a.style.display = 'none';
-				a.href = encodedUri;
-				a.setAttribute('target', '_blank')
-				document.body.appendChild(a);
-				a.click();
 
-				#Update GUI to indicate succesful download
-				$(".bv_downloadWarning").hide()
-				$(".bv_downloadSuccess").show()
+				# create a Blob object from the CSV string in response
+				csvBlob = new Blob([response], { type: 'text/csv;charset=utf-8;' })
+
+				# create a temporary URL for the Blob object
+				csvUrl = URL.createObjectURL(csvBlob)
+
+				# create a temporary link element to trigger the download
+				downloadLink = document.createElement('a')
+				downloadLink.href = csvUrl
+				downloadLink.download = @protocolController.model.escape('codeName') + "_template.csv"
+
+				# trigger the download by programmatically clicking the link
+				document.body.appendChild(downloadLink)
+				downloadLink.click()
+
+				# clean up by revoking the URL and removing the link element
+				URL.revokeObjectURL(csvUrl)
+				document.body.removeChild(downloadLink)
+
+				# update GUI to indicate succesful download
+				$(".bv_downloadTemplateWarning").hide()
+				$(".bv_downloadTemplateSuccess").show()
 			error: (err) =>
 				console.log "getTemplateSELFile() error:" + err
 				
 				#Update GUI to indicate files could not be downloaded
-				$(".bv_downloadSuccess").hide()
-				$(".bv_downloadWarning").show()
+				$(".bv_downloadTemplateSuccess").hide()
+				$(".bv_downloadTemplateWarning").show()
 
 	
 
