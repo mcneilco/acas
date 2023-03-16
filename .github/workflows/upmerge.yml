@@ -1,0 +1,71 @@
+name: Upmerge release branches
+
+# Schedule this workflow to run every 15 minutes
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+
+jobs:
+  trigger-tag:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        acas-repo: [ acas ]
+    steps:
+      - name: Creteate pull requests to upmerge branches to main
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.ACAS_WORKFLOWS_TOKEN }}
+          script: |
+            // Get all protected branches
+            const protectedBranches = await github.rest.repos.listBranches({
+              owner: "mcneilco",
+              repo: "${{ matrix.acas-repo }}",
+              protected: true
+            })
+            // Sort the protected banches by symantic version but main and master last
+            const sortedProtectedBranches = protectedBranches.data.required_status_checks.contexts.sort((a, b) => {
+              const aIsMain = a === "main"
+              const bIsMain = b === "main"
+              const aIsMaster = a === "master"
+              const bIsMaster = b === "master"
+              if (aIsMain || bIsMain) {
+                return aIsMain ? 1 : -1
+              }
+              if (aIsMaster || bIsMaster) {
+                return aIsMaster ? 1 : -1
+              }
+              return a.localeCompare(b)
+            })
+            // Run this until there are no more protected branches using shift 
+            while (sortedProtectedBranches.length > 0) {
+              // Check branch A against Branch B commits
+              const branchA = sortedProtectedBranches.shift()
+              const branchB = sortedProtectedBranches[0]
+              // Create a pull request to merge branch A into branch B if there are commits to merge
+              const commits = await github.rest.repos.compareCommits({
+                owner: "mcneilco",
+                repo: "${{ matrix.acas-repo }}",
+                base: branchA,
+                head: branchB
+              })
+              if (commits.data.total_commits > 0) {
+                const pullRequest = await github.rest.pulls.create({
+                  owner: "mcneilco",
+                  repo: "${{ matrix.acas-repo }}",
+                  title: "Upmerge ${branchA} to ${branchB}",
+                  head: branchA,
+                  base: branchB
+                })
+                // Add the label "upmerge" to the pull request
+                await github.rest.issues.addLabels({
+                  owner: "mcneilco",
+                  repo: "${{ matrix.acas-repo }}",
+                  issue_number: pullRequest.data.number,
+                  labels: ["upmerge"]
+                })
+              }
+            }
+            
+
+
