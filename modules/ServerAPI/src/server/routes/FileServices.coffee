@@ -92,6 +92,12 @@ setupRoutes = (app, loginRoutes, requireLogin) ->
 							"originalName": file.originalname,
 							"size": file.size,
 							"type": file.mimetype,
+							# Note, the delete_type and delete_url are required by the jquery file upload plugin
+							# They tell the plugin how to actually delete the file and adjust the maxNumberOfFiles
+							# https://github.com/mcneilco/acas/blob/36f3d6cea0fda97177863818a8ccbc15c60b35c4/public/lib/jqueryFileUpload/js/jquery.fileupload-ui.js#L297
+							# Without it the maxNumberOfFiles is not adjusted and the user can't upload more files
+							"delete_type": "DELETE",
+							"delete_url": "/dataFiles/" + file.filename,
 							"url": "http://#{req.get('Host')}/dataFiles/" + file.filename,
 							"filePath": file.path
 						}
@@ -193,7 +199,13 @@ setupRoutes = (app, loginRoutes, requireLogin) ->
 
 exports.setupAPIRoutes = (app, loginRoutes) ->
 	setupRoutes app, loginRoutes, false
+	app.delete '/dataFiles/*', exports.deleteFile
 
 exports.setupRoutes = (app, loginRoutes) ->
 	setupRoutes app, loginRoutes, true
+	app.delete '/dataFiles/*', loginRoutes.ensureAuthenticated, exports.deleteFile
 
+exports.deleteFile = (req, resp) ->
+	console.log 'Got DELETE request for data file: ' + req.params[0] + ' from user: ' + req.user.username
+	console.log 'Not deleting file, just returning 200 OK'
+	resp.send 200
