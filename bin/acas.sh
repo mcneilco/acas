@@ -408,7 +408,7 @@ if [ "$PREPARE_MODULE_CONF_JSON" = "true" ]; then
         while true; do
             # Wait until the persistence_service_url returns a non failure status code
             if ! curl --output /dev/null --silent --head --fail $persistence_service_url; then
-                echo "PrepareModuleConfJSON.js: Waiting for $persistence_service_url to be available"
+                echo "PrepareModuleConfJSON.js: Persistence service url $persistence_service_url unavailable, waiting $wait_between_retries seconds before retrying"
             else
                 echo "PrepareModuleConfJSON.js: Running PrepareModuleConfJSON.js"
                 node $ACAS_HOME/src/javascripts/BuildUtilities/PrepareModuleConfJSON.js
@@ -419,7 +419,6 @@ if [ "$PREPARE_MODULE_CONF_JSON" = "true" ]; then
                     echo "PrepareModuleConfJSON.js: Failed"
                 fi
             fi
-            echo "PrepareModuleConfJSON.js: Waiting $wait_between_retries seconds before retrying"
             sleep $wait_between_retries
         done
     ) &
