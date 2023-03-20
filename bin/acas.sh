@@ -406,7 +406,7 @@ if [ "$PREPARE_MODULE_CONF_JSON" = "true" ]; then
         persistence_service_url=$client_service_persistence_fullpath/protocoltypes
         wait_between_retries=1
         while true; do
-            # Wait until the backend is up: curl --output /dev/null --silent --head --fail http://${client_service_persistence_host}:${client_service_persistence_port}
+            # Wait until the persistence_service_url returns a non failure status code
             if ! curl --output /dev/null --silent --head --fail $persistence_service_url; then
                 echo "PrepareModuleConfJSON.js: Waiting for $persistence_service_url to be available"
             else
