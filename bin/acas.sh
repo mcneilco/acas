@@ -399,26 +399,28 @@ until [ -f $ACAS_HOME/conf/compiled/conf.properties  ] || [ $counter == $wait ];
 done
 source /dev/stdin <<< "$(cat $ACAS_HOME/conf/compiled/conf.properties | awk -f $ACAS_HOME/bin/readproperties.awk)"
 
-#Once tomcat is available then try and run prepare module conf json if in environment
+# Once the script is available and the persistence service is up, run PrepareModuleConfJSON.js
 if [ "$PREPARE_MODULE_CONF_JSON" = "true" ]; then
     (
-    cd src/javascripts/BuildUtilities
-    if [ $? -eq 0 ];then
-        counter=0
-        wait=1000
-        until $(curl --output /dev/null --silent --head --fail http://${client_service_persistence_host}:${client_service_persistence_port}) || [ $counter == $wait ]; do
-            sleep 1
-            counter=$((counter+1))
+        # Run this until it succeeds
+        persistence_service_url=$client_service_persistence_fullpath/protocoltypes
+        wait_between_retries=1
+        while true; do
+            # Wait until the persistence_service_url returns a non failure status code
+            if ! curl --output /dev/null --silent --head --fail $persistence_service_url; then
+                echo "PrepareModuleConfJSON.js: Persistence service url $persistence_service_url unavailable, waiting $wait_between_retries seconds before retrying"
+            else
+                echo "PrepareModuleConfJSON.js: Running PrepareModuleConfJSON.js"
+                node $ACAS_HOME/src/javascripts/BuildUtilities/PrepareModuleConfJSON.js
+                if [ $? -eq 0 ]; then
+                    echo "PrepareModuleConfJSON.js: Success"
+                    break
+                else
+                    echo "PrepareModuleConfJSON.js: Failed"
+                fi
+            fi
+            sleep $wait_between_retries
         done
-        if [ $counter == $wait ]; then
-            echo "waited $wait seconds for acas to start, giving up on prepare module conf json"
-        else
-            node PrepareModuleConfJSON.js
-        fi
-    else
-        echo "${client_service_persistence_host} not available, not waiting for roo to start and not running prepare module conf json"
-    fi
-    cd ../../..
     ) &
 fi
 
