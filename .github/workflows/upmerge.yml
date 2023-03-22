@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        repo: [ acas, acas-roo-server, acasclient, racas ]
+        repo: [ acas, acas-roo-server, racas ]
         owner: [ mcneilco ]
     steps:
       - name: Create pull requests to upmerge branches to main
