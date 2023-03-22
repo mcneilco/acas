@@ -76,7 +76,8 @@
     "url-loader": "4.1.1",
     "winston": "3.3.3",
     "winston-mongodb": "5.0.5",
-    "yamljs": "0.3.0"
+    "yamljs": "0.3.0",
+    "csv-stringify": "6.3.0"
   },
   "devDependencies": {
     "coffeescript": "2.5.1",

@@ -625,6 +625,7 @@ exports.getTemplateSELFile = (req, resp) ->
 	experimentServiceRoutes = require './ExperimentServiceRoutes.js'
 	csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
 	request = require 'request'
+	csv = require 'csv-stringify/sync'
 
 	protocolCode = req.body.protocolCode
 
@@ -794,16 +795,26 @@ exports.getTemplateSELFile = (req, resp) ->
 
 								dataTypeRowString = dataTypeRowString + dataTypeRowEntry
 
+						# Create an array of data for the CSV file
+						data = [  ['Experiment Meta Data'],
+						['Format', 'Generic'],
+						['Protocol Name', protocolName],
+						['Experiment Name', ''],
+						['Scientist', protocolScientist],
+						['Notebook', ''],
+						['Page', ''],
+						['Assay Date', protocolDate],
+						['Project', protocolProject],
+						[''],
+						['Calculated Results'],
+						dataTypeRowString.split(','),
+						endpointNameRowString.split(',')
+						]
 
-						# marking the file as a .csv
-						csvContent = "data:text/csv;charset=utf-8," 
+						# Convert the data to a CSV string
+						csvString = csv.stringify(data, {header: false})
 
-						# adding the SEL content
-						csvContent = csvContent + "Experiment Meta Data\nFormat,Generic\nProtocol Name," + protocolName + 
-						"\nExperiment Name,\nScientist," + protocolScientist + "\nNotebook,\nPage,\nAssay Date," + protocolDate +
-						"\nProject," + protocolProject + "\n\nCalculated Results,\n" + dataTypeRowString + "\n" + endpointNameRowString
-
-						resp.json csvContent
+						resp.json csvString
 
 					else
 						console.log 'got ajax error'
