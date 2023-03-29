@@ -705,7 +705,7 @@ exports.getTemplateSELFile = (req, resp) ->
 											endpointConcEntry = j.numericValue
 										if j.lsKind == "column conc units" and j.ignored == false
 											endpointConcUnitsEntry = j.codeValue
-										if j.lsKind = "column time" and j.ignored == false
+										if j.lsKind == "column time" and j.ignored == false
 											endpointTimeEntry = j.numericValue
 										if j.lsKind == "column time units" and j.ignored == false
 											endpointTimeUnitsEntry = j.codeValue
@@ -728,7 +728,6 @@ exports.getTemplateSELFile = (req, resp) ->
 										endpointTimes.push endpointTimeEntry
 										endpointTimeUnits.push endpointTimeUnitsEntry
 										endpointHiddens.push endpointHiddenEntry
-
 						# Part 2: create a CSV file with the endpoints	
 						blankElements = ["NA", "undefined", "", null, undefined]
 
