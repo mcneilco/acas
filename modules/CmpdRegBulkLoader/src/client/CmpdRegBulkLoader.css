@@ -73,3 +73,23 @@
 .bv_browseSdfFile form.fileupload table.table.bv_fileInfo tbody.files tr.template-upload.fade.in td.cancel button.btn.btn-warning.bv_cancelFile i.icon-ban-circle.icon-white{
     display:none;
 }
+
+.bv_bulkReg .bv_configuration .select2 {
+    margin-left:6px;
+}
+
+.bv_bulkReg .bv_assignProperties .select2 {
+    margin-left:20px !important;
+    width: 307px !important;
+}
+
+.bv_bulkReg .error .select2-selection__rendered {
+    /* This is an error select2 so outline it red and color the text red*/
+    color: #b94a48;
+    background-color: #fbded9;
+    border-color: #fbded9;
+    border-style: solid;
+    border-width: 1px;
+}
+
+

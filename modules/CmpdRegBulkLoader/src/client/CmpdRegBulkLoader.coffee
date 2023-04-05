@@ -254,7 +254,7 @@ class AssignedPropertyController extends AbstractFormController
 
 	setupDbPropertiesSelect: ->
 		formattedDbProperties = @formatDbSelectOptions()
-		@dbPropertiesListController = new PickListSelectController
+		@dbPropertiesListController = new PickListSelect2Controller
 			el: @$('.bv_dbProperty')
 			collection: formattedDbProperties
 			insertFirstOption: new PickList
@@ -412,7 +412,7 @@ class AssignSdfPropertiesController extends Backbone.View
 
 	setupTemplateSelect: (templatePickList)->
 		@templateList = templatePickList
-		@templateListController = new PickListSelectController
+		@templateListController = new PickListSelect2Controller
 			el: @$('.bv_useTemplate')
 			collection: @templateList
 			insertFirstOption: new PickList
@@ -424,7 +424,7 @@ class AssignSdfPropertiesController extends Backbone.View
 	setupProjectSelect: ->
 		@projectList = new PickListList()
 		@projectList.url = "/cmpdreg/projects"
-		@projectListController = new PickListSelectController
+		@projectListController = new PickListSelect2Controller
 			el: @$('.bv_dbProject')
 			collection: @projectList
 			insertFirstOption: new PickList
@@ -435,7 +435,7 @@ class AssignSdfPropertiesController extends Backbone.View
 	setupPrefixSelect: ->
 		@prefixList = new PickListList()
 		@prefixList.url = "/cmpdreg/labelPrefixes"
-		@prefixListController = new PickListSelectController
+		@prefixListController = new PickListSelect2Controller
 			el: @$('.bv_labelPrefix')
 			collection: @prefixList
 			insertFirstOption: new PickList
