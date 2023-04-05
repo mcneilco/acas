@@ -84,12 +84,9 @@
 }
 
 .bv_bulkReg .error .select2-selection__rendered {
-    /* This is an error select2 so outline it red and color the text red*/
     color: #b94a48;
-    background-color: #fbded9;
-    border-color: #fbded9;
-    border-style: solid;
-    border-width: 1px;
 }
-
-
+.bv_bulkReg .error .select2-selection {
+    border-color: #b94a48;
+    border-style: solid;
+}
