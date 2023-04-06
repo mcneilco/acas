@@ -73,3 +73,20 @@
 .bv_browseSdfFile form.fileupload table.table.bv_fileInfo tbody.files tr.template-upload.fade.in td.cancel button.btn.btn-warning.bv_cancelFile i.icon-ban-circle.icon-white{
     display:none;
 }
+
+.bv_bulkReg .bv_configuration .select2 {
+    margin-left:6px;
+}
+
+.bv_bulkReg .bv_assignProperties .select2 {
+    margin-left:20px !important;
+    width: 307px !important;
+}
+
+.bv_bulkReg .error .select2-selection__rendered {
+    color: #b94a48;
+}
+.bv_bulkReg .error .select2-selection {
+    border-color: #b94a48;
+    border-style: solid;
+}
