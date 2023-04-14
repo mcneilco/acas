@@ -72,11 +72,43 @@ jobs:
             BUILDTIME=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
             VERSION=${{ env.ACAS_TAG }}
             REVISION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.revision'] }}
-      - name: Run docker-compose up - assumes racas-oss:${{ env.ACAS_TAG }} and acas-roo-server-oss:${{ env.ACAS_TAG }}-indigo exist and are up to date
+      - name: Run docker-compose up using ${{ env.ACAS_TAG }} image tags - fallback to ${{ env.DEFAULT_BRANCH_ACAS_TAG }} only if the event is a pull request
         id: dockerComposeUp
         run: |
           echo "docker_compose_pull_failure=false" >> $GITHUB_OUTPUT
-          docker-compose -f "docker-compose.yml" up -d || echo "docker_compose_pull_failure=true" >> $GITHUB_OUTPUT
+          MAX_RETRIES=120 # 1 hour (240 * 30 seconds)
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            MAX_RETRIES=0
+          fi
+
+          RETRY_COUNT=0
+          while true; do
+            if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+              OUTPUT=$(docker-compose -f "docker-compose.yml" up -d 2>&1)
+              if echo "$OUTPUT" | grep -q "manifest unknown"; then
+                RETRY_COUNT=$((RETRY_COUNT+1))
+                # Print the output with new lines and indent it
+                echo "$OUTPUT" | sed 's/^/  /'
+                echo "docker-compose up failed with 'manifest unknown' error. Builds may be running. Retrying in 30 seconds...$((MAX_RETRIES-RETRY_COUNT)) retries remaining."
+                sleep 30
+              elif [ $? -eq 0 ]; then
+                echo "docker-compose up succeeded."
+                break
+              else
+                echo "$OUTPUT" | sed 's/^/  /'
+                echo "docker-compose up failed with unknown error"
+                exit 1
+              fi
+            else
+              if [ "${{ github.event_name }}" = "pull_request" ]; then
+                  echo "docker_compose_pull_failure=true" >> $GITHUB_OUTPUT
+              else
+                  echo "docker-compose up failed with 'manifest unknown' error. Builds may be running but the maximum number of retries has been reached."
+                  exit 1
+              fi
+              fi
+            fi
+          done
       - name: Get docker images fallback tag name
         run: |
           echo "DEFAULT_BRANCH_ACAS_TAG=$(echo ${{ github.event.repository.default_branch }} | sed -e 's/\//-/g')" >> $GITHUB_ENV
