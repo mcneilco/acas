@@ -106,7 +106,6 @@ jobs:
                   echo "docker-compose up failed with 'manifest unknown' error. Builds may be running but the maximum number of retries has been reached."
                   exit 1
               fi
-              fi
             fi
           done
       - name: Get docker images fallback tag name
