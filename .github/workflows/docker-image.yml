@@ -85,18 +85,19 @@ jobs:
           while true; do
             if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
               OUTPUT=$(docker-compose -f "docker-compose.yml" up -d 2>&1)
+              retvalue=$?
               if echo "$OUTPUT" | grep -q "manifest unknown"; then
                 RETRY_COUNT=$((RETRY_COUNT+1))
                 # Print the output with new lines and indent it
                 echo "$OUTPUT" | sed 's/^/  /'
                 echo "docker-compose up failed with 'manifest unknown' error. Builds may be running. Retrying in 30 seconds...$((MAX_RETRIES-RETRY_COUNT)) retries remaining."
                 sleep 30
-              elif [ $? -eq 0 ]; then
+              elif [ $retvalue -eq 0 ]; then
                 echo "docker-compose up succeeded."
                 break
               else
                 echo "$OUTPUT" | sed 's/^/  /'
-                echo "docker-compose up failed with unknown error"
+                echo "docker-compose up failed with unknown error exit code $retvalue."
                 exit 1
               fi
             else
