@@ -798,6 +798,7 @@ class EndpointListController extends AbstractFormController
 		if @options.newProtocol == true
 			@$(".bv_downloadFiles").hide()
 			@$(".bv_endpointManagerInstructions").hide()
+			@endpointControllers = [] # initialize empty endpoint controller list since it won't be automatically made for new protocol 
 
 		#check whether or not to display time and concentration columns in the endpoint table
 		@showTimeAndConcentration()
@@ -1068,9 +1069,6 @@ class EndpointListController extends AbstractFormController
 		# Create a new EndpointController, which manages a row
 		# We get the row number from the state which was passed in
 		rowNumber = @getRowNumberForState(state)
-		# If there is a fresh protocol, we need to redefine @endpointControllers which is blank so that we can add controllers
-		if @endpointControllers == undefined
-			@endpointControllers = []
 		# Start tracking the controllers based on their row numbers
 		if @endpointControllers[rowNumber]?
 			@endpointControllers[rowNumber].remove()
