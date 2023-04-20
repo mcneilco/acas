@@ -677,119 +677,87 @@ exports.getTemplateSELFile = (req, resp) ->
 				['Calculated Results']
 				]
 
+				extractEndpointData = (lsState) ->
+					# Function for extracting endpoint data from an lsState ("data column order")
+				
+					# create NAs for each entry in case we don't find a variable, we'll plug these in instead
+					endpointNamesEntry = "NA"
+					endpointUnitsEntry = "NA"
+					endpointDataTypeEntry = "NA"
+					endpointConcEntry = "NA"
+					endpointConcUnitsEntry = "NA"
+					endpointTimeEntry = "NA"
+					endpointTimeUnitsEntry = "NA"
+					endpointHiddenEntry = "NA"
+
+					for lsValue in lsState.lsValues
+						# only looking at the data that is not ignored
+						if not lsValue.ignored
+							switch lsValue.lsKind
+								when "column name" then endpointNamesEntry = lsValue.codeValue
+								when "column units" then endpointUnitsEntry = lsValue.codeValue
+								when "column type" then endpointDataTypeEntry = lsValue.codeValue
+								when "column concentration" then endpointConcEntry = lsValue.numericValue
+								when "column conc units" then endpointConcUnitsEntry = lsValue.codeValue
+								when "column time" then endpointTimeEntry = lsValue.numericValue
+								when "column time units" then endpointTimeUnitsEntry = lsValue.codeValue
+								when "codeValue_hide column" then endpointHiddenEntry = lsValue.codeValue
+
+					# create a string of all the different sections put together to identify duplicates
+					endpointString = endpointNamesEntry + endpointUnitsEntry + endpointDataTypeEntry + String(endpointConcEntry) + endpointConcUnitsEntry + String(endpointTimeEntry) + endpointTimeUnitsEntry
+
+					# if the endpoint is not already in there, record it
+					if endpointString not in endpointStrings
+						@endpointStrings.push endpointString							
+
+						# record the endpoint data
+						@endpointNames.push endpointNamesEntry
+						@endpointUnits.push endpointUnitsEntry
+						@endpointDataTypes.push endpointDataTypeEntry
+						@endpointConcs.push endpointConcEntry
+						@endpointConcUnits.push endpointConcUnitsEntry
+						@endpointTimes.push endpointTimeEntry
+						@endpointTimeUnits.push endpointTimeUnitsEntry
+						@endpointHiddens.push endpointHiddenEntry
+
+
 				experimentServiceRoutes.experimentsByProtocolCodenameInternal protocolCode, false, (statusCode, experiments) ->
 					if statusCode == 200
 						# Part 1: Find all unique endpoints across experiments that use this protocol code
 						# arrays for recording endpoint data
-						endpointNames = []
-						endpointUnits = []
-						endpointDataTypes = []
-						endpointConcs = []
-						endpointConcUnits = []
-						endpointTimes = []
-						endpointTimeUnits = []
-						endpointHiddens = []
+						@endpointNames = []
+						@endpointUnits = []
+						@endpointDataTypes = []
+						@endpointConcs = []
+						@endpointConcUnits = []
+						@endpointTimes = []
+						@endpointTimeUnits = []
+						@endpointHiddens = []
 
-						endpointStrings = []
+						@endpointStrings = []
 
 						# set the default value to true unless otherwise specified
 						protocolHasEndpoints = true
-						
+
 						# if the protocol has no experiments, use the defined endpoint information in the protocol 
 						if experiments.length == 0
-							protocolEndpoints = _.where(json.lsStates, {lsKind: "data column order", ignored: false})
-							# if the protocol has no endpoints saved in it, pass
-							if protocolEndpoints.length == 0
+							protocolEndpointLsStates = _.where(json.lsStates, {lsKind: "data column order", ignored: false})
+							# if the protocol has no endpoints saved in it, we record it has no endpoint data and won't write that section of the .csv...
+							if protocolEndpointLsStates.length == 0
 								protocolHasEndpoints = false 
+
+							# ...but if it does, we want to extract them and format them for the template file
 							else
-								# if it does, we want to extract them and format them for the template file
-								for i in protocolEndpoints
-									# create NAs for each entry in case we don't find a variable, we'll plug these in instead
-									endpointNamesEntry = "NA"
-									endpointUnitsEntry = "NA"
-									endpointDataTypeEntry = "NA"
-									endpointConcEntry = "NA"
-									endpointConcUnitsEntry = "NA"
-									endpointTimeEntry = "NA"
-									endpointTimeUnitsEntry = "NA"
-									endpointHiddenEntry = "NA"
-
-									for j in i.lsValues
-										# only looking at the data that is not ignored
-										if not j.ignored
-											switch j.lsKind
-												when "column name" then endpointNamesEntry = j.codeValue
-												when "column units" then endpointUnitsEntry = j.codeValue
-												when "column type" then endpointDataTypeEntry = j.codeValue
-												when "column concentration" then endpointConcEntry = j.numericValue
-												when "column conc units" then endpointConcUnitsEntry = j.codeValue
-												when "column time" then endpointTimeEntry = j.numericValue
-												when "column time units" then endpointTimeUnitsEntry = j.codeValue
-												when "codeValue_hide column" then endpointHiddenEntry = j.codeValue
-
-									# create a string of all the different sections put together to identify duplicates
-									endpointString = endpointNamesEntry + endpointUnitsEntry + endpointDataTypeEntry + String(endpointConcEntry) + endpointConcUnitsEntry + String(endpointTimeEntry) + endpointTimeUnitsEntry
-
-									# if the endpoint is not already in there, record it
-									if endpointString not in endpointStrings
-										endpointStrings.push endpointString							
-
-										# record the endpoint data
-										endpointNames.push endpointNamesEntry
-										endpointUnits.push endpointUnitsEntry
-										endpointDataTypes.push endpointDataTypeEntry
-										endpointConcs.push endpointConcEntry
-										endpointConcUnits.push endpointConcUnitsEntry
-										endpointTimes.push endpointTimeEntry
-										endpointTimeUnits.push endpointTimeUnitsEntry
-										endpointHiddens.push endpointHiddenEntry
+								for lsState in protocolEndpointLsStates
+									extractEndpointData(lsState)
 
 						# if the protocol has experiments, collect all the endpoint information available
 						else 
 							for experiment in experiments
-								for i in experiment.lsStates
-									#go through the experiment data to check if the endpoint data is there
-									if i.lsKind == 'data column order' and i.ignored == false
-
-										# create NAs for each entry in case we don't find a variable, we'll plug these in instead
-										endpointNamesEntry = "NA"
-										endpointUnitsEntry = "NA"
-										endpointDataTypeEntry = "NA"
-										endpointConcEntry = "NA"
-										endpointConcUnitsEntry = "NA"
-										endpointTimeEntry = "NA"
-										endpointTimeUnitsEntry = "NA"
-										endpointHiddenEntry = "NA"
-
-										for j in i.lsValues
-											# only looking at the data that is not ignored
-											if not j.ignored
-												switch j.lsKind
-													when "column name" then endpointNamesEntry = j.codeValue
-													when "column units" then endpointUnitsEntry = j.codeValue
-													when "column type" then endpointDataTypeEntry = j.codeValue
-													when "column concentration" then endpointConcEntry = j.numericValue
-													when "column conc units" then endpointConcUnitsEntry = j.codeValue
-													when "column time" then endpointTimeEntry = j.numericValue
-													when "column time units" then endpointTimeUnitsEntry = j.codeValue
-													when "codeValue_hide column" then endpointHiddenEntry = j.codeValue
-
-										# create a string of all the different sections put together to identify duplicates
-										endpointString = endpointNamesEntry + endpointUnitsEntry + endpointDataTypeEntry + String(endpointConcEntry) + endpointConcUnitsEntry + String(endpointTimeEntry) + endpointTimeUnitsEntry
-
-										# if the endpoint is not already in there, record it
-										if endpointString not in endpointStrings
-											endpointStrings.push endpointString							
-
-											# record the endpoint data
-											endpointNames.push endpointNamesEntry
-											endpointUnits.push endpointUnitsEntry
-											endpointDataTypes.push endpointDataTypeEntry
-											endpointConcs.push endpointConcEntry
-											endpointConcUnits.push endpointConcUnitsEntry
-											endpointTimes.push endpointTimeEntry
-											endpointTimeUnits.push endpointTimeUnitsEntry
-											endpointHiddens.push endpointHiddenEntry
+								for lsState in experiment.lsStates
+									# go through the experiment data to check if the endpoint data is there
+									if lsState.lsKind == 'data column order' and lsState.ignored == false
+										extractEndpointData(lsState)
 
 						# Part 2: create a CSV file with the endpoints	
 						blankElements = ["NA", "undefined", "", null, undefined]
@@ -797,19 +765,19 @@ exports.getTemplateSELFile = (req, resp) ->
 						endpointNameRowString = "Corporate Batch ID,"
 						dataTypeRowString = "Datatype,"
 						if protocolHasEndpoints
-							for indexNum in [0..endpointNames.length]
+							for indexNum in [0..@endpointNames.length]
 								endpointRowEntry = ""
 								dataTypeEntry = ""
 
 								endpointHasNoValues = true
-								endpointName = endpointNames[indexNum]
-								endpointUnit = endpointUnits[indexNum]
-								endpointDataType = endpointDataTypes[indexNum]
-								endpointConc = endpointConcs[indexNum]
-								endpointConcUnit = endpointConcUnits[indexNum]
-								endpointTime = endpointTimes[indexNum]
-								endpointTimeUnit = endpointTimeUnits[indexNum]
-								endpointHidden = endpointHiddens[indexNum]
+								endpointName = @endpointNames[indexNum]
+								endpointUnit = @endpointUnits[indexNum]
+								endpointDataType = @endpointDataTypes[indexNum]
+								endpointConc = @endpointConcs[indexNum]
+								endpointConcUnit = @endpointConcUnits[indexNum]
+								endpointTime = @endpointTimes[indexNum]
+								endpointTimeUnit = @endpointTimeUnits[indexNum]
+								endpointHidden = @endpointHiddens[indexNum]
 
 								if endpointName not in blankElements
 									endpointRowEntry = endpointRowEntry + endpointName + " "
