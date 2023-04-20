@@ -662,6 +662,21 @@ exports.getTemplateSELFile = (req, resp) ->
 				protocolDate = todayDate.getMonth() + 1 + "/" + todayDate.getDate() + "/" + String(todayDate.getFullYear())[2..4]
 			
 				protocolScientist = req.session.passport.user.username
+
+				# create the top portion of the template file given the protocol metadata just extracted...
+				data = [  ['Experiment Meta Data'],
+				['Format', 'Generic'],
+				['Protocol Name', protocolName],
+				['Experiment Name', ''],
+				['Scientist', protocolScientist],
+				['Notebook', ''],
+				['Page', ''],
+				['Assay Date', protocolDate],
+				['Project', protocolProject],
+				[''],
+				['Calculated Results']
+				]
+
 				experimentServiceRoutes.experimentsByProtocolCodenameInternal protocolCode, false, (statusCode, experiments) ->
 					if statusCode == 200
 						# Part 1: Find all unique endpoints across experiments that use this protocol code
@@ -677,138 +692,136 @@ exports.getTemplateSELFile = (req, resp) ->
 
 						endpointStrings = []
 
-						for experiment in experiments
-							for i in experiment.lsStates
-								#go through the experiment data to check if the endpoint data is there
-								if i.lsKind == 'data column order' and i.ignored == false
+						# if the protocol has no experiments, use the endpoint information in the protocol 
+						if experiments.length == 0
+							protocolHasEndpoints = false 
 
-									# create NAs for each entry in case we don't find a variable, we'll plug these in instead
-									endpointNamesEntry = "NA"
-									endpointUnitsEntry = "NA"
-									endpointDataTypeEntry = "NA"
-									endpointConcEntry = "NA"
-									endpointConcUnitsEntry = "NA"
-									endpointTimeEntry = "NA"
-									endpointTimeUnitsEntry = "NA"
-									endpointHiddenEntry = "NA"
+						# if the protocol has experiments, collect all the endpoint information available
+						else 
+							protocolHasEndpoints = true
+							for experiment in experiments
+								for i in experiment.lsStates
+									#go through the experiment data to check if the endpoint data is there
+									if i.lsKind == 'data column order' and i.ignored == false
 
-									for j in i.lsValues
-										# only looking at the data that is not ignored
-										# TODO - add try/catch 
-										if j.lsKind == "column name" and j.ignored == false
-											endpointNamesEntry = j.codeValue
-										if j.lsKind == "column units" and j.ignored == false
-											endpointUnitsEntry = j.codeValue
-										if j.lsKind == "column type" and j.ignored == false
-											endpointDataTypeEntry = j.codeValue
-										if j.lsKind == "column concentration" and j.ignored == false
-											endpointConcEntry = j.numericValue
-										if j.lsKind == "column conc units" and j.ignored == false
-											endpointConcUnitsEntry = j.codeValue
-										if j.lsKind == "column time" and j.ignored == false
-											endpointTimeEntry = j.numericValue
-										if j.lsKind == "column time units" and j.ignored == false
-											endpointTimeUnitsEntry = j.codeValue
-										if j.lsTypeAndKind == "codeValue_hide column" and j.ignored == false
-											endpointHiddenEntry = j.codeValue
+										# create NAs for each entry in case we don't find a variable, we'll plug these in instead
+										endpointNamesEntry = "NA"
+										endpointUnitsEntry = "NA"
+										endpointDataTypeEntry = "NA"
+										endpointConcEntry = "NA"
+										endpointConcUnitsEntry = "NA"
+										endpointTimeEntry = "NA"
+										endpointTimeUnitsEntry = "NA"
+										endpointHiddenEntry = "NA"
 
-									# create a string of all the different sections put together to identify duplicates
-									endpointString = endpointNamesEntry + endpointUnitsEntry + endpointDataTypeEntry + String(endpointConcEntry) + endpointConcUnitsEntry + String(endpointTimeEntry) + endpointTimeUnitsEntry
+										for j in i.lsValues
+											# only looking at the data that is not ignored
+											# TODO - add try/catch 
+											if j.lsKind == "column name" and j.ignored == false
+												endpointNamesEntry = j.codeValue
+											if j.lsKind == "column units" and j.ignored == false
+												endpointUnitsEntry = j.codeValue
+											if j.lsKind == "column type" and j.ignored == false
+												endpointDataTypeEntry = j.codeValue
+											if j.lsKind == "column concentration" and j.ignored == false
+												endpointConcEntry = j.numericValue
+											if j.lsKind == "column conc units" and j.ignored == false
+												endpointConcUnitsEntry = j.codeValue
+											if j.lsKind = "column time" and j.ignored == false
+												endpointTimeEntry = j.numericValue
+											if j.lsKind == "column time units" and j.ignored == false
+												endpointTimeUnitsEntry = j.codeValue
+											if j.lsTypeAndKind == "codeValue_hide column" and j.ignored == false
+												endpointHiddenEntry = j.codeValue
 
-									# if the endpoint is not already in there, record it
-									if endpointString not in endpointStrings
-										endpointStrings.push endpointString							
+										# create a string of all the different sections put together to identify duplicates
+										endpointString = endpointNamesEntry + endpointUnitsEntry + endpointDataTypeEntry + String(endpointConcEntry) + endpointConcUnitsEntry + String(endpointTimeEntry) + endpointTimeUnitsEntry
 
-										# record the endpoint data
-										endpointNames.push endpointNamesEntry
-										endpointUnits.push endpointUnitsEntry
-										endpointDataTypes.push endpointDataTypeEntry
-										endpointConcs.push endpointConcEntry
-										endpointConcUnits.push endpointConcUnitsEntry
-										endpointTimes.push endpointTimeEntry
-										endpointTimeUnits.push endpointTimeUnitsEntry
-										endpointHiddens.push endpointHiddenEntry
+										# if the endpoint is not already in there, record it
+										if endpointString not in endpointStrings
+											endpointStrings.push endpointString							
+
+											# record the endpoint data
+											endpointNames.push endpointNamesEntry
+											endpointUnits.push endpointUnitsEntry
+											endpointDataTypes.push endpointDataTypeEntry
+											endpointConcs.push endpointConcEntry
+											endpointConcUnits.push endpointConcUnitsEntry
+											endpointTimes.push endpointTimeEntry
+											endpointTimeUnits.push endpointTimeUnitsEntry
+											endpointHiddens.push endpointHiddenEntry
+
 						# Part 2: create a CSV file with the endpoints	
 						blankElements = ["NA", "undefined", "", null, undefined]
 
 						endpointNameRowString = "Corporate Batch ID,"
 						dataTypeRowString = "Datatype,"
-						for indexNum in [0..endpointNames.length]
-							endpointRowEntry = ""
-							dataTypeEntry = ""
+						if protocolHasEndpoints
+							for indexNum in [0..endpointNames.length]
+								endpointRowEntry = ""
+								dataTypeEntry = ""
 
-							endpointHasNoValues = true
-							endpointName = endpointNames[indexNum]
-							endpointUnit = endpointUnits[indexNum]
-							endpointDataType = endpointDataTypes[indexNum]
-							endpointConc = endpointConcs[indexNum]
-							endpointConcUnit = endpointConcUnits[indexNum]
-							endpointTime = endpointTimes[indexNum]
-							endpointTimeUnit = endpointTimeUnits[indexNum]
-							endpointHidden = endpointHiddens[indexNum]
+								endpointHasNoValues = true
+								endpointName = endpointNames[indexNum]
+								endpointUnit = endpointUnits[indexNum]
+								endpointDataType = endpointDataTypes[indexNum]
+								endpointConc = endpointConcs[indexNum]
+								endpointConcUnit = endpointConcUnits[indexNum]
+								endpointTime = endpointTimes[indexNum]
+								endpointTimeUnit = endpointTimeUnits[indexNum]
+								endpointHidden = endpointHiddens[indexNum]
 
-							if endpointName not in blankElements
-								endpointRowEntry = endpointRowEntry + endpointName + " "
-								endpointHasNoValues = false
-							if endpointUnit not in blankElements
-								endpointRowEntry = endpointRowEntry + "(" + endpointUnit + ") "
-								endpointHasNoValues = false
+								if endpointName not in blankElements
+									endpointRowEntry = endpointRowEntry + endpointName + " "
+									endpointHasNoValues = false
+								if endpointUnit not in blankElements
+									endpointRowEntry = endpointRowEntry + "(" + endpointUnit + ") "
+									endpointHasNoValues = false
 
-							# construct a different string for concentration depending on which combination of conc and conc units are present or not
-							if endpointConc not in blankElements && endpointConcUnit not in blankElements
-								endpointRowEntry = endpointRowEntry + "[" + endpointConc + " " + endpointConcUnit + "] "
-								endpointHasNoValues = false
-							if endpointConc in blankElements && endpointConcUnit not in blankElements
-								endpointRowEntry = endpointRowEntry + "[" + endpointConcUnit + "] "
-								endpointHasNoValues = false
-							if endpointConc not in blankElements && endpointConcUnit in blankElements
-								endpointRowEntry = endpointRowEntry + "[" + endpointConc + "] "
-								endpointHasNoValues = false
+								# construct a different string for concentration depending on which combination of conc and conc units are present or not
+								if endpointConc not in blankElements && endpointConcUnit not in blankElements
+									endpointRowEntry = endpointRowEntry + "[" + endpointConc + " " + endpointConcUnit + "] "
+									endpointHasNoValues = false
+								if endpointConc in blankElements && endpointConcUnit not in blankElements
+									endpointRowEntry = endpointRowEntry + "[" + endpointConcUnit + "] "
+									endpointHasNoValues = false
+								if endpointConc not in blankElements && endpointConcUnit in blankElements
+									endpointRowEntry = endpointRowEntry + "[" + endpointConc + "] "
+									endpointHasNoValues = false
 
-							# construct a different string for time depending on which combination of time and time units are present or not
-							if endpointTime not in blankElements && endpointTimeUnit not in blankElements
-								endpointRowEntry = endpointRowEntry + "{" + endpointTime + " " + endpointTimeUnits + "} " 
-								endpointHasNoValues = false
-							if endpointTime not in blankElements && endpointTimeUnit in blankElements
-								endpointRowEntry = endpointRowEntry + "{" + endpointTime + "} "
-								endpointHasNoValues = false
-							if endpointTime in blankElements && endpointTimeUnit not in blankElements
-								endpointRowEntry = endpointRowEntry + "{" + endpointTimeUnit + "} "
-								endpointHasNoValues = false
+								# construct a different string for time depending on which combination of time and time units are present or not
+								if endpointTime not in blankElements && endpointTimeUnit not in blankElements
+									endpointRowEntry = endpointRowEntry + "{" + endpointTime + " " + endpointTimeUnits + "} " 
+									endpointHasNoValues = false
+								if endpointTime not in blankElements && endpointTimeUnit in blankElements
+									endpointRowEntry = endpointRowEntry + "{" + endpointTime + "} "
+									endpointHasNoValues = false
+								if endpointTime in blankElements && endpointTimeUnit not in blankElements
+									endpointRowEntry = endpointRowEntry + "{" + endpointTimeUnit + "} "
+									endpointHasNoValues = false
 
-							# only attach the endpoint to the csv if it has any values 
-							if endpointHasNoValues == false
-								endpointNameRowString = endpointNameRowString + endpointRowEntry + ","
+								# only attach the endpoint to the csv if it has any values 
+								if endpointHasNoValues == false
+									endpointNameRowString = endpointNameRowString + endpointRowEntry + ","
 
-								# we only record the data type value if the other endpoint values are not empty 
-								if endpointDataType == "numericValue"
-									dataTypeRowEntry = "Number "					
-								else if endpointDataType == "stringValue"
-									dataTypeRowEntry = "Text "
+									# we only record the data type value if the other endpoint values are not empty 
+									if endpointDataType == "numericValue"
+										dataTypeRowEntry = "Number "					
+									else if endpointDataType == "stringValue"
+										dataTypeRowEntry = "Text "
 
-								# mark if the endpoint is hidden or not
-								if endpointHidden == "TRUE"
-									dataTypeRowEntry = dataTypeRowEntry + "(Hidden),"
-								else
-									dataTypeRowEntry = dataTypeRowEntry + ","	
+									# mark if the endpoint is hidden or not
+									if endpointHidden == "TRUE"
+										dataTypeRowEntry = dataTypeRowEntry + "(Hidden),"
+									else
+										dataTypeRowEntry = dataTypeRowEntry + ","	
 
-								dataTypeRowString = dataTypeRowString + dataTypeRowEntry
+									dataTypeRowString = dataTypeRowString + dataTypeRowEntry
 
-						# Create an array of data for the CSV file
-						data = [  ['Experiment Meta Data'],
-						['Format', 'Generic'],
-						['Protocol Name', protocolName],
-						['Experiment Name', ''],
-						['Scientist', protocolScientist],
-						['Notebook', ''],
-						['Page', ''],
-						['Assay Date', protocolDate],
-						['Project', protocolProject],
-						[''],
-						['Calculated Results'],
-						dataTypeRowString.split(','),
-						endpointNameRowString.split(',')
-						]
+							# add-on the endpoint column names and data types to the .csv data if there is data
+							data.push(dataTypeRowString.split(','))
+							data.push(endpointNameRowString.split(','))
+							
 
 						# Convert the data to a CSV string
 						csvString = csv.stringify(data, {header: false})
