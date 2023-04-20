@@ -692,9 +692,62 @@ exports.getTemplateSELFile = (req, resp) ->
 
 						endpointStrings = []
 
-						# if the protocol has no experiments, use the endpoint information in the protocol 
+						# if the protocol has no experiments, use the defined endpoint information in the protocol 
 						if experiments.length == 0
-							protocolHasEndpoints = false 
+							protocolEndpoints = _.where(json.lsStates, {lsKind: "data column order", ignored: false})
+							# if the protocol has no endpoints saved in it, pass
+							if protocolEndpoints.length == 0
+								protocolHasEndpoints = false 
+							else
+								protocolHasEndpoints = true
+								# if it does, we want to extract them and format them for the template file
+								for i in protocolEndpoints
+									# create NAs for each entry in case we don't find a variable, we'll plug these in instead
+									endpointNamesEntry = "NA"
+									endpointUnitsEntry = "NA"
+									endpointDataTypeEntry = "NA"
+									endpointConcEntry = "NA"
+									endpointConcUnitsEntry = "NA"
+									endpointTimeEntry = "NA"
+									endpointTimeUnitsEntry = "NA"
+									endpointHiddenEntry = "NA"
+
+									for j in i.lsValues
+										# only looking at the data that is not ignored
+										# TODO - add try/catch 
+										if j.lsKind == "column name" and j.ignored == false
+											endpointNamesEntry = j.codeValue
+										if j.lsKind == "column units" and j.ignored == false
+											endpointUnitsEntry = j.codeValue
+										if j.lsKind == "column type" and j.ignored == false
+											endpointDataTypeEntry = j.codeValue
+										if j.lsKind == "column concentration" and j.ignored == false
+											endpointConcEntry = j.numericValue
+										if j.lsKind == "column conc units" and j.ignored == false
+											endpointConcUnitsEntry = j.codeValue
+										if j.lsKind = "column time" and j.ignored == false
+											endpointTimeEntry = j.numericValue
+										if j.lsKind == "column time units" and j.ignored == false
+											endpointTimeUnitsEntry = j.codeValue
+										if j.lsTypeAndKind == "codeValue_hide column" and j.ignored == false
+											endpointHiddenEntry = j.codeValue
+
+									# create a string of all the different sections put together to identify duplicates
+									endpointString = endpointNamesEntry + endpointUnitsEntry + endpointDataTypeEntry + String(endpointConcEntry) + endpointConcUnitsEntry + String(endpointTimeEntry) + endpointTimeUnitsEntry
+
+									# if the endpoint is not already in there, record it
+									if endpointString not in endpointStrings
+										endpointStrings.push endpointString							
+
+										# record the endpoint data
+										endpointNames.push endpointNamesEntry
+										endpointUnits.push endpointUnitsEntry
+										endpointDataTypes.push endpointDataTypeEntry
+										endpointConcs.push endpointConcEntry
+										endpointConcUnits.push endpointConcUnitsEntry
+										endpointTimes.push endpointTimeEntry
+										endpointTimeUnits.push endpointTimeUnitsEntry
+										endpointHiddens.push endpointHiddenEntry
 
 						# if the protocol has experiments, collect all the endpoint information available
 						else 
