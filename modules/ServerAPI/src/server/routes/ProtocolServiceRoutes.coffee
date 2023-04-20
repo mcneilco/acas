@@ -692,6 +692,9 @@ exports.getTemplateSELFile = (req, resp) ->
 
 						endpointStrings = []
 
+						# set the default value to true unless otherwise specified
+						protocolHasEndpoints = true
+						
 						# if the protocol has no experiments, use the defined endpoint information in the protocol 
 						if experiments.length == 0
 							protocolEndpoints = _.where(json.lsStates, {lsKind: "data column order", ignored: false})
@@ -699,7 +702,6 @@ exports.getTemplateSELFile = (req, resp) ->
 							if protocolEndpoints.length == 0
 								protocolHasEndpoints = false 
 							else
-								protocolHasEndpoints = true
 								# if it does, we want to extract them and format them for the template file
 								for i in protocolEndpoints
 									# create NAs for each entry in case we don't find a variable, we'll plug these in instead
@@ -714,23 +716,16 @@ exports.getTemplateSELFile = (req, resp) ->
 
 									for j in i.lsValues
 										# only looking at the data that is not ignored
-										# TODO - add try/catch 
-										if j.lsKind == "column name" and j.ignored == false
-											endpointNamesEntry = j.codeValue
-										if j.lsKind == "column units" and j.ignored == false
-											endpointUnitsEntry = j.codeValue
-										if j.lsKind == "column type" and j.ignored == false
-											endpointDataTypeEntry = j.codeValue
-										if j.lsKind == "column concentration" and j.ignored == false
-											endpointConcEntry = j.numericValue
-										if j.lsKind == "column conc units" and j.ignored == false
-											endpointConcUnitsEntry = j.codeValue
-										if j.lsKind = "column time" and j.ignored == false
-											endpointTimeEntry = j.numericValue
-										if j.lsKind == "column time units" and j.ignored == false
-											endpointTimeUnitsEntry = j.codeValue
-										if j.lsTypeAndKind == "codeValue_hide column" and j.ignored == false
-											endpointHiddenEntry = j.codeValue
+										if not j.ignored
+											switch j.lsKind
+												when "column name" then endpointNamesEntry = j.codeValue
+												when "column units" then endpointUnitsEntry = j.codeValue
+												when "column type" then endpointDataTypeEntry = j.codeValue
+												when "column concentration" then endpointConcEntry = j.numericValue
+												when "column conc units" then endpointConcUnitsEntry = j.codeValue
+												when "column time" then endpointTimeEntry = j.numericValue
+												when "column time units" then endpointTimeUnitsEntry = j.codeValue
+												when "codeValue_hide column" then endpointHiddenEntry = j.codeValue
 
 									# create a string of all the different sections put together to identify duplicates
 									endpointString = endpointNamesEntry + endpointUnitsEntry + endpointDataTypeEntry + String(endpointConcEntry) + endpointConcUnitsEntry + String(endpointTimeEntry) + endpointTimeUnitsEntry
@@ -751,7 +746,6 @@ exports.getTemplateSELFile = (req, resp) ->
 
 						# if the protocol has experiments, collect all the endpoint information available
 						else 
-							protocolHasEndpoints = true
 							for experiment in experiments
 								for i in experiment.lsStates
 									#go through the experiment data to check if the endpoint data is there
@@ -769,23 +763,16 @@ exports.getTemplateSELFile = (req, resp) ->
 
 										for j in i.lsValues
 											# only looking at the data that is not ignored
-											# TODO - add try/catch 
-											if j.lsKind == "column name" and j.ignored == false
-												endpointNamesEntry = j.codeValue
-											if j.lsKind == "column units" and j.ignored == false
-												endpointUnitsEntry = j.codeValue
-											if j.lsKind == "column type" and j.ignored == false
-												endpointDataTypeEntry = j.codeValue
-											if j.lsKind == "column concentration" and j.ignored == false
-												endpointConcEntry = j.numericValue
-											if j.lsKind == "column conc units" and j.ignored == false
-												endpointConcUnitsEntry = j.codeValue
-											if j.lsKind = "column time" and j.ignored == false
-												endpointTimeEntry = j.numericValue
-											if j.lsKind == "column time units" and j.ignored == false
-												endpointTimeUnitsEntry = j.codeValue
-											if j.lsTypeAndKind == "codeValue_hide column" and j.ignored == false
-												endpointHiddenEntry = j.codeValue
+											if not j.ignored
+												switch j.lsKind
+													when "column name" then endpointNamesEntry = j.codeValue
+													when "column units" then endpointUnitsEntry = j.codeValue
+													when "column type" then endpointDataTypeEntry = j.codeValue
+													when "column concentration" then endpointConcEntry = j.numericValue
+													when "column conc units" then endpointConcUnitsEntry = j.codeValue
+													when "column time" then endpointTimeEntry = j.numericValue
+													when "column time units" then endpointTimeUnitsEntry = j.codeValue
+													when "codeValue_hide column" then endpointHiddenEntry = j.codeValue
 
 										# create a string of all the different sections put together to identify duplicates
 										endpointString = endpointNamesEntry + endpointUnitsEntry + endpointDataTypeEntry + String(endpointConcEntry) + endpointConcUnitsEntry + String(endpointTimeEntry) + endpointTimeUnitsEntry
