@@ -798,6 +798,7 @@ class EndpointListController extends AbstractFormController
 		if @options.newProtocol == true
 			@$(".bv_downloadFiles").hide()
 			@$(".bv_endpointManagerInstructions").hide()
+			@endpointControllers = [] # initialize empty endpoint controller list since it won't be automatically made for new protocol 
 
 		#check whether or not to display time and concentration columns in the endpoint table
 		@showTimeAndConcentration()
