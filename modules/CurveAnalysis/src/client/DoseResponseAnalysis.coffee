@@ -435,7 +435,7 @@ class DoseResponseAnalysisController extends Backbone.View
 
 	initialize: ->
 		@model.on "sync", @handleExperimentSaved
-		@model.getStatus().on 'change', @handleStatusChanged.bind(@)
+		@model.getStatus().on 'change', @handleStatusChanged
 		@parameterController = null
 		@analyzedPreviously = if @model.getModelFitStatus().get('codeValue') == "not started" then false else true
 		$(@el).empty()
