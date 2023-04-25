@@ -707,7 +707,7 @@ exports.getTemplateSELFile = (req, resp) ->
 					endpointString = endpointNamesEntry + endpointUnitsEntry + endpointDataTypeEntry + String(endpointConcEntry) + endpointConcUnitsEntry + String(endpointTimeEntry) + endpointTimeUnitsEntry
 
 					# if the endpoint is not already in there, record it
-					if endpointString not in endpointStrings
+					if endpointString not in @endpointStrings
 						@endpointStrings.push endpointString							
 
 						# record the endpoint data
@@ -720,125 +720,109 @@ exports.getTemplateSELFile = (req, resp) ->
 						@endpointTimeUnits.push endpointTimeUnitsEntry
 						@endpointHiddens.push endpointHiddenEntry
 
+				# Part 1: Find all unique endpoints across experiments that use this protocol code
+				# arrays for recording endpoint data
+				@endpointNames = []
+				@endpointUnits = []
+				@endpointDataTypes = []
+				@endpointConcs = []
+				@endpointConcUnits = []
+				@endpointTimes = []
+				@endpointTimeUnits = []
+				@endpointHiddens = []
 
-				experimentServiceRoutes.experimentsByProtocolCodenameInternal protocolCode, false, (statusCode, experiments) ->
-					if statusCode == 200
-						# Part 1: Find all unique endpoints across experiments that use this protocol code
-						# arrays for recording endpoint data
-						@endpointNames = []
-						@endpointUnits = []
-						@endpointDataTypes = []
-						@endpointConcs = []
-						@endpointConcUnits = []
-						@endpointTimes = []
-						@endpointTimeUnits = []
-						@endpointHiddens = []
+				@endpointStrings = []
 
-						@endpointStrings = []
 
-						# set the default value to true unless otherwise specified
-						protocolHasEndpoints = true
+				# use the defined endpoint information in the protocol 
+				protocolEndpointLsStates = _.where(json.lsStates, {lsKind: "data column order", ignored: false})
+				# if the protocol has no endpoints saved in it, we record it has no endpoint data and won't write that section of the .csv...
+				if protocolEndpointLsStates.length == 0
+					protocolHasEndpoints = false 
 
-						# if the protocol has no experiments, use the defined endpoint information in the protocol 
-						if experiments.length == 0
-							protocolEndpointLsStates = _.where(json.lsStates, {lsKind: "data column order", ignored: false})
-							# if the protocol has no endpoints saved in it, we record it has no endpoint data and won't write that section of the .csv...
-							if protocolEndpointLsStates.length == 0
-								protocolHasEndpoints = false 
+				# ...but if it does, we want to extract them and format them for the template file
+				else
+					protocolHasEndpoints = true
+					for lsState in protocolEndpointLsStates
+						extractEndpointData(lsState)
 
-							# ...but if it does, we want to extract them and format them for the template file
+
+				# Part 2: create a CSV file with the endpoints	
+				blankElements = ["NA", "undefined", "", null, undefined]
+
+				endpointNameRowString = "Corporate Batch ID,"
+				dataTypeRowString = "Datatype,"
+				if protocolHasEndpoints
+					for indexNum in [0..@endpointNames.length]
+						endpointRowEntry = ""
+						dataTypeEntry = ""
+
+						endpointHasNoValues = true
+						endpointName = @endpointNames[indexNum]
+						endpointUnit = @endpointUnits[indexNum]
+						endpointDataType = @endpointDataTypes[indexNum]
+						endpointConc = @endpointConcs[indexNum]
+						endpointConcUnit = @endpointConcUnits[indexNum]
+						endpointTime = @endpointTimes[indexNum]
+						endpointTimeUnit = @endpointTimeUnits[indexNum]
+						endpointHidden = @endpointHiddens[indexNum]
+
+						if endpointName not in blankElements
+							endpointRowEntry = endpointRowEntry + endpointName + " "
+							endpointHasNoValues = false
+						if endpointUnit not in blankElements
+							endpointRowEntry = endpointRowEntry + "(" + endpointUnit + ") "
+							endpointHasNoValues = false
+
+						# construct a different string for concentration depending on which combination of conc and conc units are present or not
+						if endpointConc not in blankElements && endpointConcUnit not in blankElements
+							endpointRowEntry = endpointRowEntry + "[" + endpointConc + " " + endpointConcUnit + "] "
+							endpointHasNoValues = false
+						if endpointConc in blankElements && endpointConcUnit not in blankElements
+							endpointRowEntry = endpointRowEntry + "[" + endpointConcUnit + "] "
+							endpointHasNoValues = false
+						if endpointConc not in blankElements && endpointConcUnit in blankElements
+							endpointRowEntry = endpointRowEntry + "[" + endpointConc + "] "
+							endpointHasNoValues = false
+
+						# construct a different string for time depending on which combination of time and time units are present or not
+						if endpointTime not in blankElements && endpointTimeUnit not in blankElements
+							endpointRowEntry = endpointRowEntry + "{" + endpointTime + " " + endpointTimeUnits + "} " 
+							endpointHasNoValues = false
+						if endpointTime not in blankElements && endpointTimeUnit in blankElements
+							endpointRowEntry = endpointRowEntry + "{" + endpointTime + "} "
+							endpointHasNoValues = false
+						if endpointTime in blankElements && endpointTimeUnit not in blankElements
+							endpointRowEntry = endpointRowEntry + "{" + endpointTimeUnit + "} "
+							endpointHasNoValues = false
+
+						# only attach the endpoint to the csv if it has any values 
+						if endpointHasNoValues == false
+							endpointNameRowString = endpointNameRowString + endpointRowEntry + ","
+
+							# we only record the data type value if the other endpoint values are not empty 
+							if endpointDataType == "numericValue"
+								dataTypeRowEntry = "Number "					
+							else if endpointDataType == "stringValue"
+								dataTypeRowEntry = "Text "
+
+							# mark if the endpoint is hidden or not
+							if endpointHidden == "TRUE"
+								dataTypeRowEntry = dataTypeRowEntry + "(Hidden),"
 							else
-								for lsState in protocolEndpointLsStates
-									extractEndpointData(lsState)
+								dataTypeRowEntry = dataTypeRowEntry + ","	
 
-						# if the protocol has experiments, collect all the endpoint information available
-						else 
-							for experiment in experiments
-								for lsState in experiment.lsStates
-									# go through the experiment data to check if the endpoint data is there
-									if lsState.lsKind == 'data column order' and lsState.ignored == false
-										extractEndpointData(lsState)
+							dataTypeRowString = dataTypeRowString + dataTypeRowEntry
 
-						# Part 2: create a CSV file with the endpoints	
-						blankElements = ["NA", "undefined", "", null, undefined]
+					# add-on the endpoint column names and data types to the .csv data if there is data
+					data.push(dataTypeRowString.split(','))
+					data.push(endpointNameRowString.split(','))
+					
 
-						endpointNameRowString = "Corporate Batch ID,"
-						dataTypeRowString = "Datatype,"
-						if protocolHasEndpoints
-							for indexNum in [0..@endpointNames.length]
-								endpointRowEntry = ""
-								dataTypeEntry = ""
+				# Convert the data to a CSV string
+				csvString = csv.stringify(data, {header: false})
 
-								endpointHasNoValues = true
-								endpointName = @endpointNames[indexNum]
-								endpointUnit = @endpointUnits[indexNum]
-								endpointDataType = @endpointDataTypes[indexNum]
-								endpointConc = @endpointConcs[indexNum]
-								endpointConcUnit = @endpointConcUnits[indexNum]
-								endpointTime = @endpointTimes[indexNum]
-								endpointTimeUnit = @endpointTimeUnits[indexNum]
-								endpointHidden = @endpointHiddens[indexNum]
-
-								if endpointName not in blankElements
-									endpointRowEntry = endpointRowEntry + endpointName + " "
-									endpointHasNoValues = false
-								if endpointUnit not in blankElements
-									endpointRowEntry = endpointRowEntry + "(" + endpointUnit + ") "
-									endpointHasNoValues = false
-
-								# construct a different string for concentration depending on which combination of conc and conc units are present or not
-								if endpointConc not in blankElements && endpointConcUnit not in blankElements
-									endpointRowEntry = endpointRowEntry + "[" + endpointConc + " " + endpointConcUnit + "] "
-									endpointHasNoValues = false
-								if endpointConc in blankElements && endpointConcUnit not in blankElements
-									endpointRowEntry = endpointRowEntry + "[" + endpointConcUnit + "] "
-									endpointHasNoValues = false
-								if endpointConc not in blankElements && endpointConcUnit in blankElements
-									endpointRowEntry = endpointRowEntry + "[" + endpointConc + "] "
-									endpointHasNoValues = false
-
-								# construct a different string for time depending on which combination of time and time units are present or not
-								if endpointTime not in blankElements && endpointTimeUnit not in blankElements
-									endpointRowEntry = endpointRowEntry + "{" + endpointTime + " " + endpointTimeUnits + "} " 
-									endpointHasNoValues = false
-								if endpointTime not in blankElements && endpointTimeUnit in blankElements
-									endpointRowEntry = endpointRowEntry + "{" + endpointTime + "} "
-									endpointHasNoValues = false
-								if endpointTime in blankElements && endpointTimeUnit not in blankElements
-									endpointRowEntry = endpointRowEntry + "{" + endpointTimeUnit + "} "
-									endpointHasNoValues = false
-
-								# only attach the endpoint to the csv if it has any values 
-								if endpointHasNoValues == false
-									endpointNameRowString = endpointNameRowString + endpointRowEntry + ","
-
-									# we only record the data type value if the other endpoint values are not empty 
-									if endpointDataType == "numericValue"
-										dataTypeRowEntry = "Number "					
-									else if endpointDataType == "stringValue"
-										dataTypeRowEntry = "Text "
-
-									# mark if the endpoint is hidden or not
-									if endpointHidden == "TRUE"
-										dataTypeRowEntry = dataTypeRowEntry + "(Hidden),"
-									else
-										dataTypeRowEntry = dataTypeRowEntry + ","	
-
-									dataTypeRowString = dataTypeRowString + dataTypeRowEntry
-
-							# add-on the endpoint column names and data types to the .csv data if there is data
-							data.push(dataTypeRowString.split(','))
-							data.push(endpointNameRowString.split(','))
-							
-
-						# Convert the data to a CSV string
-						csvString = csv.stringify(data, {header: false})
-
-						resp.json csvString
-
-					else
-						console.log 'got ajax error'
-						resp.end JSON.stringify "Error"
+				resp.json csvString
 
 		else
 			console.log 'got ajax error'
