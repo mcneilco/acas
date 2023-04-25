@@ -35,7 +35,7 @@ services:
 # Start command
 #    command: ["bin/acas.sh", "run", "acas", "start"]
   rservices:
-    image: mcneilco/racas-oss:${ACAS_TAG}
+    image: mcneilco/racas-oss:ACAS-633
     restart: always
     ports:
      - "1080:1080"

@@ -979,8 +979,8 @@ class FileRowSummaryController extends Backbone.View
 			currentFileName: currentFileName
 			reportName: reportDisplayName
 			#remove special characters from the links to prevent errors, but not from the displayed names
-			fileLink: window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" + encodeURIComponent(fileName)
-			reportLink: window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" + encodeURIComponent(reportName)
+			fileLink: window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/#{reportID}/#{encodeURIComponent(fileName)}"
+			reportLink: window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/#{reportID}/#{encodeURIComponent(reportName)}"
 		$(@el).html(@template(toDisplay))		
 		@
 
