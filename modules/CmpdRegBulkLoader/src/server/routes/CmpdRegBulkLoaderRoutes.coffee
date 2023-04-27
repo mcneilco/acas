@@ -1,4 +1,7 @@
 path = require 'path'
+fs = require 'fs'
+JSZip = require 'jszip'
+zip = new JSZip()
 
 exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.post '/api/cmpdRegBulkLoader/registerCmpds', exports.registerCmpds
@@ -8,8 +11,6 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.post '/api/cmpdRegBulkLoader/purgeFile', exports.purgeFile
 	app.get '/api/cmpdRegBulkLoader/getSDFFromBulkLoadFileId/:bulkFileID', exports.getSDFFromBulkLoadFileId
 	app.get '/api/cmpdRegBulkLoader/getLotsByBulkLoadFileID/:bulkFileID', exports.getLotsByBulkLoadFileID
-
-
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/cmpdRegBulkLoader', loginRoutes.ensureAuthenticated, exports.cmpdRegBulkLoaderIndex
@@ -171,22 +172,21 @@ exports.validateCmpds = (req, resp) ->
 	exports.registerCmpds(req, resp)
 
 exports.registerCmpds = (req, resp) ->
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+	config = require '../conf/compiled/conf.js'
 	req.connection.setTimeout 6000000
 	bulk_load_sub_folder = "cmpdreg_bulkload"
+
 	createSummaryZip = (fileName, originalFileName, json) ->
-		originalFilePath = "cmpdreg_bulkload"+path.sep+originalFileName
-		#remove .sdf from fileName and originalFileName
-		fileName = fileName.substring(0, fileName.length-4)
-		originalFileName = originalFileName.substring(0, originalFileName.length-4)
-		zipFileName = fileName+".zip"
-		zipFileDisplayName = originalFileName+".zip"
-		fs = require 'fs'
-		JSZip = require 'jszip'
-		zip = new JSZip()
+		# This is passed as just a name but it exists in the bulk_load_sub_folder
+		originalFilePath = path.join(bulk_load_sub_folder, fileName)
+
+		# Replace the extension with .zip to create the zip file name
+		zipFileName =  path.basename(fileName, path.extname(fileName)) + '.zip'
+		zipFileDisplayName = path.basename(originalFileName, path.extname(originalFileName)) + '.zip'
 		
+		# Create the zip file
 		for rFile in json.reportFiles
-			serverUtilityFunctions = require './ServerUtilityFunctions.js'
-			config = require '../conf/compiled/conf.js'
 			splitNames = rFile.split (path.sep+bulk_load_sub_folder+path.sep)
 			rFileName = splitNames[1]
 			rFileName = rFileName.replace(path.sep, '');
@@ -195,39 +195,45 @@ exports.registerCmpds = (req, resp) ->
 			zip.file(rFileName, fs.readFileSync(rFile))
 
 		origUploadsPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path
-		shortZipName = bulk_load_sub_folder + path.sep + zipFileName
-		zipFilePath = origUploadsPath + shortZipName
-		console.log zipFilePath
+		shortZipName = path.join(bulk_load_sub_folder, zipFileName)
+		zipFilePath = path.join(origUploadsPath, shortZipName)
+
+		console.log "Creating zip file #{zipFilePath}"
 		fstream = zip.generateNodeStream({type:"nodebuffer", streamFiles:true}).pipe(fs.createWriteStream(zipFilePath))
 		
 		fstream.on 'finish', ->
-			console.log "finished create write stream"
-			if config.all.server.service.external.file.type == 'custom'
+			console.log "Zip file #{zipFilePath} created"
+			if config.all.server.service.external.file.type == 'gcs'
 				# We want to upload the bulkloadFileID as meta data to the uploaded files
-				meta = {}
-				subFolder = bulk_load_sub_folder
+				metaData = {}
 				if json?.id?
-					meta = {bulkloadFileID: json.id}
-					subFolder = subFolder+path.sep+json.id
-				console.log "Moving files to custom location"
+					console.log "This is a registered bulk load file with id #{json.id}"
+					metaData = {bulkloadFileID: json.id}
+					subFolder = path.join(bulk_load_sub_folder, "registered", json.id.toString())
+				else
+					subFolder = path.join(bulk_load_sub_folder, "validated")
+
+				console.log "Moving files to #{subFolder}"
 				filesToMove = []
+				updatedReportFiles = []
 				for rFile in json.reportFiles
-					# Remove the server.service.persistence.filePath from begginging of the file path to create a short file path
-					console.log "rFile: #{rFile}"
-					console.log "#{config.all.server.service.persistence.filePath+path.sep+bulk_load_sub_folder}"
-					shortFilePath = rFile.replace("#{config.all.server.service.persistence.filePath+path.sep+bulk_load_sub_folder}/", "")
-					console.log "shortFilePath: #{shortFilePath}"
-					filesToMove.push({sourceLocation: shortFilePath, targetLocation: "#{subFolder+path.sep+shortFilePath}", meta: meta})
+					baseFileName = path.basename(rFile)
+					targetLocation = path.join(subFolder, baseFileName)
+					filesToMove.push({sourceLocation: rFile, targetLocation: targetLocation, metaData: metaData})
+					updatedReportFiles.push(targetLocation)
+				json.reportFiles = updatedReportFiles
 
 				# Add the zip file to the list of files to move
-				filesToMove.push({sourceLocation: shortZipName, targetLocation: "#{subFolder+path.sep+shortZipName}", meta: meta})
+				zipFileName = path.join(subFolder, zipFileName)
+				filesToMove.push({sourceLocation: shortZipName, targetLocation: zipFileName, metaData: metaData})
 
 				# Add the original file to the list of files to move
-				filesToMove.push({sourceLocation: originalFilePath, targetLocation: "#{subFolder+path.sep+originalFilePath}", meta: meta})
+				uploadedOriginalFilePath = path.join(subFolder, path.basename(originalFilePath))
+				filesToMove.push({sourceLocation: originalFilePath, targetLocation:  uploadedOriginalFilePath, metaData: metaData})
 				
 				fileServices = require './FileServices.js'
 				console.log(filesToMove)
-				files = await fileServices.moveDataFilesInternal(filesToMove) 
+				files = await fileServices.moveDataFilesInternal(filesToMove)
 				console.log "Finished moving files to custom location"
 
 			resp.json [json, zipFileName, zipFileDisplayName]

@@ -261,12 +261,17 @@ exports.moveDataFilesInternal = (files, deleteSourceFileOnSuccess) ->
 			continue
 
 		# Add config.all.server.datafiles.relative_path path to sourceLocation
-		file.fullPath = path.join(config.all.server.datafiles.relative_path, sourceLocation)
+		# Check if relative path is already added
+		if sourceLocation.indexOf(config.all.server.datafiles.relative_path) == -1
+			file.fullPath = path.join(config.all.server.datafiles.relative_path, sourceLocation)
+		else
+			file.fullPath = sourceLocation
 
 		# Ensure that the source file exists
 		exists = !!(await (fs.promises.stat file.fullPath).catch (err) -> false)
 		if !exists
 			file.error = "Source file does not exist"
+			console.error "Source file does not exist: #{file.fullPath}"
 			continue
 
 	# Upload each of the files to the bucket after validating all of them
@@ -278,7 +283,6 @@ exports.moveDataFilesInternal = (files, deleteSourceFileOnSuccess) ->
 		
 		if file.error
 			continue
-
 		promises.push(exports.uploadToBucket(fullPath, file.targetLocation, file.metaData)
 			.then (response) ->
 			# Add the file to the list of uploaded files
@@ -332,7 +336,7 @@ exports.uploadToBucket = (sourceLocation, targetLocation, metaData) ->
 			metadata: metaData
 		};
 	[file] = await bucket.upload(sourceLocation, {destination: targetLocation, metadata: metadata})
-	console.log "File '#{file.name}' uploaded to bucket '#{bucket.name}'."
+	console.log "Uploaded file #{sourceLocation} to #{targetLocation} in bucket #{bucket.name} with metadata #{JSON.stringify(metadata)}"
 	# Return both the file and the original file path
 	return {_uploadedFileRepresentation: file, sourceLocation: sourceLocation, targetLocation: targetLocation, metaData: metaData}
 

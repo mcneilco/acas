@@ -979,8 +979,8 @@ class FileRowSummaryController extends Backbone.View
 			currentFileName: currentFileName
 			reportName: reportDisplayName
 			#remove special characters from the links to prevent errors, but not from the displayed names
-			fileLink: window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/#{reportID}/#{encodeURIComponent(fileName)}"
-			reportLink: window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/#{reportID}/#{encodeURIComponent(reportName)}"
+			fileLink: window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/registered/#{reportID}/#{encodeURIComponent(fileName)}"
+			reportLink: window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/registered/#{reportID}/#{encodeURIComponent(reportName)}"
 		$(@el).html(@template(toDisplay))		
 		@
 
@@ -1203,14 +1203,14 @@ class CmpdRegBulkLoaderAppController extends Backbone.View
 			@$('.bv_bulkValSummary').hide()
 			@$('.bv_bulkRegSummary').show()
 			@setupBulkRegCmpdsSummaryController(summary[0])
-			downloadUrl = window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" + encodeURIComponent(summary[1])
+			downloadUrl = window.conf.datafiles.downloadurl.prefix + encodeURIComponent(summary[1])
 			@$('.bv_downloadSummary').attr "href", downloadUrl
 			@$('.bv_downloadSummary').attr "download", summary[2]
 		@regCmpdsController.on 'validateComplete', (summary) =>
 			@$('.bv_bulkReg').hide()
 			@$('.bv_bulkValSummary').show()
 			@setupBulkValCmpdsSummaryController(summary[0])
-			downloadUrl = window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" + encodeURIComponent(summary[1])
+			downloadUrl = window.conf.datafiles.downloadurl.prefix + encodeURIComponent(summary[1])
 			@$('.bv_downloadSummary').attr "href", downloadUrl
 			@$('.bv_downloadSummary').attr "download", summary[2]
 
