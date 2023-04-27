@@ -4,6 +4,7 @@ path = require 'path'
 multer = require 'multer'
 helmet = require("helmet");
 { Storage } = require '@google-cloud/storage'
+
 setupRoutes = (app, loginRoutes, requireLogin) ->
 	config = require '../conf/compiled/conf.js'
 
@@ -234,3 +235,108 @@ exports.deleteFile = (req, resp) ->
 	console.log 'Got DELETE request for data file: ' + req.params[0] + ' from user: ' + req.user.username
 	console.log 'Not deleting file, just returning 200 OK'
 	resp.send 200
+
+
+exports.moveDataFiles = (req, resp) ->
+	deleteSourceFileOnSuccess = if req.query?.deleteSourceFileOnSuccess? then req.query.deleteSourceFileOnSuccess == "true" else true
+	files = await exports.moveDataFilesInternal(req.body, deleteSourceFileOnSuccess)
+	resp.json files
+
+exports.moveDataFilesInternal = (files, deleteSourceFileOnSuccess) ->
+	config = require '../conf/compiled/conf.js'
+	
+	deleteSourceFileOnSuccess = if deleteSourceFileOnSuccess? then deleteSourceFileOnSuccess == true else true
+
+	# For each of the files, move them to the new location
+	for file in files
+		sourceLocation = file.sourceLocation
+		targetLocation = file.targetLocation
+
+		# IF metadata is not defined then set it to an empty object
+		if !file.metaData
+			file.metaData = {}
+
+		if !sourceLocation || !targetLocation
+			file.error = "Source and target locations must be defined"
+			continue
+
+		# Add config.all.server.datafiles.relative_path path to sourceLocation
+		file.fullPath = path.join(config.all.server.datafiles.relative_path, sourceLocation)
+
+		# Ensure that the source file exists
+		exists = !!(await (fs.promises.stat file.fullPath).catch (err) -> false)
+		if !exists
+			file.error = "Source file does not exist"
+			continue
+
+	# Upload each of the files to the bucket after validating all of them
+	promises = []
+	for file in files
+		if file.fullPath?
+			fullPath = file.fullPath
+			delete file.fullPath
+		
+		if file.error
+			continue
+
+		promises.push(exports.uploadToBucket(fullPath, file.targetLocation, file.metaData)
+			.then (response) ->
+			# Add the file to the list of uploaded files
+				file.fileServiceRepresentation = response.uploadedFileRepresentation
+				# Delete the source file
+				if deleteSourceFileOnSuccess
+					await fs.promises.unlink response.sourceLocation
+			.catch (err) ->
+				console.error "Error uploading file to bucket: #{err}"
+				file.error = "Error uploading file to bucket: #{err}"
+		)
+	console.log "awaiting uploads to complete"		
+	await Promise.all(promises)
+	console.log "uploads complete"
+
+
+
+	return files
+
+getOrCreateBucket = () ->
+	try
+		storage = new Storage({keyFilename: 'conf/gcscreds.json'})
+		projectID = "discovery-informatics"
+		bucketName = "acas-test-files"
+		region = 'US'
+		uniformBucketLevelAccess = true
+		defaultAcl = [{entity: 'allUsers',role: storage.acl.READER_ROLE}]
+		
+		bucket = await storage.bucket(bucketName)
+		[exists] = await bucket.exists()
+		if exists
+			console.log "Bucket #{bucketName} already exists."
+			[bucket] = await bucket.get()
+			return bucket
+		else
+			[bucket] = await storage.createBucket bucketName,
+				location: region
+				uniformBucketLevelAccess: uniformBucketLevelAccess
+				defaultAcl: defaultAcl
+				console.log "Bucket #{bucketName} created with uniform ACLs."
+			return bucket
+	catch err
+		console.error "ERROR: #{err}"
+
+exports.uploadToBucket = (sourceLocation, targetLocation, metaData) ->
+	bucket = await getOrCreateBucket()
+	if metaData == undefined
+		metaData = {}
+	else
+		metadata = {
+			metadata: metaData
+		};
+	[file] = await bucket.upload(sourceLocation, {destination: targetLocation, metadata: metadata})
+	console.log "File '#{file.name}' uploaded to bucket '#{bucket.name}'."
+	# Return both the file and the original file path
+	return {_uploadedFileRepresentation: file, sourceLocation: sourceLocation, targetLocation: targetLocation, metaData: metaData}
+
+exports.getFromBucket = (path) ->
+	bucket = await getOrCreateBucket()
+	file = await bucket.file(path)
+	return await file.createReadStream()
