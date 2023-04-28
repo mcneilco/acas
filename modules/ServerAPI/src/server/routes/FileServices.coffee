@@ -202,8 +202,12 @@ setupRoutes = (app, loginRoutes, requireLogin) ->
 					else
 						# Pipe the stream returned from getFromBucket(req.params[0]) to the response
 						#Print the readable stream as text to the console
-						fileStream = await exports.getFromBucket(req.params[0])
-						fileStream.pipe(resp);
+						{fileStream, metaData} = await exports.getFromBucket(req.params[0])
+						# Set the content type of the response to the content type of the metaData
+						resp.set('Content-Type', metaData.contentType)
+						resp.set('Content-Length', metaData.size)
+						resp.set('Last-Modified', metaData.updated)
+						fileStream.pipe(resp)
 
 	serverUtilityFunctions.ensureExists tempFilesPath, 0o0744, (err) ->
 		if err?
@@ -343,4 +347,6 @@ exports.uploadToBucket = (sourceLocation, targetLocation, metaData) ->
 exports.getFromBucket = (path) ->
 	bucket = await getOrCreateBucket()
 	file = await bucket.file(path)
-	return await file.createReadStream()
+	metaData = await file.getMetadata()
+	fileStream = await file.createReadStream()
+	return {fileStream: fileStream, metaData: metaData[0]}
