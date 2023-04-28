@@ -58,7 +58,7 @@ customSourceFileMove <- function(sourceLocation, recordedBy, fileName = NA, enti
   request <- list(list(
     "sourceLocation" = shortSourceLocation,
     "targetLocation" = targetLocation,
-    metadata = list("recordedBy" = recordedBy)
+    metaData = list("recordedBy" = recordedBy)
   ))
   url <- paste0(racas::applicationSettings$server.nodeapi.path, "/api/moveDataFiles?deleteSourceFileOnSuccess=true")
   result <- fromJSON(racas::postURLcheckStatus(url, toJSON(request), requireJSON = TRUE))
