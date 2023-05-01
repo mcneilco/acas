@@ -203,9 +203,13 @@ validateMetaData <- function(metaData, configList, username, formatSettings = li
     validatedMetaData$Scientist <- validateScientist(validatedMetaData$Scientist, configList, testMode) 
   }
 
-  if (!is.null(validatedMetaData["Experiment Status"])) {
-    validatedMetaData["Experiment Status CodeValue"] = validateExperimentStatus(validatedMetaData["Experiment Status"], configList, testMode) 
-  }
+
+  if ("Experiment Status" %in% names(validatedMetaData)) {
+    if (!is.null(validatedMetaData$"Experiment Status")) {
+      validatedMetaData$"Experiment Status" = validateExperimentStatus(validatedMetaData$"Experiment Status", configList, testMode) 
+    }
+  } 
+
 
   projectRequired <- !is.null(configList$client.include.project) && configList$client.include.project
   shouldSaveProject <- !is.null(configList$client.save.project) && configList$client.save.project
@@ -217,7 +221,6 @@ validateMetaData <- function(metaData, configList, username, formatSettings = li
   if (shouldSaveProject & projectRowSupplied & !projectRowSuppliedButEmpty) {
     validatedMetaData$Project <- validateProject(validatedMetaData$Project, configList, username, validatedMetaData[,paste0(racas::applicationSettings$client.protocol.label," Name")], errorEnv)
   }
-  
   if(!is.null(validatedMetaData[paste0(racas::applicationSettings$client.experiment.label," Name")]) && grepl("CREATETHISEXPERIMENT$", validatedMetaData[paste0(racas::applicationSettings$client.experiment.label," Name")])) {
     validatedMetaData[paste0(racas::applicationSettings$client.experiment.label," Name")] <- trim(gsub("CREATETHISEXPERIMENT$", "", validatedMetaData[paste0(racas::applicationSettings$client.experiment.label," Name")]))
     duplicateExperimentNamesAllowed <- TRUE
@@ -2168,7 +2171,7 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
     codeKind = "scientist",
     lsTransaction= lsTransaction)
   # experimentStatus <- racas::applicationSettings$server.sel.experimentStatus
-  experimentStatus <- metdata["Experiment Status CodeValue"]
+  experimentStatus <- metaData$"Experiment Status"
   if (is.null(experimentStatus) || experimentStatus == "") {
     experimentStatus <- "approved"
   }
@@ -3770,6 +3773,9 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   summaryInfo$info$"Format" <- as.character(validatedMetaData$Format)
   summaryInfo$info[configList$client.protocol.label] <- as.character(validatedMetaData[,paste0(racas::applicationSettings$client.protocol.label," Name")])
   summaryInfo$info[configList$client.experiment.label] <- as.character(validatedMetaData[,paste0(racas::applicationSettings$client.experiment.label," Name")])
+  if (!is.null(validatedMetaData$"Experiment Status")) {
+    summaryInfo$info$"Experiment Status" <- as.character(validatedMetaData$"Experiment Status")
+  }
   summaryInfo$info$"Scientist" <- validatedMetaData$Scientist
   summaryInfo$info$"Notebook" <- validatedMetaData$Notebook
   if(!is.null(validatedMetaData$Page)) {
@@ -3922,7 +3928,7 @@ parseGenericData <- function(request) {
   # This is used for development: outputs the JSON rather than sending it to the
   # server and does not wrap everything in tryCatch so debug will keep printing
   developmentMode <- messenger()$devMode
-  developmentMode<-TRUE
+  # developmentMode<-TRUE
 
   # Collect the information from the request
   request <- as.list(request)
@@ -4724,6 +4730,3 @@ createColumnOrderStates <- function(exptDataColumns=selColumnOrderInfo, errorEnv
     }
     return(experimentStates)
 }
-
-
-
