@@ -1830,13 +1830,24 @@ addImageFiles <- function(imagesFile, calculatedResults, experiment, dryRun, rec
     matchedUploadedFileNames <- validateUploadedImages(imageLocation = imageLocation, listedImageFiles = listedImageFiles, experimentFolderLocation = experimentFolderLocation)
     calculatedResults[!is.na(calculatedResults$inlineFileValue),]$inlineFileValue <- matchedUploadedFileNames
     calculatedResults <- addComment(calculatedResults = calculatedResults)
-    if (racas::applicationSettings$server.service.external.file.type == "custom") {
+    if (racas::applicationSettings$server.service.external.file.type %in% c("custom", "gcs")) {
       fileValueVector <- ifelse(is.na(calculatedResults$inlineFileValue),
                                 NA_character_,
                                 file.path(imageLocation, calculatedResults$inlineFileValue))
       fileValuesToAdd <- fileValueVector[!is.na(fileValueVector)]
       if (!dryRun) {
-        fileValuesToAdd <- vapply(fileValuesToAdd, moveFileToFileServer, c(""), experiment=experiment, recordedBy=recordedBy, customSourceFileMove=customSourceFileMove)
+        # fileValuesToAdd is a list of file paths but there could be duplicates, so we make it a data table
+        # and then use by to only upload each file once and then assign the response to the fileValuesToAdd
+        # as this contains the uploaded file paths
+        fileValuesToAddDT <- data.table(file=fileValuesToAdd)
+        uniqueFilesToUpload <- unique(fileValuesToAddDT)
+        uniqueFilesToUpload[ , fileValuesToAdd := {
+          uploadedFilePaths = moveFileToFileServer(file, experiment = experiment, recordedBy = recordedBy, customSourceFileMove = customSourceFileMove, additionalPath = "analysis/uploadedFiles")
+          list(uploadedFilePaths)
+        }]
+        # Merge the 2 datatables
+        filesToUpload <- merge(fileValuesToAddDT, uniqueFilesToUpload, by = "file")
+        fileValuesToAdd <- filesToUpload$fileValuesToAdd
       }
       calculatedResults$fileValue[!is.na(fileValueVector)] <- fileValuesToAdd
     } else {
@@ -1849,8 +1860,11 @@ addImageFiles <- function(imagesFile, calculatedResults, experiment, dryRun, rec
       unlink(experimentFolderLocation, recursive = TRUE)
     } else {
       # Otherwise, we should move the zip file from privateUploads into the experiment folder
+      imagesZipLocation <-  racas::getUploadedFilePath(imagesFile)
       if (racas::applicationSettings$server.service.external.file.type == "blueimp") {
-        file.rename(from = racas::getUploadedFilePath(imagesFile), to = file.path(experimentFolderLocation, basename(imagesFile)))
+        file.rename(from = imagesZipLocation, to = file.path(experimentFolderLocation, basename(imagesFile)))
+      } else if(racas::applicationSettings$server.service.external.file.type == "gcs"){
+        customSourceFileMove(imagesZipLocation, entityType = "experiment", entity = experiment, recordedBy = recordedBy)
       }
     }
   } else {
@@ -2446,7 +2460,7 @@ unzipUploadedImages <- function(imagesFile, experimentFolderLocation = experimen
     stopUser("The uploaded file must be a zip file")
   }
   
-  if (racas::applicationSettings$server.service.external.file.type == "blueimp") {
+  if (racas::applicationSettings$server.service.external.file.type %in% c("blueimp", "gcs")) {
     # Create the directory that will house the files
     filesLocation <- file.path(experimentFolderLocation, "analysis", "uploadedFiles")
     dir.create(filesLocation, showWarnings = FALSE, recursive = TRUE)
@@ -3675,8 +3689,8 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
 
   # Upload the data if this is not a dry run
   if(!dryRun & errorFree) {
-    
-    reportFileSummary <- basename(reportFilePath)
+    # If the reportfile is not provided then 
+    reportFileSummary <- ifelse(is.null(reportFilePath), "", basename(reportFilePath))
     if(rawOnlyFormat) { 
       uploadRawDataOnly(metaData = validatedMetaData, lsTransaction, subjectData = calculatedResults,
                         experiment, fileStartLocation = pathToGenericDataFormatExcelFile, configList, 
@@ -3692,7 +3706,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
                  reportFilePath=reportFilePath, reportFileSummary=reportFileSummary, recordedBy, formatParameters$annotationType, 
                  mainCode, appendCodeNameList = list(analysisGroup = "curve id"))
     }
-        
+
   }
   
   if(!dryRun) {

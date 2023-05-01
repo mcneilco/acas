@@ -203,38 +203,43 @@ exports.registerCmpds = (req, resp) ->
 		
 		fstream.on 'finish', ->
 			console.log "Zip file #{zipFilePath} created"
-			if config.all.server.service.external.file.type == 'gcs'
-				# We want to upload the bulkloadFileID as meta data to the uploaded files
-				metaData = {}
-				if json?.id?
-					console.log "This is a registered bulk load file with id #{json.id}"
-					metaData = {bulkloadFileID: json.id}
-					subFolder = path.join(bulk_load_sub_folder, "registered", json.id.toString())
-				else
-					subFolder = path.join(bulk_load_sub_folder, "validated")
+			# We want to upload the bulkloadFileID as meta data to the uploaded files
+			metaData = {}
+			if json?.id?
+				console.log "This is a registered bulk load file with id #{json.id}"
+				metaData = {bulkloadFileID: json.id}
+				subFolder = path.join(bulk_load_sub_folder, "registered", json.id.toString())
+			else
+				subFolder = path.join(bulk_load_sub_folder, "validated")
 
-				console.log "Moving files to #{subFolder}"
-				filesToMove = []
-				updatedReportFiles = []
-				for rFile in json.reportFiles
-					baseFileName = path.basename(rFile)
-					targetLocation = path.join(subFolder, baseFileName)
-					filesToMove.push({sourceLocation: rFile, targetLocation: targetLocation, metaData: metaData})
-					updatedReportFiles.push(targetLocation)
-				json.reportFiles = updatedReportFiles
+			console.log "Moving files to #{subFolder}"
+			filesToMove = []
+			updatedReportFiles = []
+			for rFile in json.reportFiles
+				baseFileName = path.basename(rFile)
+				targetLocation = path.join(subFolder, baseFileName)
+				filesToMove.push({sourceLocation: rFile, targetLocation: targetLocation, metaData: metaData})
+				updatedReportFiles.push(targetLocation)
+			json.reportFiles = updatedReportFiles
 
-				# Add the zip file to the list of files to move
-				zipFileName = path.join(subFolder, zipFileName)
-				filesToMove.push({sourceLocation: shortZipName, targetLocation: zipFileName, metaData: metaData})
+			# Add the zip file to the list of files to move
+			zipFileName = path.join(subFolder, zipFileName)
+			filesToMove.push({sourceLocation: shortZipName, targetLocation: zipFileName, metaData: metaData})
 
-				# Add the original file to the list of files to move
-				uploadedOriginalFilePath = path.join(subFolder, path.basename(originalFilePath))
-				filesToMove.push({sourceLocation: originalFilePath, targetLocation:  uploadedOriginalFilePath, metaData: metaData})
-				
-				fileServices = require './FileServices.js'
-				console.log(filesToMove)
-				files = await fileServices.moveDataFilesInternal(filesToMove)
-				console.log "Finished moving files to custom location"
+			# Add the original file to the list of files to move
+			uploadedOriginalFilePath = path.join(subFolder, path.basename(originalFilePath))
+			filesToMove.push({sourceLocation: originalFilePath, targetLocation:  uploadedOriginalFilePath, metaData: metaData})
+			
+			fileServices = require './FileServices.js'
+			console.log(filesToMove)
+			files = await fileServices.moveDataFilesInternal(filesToMove)
+			# Check to see if any of the files have errors
+			for file in files
+				if file.error?
+					console.log "Error moving file #{file.sourceLocation} to #{file.targetLocation}"
+					console.log file.error
+					resp.end "Summary ZIP file could not be created"
+			console.log "Finished moving files to custom location"
 
 			resp.json [json, zipFileName, zipFileDisplayName]
 		fstream.on 'error', (err) ->

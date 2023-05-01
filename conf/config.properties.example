@@ -322,8 +322,18 @@ server.delete.files.on.reload=false
 server.projects.type=HardCoded
 client.require.login=true
 
-server.service.external.file.type=custom
+# blueimp for local file storage
+# gcs for Google Cloud Storage
+# custom for custom file storage (add file service url below)
+server.service.external.file.type=blueimp
+
+# Used when server.service.external.file.type = "custom"
 server.service.external.file.service.url=
+
+# Used when server.service.external.file.type = "gcs"
+server.datafiles.gcs.projectID=
+server.datafiles.gcs.bucketName=
+server.datafiles.gcs.bucketRegion=US
 
 # options for preferred batchid type are: NewLineSepBulkPost, SeuratCmpdReg, GeneCodeCheckByR, AcasCmpdReg, LabSynchCmpdReg, SingleBatchNameQueryString, AllPass
 client.service.external.preferred.batchid.type=NewLineSepBulkPost

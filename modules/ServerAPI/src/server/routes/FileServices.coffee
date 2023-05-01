@@ -4,9 +4,8 @@ path = require 'path'
 multer = require 'multer'
 helmet = require("helmet");
 { Storage } = require '@google-cloud/storage'
-
+config = require '../conf/compiled/conf.js'
 setupRoutes = (app, loginRoutes, requireLogin) ->
-	config = require '../conf/compiled/conf.js'
 
 	dataFilesPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path
 	tempFilesPath = serverUtilityFunctions.makeAbsolutePath config.all.server.tempfiles.relative_path
@@ -104,7 +103,7 @@ setupRoutes = (app, loginRoutes, requireLogin) ->
 							"url": "http://#{req.get('Host')}/dataFiles/" + file.filename,
 							"filePath": file.path
 						}
-						if config.all.server.service.external.file.type == 'custom'
+						if config.all.server.service.external.file.type == 'gcs'
 							console.log "Copying files to custom location"
 
 							filesToMove.push({sourceLocation: file.filename, targetLocation: file.filename, meta: outfile})
@@ -199,15 +198,22 @@ setupRoutes = (app, loginRoutes, requireLogin) ->
 					# If the config server.service.external.file.type = custom then we use the customerSpecificServerFunction to get the file
 					if config.all.server.service.external.file.type == 'blueimp'
 						resp.sendfile(dataFilesPath + encodeURIComponent(req.params[0]))
-					else
+					else if config.all.server.service.external.file.type == 'gcs'
 						# Pipe the stream returned from getFromBucket(req.params[0]) to the response
 						#Print the readable stream as text to the console
-						{fileStream, metaData} = await exports.getFromBucket(req.params[0])
-						# Set the content type of the response to the content type of the metaData
-						resp.set('Content-Type', metaData.contentType)
-						resp.set('Content-Length', metaData.size)
-						resp.set('Last-Modified', metaData.updated)
-						fileStream.pipe(resp)
+						try 
+							{fileStream, metaData} = await exports.getFromBucket(req.params[0])
+							# Set the content type of the response to the content type of the metaData
+							resp.set('Content-Type', metaData.contentType)
+							resp.set('Content-Length', metaData.size)
+							resp.set('Last-Modified', metaData.updated)
+							fileStream.pipe(resp)
+						catch err
+							console.error(err)
+							resp.send(err)
+					else if config.all.server.service.external.file.type == 'custom'
+						# Throw an error
+						resp.send(500, "The server.service.external.file.type is set to custom but no customerSpecificServerFunction is defined")
 
 	serverUtilityFunctions.ensureExists tempFilesPath, 0o0744, (err) ->
 		if err?
@@ -287,10 +293,23 @@ exports.moveDataFilesInternal = (files, deleteSourceFileOnSuccess) ->
 		
 		if file.error
 			continue
-		promises.push(exports.uploadToBucket(fullPath, file.targetLocation, file.metaData)
+
+		# Switch move function based on config.all.server.datafiles.type
+		# if gcs then use exports.uploadToBucket
+		# if blueimp then use exports.moveFile
+		moveMethod = null
+		if config.all.server.service.external.file.type == 'gcs'
+			moveMethod = exports.uploadToBucket
+		else if config.all.server.service.external.file.type == 'blueimp'
+			moveMethod = exports.moveFile
+		else
+			file.error = "Invalid config.all.server.datafiles.type: #{config.all.server.service.external.file.type}"
+			continue
+
+		# Move the actual files and get responses
+		promises.push(moveMethod(fullPath, file.targetLocation, file.metaData)
 			.then (response) ->
-			# Add the file to the list of uploaded files
-				file.fileServiceRepresentation = response.uploadedFileRepresentation
+				# Add the file to the list of uploaded files
 				# Delete the source file
 				if deleteSourceFileOnSuccess
 					await fs.promises.unlink response.sourceLocation
@@ -302,16 +321,14 @@ exports.moveDataFilesInternal = (files, deleteSourceFileOnSuccess) ->
 	await Promise.all(promises)
 	console.log "uploads complete"
 
-
-
 	return files
 
 getOrCreateBucket = () ->
 	try
+		projectID = config.all.server.datafiles.gcs.projectID
+		bucketName = config.all.server.datafiles.gcs.bucketName
+		region = config.all.server.datafiles.gcs.bucketRegion
 		storage = new Storage({keyFilename: 'conf/gcscreds.json'})
-		projectID = "discovery-informatics"
-		bucketName = "acas-test-files"
-		region = 'US'
 		uniformBucketLevelAccess = true
 		defaultAcl = [{entity: 'allUsers',role: storage.acl.READER_ROLE}]
 		
@@ -331,6 +348,14 @@ getOrCreateBucket = () ->
 	catch err
 		console.error "ERROR: #{err}"
 
+exports.moveFile = (sourceLocation, targetLocation) ->
+  return new Promise (resolve, reject) ->
+    fs.rename sourceLocation, targetLocation, (err) ->
+      if err
+        reject err
+      else
+        resolve({sourceLocation: sourceLocation, targetLocation: targetLocation, metaData: metaData})
+
 exports.uploadToBucket = (sourceLocation, targetLocation, metaData) ->
 	bucket = await getOrCreateBucket()
 	if metaData == undefined
@@ -342,11 +367,14 @@ exports.uploadToBucket = (sourceLocation, targetLocation, metaData) ->
 	[file] = await bucket.upload(sourceLocation, {destination: targetLocation, metadata: metadata})
 	console.log "Uploaded file #{sourceLocation} to #{targetLocation} in bucket #{bucket.name} with metadata #{JSON.stringify(metadata)}"
 	# Return both the file and the original file path
-	return {_uploadedFileRepresentation: file, sourceLocation: sourceLocation, targetLocation: targetLocation, metaData: metaData}
+	return {sourceLocation: sourceLocation, targetLocation: targetLocation, metaData: metaData}
 
 exports.getFromBucket = (path) ->
 	bucket = await getOrCreateBucket()
 	file = await bucket.file(path)
+	[exists] = await file.exists()
+	if !exists
+		throw new Error("File does not exist: #{path}")
 	metaData = await file.getMetadata()
 	fileStream = await file.createReadStream()
 	return {fileStream: fileStream, metaData: metaData[0]}

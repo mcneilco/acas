@@ -19,7 +19,7 @@ calculateTreatmemtGroupID <- function(results, inputFormat, stateGroups, resultT
 
 #' Move file to file server
 #'
-#' @param sourceLocation current location of file, relative from working directory or absolute
+#' @param sourceLocations current location of files, relative from working directory or absolute
 #' @param recordedBy logged in username
 #' @param fileName name of the file to save
 #' @param entity entity object
@@ -28,10 +28,13 @@ calculateTreatmemtGroupID <- function(results, inputFormat, stateGroups, resultT
 #' @return character file code or path relative from privateUploads
 #' @export
 #'
-customSourceFileMove <- function(sourceLocation, recordedBy, fileName = NA, entityType = NA, entity = NULL, 
+customSourceFileMove <- function(sourceLocations, recordedBy, fileNames = NA, entityType = NA, entity = NULL, 
                                                deleteOldFile = TRUE, additionalPath = "") {
-  if (is.na(fileName)) {
-    fileName <- basename(sourceLocation)
+                                                
+  for (i in 1:length(fileNames)) {
+    if(is.na(fileNames[i])) {
+      fileNames[i] <- basename(sourceLocations[i])
+    }
   }
 
   # If the entity type is specified then use the entity_paths table to get the path
@@ -51,23 +54,35 @@ customSourceFileMove <- function(sourceLocation, recordedBy, fileName = NA, enti
   }
 
   # Join the folder and file name together but if folder is empty then just use the file name
-  targetLocation <- file.path(folder, fileName)
+  targetLocations <- unlist(lapply(fileNames, function(x) {file.path(folder, x)}))
 
   # Remove the relative file path from the sourceLocation to get a shortLocation for the service
-  shortSourceLocation <- gsub(paste0(racas::applicationSettings$server.file.server.path,"/"), "", sourceLocation)
-  request <- list(list(
-    "sourceLocation" = shortSourceLocation,
-    "targetLocation" = targetLocation,
-    metaData = list("recordedBy" = recordedBy)
-  ))
-  url <- paste0(racas::applicationSettings$server.nodeapi.path, "/api/moveDataFiles?deleteSourceFileOnSuccess=true")
-  result <- fromJSON(racas::postURLcheckStatus(url, toJSON(request), requireJSON = TRUE))
-
-  if(!is.null(result[[1]]$error)) {
-    stop(result[[1]]$error)
+  shortSourceLocations <- unlist(lapply(sourceLocations, function(x) {gsub(paste0(racas::applicationSettings$server.file.server.path,"/"), "", x)}))
+  request <- list()
+  for (i in 1:length(sourceLocations)) {
+    request[[i]] <- list(
+      "sourceLocation" = shortSourceLocations[i],
+      "targetLocation" = targetLocations[i],
+      metaData = list("recordedBy" = recordedBy)
+    )
   }
-  
-  return(result[[1]]$targetLocation)
+  request <- toJSON(request)
+  racasMessenger$logger$info(paste0("/api/moveDataFiles?deleteSourceFileOnSuccess=true request: ", toJSON(request)))
+  url <- paste0(racas::applicationSettings$server.nodeapi.path, "/api/moveDataFiles?deleteSourceFileOnSuccess=", tolower(deleteOldFile))
+  results <- fromJSON(racas::postURLcheckStatus(url, request, requireJSON = TRUE))
+
+  savedTargetLocations <- c()
+  for(result in results) {
+    if(!is.null(result$error)) {
+      racasMessenger$logger$error(paste0("Error moving file: ", result$sourceLocation, " to ", result$targetLocation))
+      stop(result$error)
+    } else {
+      racasMessenger$logger$info(paste0("File moved successfully to ", result$targetLocation))
+      savedTargetLocations <- c(savedTargetLocations, result$targetLocation)
+    }
+  }
+
+  return(savedTargetLocations)
 }
 
 moveAllEntityFilesToGCS <- function() {
@@ -104,7 +119,7 @@ moveAllEntityFilesToGCS <- function() {
         recordedBy <- "acas"
       }
       relativePath <- getUploadedFilePath(file.path(entityFolder, entityFile))
-      result <- customSourceFileMove(relativePath, recordedBy, fileName = NA, entityType = entityType, entity = entity, deleteOldFile = TRUE, additionalPath = "")
+      result <- customSourceFileMove(relativePath, recordedBy, fileNames = NA, entityType = entityType, entity = entity, deleteOldFile = TRUE, additionalPath = "")
       # Decided to not delete the file from the local server
     }
   }
