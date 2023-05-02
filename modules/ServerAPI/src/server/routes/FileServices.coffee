@@ -20,21 +20,19 @@ setupRoutes = (app, loginRoutes, requireLogin) ->
 		# Configure this route to write posted files to temp files path
 		fileRename = (req, file, callback) ->
 			# rename the file to the original name
-			safeName dataFilesPath, file.originalname, (safeFileName) ->
+			safeName tempFilesPath, file.originalname, (safeFileName) ->
 				callback(null, safeFileName)
 		
 		safeName = (dir, filename, callback) ->
-			fs.exists dir + '/' + filename, (exists) ->
-				if exists
-					filename = filename.replace(/(?:(?: \(([\d]+)\))?(\.[^.]+))?$/, (s, index, ext) ->
-						' (' + ((parseInt(index, 10) or 0) + 1) + ')' + (ext or '')
-					)
-					safeName dir, filename, callback
-				else
-					callback filename
-				return
+			exists = await fs.promises.access(path.join(dir, filename)).then(() => true).catch(() => false)
+			if exists
+				filename = filename.replace(/(?:(?: \(([\d]+)\))?(\.[^.]+))?$/, (s, index, ext) ->
+					' (' + ((parseInt(index, 10) or 0) + 1) + ')' + (ext or '')
+				)
+				safeName dir, filename, callback
+			else
+				callback filename
 			return
-
 
 		storage = multer.diskStorage(
 			destination: dataFilesPath
@@ -104,14 +102,14 @@ setupRoutes = (app, loginRoutes, requireLogin) ->
 							"filePath": file.path
 						}
 						if config.all.server.service.external.file.type == 'gcs'
-							console.log "Copying files to custom location"
+							console.log "Copying files to gcs"
 
 							filesToMove.push({sourceLocation: file.filename, targetLocation: file.filename, meta: outfile})
 
 							# We do not delete files on success as we need to keep them in the temp folder for the file upload to work
 							deleteFilesOnSuccess = false
 							moveOutput = await exports.moveDataFilesInternal(filesToMove, deleteFilesOnSuccess) 
-							console.log "Finished moving files to custom location"
+							console.log "Finished moving files to gcs"
 							
 						files.push(outfile)
 					resp.json {"files": files}
@@ -301,7 +299,7 @@ exports.moveDataFilesInternal = (files, deleteSourceFileOnSuccess) ->
 		if config.all.server.service.external.file.type == 'gcs'
 			moveMethod = exports.uploadToBucket
 		else if config.all.server.service.external.file.type == 'blueimp'
-			moveMethod = exports.moveFile
+			moveMethod = exports.copyFile
 		else
 			file.error = "Invalid config.all.server.datafiles.type: #{config.all.server.service.external.file.type}"
 			continue
@@ -309,6 +307,7 @@ exports.moveDataFilesInternal = (files, deleteSourceFileOnSuccess) ->
 		# Move the actual files and get responses
 		promises.push(moveMethod(fullPath, file.targetLocation, file.metaData)
 			.then (response) ->
+				console.log "Response from moveMethod: #{JSON.stringify(response)}"
 				# Add the file to the list of uploaded files
 				# Delete the source file
 				if deleteSourceFileOnSuccess
@@ -348,13 +347,22 @@ getOrCreateBucket = () ->
 	catch err
 		console.error "ERROR: #{err}"
 
-exports.moveFile = (sourceLocation, targetLocation) ->
-  return new Promise (resolve, reject) ->
-    fs.rename sourceLocation, targetLocation, (err) ->
-      if err
-        reject err
-      else
-        resolve({sourceLocation: sourceLocation, targetLocation: targetLocation, metaData: metaData})
+exports.copyFile = (sourceLocation, targetLocation, metaData) ->
+	# source and target locations could be a full path or a relative path config.all.server.datafiles.relative_path
+	# Lets convert both to full paths
+	if sourceLocation.indexOf(config.all.server.datafiles.relative_path) == -1
+		sourceLocation = path.join(config.all.server.datafiles.relative_path, sourceLocation)
+	if targetLocation.indexOf(config.all.server.datafiles.relative_path) == -1
+		targetLocation = path.join(config.all.server.datafiles.relative_path, targetLocation)
+
+	# Check if the target directory exists
+	[exists] = await fs.promises.access(path.dirname(targetLocation)).then(() => [true]).catch(() => [false])
+	if !exists
+		# Create the target directory
+		await fs.promises.mkdir path.dirname(targetLocation), {recursive: true}
+		
+	await fs.promises.copyFile(sourceLocation, targetLocation)
+	return {sourceLocation: sourceLocation, targetLocation: targetLocation, metaData: {}}
 
 exports.uploadToBucket = (sourceLocation, targetLocation, metaData) ->
 	bucket = await getOrCreateBucket()
