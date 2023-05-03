@@ -5,11 +5,153 @@ multer = require 'multer'
 helmet = require("helmet");
 { Storage } = require '@google-cloud/storage'
 config = require '../conf/compiled/conf.js'
+
+
+class LocalFileHandler
+
+	moveFiles: (files, deleteSourceFileOnSuccess) ->
+		config = require '../conf/compiled/conf.js'
+		
+		deleteSourceFileOnSuccess = if deleteSourceFileOnSuccess? then deleteSourceFileOnSuccess == true else true
+
+		# For each of the files, move them to the new location
+		for file in files
+			sourceLocation = file.sourceLocation
+			targetLocation = file.targetLocation
+
+			# IF metadata is not defined then set it to an empty object
+			if !file.metaData
+				file.metaData = {}
+
+			if !sourceLocation || !targetLocation
+				file.error = "Source and target locations must be defined"
+				continue
+
+			# Add config.all.server.datafiles.relative_path path to sourceLocation
+			# Check if relative path is already added
+			if sourceLocation.indexOf(config.all.server.datafiles.relative_path) == -1
+				file.fullPath = path.join(config.all.server.datafiles.relative_path, sourceLocation)
+			else
+				file.fullPath = sourceLocation
+
+			# Ensure that the source file exists
+			exists = !!(await (fs.promises.stat file.fullPath).catch (err) -> false)
+			if !exists
+				file.error = "Source file does not exist"
+				console.error "Source file does not exist: #{file.fullPath}"
+				continue
+
+		# Upload each of the files to the bucket after validating all of them
+		promises = []
+		for file in files
+			if file.fullPath?
+				fullPath = file.fullPath
+				delete file.fullPath
+			
+			if file.error
+				continue
+
+			# Switch move function based on config.all.server.datafiles.type
+			# if gcs then use exports.uploadToBucket
+			# if blueimp then use exports.moveFile
+			moveMethod = null
+
+			# Move the actual files and get responses
+			promises.push(@copyFile(fullPath, file.targetLocation, file.metaData)
+				.then (response) ->
+					console.log "Response from moveMethod: #{JSON.stringify(response)}"
+					# Add the file to the list of uploaded files
+					# Delete the source file
+					if deleteSourceFileOnSuccess
+						await fs.promises.unlink response.sourceLocation
+				.catch (err) ->
+					console.error "Error uploading file to bucket: #{err}"
+					file.error = "Error uploading file to bucket: #{err}"
+			)
+		console.log "awaiting uploads to complete"		
+		await Promise.all(promises)
+		console.log "uploads complete"
+
+		return files
+
+	copyFile: (sourceLocation, targetLocation, metaData) ->
+		# source and target locations could be a full path or a relative path config.all.server.datafiles.relative_path
+		# Lets convert both to full paths
+		if sourceLocation.indexOf(config.all.server.datafiles.relative_path) == -1
+			sourceLocation = path.join(config.all.server.datafiles.relative_path, sourceLocation)
+		if targetLocation.indexOf(config.all.server.datafiles.relative_path) == -1
+			targetLocation = path.join(config.all.server.datafiles.relative_path, targetLocation)
+
+		# Check if the target directory exists
+		[exists] = await fs.promises.access(path.dirname(targetLocation)).then(() => [true]).catch(() => [false])
+		if !exists
+			# Create the target directory
+			await fs.promises.mkdir path.dirname(targetLocation), {recursive: true}
+			
+		await fs.promises.copyFile(sourceLocation, targetLocation)
+		return {sourceLocation: sourceLocation, targetLocation: targetLocation, metaData: {}}
+
+class GCSFileHandler extends LocalFileHandler
+
+	init: ->
+		@bucket = await @_getOrCreateBucket()
+
+	_getOrCreateBucket: ->
+		projectID = config.all.server.datafiles.gcs.projectID
+		bucketName = config.all.server.datafiles.gcs.bucketName
+		region = config.all.server.datafiles.gcs.bucketRegion
+		storage = new Storage({keyFilename: 'conf/gcscreds.json'})
+		uniformBucketLevelAccess = true
+		defaultAcl = [{entity: 'allUsers',role: storage.acl.READER_ROLE}]
+		
+		bucket = await storage.bucket(bucketName)
+		[exists] = await bucket.exists()
+		if exists
+			console.log "Bucket #{bucketName} already exists."
+			[bucket] = await bucket.get()
+			return bucket
+		else
+			[bucket] = await storage.createBucket bucketName,
+				location: region
+				uniformBucketLevelAccess: uniformBucketLevelAccess
+				defaultAcl: defaultAcl
+				console.log "Bucket #{bucketName} created with uniform ACLs."
+			return bucket
+	
+	copyFile: (sourceLocation, targetLocation, metaData)->
+		if metaData == undefined
+			metaData = {}
+		else
+			metadata = {
+				metadata: metaData
+			};
+		[file] = await @bucket.upload(sourceLocation, {destination: targetLocation, metadata: metadata})
+		console.log "Uploaded file #{sourceLocation} to #{targetLocation} in bucket #{@bucket.name} with metadata #{JSON.stringify(metadata)}"
+		# Return both the file and the original file path
+		return {sourceLocation: sourceLocation, targetLocation: targetLocation, metaData: metaData}
+
+	getFile: (path) ->
+		file = await @bucket.file(path)
+		[exists] = await file.exists()
+		if !exists
+			throw new Error("File does not exist: #{path}")
+		metaData = await file.getMetadata()
+		fileStream = await file.createReadStream()
+		return {fileStream: fileStream, metaData: metaData[0]}
+
 setupRoutes = (app, loginRoutes, requireLogin) ->
 
 	dataFilesPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path
 	tempFilesPath = serverUtilityFunctions.makeAbsolutePath config.all.server.tempfiles.relative_path
-
+	
+	if config.all.server.service.external.file.type == 'blueimp'
+		# Local File Helper
+		fileHandler = new LocalFileHandler()
+	else if config.all.server.service.external.file.type == 'gcs'
+		# New GCS Helper
+		fileHandler = new GCSFileHandler()
+	else
+		throw new Error("Unknown file handler type: #{config.all.server.service.external.file.type}")
 
 	uploads = (req, resp) ->
 		if requireLogin
@@ -101,15 +243,15 @@ setupRoutes = (app, loginRoutes, requireLogin) ->
 							"url": "http://#{req.get('Host')}/dataFiles/" + file.filename,
 							"filePath": file.path
 						}
-						if config.all.server.service.external.file.type == 'gcs'
-							console.log "Copying files to gcs"
+						# if config.all.server.service.external.file.type == 'gcs'
+						# 	console.log "Copying files to gcs"
 
-							filesToMove.push({sourceLocation: file.filename, targetLocation: file.filename, meta: outfile})
+						# 	filesToMove.push({sourceLocation: file.filename, targetLocation: file.filename, meta: outfile})
 
-							# We do not delete files on success as we need to keep them in the temp folder for the file upload to work
-							deleteFilesOnSuccess = false
-							moveOutput = await exports.moveDataFilesInternal(filesToMove, deleteFilesOnSuccess) 
-							console.log "Finished moving files to gcs"
+						# 	# We do not delete files on success as we need to keep them in the temp folder for the file upload to work
+						# 	deleteFilesOnSuccess = false
+						# 	moveOutput = await exports.moveDataFilesInternal(filesToMove, deleteFilesOnSuccess) 
+						# 	console.log "Finished moving files to gcs"
 							
 						files.push(outfile)
 					resp.json {"files": files}
@@ -192,15 +334,31 @@ setupRoutes = (app, loginRoutes, requireLogin) ->
 			else
 				app.get '/dataFiles/*', dataFilesPolicy, loginRoutes.ensureAuthenticated, (req, resp) ->
 					console.log dataFilesPath
+
+					filePath = req.params[0]
+					console.log "Got request for file: #{filePath}"
+
+					# If the file is in a folder then it's a persistant file
+					knownNonPersistantBaseFolders = ['exportedSearchResults']
+					isPersistantFile = false
+					if filePath.indexOf(path.sep) > -1
+						# Get the first folder
+						firstFolder = filePath.split(path.sep)[0]
+						if firstFolder in knownNonPersistantBaseFolders
+							isPersistantFile = false
+						else
+							isPersistantFile = true
 					
-					# If the config server.service.external.file.type = custom then we use the customerSpecificServerFunction to get the file
-					if config.all.server.service.external.file.type == 'blueimp'
-						resp.sendfile(dataFilesPath + encodeURIComponent(req.params[0]))
+					# If the file service is blueimp or if the file is not in a folder then send the file from the local file system
+					if !isPersistantFile || config.all.server.service.external.file.type == 'blueimp'
+						console.log "Getting the file from the local file system"
+						resp.sendfile(dataFilesPath + encodeURIComponent(filePath))
 					else if config.all.server.service.external.file.type == 'gcs'
 						# Pipe the stream returned from getFromBucket(req.params[0]) to the response
 						#Print the readable stream as text to the console
+						console.log "Getting the file from gcs"
 						try 
-							{fileStream, metaData} = await exports.getFromBucket(req.params[0])
+							{fileStream, metaData} = await exports.fileHandler.getFile(filePath)
 							# Set the content type of the response to the content type of the metaData
 							resp.set('Content-Type', metaData.contentType)
 							resp.set('Content-Length', metaData.size)
@@ -251,138 +409,4 @@ exports.moveDataFiles = (req, resp) ->
 	resp.json files
 
 exports.moveDataFilesInternal = (files, deleteSourceFileOnSuccess) ->
-	config = require '../conf/compiled/conf.js'
-	
-	deleteSourceFileOnSuccess = if deleteSourceFileOnSuccess? then deleteSourceFileOnSuccess == true else true
-
-	# For each of the files, move them to the new location
-	for file in files
-		sourceLocation = file.sourceLocation
-		targetLocation = file.targetLocation
-
-		# IF metadata is not defined then set it to an empty object
-		if !file.metaData
-			file.metaData = {}
-
-		if !sourceLocation || !targetLocation
-			file.error = "Source and target locations must be defined"
-			continue
-
-		# Add config.all.server.datafiles.relative_path path to sourceLocation
-		# Check if relative path is already added
-		if sourceLocation.indexOf(config.all.server.datafiles.relative_path) == -1
-			file.fullPath = path.join(config.all.server.datafiles.relative_path, sourceLocation)
-		else
-			file.fullPath = sourceLocation
-
-		# Ensure that the source file exists
-		exists = !!(await (fs.promises.stat file.fullPath).catch (err) -> false)
-		if !exists
-			file.error = "Source file does not exist"
-			console.error "Source file does not exist: #{file.fullPath}"
-			continue
-
-	# Upload each of the files to the bucket after validating all of them
-	promises = []
-	for file in files
-		if file.fullPath?
-			fullPath = file.fullPath
-			delete file.fullPath
-		
-		if file.error
-			continue
-
-		# Switch move function based on config.all.server.datafiles.type
-		# if gcs then use exports.uploadToBucket
-		# if blueimp then use exports.moveFile
-		moveMethod = null
-		if config.all.server.service.external.file.type == 'gcs'
-			moveMethod = exports.uploadToBucket
-		else if config.all.server.service.external.file.type == 'blueimp'
-			moveMethod = exports.copyFile
-		else
-			file.error = "Invalid config.all.server.datafiles.type: #{config.all.server.service.external.file.type}"
-			continue
-
-		# Move the actual files and get responses
-		promises.push(moveMethod(fullPath, file.targetLocation, file.metaData)
-			.then (response) ->
-				console.log "Response from moveMethod: #{JSON.stringify(response)}"
-				# Add the file to the list of uploaded files
-				# Delete the source file
-				if deleteSourceFileOnSuccess
-					await fs.promises.unlink response.sourceLocation
-			.catch (err) ->
-				console.error "Error uploading file to bucket: #{err}"
-				file.error = "Error uploading file to bucket: #{err}"
-		)
-	console.log "awaiting uploads to complete"		
-	await Promise.all(promises)
-	console.log "uploads complete"
-
-	return files
-
-getOrCreateBucket = () ->
-	try
-		projectID = config.all.server.datafiles.gcs.projectID
-		bucketName = config.all.server.datafiles.gcs.bucketName
-		region = config.all.server.datafiles.gcs.bucketRegion
-		storage = new Storage({keyFilename: 'conf/gcscreds.json'})
-		uniformBucketLevelAccess = true
-		defaultAcl = [{entity: 'allUsers',role: storage.acl.READER_ROLE}]
-		
-		bucket = await storage.bucket(bucketName)
-		[exists] = await bucket.exists()
-		if exists
-			console.log "Bucket #{bucketName} already exists."
-			[bucket] = await bucket.get()
-			return bucket
-		else
-			[bucket] = await storage.createBucket bucketName,
-				location: region
-				uniformBucketLevelAccess: uniformBucketLevelAccess
-				defaultAcl: defaultAcl
-				console.log "Bucket #{bucketName} created with uniform ACLs."
-			return bucket
-	catch err
-		console.error "ERROR: #{err}"
-
-exports.copyFile = (sourceLocation, targetLocation, metaData) ->
-	# source and target locations could be a full path or a relative path config.all.server.datafiles.relative_path
-	# Lets convert both to full paths
-	if sourceLocation.indexOf(config.all.server.datafiles.relative_path) == -1
-		sourceLocation = path.join(config.all.server.datafiles.relative_path, sourceLocation)
-	if targetLocation.indexOf(config.all.server.datafiles.relative_path) == -1
-		targetLocation = path.join(config.all.server.datafiles.relative_path, targetLocation)
-
-	# Check if the target directory exists
-	[exists] = await fs.promises.access(path.dirname(targetLocation)).then(() => [true]).catch(() => [false])
-	if !exists
-		# Create the target directory
-		await fs.promises.mkdir path.dirname(targetLocation), {recursive: true}
-		
-	await fs.promises.copyFile(sourceLocation, targetLocation)
-	return {sourceLocation: sourceLocation, targetLocation: targetLocation, metaData: {}}
-
-exports.uploadToBucket = (sourceLocation, targetLocation, metaData) ->
-	bucket = await getOrCreateBucket()
-	if metaData == undefined
-		metaData = {}
-	else
-		metadata = {
-			metadata: metaData
-		};
-	[file] = await bucket.upload(sourceLocation, {destination: targetLocation, metadata: metadata})
-	console.log "Uploaded file #{sourceLocation} to #{targetLocation} in bucket #{bucket.name} with metadata #{JSON.stringify(metadata)}"
-	# Return both the file and the original file path
-	return {sourceLocation: sourceLocation, targetLocation: targetLocation, metaData: metaData}
-
-exports.getFromBucket = (path) ->
-	bucket = await getOrCreateBucket()
-	file = await bucket.file(path)
-	[exists] = await file.exists()
-	if !exists
-		throw new Error("File does not exist: #{path}")
-	metaData = await file.getMetadata()
-	fileStream = await file.createReadStream()
-	return {fileStream: fileStream, metaData: metaData[0]}
+	return await exports.fileHandler.moveFiles(files, deleteSourceFileOnSuccess)

@@ -5,6 +5,7 @@
 ###
 ACAS_HOME="../../.."
 serverUtilityFunctions = require "#{ACAS_HOME}/routes/ServerUtilityFunctions.js"
+fileServices = require "#{ACAS_HOME}/routes/FileServices.js"
 fs = require 'fs'
 _ = require 'underscore'
 util = require 'util'
@@ -429,7 +430,17 @@ exports.relocateEntityFile = (fileValue, entityCodePrefix, entityCode, callback)
 	else
 		newPath = relEntityFolder + fileValue.fileValue
 	
-	file = await exports.uploadToBucket(oldPath, newPath)
+	filesToMove = [{sourceLocation: oldPath, targetLocation: newPath}]
+	movedFileResponse = await fileServices.moveDataFilesInternal(filesToMove)
+	if movedFileResponse.length == 0
+		console.log "File relocation failed"
+		callback false
+		return
+	else if movedFileResponse[0].error?
+		console.log "File relocation failed"
+		callback false
+		return
+
 	if fileValue.comments != undefined and fileValue.comments != null
 		fileValue.fileValue = relEntityFolder + fileValue.comments
 	else
