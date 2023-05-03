@@ -326,6 +326,7 @@ client.require.login=true
 # gcs for Google Cloud Storage
 # custom for custom file storage (add file service url below)
 server.service.external.file.type=blueimp
+server.service.external.file.uploadTempFiles=true
 
 # Used when server.service.external.file.type = "custom"
 server.service.external.file.service.url=
@@ -334,6 +335,8 @@ server.service.external.file.service.url=
 server.datafiles.gcs.projectID=
 server.datafiles.gcs.bucketName=
 server.datafiles.gcs.bucketRegion=US
+server.datafiles.gcs.clientEmail=some@serviceaccount.iam.gserviceaccount.com
+server.datafiles.gcs.privateKey=-----BEGIN PRIVATE KEY-----\\nABC\\nXYZ\\n-----\\n
 
 # options for preferred batchid type are: NewLineSepBulkPost, SeuratCmpdReg, GeneCodeCheckByR, AcasCmpdReg, LabSynchCmpdReg, SingleBatchNameQueryString, AllPass
 client.service.external.preferred.batchid.type=NewLineSepBulkPost

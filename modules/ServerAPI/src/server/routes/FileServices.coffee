@@ -91,7 +91,9 @@ class LocalFileHandler
 		await fs.promises.copyFile(sourceLocation, targetLocation)
 		return {sourceLocation: sourceLocation, targetLocation: targetLocation, metaData: {}}
 
-class GCSFileHandler extends LocalFileHandler
+class ExternalFileHandler extends LocalFileHandler
+
+class GCSFileHandler extends ExternalFileHandler
 
 	init: ->
 		@bucket = await @_getOrCreateBucket()
@@ -100,7 +102,15 @@ class GCSFileHandler extends LocalFileHandler
 		projectID = config.all.server.datafiles.gcs.projectID
 		bucketName = config.all.server.datafiles.gcs.bucketName
 		region = config.all.server.datafiles.gcs.bucketRegion
-		storage = new Storage({keyFilename: 'conf/gcscreds.json'})
+		clientEmail = config.all.server.datafiles.gcs.clientEmail
+		privateKey = config.all.server.datafiles.gcs.privateKey
+		storage = new Storage(
+			projectId: projectID,
+			credentials: {
+				client_email: clientEmail,
+				private_key: privateKey
+			}
+		)
 		uniformBucketLevelAccess = true
 		defaultAcl = [{entity: 'allUsers',role: storage.acl.READER_ROLE}]
 		
@@ -153,6 +163,8 @@ setupRoutes = (app, loginRoutes, requireLogin) ->
 	else
 		throw new Error("Unknown file handler type: #{config.all.server.service.external.file.type}")
 
+	await fileHandler.init()
+	exports.fileHandler = fileHandler
 	uploads = (req, resp) ->
 		if requireLogin
 			if !req.isAuthenticated()
@@ -243,16 +255,23 @@ setupRoutes = (app, loginRoutes, requireLogin) ->
 							"url": "http://#{req.get('Host')}/dataFiles/" + file.filename,
 							"filePath": file.path
 						}
-						# if config.all.server.service.external.file.type == 'gcs'
-						# 	console.log "Copying files to gcs"
+						# If fileHandler extends ExternalFileHandler then we need to move the file to the external file system
+						try
+							uploadTempFilesConfig = config.all.server.service.external.file.uploadTempFiles
+							if fileHandler instanceof ExternalFileHandler && (uploadTempFilesConfig? || uploadTempFilesConfig == true)
+								filesToMove.push({sourceLocation: file.filename, targetLocation: path.join("tmp", file.filename), meta: outfile})
 
-						# 	filesToMove.push({sourceLocation: file.filename, targetLocation: file.filename, meta: outfile})
+								# We do not delete files on success as we need to keep them in the temp folder for the file upload to work
+								deleteFilesOnSuccess = false
 
-						# 	# We do not delete files on success as we need to keep them in the temp folder for the file upload to work
-						# 	deleteFilesOnSuccess = false
-						# 	moveOutput = await exports.moveDataFilesInternal(filesToMove, deleteFilesOnSuccess) 
-						# 	console.log "Finished moving files to gcs"
-							
+								# We don't await this as we want to move the files asynchronously
+								exports.moveDataFilesInternal(filesToMove, deleteFilesOnSuccess)
+						
+						catch err
+							console.log "Error moving tmp file to external file system"
+							resp.send(err)
+							return
+								
 						files.push(outfile)
 					resp.json {"files": files}
 				catch err
