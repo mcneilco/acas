@@ -2170,11 +2170,13 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
     codeType = "assay",
     codeKind = "scientist",
     lsTransaction= lsTransaction)
-  # experimentStatus <- racas::applicationSettings$server.sel.experimentStatus
   experimentStatus <- metaData$"Experiment Status"
   if (is.null(experimentStatus) || experimentStatus == "") {
-    experimentStatus <- "approved"
+    experimentStatus <- racas::applicationSettings$server.sel.experimentStatus
   }
+  if (is.null(experimentStatus) || experimentStatus == "") {
+    experimentStatus <- "approved"
+  }  
   experimentValues[[length(experimentValues)+1]] <- createStateValue(
     recordedBy = recordedBy,
     lsType = "codeValue",
@@ -2396,7 +2398,6 @@ validateExperimentStatus <- function(experimentStatusToValidate, configList, tes
   require('rjson')
   
   response <- NULL
-  # username <- "username"
   
   if (!testMode) {
     response <- tryCatch({
@@ -3928,7 +3929,6 @@ parseGenericData <- function(request) {
   # This is used for development: outputs the JSON rather than sending it to the
   # server and does not wrap everything in tryCatch so debug will keep printing
   developmentMode <- messenger()$devMode
-  # developmentMode<-TRUE
 
   # Collect the information from the request
   request <- as.list(request)
@@ -4730,3 +4730,7 @@ createColumnOrderStates <- function(exptDataColumns=selColumnOrderInfo, errorEnv
     }
     return(experimentStates)
 }
+
+
+
+
