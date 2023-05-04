@@ -4,10 +4,14 @@ path = require 'path'
 multer = require 'multer'
 helmet = require("helmet");
 { Storage } = require '@google-cloud/storage'
+mime = require 'mime-types'
 config = require '../conf/compiled/conf.js'
 
 
 class LocalFileHandler
+
+	init: ->
+		## No initialization required for local file handler
 
 	moveFiles: (files, deleteSourceFileOnSuccess) ->
 		config = require '../conf/compiled/conf.js'
@@ -91,6 +95,27 @@ class LocalFileHandler
 		await fs.promises.copyFile(sourceLocation, targetLocation)
 		return {sourceLocation: sourceLocation, targetLocation: targetLocation, metaData: {}}
 
+	getFile: (filePath) ->
+		fullPath = path.join(config.all.server.datafiles.relative_path, filePath)
+		# Check if the file exists
+		exists = await fs.promises.access(fullPath).then(() => true).catch(() => false)
+		if !exists
+			throw new Error("File does not exist: #{fullPath}")
+		# Get the file metadata
+		stats = await fs.promises.stat(fullPath)
+		# Get the content type
+		contentType = mime.lookup(fullPath) || 'application/octet-stream'
+		console.log "File path: #{fullPath}"
+		console.log "Content type: #{contentType}"
+		metaData = {
+			contentType: contentType
+			size: stats.size
+			updated: stats.mtime.toUTCString()
+		}
+		# Return the file stream and the metadata
+		return {fileStream: fs.createReadStream(fullPath), metaData: metaData}
+
+
 class ExternalFileHandler extends LocalFileHandler
 
 class GCSFileHandler extends ExternalFileHandler
@@ -140,13 +165,14 @@ class GCSFileHandler extends ExternalFileHandler
 		# Return both the file and the original file path
 		return {sourceLocation: sourceLocation, targetLocation: targetLocation, metaData: metaData}
 
-	getFile: (path) ->
-		file = await @bucket.file(path)
+	getFile: (filePath) ->
+		file = await @bucket.file(filePath)
 		[exists] = await file.exists()
 		if !exists
-			throw new Error("File does not exist: #{path}")
+			throw new Error("File does not exist: #{filePath}")
 		metaData = await file.getMetadata()
 		fileStream = await file.createReadStream()
+		metaData[0].contentType = metaData[0].contentType || 'application/octet-stream'
 		return {fileStream: fileStream, metaData: metaData[0]}
 
 setupRoutes = (app, loginRoutes, requireLogin) ->
@@ -154,9 +180,11 @@ setupRoutes = (app, loginRoutes, requireLogin) ->
 	dataFilesPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path
 	tempFilesPath = serverUtilityFunctions.makeAbsolutePath config.all.server.tempfiles.relative_path
 	
+	# Local file handler is used in some cases regardless of the external file handler type
+	exports.localFileHandler = new LocalFileHandler()
 	if config.all.server.service.external.file.type == 'blueimp'
 		# Local File Helper
-		fileHandler = new LocalFileHandler()
+		fileHandler = exports.localFileHandler
 	else if config.all.server.service.external.file.type == 'gcs'
 		# New GCS Helper
 		fileHandler = new GCSFileHandler()
@@ -367,28 +395,20 @@ setupRoutes = (app, loginRoutes, requireLogin) ->
 							isPersistantFile = false
 						else
 							isPersistantFile = true
-					
-					# If the file service is blueimp or if the file is not in a folder then send the file from the local file system
-					if !isPersistantFile || config.all.server.service.external.file.type == 'blueimp'
-						console.log "Getting the file from the local file system"
-						resp.sendfile(dataFilesPath + encodeURIComponent(filePath))
-					else if config.all.server.service.external.file.type == 'gcs'
-						# Pipe the stream returned from getFromBucket(req.params[0]) to the response
-						#Print the readable stream as text to the console
-						console.log "Getting the file from gcs"
-						try 
+		
+					try 
+						if !isPersistantFile
+							{fileStream, metaData} = await exports.localFileHandler.getFile(filePath)
+						else
 							{fileStream, metaData} = await exports.fileHandler.getFile(filePath)
-							# Set the content type of the response to the content type of the metaData
-							resp.set('Content-Type', metaData.contentType)
-							resp.set('Content-Length', metaData.size)
-							resp.set('Last-Modified', metaData.updated)
-							fileStream.pipe(resp)
-						catch err
-							console.error(err)
-							resp.send(err)
-					else if config.all.server.service.external.file.type == 'custom'
-						# Throw an error
-						resp.send(500, "The server.service.external.file.type is set to custom but no customerSpecificServerFunction is defined")
+						# Set the content type of the response to the content type of the metaData
+						resp.set('Content-Type', metaData.contentType)
+						resp.set('Content-Length', metaData.size)
+						resp.set('Last-Modified', metaData.updated)
+						fileStream.pipe(resp)
+					catch err
+						console.error(err)
+						resp.send(err)
 
 	serverUtilityFunctions.ensureExists tempFilesPath, 0o0744, (err) ->
 		if err?
