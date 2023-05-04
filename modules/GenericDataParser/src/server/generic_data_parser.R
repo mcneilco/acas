@@ -2392,7 +2392,7 @@ validateExperimentStatus <- function(experimentStatusToValidate, configList, tes
   #   testMode:               If true, the function bypasses Roo services and gives a database-independent answer
   #
   # Returns:
-  #  The scientist's name if they are registered, and the empty string if they are not
+  #  The experiment status code value, and the empty string if they are not
   require('utils')
   require('RCurl')
   require('rjson')
