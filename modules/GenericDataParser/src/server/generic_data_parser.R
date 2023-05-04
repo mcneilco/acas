@@ -4730,7 +4730,3 @@ createColumnOrderStates <- function(exptDataColumns=selColumnOrderInfo, errorEnv
     }
     return(experimentStates)
 }
-
-
-
-
