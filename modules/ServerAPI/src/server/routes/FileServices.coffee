@@ -69,8 +69,8 @@ class LocalFileHandler
 					if deleteSourceFileOnSuccess
 						await fs.promises.unlink response.sourceLocation
 				.catch (err) ->
-					console.error "Error uploading file to bucket: #{err}"
-					file.error = "Error uploading file to bucket: #{err}"
+					console.error "Error moving file #{err}"
+					file.error = "Error moving file: #{err}"
 			)
 		console.log "awaiting uploads to complete"		
 		await Promise.all(promises)
@@ -115,6 +115,20 @@ class LocalFileHandler
 		# Return the file stream and the metadata
 		return {fileStream: fs.createReadStream(fullPath), metaData: metaData}
 
+	listFiles: (folderPath) ->
+		# Return a list of files in the folder
+		fullPath = path.join(config.all.server.datafiles.relative_path, folderPath)
+
+		# Check if the folder exists
+		exists = await fs.promises.access(fullPath).then(() => true).catch(() => false)
+
+		if !exists
+			return []
+
+		# List all files in the folder but exclude folders
+		paths = await fs.promises.readdir(fullPath, {withFileTypes: true})
+		files = paths.filter((p) -> p.isFile()).map((p) -> {path: path.join(folderPath, p.name)})
+		return files
 
 class ExternalFileHandler extends LocalFileHandler
 
@@ -175,24 +189,22 @@ class GCSFileHandler extends ExternalFileHandler
 		metaData[0].contentType = metaData[0].contentType || 'application/octet-stream'
 		return {fileStream: fileStream, metaData: metaData[0]}
 
+	listFiles: (folderName) ->
+		options = prefix: folderName
+		[files] = await @bucket.getFiles(options)
+		# Lets just return an object like:
+		# {
+		# 	"path": path
+		# }
+
+		files = files.map (file) -> path: file.name
+		return files
+
 setupRoutes = (app, loginRoutes, requireLogin) ->
 
 	dataFilesPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path
 	tempFilesPath = serverUtilityFunctions.makeAbsolutePath config.all.server.tempfiles.relative_path
-	
-	# Local file handler is used in some cases regardless of the external file handler type
-	exports.localFileHandler = new LocalFileHandler()
-	if config.all.server.service.external.file.type == 'blueimp'
-		# Local File Helper
-		fileHandler = exports.localFileHandler
-	else if config.all.server.service.external.file.type == 'gcs'
-		# New GCS Helper
-		fileHandler = new GCSFileHandler()
-	else
-		throw new Error("Unknown file handler type: #{config.all.server.service.external.file.type}")
 
-	await fileHandler.init()
-	exports.fileHandler = fileHandler
 	uploads = (req, resp) ->
 		if requireLogin
 			if !req.isAuthenticated()
@@ -286,7 +298,7 @@ setupRoutes = (app, loginRoutes, requireLogin) ->
 						# If fileHandler extends ExternalFileHandler then we need to move the file to the external file system
 						try
 							uploadTempFilesConfig = config.all.server.service.external.file.uploadTempFiles
-							if fileHandler instanceof ExternalFileHandler && (uploadTempFilesConfig? || uploadTempFilesConfig == true)
+							if exports.fileHandler instanceof ExternalFileHandler && (uploadTempFilesConfig? || uploadTempFilesConfig == true)
 								filesToMove.push({sourceLocation: file.filename, targetLocation: path.join("tmp", file.filename), meta: outfile})
 
 								# We do not delete files on success as we need to keep them in the temp folder for the file upload to work
@@ -296,7 +308,7 @@ setupRoutes = (app, loginRoutes, requireLogin) ->
 								exports.moveDataFilesInternal(filesToMove, deleteFilesOnSuccess)
 						
 						catch err
-							console.log "Error moving tmp file to external file system"
+							console.error "Error moving tmp file to external file system: #{err}"
 							resp.send(err)
 							return
 								
@@ -449,3 +461,71 @@ exports.moveDataFiles = (req, resp) ->
 
 exports.moveDataFilesInternal = (files, deleteSourceFileOnSuccess) ->
 	return await exports.fileHandler.moveFiles(files, deleteSourceFileOnSuccess)
+
+
+exports.migrateCmpdRegBulkLoaderFilesToSubfolders = () ->
+	console.log "About to migrate cmpdReg bulk loader files to subfolders"
+
+	cmpdRegBulkLoaderRoutes = require('./CmpdRegBulkLoaderRoutes.js')
+	bulkLoadFiles = await cmpdRegBulkLoaderRoutes.getBulkloadFilesInternal()
+	console.log "There are #{bulkLoadFiles.length} bulk load files in the DB"
+	bulkLoadSubFolderFiles = await exports.fileHandler.listFiles(cmpdRegBulkLoaderRoutes.BULKLOAD_SUB_FOLDER)
+	console.log "There are #{bulkLoadSubFolderFiles.length} bulk load files in the bulkload subfolder"
+	# {
+	# 	name: 'cmpdreg_bulkload/registered/249/test_012_register_sdf.sdf_2023-05-04_errors.csv'
+    # },
+	# storedFilesByID = {}
+	# for file in registeredStoredFiles
+	# 	# Remove the cmpdRegBulkLoaderRoutes.REGISTERED_FOLDER from the file path and keep the first subfolder as the id
+	# 	id = file.name.replace(cmpdRegBulkLoaderRoutes.REGISTERED_FOLDER, '').split(path.sep)[1]
+	# 	# Keep just the basename of the file
+	# 	storedFilesByID[id] = path.basename(file.name)
+	
+	# For each of the bulkLoadFiles in the DB check if the file is in the storedFilesByID dict
+	filesToMove = []
+	for bulkLoadFile in bulkLoadFiles
+		registeredFilesFolder = path.join(cmpdRegBulkLoaderRoutes.REGISTERED_FOLDER, bulkLoadFile.id.toString())
+		registeredStoredFiles = await exports.fileHandler.listFiles(registeredFilesFolder)
+		fileNameNoExtension = path.basename(bulkLoadFile.fileName, path.extname(bulkLoadFile.fileName))
+		
+		# Find all bulkLoadSubFolderFiles files that start with the fileNameNoExtension
+		matchingBulkLoadSubFolderFiles = bulkLoadSubFolderFiles.filter (file) ->
+			path.basename(file.path).startsWith(fileNameNoExtension)
+
+		if matchingBulkLoadSubFolderFiles.length == 0 && registeredStoredFiles.length == 0
+			console.error "Could not find any file #{bulkLoadFile.fileName} in the #{cmpdRegBulkLoaderRoutes.BULKLOAD_SUB_FOLDER} folder or in the #{registeredFilesFolder} folder"
+			continue
+
+		console.log "Found #{matchingBulkLoadSubFolderFiles.length} files in the #{cmpdRegBulkLoaderRoutes.BULKLOAD_SUB_FOLDER} folder and #{registeredStoredFiles.length} files in the #{registeredFilesFolder} folder"
+			
+		for file in matchingBulkLoadSubFolderFiles
+			# We move the stored DB file name
+			fileToMove = {
+				sourceLocation: file.path,
+				targetLocation: path.join(registeredFilesFolder, path.basename(file.path))
+			}
+			filesToMove.push(fileToMove)
+	
+	if filesToMove.length > 0
+		console.log "Found #{filesToMove.length} files to move"
+		await exports.fileHandler.moveFiles(filesToMove, true)
+	else 
+		console.log "No files to move"
+
+exports.init = ->
+	# Local file handler is used in some cases regardless of the external file handler type
+	localFileHandler = new LocalFileHandler()
+	if config.all.server.service.external.file.type == 'blueimp'
+		# Local File Helper
+		fileHandler = localFileHandler
+	else if config.all.server.service.external.file.type == 'gcs'
+		# New GCS Helper
+		fileHandler = new GCSFileHandler()
+	else
+		throw new Error("Unknown file handler type: #{config.all.server.service.external.file.type}")
+	await fileHandler.init()
+	exports.fileHandler = fileHandler
+	exports.localFileHandler = localFileHandler
+
+
+exports.init()

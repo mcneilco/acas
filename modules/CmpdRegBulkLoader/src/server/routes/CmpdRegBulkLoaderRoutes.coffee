@@ -2,6 +2,9 @@ path = require 'path'
 fs = require 'fs'
 JSZip = require 'jszip'
 zip = new JSZip()
+exports.BULKLOAD_SUB_FOLDER = "cmpdreg_bulkload"
+exports.REGISTERED_FOLDER = path.join(exports.BULKLOAD_SUB_FOLDER, "registered")
+exports.VALIDATED_FOLDER = path.join(exports.BULKLOAD_SUB_FOLDER, "validated")
 
 exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.post '/api/cmpdRegBulkLoader/registerCmpds', exports.registerCmpds
@@ -73,6 +76,13 @@ exports.getFilesToPurge = (req, resp) ->
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"bulkload/files"
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
+
+exports.getBulkloadFilesInternal = () ->
+	config = require '../conf/compiled/conf.js'
+	url = config.all.client.service.cmpdReg.persistence.fullpath+"bulkload/files"
+	#Fetch the url
+	response = await fetch(url, method: 'GET')
+	return await response.json()
 
 exports.cmpdRegBulkLoaderReadSdf = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
@@ -175,11 +185,10 @@ exports.registerCmpds = (req, resp) ->
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	config = require '../conf/compiled/conf.js'
 	req.connection.setTimeout 6000000
-	bulk_load_sub_folder = "cmpdreg_bulkload"
 
 	createSummaryZip = (fileName, originalFileName, json) ->
 		# This is passed as just a name but it exists in the bulk_load_sub_folder
-		originalFilePath = path.join(bulk_load_sub_folder, fileName)
+		originalFilePath = path.join(exports.BULKLOAD_SUB_FOLDER, fileName)
 
 		# Replace the extension with .zip to create the zip file name
 		zipFileName =  path.basename(fileName, path.extname(fileName)) + '.zip'
@@ -187,7 +196,7 @@ exports.registerCmpds = (req, resp) ->
 		
 		# Create the zip file
 		for rFile in json.reportFiles
-			splitNames = rFile.split (path.sep+bulk_load_sub_folder+path.sep)
+			splitNames = rFile.split (path.sep+exports.BULKLOAD_SUB_FOLDER+path.sep)
 			rFileName = splitNames[1]
 			rFileName = rFileName.replace(path.sep, '');
 			# rename to use the original name rather than the actual on disk name
@@ -195,7 +204,7 @@ exports.registerCmpds = (req, resp) ->
 			zip.file(rFileName, fs.readFileSync(rFile))
 
 		origUploadsPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path
-		shortZipName = path.join(bulk_load_sub_folder, zipFileName)
+		shortZipName = path.join(exports.BULKLOAD_SUB_FOLDER, zipFileName)
 		zipFilePath = path.join(origUploadsPath, shortZipName)
 
 		console.log "Creating zip file #{zipFilePath}"
@@ -208,9 +217,9 @@ exports.registerCmpds = (req, resp) ->
 			if json?.id?
 				console.log "This is a registered bulk load file with id #{json.id}"
 				metaData = {bulkloadFileID: json.id}
-				subFolder = path.join(bulk_load_sub_folder, "registered", json.id.toString())
+				subFolder = path.join(exports.REGISTERED_FOLDER, json.id.toString())
 			else
-				subFolder = path.join(bulk_load_sub_folder, "validated")
+				subFolder = path.join(exports.VALIDATED_FOLDER, "validated")
 
 			console.log "Moving files to #{subFolder}"
 			filesToMove = []
