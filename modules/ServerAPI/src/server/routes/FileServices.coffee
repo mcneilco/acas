@@ -465,21 +465,11 @@ exports.moveDataFilesInternal = (files, deleteSourceFileOnSuccess) ->
 
 exports.migrateCmpdRegBulkLoaderFilesToSubfolders = () ->
 	console.log "About to migrate cmpdReg bulk loader files to subfolders"
-
 	cmpdRegBulkLoaderRoutes = require('./CmpdRegBulkLoaderRoutes.js')
 	bulkLoadFiles = await cmpdRegBulkLoaderRoutes.getBulkloadFilesInternal()
 	console.log "There are #{bulkLoadFiles.length} bulk load files in the DB"
 	bulkLoadSubFolderFiles = await exports.fileHandler.listFiles(cmpdRegBulkLoaderRoutes.BULKLOAD_SUB_FOLDER)
 	console.log "There are #{bulkLoadSubFolderFiles.length} bulk load files in the bulkload subfolder"
-	# {
-	# 	name: 'cmpdreg_bulkload/registered/249/test_012_register_sdf.sdf_2023-05-04_errors.csv'
-    # },
-	# storedFilesByID = {}
-	# for file in registeredStoredFiles
-	# 	# Remove the cmpdRegBulkLoaderRoutes.REGISTERED_FOLDER from the file path and keep the first subfolder as the id
-	# 	id = file.name.replace(cmpdRegBulkLoaderRoutes.REGISTERED_FOLDER, '').split(path.sep)[1]
-	# 	# Keep just the basename of the file
-	# 	storedFilesByID[id] = path.basename(file.name)
 	
 	# For each of the bulkLoadFiles in the DB check if the file is in the storedFilesByID dict
 	filesToMove = []
@@ -511,6 +501,7 @@ exports.migrateCmpdRegBulkLoaderFilesToSubfolders = () ->
 		await exports.fileHandler.moveFiles(filesToMove, true)
 	else 
 		console.log "No files to move"
+		
 
 exports.init = ->
 	# Local file handler is used in some cases regardless of the external file handler type

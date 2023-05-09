@@ -1,4 +1,6 @@
 # Do not add content to this file, this is strictly for client usage to allow a script to be executed on start
+path = require 'path'
+fs = require 'fs'
 
 exports.main = (callback) ->
     # Example install of LD client python library on start
@@ -17,9 +19,27 @@ exports.main = (callback) ->
             else
                 callback(null)
     if config.all.server.migrateCmpdRegBulkLoaderFilesToSubfoldersOnStart? && config.all.server.migrateCmpdRegBulkLoaderFilesToSubfoldersOnStart
+        # Write a file to the file system to indicate that the migration has started
         fileServices = require "#{ACAS_HOME}/routes/FileServices.js"
         await fileServices.init()
-        bulkLoadFiles = await fileServices.migrateCmpdRegBulkLoaderFilesToSubfolders()
+
+        # Check if lock file exists in the datafiles relative path location then exist
+        lockFilePath = path.join(config.all.server.datafiles.relative_path, 'files.lock')
+        exists = !!(await (fs.promises.stat lockFilePath).catch (err) -> false)
+        if exists
+            console.log "Lock file exists at: #{lockFilePath}. Exiting."
+            process.exit -1
+        else
+            await fs.promises.writeFile(lockFilePath, 'lock')
+            # When we exit the function delete the lock file
+            console.log "Created lock file at: #{lockFilePath}"
+        try
+            await fileServices.migrateCmpdRegBulkLoaderFilesToSubfolders()
+        catch err
+            console.error "Error migrating files to subfolders: #{err}"
+        finally
+            await fs.promises.unlink(lockFilePath)
+            console.log "Deleted lock file at: #{lockFilePath}"
 
 if require.main == module
     exports.main()
