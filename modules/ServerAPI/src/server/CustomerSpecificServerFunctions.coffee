@@ -448,58 +448,6 @@ exports.relocateEntityFile = (fileValue, entityCodePrefix, entityCode, callback)
 		fileValue.fileValue = relEntityFolder + fileValue.fileValue
 	callback true
 
-exports.relocateEntityFileOld = (fileValue, entityCodePrefix, entityCode, callback) ->
-	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
-	uploadsPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path
-	oldPath = uploadsPath + fileValue.fileValue
-	relEntitiesFolder = serverUtilityFunctions.getRelativeFolderPathForPrefix(entityCodePrefix)
-	if relEntitiesFolder==null
-		callback false
-		return
-	relEntityFolder = relEntitiesFolder + entityCode + "/"
-	absEntitiesFolder = uploadsPath + relEntitiesFolder
-	absEntityFolder = uploadsPath + relEntityFolder
-	if fileValue.comments != undefined and fileValue.comments != null
-		newPath = absEntityFolder + fileValue.comments
-	else
-		newPath = absEntityFolder + fileValue.fileValue
-
-	entitiesFolder = uploadsPath + "entities/"
-	serverUtilityFunctions.ensureExists entitiesFolder, 0o0744, (err) ->
-		if err?
-			console.log "Can't find or create entities folder: " + entitiesFolder
-			callback false
-		else
-			serverUtilityFunctions.ensureExists absEntitiesFolder, 0o0744, (err) ->
-				if err?
-					console.log "Can't find or create : " + absEntitiesFolder
-					callback false
-				else
-					serverUtilityFunctions.ensureExists absEntityFolder, 0o0744, (err) ->
-						if err?
-							console.log "Can't find or create : " + absEntityFolder
-							callback false
-						else if fileValue.comments != undefined and fileValue.comments != null
-							console.log "fileValue has comments"
-							console.log oldPath
-							console.log newPath
-							stream = fs.createReadStream(oldPath).pipe fs.createWriteStream(newPath)
-							stream.on 'error', (err) ->
-								console.log "error copying file to new location"
-								callback false
-							stream.on 'close', ->
-								fileValue.fileValue = relEntityFolder + fileValue.comments
-								callback true
-						else
-							fs.rename oldPath, newPath, (err) ->
-								if err?
-									console.log err
-									callback false
-								else
-									fileValue.comments = fileValue.fileValue
-									fileValue.fileValue = relEntityFolder + fileValue.fileValue
-									callback true
-
 exports.getDownloadUrl = (fileValue) ->
 	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 	return config.all.client.datafiles.downloadurl.prefix+fileValue
