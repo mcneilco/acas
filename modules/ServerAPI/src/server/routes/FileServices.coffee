@@ -189,7 +189,14 @@ class GCSFileHandler extends ExternalFileHandler
 		metaData[0].contentType = metaData[0].contentType || 'application/octet-stream'
 		return {fileStream: fileStream, metaData: metaData[0]}
 
-	listFiles: (folderName) ->
+	listFiles: (folderName, recursive) ->
+		# If recursive is true, list all files in the folder and subfolders
+
+		if folderName == undefined
+			folderName = ''
+		if recursive == undefined
+			recursive = false
+		
 		options = prefix: folderName
 		[files] = await @bucket.getFiles(options)
 		# Lets just return an object like:
@@ -468,14 +475,14 @@ exports.migrateCmpdRegBulkLoaderFilesToSubfolders = () ->
 	cmpdRegBulkLoaderRoutes = require('./CmpdRegBulkLoaderRoutes.js')
 	bulkLoadFiles = await cmpdRegBulkLoaderRoutes.getBulkloadFilesInternal()
 	console.log "There are #{bulkLoadFiles.length} bulk load files in the DB"
-	bulkLoadSubFolderFiles = await exports.fileHandler.listFiles(cmpdRegBulkLoaderRoutes.BULKLOAD_SUB_FOLDER)
+	bulkLoadSubFolderFiles = await exports.localFileHandler.listFiles(cmpdRegBulkLoaderRoutes.BULKLOAD_SUB_FOLDER)
 	console.log "There are #{bulkLoadSubFolderFiles.length} bulk load files in the bulkload subfolder"
 	
 	# For each of the bulkLoadFiles in the DB check if the file is in the storedFilesByID dict
 	filesToMove = []
 	for bulkLoadFile in bulkLoadFiles
 		registeredFilesFolder = path.join(cmpdRegBulkLoaderRoutes.REGISTERED_FOLDER, bulkLoadFile.id.toString())
-		registeredStoredFiles = await exports.fileHandler.listFiles(registeredFilesFolder)
+		registeredStoredFiles = await exports.localFileHandler.listFiles(registeredFilesFolder)
 		fileNameNoExtension = path.basename(bulkLoadFile.fileName, path.extname(bulkLoadFile.fileName))
 		
 		# Find all bulkLoadSubFolderFiles files that start with the fileNameNoExtension
@@ -498,10 +505,21 @@ exports.migrateCmpdRegBulkLoaderFilesToSubfolders = () ->
 	
 	if filesToMove.length > 0
 		console.log "Found #{filesToMove.length} files to move"
-		await exports.fileHandler.moveFiles(filesToMove, true)
+		await exports.localFileHandler.moveFiles(filesToMove, true)
 	else 
 		console.log "No files to move"
 		
+exports.migrateFromLocalToExternalFileHandler() ->
+	if exports.fileHandler instanceof LocalFileHandler
+		console.log "File handler is local file handler. No migration needed"
+		return
+	
+	allFiles = await exports.localFileHandler.listFiles()
+	# Do uploads of 100 files at a time
+	for i in [0...allFiles.length] by 100
+		files = allFiles.slice(i, i+100)
+		await exports.fileHandler.copy(files)
+		await exports.localFileHandler.deleteFiles(files)
 
 exports.init = ->
 	# Local file handler is used in some cases regardless of the external file handler type
