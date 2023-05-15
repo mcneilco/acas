@@ -41,5 +41,28 @@ exports.main = (callback) ->
             await fs.promises.unlink(lockFilePath)
             console.log "Deleted lock file at: #{lockFilePath}"
 
+    if config.all.server.migrateFromLocalToExternalFileHandlerOnStart? && config.all.server.migrateFromLocalToExternalFileHandlerOnStart
+        # Write a file to the file system to indicate that the migration has started
+        fileServices = require "#{ACAS_HOME}/routes/FileServices.js"
+        await fileServices.init()
+
+        # Check if lock file exists in the datafiles relative path location then exist
+        lockFilePath = path.join(config.all.server.datafiles.relative_path, 'files.lock')
+        exists = !!(await (fs.promises.stat lockFilePath).catch (err) -> false)
+        if exists
+            console.log "Lock file exists at: #{lockFilePath}. Exiting."
+            process.exit -1
+        else
+            await fs.promises.writeFile(lockFilePath, 'lock')
+            # When we exit the function delete the lock file
+            console.log "Created lock file at: #{lockFilePath}"
+        try
+            await fileServices.migrateFromLocalToExternalFileHandler(lockFilePath)
+        catch err
+            console.error "Error migrating files to external file handler: #{err}"
+        finally
+            await fs.promises.unlink(lockFilePath)
+            console.log "Deleted lock file at: #{lockFilePath}"
+
 if require.main == module
     exports.main()
