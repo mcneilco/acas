@@ -700,23 +700,24 @@ exports.fileSave = (req, resp) ->
 
 	# Create a multer object to handle the upload
 	# Use .any to allow multiple files to be uploaded
-	notebookUpload = multer({dest: noteBookPath, storage: storage}).any()
+	notebookUpload = multer({dest: notebooksBasePath, storage: storage}).any()
 	filesToMove = []
 	notebookUpload req, resp, (err) ->
 
 		# For each of the saved files we need to move them to the correct location which is the notebookSavePath + subdir (lot corp name)
 		req.body.size = []
 		req.body.contentType = []
+		req.body.file = []
 		i = 0
 		for file in req.files
 			destPath =  path.join(config.all.client.cmpdreg.serverSettings.notebookSavePath, req.body.subdir, file.originalname)
 			fileToMove = {
 				sourceLocation: file.path
-				destinationLocation: destPath
+				targetLocation: destPath
 			}
 
 			# Update the file attribute to be a path to the file
-			req.body.file[i] = destPath
+			req.body.file.push destPath
 
 			# Add extra information to store on the file
 			req.body.size.push file.size
@@ -728,12 +729,12 @@ exports.fileSave = (req, resp) ->
 	
 		# Move the files to final location
 		movedFiles = await fileServices.moveDataFilesInternal(filesToMove, true)
-		console.log "Response from move files #{movedFiles}"
+		console.log "Response from move files #{JSON.stringify(movedFiles)}"
 
 		# Save the file information to the cmpd reg file service
 		cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/filesave'
 		req.body.ie = req.body.ie == "true"
-		console.log JSON.stringify req.body
+		console.log "Saving file information to cmpd reg #{JSON.stringify(req.body)}"
 		response = await fetch(cmpdRegCall,
 			method: 'POST'
 			body: JSON.stringify(req.body)
@@ -741,6 +742,7 @@ exports.fileSave = (req, resp) ->
 				'Content-Type': 'application/json'
 		)
 		json = await response.json()
+		console.log "Response from cmpd reg file save #{JSON.stringify(json)}"
 		resp.json json
 
 exports.saveMetaLot = (req, resp) ->
