@@ -1,3 +1,15 @@
+_ = require 'underscore'
+request = require 'request'
+config = require '../conf/compiled/conf.js'
+serverUtilityFunctions = require './ServerUtilityFunctions.js'
+loginRoutes = require './loginRoutes.js'
+authorRoutes = require './AuthorRoutes.js'
+experimentServiceRoutes = require './ExperimentServiceRoutes.js'
+protocolServiceRoutes = require './ProtocolServiceRoutes.js'
+fileServices = require './FileServices.js'
+multer = require('multer')
+path = require('path')
+
 exports.setupAPIRoutes = (app) ->
 	app.get '/cmpdReg/scientists', exports.getScientists
 	app.get '/cmpdReg/metalots/corpName/:lotCorpName', exports.getMetaLot
@@ -60,14 +72,6 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/cmpdReg/export/corpName/:lotCorpName', loginRoutes.ensureAuthenticated, exports.exportLotToSDF
 	app.post '/api/cmpdReg/renderMolStructureBase64', loginRoutes.ensureAuthenticated, exports.renderMolStructureBase64CmpdReg
 
-_ = require 'underscore'
-request = require 'request'
-config = require '../conf/compiled/conf.js'
-serverUtilityFunctions = require './ServerUtilityFunctions.js'
-loginRoutes = require './loginRoutes.js'
-authorRoutes = require './AuthorRoutes.js'
-experimentServiceRoutes = require './ExperimentServiceRoutes.js'
-protocolServiceRoutes = require './ProtocolServiceRoutes.js'
 
 exports.cmpdRegIndex = (req, res) ->
 	scriptPaths = require './RequiredClientScripts.js'
@@ -681,8 +685,63 @@ exports.getMultipleFilePicker = (req, resp) ->
 	req.pipe(request(cmpdRegCall)).pipe(resp)
 
 exports.fileSave = (req, resp) ->
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/filesave'
-	req.pipe(request[req.method.toLowerCase()](cmpdRegCall)).pipe(resp)
+	# This is a multi part post, we need to get each of the files and write them to the file system
+	# Then we post the json to the cmpd reg service to save the file paths
+
+	# First we need to get the files and write them to the file system
+	notebooksBasePath = path.join(config.all.server.datafiles.relative_path, config.all.client.cmpdreg.serverSettings.notebookSavePath)
+
+	# Setup disk storage and use the original name as the file name
+	# Otherwise multer will use a random hash name to guarantee uniqueness
+	storage = multer.diskStorage
+		destination: notebooksBasePath
+		filename: (req, file, cb) ->
+			cb null, file.originalname
+
+	# Create a multer object to handle the upload
+	# Use .any to allow multiple files to be uploaded
+	notebookUpload = multer({dest: noteBookPath, storage: storage}).any()
+	filesToMove = []
+	notebookUpload req, resp, (err) ->
+
+		# For each of the saved files we need to move them to the correct location which is the notebookSavePath + subdir (lot corp name)
+		req.body.size = []
+		req.body.contentType = []
+		i = 0
+		for file in req.files
+			destPath =  path.join(config.all.client.cmpdreg.serverSettings.notebookSavePath, req.body.subdir, file.originalname)
+			fileToMove = {
+				sourceLocation: file.path
+				destinationLocation: destPath
+			}
+
+			# Update the file attribute to be a path to the file
+			req.body.file[i] = destPath
+
+			# Add extra information to store on the file
+			req.body.size.push file.size
+			req.body.contentType.push file.mimetype
+
+			# Add the file to the list of files to move
+			filesToMove.push fileToMove
+			i++
+	
+		# Move the files to final location
+		movedFiles = await fileServices.moveDataFilesInternal(filesToMove, true)
+		console.log "Response from move files #{movedFiles}"
+
+		# Save the file information to the cmpd reg file service
+		cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/filesave'
+		req.body.ie = req.body.ie == "true"
+		console.log JSON.stringify req.body
+		response = await fetch(cmpdRegCall,
+			method: 'POST'
+			body: JSON.stringify(req.body)
+			headers:
+				'Content-Type': 'application/json'
+		)
+		json = await response.json()
+		resp.json json
 
 exports.saveMetaLot = (req, resp) ->
 	metaLot = req.body;

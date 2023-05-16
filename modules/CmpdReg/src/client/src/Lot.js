@@ -45,7 +45,8 @@ $(function() {
 				descriptions: true,
 				compatibilityMode: true,
 				target: uploadTarget,
-                serverDestDir: serverDestDir
+                serverDestDir: serverDestDir,
+				baseDirectory: window.configuration.serverSettings.notebookSavePath
 			});
 			this.fileUploadController.hide();
 

@@ -63,6 +63,7 @@ exports.main = (callback) ->
         finally
             await fs.promises.unlink(lockFilePath)
             console.log "Deleted lock file at: #{lockFilePath}"
+    console.log "Bootstrap complete"
 
 if require.main == module
     exports.main()
