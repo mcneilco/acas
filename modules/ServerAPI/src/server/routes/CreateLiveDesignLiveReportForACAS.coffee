@@ -34,7 +34,7 @@ exports.redirectToNewLiveDesignLiveReportForExperiment = (req, resp) ->
 exports.getUrlForNewLiveDesignLiveReportForExperiment = (req, resp) ->
   exptCode = req.params.experimentCode
   username = req.session.passport.user.username
-  exports.getUrlForNewLiveDesignLiveReportForExperimentInternal exptCode, (status_code, url) ->
+  exports.getUrlForNewLiveDesignLiveReportForExperimentInternal exptCode, username, (status_code, url) ->
     if status_code != 200
       resp.statusCode = status_code
       resp.end url
