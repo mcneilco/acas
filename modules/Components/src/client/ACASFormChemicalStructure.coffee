@@ -111,7 +111,7 @@ class MaestroChemicalStructureController extends Backbone.View
 			@maestro.sketcherImportText(molStr)
 
 	clear: ->
-		@maestro.clearSketcher()
+		@maestro.sketcher_clear
 
 	isEmptyMol: (molStr) ->
 		if (molStr.indexOf("M  V30 COUNTS 0 0 0 0 0") > -1)
