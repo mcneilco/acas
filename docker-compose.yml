@@ -49,7 +49,7 @@ services:
       - logs:/home/runner/logs
     command: ["bin/acas.sh", "run", "rservices"]
   db:
-    image: mcneilco/acas-postgres:release-1.13.7
+    image: mcneilco/acas-postgres:release-2023.3.x
     restart: always
     volumes:
      - dbstore:/var/lib/postgresql/data
