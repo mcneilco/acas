@@ -140,11 +140,11 @@ exports.experimentByName = (req, resp) ->
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 exports.experimentsByProtocolCodename = (req, resp) ->
-	exports.experimentsByProtocolCodenameInternal req.params.code, req.query.testMode, (status, response) =>
+	exports.experimentsByProtocolCodenameInternal req.params.code, req.user, req.query.testMode, (status, response) =>
 		resp.statusCode = status
 		resp.json response 
 
-exports.experimentsByProtocolCodenameInternal = (code, testMode, callback) ->
+exports.experimentsByProtocolCodenameInternal = (code, user, testMode, callback) ->
 	console.log code
 	console.log testMode
 
@@ -155,8 +155,14 @@ exports.experimentsByProtocolCodenameInternal = (code, testMode, callback) ->
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"experiments/protocol/"+code
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
-		serverUtilityFunctions.getFromACASServerInternal baseurl, (statusCode, value) ->
-			callback(statusCode, value)
+		authorRoutes = require './AuthorRoutes.js'
+		authorRoutes.allowedProjectsInternal user, (statusCode, allowedUserProjects) ->
+			_ = require "underscore"
+			allowedProjectCodes = _.pluck(allowedUserProjects, "code")
+			baseurl = "#{baseurl}?projects=#{encodeURIComponent(allowedProjectCodes.join(','))}"
+
+			serverUtilityFunctions.getFromACASServerInternal baseurl, (statusCode, value) ->
+				callback(statusCode, value)
 
 exports.experimentById = (req, resp) ->
 	console.log req.params.id
