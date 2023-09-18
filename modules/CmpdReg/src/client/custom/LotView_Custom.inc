@@ -5,11 +5,11 @@
 		<div>
 			<div>
 				<label class="FormLabel">*Chemist:</label>
-				<select class="FormInput chemist" <%- saved ? 'disabled=true': '' %> ></select>
+				<select class="FormInput chemist" ></select>
 			</div>
 			<div>
 				<label class="FormLabel"><span class="notForVirtual">*</span>Notebook-Page:</label>
-				<input type="textfield" class="FormInput notebookPage" <%- saved ? 'disabled=true': '' %> value="<%- notebookPage %>" />
+				<input type="textfield" class="FormInput notebookPage" value="<%- notebookPage %>" />
 			</div>
 		</div>
 		
@@ -70,7 +70,7 @@
 			</div>
 			<div>
 				<label class="FormLabel"><span class="notForVirtual">*</span>Synthesis Date:</label>
-				<input type="textfield" class="FormInput synthesisDate" <%- saved ? 'disabled=true': '' %> value="<%- synthesisDate %>"/>
+				<input type="textfield" class="FormInput synthesisDate" value="<%- synthesisDate %>"/>
 			</div>
 		</div>
 		<div class="notForVirtual2 notForVirtual">
