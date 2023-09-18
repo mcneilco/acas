@@ -270,7 +270,15 @@ exports.getMetaLotDependencies = (req, resp, next) ->
 			includeLinkedLots = if(req.query.includeLinkedLots == "false" || req.query.includeLinkedLots == "0") then false else true
 		else
 			includeLinkedLots = true
-		dependencies = await exports.getLotDependenciesInternal(metaLot.lot, user, allowedProjects, includeLinkedLots)
+
+		# Check the parameter for includeAnalysisGroupValues but return false by default
+		if req.query.includeAnalysisGroupValues?
+			# Booleans are passed as strings, so convert to boolean
+			# Only set this to true if the value is actually "true" or "1"
+			includeAnalysisGroupValues = if(req.query.includeAnalysisGroupValues == "true" || req.query.includeAnalysisGroupValues == "1") then true else false
+		else
+			includeAnalysisGroupValues = false
+		dependencies = await exports.getLotDependenciesInternal(metaLot.lot, user, allowedProjects, includeLinkedLots, includeAnalysisGroupValues)
 		resp.json dependencies
 	catch error
 		console.error error
@@ -278,9 +286,9 @@ exports.getMetaLotDependencies = (req, resp, next) ->
 		resp.statusCode = 500
 		resp.json {error: err}
 
-exports.getLotDependenciesByCorpNameInternal = (lotCorpName, user, allowedProjects, includeLinkedLots=true) ->
+exports.getLotDependenciesByCorpNameInternal = (lotCorpName, user, allowedProjects, includeLinkedLots=true, includeAnalysisGroupValues=false) ->
 	[err, metaLot, statusCode] = await exports.getMetaLotInternal(lotCorpName, user, allowedProjects, getDeleteAcl=false)
-	dependencies = await exports.getLotDependenciesInternal(metaLot.lot, user, allowedProjects, includeLinkedLots)
+	dependencies = await exports.getLotDependenciesInternal(metaLot.lot, user, allowedProjects, includeLinkedLots, includeAnalysisGroupValues)
 	return dependencies
 
 
@@ -356,7 +364,7 @@ exports.getProtocolCodeAndName = (protocol) ->
 # @param {object} user - User object.
 # @param {array} allowedProjects - Projects user has access to.
 ###
-exports.getLotExperimentDependencies = (lot, user, allowedProjects) ->
+exports.getLotExperimentDependencies = (lot, user, allowedProjects, includeAnalysisGroupValues) ->
 	lotCorpName = lot.corpName
 	# Get the depdencies from the service which does not cover user ACLS
 	response = await exports.fetchMetaLotDependencies(lotCorpName)
@@ -378,7 +386,11 @@ exports.getLotExperimentDependencies = (lot, user, allowedProjects) ->
 		experimentCodeList = _.uniq experimentCodeList
 
 		# Get the experiments from the server
-		response = await experimentServiceRoutes.fetchExperimentsByCodeNames(experimentCodeList, "analysisgroupvalues")
+		if includeAnalysisGroupValues
+			experimentsWith = "analysisgroupvalues"
+		else
+			experimentsWith = null
+		response = await experimentServiceRoutes.fetchExperimentsByCodeNames(experimentCodeList, experimentsWith)
 		experiments = await response.json()
 
 		# It's unexpected that the server would return a list of experiments that are not in the list of codes we asked for, so we check for that and erorr
@@ -411,13 +423,14 @@ exports.getLotExperimentDependencies = (lot, user, allowedProjects) ->
 			codeToExperiment[experiment.experiment.codeName] = experiment.experiment
 
 		# Add analysis group values in linked experiments.
-		for experiment in dependencies.linkedExperiments
-			if experiment.acls.getRead()
-				code = experiment.code
-				analysisGroups = codeToExperiment[code].analysisGroups
-				experiment.analysisGroups = exports.getAnalysisGroupValues analysisGroups
-			else
-				experiment.analysisGroups = []
+		if includeAnalysisGroupValues
+			for experiment in dependencies.linkedExperiments
+				if experiment.acls.getRead()
+					code = experiment.code
+					analysisGroups = codeToExperiment[code].analysisGroups
+					experiment.analysisGroups = exports.getAnalysisGroupValues analysisGroups
+				else
+					experiment.analysisGroups = []
 
 		# Get protocols for which user has read acess
 		protocolCodes = []
@@ -443,7 +456,7 @@ exports.getLotExperimentDependencies = (lot, user, allowedProjects) ->
 	return dependencies
 
 
-exports.getLotDependenciesInternal = (lot, user, allowedProjects, includeLinkedLots=true) ->
+exports.getLotDependenciesInternal = (lot, user, allowedProjects, includeLinkedLots=true, includeAnalysisGroupValues=false) ->
 	console.log "Checking lot dependencies for lot #{lot.corpName} with user #{user.username}"
 
 	if !allowedProjects?
@@ -454,7 +467,7 @@ exports.getLotDependenciesInternal = (lot, user, allowedProjects, includeLinkedL
 
 	lotCorpName = lot.corpName
 
-	dependencies = await exports.getLotExperimentDependencies lot, user, allowedProjects
+	dependencies = await exports.getLotExperimentDependencies lot, user, allowedProjects, includeAnalysisGroupValues
 	# Look up and attach the acls of the linked lots
 	# Don't show any information except acls if the user cannot read the lot
 	# This data is purely informational when considering the dependencies of a lot
@@ -625,7 +638,7 @@ exports.getLotAcls = (lot, user, allowedProjects, checkDelete=true) ->
 			lotAcls.setDelete(false)
 		else
 			# Do not need to fetch linked lots here because they do not matter when considering delete acls (linked lots are purely informational)
-			dependencies = await exports.getLotDependenciesInternal(lot, user, allowedProjects, false)
+			dependencies = await exports.getLotDependenciesInternal(lot, user, allowedProjects, false, false)
 			canDelete = true
 			for experiment in dependencies.linkedExperiments
 				console.log "experiment"
