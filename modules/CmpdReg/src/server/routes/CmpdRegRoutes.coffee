@@ -508,7 +508,7 @@ exports.getMetaLotInternal = (lotCorpName, user, allowedProjects, getDeleteAcl=t
 		checkStatus response
 		metaLot = await response.json()
 		if Object.keys(metaLot).length == 0 || !metaLot.lot?
-			statusCode = 500
+			statusCode = 404
 			err =  "Could not find lot"
 		else
 			acls = await exports.getLotAcls(metaLot.lot, user, allowedProjects, getDeleteAcl)
