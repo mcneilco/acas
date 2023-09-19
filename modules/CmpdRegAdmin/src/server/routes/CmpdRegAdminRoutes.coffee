@@ -322,12 +322,14 @@ exports.reparentLot = (req, resp) ->
 		if !error && response.statusCode == 200
 			if json?.newLot?
 				# Fetch the new lot dependencies and attach it to the json
+				# We don't want to include the analysis group values in the dependencies because this could be a lot of data and be slow
+				includeAnalysisGroupValues = false
 				if dryRun
 					console.log "Dry run is true, returning dependencies for original lot corp name #{json.originalLotCorpName}"
-					dependencies = await cmpdRegRoutes.getLotDependenciesByCorpNameInternal(json.originalLotCorpName, req.session.passport.user, null, true)
+					dependencies = await cmpdRegRoutes.getLotDependenciesByCorpNameInternal(json.originalLotCorpName, req.session.passport.user, null, true, includeAnalysisGroupValues)
 				else
-					console.log "Dry run is false, returning dependencies for original lot corp name #{json.originalLotCorpName}"
-					dependencies = await cmpdRegRoutes.getLotDependenciesInternal(json.newLot, req.session.passport.user, null, true)
+					console.log "Dry run is false, returning dependencies for new lot corp name #{json.newLot}"
+					dependencies = await cmpdRegRoutes.getLotDependenciesInternal(json.newLot, req.session.passport.user, null, true, includeAnalysisGroupValues)
 
 				json.dependencies = dependencies
 			resp.json json
