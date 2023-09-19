@@ -361,9 +361,10 @@ $(function () {
         //                this.$('.notForVirtual3').hide();
       }
 
+      this.$('.synthesisDate').datepicker();
+      this.$('.synthesisDate').datepicker("option", "dateFormat", "mm/dd/yy");
+
       if (this.model.isNew()) {
-        this.$('.synthesisDate').datepicker();
-        this.$('.synthesisDate').datepicker("option", "dateFormat", "mm/dd/yy");
         this.$('.editAnalyticalFiles').hide();
         this.$('.analyticalFiles').html('Add analytical files by editing lot after it is saved');
         if (!this.model.get('isVirtual') && this.autoPopulateNextLotNumber) {
@@ -453,9 +454,6 @@ $(function () {
 
       if (this.model.isNew()) {
         this.model.set({
-          notebookPage: jQuery.trim(this.$('.notebookPage').val()),
-          synthesisDate: jQuery.trim(this.$('.synthesisDate').val()),
-          chemist: this.chemistCodeController.getSelectedModel(),
           lotNumber:
             (jQuery.trim(this.$('.lotNumber').val()) == '') ? null :
               parseInt(jQuery.trim(this.$('.lotNumber').val()))
@@ -524,6 +522,8 @@ $(function () {
         if (this.vendorCodeController.getSelectedModel().isNew()) vendor = null;
         else vendor = this.vendorCodeController.getSelectedModel();
         this.model.set({
+          notebookPage: jQuery.trim(this.$('.notebookPage').val()),
+          synthesisDate: jQuery.trim(this.$('.synthesisDate').val()),
           supplier: jQuery.trim(this.$('.supplier').val()),
           supplierID: jQuery.trim(this.$('.supplierID').val()),
           percentEE:
