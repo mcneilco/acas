@@ -5,6 +5,7 @@ import re
 from ldclient.client import LDClient
 from ldclient.api.requester import SUPPORTED_SERVER_VERSION
 from ldclient.base import version_str_as_tuple
+from ldclient.enums import ProjectType
 
 import argparse
 import json
@@ -274,7 +275,7 @@ def ld_project_to_acas(ld_project):
         'alias': ld_project.name,
         'active': True if ld_project.active == "Y" else False,
         'ignored': False if ld_project.active == "Y" else True,
-        'isRestricted': ld_project.restricted,
+        'isRestricted': ld_project.project_type not in (ProjectType.GLOBAL, ProjectType.UNRESTRICTED),
         'name': ld_project.name
     }
     return acas_project
