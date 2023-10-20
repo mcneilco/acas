@@ -43,7 +43,7 @@
     "jasmine-jquery": "^2.1.1",
     "jquery": "^3.5.1",
     "json2csv": "^5.0.5",
-    "jszip": "3.5.0",
+    "jszip": "3.8.0",
     "less": "^3.12.2",
     "lodash": "^4.17.20",
     "marked": "1.2.5",
