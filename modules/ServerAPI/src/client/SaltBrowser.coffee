@@ -333,7 +333,15 @@ class SaltBrowserController extends Backbone.View
 					console.log(errorMsg)
 					@$('.bv_createSalt').hide()
 					@$('.bv_errorCreatingSaltMessage').show()
-					@$('.bv_createSaltErrorMessageHolder') errorMsg
+					errorData = JSON.parse(errorMsg.responseText)
+					errorContainer = @$('.bv_createSaltErrorMessageHolder')
+					errorContainer.empty()
+					errorContainer.append("<p>Error(s):</p>")
+					errorList = $('<ul class="error-list"></ul>')
+					for error in errorData
+						errorMessage = error.message
+						errorList.append("<li>#{errorMessage}</li>")
+					errorContainer.append(errorList)
 			)
 
 	handleBackConfirmCreateClicked: => 
@@ -392,7 +400,15 @@ class SaltBrowserController extends Backbone.View
 					console.log(errorMsg)
 					@$('.bv_confirmCreateSalt').hide()
 					@$('.bv_errorCreatingSaltMessage').show()
-					@$('.bv_createSaltErrorMessageHolder') errorMsg
+					errorData = JSON.parse(errorMsg.responseText)
+					errorContainer = @$('.bv_createSaltErrorMessageHolder')
+					errorContainer.empty()
+					errorContainer.append("<p>Error(s):</p>")
+					errorList = $('<ul class="error-list"></ul>')
+					for error in errorData
+						errorMessage = error.message
+						errorList.append("<li>#{errorMessage}</li>")
+					errorContainer.append(errorList)
 					@$('.bv_createNotifications').hide()
 			)
 
