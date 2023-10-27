@@ -49,6 +49,7 @@ exports.applicationScripts = [
 	'/javascripts/src/Components/ACASFormStateTable.js',
 	'/javascripts/src/Components/BasicFileValidateAndSave.js',
 	'/javascripts/src/Components/BasicFileValidateReviewAndSave.js',
+	'/javascripts/src/Components/BasicThingValidateAndSave.js',
 	'/javascripts/src/Components/ACASThingBrowser.js',
 	'/javascripts/src/Components/PickList.js',
 	'/javascripts/src/CodeTablesAdmin/AbstractCodeTable.js',
