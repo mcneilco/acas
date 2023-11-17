@@ -3,10 +3,10 @@ name: Docker Image CI
 on:
   push:
     branches: ["master", "release/*"]
+    tags:
+      - "*"
   pull_request:
     types: [opened, synchronize]
-  create:
-    tags: "**"
 jobs:
   acas:
     runs-on: ubuntu-latest
