@@ -61,13 +61,15 @@ jobs:
           # Check out the branch specified by ACAS_CLIENT_REF
           ref: ${{ env.ACAS_CLIENT_REF }}
       - name: Build (no push)
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v5
         with:
           push: false
           load: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           file: Dockerfile
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           build-args: |
             BUILDTIME=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
             VERSION=${{ env.ACAS_TAG }}
@@ -111,7 +113,7 @@ jobs:
       - name: Run tests
         run: python -m unittest discover -s ./acasclient -p "test_*.py" -v
       - name: Build and push
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v5
         with:
           # Only push tags and release branches
           push: ${{ startsWith(github.ref, 'refs/heads/release/') || startsWith(github.ref, 'refs/tags/') }}
@@ -119,6 +121,8 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           file: Dockerfile
           platforms: linux/amd64,linux/arm64/v8
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           build-args: |
             BUILDTIME=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
             VERSION=${{ env.ACAS_TAG }}
