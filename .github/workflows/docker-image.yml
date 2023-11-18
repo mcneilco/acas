@@ -112,11 +112,12 @@ jobs:
           pip install ./acasclient
       - name: Run tests
         run: python -m unittest discover -s ./acasclient -p "test_*.py" -v
-      - name: Build and push
+      - name: Build multi-arch and push
+        # Only push tags and release branches
+        if: ${{ startsWith(github.ref, 'refs/heads/release/') || startsWith(github.ref, 'refs/tags/') }}
         uses: docker/build-push-action@v5
         with:
-          # Only push tags and release branches
-          push: ${{ startsWith(github.ref, 'refs/heads/release/') || startsWith(github.ref, 'refs/tags/') }}
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           file: Dockerfile
