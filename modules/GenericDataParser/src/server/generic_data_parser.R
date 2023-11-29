@@ -2106,7 +2106,7 @@ createNewProtocol <- function(metaData, lsTransaction, recordedBy, columnOrderSt
   
   # Create the protocol
   protocol <- createProtocol(lsTransaction = lsTransaction,
-                             shortDescription=paste0(racas::applicationSettings$client.protocol.label," created by generic data parser"),  
+                             shortDescription=racas::applicationSettings$server.sel.protocolDescription,  
                              recordedBy=recordedBy, 
                              protocolLabels=protocolLabels,
                              protocolStates=protocolStates)
@@ -2273,7 +2273,7 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
                                  shortDescription = if(!is.null(metaData$"Short Description"[1])) {
                                    metaData$"Short Description"[1]
                                      } else {
-                                   paste0(racas::applicationSettings$client.experiment.label," created by generic data parser")
+                                   racas::applicationSettings$server.sel.experimentDescription
                                      },  
                                  recordedBy=recordedBy, 
                                  experimentLabels=experimentLabels,
