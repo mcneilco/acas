@@ -65,7 +65,7 @@
     "request": "2.34.0",
     "request-promise": "4.2.1",
     "serve-favicon": "^2.5.0",
-    "semver": "7.3.5",
+    "semver": "7.5.2",
     "socket.io": "2.4.1",
     "style-loader": "2.0.0",
     "temporary": "1.1.0",
