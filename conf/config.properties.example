@@ -637,7 +637,7 @@ server.systemTest.runDestructive=false
 # Behavior without this config set to true is to give all users access to all projects
 server.project.roles.enable=true
 
-# Require project type to be returned by project customer specific CustomerSpecificFunctions
+# Require project type to be returned by project CustomerSpecificFunctions
 server.project.type.required=false
 
 #Controls whether to try to sync projects list from ACAS to CmpdReg
