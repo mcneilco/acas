@@ -706,27 +706,58 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
         # A project can only be used in the experiment if it's an unrestricted project or belongs to the project which this experiment belongs to
         projectsDT <- data.table(projectDF)
 
-        # Loop through by project code and create a projectAllowedForExperiment column
+        # Add project type if its missing
+        if(!"type" %in% colnames(projectsDT)) {
+          projectsDT[ , type := NA]
+        }
+
+        # Get the project type of the experiment project if required by configurations
+        projectType <- NA
+        if(configList$server.project.type.required) {
+          projectType <- projectsDT[code == projectCode]$type
+          if(is.na(projectType)) {
+            stopUser(paste0("Project '",projectCode,"' does not have a type. Please contact your system administrator."))
+          }
+        }
+
+        # Here we are annotating each of the projects with a boolean as to whether it can be used in the experiment if its used by a lot     
         projectsDT[ , projectAllowedForExperiment := {
-          # Check if the project is unrestricted or if it equals the projectCode of the experiment
-          !isRestricted | code == projectCode
+          # projectType and projectCode are referring to the experiment project
+          # code and isRestricted are referring to the batch project
+          if(is.na(projectType)) {
+            # If the project type is na then this is not a system with project type
+            # so we just check if the project is restricted and if the lot project is the same as the experiment project
+            !isRestricted | code == projectCode
+          } else {
+            # If project type is not na then this is a system with project type
+            switch(projectType,
+                    "RESTRICTED" =  !isRestricted | code == projectCode,
+                    "HYPER_RESTRICTED" = code == projectCode,
+                    "UNRESTRICTED" = TRUE,
+                    "GLOBAL" = ifelse(identical(type, "HYPER_RESTRICTED"), FALSE, TRUE),
+                    stopUser(paste0("Project '",projectCode,"' has an invalid type. Please contact your system administrator."))
+            )
+          }
+
         }, by = code]
 
         # Merge batch projects to project restrition information
         batchProjectWithRestrictionInfo <- as.data.table(merge(batchProjects, projectsDT, by.x="Project.Code", by.y="code"))
-        
+
         # Create a data table with one row per batch with a boolean column as to whether it can be used in the experiment
         # if any of the projects the batch belongs to is allowed to be loaded to this experiment, then the batch can be loaded to the experiment
-        canUseBatchDT <- batchProjectWithRestrictionInfo[ , any(projectAllowedForExperiment), by = Requested.Name]
+        canUseBatchDT <- batchProjectWithRestrictionInfo[ , any(projectAllowedForExperiment), by = c("Requested.Name", "type")]
         setnames(canUseBatchDT, "V1", "batchCanBeLoadedToExperimentProject")
 
         # Get a list of batches which are restricted and cannot be used in this experiment's project
-        rCompounds <- canUseBatchDT[batchCanBeLoadedToExperimentProject == FALSE]$Requested.Name
+        rCompounds <- canUseBatchDT[batchCanBeLoadedToExperimentProject == FALSE]
 
-        if (length(rCompounds) > 0) {
+        if (nrow(rCompounds) > 0) {
           addProjectError <- TRUE
-          shouldCheckRole <- configList$server.project.roles.enable & !is.null(configList$client.roles.crossProjectLoaderRole)
-          if(shouldCheckRole) {
+          crossProjectLoaderRolesEnabled <- configList$server.project.roles.enable & !is.null(configList$client.roles.crossProjectLoaderRole)
+          # HYPER_RESTRICTED projects are not allowed to be loaded to other projects by anyone
+          # So only check cross project loader roles if the project is not HYPER_RESTRICTED
+          if(crossProjectLoaderRolesEnabled && !identical(projectType, "HYPER_RESTRICTED")) {
             response <- getURL(URLencode(paste0(racas::applicationSettings$server.nodeapi.path, racas::applicationSettings$client.service.users.path, "/", user)))
             if(response=="") {
               addError(paste0("Username '",user,"' could not be found in the system"))
@@ -740,8 +771,17 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
             }
           }
           if(addProjectError) {
-            addError(paste0("Compounds '", paste(rCompounds, collapse = "', '"),
+            # Return error message for each type of project
+            # if projectType (experiment project) is restricted then return error message for specific for hyper restrictions
+            rCompounds[ , {
+              if(identical(projectType, "HYPER_RESTRICTED")) {
+                 addError(paste0("Compounds '", paste(.SD$Requested.Name, collapse = "', '"),
+                            "' are in a project that does not match the hyper restricted project entered for this ",racas::applicationSettings$client.experiment.label,"."))
+              } else {
+                 addError(paste0("Compounds '", paste(.SD$Requested.Name, collapse = "', '"),
                             "' are in a restricted project that does not match the one entered for this ",racas::applicationSettings$client.experiment.label,"."))
+              }
+            }, by = type]
           }
         }
       }
