@@ -368,6 +368,14 @@ exports.getProjectStubsInternal = (callback) ->
 		#remove groups attribute
 		_.each acasGroupsAndProjects.projects, (project) ->
 			delete project.groups
+			# ACAS-754: Adding project type to project object
+			# For testing purposes only
+			# if project.code == "Global"
+			# 	project.type = "GLOBAL"
+			# else if project.isRestricted
+			# 	project.type = "HYPER_RESTRICTED"
+			# else
+			# 	project.type = "UNRESTRICTED"
 		callback response.statusCode, acasGroupsAndProjects.projects
 
 exports.makeServiceRequestHeaders = (user) ->
