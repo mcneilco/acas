@@ -370,7 +370,7 @@ exports.getProjectStubsInternal = (callback) ->
 			delete project.groups
 			# ACAS-754: Adding project type to project object
 			# For testing purposes only
-			# if project.code == "Global"
+			# if project.name == "Global"
 			# 	project.type = "GLOBAL"
 			# else if project.isRestricted
 			# 	project.type = "HYPER_RESTRICTED"
