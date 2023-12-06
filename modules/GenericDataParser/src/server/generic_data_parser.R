@@ -256,7 +256,7 @@ saveEndpointCodeTables <- function(codes, codeKind) {
   }
 
   # we don't want to work with other codeKinds (this is set up for endpoint manager only right now... )
-  validCodeKinds = c("column name", "column units", "concentration units", "time units")
+  validCodeKinds = c("column name", "column units", "column conc units", "time units")
 
   #Before we save the incoming code, we need to check if the code/codeKind pair already exists... 
   #get relevant ddict data
@@ -3664,7 +3664,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     # also save the new endpoints of the protocol 
     saveEndpointCodeTables(selColumnOrderInfo$Units, "column units")
     saveEndpointCodeTables(selColumnOrderInfo$valueKind, "column name")
-    saveEndpointCodeTables(selColumnOrderInfo$concUnits, "concentration units")
+    saveEndpointCodeTables(selColumnOrderInfo$concUnits, "column conc units")
     saveEndpointCodeTables(selColumnOrderInfo$timeUnit, "time units")
 
     if (newProtocol) {
