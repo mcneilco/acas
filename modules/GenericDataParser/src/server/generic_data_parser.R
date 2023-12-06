@@ -733,7 +733,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
             switch(projectType,
                     "RESTRICTED" =  !isRestricted | code == projectCode,
                     "HYPER_RESTRICTED" = code == projectCode,
-                    "UNRESTRICTED" = TRUE,
+                    "UNRESTRICTED" = ifelse(identical(type, "HYPER_RESTRICTED"), FALSE, TRUE),
                     "GLOBAL" = ifelse(identical(type, "HYPER_RESTRICTED"), FALSE, TRUE),
                     stopUser(paste0("Project '",projectCode,"' has an invalid type. Please contact your system administrator."))
             )
