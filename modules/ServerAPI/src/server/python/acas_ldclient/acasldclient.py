@@ -276,6 +276,7 @@ def ld_project_to_acas(ld_project):
         'active': True if ld_project.active == "Y" else False,
         'ignored': False if ld_project.active == "Y" else True,
         'isRestricted': ld_project.project_type not in (ProjectType.GLOBAL, ProjectType.UNRESTRICTED),
+        'type': ld_project.project_type,
         'name': ld_project.name
     }
     return acas_project
