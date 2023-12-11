@@ -369,7 +369,7 @@ exports.getProjectStubsInternal = (callback) ->
 		_.each acasGroupsAndProjects.projects, (project) ->
 			delete project.groups
 			# ACAS-754: Adding project type to project object
-			# For testing purposes only
+			# This is for testing experiment loader with different project types explained in ACAS-754
 			# if project.name == "Global"
 			# 	project.type = "GLOBAL"
 			# else if project.isRestricted
