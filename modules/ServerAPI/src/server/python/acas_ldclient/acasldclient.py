@@ -5,7 +5,13 @@ import re
 from ldclient.client import LDClient
 from ldclient.api.requester import SUPPORTED_SERVER_VERSION
 from ldclient.base import version_str_as_tuple
-from ldclient.enums import ProjectType
+
+# Prior to Live Design 2024-1, ProjectType was not available in the API
+# so we only import it and use it if it is available in order to maintain backwards compatibility
+try:
+    from ldclient.enums import ProjectType
+except ImportError:
+    ProjectType = None
 
 import argparse
 import json
@@ -269,16 +275,28 @@ def get_projects(client):
     return projects
 
 def ld_project_to_acas(ld_project):
+
+    # Prior to Live Design 2024-1, the project type was not available in the API
+    # so we only set it if it is available in order to maintain backwards compatibility
+    if ProjectType is not None:
+        project_acls = {
+            'isRestricted': ld_project.project_type not in (ProjectType.GLOBAL, ProjectType.UNRESTRICTED),
+            'type': ld_project.project_type
+        }
+    else:
+        project_acls = {
+            'isRestricted': ld_project.restricted
+        }
+
     acas_project = {
         'id': ld_project.id,
         'code': ld_project.name,
         'alias': ld_project.name,
         'active': True if ld_project.active == "Y" else False,
         'ignored': False if ld_project.active == "Y" else True,
-        'isRestricted': ld_project.project_type not in (ProjectType.GLOBAL, ProjectType.UNRESTRICTED),
-        'type': ld_project.project_type,
         'name': ld_project.name
     }
+    acas_project.update(project_acls)
     return acas_project
 
 def main():
