@@ -723,7 +723,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
         # Here we are annotating each of the projects with a boolean as to whether it can be used in the experiment if its used by a lot     
         projectsDT[ , projectAllowedForExperiment := {
           # projectType and projectCode are referring to the experiment project
-          # code and isRestricted are referring to the batch project
+          # type, code, and isRestricted are referring to the batch project
           if(is.na(projectType)) {
             # If the project type is na then this is not a system with project type
             # so we just check if the project is restricted and if the lot project is the same as the experiment project
