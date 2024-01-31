@@ -1115,7 +1115,7 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun, r
     valueTypesList <- getAllValueTypes()
     valueTypes <- sapply(valueTypesList, getElement, "typeName")
     # Add problemFrame$oldValueKinds to newValueKinds, as we now save them
-    newValueKinds <- c(problemFrame$oldValueKinds, newValueKinds)
+    newValueKinds <- unique(c(problemFrame$oldValueKinds, newValueKinds))
     valueKindTypes <- neededValueKindTypes[match(newValueKinds, neededValueKinds)]
     valueKindTypes <- c("numericValue", "stringValue", "dateValue", "clobValue", "inlineFileValue")[match(valueKindTypes, c("Number", "Text", "Date", "Clob", "Image File"))]
     
