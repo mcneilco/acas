@@ -42,8 +42,8 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/cmpdReg/api/v1/structureServices/hydrogenizer', loginRoutes.ensureAuthenticated, exports.genericStructureService
 	app.post '/cmpdReg/api/v1/structureServices/cipStereoInfo', loginRoutes.ensureAuthenticated, exports.genericStructureService
 	app.post '/cmpdReg/export/searchResults', loginRoutes.ensureAuthenticated, exports.exportSearchResults
-	app.post '/cmpdReg/validateParent', loginRoutes.ensureAuthenticated, loginRoutes.ensureCmpdRegAdmin, exports.validateParent
-	app.post '/cmpdReg/updateParent', loginRoutes.ensureAuthenticated, loginRoutes.ensureCmpdRegAdmin, exports.updateParent
+	app.post '/cmpdReg/validateParent', loginRoutes.ensureAuthenticated, exports.validateParent
+	app.post '/cmpdReg/updateParent', loginRoutes.ensureAuthenticated, exports.updateParent
 	app.post '/cmpdReg/swapParentStructures', loginRoutes.ensureAuthenticated, loginRoutes.ensureCmpdRegAdmin, exports.swapParentStructures
 	app.post '/cmpdReg/api/v1/lotServices/update/lot/metadata', loginRoutes.ensureAuthenticated, exports.updateLotMetadata
 	app.post '/cmpdReg/api/v1/lotServices/update/lot/metadata/jsonArray', loginRoutes.ensureAuthenticated, exports.updateLotsMetadata

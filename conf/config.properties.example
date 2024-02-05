@@ -506,6 +506,12 @@ server.sel.protocolStatus=created
 server.sel.assayStage=unassigned
 server.sel.validateDoseResponseCurves=true
 
+# Default protocol/experiment description when loaded through experiment loader
+# server.sel.protocolDescription=${client.protocol.label} created by generic data parser
+# server.sel.experimentDescription=${client.experiment.label} created by generic data parser
+server.sel.protocolDescription=
+server.sel.experimentDescription=
+
 # Cron- change to "false" to not start cron jobs on startup
 server.service.cron.startOnRestart=true
 server.service.cron.enable=true
@@ -631,6 +637,9 @@ server.systemTest.runDestructive=false
 # Behavior without this config set to true is to give all users access to all projects
 server.project.roles.enable=true
 
+# Require project type to be returned by project CustomerSpecificFunctions
+server.project.type.required=false
+
 #Controls whether to try to sync projects list from ACAS to CmpdReg
 server.project.sync.cmpdReg=true
 
@@ -710,7 +719,7 @@ client.cmpdreg.metaLot.requireLotNumber=false
 client.cmpdreg.metaLot.allowManualLotNumber=false
 client.cmpdreg.metaLot.autoPopulateNextLotNumber=true
 client.cmpdreg.metaLot.maxAutoLotNumber=1000
-client.cmpdreg.metaLot.allowDuplicateParentAliases=true
+client.cmpdreg.metaLot.allowDuplicateParentAliases=false
 client.cmpdreg.serverSettings.corpPrefix=CMPD
 client.cmpdreg.serverSettings.corpSeparator=-
 client.cmpdreg.serverSettings.saltSeparator=
