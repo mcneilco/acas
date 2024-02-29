@@ -219,7 +219,9 @@ class BasicFileValidateAndSaveController extends Backbone.View
 		@showFileSelectPhase()
 
 	loadAnother: =>
+		#TODO This is bad style, but the LSFileInputController has no API for deleting and resetting
 		@showFileSelectPhase()
+		@$('.bv_deleteFile').click()
 
 	showFileSelectPhase: ->
 		@$('.bv_resultStatus').hide()
