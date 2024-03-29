@@ -29,7 +29,7 @@ RUN   dnf install -y initscripts python3-psycopg2
 
 # node
 ENV NPM_CONFIG_LOGLEVEL warn
-ENV NODE_VERSION 18.x
+ENV NODE_VERSION 18.19.1
 RUN curl -fsSL https://rpm.nodesource.com/setup_$NODE_VERSION | bash - && \
   dnf install -y nodejs
 
