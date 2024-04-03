@@ -361,7 +361,27 @@ class PickListSelect2Controller extends PickListSelectController
 			openOnEnter: false
 			allowClear: true
 			width: @width
-
+			ajax:
+				url: (params) =>
+					if !params.term?
+						params.term = @selectedCode
+					# The URL parameter on for the code service may have e.g. shortName
+					# as a a parameter, so we need to remove it from the URL
+					# we use relative paths url in acas currently so we need to add the full path
+					# to parse the url correctly
+					urlObj = new URL(@collection.url, "http://localhost")
+					searchParams = new URLSearchParams()
+					searchParams.set('labelTextSearchTerm', params.term)
+					urlStr = "#{urlObj.pathname}?#{searchParams.toString()}"
+					return urlStr
+				dataType: 'json'
+				delay: 250
+				processResults: (data, params) =>
+					@latestData = data
+					results = for option in data
+						{id: option.code, text: option.name}
+					return {results: results}
+		
 		@setSelectedCode @selectedCode
 		@rendered = true
 		@

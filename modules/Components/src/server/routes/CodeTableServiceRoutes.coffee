@@ -37,31 +37,33 @@ exports.getAllCodeTableValues = (req, resp) ->
 		)
 
 exports.getCodeTableValues = (req, resp) ->
-	exports.getCodeTableValuesInternal req.params.type, req.params.kind, (result) ->
+	exports.getCodeTableValuesInternal req.params.type, req.params.kind, req.query, (result) ->
 		resp.json result
 
-exports.getCodeTableValuesInternal = (type, kind, cb) ->
+exports.getCodeTableValuesInternal = (type, kind, query, cb) ->
 	if global.specRunnerTestmode
 		fullCodeTableJSON = require '../public/javascripts/spec/CodeTableJSON.js'
 		correctCodeTable = _.findWhere(fullCodeTableJSON.codes, {type:type, kind:kind})
 		cb correctCodeTable['codes']
 	else
+		# For backwards compatibility, check if the query parameter is a function
+		if typeof query == 'function'
+			console.warn('Deprecation warning: Please provide the query parameter using the new parameter order. The old order will be removed in a future release.')
+			cb = query
+			query = null
 		config = require '../conf/compiled/conf.js'
 		baseurl = "#{config.all.client.service.persistence.fullpath}ddictvalues/all/#{type}/#{kind}/codetable"
+		qs = {}
+		if query?
+			qs = query
 		request = require 'request'
 		request(
 			method: 'GET'
 			url: baseurl
+			qs: qs
 			json: true
 		, (error, response, json) =>
 			if !error && response.statusCode == 200
-				if json.length > 0 and !json[0].displayOrder? and json[0].name?
-					json = json.sort (a, b) ->
-						if a.name.toUpperCase() < b.name.toUpperCase()
-							return -1
-						if a.name.toUpperCase() > b.name.toUpperCase()
-							return 1
-						return 0
 				cb json
 			else
 				console.log 'got ajax error trying to get code table entries'
