@@ -41,7 +41,7 @@ exports.validateCodeTablesEntityBeforeSave = (req, resp) ->
 	config = require '../conf/compiled/conf.js'
 	codeTableServiceRoutes = require "./CodeTableServiceRoutes.js"
 	searchTerm = req.params.searchTerm
-	codeTableServiceRoutes.getCodeTableValuesInternal req.params.codeType, req.params.codeKind, (results) ->
+	codeTableServiceRoutes.getCodeTableValuesInternal req.params.codeType, req.params.codeKind, null, (results) ->
 		if !req.body.data?
 			data = req.body
 		else
@@ -105,15 +105,7 @@ exports.searchCodeTablesEntities = (req, resp) ->
 	request = require 'request'
 	config = require '../conf/compiled/conf.js'
 	codeTableServiceRoutes = require "./CodeTableServiceRoutes.js"
-	searchTerm = req.params.searchTerm.toLowerCase().trim()
-	codeTableServiceRoutes.getCodeTableValuesInternal req.params.codeType, req.params.codeKind, (results) ->
-		searchResults = []
-		if searchTerm == "*" || searchTerm == ""
-			searchResults = results
-		else
-			for r in results
-				if (r.code? && r.code.toLowerCase().indexOf(searchTerm) >= 0) || (r.comments? && r.comments.toLowerCase().indexOf(searchTerm) >= 0) || (r.description? && r.description.toLowerCase().indexOf(searchTerm) >= 0) || (r.name? && r.name.toLowerCase().indexOf(searchTerm) >= 0) 
-					searchResults.push(r)
+	codeTableServiceRoutes.getCodeTableValuesInternal req.params.codeType, req.params.codeKind, searchTerm, (results) ->
 		resp.json searchResults
 
 exports.getCodeTablesEntities = (req, resp) ->
