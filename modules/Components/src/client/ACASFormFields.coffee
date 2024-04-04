@@ -439,9 +439,9 @@ class ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldController
 		if @options.autoSavePickListItem? && !@options.autoSavePickListItem
 			plOptions.autoSave = false
 
-		plOptions.autoFetch = false
-		if @options.autoFetch? && @options.autoFetch
-			plOptions.autoFetch = true
+		plOptions.autoFetch = true
+		if @options.autoFetch?
+			plOptions.autoFetch = @options.autoFetch
 		@pickListController = new EditablePickListSelect2Controller plOptions
 		@pickListController.on('change', @handleInputChanged).bind(@)
 		@pickListController.render()
