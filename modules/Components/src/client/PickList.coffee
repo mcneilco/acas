@@ -372,6 +372,7 @@ class PickListSelect2Controller extends PickListSelectController
 					urlObj = new URL(@collection.url, "http://localhost")
 					searchParams = new URLSearchParams()
 					searchParams.set('labelTextSearchTerm', params.term)
+					searchParams.set('maxHits', "100")
 					urlStr = "#{urlObj.pathname}?#{searchParams.toString()}"
 					return urlStr
 				dataType: 'json'
