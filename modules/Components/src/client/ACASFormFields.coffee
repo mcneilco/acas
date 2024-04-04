@@ -397,7 +397,11 @@ class ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldController
 			if @url?
 				@pickList.url = @url
 			else
-				@pickList.url = "/api/codetables/#{mdl.get 'codeType'}/#{mdl.get 'codeKind'}"
+				## Editable picklists can type ahead serch code tables
+				## we want to first populate with the matching value only by adding a shortName parameter
+				@pickList.url = "/api/codetables/#{mdl.get 'codeType'}/#{mdl.get 'codeKind'}/?maxHits=100"
+				if mdl.get('value')?
+					@pickList.url = "#{@pickList.url}&shortName=#{mdl.get('value')}"
 			plOptions =
 				el: @$('.bv_editablePicklist')
 				collection: @pickList
@@ -435,6 +439,9 @@ class ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldController
 		if @options.autoSavePickListItem? && !@options.autoSavePickListItem
 			plOptions.autoSave = false
 
+		plOptions.autoFetch = true
+		if @options.autoFetch?
+			plOptions.autoFetch = @options.autoFetch
 		@pickListController = new EditablePickListSelect2Controller plOptions
 		@pickListController.on('change', @handleInputChanged).bind(@)
 		@pickListController.render()

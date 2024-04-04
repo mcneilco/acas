@@ -409,7 +409,7 @@ exports.getAllAuthors = (opts, callback) ->
 		# This is was added for the purpose of allowing additional non-authors to show up in picklists throughout ACAS and Creg
 		if opts.additionalCodeType? and opts.additionalCodeKind?
 			codeTableServiceRoutes = require "#{ACAS_HOME}/routes/CodeTableServiceRoutes.js"
-			codeTableServiceRoutes.getCodeTableValuesInternal opts.additionalCodeType, opts.additionalCodeKind, (codes) ->
+			codeTableServiceRoutes.getCodeTableValuesInternal opts.additionalCodeType, opts.additionalCodeKind, null, (codes) ->
 				Array::push.apply json, codes
 				callback statusCode, json
 		else

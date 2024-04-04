@@ -3034,7 +3034,7 @@ createDaughterVialFileEntryArray = (csvFileName, callback) =>
 	)
 
 dealiasPhysicalStates = (fileEntryArray, callback) ->
-	codeTableRoutes.getCodeTableValuesInternal 'container status', 'physical state', (configuredPhysicalStates) ->
+	codeTableRoutes.getCodeTableValuesInternal 'container status', 'physical state', null, (configuredPhysicalStates) ->
 		cleanedFileEntryArray = _.map fileEntryArray, (entry) ->
 			foundPhysicalState = _.findWhere configuredPhysicalStates, {code: entry.physicalState}
 			if !foundPhysicalState?
@@ -3061,7 +3061,7 @@ checkRequiredAttributes = (fileEntryArray, callback) ->
 	callback requiredAttributeErrors
 
 checkDataTypeErrors = (fileEntryArray, callback) ->
-	codeTableRoutes.getCodeTableValuesInternal 'container status', 'physical state', (configuredPhysicalStates) ->
+	codeTableRoutes.getCodeTableValuesInternal 'container status', 'physical state', null, (configuredPhysicalStates) ->
 		dataTypeErrors = []
 		_.each fileEntryArray, (entry) ->
 			foundPhysicalState = _.findWhere configuredPhysicalStates, {code: entry.physicalState}
@@ -3356,7 +3356,7 @@ updateWellContentSerial = (wellsToUpdate, currentIndex, outerCallback) ->
 			return
 
 prepareSummaryInfo = (fileEntryArray, cb) ->
-	codeTableRoutes.getCodeTableValuesInternal 'container status', 'physical state', (configuredPhysicalStates) ->
+	codeTableRoutes.getCodeTableValuesInternal 'container status', 'physical state', null, (configuredPhysicalStates) ->
 		summaryInfo =
 			totalNumberOfVials: fileEntryArray.length
 			totalsByStates: {}
