@@ -364,7 +364,7 @@ class PickListSelect2Controller extends PickListSelectController
 			ajax:
 				url: (params) =>
 					if !params.term?
-						params.term = @selectedCode
+						params.term = ''
 					# The URL parameter on for the code service may have e.g. shortName
 					# as a a parameter, so we need to remove it from the URL
 					# we use relative paths url in acas currently so we need to add the full path
@@ -705,6 +705,7 @@ class EditablePickListSelect2Controller extends EditablePickListSelectController
 			collection: @collection
 			selectedCode: @options.selectedCode
 			filters: filters
+			autoFetch: @options.autoFetch
 		if @options.insertFirstOption
 			plOptions.insertFirstOption = @options.insertFirstOption
 		else if @options.parameter?
