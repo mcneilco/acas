@@ -32,6 +32,8 @@ ENV NPM_CONFIG_LOGLEVEL warn
 ENV NODE_VERSION 18.x
 RUN curl -fsSL https://rpm.nodesource.com/setup_$NODE_VERSION | bash - && \
   dnf install -y nodejs
+# ACAS-762 temporary fix for npm multi-arch build issue. Remove when Node is updated to > 18.20.1 and fix is confirmed
+RUN npm install npm@10.5.1 -g
 
 # ACAS
 RUN	    useradd -u 1000 -ms /bin/bash runner
