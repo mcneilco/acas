@@ -993,16 +993,19 @@ exports.cleanUpExportedSearchResults = (exportedSearchResults) ->
 					if err?
 						console.log "Error getting stats for file: " + filePath
 					else
-						# Get the last modified time
-						lastModifiedTime = stats.mtime.getTime()
-						# If the file is over a day old then delete it
-						if currentTime - lastModifiedTime > 86400000 # 24 hours in milliseconds
-							fs.unlink(filePath, (err) ->
-								if err?
-									console.log "Error deleting file: " + filePath
-								else
-									console.log "Deleted file: " + filePath
-							)
+						if stats.isFile()
+							# Get the last modified time
+							lastModifiedTime = stats.mtime.getTime()
+							# If the file is over a day old then delete it
+							if currentTime - lastModifiedTime > 86400000 # 24 hours in milliseconds
+								fs.unlink(filePath, (err) ->
+									if err?
+										console.log "Error deleting file: " + filePath
+									else
+										console.log "Deleted file: " + filePath
+								)
+						else
+							console.warn "Skipping cleanup of nonfile: " + filePath
 				)
 	)
 
