@@ -927,6 +927,7 @@ exports.exportSearchResults = (req, resp) ->
 	serverUtilityFunctions.ensureExists exportedSearchResults, 0o0744, (err) ->
 		if err?
 			console.log "Can't find or create exportedSearchResults folder: " + exportedSearchResults
+			console.error err
 			resp.statusCode = 500
 			resp.end "Error trying to export search results to sdf: Can't find or create exportedSearchResults folder " + exportedSearchResults
 		else
@@ -966,6 +967,44 @@ exports.exportSearchResults = (req, resp) ->
 					resp.end "Error trying to export search results to sdf: " + error;
 
 			)
+
+	# After responding, clean up old exported search results
+	exports.cleanUpExportedSearchResults(exportedSearchResults)
+
+exports.cleanUpExportedSearchResults = (exportedSearchResults) ->
+	# Function to clean up files in the exportedSearchResults folder that are over a day old
+	fs = require 'fs'
+	path = require 'path'
+
+	# Get the list of files in the folder
+	fs.readdir(exportedSearchResults, (err, files) ->
+		if err?
+			console.log "Error reading files in exportedSearchResults folder: " + exportedSearchResults
+		else
+			# Get the current time
+			currentTime = new Date().getTime()
+
+			console.log "Cleaning up files in exportedSearchResults where lastModifiedTime is > 24 hours: " + exportedSearchResults
+			# Loop through the files
+			files.forEach (file) ->
+				# Get the file stats
+				filePath = path.join(exportedSearchResults, file)
+				fs.stat(filePath, (err, stats) ->
+					if err?
+						console.log "Error getting stats for file: " + filePath
+					else
+						# Get the last modified time
+						lastModifiedTime = stats.mtime.getTime()
+						# If the file is over a day old then delete it
+						if currentTime - lastModifiedTime > 86400000 # 24 hours in milliseconds
+							fs.unlink(filePath, (err) ->
+								if err?
+									console.log "Error deleting file: " + filePath
+								else
+									console.log "Deleted file: " + filePath
+							)
+				)
+	)
 
 exports.validateParent = (req, resp) ->
 	console.log "exports.validateParent"
