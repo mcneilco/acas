@@ -1715,7 +1715,7 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
   stringValuesWithNumbers <- numbersToBeSavedAsString$"stringValue"[grepl("[0-9]",numbersToBeSavedAsString$"stringValue")]
   # Warn the user if there are any
   if(length(stringValuesWithNumbers) > 0) {
-    warnUser(paste0("The following Number values contain numerics but could not be parsed as Number so will be saved as Text: '", paste(unique(stringValuesWithNumbers), collapse = "', '"), "'. To avoid this warning set only non-numerics like 'Bad Solutibility', or use a correctly formatted Number. For example, 1, 1.2, 1.23e-10, >1, <1"))
+    warnUser(paste0("The following Number values contain numerals but could not be parsed as Number so will be saved as Text: '", paste(unique(stringValuesWithNumbers), collapse = "', '"), "'. To avoid this warning either remove all numerals from the text, or use a correctly formatted Number. For example, 1, 1.2, 1.23e-10, >1, <1"))
   }
 
   # Check the Number values are finite
