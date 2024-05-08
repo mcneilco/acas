@@ -58,6 +58,11 @@ exports.allowedProjectsInternal = (user, callback) ->
 		allProjects = _.filter allProjects, (project, index) ->
 			! _.contains projectFilterList, project.code
 
+		# Get additional project grants from the config
+		# These configs allow a user access to a set of projects if they belong to the project specified in the key
+		# e.g. {"Project B": ["Project A", "Project C"]} means that if a user has access to Project B, they also have access to Project A and Project C
+		additionalProjectGrants = JSON.parse config.all.server.projects.additionalProjectGrants
+		
 		if (config.all.server.project.roles.enable)
 			filteredProjects = []
 			isAdmin = false;
@@ -66,6 +71,10 @@ exports.allowedProjectsInternal = (user, callback) ->
 			user.roles.forEach (role) ->
 				if role.roleEntry.lsType != null && role.roleEntry.lsType == "Project"
 					allowedProjectCodes.push role.roleEntry.lsKind
+                    # If the user has access to a project, also give them access to its dependent projects
+					if additionalProjectGrants[role.roleEntry.lsKind]?
+						console.log "User #{user.username} has access to project #{role.roleEntry.lsKind} so also giving access to additional projects #{additionalProjectGrants[role.roleEntry.lsKind]}"
+						allowedProjectCodes = allowedProjectCodes.concat(additionalProjectGrants[role.roleEntry.lsKind])
 				else if role.roleEntry.roleName == config.all.client.roles.acas.adminRole
 					isAdmin = true
 			if isAdmin
