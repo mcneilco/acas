@@ -106,7 +106,7 @@ exports.searchCodeTablesEntities = (req, resp) ->
 	config = require '../conf/compiled/conf.js'
 	codeTableServiceRoutes = require "./CodeTableServiceRoutes.js"
 	searchTerm = req.params.searchTerm.toLowerCase().trim()
-	codeTableServiceRoutes.getCodeTableValuesInternal req.params.codeType, req.params.codeKind, (results) ->
+	codeTableServiceRoutes.getCodeTableValuesInternal req.params.codeType, req.params.codeKind, '', (results) ->
 		searchResults = []
 		if searchTerm == "*" || searchTerm == ""
 			searchResults = results
