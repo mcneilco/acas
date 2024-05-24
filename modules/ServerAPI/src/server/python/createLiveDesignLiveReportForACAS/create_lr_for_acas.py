@@ -372,6 +372,11 @@ def main():
 
     compound_ids=args['input']['compounds']
     assays_to_add=args['input']['assays']
+
+    # Remove the inlineFileValue_ prefix from the resultType
+    for assay_to_add in assays_to_add:
+        assay_to_add['resultType'] = re.sub(r'^inlineFileValue_', '', assay_to_add['resultType'])
+
     experiment_code=args['input']['experimentCode']
     try:
         project=args['input']['project']
