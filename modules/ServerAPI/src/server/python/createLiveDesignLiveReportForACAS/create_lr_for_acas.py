@@ -177,12 +177,25 @@ def wait_and_add_columns(ld_client,
     :param delay_sec: Seconds of delay been tries, defaults to 5
     """
     success = False
+
+    pattern_match_found = False
+    for col_name in column_names:
+        # check if column name with prefix '{assay_name} (inlineFileValue_' exists
+        # taking this pattern from get_assay_names_to_full_col_names -> col_name
+        column_name_prefix = f'{assay_name} (inlineFileValue_'
+        if col_name.startswith(column_name_prefix):
+            pattern_match_found = True
+            break
+    
     for attempt in range(max_retries):
         try:
             col_ids = find_column_ids(
                 ld_client, assay_name, project_id=project_id, column_names=column_names)
-            expected = len(column_names)
+  
             found = len(col_ids)
+            expected = len(column_names)
+            expected -= (1 if pattern_match_found and found + 1 == expected else 0)
+            
             if found < expected:
                 raise ValueError(
                     f'Some columns under {assay_name} not found. Found {found} of {expected}.')
@@ -274,6 +287,18 @@ def make_acas_live_report(api, compound_ids, assays_to_add, experiment_code, log
     eprint("Live Report ID is:" + str(lr_id))
     #get the list of assay addable columns
     if ldClientVersion >= 7.6:
+        
+        # Adding new mapping column for inlineFileValue_ resultType
+        for assay_to_add in assays_to_add:
+            # check if the resultType is prefixed with 'inlineFileValue_'
+            result_type_prefix = 'inlineFileValue_'
+            if assay_to_add['resultType'].startswith(result_type_prefix):
+                # copy of object to avoid modifying the original
+                assay_to_add_copy = assay_to_add.copy()
+                assay_to_add_copy['resultType'] = assay_to_add_copy['resultType'][len(result_type_prefix):]
+                assays_to_add.append(assay_to_add_copy)
+                break
+        
         # convert `assays_to_add` into a list of full column names
         assay_names_to_column_names = get_assay_names_to_full_col_names(assays_to_add)
         for assay_name, column_names in assay_names_to_column_names.items():
@@ -372,11 +397,6 @@ def main():
 
     compound_ids=args['input']['compounds']
     assays_to_add=args['input']['assays']
-
-    # Remove the inlineFileValue_ prefix from the resultType
-    for assay_to_add in assays_to_add:
-        assay_to_add['resultType'] = re.sub(r'^inlineFileValue_', '', assay_to_add['resultType'])
-
     experiment_code=args['input']['experimentCode']
     try:
         project=args['input']['project']
