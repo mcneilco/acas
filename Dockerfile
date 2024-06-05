@@ -9,11 +9,6 @@ ENV ACAS_CLIENT_ABOUT_ACAS_VERSION=${VERSION}
 ARG REVISION=UNKNOWN
 ENV ACAS_CLIENT_ABOUT_ACAS_REVISION=${REVISION}
 
-# EOL for Centos8-Stream workaround 
-RUN sed -i 's/^mirrorlist=/#&/' /etc/yum.repos.d/*.repo && \
-    sed -i 's/^#baseurl=/baseurl=/' /etc/yum.repos.d/*.repo && \ 
-    sed -i 's/mirror.centos.org/vault.centos.org/' /etc/yum.repos.d/*.repo 
-
 # Update
 RUN \
   dnf update -y && \
