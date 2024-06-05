@@ -9,6 +9,11 @@ ENV ACAS_CLIENT_ABOUT_ACAS_VERSION=${VERSION}
 ARG REVISION=UNKNOWN
 ENV ACAS_CLIENT_ABOUT_ACAS_REVISION=${REVISION}
 
+# EOL for Centos8-Stream workaround 
+RUN sed -i 's/^mirrorlist=/#&/' /etc/yum.repos.d/*.repo && \
+    sed -i 's/^#baseurl=/baseurl=/' /etc/yum.repos.d/*.repo && \ 
+    sed -i 's/mirror.centos.org/vault.centos.org/' /etc/yum.repos.d/*.repo 
+
 # Update
 RUN \
   dnf update -y && \
@@ -28,7 +33,7 @@ RUN		pip install argparse requests psycopg2-binary
 
 # node
 ENV NPM_CONFIG_LOGLEVEL warn
-ENV NODE_VERSION 18.x
+ENV NODE_VERSION 20.x
 RUN curl -fsSL https://rpm.nodesource.com/setup_$NODE_VERSION | bash - && \
   dnf install -y nodejs
 # ACAS-762 temporary fix for npm multi-arch build issue. Remove when Node is updated to > 18.20.1 and fix is confirmed

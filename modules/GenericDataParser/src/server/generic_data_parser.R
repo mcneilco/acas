@@ -1705,12 +1705,25 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
   # Turn result values to numeric values
   longResults$"numericValue" <-  as.numeric(gsub(",","",gsub(matchExpression,"",longResults$"numericValue")))
   
+  # Get just the values that the user set to be Number data types to check for unparsable numbers
+  numericLongResults <- longResults[longResults$Class=="Number",]
+
+  # For any Number data types where the numericValue is NA and the stringValue is not NA, check if the stringValue contains numbers
+  # Warn the user that these values contain numerics but could not be parsed as Number and will be saved as Text
+  numbersToBeSavedAsString <- numericLongResults[which(is.na(numericLongResults$numericValue) & !is.na(numericLongResults$stringValue)),]
+  # Get the string values that contain numbers
+  stringValuesWithNumbers <- numbersToBeSavedAsString$"stringValue"[grepl("[0-9]",numbersToBeSavedAsString$"stringValue")]
+  # Warn the user if there are any
+  if(length(stringValuesWithNumbers) > 0) {
+    warnUser(paste0("The following Number values contain numerals but could not be parsed as Number so will be saved as Text: '", paste(unique(stringValuesWithNumbers), collapse = "', '"), "'. To avoid this warning either remove all numerals from the text, or use a correctly formatted Number. For example, 1, 1.2, 1.23e-10, >1, <1"))
+  }
+
   # Check the Number values are finite
-  numericValues <- longResults$"numericValue"[which(longResults$Class=="Number")]
+  numericValues <- numericLongResults$"numericValue"
   nonNaNumericValues <- na.omit(numericValues)
   infiniteNumbersIndexes <- which(!is.finite(nonNaNumericValues))
   if(length(infiniteNumbersIndexes) > 0) {
-    unParsedNonNaNumericValues <- longResults$UnparsedValue[which(longResults$Class=="Number")]
+    unParsedNonNaNumericValues <- numericLongResults$UnparsedValue[which(numericLongResults$Class=="Number")]
     naNumericValueIndexes <- which(is.na(numericValues))
     if(length(naNumericValueIndexes) > 0) {
       unParsedNonNaNumericValues[-naNumericValueIndexes]
