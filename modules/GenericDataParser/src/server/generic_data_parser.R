@@ -2005,7 +2005,7 @@ getExperimentByNameCheck <- function(experimentName, protocol, configList, dupli
     protocolOfExperiment <- getProtocolByCodeName(experimentList[[1]]$protocol$codeName)
 
     
-    if (is.na(protocol) || protocolOfExperiment$id != protocol$id) {
+    if (identical(protocol, NA) || protocolOfExperiment$id != protocol$id) {
       if (duplicateNamesAllowed) {
         experiment <- NA
       } else {
@@ -3567,7 +3567,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   protocol <- NULL
   if (!useExisting) {
     protocol <- getProtocolByNameAndFormat(protocolName = validatedMetaData[,paste0(racas::applicationSettings$client.protocol.label," Name")][1], configList, inputFormat)
-    newProtocol <- is.na(protocol[[1]])
+    newProtocol <- identical(protocol[[1]], NA)
     if (!newProtocol) {
       validatedMetaData[,paste0(racas::applicationSettings$client.protocol.label," Name")][1] <- getPreferredProtocolName(protocol, validatedMetaData[,paste0(racas::applicationSettings$client.protocol.label," Name")][1])
     }
@@ -3728,7 +3728,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   }
   
   # Checks if we have a new experiment
-  newExperiment <- class(experiment[[1]])!="list" && is.na(experiment[[1]])
+  newExperiment <- class(experiment[[1]])!="list" && identical(experiment[[1]], NA)
   
   # If there are errors, do not allow an upload (yes, this is needed a second time)
   errorFree <- length(messenger()$errors)==0
@@ -4628,6 +4628,10 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
 validateSubjectData <- function(subjectData, dryRun) {
   # Validates Subject Data
   # For now, just passes information to validateValue Kinds
+  if (is.null(subjectData)) {
+    return(NULL)
+  }
+  # subjectData is just list() with the new thing so why is it 
   uniqueDF <- unique(subjectData[, c("Class", "valueKind")])
   uniqueDF <- uniqueDF[!(uniqueDF$valueKind %in% c('flag cause', 'flag observation', 'flag status')), ]
   validateValueKinds(uniqueDF$valueKind, uniqueDF$Class, dryRun, reserved = NULL)
