@@ -1,4 +1,4 @@
-FROM quay.io/centos/centos:stream8
+FROM quay.io/centos/centos:stream9
 
 ARG BUILDTIME=1970-01-01T00:00:00Z
 ENV ACAS_CLIENT_ABOUT_ACAS_BUILDTIME=${BUILDTIME}
@@ -8,11 +8,6 @@ ENV ACAS_CLIENT_ABOUT_ACAS_VERSION=${VERSION}
 
 ARG REVISION=UNKNOWN
 ENV ACAS_CLIENT_ABOUT_ACAS_REVISION=${REVISION}
-
-# EOL for Centos8-Stream workaround 
-RUN sed -i 's/^mirrorlist=/#&/' /etc/yum.repos.d/*.repo && \
-    sed -i 's/^#baseurl=/baseurl=/' /etc/yum.repos.d/*.repo && \ 
-    sed -i 's/mirror.centos.org/vault.centos.org/' /etc/yum.repos.d/*.repo 
 
 # Update
 RUN \
@@ -26,11 +21,10 @@ RUN \
   dnf clean all
 
 #Install python dependencies
-RUN   dnf install -y python36 python3-pip
-RUN   alternatives --set python /usr/bin/python3
-RUN   alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
-RUN		pip install argparse requests
-RUN   dnf install -y initscripts python3-psycopg2
+RUN   dnf install -y python311 python3.11-pip initscripts
+RUN   alternatives --install /usr/bin/python python /usr/bin/python3.11 1
+RUN   alternatives --install /usr/bin/pip pip /usr/bin/pip3.11 1
+RUN		pip install argparse requests psycopg2-binary
 
 # node
 ENV NPM_CONFIG_LOGLEVEL warn
