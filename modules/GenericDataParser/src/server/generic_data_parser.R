@@ -4631,7 +4631,6 @@ validateSubjectData <- function(subjectData, dryRun) {
   if (is.null(subjectData)) {
     return(NULL)
   }
-  # subjectData is just list() with the new thing so why is it 
   uniqueDF <- unique(subjectData[, c("Class", "valueKind")])
   uniqueDF <- uniqueDF[!(uniqueDF$valueKind %in% c('flag cause', 'flag observation', 'flag status')), ]
   validateValueKinds(uniqueDF$valueKind, uniqueDF$Class, dryRun, reserved = NULL)
