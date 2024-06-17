@@ -3674,13 +3674,13 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   }
 
   # Validate Experiment Columns against Protocol Endpoints when using existing protocol and endpoint manager is enabled
-  expProtocolEndpointValiation <- list(passed = FALSE, nonMatchingRows = data.frame()) 
+  expProtocolEndpointValidation <- list(passed = FALSE, nonMatchingRows = data.frame()) 
 
   if (!newProtocol && racas::applicationSettings$client.protocol.endpointManager.enabled) {
     # extract the endpoint data from the protocol object to check against
     protocolEndpointData <- getProtocolEndpointData(protocol)
     # Check the experiment columns against the protocolEndpointData
-    expProtocolEndpointValiation <- validateExperimentColumns(selColumnOrderInfo, protocolEndpointData, getProtocolStrictEndpointMatching(protocol), protocol$lsLabels[[1]]$labelText)
+    expProtocolEndpointValidation <- validateExperimentColumns(selColumnOrderInfo, protocolEndpointData, getProtocolStrictEndpointMatching(protocol), protocol$lsLabels[[1]]$labelText)
   }
   
   # If there are errors, do not allow an upload
@@ -3718,8 +3718,8 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
       protocol <- createNewProtocol(metaData = validatedMetaData, lsTransaction, recordedBy, columnOrderStates)
     } else {
       # If the protocol has passed endpoint validation and we are not in a dry run, update the protocol with any new endpoints
-      if (expProtocolEndpointValiation$passed && nrow(expProtocolEndpointValiation$nonMatchingRows) > 0) {
-        protocol <- updateColumnOrderStates(protocol, "protocols", expProtocolEndpointValiation$nonMatchingRows, errorEnv, recordedBy, lsTransaction)
+      if (expProtocolEndpointValidation$passed && nrow(expProtocolEndpointValidation$nonMatchingRows) > 0) {
+        protocol <- updateColumnOrderStates(protocol, "protocols", expProtocolEndpointValidation$nonMatchingRows, errorEnv, recordedBy, lsTransaction)
       }
     }
   }
