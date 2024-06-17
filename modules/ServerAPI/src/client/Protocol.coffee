@@ -1122,10 +1122,10 @@ class EndpointListController extends AbstractFormController
 	#Function brought over from experiment.coffee 
 	setupExperimentSummaryTable: (experiments) =>
 		#@$(".bv_searchStatusIndicator").addClass "hide"
-		$(".bv_experimentTableController").removeClass "hide"
+		@$(".bv_experimentTableController").removeClass "hide"
 
 		@experimentSummaryTable = new ExperimentSummaryTableController
-			el: $(".bv_experimentTableController")
+			el: @$(".bv_experimentTableController")
 			collection: experiments
 
 		@experimentSummaryTable.on "selectedRowUpdated", @selectedExperimentUpdated
