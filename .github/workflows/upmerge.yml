@@ -100,7 +100,10 @@ jobs:
 
               // If apiUser is a reviewer, remove them but tag them in the description
               let addApiUser = false
+              console.log(`API user: ${apiUser}`)
+              console.log(`Unique reviewers: ${uniqueReviewers.join(", ")}`)
               if (uniqueReviewers.includes(apiUser)) {
+                console.log(`API user is a reviewer. Removing them from the reviewers list`)
                 uniqueReviewers.splice(uniqueReviewers.indexOf(apiUser), 1)
                 addApiUser = true
               }
