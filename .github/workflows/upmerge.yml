@@ -79,7 +79,16 @@ jobs:
               })
 
               // Create a unique set of reviewers: Reviewers for the PR should be anyone with commits in the diff 
-              const reviewers = diff.data.commits.map(commit => commit.author.login)
+              const reviewers = diff.data.commits
+                .filter(commit => commit.author !== null)
+                .map(commit => commit.author.login)
+
+              // Fallback to repo owner if no reviewers found
+              if (reviewers.length === 0) {
+                reviewers = [github.context.repo.owner];
+                console.log(`No reviewers found. Falling back to repository owner: ${github.context.repo.owner}`);
+              }
+              
 
               // Get the most recent commit author to be the assignee
               const assignee = reviewers[reviewers.length - 1]
