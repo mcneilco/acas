@@ -153,8 +153,11 @@ jobs:
               })
 
               // Add the reviewers to the pull request if there are any
+              // Remove the author from the reviewers list
+              if (uniqueReviewers.includes(pullRequest.user.login)) {
+                uniqueReviewers.splice(uniqueReviewers.indexOf(pullRequest.user.login), 1)
+              }
               if (uniqueReviewers.length > 0) {
-                console.log(`Adding reviewers to pull request ${pullRequest.number}: ${uniqueReviewers.join(", ")}`)
                 await github.rest.pulls.requestReviewers({
                   owner: "${{ matrix.owner }}",
                   repo: "${{ matrix.repo }}",
