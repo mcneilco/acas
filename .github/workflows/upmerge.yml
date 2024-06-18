@@ -154,6 +154,7 @@ jobs:
 
               // Add the reviewers to the pull request if there are any
               if (uniqueReviewers.length > 0) {
+                console.log(`Adding reviewers to pull request ${pullRequest.number}: ${uniqueReviewers.join(", ")}`)
                 await github.rest.pulls.requestReviewers({
                   owner: "${{ matrix.owner }}",
                   repo: "${{ matrix.repo }}",
