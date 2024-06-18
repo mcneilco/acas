@@ -3,6 +3,9 @@ name: Create upmerge pull requests
 # **What it does**: Loops through protected branches and creates pull requests to upmerge them if there are any commits between them.
 # **Why we have it**: To automate the process of upmerging branches.
 
+env:
+  FALLBACK_REVIEWERS: '["brian.bolt@schrodinger.com", "brian.frost@schrodinger.com"]'
+
 on:
   # Run every 3 hours on the hour
   schedule:
@@ -79,19 +82,38 @@ jobs:
               })
 
               // Create a unique set of reviewers: Reviewers for the PR should be anyone with commits in the diff 
-              const reviewers = diff.data.commits.map(commit => commit.author.login)
+              let reviewers = diff.data.commits
+                .filter(commit => commit.author !== null)
+                .map(commit => commit.author.login)
+
+              // Fallback to the reviewers if no commits are found
+              if (reviewers.length === 0) {
+                reviewers = JSON.parse(process.env.FALLBACK_REVIEWERS);
+                console.log(`No reviewers found. Falling back to: ${reviewers}`);
+              }
 
               // Get the most recent commit author to be the assignee
               const assignee = reviewers[reviewers.length - 1]
 
               // Remove any duplicate reviewers
-              const uniqueReviewers = [...new Set(reviewers)]
+              let uniqueReviewers = [...new Set(reviewers)]
 
-             // If apiUser is a reviewer, remove them but tag them in the description
-              addApiUser = false
+              // If apiUser is a reviewer, remove them but tag them in the description
+              let addApiUser = false
+              console.log(`API user: ${apiUser}`)
+              console.log(`Unique reviewers: ${uniqueReviewers.join(", ")}`)
               if (uniqueReviewers.includes(apiUser)) {
+                console.log(`API user is a reviewer. Removing them from the reviewers list`)
                 uniqueReviewers.splice(uniqueReviewers.indexOf(apiUser), 1)
                 addApiUser = true
+              }
+
+              // If the assignee is the pull request author, remove them from the reviewers list
+              if (assignee === apiUser) {
+                const index = uniqueReviewers.indexOf(assignee);
+                if (index !== -1) {
+                  uniqueReviewers.splice(index, 1);
+                }
               }
 
               // If the PR doesn't exist then create it
@@ -131,6 +153,10 @@ jobs:
               })
 
               // Add the reviewers to the pull request if there are any
+              // Remove the author from the reviewers list
+              if (uniqueReviewers.includes(pullRequest.user.login)) {
+                uniqueReviewers.splice(uniqueReviewers.indexOf(pullRequest.user.login), 1)
+              }
               if (uniqueReviewers.length > 0) {
                 await github.rest.pulls.requestReviewers({
                   owner: "${{ matrix.owner }}",
