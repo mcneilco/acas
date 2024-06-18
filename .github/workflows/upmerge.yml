@@ -19,6 +19,7 @@ jobs:
       matrix:
         repo: [ acas, acas-roo-server, racas ]
         owner: [ mcneilco ]
+        fallbackReviewers: [ "brian.bolt@schrodinger.com", "brian.frost@schrodinger.com"]
     steps:
       - name: Create pull requests to upmerge branches to main
         uses: actions/github-script@v7
@@ -83,12 +84,11 @@ jobs:
                 .filter(commit => commit.author !== null)
                 .map(commit => commit.author.login)
 
-              // Fallback to repo owner if no reviewers found
+              // Fallback to the reviewers if no commits are found
               if (reviewers.length === 0) {
-                reviewers = [github.context.repo.owner];
-                console.log(`No reviewers found. Falling back to repository owner: ${github.context.repo.owner}`);
+                reviewers = ${{ matrix.fallbackReviewers }}
+                console.log(`No reviewers found for commits, falling back to ${reviewers.join(", ")}`)
               }
-              
 
               // Get the most recent commit author to be the assignee
               const assignee = reviewers[reviewers.length - 1]
