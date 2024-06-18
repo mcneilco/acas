@@ -98,11 +98,19 @@ jobs:
               // Remove any duplicate reviewers
               const uniqueReviewers = [...new Set(reviewers)]
 
-             // If apiUser is a reviewer, remove them but tag them in the description
-              addApiUser = false
+              // If apiUser is a reviewer, remove them but tag them in the description
+              let addApiUser = false
               if (uniqueReviewers.includes(apiUser)) {
                 uniqueReviewers.splice(uniqueReviewers.indexOf(apiUser), 1)
                 addApiUser = true
+              }
+
+              // If the assignee is the pull request author, remove them from the reviewers list
+              if (assignee === apiUser) {
+                const index = uniqueReviewers.indexOf(assignee);
+                if (index !== -1) {
+                  uniqueReviewers.splice(index, 1);
+                }
               }
 
               // If the PR doesn't exist then create it
