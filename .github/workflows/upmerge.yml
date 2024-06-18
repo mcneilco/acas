@@ -82,7 +82,7 @@ jobs:
               })
 
               // Create a unique set of reviewers: Reviewers for the PR should be anyone with commits in the diff 
-              const reviewers = diff.data.commits
+              let reviewers = diff.data.commits
                 .filter(commit => commit.author !== null)
                 .map(commit => commit.author.login)
 
@@ -96,7 +96,7 @@ jobs:
               const assignee = reviewers[reviewers.length - 1]
 
               // Remove any duplicate reviewers
-              const uniqueReviewers = [...new Set(reviewers)]
+              let uniqueReviewers = [...new Set(reviewers)]
 
               // If apiUser is a reviewer, remove them but tag them in the description
               let addApiUser = false
