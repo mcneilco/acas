@@ -6,7 +6,7 @@ exports.main = (callback) ->
     config = require "#{ACAS_HOME}/conf/compiled/conf.js"
     if config.all.server.liveDesign.installClientOnStart? && config.all.server.liveDesign.installClientOnStart
         exec = require('child_process').exec
-        command = "pip3.6 install --upgrade --force-reinstall --user #{config.all.client.service.result.viewer.liveDesign.baseUrl}/ldclient.tar.gz"
+        command = "pip install --upgrade --force-reinstall --user #{config.all.client.service.result.viewer.liveDesign.baseUrl}/ldclient.tar.gz"
         console.log "About to call python using command: "+command
         child = exec command,  (error, stdout, stderr) ->
             console.log stdout
