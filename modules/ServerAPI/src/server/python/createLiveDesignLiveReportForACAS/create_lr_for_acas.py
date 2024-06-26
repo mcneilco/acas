@@ -22,22 +22,20 @@ http_client.HTTPConnection.debuglevel = 0
 import ldclient
 from ldclient.client import LDClient, LiveReport
 
-try:
-    import requests
-    from requests.packages.urllib3.exceptions import (InsecurePlatformWarning,
-                                                      InsecureRequestWarning,
-                                                      SNIMissingWarning)
-    requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
-    requests.packages.urllib3.disable_warnings(InsecurePlatformWarning)
-    requests.packages.urllib3.disable_warnings(SNIMissingWarning)
-except ImportError:
-    #ignore error, allow warnings
-    print('ignoring ImportError')
-
 ### Generic helper functions
 def eprint(*args, **kwargs):
     """Print to stderr"""
     print(*args, file=sys.stderr, **kwargs)
+
+try:
+    import requests
+    from requests.packages.urllib3.exceptions import (InsecurePlatformWarning,
+                                                      InsecureRequestWarning)
+    requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+    requests.packages.urllib3.disable_warnings(InsecurePlatformWarning)
+except ImportError as e:
+    #ignore error, allow warnings
+    eprint(f"Ignoring ImportError: {e}")
 
 def str2bool(v):
     if isinstance(v, bool):
