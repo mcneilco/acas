@@ -25,6 +25,8 @@ RUN   dnf install -y python311 python3.11-pip initscripts
 RUN   alternatives --install /usr/bin/python python /usr/bin/python3.11 1
 RUN   alternatives --install /usr/bin/pip pip /usr/bin/pip3.11 1
 RUN		pip install argparse requests psycopg2-binary
+COPY    --chown=runner:runner requirements.txt $ACAS_BASE/requirements.txt
+RUN    pip install -r $ACAS_BASE/requirements.txt
 
 # node
 ENV NPM_CONFIG_LOGLEVEL warn
