@@ -77,7 +77,7 @@ def find_column_ids(
     resp_tree = ld_client.get_folder_tree_data(project_id, assay_name)
     if type(resp_tree) is list:
         resp_tree = [
-            item for item in resp_tree if item['name'] == 'Experimental Assays'
+            item for item in resp_tree if item['original_name'] == 'Experimental Assays'
         ]
         if resp_tree:
             resp_tree = resp_tree[0]
@@ -115,10 +115,10 @@ def find_assay(assay_tree, assays, assay_pattern=None, assay_name=None):
     :param assay_pattern (Optional): A regex pattern to match the column name(s)
     :param assay_name (Optional): The full column name to match exactly
     """
-    if 'name' in assay_tree:
-        if assay_pattern and assay_pattern.fullmatch(assay_tree['name']):
+    if 'original_name' in assay_tree:
+        if assay_pattern and assay_pattern.fullmatch(assay_tree['original_name']):
             assays.append(assay_tree)
-        elif assay_name and assay_name == assay_tree['name']:
+        elif assay_name and assay_name == assay_tree['original_name']:
             assays.append(assay_tree)
 
     for sub_tree in assay_tree['children']:
@@ -151,7 +151,7 @@ def extract_endpoints_dict(node, endpoints_dict):
     :return: The dictionary of column names to column IDs
     """
     if node['column_folder_node_type'] == 'LEAF':
-        endpoints_dict[node['name']] = node['addable_column_ids']
+        endpoints_dict[node['original_name']] = node['addable_column_ids']
     for child_node in node['children']:
         extract_endpoints_dict(child_node, endpoints_dict)
     return endpoints_dict
