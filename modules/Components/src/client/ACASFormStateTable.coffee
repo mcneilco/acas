@@ -25,10 +25,6 @@ class ACASFormStateTableController extends Backbone.View
 		@stateTableFormControllersCollection = []
 		@tableReadOnly = false
 		@selectedCell = null
-		# This might be referenced some day as textbook hacky code
-		# https://github.com/handsontable/handsontable/issues/2268
-		WalkontableTable.prototype.isRowBeforeRenderedRows = (r) -> 
-			return !this.rowFilter || (this.rowFilter.sourceToRendered(r) < 0 && r >= 0);
 
 	getCollection: ->
 		#TODO get states by type and kind
