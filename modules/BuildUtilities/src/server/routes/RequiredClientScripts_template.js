@@ -16,7 +16,7 @@ exports.requiredScripts = [
 	'/lib/jquery-ui-1.10.2.custom/js/jquery-ui-1.10.2.custom.min.js',
 	'/lib/bootstrap/bootstrap-tooltip.js',
 	'/lib/bootstrap-tagsinput/bootstrap-tagsinput.min.js',
-	'/lib/dataTables/js/jquery.dataTables.js',
+	'/lib/dataTables/js/dataTables.dataTables.min.js',
 	'/lib/dataTables/js/lsThingSorting.js',
 	'/lib/bootstrap/bootstrap-datatable.js',
 	'/lib/bootstrap-combobox/js/bootstrap-combobox.js',
