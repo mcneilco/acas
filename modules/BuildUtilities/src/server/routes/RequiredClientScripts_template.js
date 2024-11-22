@@ -34,8 +34,7 @@ exports.requiredScripts = [
 	// '/CmpdReg/client/custom/marvinStructureTemplate.js',
 	// The following line is for the Maestro sketcher
 	'/CmpdReg/client/schrodinger/maestrosketcher/maestrosketcherlauncher.js',
-	'/socket.io/socket.io.js',
-	'/lib/blockUI.js'
+	'/socket.io/socket.io.js'
 ];
 
 exports.applicationScripts = [
