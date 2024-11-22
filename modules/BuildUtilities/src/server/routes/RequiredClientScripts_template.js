@@ -5,7 +5,7 @@ exports.requiredScripts = [
 	'/lib/backbone-min.js',
 	'/lib/jqueryFileUpload/js/vendor/jquery.ui.widget.js',
 	'/lib/jqueryFileUpload/js/jquery.iframe-transport.js',
-	'/lib/bootstrap/bootstrap.min.js',
+	'/lib/bootstrap-3.4.1-dist/js/bootstrap.min.js',
 	'/lib/jqueryFileUpload/tmpl.min.js',
 	'/lib/jqueryFileUpload/js/jquery.iframe-transport.js',
 	'/lib/jqueryFileUpload/js/jquery.fileupload.js',
