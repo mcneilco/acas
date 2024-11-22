@@ -1,5 +1,6 @@
 exports.requiredScripts = [
 	'/lib/jquery.min.js',
+	'/lib/jquery-migrate-1.4.1.js', // Remove after upgrading
 	'/lib/json2.js',
 	'/lib/underscore.js',
 	'/lib/backbone-min.js',
