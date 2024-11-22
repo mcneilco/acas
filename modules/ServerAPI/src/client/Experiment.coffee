@@ -538,7 +538,7 @@ class ExperimentBaseController extends BaseEntityController
 			name = ""
 		if code == name
 			@$('.bv_experimentName').attr('disabled', 'disabled')
-			@$('.bv_exptNameChkbx').attr('checked','checked')
+			@$('.bv_exptNameChkbx').prop('checked','checked')
 		else
 			@$('.bv_exptNameChkbx').removeAttr('checked')
 
@@ -733,7 +733,7 @@ class ExperimentBaseController extends BaseEntityController
 
 	handleUseProtocolParametersClicked: =>
 		@model.copyProtocolAttributes(@model.get('protocol'))
-		exptChkbx = @$('.bv_exptNameChkbx').attr('checked') #render will always disable the expt name field if new.
+		exptChkbx = @$('.bv_exptNameChkbx').prop('checked') #render will always disable the expt name field if new.
 		# Remember if checkbox was checked and then display expt name field properly after render is called.
 		@render()
 		if exptChkbx is "checked"
