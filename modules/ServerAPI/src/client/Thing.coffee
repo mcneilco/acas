@@ -19,7 +19,8 @@ class Thing extends Backbone.Model
 		secondLsThings: new SecondLsThingItxList()
 		lsTags: new TagList()
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@setThingKindDisplayName()
 		@.set @parse(@.attributes)
 
@@ -468,7 +469,8 @@ if typeof(exports) != "undefined"
 #class window.DocumentModel extends Thing
 #	urlRoot:"/api/things/legalDocument/MTA"
 #	className: "DocumentManagerTermType"
-#	initialize: ->
+#	initialize: (options) ->
+		@options = options
 #		@.set
 #			lsType: "legalDocument"
 #			lsKind: "MTA"

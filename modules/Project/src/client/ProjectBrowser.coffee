@@ -13,7 +13,8 @@ class ProjectSimpleSearchController extends AbstractFormController
 	genericSearchUrl: "/api/genericSearch/projects/"
 #	codeNameSearchUrl: "/api/projects/codename/"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@includeDuplicateAndEdit = @options.includeDuplicateAndEdit
 		@searchUrl = ""
 		if @includeDuplicateAndEdit
@@ -96,7 +97,8 @@ class ProjectRowSummaryController extends Backbone.View
 		$(@el).closest("table").find("tr").removeClass "info"
 		$(@el).addClass "info"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@template = _.template($('#ProjectRowSummaryView').html())
 
 	render: =>
@@ -128,7 +130,8 @@ class ProjectRowSummaryController extends Backbone.View
 		@
 
 class ProjectSummaryTableController extends Backbone.View
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 
 	selectedRowChanged: (row) =>
 		@trigger "selectedRowUpdated", row
@@ -163,7 +166,8 @@ class ProjectBrowserController extends Backbone.View
 		"click .bv_confirmDeleteProjectButton": "handleConfirmDeleteProjectClicked"
 		"click .bv_cancelDelete": "handleCancelDeleteClicked"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		template = _.template( $("#ProjectBrowserView").html(),  {includeDuplicateAndEdit: @includeDuplicateAndEdit} );
 		$(@el).empty()
 		$(@el).html template

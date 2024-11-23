@@ -5,7 +5,8 @@ class OpenExperimentInQueryToolController extends Backbone.View
 
     template: _.template($("#OpenExperimentInQueryToolView").html())
 
-    initialize: ->
+    initialize: (options) ->
+        @options = options
         @code = @options.code
         @experimentStatus = @options.experimentStatus
 

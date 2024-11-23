@@ -35,7 +35,8 @@ class DoseResponseKnockoutPanelController extends Backbone.View
 
 class DoseResponsePlotController extends AbstractFormController
 	template: _.template($("#DoseResponsePlotView").html())
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@pointList = []
 
 	render: =>
@@ -340,7 +341,8 @@ class DoseResponsePlotController extends AbstractFormController
 class CurveDetail extends Backbone.Model
 	url: ->
 		return "/api/curve/detail/" + @id
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@fixCompositeClasses()
 
 	fixCompositeClasses: =>
@@ -370,7 +372,8 @@ class CurveEditorController extends Backbone.View
 		'click .bv_approve': 'handleApproveClicked'
 		'click .bv_reject': 'handleRejectClicked'
 
-	initialize: =>
+	initialize: (options) =>
+		@options = options
 		if @options.locked
 			@locked = @options.locked
 
@@ -609,7 +612,8 @@ class CurveSummaryController extends Backbone.View
 		'click .bv_userReject': 'userReject'
 		'click .bv_userNA': 'userNA'
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		curvefitClassesCollection = new Backbone.Collection $.parseJSON window.conf.curvefit.modelfitparameter.classes
 		curveFitClasses =  curvefitClassesCollection.findWhere({code: @model.get('curveAttributes').renderingHint})
 		renderCurvePath =  curveFitClasses.get 'renderCurvePath'
@@ -738,7 +742,8 @@ class CurveSummaryListController extends Backbone.View
 	template: _.template($("#CurveSummaryListView").html())
 	defaults:
 		locked: false
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		if @options.locked
 			@locked = @options.locked
 		@filterKey = 'all'

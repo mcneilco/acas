@@ -28,7 +28,8 @@ class BasicFileValidateAndSaveController extends Backbone.View
 		'click .bv_attachImagesFile': 'handleAttachImagesFileChanged'
 
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		$(@el).html @template()
 		@notificationController = new LSNotificationController
 			el: @$('.bv_notifications')

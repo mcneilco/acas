@@ -38,7 +38,8 @@ class DocUploadController extends AbstractFormController
 		'change .bv_url': "attributeChanged"
 		'change .bv_description': "attributeChanged"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@errorOwnerName = 'DocUploadController'
 		$(@el).html @template()
 		@fileInputController = new LSFileInputController

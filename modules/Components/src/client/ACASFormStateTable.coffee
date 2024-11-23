@@ -16,7 +16,8 @@ class ACASFormStateTableController extends Backbone.View
 	template: _.template($("#ACASFormStateTableView").html())
 	rowNumberKind: 'row number'
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@thingRef = @options.thingRef
 		@tableDef = @options.tableDef
 		@formWrapper = @options.formWrapper

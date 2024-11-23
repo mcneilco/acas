@@ -10,7 +10,8 @@ class Label extends Backbone.Model
 		physicallyLabled: false
 		imageFile: null
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@.on "change:labelText": @handleLabelTextChanged
 
 	handleLabelTextChanged: =>
@@ -178,7 +179,8 @@ class Value extends Backbone.Model
 		recordedDate: null
 		recordedBy: ""
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@.on "change:value": @setValueType
 
 	setValueType: ->
@@ -205,7 +207,8 @@ class State extends Backbone.Model
 		recordedDate: null
 		recordedBy: ""
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		if @has('lsValues')
 			if @get('lsValues') not instanceof ValueList
 				@set lsValues: new ValueList(@get('lsValues'))
