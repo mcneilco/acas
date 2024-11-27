@@ -10,7 +10,8 @@ $(function() {
             'click .newLotButton': 'newLot'
         },
 
-        initialize: function(){
+        initialize: function(options){
+            this.options = options
             $(this.el).html(this.template());
             _.bindAll(this, 'render', 'openLot', 'newLot');
         },
@@ -83,7 +84,8 @@ $(function() {
     });
 
     window.SearchResultListController = Backbone.View.extend({
-		initialize: function(){
+		initialize: function(options){
+			this.options = options;
             _.bindAll(this, 'openLot', 'newLot');
 		},
 
@@ -117,7 +119,8 @@ $(function() {
 
         },
 
-        initialize: function(){
+        initialize: function(options){
+            this.options = options
             $(this.el).html(this.template());
             _.bindAll(this, 'render', 'close', 'back', 'openLot', 'newLot', 'exportSDF');
             if (this.options.searchResults != null) {

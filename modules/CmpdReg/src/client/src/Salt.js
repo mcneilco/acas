@@ -2,7 +2,8 @@ $(function() {
 
 	window.Salt = Backbone.Model.extend({
 
-		initialize: function() {
+		initialize: function(options) {
+			this.options = options;
 
 		},
 
@@ -55,7 +56,8 @@ $(function() {
 
 		model: Salt,
 
-		initialize: function() {
+		initialize: function(options) {
+			this.options = options;
 
 		},
         url: function() {
@@ -74,7 +76,8 @@ $(function() {
 	window.SaltOptionController = Backbone.View.extend({
 		tagName: "option",
 
-		initialize: function(){
+		initialize: function(options){
+			this.options = options;
 		  _.bindAll(this, 'render');
 		},
 
@@ -95,7 +98,8 @@ $(function() {
 			'change': 'handleSelectChanged'
 		},
 
-		initialize: function(){
+		initialize: function(options){
+			this.options = options;
 			_.bindAll(this, 'addOne', 'render', 'handleSelectChanged');
 			this.collection.bind('add', this.addOne);
 			this.collection.bind('reset', this.render);
@@ -110,9 +114,8 @@ $(function() {
 		render: function() {
 			$(this.el).empty();
 			if(window.configuration.metaLot.sortSaltsByAbbrev) {
-				$(this.el).append(this.make('option', {value: ''}, window.configuration.metaLot.saltListNoneOption));
-			} else {
-				$(this.el).append(this.make('option', {value: ''}, 'none'));
+				$(this.el).append($('<option>', { value: '' }).text(window.configuration.metaLot.saltListNoneOption));			} else {
+				$(this.el).append($('<option>', { value: '' }).text('none'));
 			}
 			var self = this;
 			this.collection.each(function(salt){
@@ -150,7 +153,8 @@ $(function() {
 			'click .cancelNewSaltButton': 'cancel'
 		},
 
-		initialize: function(){
+		initialize: function(options){
+			this.options = options;
 			_.bindAll(this, 'validationError', 'saveSalt', 'render');
 			$(this.el).html(this.template());
 			this.exportFormat = "mol";
@@ -177,7 +181,7 @@ $(function() {
 
 		hide: function() {
 			$(this.el).hide();
-			$(this.el).dialog('close');
+			// $(this.el).dialog('close');
 		},
 
 		cancel: function() {

@@ -4,7 +4,8 @@ $(function() {
     window.SaltFormOptionController = Backbone.View.extend({
 		tagName: "option",
 		
-		initialize: function(){
+		initialize: function(options){
+			this.options = options;
 		  _.bindAll(this, 'render');
 		},
 		
@@ -16,7 +17,8 @@ $(function() {
     
 	window.SaltFormSelectController = Backbone.View.extend({
         
-		initialize: function(){
+		initialize: function(options){
+			this.options = options;
 			_.bindAll(this, 'render');
 		},
 		
@@ -26,12 +28,12 @@ $(function() {
 			this.collection.each(function(sf){
 				$(self.el).append(new SaltFormOptionController({ model: sf }).render().el);
 			});
-			$(this.el).append(this.make('option', {value: -1}, 'New Salt'));
+			$(this.el).append($('<option>', { value: -1 }).text('New Salt'));
 		},
 
 		getSelectedSaltForm: function(){
             if ($(this.el).val() == -1) return null;
-			return this.collection.getByCid($(this.el).val());
+			return this.collection.get($(this.el).val());
 		}
 
 	});	

@@ -46,7 +46,8 @@ $(function() {
 			'click .cancelButton': 'cancel'
 		},
 
-		initialize: function(){
+		initialize: function(options){
+			this.options = options;
 			_.bindAll(this, 'search', 'cancel', 'validationError', 'updatePercentSimilarityDisabled','chemistsLoaded');
             this.valid = false;
 			this.sketcherLoaded = false;

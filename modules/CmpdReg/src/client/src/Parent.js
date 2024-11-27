@@ -15,7 +15,8 @@ $(function() {
 			labelPrefix: null
 		},
 
-		initialize: function() {
+		initialize: function(options) {
+			this.options = options;
 
 			// If this was saved, we'll initialize from a json object
 			// that is part of the wrapping object
@@ -123,7 +124,8 @@ $(function() {
 			'click .closeParentUpdatedPanel': 'showUpdatedMetalot'
 		},
 
-		initialize: function() {
+		initialize: function(options) {
+			this.options = options;
 			_.bindAll(this, 'validationError', 'setAliasToReadOnly', 'setAliasToEdit', 'render');
 			this.model.bind('error',  this.validationError);
 			this.valid = true;
@@ -520,7 +522,8 @@ $(function() {
 
     window.RegParentController = ParentController.extend({
 
-		initialize: function() {
+		initialize: function(options) {
+			this.options = options;
 			RegParentController.__super__.render.call(this);
 			if(typeof(this.options.showReparentLot) != "undefined" && this.options.showReparentLot == true){
 				this.showReparentLot = this.options.showReparentLot;

@@ -8,7 +8,8 @@ $(function() {
 			casNumber: ''
 		},
 
-		initialize: function() {
+		initialize: function(options) {
+			this.options = options;
 
 			// If this was saved, we'll initialize from a json object
 			// that is part of the wrapping object
@@ -75,7 +76,8 @@ $(function() {
 			'click .copyPanelCloseButton': 'hideCopyMolPanel'
 		},
 
-		initialize: function() {
+		initialize: function(options) {
+			this.options = options;
 			$(this.el).html(this.template());
 			this.$('.radioWrapper').hide();
 

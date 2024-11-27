@@ -2,7 +2,8 @@ $(function() {
 
 	window.IsoSaltEquiv = Backbone.Model.extend({
 
-		initialize: function() {
+		initialize: function(options) {
+			this.options = options;
 			if(window.configuration.serverConnection.connectToServer) {
 				//NB We do not intend to save these seperately, rather in a single commit with new lots
 				// However, we need this for testing
@@ -81,7 +82,8 @@ $(function() {
 	window.IsoSaltEquivController = Backbone.View.extend({
 		template: _.template($('#LotForm_SaltForm_IsoSaltEquivView_template').html()),
 
-		initialize: function(){
+		initialize: function(options){
+			this.options = options;
 			_.bindAll(this, 'render', 'validationError', 'updateModel');
 			this.model.bind('error',  this.validationError);
 			this.isEditable = this.options.isEditable;
@@ -141,7 +143,7 @@ $(function() {
 				});
 			} else {
 				this.model.set({
-					isosalt: this.options.isosalts.getByCid(this.isosaltSelectController.selectedCid()),
+					isosalt: this.options.isosalts.get(this.isosaltSelectController.selectedCid()),
 					equivalents: parseFloat(this.$('.equivalents').val())
 				});
 			}
@@ -177,7 +179,8 @@ $(function() {
 
 	window.IsoSaltEquivListController = Backbone.View.extend({
 
-		initialize: function() {
+		initialize: function(options) {
+			this.options = options;
 			_.bindAll(this, 'addOne');
 			this.collection.bind('add', this.addOne);
 

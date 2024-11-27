@@ -43,7 +43,8 @@ $(function () {
       nextAutoLot: null
     },
 
-    initialize: function () {
+    initialize: function (options) {
+      this.options = options;
       this.maxAutoLotNumber = window.configuration.metaLot.maxAutoLotNumber;
       this.requireLotNumber = false
       this.autoPopulateNextLotNumber = false
@@ -233,7 +234,8 @@ $(function () {
         'click .insertNextAutoLotNumberButton': 'handleInsertNextAutoLotNumberButtonClicked'
       })
     },
-    initialize: function () {
+    initialize: function (options) {
+      this.options = options;
       LotController_Abstract.prototype.initialize.apply(this, arguments);
       this.maxAutoLotNumber = window.configuration.metaLot.maxAutoLotNumber;
       this.requireLotNumber = false

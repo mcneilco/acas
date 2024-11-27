@@ -5,7 +5,8 @@ $(function() {
 		tagName: 'div',
         className: 'RegSearchResults_ParentListView',
 
-        initialize: function(){
+        initialize: function(options){
+            this.options = options
             this.parentControllers = new Array();
 		},
 

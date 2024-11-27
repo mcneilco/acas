@@ -1,7 +1,8 @@
 $(function() {
 
 	window.Isotope = Backbone.Model.extend({
-		initialize: function() {
+		initialize: function(options) {
+			this.options = options;
 //			if(window.configuration.serverConnection.connectToServer) {
 //				this.urlRoot = window.configuration.serverConnection.baseServerURL+'/isotopes';
 //			} else {
@@ -57,7 +58,8 @@ $(function() {
 	window.Isotopes = Backbone.Collection.extend({
 
 		model: Isotope,
-		initialize: function() {
+		initialize: function(options) {
+			this.options = options;
 //			if(window.configuration.serverConnection.connectToServer) {
 //				this.url = window.configuration.serverConnection.baseServerURL+'/isotopes';
 //			} else {
@@ -80,7 +82,8 @@ $(function() {
 	window.IsotopeOptionController = Backbone.View.extend({
 		tagName: "option",
 
-		initialize: function(){
+		initialize: function(options){
+			this.options = options;
 		  _.bindAll(this, 'render');
 		},
 
@@ -99,7 +102,8 @@ $(function() {
 			'change': 'handleSelectChanged'
 		},
 
-		initialize: function(){
+		initialize: function(options){
+			this.options = options;
 			_.bindAll(this, 'addOne','render');
 			this.collection.bind('add', this.addOne);
 			this.collection.bind('reset', this.render);
@@ -114,9 +118,9 @@ $(function() {
 		render: function() {
 			$(this.el).empty();
 			if(window.configuration.metaLot.isotopeListNoneOption) {
-				$(this.el).append(this.make('option', {value: ''}, window.configuration.metaLot.isotopeListNoneOption));
+				$(this.el).append($('<option>', { value: '' }).text(window.configuration.metaLot.isotopeListNoneOption));
 			} else {
-				$(this.el).append(this.make('option', {value: ''}, 'none'));
+				$(this.el).append($('<option>', { value: '' }).text('none'));
 			}
 			var self = this;
 			this.collection.each(function (isotope) {
@@ -152,7 +156,8 @@ $(function() {
 			'click .cancelNewIsotopeButton': 'cancel'
 		},
 
-		initialize: function(){
+		initialize: function(options){
+			this.options = options;
 			_.bindAll(this, 'validationError', 'save');
 			//TODO the template load should probably in render()
             $(this.el).html(this.template());
@@ -177,7 +182,7 @@ $(function() {
 
 		hide: function() {
 			$(this.el).hide();
-			$(this.el).dialog('close');
+			// $(this.el).dialog('close');
 		},
 
 		cancel: function() {

@@ -2,7 +2,8 @@ $(function() {
 
 	window.MetaLot = Backbone.Model.extend({
 
-		initialize: function() {
+		initialize: function(options) {
+			this.options = options;
 			if (this.has('json') ) {
 				var lotjs = this.get('json');
 
@@ -114,7 +115,8 @@ $(function() {
 		    'click .downloadLotButton': 'downloadLot'
 	    },
 
-	    initialize: function () {
+	    initialize: function (options) {
+      this.options = options;
 		    //TODO the template load be in render(), but saltFormController won't work that way, unless I new it in the render'
 		    $(this.el).html(this.template());
 		    _.bindAll(this, 'save', 'back', 'newLot', 'newLotSaved', 'deleteLotRequest', 'lotUpdated', 'editParentRequest', 'handleLotControllerReadyForRender');

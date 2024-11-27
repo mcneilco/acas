@@ -83,7 +83,8 @@ $(function () {
     window.FileView = Backbone.View.extend({
         className: 'file-view',
 
-        initialize: function () {
+        initialize: function (options) {
+      this.options = options;
             this.model.bind('change', this.render, this);
 			this.model.bind('destroy', this.fade_remove, this);
         },
@@ -123,7 +124,8 @@ $(function () {
             },
             window.FileView.prototype.events
         ),
-        initialize: function() {
+        initialize: function(options) {
+            this.options = options;
             this.constructor.__super__.initialize.apply(this);
             this.descriptionCodeController = null;
             _.bindAll(this, 'render', 'saveDescription');

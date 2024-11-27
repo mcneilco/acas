@@ -43,7 +43,8 @@ $(function() {
 	window.PickListOptionController = Backbone.View.extend({
 		tagName: "option",
 		
-		initialize: function(){
+		initialize: function(options){
+			this.options = options;
 		  _.bindAll(this, 'render');
 		},
 		
@@ -54,7 +55,8 @@ $(function() {
 	});
 
 	window.PickListSelectController = Backbone.View.extend({
-		initialize: function(){	
+		initialize: function(options){
+			this.options = options;	
 			_.bindAll(this, 'addOne', 'render', 'handleListReset');
 			this.rendered = false;
             this.collection = new PickListList();
@@ -177,7 +179,8 @@ $(function() {
 		defaults: {
 			ignore: false
 		},
-		initialize: function() {
+		initialize: function(options) {
+			this.options = options;
 			var codeVal = this.get("lsType").typeName + ":" + this.get("kindName")
 			this.set({code: codeVal});
 			var nameVal = this.get("lsType").typeName + ": " + this.get("kindName");
@@ -220,7 +223,8 @@ $(function() {
 	window.AliasListOptionController = Backbone.View.extend({
 		tagName: "option",
 
-		initialize: function(){
+		initialize: function(options){
+			this.options = options;
 			_.bindAll(this, 'render');
 		},
 
@@ -231,7 +235,8 @@ $(function() {
 	});
 
 	window.AliasListSelectController = Backbone.View.extend({
-		initialize: function(){
+		initialize: function(options){
+			this.options = options;
 			_.bindAll(this, 'addOne', 'render', 'handleListReset');
 			this.rendered = false;
 			if (this.options.collection) {

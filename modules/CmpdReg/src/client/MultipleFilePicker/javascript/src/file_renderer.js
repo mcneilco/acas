@@ -3,7 +3,8 @@ $(function () {
         
         template: _.template($('#file-template-renderer').html()),
         
-        initialize: function () {
+        initialize: function (options) {
+      this.options = options;
             this.model.bind('change', this.render, this);
 			this.model.bind('destroy', this.remove, this);
         },

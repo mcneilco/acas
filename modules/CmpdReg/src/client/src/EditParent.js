@@ -22,7 +22,8 @@ $(function () {
             'click .cancelEditButton': 'cancel'
         },
 
-        initialize: function(){
+        initialize: function(options){
+            this.options = options
             _.bindAll(this, 'next', 'cancel', 'render', 'validationError');
             this.valid = false;
             this.sketcherLoaded = false;
@@ -171,7 +172,8 @@ $(function () {
             'click .reparentLotPick': 'reparentLotPick'
         },
 
-        initialize: function(){
+        initialize: function(options){
+            this.options = options
             _.bindAll(this, 'toggleParentsVisible', 'next', 'back', 'reparentLotPick');
             this.sketcherLoaded = false;
             this.hide();
@@ -347,7 +349,8 @@ $(function () {
     window.EditParentWorkflowController = Backbone.View.extend({
         template: _.template($('#EditParentView_template').html()),
 
-        initialize: function(){
+        initialize: function(options){
+            this.options = options
             _.bindAll(
                 this,
                 'editParentSearchReturn',

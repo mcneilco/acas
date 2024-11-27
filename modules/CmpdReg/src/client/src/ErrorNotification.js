@@ -17,7 +17,8 @@ $(function() {
 		localStorage: new Store('ErrorNotifications'),
 		model: ErrorNotification,
 	
-		initialize: function(){
+		initialize: function(options){
+			this.options = options;
 			_.bindAll(this, 'add', 'getMessagesForOwner', 'getMessagesOfLevel', 'removeMessagesForOwner');
 		},
 		getMessagesForOwner: function(owner) {
@@ -36,7 +37,8 @@ $(function() {
 	window.ErrorNotificationController = Backbone.View.extend({
 		tagName: "div",
 		
-		initialize: function(){
+		initialize: function(options){
+			this.options = options;
 			_.bindAll(this, 'render');
 			this.model.bind('destroy', this.remove, this);
 		},
@@ -54,7 +56,8 @@ $(function() {
 		events: {
 			'click .showHideButton': 'toggleErrorsVisible'
 		},
-		initialize: function(){	
+		initialize: function(options){
+			this.options = options;	
 			$(this.el).html(this.template());
             _.bindAll(this, 'addOne', 'toggleErrorsVisible');
 			this.collection.bind('add', this.addOne, this);

@@ -6,7 +6,8 @@ $(function () {
 		events: {
 		},
 
-		initialize: function(){
+		initialize: function(options){
+			this.options = options;
 			_.bindAll(
                 this,
                 'regSearchReturn',

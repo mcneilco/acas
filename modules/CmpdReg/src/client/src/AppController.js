@@ -51,9 +51,9 @@ $(function () {
             'click .applicationName': 'reset'
 		},
 
-		initialize: function(){
+		initialize: function(options){
 			_.bindAll(this, 'render', 'startRegister','startSearch','launchRegister','launchSearch', 'reset', 'openLot', 'updateLot');
-
+            this.options = options;
             this.user = this.options.user;
 
             this.render();
@@ -150,7 +150,7 @@ $(function () {
                     self.$('.GetCmpdError').hide();
                 }
             )
-            .error(function(error) {
+            .fail(function(error) {
                 var resp = $.parseJSON(error.responseText);
                 if(resp.errors != null) {
                     _.each(resp.errors, function (err) {

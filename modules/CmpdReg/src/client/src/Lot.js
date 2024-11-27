@@ -18,7 +18,8 @@ $(function() {
 			'click .editAnalyticalFiles': 'showFileUploadController'
 		},
 
-		initialize: function() {
+		initialize: function(options) {
+			this.options = options;
 			_.bindAll(this, 'showFileUploadController', 'validationError');
 			this.model.bind('error',  this.validationError);
 			this.valid = true;

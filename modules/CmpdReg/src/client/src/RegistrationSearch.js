@@ -23,7 +23,8 @@ $(function() {
 			'click .cancelButton': 'cancel'
 		},
 		
-		initialize: function(){
+		initialize: function(options){
+			this.options = options;
 			_.bindAll(this, 'next', 'cancel', 'render', 'validationError');
             this.valid = false;
 			this.sketcherLoaded = false;

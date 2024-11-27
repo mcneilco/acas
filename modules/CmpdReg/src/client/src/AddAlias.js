@@ -20,7 +20,8 @@
       "click .bv_editAliases": "handleEditAliasesClick"
     };
 
-    AliasesController.prototype.initialize = function() {
+    AliasesController.prototype.initialize = function(options) {
+      this.options = options;
       if (this.options.collection != null) {
         this.collection = this.options.collection;
       } else {
@@ -101,7 +102,8 @@
       "click .bv_cancelAddNewAlias": "handleCancelAddNewAliasClick"
     };
 
-    AddAliasController.prototype.initialize = function() {
+    AddAliasController.prototype.initialize = function(options) {
+      this.options = options;
       this.collection = this.options.collection;
       this.listOfAliases = new AliasListList();
       this.listOfAliases.type = "aliases/parentAliasKinds";
@@ -163,7 +165,8 @@
       'click .bv_addNewAlias': 'handleAddAliasRowClick'
     };
 
-    AddAliasTableController.prototype.initialize = function() {
+    AddAliasTableController.prototype.initialize = function(options) {
+      this.options = options;
       this.collection = this.options.collection;
       this.listOfAliases = this.options.listOfAliases;
       this.lastId = 0;
@@ -270,7 +273,8 @@
       "change .bv_aliasKind": "handleInputChange"
     };
 
-    AliasRowController.prototype.initialize = function() {
+    AliasRowController.prototype.initialize = function(options) {
+      this.options = options;
       this.model = this.options.model;
       return this.listOfAliases = this.options.listOfAliases;
     };
@@ -377,7 +381,8 @@
       sortId: null
     };
 
-	AliasModel.prototype.initialize = function() {
+	AliasModel.prototype.initialize = function(options) {
+    this.options = options;
 		var typeKind = this.get('lsType') + ':' + this.get('lsKind');
 		this.set({'typeKind': typeKind});
 	}
@@ -449,7 +454,8 @@
 
     AliasListReadView.prototype.tagName = 'span';
 
-    AliasListReadView.prototype.initialize = function() {
+    AliasListReadView.prototype.initialize = function(options) {
+      this.options = options;
       return this.collection = this.options.collection;
     };
 

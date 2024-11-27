@@ -8,7 +8,8 @@ $(function() {
 			'click .copyPanelCloseButton': 'hideCopyMolPanel'
 		},
 
-		initialize: function() {
+		initialize: function(options) {
+			this.options = options;
 			_.bindAll(this, 'render');
 
 		},

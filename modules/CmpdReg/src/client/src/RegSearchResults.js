@@ -10,7 +10,8 @@ $(function() {
             'click .backButton': 'back'
 		},
 
-		initialize: function(){
+		initialize: function(options){
+			this.options = options;
 			_.bindAll(this, 'toggleParentsVisible', 'next');
 			this.sketcherLoaded = false;
             this.hide();

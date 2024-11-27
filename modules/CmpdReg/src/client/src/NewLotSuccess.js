@@ -9,7 +9,8 @@ $(function() {
             'click .closeButton': 'closeLot'
         },
 
-        initialize: function(){
+        initialize: function(options){
+            this.options = options
             _.bindAll(this, 'render', 'openLot', 'newLot','closeLot');
         },
         
