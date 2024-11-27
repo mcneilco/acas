@@ -13,7 +13,7 @@ exports.requiredScripts = [
 	'/lib/jqueryFileUpload-10.32.0/js/jquery.fileupload-process.js',
 	'/lib/jqueryFileUpload-10.32.0/js/jquery.fileupload-ui.js',
 	'/lib/jqueryFileUpload/js/locale.js',
-	'/lib/jquery-ui-1.14.1/js/jquery-ui.min.js',
+	'/lib/jquery-ui-1.14.1.custom/jquery-ui.min.js',
 	'/lib/bootstrap/bootstrap-tooltip.js',
 	'/lib/bootstrap-tagsinput/bootstrap-tagsinput.min.js',
 	'/lib/dataTables/js/dataTables.dataTables.min.js',
