@@ -2,9 +2,10 @@ class BasicFileValidateReviewAndSaveController extends BasicFileValidateAndSaveC
 	template: _.template($("#BasicFileValidateReviewAndSaveView").html())
 
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		console.log "BasicFileValidateReviewAndSaveController"
-		super()
+		super(options)
 
 	handleValidationReturnSuccess: (json) =>
 		console.log "handleValidationReturnSuccess"

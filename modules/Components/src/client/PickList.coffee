@@ -31,7 +31,8 @@ class PickListList extends Backbone.Collection
 
 class PickListOptionController extends Backbone.View
 	tagName: "option"
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 
 	render: =>
 		$(@el).attr("value", @model.get("code")).text @model.get("name")
@@ -39,7 +40,8 @@ class PickListOptionController extends Backbone.View
 
 class PickListOptionControllerForLsThing extends Backbone.View
 	tagName: "option"
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		if @options.insertFirstOption?
 			@insertFirstOption = @options.insertFirstOption
 		else
@@ -454,7 +456,8 @@ class AddParameterOptionPanelController extends AbstractFormController
 		"change .bv_newOptionComments": "attributeChanged"
 		"click .bv_addNewParameterOption": "triggerAddRequest" #.bv_addNewParameterOption adds the option to the picklist
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@errorOwnerName = 'AddParameterOptionPanelController'
 		@setBindings()
 
@@ -506,6 +509,9 @@ class EditablePickListSelectController extends Backbone.View
 	#will also need to call render to show the controller
 	events:
 		"click .bv_addOptionBtn": "handleShowAddPanel"
+
+	initialize: (options) ->
+		@options = options
 
 	render: =>
 		$(@el).empty()
@@ -730,7 +736,8 @@ class EditablePickListSelect2Controller extends EditablePickListSelectController
 
 class ThingLabelComboBoxController extends PickListSelect2Controller
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@thingType = @options.thingType
 		@thingKind = @options.thingKind
 		@labelType = if @options.labelType? then @options.labelType else null

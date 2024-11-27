@@ -6,9 +6,10 @@ class Experiment extends BaseEntity
 			analysisGroups: new AnalysisGroupList()
 		)
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@.set subclass: "experiment"
-		super()
+		super(options)
 		unless window.conf.include.project?
 			console.dir "config for client.include.project is not set"
 
@@ -372,7 +373,8 @@ class ExperimentBaseController extends BaseEntityController
 			"change .bv_status": "handleStatusChanged"
 		)
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		if @model?
 			@completeInitialization()
 		else

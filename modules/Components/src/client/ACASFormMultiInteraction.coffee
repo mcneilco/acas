@@ -56,7 +56,7 @@ class ACASFormMultiInteractionListController extends ACASFormAbstractFieldContro
 		"click .bv_addInteractionButton": "handleAddInteractionButtonClicked"
 
 	initialize: (options) ->
-		options = @options
+		@options = options
 		super(options)
 		@enabled = true
 		@opts = @options

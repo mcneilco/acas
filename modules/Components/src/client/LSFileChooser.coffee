@@ -4,7 +4,8 @@ class LSFileChooserModel extends Backbone.Model
 		fileNameOnServer: ''
 		fileType: ''
 		
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		_.bindAll(@,
 			'isDirty')
 

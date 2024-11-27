@@ -84,7 +84,8 @@ class AuthorRowSummaryController extends Backbone.View
 		$(@el).closest("table").find("tr").removeClass "info"
 		$(@el).addClass "info"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@template = _.template($('#AuthorRowSummaryView').html())
 
 	render: =>
@@ -98,7 +99,8 @@ class AuthorRowSummaryController extends Backbone.View
 		@
 
 class AuthorSummaryTableController extends Backbone.View
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 
 	selectedRowChanged: (row) =>
 		@trigger "selectedRowUpdated", row
@@ -130,7 +132,8 @@ class AuthorBrowserController extends Backbone.View
 		"click .bv_confirmDeleteAuthorButton": "handleConfirmDeleteAuthorClicked"
 		"click .bv_cancelDelete": "handleCancelDeleteClicked"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		template = _.template($("#AuthorBrowserView").html())
 		$(@el).empty()
 		$(@el).html template
