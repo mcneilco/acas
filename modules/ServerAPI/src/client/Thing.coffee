@@ -470,7 +470,7 @@ if typeof(exports) != "undefined"
 #	urlRoot:"/api/things/legalDocument/MTA"
 #	className: "DocumentManagerTermType"
 #	initialize: (options) ->
-		@options = options
+#		@options = options
 #		@.set
 #			lsType: "legalDocument"
 #			lsKind: "MTA"
