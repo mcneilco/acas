@@ -6,23 +6,11 @@ block content
 
     script
         window.AppLaunchParams = !{JSON.stringify(AppLaunchParams)};
-        $(function() {
-            var currentWindowOnload = window.onload;
-
-            window.onload = function() {
-                if (currentWindowOnload) {
-                    currentWindowOnload();
-                }
-                //window.Todos = new TodoList()
-                //window.app = new app.AppView()
-                // random initialization js goes here
-                // App = new app.AppView
-                window.servicesHostPrefix = "";
-                //TODO
-                window.appController = new ModuleMenusController({
-                                el: $('#appContainer'),
-                                menuListJSON:(typeof ModuleMenusConfiguration !== "undefined") ? ModuleMenusConfiguration : null
-                            });
-                window.appController.render();
-            };
+        window.addEventListener('load', function() {
+            window.servicesHostPrefix = "";
+            window.appController = new ModuleMenusController({
+                el: $('#appContainer'),
+                menuListJSON: (typeof ModuleMenusConfiguration !== "undefined") ? ModuleMenusConfiguration : null
+            });
+            window.appController.render();
         });
