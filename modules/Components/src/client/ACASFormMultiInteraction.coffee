@@ -9,6 +9,7 @@ class ACASFormMultiInteractionController extends Backbone.View
 		"click .bv_removeInteractionButton": "handleRemoveInteractionButtonClicked"
 
 	initialize: (options)->
+		@options = options
 		options =
 			modelKey: @options.interactionKey
 			thingType: @options.thingType

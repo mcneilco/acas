@@ -128,8 +128,8 @@ class LogEntryController extends Backbone.View
 	template: $("#log-entry-item").html()
 	render: =>
 		@$el.empty()
-		template = _.template( @template, @model.toJSON())
-		@$el.html(template)
+		template = _.template(@template)
+		@$el.html(template(@model.toJSON()))
 		styleName = ""
 
 		if @model.get("level") is "warn"

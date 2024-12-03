@@ -323,6 +323,7 @@ class PickListSelect2Controller extends PickListSelectController
 	# 'options.propertyMap' is not specified, it defaults to using the
 	# 'acasPropertyMap'
 	initialize: (options) ->
+		@options = options
 		if @options?.width?
 			@width = @options.width
 		else
