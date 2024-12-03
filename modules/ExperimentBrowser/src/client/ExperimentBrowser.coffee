@@ -349,11 +349,10 @@ class ExperimentBrowserController extends Backbone.View
 		"click .bv_cancelDelete": "handleCancelDeleteClicked"
 		'click .bv_downloadFiles': 'downloadFiles'
 
-	initialize: (options) ->
-		@options = options
-		template = _.template( $("#ExperimentBrowserView").html(),  {includeDuplicateAndEdit: @includeDuplicateAndEdit} );
+	initialize: ->
+		template = _.template( $("#ExperimentBrowserView").html());
 		$(@el).empty()
-		$(@el).html template
+		$(@el).html template({includeDuplicateAndEdit: @includeDuplicateAndEdit})
 		@searchController = new ExperimentSimpleSearchController
 			model: new ExperimentSearch()
 			el: @$('.bv_experimentSearchController')

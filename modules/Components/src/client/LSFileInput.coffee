@@ -54,8 +54,8 @@ class LSFileInputController extends Backbone.View
 	render: ->
 		self = @
 		$(@el).html ""
-		template = _.template($("#LSFileInputView").html(), {inputTitle: @inputTitle, fieldIsRequired: @fieldIsRequired})
-		$(@el).html template
+		template = _.template($("#LSFileInputView").html())
+		$(@el).html template({inputTitle: @inputTitle, fieldIsRequired: @fieldIsRequired})
 		@lsFileChooser = new LSFileChooserController({
 			el: @$('.bv_fileChooserContainer'), 
 			formId: 'fieldBlah', 

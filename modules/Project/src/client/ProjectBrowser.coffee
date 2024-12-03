@@ -168,9 +168,9 @@ class ProjectBrowserController extends Backbone.View
 
 	initialize: (options) ->
 		@options = options
-		template = _.template( $("#ProjectBrowserView").html(),  {includeDuplicateAndEdit: @includeDuplicateAndEdit} );
+		template = _.template( $("#ProjectBrowserView").html());
 		$(@el).empty()
-		$(@el).html template
+		$(@el).html template({includeDuplicateAndEdit: @includeDuplicateAndEdit})
 		@searchController = new ProjectSimpleSearchController
 			model: new ProjectSearch()
 			el: @$('.bv_projectSearchController')

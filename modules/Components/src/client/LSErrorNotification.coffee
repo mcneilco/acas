@@ -24,8 +24,8 @@ class LSAbstractNotificationCounterController extends Backbone.View
 		@container = @.options.container
 	
 	render: ->
-		template = _.template($(@templateTypeId).html(), {count: @notificationsList.length})
-		$(@el).html template
+		template = _.template($(@templateTypeId).html())
+		$(@el).html template({count: @notificationsList.length})
 		counterPopoverText = "#{@notificationsList.length} #{@messageString}"
 		unless @notificationsList.length == 1
 			counterPopoverText += "s"
@@ -59,8 +59,8 @@ class LSMessageController extends Backbone.View
 		@alertType = @options.alertType
 		
 	render: ->
-		template = _.template($(@alertType).html(), {message: @message})
-		$(@el).html template
+		template = _.template($(@alertType).html())
+		$(@el).html template({message: @message})
 		@
 
 class LSErrorController extends Backbone.View
