@@ -140,7 +140,8 @@ class ExperimentSimpleSearchController extends AbstractFormController
 	genericSearchUrl: "/api/experiments/genericSearch/"
 	codeNameSearchUrl: "/api/experiments/codename/"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@includeDuplicateAndEdit = @options.includeDuplicateAndEdit
 		@searchUrl = ""
 		if @includeDuplicateAndEdit
@@ -223,7 +224,8 @@ class ExperimentRowSummaryController extends Backbone.View
 		$(@el).closest("table").find("tr").removeClass "info"
 		$(@el).addClass "info"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@template = _.template($('#ExperimentRowSummaryView').html())
 
 	render: =>
@@ -274,7 +276,8 @@ class ExperimentRowSummaryController extends Backbone.View
 		@
 
 class ExperimentSummaryTableController extends Backbone.View
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		if @options.domSuffix?
 			@domSuffix = @options.domSuffix
 		else
@@ -346,7 +349,8 @@ class ExperimentBrowserController extends Backbone.View
 		"click .bv_cancelDelete": "handleCancelDeleteClicked"
 		'click .bv_downloadFiles': 'downloadFiles'
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		template = _.template( $("#ExperimentBrowserView").html(),  {includeDuplicateAndEdit: @includeDuplicateAndEdit} );
 		$(@el).empty()
 		$(@el).html template
@@ -660,7 +664,8 @@ class ExperimentBrowserController extends Backbone.View
 class ExperimentDetailController extends Backbone.View
 	template: _.template($("#ExperimentDetailsView").html())
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		$(@el).empty()
 		$(@el).html @template()
 

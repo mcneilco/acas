@@ -8,7 +8,8 @@ class ReparentLotController extends Backbone.View
 		"click .bv_backToCreg": "handleBackToCregButtonClicked"
 
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		_.bindAll(@, 'handleCancelButtonClicked', 'handleReparentButtonClicked', 'reparentDryRun', 'reparentDryRunReturn', 'reparentDryRunError', 'reparentLotError', 'reparentLotReturn', 'back', 'handleBackToCregButtonClicked');
 		# $(@el).empty()
 		$(@el).html @template()

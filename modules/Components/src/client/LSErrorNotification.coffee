@@ -51,7 +51,8 @@ class LSMessageController extends Backbone.View
 	alertType: null
 	tagName: 'div'
 	
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		_.bindAll(@,
 			'render')
 		@message = @options.message

@@ -5,7 +5,8 @@ class Vendor extends AbstractCodeTable
 	codeType: 'cmpdRegAdmin'
 	codeKind: 'vendor'
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		options = 
 			urlRoot: "/api/cmpdRegAdmin/vendors"
 			deleteUrlRoot: "/api/cmpdRegAdmin/vendors"

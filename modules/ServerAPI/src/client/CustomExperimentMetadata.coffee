@@ -3,7 +3,8 @@ class CustomMetadataValueController extends Backbone.View
 	events: ->
 		"change .bv_value": "handleValueInputChanged"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@experiment = @options.experiment
 		@lsType = @model.get 'lsType'
 
@@ -74,7 +75,8 @@ class CustomMetadataURLValueController extends CustomMetadataValueController
 class CustomExperimentMetadataListController extends Backbone.View
 	template: _.template($("#CustomExperimentMetaDataListView").html())
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		# Get custom metadata values from experiment
 		experimentStates = @model.get('lsStates')
 		customExperimentMetaDataStateArray = experimentStates.getStatesByTypeAndKind "metadata", "custom experiment metadata"

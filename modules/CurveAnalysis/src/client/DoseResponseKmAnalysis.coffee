@@ -83,7 +83,8 @@ class DoseResponseKmAnalysisParametersController extends AbstractFormController
 		"change .bv_inactiveThreshold": "attributeChanged"
 		"change .bv_theoreticalMax": "attributeChanged"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		$(@el).html @template()
 		@errorOwnerName = 'DoseResponseAnalysisParametersController'
 		@setBindings()

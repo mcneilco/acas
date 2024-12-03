@@ -167,7 +167,8 @@ class MarvinJSChemicalStructureController extends Backbone.View
 	template: _.template($("#MarvinJSChemicalStructureControllerView").html())
 
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@exportFormat = "mol";
 		if window.configuration?.marvin?.exportFormat?
 			@exportFormat = window.configuration.marvin.exportFormat

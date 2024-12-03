@@ -41,7 +41,8 @@ class ModuleLauncherMenuController extends Backbone.View
 	events:
 		'click .bv_menuName': "handleSelect"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@model.bind "change", @render.bind(@)
 
 	render: =>
@@ -97,7 +98,8 @@ class ModuleLauncherMenuHeaderController extends Backbone.View
 	tagName: 'li'
 	className: "nav-header bv_notTopHeader"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@model.bind "change", @render
 
 	render: =>
@@ -150,7 +152,8 @@ class ModuleLauncherMenuListController extends Backbone.View
 
 	template: _.template($("#ModuleLauncherMenuListView").html())
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@lastCollapsibleHeader = null
 		@collapsibleHeaders = []
 		#@collection.bind 'reset', @render()
@@ -218,7 +221,8 @@ class ModuleLauncherController extends Backbone.View
 	tagName: 'div'
 	template: _.template($("#ModuleLauncherView").html())
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@model.bind 'activationRequested', @handleActivation.bind(@)
 		@model.bind 'deactivationRequested', @handleDeactivation.bind(@)
 
@@ -258,7 +262,8 @@ class ModuleLauncherListController extends Backbone.View
 
 	template: _.template($("#ModuleLauncherListView").html())
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 
 
 	render: =>

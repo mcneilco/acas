@@ -227,7 +227,8 @@ class ExampleThingParent extends Thing
 			return "/api/things/parent/thing/#{@get 'codeName'}?nestedstub=true"
 	className: "ExampleThingParent"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@.set
 			lsType: "parent"
 			lsKind: "Example Thing"
@@ -244,7 +245,7 @@ class ExampleThingParent extends Thing
 		for itx in ExampleThingConf.formFieldDefinitions.secondLsThingItxs
 			itx.modelDefaults.key = itx.key
 			@lsProperties.defaultSecondLsThingItx.push itx.modelDefaults
-		super()
+		super(options)
 
 	lsProperties:
 		defaultLabels: [
@@ -279,7 +280,8 @@ class ExampleThingController extends AbstractThingFormController
 	events: ->
 		"click .bv_saveThing": "handleUpdateThing"
 
-	initialize: =>
+	initialize: (options) =>
+		@options = options
 		@errorOwnerName = 'ExampleThingController'
 		@lockEditingForSessionKey = 'codeName'
 		@openFormControllerSocket()
@@ -482,7 +484,8 @@ class ExampleTableAuditController extends AbstractThingFormController
 
 	events: ->
 
-	initialize: =>
+	initialize: (options) =>
+		@options = options
 		@hasRendered = false
 		@model = new ExampleThingParent codeName: @options.thingCode
 		@model.fetch()
