@@ -10,7 +10,7 @@ class DoseResponseKnockoutPanelController extends Backbone.View
 		@$('.bv_doseResponseKnockoutPanel').on "keypress", (key)=>
 			if key.keyCode == 13
 				@$('.bv_doseResponseKnockoutPanelOKBtn').click()
-		@$('.bv_doseResponseKnockoutPanel').on "hidden", =>
+		@$('.bv_doseResponseKnockoutPanelOKBtn').on "click", =>
 			@handleDoseResponseKnockoutPanelHidden()
 		@
 
