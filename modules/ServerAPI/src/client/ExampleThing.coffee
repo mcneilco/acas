@@ -13,6 +13,7 @@ ExampleThingConf =
 				formLabel: "*Name"
 				placeholder: "name"
 				fieldWrapper: "bv_thingName"
+				formLabelTooltip: "Example name tooltip"
 		,
 			key: 'alias_'
 			multiple: true
