@@ -290,76 +290,39 @@ class ThingSummaryTableController extends Backbone.View
 					configs: @configs
 				prsc.on "gotClick", @selectedRowChanged
 				@$("tbody").append prsc.render().el
-
-			$.fn.dataTableExt.oApi.fnGetColumnData = (oSettings, iColumn, bUnique, bFiltered, bIgnoreEmpty) ->
-				# check that we have a column id
-				if typeof iColumn == 'undefined'
-					return new Array
-				# by default we only want unique data
-				if typeof bUnique == 'undefined'
-					bUnique = true
-				# by default we do want to only look at filtered data
-				if typeof bFiltered == 'undefined'
-					bFiltered = true
-				# by default we do not want to include empty values
-				if typeof bIgnoreEmpty == 'undefined'
-					bIgnoreEmpty = true
-				# list of rows which we're going to loop through
-				aiRows = undefined
-				# use only filtered rows
-				if bFiltered == true
-					aiRows = oSettings.aiDisplay
-				else
-					aiRows = oSettings.aiDisplayMaster
-				# all row numbers
-				# set up data array   
-				asResultData = new Array
-				i = 0
-				c = aiRows.length
-				while i < c
-					iRow = aiRows[i]
-					aData = @fnGetData(iRow)
-					sValue = aData[iColumn]
-					# ignore empty values?
-					if bIgnoreEmpty == true and sValue.length == 0
-						i++
-						continue
-					else if bUnique == true and jQuery.inArray(sValue, asResultData) > -1
-						i++
-						continue
-					else
-						asResultData.push sValue
-					i++
-
-				# Sort lexicographically before returning
-				asResultData.sort (a, b)->
-					return a.toLowerCase().localeCompare(b.toLowerCase());
 				
-			
-			fnCreateSelect = (aData) ->
-				r = '<select><option value=""></option>'
-				i = undefined
-				iLen = aData.length
-				i = 0
-				while i < iLen
-					r += '<option value="' + aData[i] + '">' + aData[i] + '</option>'
-					i++
-				r + '</select>'
-				
-			oTable = @$("table").dataTable oLanguage:
-				sSearch: "Filter results: " #rename summary table's search bar
+			filterHandles = {
+				table: @$("table"),
+				configs: @configs,
+				columnFilters: @columnFilters
+			}
+			oTable = @$("table").dataTable 
+				oLanguage:
+					sSearch: "Filter results: " #rename summary table's search bar
+				initComplete: ->
+					filterHandles = filterHandles
+					@api().columns().every ->
+						column = this
+						# Create select element
+						select = document.createElement('select')
 
-			if @columnFilters? && @columnFilters
-				configs = @configs
-				this.$('thead tr.bv_colFilters th').each (i) ->
-					# Default is to add a filter to each column
-					# So only skip filtering if filter is false
-					if !configs[i].filter? || configs[i].filter
-						@innerHTML = fnCreateSelect(oTable.fnGetColumnData(i))
-						$('select', this).change ->
-							oTable.fnFilter "^"+$(this).val()+"$", i, true
-							return
+						# Default is to add a filter to each column
+						# So only skip filtering if filter is false
+						config = filterHandles.configs[column.index()]
+						if !config.filter? || config.filter
+							$(select).appendTo(filterHandles.table.find("thead tr:eq(1) th").eq(column.index()).empty() )
+
+							select.add new Option('')
+							column.header().replaceChildren select
+							# Apply listener for user change in value
+							select.addEventListener 'change', ->
+								column.search(select.value, exact: true).draw()
+							# Add list of options
+							column.data().unique().sort().each (d, j) ->
+								select.add new Option(d)
+								return
 						return
+					return
 
 		@
 
