@@ -86,7 +86,8 @@ class DetectSdfPropertiesController extends Backbone.View
 		"click .bv_readMore": "readMoreRecords"
 		"click .bv_readAll": "readAllRecords"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@numRecords = 100
 		@tempName = "none"
 		@mappings = new AssignedPropertiesList()
@@ -230,7 +231,8 @@ class AssignedPropertyController extends AbstractFormController
 		"keyup .bv_defaultVal": "handleDefaultValChanged"
 		"click .bv_deleteProperty": "clear"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		unless @model?
 			@model = new AssignedProperty()
 		@errorOwnerName = 'AssignedPropertyController'
@@ -356,7 +358,8 @@ class AssignSdfPropertiesController extends Backbone.View
 		"click .bv_regCmpds": "handleRegCmpdsClicked"
 		"click .bv_valCmpds": "handleValCmpdsClicked"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@fileName = null
 		@project = false
 		$(@el).empty()
@@ -793,7 +796,8 @@ class AssignSdfPropertiesController extends Backbone.View
 class BulkRegCmpdsController extends Backbone.View
 	template: _.template($("#BulkRegCmpdsView").html())
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		$(@el).empty()
 		$(@el).html @template()
 		@checkAllowCmpdRegistration()
@@ -873,7 +877,8 @@ class BulkRegCmpdsSummaryController extends Backbone.View
 	events:
 		"click .bv_loadAnother": "handleLoadAnotherSDF"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		$(@el).empty()
 		$(@el).html @template()
 		if @options.summaryHTML?
@@ -894,7 +899,8 @@ class BulkValCmpdsSummaryController extends Backbone.View
 		"click .bv_register": "handleRegister"
 		"click .bv_back": "handleBack"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		$(@el).empty()
 		$(@el).html @template()
 		if @options.summaryHTML?
@@ -925,7 +931,8 @@ class FileRowSummaryController extends Backbone.View
 		$(@el).closest("table").find("tr").removeClass "info"
 		$(@el).addClass "info"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@template = _.template($('#FileRowSummaryView').html())
 	
 	render: =>
@@ -1017,7 +1024,8 @@ class PurgeFilesController extends Backbone.View
 		"click .bv_confirmPurgeFileButton": "handleConfirmPurgeFileBtnClicked"
 		"click .bv_okay": "handleOkayClicked"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		$(@el).empty()
 		$(@el).html @template()
 		@$('.bv_purgeFileBtn').attr 'disabled', 'disabled'
@@ -1153,7 +1161,8 @@ class CmpdRegBulkLoaderAppController extends Backbone.View
 		"click .bv_bulkRegDropdown": "handleBulkRegDropdownSelected"
 		"click .bv_purgeFileDropdown": "handlePurgeFileDropdownSelected"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		$(@el).empty()
 		$(@el).html @template()
 		$(@el).addClass 'CmpdRegBulkLoaderAppController'

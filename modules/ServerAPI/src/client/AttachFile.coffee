@@ -77,7 +77,8 @@ class BasicFileController extends AbstractFormController
 	events: ->
 		"click .bv_delete": "clear"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@errorOwnerName = 'BasicFileController'
 		@setBindings()
 		@model.on "destroy", @remove, @
@@ -150,7 +151,8 @@ class BasicFileController extends AbstractFormController
 class BasicFileListController extends Backbone.View
 	template: _.template($("#BasicFileListView").html())
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		if @options.required?
 			@required = @options.required
 		else
@@ -237,8 +239,9 @@ class AttachFileController extends BasicFileController
 			"change .bv_fileType": "handleFileTypeChanged"
 		)
 
-	initialize: ->
-		super()
+	initialize: (options) ->
+		@options = options
+		super(options)
 		@errorOwnerName = 'AttachFileController'
 
 	render: =>
@@ -296,12 +299,13 @@ class AttachFileListController extends BasicFileListController
 	events:
 		"click .bv_addFileInfo": "uploadNewFile"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		unless @collection?
 			@collection = new AttachFileList()
 			newModel = new AttachFile
 			@collection.add newModel
-		super()
+		super(options)
 		if @options.fileTypeList?
 			@fileTypeList = @options.fileTypeList
 		else
@@ -347,12 +351,13 @@ class AttachFileListController extends BasicFileListController
 
 class ExperimentAttachFileListController extends AttachFileListController
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		unless @collection?
 			@collection = new ExperimentAttachFileList()
 			newModel = new AttachFile
 			@collection.add newModel
-		super()
+		super(options)
 		if @options.fileTypeList?
 			@fileTypeList = @options.fileTypeList
 		else

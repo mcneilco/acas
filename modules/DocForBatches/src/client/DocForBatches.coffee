@@ -2,7 +2,8 @@ class DocForBatches extends Backbone.Model
 	protocol: null
 	experiment: null
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		if @has('json')
 			js = @get('json')
 			@set
@@ -160,7 +161,8 @@ class DocForBatchesController extends Backbone.View
 		"click .bv_saveButton": "save"
 		"click .bv_cancelButton": "resetForm"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		$(@el).html @template()
 
 		unless @model?

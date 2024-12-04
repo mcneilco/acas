@@ -1,7 +1,8 @@
 class StandardizationCurrentSettingsController extends Backbone.View
 	template: _.template($("#StandardizationCurrentSettingsView").html())
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		$(@el).empty()
 		$(@el).html @template()
 		@$('.bv_getCurrentSettingsError').hide()
@@ -76,7 +77,8 @@ class DownloadDryResultsController extends Backbone.View
 	events: ->
 		"click .bv_download": "handleDownloadClicked"
 		
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		$(@el).empty()
 		$(@el).html @template()
 			
@@ -124,7 +126,8 @@ class StandardizationHistoryRowSummaryController extends Backbone.View
 	tagName: 'tr'
 	className: 'dataTableRow'
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@template = _.template($('#StandardizationHistoryRowSummaryView').html())
 
 	render: =>
@@ -220,7 +223,8 @@ class StandardizationHistorySummaryTableController extends Backbone.View
 class StandardizationDryRunReportStatsController extends Backbone.View
 	template: _.template($("#StandardizationDryRunReportStatsView").html())
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		$(@el).empty()
 		$(@el).html @template()
 		@$('.bv_standardizationDryRunReportStatsTable').hide()
@@ -276,7 +280,8 @@ class StandardizationDryRunReportRowSummaryController extends Backbone.View
 	tagName: 'tr'
 	className: 'dataTableRow'
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@template = _.template($('#StandardizationDryRunReportRowSummaryView').html())
 
 	render: =>
@@ -447,7 +452,8 @@ class StandardizationDryRunReportSummaryController extends Backbone.View
 	events: ->
 		"click .bv_search": "handleSearchClicked"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@model = new StandardizationDryRunReportSearch()
 		@mostRecentHistory = @options.mostRecentHistory
 		@maxDisplayCount = window.conf.cmpdreg.serverSettings.maxStandardizationDisplay
@@ -511,7 +517,8 @@ class StandardizationDryRunReportSummaryTableController extends Backbone.View
 		"click .selectBox": "handleDropDownClicked"
 		"change .bv_dryRunReportColumnCheckBoxes ": "handleHideShowCheckboxChanged"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@expanded = false
 
 
@@ -648,7 +655,8 @@ class StandardizationController extends Backbone.View
 		"click .bv_executeStandardization": "handleExecuteStandardizationClicked"
 		"click .bv_standardizationCompleteModalCloseBtn": "handleStandardizationCompleteModalCloseClicked"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@openStandardizationControllerSocket()
 		$(@el).empty()
 		$(@el).html @template()

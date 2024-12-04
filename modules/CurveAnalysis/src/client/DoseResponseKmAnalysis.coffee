@@ -10,6 +10,7 @@ class DoseResponseKmAnalysisParameters extends Backbone.Model
 		et: new Backbone.Model
 
 	initialize: (options) ->
+		@options = options
 		if options?
 			if(typeof(options.inactiveThreshold) == "undefined")
 				@set 'inactiveThreshold', null
@@ -83,7 +84,8 @@ class DoseResponseKmAnalysisParametersController extends AbstractFormController
 		"change .bv_inactiveThreshold": "attributeChanged"
 		"change .bv_theoreticalMax": "attributeChanged"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		$(@el).html @template()
 		@errorOwnerName = 'DoseResponseAnalysisParametersController'
 		@setBindings()

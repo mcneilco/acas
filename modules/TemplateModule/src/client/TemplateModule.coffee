@@ -27,7 +27,8 @@ class ReagentController extends AbstractFormController
 		"change .bv_cas": "updateModel"
 		"change .bv_barcode": "updateModel"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@errorOwnerName = 'ReagentController'
 		unless @model?
 			@model = new Reagent()
