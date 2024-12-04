@@ -152,6 +152,7 @@ class BasicFileListController extends Backbone.View
 	template: _.template($("#BasicFileListView").html())
 
 	initialize: (options) ->
+		@options = options
 		if @options.required?
 			@required = @options.required
 		else

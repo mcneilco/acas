@@ -12,6 +12,7 @@ class ThingSimpleSearchController extends AbstractFormController
 		'click .bv_doSearch': 'handleDoSearchClicked'
 
 	initialize: (options) ->
+		@options = options
 		@configs = options.configs
 
 	render: =>
@@ -184,6 +185,7 @@ class ACASThingBrowserCellController extends Backbone.View
 	tagName: 'td'
 
 	initialize: (options) ->
+		@options = options
 		@configs = options.configs
 
 	render: =>
@@ -239,6 +241,7 @@ class ACASThingBrowserRowSummaryController extends Backbone.View
 		$(@el).addClass "info"
 
 	initialize: (options)->
+		@options = options
 		@configs = options.configs
 
 	render: =>
@@ -253,6 +256,7 @@ class ACASThingBrowserRowSummaryController extends Backbone.View
 
 class ThingSummaryTableController extends Backbone.View
 	initialize: (options)->
+		@options = options
 		@configs = options.configs
 		@columnFilters = options.columnFilters
 		@maxResults = options.maxResults

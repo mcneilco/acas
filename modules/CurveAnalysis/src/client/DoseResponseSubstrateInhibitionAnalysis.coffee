@@ -12,6 +12,7 @@ class DoseResponseSubstrateInhibitionAnalysisParameters extends Backbone.Model
 		et: new Backbone.Model
 
 	initialize: (options) ->
+		@options = options
 		if options?
 			if(typeof(options.inactiveThreshold) == "undefined")
 				@set 'inactiveThreshold', null
