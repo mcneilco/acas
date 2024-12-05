@@ -291,6 +291,7 @@ class ThingSummaryTableController extends Backbone.View
 				prsc.on "gotClick", @selectedRowChanged
 				@$("tbody").append prsc.render().el
 				
+			# Create a variable to hold the variables needed for filtering inside the initComplete function scope
 			filterHandles = {
 				table: @$("table"),
 				configs: @configs,
@@ -300,10 +301,8 @@ class ThingSummaryTableController extends Backbone.View
 				oLanguage:
 					sSearch: "Filter results: " #rename summary table's search bar
 				initComplete: ->
-					filterHandles = filterHandles
 					@api().columns().every ->
 						column = this
-
 						# Default is to add a filter to each column
 						# So only skip filtering if filter is false
 						config = filterHandles.configs[column.index()]
