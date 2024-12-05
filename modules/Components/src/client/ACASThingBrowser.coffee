@@ -303,20 +303,22 @@ class ThingSummaryTableController extends Backbone.View
 					filterHandles = filterHandles
 					@api().columns().every ->
 						column = this
-						# Create select element
-						select = document.createElement('select')
 
 						# Default is to add a filter to each column
 						# So only skip filtering if filter is false
 						config = filterHandles.configs[column.index()]
 						if !config.filter? || config.filter
-							$(select).appendTo(filterHandles.table.find("thead tr:eq(1) th").eq(column.index()).empty() )
+							# Create select element in the filter row
+							select = document.createElement('select')
+							$(select).appendTo(filterHandles.table.find("tr.bv_colFilters th").eq(column.index()).empty())
 
+							# Add default option
 							select.add new Option('')
-							column.header().replaceChildren select
+
 							# Apply listener for user change in value
 							select.addEventListener 'change', ->
 								column.search(select.value, exact: true).draw()
+
 							# Add list of options
 							column.data().unique().sort().each (d, j) ->
 								select.add new Option(d)
