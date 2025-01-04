@@ -119,11 +119,11 @@ startApp = ->
 
 	# added for login support
 	app.use cookieParser()
-	sessionTimeOutMinutes = config.all.server.sessionTimeOutMinutes * 60 * 1000
 	console.log "Session timeout set to #{config.all.server.sessionTimeOutMinutes} minutes"
+	sessionTimeOutMilliseconds = config.all.server.sessionTimeOutMinutes * 60 * 1000
 	app.use session
 		secret: 'acas needs login'
-		cookie: maxAge: config.all.server.sessionTimeOutMinutes * 60 * 1000
+		cookie: maxAge: sessionTimeOutMilliseconds
 		resave: true
 		saveUninitialized: true,
 		store: sessionStore
