@@ -463,12 +463,12 @@ createTask = (options, type) ->
   renameFunction = options.renameFunction
   modifyFunction = options.modifyFunction
   shouldCoffeify = (file) ->
-    if type=="coffee"
+    if type=="coffee" && (file.path.indexOf("client/ExcelApp") > -1)
        return true
     else
       return false
   shouldCoffee = (file) ->
-    if type=="coffee"
+    if type=="coffee" && !(file.path.indexOf("client/ExcelApp") > -1)
        return true
     else
       return false
