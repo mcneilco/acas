@@ -30,7 +30,7 @@ jobs:
             echo "ACAS_REF=$(echo $INPUT_BRANCH_NAME)" >> $GITHUB_ENV
           fi 
       - name: Get the latest commit of ${{ env.ACAS_REF }} and apply tag ${{ github.event.inputs.tag-name }}
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.ACAS_WORKFLOWS_TOKEN }}
           script: |

@@ -198,13 +198,13 @@ div {
     height: 20px;
 }
 .MetaLotView div.floatingPanel.newSaltView .marvinWrapper {
-    height: 506px !important;
+    height: 526px !important;
 }
 .marvinWrapper iframe {
-    height: 500px !important;
+    height: 520px !important;
 }
 .marvinContainer iframe {
-    height: 500px !important;
+    height: 520px !important;
 }
 .MetaLotView div.floatingPanel.NewLotSuccessView {
     cursor: hand;
@@ -611,7 +611,7 @@ div {
 .RegistrationSearchView .corpNameInput{
     position: absolute;
     left: 20px;
-    top: 560px;
+    top: 580px;
     margin-left: 140px;
 }
 .RegistrationSearchView a.nextButton, .EditParentSearchView a.nextButton {
@@ -620,7 +620,7 @@ div {
     width: 90px;
     position: absolute;
     left: 680px;
-    top: 560px;
+    top: 580px;
 }
 .RegistrationSearchView a.cancelButton, .EditParentSearchView a.cancelEditButton {
     background: no-repeat url('../images/cancel.png');
@@ -628,7 +628,7 @@ div {
     width: 90px;
     position: absolute;
     left: 580px;
-    top: 560px;
+    top: 580px;
 }
 /****** REGISTRATION STEP 2 ******/
 .RegSearchResultsView .radioWrapper label, .EditParentSearchResultsView .radioWrapper label {
@@ -999,7 +999,7 @@ div {
     margin-right: 14px;
 }
 .LotForm_SaltFormView iframe {
-    height: 500px;
+    height: 520px;
 }
 
 .EnterIsoHeader {

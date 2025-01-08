@@ -22,22 +22,20 @@ http_client.HTTPConnection.debuglevel = 0
 import ldclient
 from ldclient.client import LDClient, LiveReport
 
-try:
-    import requests
-    from requests.packages.urllib3.exceptions import (InsecurePlatformWarning,
-                                                      InsecureRequestWarning,
-                                                      SNIMissingWarning)
-    requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
-    requests.packages.urllib3.disable_warnings(InsecurePlatformWarning)
-    requests.packages.urllib3.disable_warnings(SNIMissingWarning)
-except ImportError:
-    #ignore error, allow warnings
-    print('ignoring ImportError')
-
 ### Generic helper functions
 def eprint(*args, **kwargs):
     """Print to stderr"""
     print(*args, file=sys.stderr, **kwargs)
+
+try:
+    import requests
+    from requests.packages.urllib3.exceptions import (InsecurePlatformWarning,
+                                                      InsecureRequestWarning)
+    requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+    requests.packages.urllib3.disable_warnings(InsecurePlatformWarning)
+except ImportError as e:
+    #ignore error, allow warnings
+    eprint(f"Ignoring ImportError: {e}")
 
 def str2bool(v):
     if isinstance(v, bool):
@@ -79,7 +77,7 @@ def find_column_ids(
     resp_tree = ld_client.get_folder_tree_data(project_id, assay_name)
     if type(resp_tree) is list:
         resp_tree = [
-            item for item in resp_tree if item['name'] == 'Experimental Assays'
+            item for item in resp_tree if item['original_name'] == 'Experimental Assays'
         ]
         if resp_tree:
             resp_tree = resp_tree[0]
@@ -117,10 +115,10 @@ def find_assay(assay_tree, assays, assay_pattern=None, assay_name=None):
     :param assay_pattern (Optional): A regex pattern to match the column name(s)
     :param assay_name (Optional): The full column name to match exactly
     """
-    if 'name' in assay_tree:
-        if assay_pattern and assay_pattern.fullmatch(assay_tree['name']):
+    if 'original_name' in assay_tree:
+        if assay_pattern and assay_pattern.fullmatch(assay_tree['original_name']):
             assays.append(assay_tree)
-        elif assay_name and assay_name == assay_tree['name']:
+        elif assay_name and assay_name == assay_tree['original_name']:
             assays.append(assay_tree)
 
     for sub_tree in assay_tree['children']:
@@ -153,7 +151,7 @@ def extract_endpoints_dict(node, endpoints_dict):
     :return: The dictionary of column names to column IDs
     """
     if node['column_folder_node_type'] == 'LEAF':
-        endpoints_dict[node['name']] = node['addable_column_ids']
+        endpoints_dict[node['original_name']] = node['addable_column_ids']
     for child_node in node['children']:
         extract_endpoints_dict(child_node, endpoints_dict)
     return endpoints_dict
@@ -177,12 +175,23 @@ def wait_and_add_columns(ld_client,
     :param delay_sec: Seconds of delay been tries, defaults to 5
     """
     success = False
+
+    pattern_match_count = 0
+    for col_name in column_names:
+        # check if column name with prefix '{assay_name} (inlineFileValue_' exists
+        # taking this pattern from get_assay_names_to_full_col_names -> col_name
+        column_name_prefix = f'{assay_name} (inlineFileValue_'
+        if col_name.startswith(column_name_prefix):
+            pattern_match_count += 1
+    
     for attempt in range(max_retries):
         try:
             col_ids = find_column_ids(
                 ld_client, assay_name, project_id=project_id, column_names=column_names)
-            expected = len(column_names)
+            
             found = len(col_ids)
+            expected = len(column_names) - pattern_match_count
+
             if found < expected:
                 raise ValueError(
                     f'Some columns under {assay_name} not found. Found {found} of {expected}.')
@@ -274,6 +283,19 @@ def make_acas_live_report(api, compound_ids, assays_to_add, experiment_code, log
     eprint("Live Report ID is:" + str(lr_id))
     #get the list of assay addable columns
     if ldClientVersion >= 7.6:
+
+        # Adding new mapping column for inlineFileValue_ resultType
+        length = len(assays_to_add)
+        for index in range(length):
+            assay_to_add = assays_to_add[index]
+            # check if the resultType is prefixed with 'inlineFileValue_'
+            result_type_prefix = 'inlineFileValue_'
+            if assay_to_add['resultType'].startswith(result_type_prefix):
+                # copy of object to avoid modifying the original
+                assay_to_add_copy = assay_to_add.copy()
+                assay_to_add_copy['resultType'] = assay_to_add_copy['resultType'][len(result_type_prefix):]
+                assays_to_add.append(assay_to_add_copy)
+                
         # convert `assays_to_add` into a list of full column names
         assay_names_to_column_names = get_assay_names_to_full_col_names(assays_to_add)
         for assay_name, column_names in assay_names_to_column_names.items():
