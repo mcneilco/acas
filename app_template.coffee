@@ -15,7 +15,7 @@ startApp = ->
 	logger = require('morgan')
 	methodOverride = require('method-override')
 	session = require('express-session')
-	MemoryStore = require('memorystore')(session)
+	PostgresqlStore = require('connect-pg-simple')(session)
 	bodyParser = require('body-parser')
 	errorHandler = require('errorhandler')
 	cookieParser = require('cookie-parser')
@@ -78,7 +78,9 @@ startApp = ->
 			console.error("NOT USING SSO configs! config.all.server.security.saml.use is set true but CustomerSpecificServerFunction 'ssoLoginStrategy' is not defined.")
 
 	loginRoutes = require './routes/loginRoutes'
-	sessionStore = new MemoryStore();
+	sessionStore = new PostgresqlStore(
+		conString: "postgres://#{config.all.server.database.username}:#{config.all.server.database.password}@#{config.all.server.database.host}:#{config.all.server.database.port}/#{config.all.server.database.name}"
+	)
 	global.app = express()
 	app.set 'port', config.all.client.port
 	app.set 'listenHost', config.all.client.listenHost
@@ -117,12 +119,14 @@ startApp = ->
 
 	# added for login support
 	app.use cookieParser()
+	console.log "Session timeout set to #{config.all.server.sessionTimeOutMinutes} minutes"
+	sessionTimeOutMilliseconds = config.all.server.sessionTimeOutMinutes * 60 * 1000
 	app.use session
 		secret: 'acas needs login'
-		cookie: maxAge: 365 * 24 * 60 * 60 * 1000
+		cookie: maxAge: sessionTimeOutMilliseconds
 		resave: true
 		saveUninitialized: true,
-		store: sessionStore # MemoryStore is used automatically if no "store" field is set, but we need a handle on the sessionStore object for Socket.IO, so we'll manually create the store so we have a handle on the object
+		store: sessionStore
 
 	app.use flash()
 	app.use passport.initialize()
