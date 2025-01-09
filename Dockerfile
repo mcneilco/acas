@@ -1,4 +1,4 @@
-FROM quay.io/centos/centos:stream8
+FROM quay.io/centos/centos:stream9
 
 ARG BUILDTIME=1970-01-01T00:00:00Z
 ENV ACAS_CLIENT_ABOUT_ACAS_BUILDTIME=${BUILDTIME}
@@ -21,19 +21,18 @@ RUN \
   dnf clean all
 
 #Install python dependencies
-RUN   dnf install -y python36 python3-pip
-RUN   alternatives --set python /usr/bin/python3
-RUN   alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
-RUN		pip install argparse requests
-RUN   dnf install -y initscripts python3-psycopg2
+RUN   dnf install -y python311 python3.11-pip initscripts
+RUN   alternatives --install /usr/bin/python python /usr/bin/python3.11 1
+RUN   alternatives --install /usr/bin/pip pip /usr/bin/pip3.11 1
+RUN		pip install argparse requests psycopg2-binary
+COPY    --chown=runner:runner requirements.txt $ACAS_BASE/requirements.txt
+RUN    pip install -r $ACAS_BASE/requirements.txt
 
 # node
 ENV NPM_CONFIG_LOGLEVEL warn
-ENV NODE_VERSION 18.x
+ENV NODE_VERSION 20.x
 RUN curl -fsSL https://rpm.nodesource.com/setup_$NODE_VERSION | bash - && \
   dnf install -y nodejs
-# ACAS-762 temporary fix for npm multi-arch build issue. Remove when Node is updated to > 18.20.1 and fix is confirmed
-RUN npm install npm@10.5.1 -g
 
 # ACAS
 RUN	    useradd -u 1000 -ms /bin/bash runner

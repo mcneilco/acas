@@ -355,13 +355,17 @@ class PickListSelect2Controller extends PickListSelectController
 		if @options?.placeholder?
 			@placeholder = @options.placeholder
 
-		$(@el).select2
+		# Define the base options
+		select2Options = 
 			placeholder: @placeholder
 			data: mappedData
 			openOnEnter: false
 			allowClear: true
 			width: @width
-			ajax:
+
+		# Conditionally add the ajax property
+		if @collection.url?
+			select2Options.ajax = 
 				url: (params) =>
 					if !params.term?
 						params.term = ''
@@ -382,6 +386,9 @@ class PickListSelect2Controller extends PickListSelectController
 					results = for option in data
 						{id: option.code, text: option.name}
 					return {results: results}
+
+		# Initialize select2 with the options
+		$(@el).select2(select2Options)
 		
 		@setSelectedCode @selectedCode
 		@rendered = true

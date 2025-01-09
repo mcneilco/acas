@@ -153,7 +153,7 @@ cp -r <path/to/marvinjs-16.10.17-all> chemaxon/marvinjs
 
 ```
 cd ~/Documents/mcneilco/oss/acas
-docker-compose up -d
+docker compose up -d
 ```
 
 #### Login
@@ -175,25 +175,25 @@ This will create a user "bob" with password "secret".
 #### Viewing logs
 
 ```
-docker-compose logs --tail=20 -f <service>
+docker compose logs --tail=20 -f <service>
 ```
 
 e.g. for all containers
 
 ```
-docker-compose logs -f 
+docker compose logs -f 
 ```
 
 e.g. for only tomcat
 
 ```
-docker-compose logs --tail=20 -f tomcat
+docker compose logs --tail=20 -f tomcat
 ```
 
 Stop the web stack
 
 ```bash
-docker-compose down
+docker compose down
 ```
 
 #### Troubleshooting
@@ -201,7 +201,7 @@ docker-compose down
 * There is a known timing issue where tomcat may try to connect to the database before the database is accepting connections.  If this happens, try restarting tomcat.
 
 ```
-docker-compose restart tomcat
+docker compose restart tomcat
 ```
 
 ## Configuration
@@ -245,7 +245,7 @@ ACAS_SERVER_DATAFILES_RELATIVE__PATH=..
 ##### Override containing configs which will be replaced with other configs
 Replaces `client.service.cmpdReg.persistence.fullpath`
 
-docker-compose example which requires `$$` to esacpe the `$` override
+docker compose example which requires `$$` to esacpe the `$` override
 ```
 environment:
   - ACAS_CLIENT_SERVICE_CMPDREG_PERSISTENCE_FULLPATH=http://$${client.service.cmpdReg.persistence.host}:$${client.service.persistence.port}/$${client.service.cmpdReg.persistence.path}/

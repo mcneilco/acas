@@ -652,6 +652,11 @@ client.roles.crossProjectLoaderRole=ROLE_ACAS-CROSS-PROJECT-LOADER
 # e.g. server.projects.filterList = ["SomeProject"]
 server.projects.filterList = []
 
+# Grant access to additionalProjectGrants to users with access to projects
+# e.g. server.projects.additionalProjectGrants = {"PROJ-00000001": ["PROJ-00000002", "PROJ-00000003"]}
+# This would grant access to PROJ-00000002 and PROJ-00000003 to users with access to PROJ-00000001
+server.projects.additionalProjectGrants = {}
+
 # For whether protocols and experiments should have sequential user defined corpName labels
 client.entity.saveInitialsCorpName=false
 
@@ -763,6 +768,8 @@ client.cmpdreg.serverSettings.liveDesign.url=http://localhost:8010/ld-chem
 
 client.cmpdreg.serverSettings.maxStandardizationDisplay=20000
 
+# Sets cookie maxAge to 1440 minutes = 24 hours
+server.sessionTimeOutMinutes=1440
 
 # About configs
 client.about.acas.version=0.0.0

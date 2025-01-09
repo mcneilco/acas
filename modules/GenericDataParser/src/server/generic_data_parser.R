@@ -1705,12 +1705,25 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
   # Turn result values to numeric values
   longResults$"numericValue" <-  as.numeric(gsub(",","",gsub(matchExpression,"",longResults$"numericValue")))
   
+  # Get just the values that the user set to be Number data types to check for unparsable numbers
+  numericLongResults <- longResults[longResults$Class=="Number",]
+
+  # For any Number data types where the numericValue is NA and the stringValue is not NA, check if the stringValue contains numbers
+  # Warn the user that these values contain numerics but could not be parsed as Number and will be saved as Text
+  numbersToBeSavedAsString <- numericLongResults[which(is.na(numericLongResults$numericValue) & !is.na(numericLongResults$stringValue)),]
+  # Get the string values that contain numbers
+  stringValuesWithNumbers <- numbersToBeSavedAsString$"stringValue"[grepl("[0-9]",numbersToBeSavedAsString$"stringValue")]
+  # Warn the user if there are any
+  if(length(stringValuesWithNumbers) > 0) {
+    warnUser(paste0("The following Number values contain numerals but could not be parsed as Number so will be saved as Text: '", paste(unique(stringValuesWithNumbers), collapse = "', '"), "'. To avoid this warning either remove all numerals from the text, or use a correctly formatted Number. For example, 1, 1.2, 1.23e-10, >1, <1"))
+  }
+
   # Check the Number values are finite
-  numericValues <- longResults$"numericValue"[which(longResults$Class=="Number")]
+  numericValues <- numericLongResults$"numericValue"
   nonNaNumericValues <- na.omit(numericValues)
   infiniteNumbersIndexes <- which(!is.finite(nonNaNumericValues))
   if(length(infiniteNumbersIndexes) > 0) {
-    unParsedNonNaNumericValues <- longResults$UnparsedValue[which(longResults$Class=="Number")]
+    unParsedNonNaNumericValues <- numericLongResults$UnparsedValue[which(numericLongResults$Class=="Number")]
     naNumericValueIndexes <- which(is.na(numericValues))
     if(length(naNumericValueIndexes) > 0) {
       unParsedNonNaNumericValues[-naNumericValueIndexes]
@@ -2005,7 +2018,7 @@ getExperimentByNameCheck <- function(experimentName, protocol, configList, dupli
     protocolOfExperiment <- getProtocolByCodeName(experimentList[[1]]$protocol$codeName)
 
     
-    if (is.na(protocol) || protocolOfExperiment$id != protocol$id) {
+    if (identical(protocol, NA) || protocolOfExperiment$id != protocol$id) {
       if (duplicateNamesAllowed) {
         experiment <- NA
       } else {
@@ -3567,7 +3580,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   protocol <- NULL
   if (!useExisting) {
     protocol <- getProtocolByNameAndFormat(protocolName = validatedMetaData[,paste0(racas::applicationSettings$client.protocol.label," Name")][1], configList, inputFormat)
-    newProtocol <- is.na(protocol[[1]])
+    newProtocol <- identical(protocol[[1]], NA)
     if (!newProtocol) {
       validatedMetaData[,paste0(racas::applicationSettings$client.protocol.label," Name")][1] <- getPreferredProtocolName(protocol, validatedMetaData[,paste0(racas::applicationSettings$client.protocol.label," Name")][1])
     }
@@ -3660,19 +3673,14 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     })
   }
 
-  # Validate Experiment Columns against Protocol Endpoints
-  # only proceed if it associated with an existing protocol (the protocol is not new)
-  # also, only proceed if endpoint manager is enabled
-
-  # We create experimentPassedEndpointValidation holding variable in case it is a new protocol and it is not assigned
-  # (Since we can't check if an empty variable is true or false later)
-  experimentPassedEndpointValidation <- FALSE 
+  # Validate Experiment Columns against Protocol Endpoints when using existing protocol and endpoint manager is enabled
+  expProtocolEndpointValidation <- list(passed = FALSE, nonMatchingRows = data.frame()) 
 
   if (!newProtocol && racas::applicationSettings$client.protocol.endpointManager.enabled) {
     # extract the endpoint data from the protocol object to check against
     protocolEndpointData <- getProtocolEndpointData(protocol)
     # Check the experiment columns against the protocolEndpointData
-    experimentPassedEndpointValidation <- validateExperimentColumns(selColumnOrderInfo, protocolEndpointData, getProtocolStrictEndpointMatching(protocol), protocol$lsLabels[[1]]$labelText)
+    expProtocolEndpointValidation <- validateExperimentColumns(selColumnOrderInfo, protocolEndpointData, getProtocolStrictEndpointMatching(protocol), protocol$lsLabels[[1]]$labelText)
   }
   
   # If there are errors, do not allow an upload
@@ -3694,7 +3702,6 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     validatedCustomMetaDataStates <- NULL
     customExperimentMetaDataValues <- NULL
   }
-  
   columnOrderStates <- createColumnOrderStates(selColumnOrderInfo, errorEnv, recordedBy, lsTransaction)
  
   
@@ -3709,6 +3716,11 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
 
     if (newProtocol) {
       protocol <- createNewProtocol(metaData = validatedMetaData, lsTransaction, recordedBy, columnOrderStates)
+    } else {
+      # If the protocol has passed endpoint validation and we are not in a dry run, update the protocol with any new endpoints
+      if (expProtocolEndpointValidation$passed && nrow(expProtocolEndpointValidation$nonMatchingRows) > 0) {
+        protocol <- updateColumnOrderStates(protocol, "protocols", expProtocolEndpointValidation$nonMatchingRows, errorEnv, recordedBy, lsTransaction)
+      }
     }
   }
 
@@ -3728,7 +3740,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   }
   
   # Checks if we have a new experiment
-  newExperiment <- class(experiment[[1]])!="list" && is.na(experiment[[1]])
+  newExperiment <- class(experiment[[1]])!="list" && identical(experiment[[1]], NA)
   
   # If there are errors, do not allow an upload (yes, this is needed a second time)
   errorFree <- length(messenger()$errors)==0
@@ -4244,7 +4256,7 @@ getProtocolEndpointData <- function(protocol) {
 
   #go through the protocol data to wrangle the endpoint data into the dataframe
   for (lsState in protocol$lsStates) {
-    if (lsState[['lsKind']] == "data column order") {
+    if (lsState$ignored != TRUE && lsState$deleted != TRUE && lsState[['lsKind']] == "data column order") {
 
       #if the name/units/data type cant be found, submit a NA
       columnNameEntry = NA
@@ -4344,6 +4356,7 @@ validateExperimentColumns <- function(selColumnOrderInfo, protocolEndpointDataFr
   # Returns TRUE/FALSE (whether the experiment passed validation)
 
   experimentPassedValidation = TRUE
+  nonMatchingRows <- data.frame()
 
   for (experimentRowNum in seq(1, nrow(selColumnOrderInfo))) {
     experimentRowData <- selColumnOrderInfo[experimentRowNum,]
@@ -4393,6 +4406,7 @@ validateExperimentColumns <- function(selColumnOrderInfo, protocolEndpointDataFr
 
     if (experimentRowMatchesEndpoint == FALSE) {
       # If strict endpoint matching is enabled, we throw an error, otherwise we throw a warning
+      nonMatchingRows <- rbind(nonMatchingRows, experimentRowData)
       if (protocolStrictEndpointMatchingEnabled == TRUE) {
         addError(paste0("The result type '", experimentRowName, "' with data type '", experimentRowDataType, "' and units '", experimentRowUnits, "' is not one of the allowed result types for this ", racas::applicationSettings$client.protocol.label, ". Please revise your file or contact an ACAS administrator to update the allowed result types for this ", racas::applicationSettings$client.protocol.label, "."))
 
@@ -4403,10 +4417,9 @@ validateExperimentColumns <- function(selColumnOrderInfo, protocolEndpointDataFr
         warnUser(paste0("The result type '", experimentRowName, "' with data type '", experimentRowDataType, "' and units '", experimentRowUnits, "' is not configured for this ", racas::applicationSettings$client.protocol.label, ". If this is expected, you may proceed with the upload. Otherwise contact an ACAS Administrator to update the configured result types for this ", racas::applicationSettings$client.protocol.label ,"."))
       } 
     }
-      
   }
 
-  return(experimentPassedValidation)
+  return(list(passed = experimentPassedValidation, nonMatchingRows = nonMatchingRows))
 }
 
 getProtocolStrictEndpointMatching <- function(protocol) {
@@ -4628,6 +4641,9 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
 validateSubjectData <- function(subjectData, dryRun) {
   # Validates Subject Data
   # For now, just passes information to validateValue Kinds
+  if (is.null(subjectData)) {
+    return(NULL)
+  }
   uniqueDF <- unique(subjectData[, c("Class", "valueKind")])
   uniqueDF <- uniqueDF[!(uniqueDF$valueKind %in% c('flag cause', 'flag observation', 'flag status')), ]
   validateValueKinds(uniqueDF$valueKind, uniqueDF$Class, dryRun, reserved = NULL)
@@ -4769,4 +4785,31 @@ createColumnOrderStates <- function(exptDataColumns=selColumnOrderInfo, errorEnv
       }
     }
     return(experimentStates)
+}
+updateColumnOrderStates <- function(entity, acasCategory, columnOrderRows, errorEnv, recordedBy, lsTransaction){
+    # Check if the entity has a column order state, if it does, update it, if not, create it
+    # Returns the updated or created state
+    columnOrderStates <- getStatesByTypeAndKind(entity, "metadata_data column order")
+    
+    if(length(columnOrderStates) > 0) {
+      # If the column order state > 0 then find the highest "column order" and update the selected column order info
+      columnOrders <- sapply(columnOrderStates, getValuesByTypeAndKind, typeAndKind = "numericValue_column order")
+      maxOrder <- max(unlist(lapply(columnOrders, function(x) x$numericValue)))
+    } else {
+      maxOrder <- 0
+    }
+
+    # Apply the max order to the new column order info
+    columnOrderRows$order <- maxOrder + 1:nrow(columnOrderRows)
+
+    # Create the new column order states
+    newColumnOrderStates <- createColumnOrderStates(columnOrderRows, errorEnv, recordedBy, lsTransaction)
+
+    # Append the new column order states to the entity
+    entity$lsStates <- c(entity$lsStates, newColumnOrderStates)
+
+    # Update the entity
+    updatedEntity <- rjson::fromJSON(updateAcasEntity(entity, acasCategory))
+
+    return(updatedEntity)
 }
