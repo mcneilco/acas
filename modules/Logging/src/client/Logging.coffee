@@ -3,7 +3,8 @@ class Logging extends Backbone.Model
 class LoggingController1 extends Backbone.View
 	template: _.template($("#LoggingView").html())
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@errorOwnerName = 'LoggingController'
 		unless @model?
 			@model = new Logging()
@@ -16,7 +17,8 @@ class LoggingController1 extends Backbone.View
 		@
 
 class LoggingController extends Backbone.View
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		if AppLaunchParams.loggingToMongo
 			@loggingApp = new MongoLoggingController()
 		else
@@ -43,7 +45,8 @@ class FileLoggingController extends Backbone.View
 
 class MongoLoggingController extends Backbone.View
 	template: $("#app-view").html()
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@logs = new LogList()
 
 	render: =>
@@ -74,7 +77,8 @@ class LogEntry extends Backbone.Model
 		data: "na"
 		timestamp: "na"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@set "sourceApp", @attributes.meta.sourceApp
 		@set "action", @attributes.meta.action
 		@set "user", @attributes.meta.user
@@ -98,7 +102,8 @@ class LogList extends Backbone.Collection
 
 class LogListController extends Backbone.View
 	template: $("#log-list-view").html()
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@collection.bind "fetch", @render
 		@collection.bind "change", @render
 		@collection.bind "add", @render
@@ -123,8 +128,8 @@ class LogEntryController extends Backbone.View
 	template: $("#log-entry-item").html()
 	render: =>
 		@$el.empty()
-		template = _.template( @template, @model.toJSON())
-		@$el.html(template)
+		template = _.template(@template)
+		@$el.html(template(@model.toJSON()))
 		styleName = ""
 
 		if @model.get("level") is "warn"
@@ -140,7 +145,8 @@ class LogEntryController extends Backbone.View
 class LogFilterMenu extends Backbone.View
 	template: $("#log-filters-menu").html()
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@usersList = new UsersList()
 		@appSourcesList = new ApplicationSourcesList()
 
@@ -175,7 +181,8 @@ class UsersList extends Backbone.Collection
 
 class GraphLogStats extends Backbone.View
 	template: $("#log-stats-view").html()
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@collection.bind "fetch", @render
 		@collection.bind "change", @render
 		@collection.bind "add", @render

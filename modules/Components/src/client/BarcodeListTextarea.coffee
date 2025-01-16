@@ -10,7 +10,8 @@ class BarcodeListTextarea extends Backbone.View
     "paste .bv_barcodes": "updateModelDeferred"
   }
 
-  initialize: ->
+  initialize: (options) ->
+    @options = options
     @rawBarcodeText = ""
     @barcodeList = []
 

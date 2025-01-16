@@ -10,7 +10,8 @@ class BasicThingValidateAndSaveController extends Backbone.View
 		'click .bv_back' : 'back'
 		'click .bv_loadAnother' : 'loadAnother'
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		$(@el).html @template()
 		@notificationController = new LSNotificationController
 			el: @$('.bv_notifications')

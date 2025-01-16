@@ -6,7 +6,8 @@ class AnalysisGroup extends Backbone.Model
 		lsLabels: new LabelList()
 		lsStates: new StateList()
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@fixCompositeClasses()
 
 	fixCompositeClasses: =>

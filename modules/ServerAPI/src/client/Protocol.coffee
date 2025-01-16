@@ -1,9 +1,10 @@
 class Protocol extends BaseEntity
 	urlRoot: "/api/protocols"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@.set subclass: "protocol"
-		super()
+		super(options)
 
 	parse: (resp) =>
 		if resp == "not unique protocol name" or resp == '"not unique protocol name"'
@@ -210,7 +211,8 @@ class ProtocolBaseController extends BaseEntityController
 
 		)
 
-	initialize: =>
+	initialize: (options) =>
+		@options = options
 		if @model?
 			@completeInitialization()
 		else
@@ -773,6 +775,7 @@ class EndpointListController extends AbstractFormController
 	stateKind: "data column order"
 	
 	initialize: (options) =>
+		@options = options
 		@model = options.model
 
 		endpointStates = @model.get("lsStates").getStatesByTypeAndKind @stateType, @stateKind

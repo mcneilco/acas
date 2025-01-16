@@ -28,7 +28,8 @@ class SaltEditorController extends AbstractFormController
 		"click .bv_confirmClear": "handleConfirmClearClicked"
 
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		if @model?
 			@completeInitialization()
 		else

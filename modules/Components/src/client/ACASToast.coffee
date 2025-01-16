@@ -2,6 +2,7 @@ class ACASToast extends Backbone.View
     template: _.template($("#ACASToastView").html())
 
     initialize: (options) ->
+        @options = options
         # Support options are: type, title, text, duration, and position
         # Supported types are: success, error, warning, info
         @type = options.type

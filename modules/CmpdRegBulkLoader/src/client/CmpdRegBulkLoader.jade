@@ -5,16 +5,10 @@ block content
 
     script
         window.AppLaunchParams = !{JSON.stringify(AppLaunchParams)};
-        $(function() {
-            var currentWindowOnload = window.onload;
-            window.onload = function() {
-                if (currentWindowOnload) {
-                    currentWindowOnload();
-                }
-                window.serviceHostPrefix = "";
-                window.appController = new CmpdRegBulkLoaderAppController({
-                                el: $('#appContainer')
-                            });
-                window.appController.render();
-            };
+        window.addEventListener('load', function() {
+            window.servicesHostPrefix = "";
+            window.appController = new CmpdRegBulkLoaderAppController({
+                el: $('#appContainer'),
+            });
+            window.appController.render();
         });

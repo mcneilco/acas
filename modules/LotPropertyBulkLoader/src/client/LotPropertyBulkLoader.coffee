@@ -13,7 +13,8 @@ class LotPropertyBulkLoaderController extends AbstractParserFormController
 	events:
 		"change .bv_overwriteExisting": "handleOverwriteExistingCheckboxChanged"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@errorOwnerName = 'LotPropertyBulkLoaderController'
 		$(@el).html @template @model.attributes
 		@setBindings()
@@ -36,12 +37,13 @@ class LotPropertyBulkLoaderController extends AbstractParserFormController
 class LotPropertyBulkLoaderParserController extends BasicFileValidateAndSaveController
 	template: _.template($("#BasicFileValidateAndSaveViewLotPropertyBulkLoader").html())
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@fileProcessorURL = "/api/LotPropertyBulkLoader/fileProcessor"
 		@errorOwnerName = 'LotPropertyBulkLoaderController'
 		@allowedFileTypes = ['xls','xlsx', 'csv']
 		@loadReportFile = false
-		super()
+		super(options)
 		@$('.bv_moduleTitle').html('Lot Property Bulk Loader')
 
 		@lpblc = new LotPropertyBulkLoaderController

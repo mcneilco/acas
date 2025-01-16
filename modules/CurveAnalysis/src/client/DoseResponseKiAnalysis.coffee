@@ -9,7 +9,8 @@ class DoseResponseKiAnalysisParameters extends Backbone.Model
 		kd: new Backbone.Model
 		ligandConc: new Backbone.Model
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@fixCompositeClasses()
 
 	fixCompositeClasses: =>
@@ -72,7 +73,8 @@ class DoseResponseKiAnalysisParametersController extends AbstractFormController
 		"change .bv_kd_value": "attributeChanged"
 		"change .bv_ligandConc_value": "attributeChanged"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		$(@el).html @template()
 		@errorOwnerName = 'DoseResponseKiAnalysisParametersController'
 		@setBindings()

@@ -11,7 +11,8 @@ class BaseEntity extends Backbone.Model
 		lsLabels: new LabelList()
 		lsStates: new StateList()
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@.set @parse(@.attributes)
 
 	parse: (resp) =>
@@ -276,7 +277,8 @@ class BaseEntityController extends AbstractThingFormController #TODO: check to s
 		"click .bv_cancelClear": "handleCancelClearClicked"
 		"click .bv_confirmClear": "handleConfirmClearClicked"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		unless @model?
 			@model=new BaseEntity()
 		@listenTo @model, 'sync', @modelSyncCallback

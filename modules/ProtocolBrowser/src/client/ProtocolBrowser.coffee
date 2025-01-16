@@ -7,7 +7,8 @@ class ProtocolSimpleSearchController extends AbstractFormController
 	genericSearchUrl: "/api/protocols/genericSearch/"
 	codeNameSearchUrl: "/api/protocols/codename/"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@searchUrl = @genericSearchUrl
 
 	events:
@@ -81,7 +82,8 @@ class ProtocolRowSummaryController extends Backbone.View
 		$(@el).closest("table").find("tr").removeClass "info"
 		$(@el).addClass "info"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@template = _.template($('#ProtocolRowSummaryView').html())
 
 	render: =>
@@ -115,7 +117,8 @@ class ProtocolRowSummaryController extends Backbone.View
 		@
 
 class ProtocolSummaryTableController extends Backbone.View
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 
 	selectedRowChanged: (row) =>
 		@trigger "selectedRowUpdated", row
@@ -179,7 +182,8 @@ class ProtocolBrowserController extends Backbone.View
 		"click .bv_cancelDelete": "handleCancelDeleteClicked"
 		"click .bv_downloadSELFile": "downloadSELFile"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		template = _.template( $("#ProtocolBrowserView").html() );
 		$(@el).empty()
 		$(@el).html template

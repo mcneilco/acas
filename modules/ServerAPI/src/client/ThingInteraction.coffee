@@ -12,7 +12,8 @@ class ThingItx extends Backbone.Model
 	_lsTypeAndKind: ->
 		@get('lsType') + '_' + @get('lsKind')
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@set @parse(@attributes)
 
 	parse: (resp) =>

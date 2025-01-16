@@ -5,7 +5,8 @@ class StereoCategory extends AbstractCodeTable
 	codeType: 'cmpdRegAdmin'
 	codeKind: 'stereoCategory'
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		options = 
 			urlRoot: "/api/cmpdRegAdmin/stereoCategories"
 			deleteUrlRoot: "/api/cmpdRegAdmin/stereoCategories"

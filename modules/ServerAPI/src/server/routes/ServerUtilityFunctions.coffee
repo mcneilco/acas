@@ -556,7 +556,8 @@ class Label extends Backbone.Model
 		physicallyLabled: false
 		imageFile: null
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@.on "change:labelText": @handleLabelTextChanged
 
 	handleLabelTextChanged: =>
@@ -680,7 +681,8 @@ class Value extends Backbone.Model
 		recordedDate: null
 		recordedBy: ""
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@.on "change:value": @setValueType
 
 	setValueType: ->
@@ -707,7 +709,8 @@ class State extends Backbone.Model
 		recordedDate: null
 		recordedBy: ""
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		if @has('lsValues')
 			if @get('lsValues') not instanceof ValueList
 				values = _.filter @get('lsValues'), (value) ->
@@ -836,7 +839,8 @@ class Thing extends Backbone.Model
 		@set firstLsThings: new FirstLsThingItxList()
 		@set secondLsThings: new SecondLsThingItxList()
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@.set @parse(@.attributes)
 
 	parse: (resp) =>
@@ -1089,7 +1093,8 @@ class ThingItx extends Backbone.Model
 	_lsTypeAndKind: ->
 		@get('lsType') + '_' + @get('lsKind')
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@set @parse(@attributes)
 
 	parse: (resp) =>
@@ -1205,7 +1210,8 @@ class Container extends Backbone.Model
 #		@set firstLsThings: new FirstLsThingItxList()
 #		@set secondLsThings: new SecondLsThingItxList()
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@.set @parse(@.attributes)
 
 	parse: (resp) =>
@@ -1658,7 +1664,8 @@ class Experiment extends Backbone.Model
 #		@set firstLsThings: new FirstLsThingItxList()
 #		@set secondLsThings: new SecondLsThingItxList()
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@.set @parse(@.attributes)
 
 	parse: (resp) =>
@@ -2040,11 +2047,12 @@ class Experiment extends Backbone.Model
 class ContainerPlate extends Container
 	urlRoot: "/api/containers"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@.set
 			lsType: "container"
 			lsKind: "plate"
-		super()
+		super(options)
 
 	lsProperties:
 		defaultLabels: [
@@ -2099,11 +2107,12 @@ class ContainerPlate extends Container
 class DefinitionContainerPlate extends Container
 	urlRoot: "/api/containers"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@.set
 			lsType: "definition container"
 			lsKind: "plate"
-		super()
+		super(options)
 
 	lsProperties:
 		defaultLabels: [
@@ -2154,7 +2163,8 @@ class DefinitionContainerTube extends DefinitionContainerPlate
 class ContainerTube extends ContainerPlate
 	urlRoot: "/api/containers"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@.set
 			lsType: "container"
 			lsKind: "tube"
@@ -2226,7 +2236,8 @@ class AnalysisGroup extends Backbone.Model
 		lsLabels: new LabelList()
 		lsStates: new StateList()
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@fixCompositeClasses()
 
 	fixCompositeClasses: =>
@@ -2242,11 +2253,12 @@ class AnalysisGroupList extends Backbone.Collection
 
 
 class Vial extends Container
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@.set
 			lsType: "container"
 			lsKind: "tube"
-		super()
+		super(options)
 
 	lsProperties:
 		defaultLabels: [
@@ -2374,11 +2386,12 @@ class Vial extends Container
 class LocationContainer extends Container
 	urlRoot: "/api/containers"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@.set
 			lsType: "location"
 			lsKind: "default"
-		super()
+		super(options)
 
 	lsProperties:
 		defaultLabels: []

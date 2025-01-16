@@ -52,7 +52,7 @@ jobs:
       - name: Override ACAS_CLIENT_REF if branch is "master"
         run: |
           echo "ACAS_CLIENT_REF=main" >> $GITHUB_ENV
-        if: github.ref == 'refs/heads/master'
+        if: ${{env.ACAS_CLIENT_REF == 'master'}}
       - name: Checkout acasclient
         uses: actions/checkout@v4
         with:

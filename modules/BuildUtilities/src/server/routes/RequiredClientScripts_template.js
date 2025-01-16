@@ -1,21 +1,21 @@
 exports.requiredScripts = [
 	'/lib/jquery.min.js',
 	'/lib/json2.js',
-	'/lib/underscore.js',
-	'/lib/backbone-min.js',
-	'/lib/jqueryFileUpload/js/vendor/jquery.ui.widget.js',
-	'/lib/jqueryFileUpload/js/jquery.iframe-transport.js',
-	'/lib/bootstrap/bootstrap.min.js',
+	'/lib/underscore-umd.js',
+	'/lib/backbone-1.6.0/backbone-min.js',
+	'/lib/jqueryFileUpload-10.32.0/js/vendor/jquery.ui.widget.js',
+	'/lib/jqueryFileUpload-10.32.0/js/jquery.iframe-transport.js',
+	'/lib/bootstrap-3.4.1-dist/js/bootstrap.min.js',
 	'/lib/jqueryFileUpload/tmpl.min.js',
-	'/lib/jqueryFileUpload/js/jquery.iframe-transport.js',
-	'/lib/jqueryFileUpload/js/jquery.fileupload.js',
-	'/lib/jqueryFileUpload/js/jquery.fileupload-fp.js',
-	'/lib/jqueryFileUpload/js/jquery.fileupload-ui.js',
+	'/lib/jqueryFileUpload-10.32.0/js/jquery.iframe-transport.js',
+	'/lib/jqueryFileUpload-10.32.0/js/jquery.fileupload.js',
+	'/lib/jqueryFileUpload-10.32.0/js/jquery.fileupload-process.js',
+	'/lib/jqueryFileUpload-10.32.0/js/jquery.fileupload-ui.js',
 	'/lib/jqueryFileUpload/js/locale.js',
-	'/lib/jquery-ui-1.10.2.custom/js/jquery-ui-1.10.2.custom.min.js',
+	'/lib/jquery-ui-1.14.1.custom/jquery-ui.min.js',
 	'/lib/bootstrap/bootstrap-tooltip.js',
 	'/lib/bootstrap-tagsinput/bootstrap-tagsinput.min.js',
-	'/lib/dataTables/js/jquery.dataTables.js',
+	'/lib/dataTables/js/dataTables.dataTables.min.js',
 	'/lib/dataTables/js/lsThingSorting.js',
 	'/lib/bootstrap/bootstrap-datatable.js',
 	'/lib/bootstrap-combobox/js/bootstrap-combobox.js',
@@ -24,7 +24,7 @@ exports.requiredScripts = [
 	'/lib/moment.min.js',
 	'/lib/spin/js/spin.js',
 	'/lib/spin/js/jquery-spin.js',
-	'/lib/handsontable/dist/handsontable.full.js',
+	'/lib/handsontable/handsontable.full.min.js',
 	'/lib/select2-4.0.2/dist/js/select2.full.js',
 	// Add the following four lines to use MarvinJSChemicalStructureController
 	// '/CmpdReg/marvinjs/js/lib/rainbow/rainbow-custom.min.js',
@@ -33,8 +33,7 @@ exports.requiredScripts = [
 	// '/CmpdReg/client/custom/marvinStructureTemplate.js',
 	// The following line is for the Maestro sketcher
 	'/CmpdReg/client/schrodinger/maestrosketcher/maestrosketcherlauncher.js',
-	'/socket.io/socket.io.js',
-	'/lib/blockUI.js'
+	'/socket.io/socket.io.js'
 ];
 
 exports.applicationScripts = [

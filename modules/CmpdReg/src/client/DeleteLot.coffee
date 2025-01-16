@@ -8,7 +8,8 @@ class DeleteLotController extends Backbone.View
 		"click .bv_backToCreg": "handleBackToCregButtonClicked"
 
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		_.bindAll(@, 'handleCancelButtonClicked', 'handleDeleteButtonClicked', 'checkDependencies', 'dependencyCheckReturn', 'dependencyCheckError', 'deleteLotError', 'deleteLotReturn', 'downloadLot', 'handleBackToCregButtonClicked');
 		$(@el).empty()
 		$(@el).html @template()

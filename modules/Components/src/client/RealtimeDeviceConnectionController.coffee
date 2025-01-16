@@ -3,11 +3,12 @@ class DeviceCollection extends PickListList
 class DeviceModel extends Container
 	urlRoot: "/api/containers"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@.set
 			lsType: "instrument"
 			lsKind: "balance"
-		super()
+		super(options)
 
 	lsProperties:
 		defaultLabels: [
@@ -65,7 +66,8 @@ class RealtimeDeviceConnectionController extends Backbone.View
 		"click .bv_dismissDisconnectMessage": "handleDismissDisconnectMessage"
 		"click .bv_zeroBalance": "handleZeroBalanceClick"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@isConnectedToDevice = false
 		@isConnectingToDevice = false
 		@testMode = @options.testMode

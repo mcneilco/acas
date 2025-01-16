@@ -75,7 +75,8 @@ class BatchNameController extends Backbone.View
 		"click .bv_removeBatch": "clear"
 		"change .bv_comment": "updateComment"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@model.on "change", @render, @
 		@model.on "destroy", @remove, @
 
@@ -102,7 +103,8 @@ class BatchNameController extends Backbone.View
 		@model.clear()
 
 class BatchNameListController extends Backbone.View
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@collection.bind "add", @add, @
 
 	render: ->
@@ -120,7 +122,8 @@ class BatchListValidatorController extends Backbone.View
 	events:
 		"click .bv_addButton": "checkAndAddBatches"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		$(@el).html @template()
 		_.bindAll this, "ischeckAndAddBatchesComplete", "getPreferredIdReturn"
 		@batchNameListController = new BatchNameListController

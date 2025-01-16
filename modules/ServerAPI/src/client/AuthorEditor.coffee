@@ -100,7 +100,8 @@ class AuthorRoleController extends AbstractFormController
 		"change .bv_authorRole": "attributeChanged"
 		"click .bv_deleteAuthorRole": "clear"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@errorOwnerName = 'AuthorRoleController'
 		@setBindings()
 		@model.on "destroy", @remove, @
@@ -176,7 +177,8 @@ class AuthorRoleListController extends Backbone.View
 	events:
 		"click .bv_addAuthorRoleButton": "addNewAuthorRole"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		unless @collection?
 			@collection = new Backbone.Collection()
 			newModel = new @collection.model
@@ -297,7 +299,8 @@ class AuthorEditorController extends AbstractFormController
 
 
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		if @model?
 			@completeInitialization()
 		else

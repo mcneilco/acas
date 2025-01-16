@@ -1,6 +1,7 @@
 class AbstractParserFormController extends AbstractFormController
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		$(@el).html @template()
 		@setBindings()
 

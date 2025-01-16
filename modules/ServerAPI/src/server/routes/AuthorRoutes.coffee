@@ -314,7 +314,8 @@ class Author extends Backbone.Model
 #		@set firstLsThings: new FirstLsThingItxList()
 #		@set secondLsThings: new SecondLsThingItxList()
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@.set @parse(@.attributes)
 
 	parse: (resp) =>

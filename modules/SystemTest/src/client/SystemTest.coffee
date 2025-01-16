@@ -7,7 +7,8 @@ class SystemTestController extends Backbone.View
 		"click .bv_forceRunAll": "handleForceRunAll"
 		"click .bv_openTestResults": "handleOpenTestResults"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		$(@el).empty()
 		$(@el).html @template
 		@handleCheckAndDisplayLatestResults "Latest Test Results", (lastTest) =>

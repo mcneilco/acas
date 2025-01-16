@@ -1,7 +1,8 @@
 class StandardizationCurrentSettingsController extends Backbone.View
 	template: _.template($("#StandardizationCurrentSettingsView").html())
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		$(@el).empty()
 		$(@el).html @template()
 		@$('.bv_getCurrentSettingsError').hide()
@@ -76,7 +77,8 @@ class DownloadDryResultsController extends Backbone.View
 	events: ->
 		"click .bv_download": "handleDownloadClicked"
 		
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		$(@el).empty()
 		$(@el).html @template()
 			
@@ -124,7 +126,8 @@ class StandardizationHistoryRowSummaryController extends Backbone.View
 	tagName: 'tr'
 	className: 'dataTableRow'
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@template = _.template($('#StandardizationHistoryRowSummaryView').html())
 
 	render: =>
@@ -220,7 +223,8 @@ class StandardizationHistorySummaryTableController extends Backbone.View
 class StandardizationDryRunReportStatsController extends Backbone.View
 	template: _.template($("#StandardizationDryRunReportStatsView").html())
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		$(@el).empty()
 		$(@el).html @template()
 		@$('.bv_standardizationDryRunReportStatsTable').hide()
@@ -276,7 +280,8 @@ class StandardizationDryRunReportRowSummaryController extends Backbone.View
 	tagName: 'tr'
 	className: 'dataTableRow'
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@template = _.template($('#StandardizationDryRunReportRowSummaryView').html())
 
 	render: =>
@@ -447,7 +452,8 @@ class StandardizationDryRunReportSummaryController extends Backbone.View
 	events: ->
 		"click .bv_search": "handleSearchClicked"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@model = new StandardizationDryRunReportSearch()
 		@mostRecentHistory = @options.mostRecentHistory
 		@maxDisplayCount = window.conf.cmpdreg.serverSettings.maxStandardizationDisplay
@@ -511,7 +517,8 @@ class StandardizationDryRunReportSummaryTableController extends Backbone.View
 		"click .selectBox": "handleDropDownClicked"
 		"change .bv_dryRunReportColumnCheckBoxes ": "handleHideShowCheckboxChanged"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@expanded = false
 
 
@@ -540,7 +547,7 @@ class StandardizationDryRunReportSummaryTableController extends Backbone.View
 		@setColumnVisibility(iCol, visible)
 	
 	setColumnVisibility: (iCol, visible) ->
-		@oTable.fnSetColumnVis iCol, visible
+		@oTable.api().columns(iCol).visible(visible)
 
 	render: =>
 		@template = _.template($("#StandardizationDryRunReportSummaryTableView").html())
@@ -550,47 +557,6 @@ class StandardizationDryRunReportSummaryTableController extends Backbone.View
 				sdrrrsc = new StandardizationDryRunReportRowSummaryController
 					model: result
 				@$("tbody").append sdrrrsc.render().el
-
-		$.fn.dataTableExt.oApi.fnGetColumnData = (oSettings, iColumn, bUnique, bFiltered, bIgnoreEmpty) ->
-			# check that we have a column id
-			if typeof iColumn == 'undefined'
-				return new Array
-			# by default we only want unique data
-			if typeof bUnique == 'undefined'
-				bUnique = true
-			# by default we do want to only look at filtered data
-			if typeof bFiltered == 'undefined'
-				bFiltered = true
-			# by default we do not want to include empty values
-			if typeof bIgnoreEmpty == 'undefined'
-				bIgnoreEmpty = true
-			# list of rows which we're going to loop through
-			aiRows = undefined
-			# use only filtered rows
-			if bFiltered == true
-				aiRows = oSettings.aiDisplay
-			else
-				aiRows = oSettings.aiDisplayMaster
-			# all row numbers
-			# set up data array   
-			asResultData = new Array
-			i = 0
-			c = aiRows.length
-			while i < c
-				iRow = aiRows[i]
-				aData = @fnGetData(iRow)
-				sValue = aData[iColumn]
-				# ignore empty values?
-				if bIgnoreEmpty == true and sValue.length == 0
-					i++
-					continue
-				else if bUnique == true and jQuery.inArray(sValue, asResultData) > -1
-					i++
-					continue
-				else
-					asResultData.push sValue
-				i++
-			asResultData.sort()
 
 		fnCreateSelect = (aData) ->
 			r = '<select><option value=""></option>'
@@ -602,6 +568,8 @@ class StandardizationDryRunReportSummaryTableController extends Backbone.View
 				i++
 			r + '</select>'
 
+		# Set table scope as it's not available in the initComplete function
+		table = @$(".bv_standardizationDryRunReportSummaryTable")
 		oTable = @$(".bv_standardizationDryRunReportSummaryTable").dataTable
 				bAutoWidth: false
 				bLengthChange: true
@@ -617,22 +585,35 @@ class StandardizationDryRunReportSummaryTableController extends Backbone.View
 					data[3] = "<img src='/cmpdreg/structureimage/originallydrawnas/"+data[0]+"?hSize=300&wSize=300'>"
 				oLanguage:
 					sSearch: "Filter results: " #rename summary table's search bar
+				initComplete: ->
+					filters = filters = ['Corporate ID', 'Standardization Status', 'Standardization Comment', 'Registration Status', 'Registration Comment', 'Structure Change', 'Display Change', 'New Duplicates', 'Existing Duplicates', 'Delta Mol. Weight', 'New Mol. Weight', 'Old Mol. Weight', 'As Drawn Display Change']
+					@api().columns().every ->
+						column = this
+						#Empty the filter html
+						tr_filter = table.find("tr.bv_colFilters th").eq(column.index())	
+						if column.title() in filters
+							# Create select element
+							select = document.createElement('select')
 
-		filters = ['Corporate ID', 'Standardization Status', 'Standardization Comment', 'Registration Status', 'Registration Comment', 'Structure Change', 'Display Change', 'New Duplicates', 'Existing Duplicates', 'Delta Mol. Weight', 'New Mol. Weight', 'Old Mol. Weight', 'As Drawn Display Change']
-		@.$('thead tr.bv_colFilters th').each (i) ->
-			if @innerHTML in filters
-				@innerHTML = fnCreateSelect(oTable.fnGetColumnData(i))
-				$('select', this).change ->
-					if $(this).val() != ""
-						# Filter based on value
-						oTable.fnFilter "^"+$(this).val()+"$", i, true
-					else
-						# If Filter is not set then remove the filter
-						oTable.fnFilter('', i)
+							# Default is to add a filter to each column
+							# So only skip filtering if filter is false
+							$(select).appendTo(tr_filter.empty())
+							
+							# Add default option
+							select.add new Option('')
+
+							# Apply listener for user change in value
+							select.addEventListener 'change', ->
+								column.search(select.value, exact: true).draw()
+							# Add list of options
+							column.data().unique().sort().each (d, j) ->
+								select.add new Option(d)
+								return
+							return
+						else
+							# Empty the column header
+							tr_filter.empty()
 					return
-				return
-			else
-				@innerHTML = ""
 
 		@oTable = oTable
 		@updateColumnVisibility()
@@ -648,7 +629,8 @@ class StandardizationController extends Backbone.View
 		"click .bv_executeStandardization": "handleExecuteStandardizationClicked"
 		"click .bv_standardizationCompleteModalCloseBtn": "handleStandardizationCompleteModalCloseClicked"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@openStandardizationControllerSocket()
 		$(@el).empty()
 		$(@el).html @template()

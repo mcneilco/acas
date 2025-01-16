@@ -80,11 +80,12 @@ class Project extends Thing
 	urlRoot: "/api/things/project/project"
 	className: "Project"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@.set
 			lsType: "project"
 			lsKind: "project"
-		super()
+		super(options)
 
 
 	lsProperties:
@@ -257,7 +258,8 @@ class ProjectLeaderController extends AbstractFormController
 		"change .bv_scientist": "attributeChanged"
 		"click .bv_deleteProjectLeader": "clear"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@errorOwnerName = 'ProjectLeaderController'
 		@setBindings()
 		@model.on "destroy", @remove, @
@@ -307,7 +309,8 @@ class ProjectLeaderListController extends Backbone.View
 	events:
 		"click .bv_addProjectLeaderButton": "addNewProjectLeader"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		unless @collection?
 			@collection = new ProjectLeaderList()
 			newModel = new ProjectLeader
@@ -378,7 +381,8 @@ class ProjectUserController extends AbstractFormController
 		"change .bv_user": "attributeChanged"
 		"click .bv_deleteProjectUser": "clear"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@errorOwnerName = 'ProjectUserController'
 		@setBindings()
 		@model.on "destroy", @remove, @
@@ -428,7 +432,8 @@ class ProjectUserListController extends Backbone.View
 	events:
 		"click .bv_addProjectUserButton": "addNewProjectUser"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		unless @collection?
 			@collection = new ProjectUserList()
 			newModel = new ProjectUser
@@ -499,7 +504,8 @@ class ProjectAdminController extends AbstractFormController
 		"change .bv_admin": "attributeChanged"
 		"click .bv_deleteProjectAdmin": "clear"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@errorOwnerName = 'ProjectAdminController'
 		@setBindings()
 		@model.on "destroy", @remove, @
@@ -549,7 +555,8 @@ class ProjectAdminListController extends Backbone.View
 	events:
 		"click .bv_addProjectAdminButton": "addNewProjectAdmin"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		unless @collection?
 			@collection = new ProjectAdminList()
 			newModel = new ProjectAdmin
@@ -632,7 +639,8 @@ class ProjectController extends AbstractFormController
 		"click .bv_cancelClear": "handleCancelClearClicked"
 		"click .bv_confirmClear": "handleConfirmClearClicked"		
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		if @model?
 			@completeInitialization()
 		else

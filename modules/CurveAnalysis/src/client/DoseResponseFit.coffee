@@ -1,11 +1,12 @@
 class DoseResponseDataParserController extends BasicFileValidateAndSaveController
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@loadReportFile = true
 		@fileProcessorURL = "/api/genericDataParser"
 		@errorOwnerName = 'DoseResponseDataParserController'
 		@additionalData = requireDoseResponse: true
-		super()
+		super(options)
 		@$('.bv_moduleTitle').html('Load Efficacy Data for Dose Response Fit')
 
 	handleSaveReturnSuccess: (json) =>
@@ -21,7 +22,8 @@ class DoseResponseFitController extends Backbone.View
 		"click .bv_fitModelButton": "launchFit"
 		"change .bv_modelFitType": "handleModelFitTypeChanged"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		if !@options.experimentCode?
 			alert("DoseResponseFitController must be initialized with an experimentCode")
 

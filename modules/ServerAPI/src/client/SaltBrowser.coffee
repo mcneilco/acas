@@ -74,7 +74,8 @@ class SaltRowSummaryController extends Backbone.View
 		$(@el).closest("table").find("tr").removeClass "info"
 		$(@el).addClass "info"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@template = _.template($('#SaltRowSummaryView').html())
 
 	render: =>
@@ -88,7 +89,8 @@ class SaltRowSummaryController extends Backbone.View
 		@
 
 class SaltSummaryTableController extends Backbone.View
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 
 	selectedRowChanged: (row) =>
 		@trigger "selectedRowUpdated", row
@@ -139,7 +141,8 @@ class SaltBrowserController extends Backbone.View
 		"click .bv_confirmDeleteSaltButton": "handleConfirmDeleteSaltClicked"
 		"click .bv_cancelDelete": "handleCancelDeleteClicked"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		template = _.template($("#SaltBrowserView").html())
 		$(@el).empty()
 		$(@el).html template
