@@ -29,6 +29,12 @@ jobs:
           else
             echo "ACAS_REF=$(echo $INPUT_BRANCH_NAME)" >> $GITHUB_ENV
           fi 
+      - name: Modify master to main if this is acasclient
+        if: ${{ matrix.acas-repo == 'acasclient' }}
+        run: |
+          if [ "${{ env.ACAS_REF }}" == "master" ]; then
+            echo "ACAS_REF=main" >> $GITHUB_ENV
+          fi
       - name: Get the latest commit of ${{ env.ACAS_REF }} and apply tag ${{ github.event.inputs.tag-name }}
         uses: actions/github-script@v7
         with:
