@@ -83,7 +83,8 @@ class ACASLabelSequenceRoleController extends AbstractFormController
 		"change .bv_role": "updateModel"
 		"click .bv_deleteLabelSequenceRole": "clear"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@errorOwnerName = 'ACASLabelSequenceRoleController'
 		@setBindings()
 		@model.on "destroy", @remove, @
@@ -133,7 +134,8 @@ class ACASLabelSequenceRoleListController extends Backbone.View
 	events:
 		"click .bv_addLabelSequenceRoleButton": "addNewLabelSequenceRole"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		unless @collection?
 			@collection = new ACASLabelSequenceRoleList()
 			newModel = new ACASLabelSequenceRole

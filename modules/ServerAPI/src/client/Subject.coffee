@@ -9,7 +9,8 @@ class Subject extends Backbone.Model
 		@set recordedDate: new Date().getTime()
 		@set lsStates: new StateList()
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@.set @parse(@.attributes)
 
 	parse: (resp) =>

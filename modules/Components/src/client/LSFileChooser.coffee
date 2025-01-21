@@ -4,7 +4,8 @@ class LSFileChooserModel extends Backbone.Model
 		fileNameOnServer: ''
 		fileType: ''
 		
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		_.bindAll(@,
 			'isDirty')
 
@@ -136,8 +137,8 @@ class LSFileChooserController extends Backbone.View
 	render: ->
 		self = @
 		$(@el).html ""
-		template = _.template($("#LSFileChooserView").html(), {uploadUrl: @uploadUrl, paramname: @paramname, dragOverMessage: @dragOverMessage, dropZoneClassId: @dropZoneClassId, allowMultipleFiles: @allowMultipleFiles})
-		$(@el).html template
+		template = _.template($("#LSFileChooserView").html())
+		$(@el).html template({uploadUrl: @uploadUrl, paramname: @paramname, dragOverMessage: @dragOverMessage, dropZoneClassId: @dropZoneClassId, allowMultipleFiles: @allowMultipleFiles})
 		
 		@$('.bv_fileDropField').html(@defaultMessage)
 		@$('.fileupload').fileupload()

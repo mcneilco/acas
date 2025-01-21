@@ -4,7 +4,8 @@ class AdminPanel extends Backbone.Model
 class AdminPanelController extends AbstractFormController
 	template: _.template($("#AdminPanelView").html())
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@errorOwnerName = 'AdminPanelController'
 		unless @model?
 			@model = new AdminPanel()

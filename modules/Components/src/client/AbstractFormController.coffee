@@ -1,6 +1,7 @@
 class AbstractFormController extends Backbone.View
 # Your initialization function needs at least these lines:
-# 	initialize: ->
+# 	initialize: (options) ->
+# 		@options = options
 # 		@errorOwnerName = 'MyControllerName'
 #   	@setBindings()
 

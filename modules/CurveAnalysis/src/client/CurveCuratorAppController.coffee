@@ -14,7 +14,8 @@ class CurveCuratorAppController extends Backbone.View
 
 	template: _.template($('#CurveCuratorAppView').html())
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 
 		$(@el).html @template()
 		#		@user = this.options.user;

@@ -133,7 +133,8 @@ class DoseResponseAnalysisParametersController extends AbstractFormController
 		"change .bv_theoreticalMax": "attributeChanged"
 		"change .bv_baseline": "attributeChanged"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		$(@el).html @template()
 		@errorOwnerName = 'DoseResponseAnalysisParametersController'
 		@setBindings()
@@ -235,7 +236,8 @@ class ModelFitTypeController extends Backbone.View
 		"change .bv_fitTransformation": "handleFitTransformationChanged"
 		"change .bv_transformationUnits": "handleTransformationUnitsChanged"
 
-	initialize: =>
+	initialize: (options) =>
+		@options = options
 		$(@el).empty()
 		$(@el).html @template()
 		#get tranformation fit options
@@ -433,7 +435,8 @@ class DoseResponseAnalysisController extends Backbone.View
 	events:
 		"click .bv_fitModelButton": "launchFit"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@model.on "sync", @handleExperimentSaved
 		@model.getStatus().on 'change', @handleStatusChanged
 		@parameterController = null

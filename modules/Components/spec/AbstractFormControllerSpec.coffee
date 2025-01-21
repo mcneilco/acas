@@ -8,7 +8,8 @@ describe 'AbstractFormController Behavior Testing', ->
 	describe 'when instantiated', ->
 		beforeEach ->
 			class @TestAbstractFormController extends AbstractFormController
-				initialize: ->
+				initialize: (options) ->
+					@options = options
 					@errorOwnerName = 'TestAbstractFormController'
 					@setBindings()
 

@@ -15,6 +15,7 @@ class AbstractCodeTable extends Backbone.Model
 		return str.replace(/\w\S*/g, (txt) -> txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase())
 	
 	initialize: (options) ->
+		@options = options
 		codeType = @codeType
 		codeKind = @codeKind
 		if options?.urlRoot?

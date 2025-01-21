@@ -88,7 +88,8 @@ class CodeTablesAdminRowSummaryController extends Backbone.View
 		$(@el).closest("table").find("tr").removeClass "info"
 		$(@el).addClass "info"
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		@template = _.template($('#CodeTablesAdminRowSummaryView').html())
 		if @options.showIgnore?
 			@showIgnore = @options.showIgnore
@@ -172,7 +173,8 @@ class AbstractCodeTablesAdminBrowserController extends Backbone.View
 	camelCase: (str) ->
 		return str.replace(/\w\S*/g, (txt) -> txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase())
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		# New up a model to get its default attributes
 		model = new window[@entityClass]()
 		# Extract default attributes

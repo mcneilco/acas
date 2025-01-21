@@ -12,6 +12,7 @@ class ThingSimpleSearchController extends AbstractFormController
 		'click .bv_doSearch': 'handleDoSearchClicked'
 
 	initialize: (options) ->
+		@options = options
 		@configs = options.configs
 
 	render: =>
@@ -184,6 +185,7 @@ class ACASThingBrowserCellController extends Backbone.View
 	tagName: 'td'
 
 	initialize: (options) ->
+		@options = options
 		@configs = options.configs
 
 	render: =>
@@ -239,6 +241,7 @@ class ACASThingBrowserRowSummaryController extends Backbone.View
 		$(@el).addClass "info"
 
 	initialize: (options)->
+		@options = options
 		@configs = options.configs
 
 	render: =>
@@ -253,6 +256,7 @@ class ACASThingBrowserRowSummaryController extends Backbone.View
 
 class ThingSummaryTableController extends Backbone.View
 	initialize: (options)->
+		@options = options
 		@configs = options.configs
 		@columnFilters = options.columnFilters
 		@maxResults = options.maxResults
@@ -286,76 +290,40 @@ class ThingSummaryTableController extends Backbone.View
 					configs: @configs
 				prsc.on "gotClick", @selectedRowChanged
 				@$("tbody").append prsc.render().el
-
-			$.fn.dataTableExt.oApi.fnGetColumnData = (oSettings, iColumn, bUnique, bFiltered, bIgnoreEmpty) ->
-				# check that we have a column id
-				if typeof iColumn == 'undefined'
-					return new Array
-				# by default we only want unique data
-				if typeof bUnique == 'undefined'
-					bUnique = true
-				# by default we do want to only look at filtered data
-				if typeof bFiltered == 'undefined'
-					bFiltered = true
-				# by default we do not want to include empty values
-				if typeof bIgnoreEmpty == 'undefined'
-					bIgnoreEmpty = true
-				# list of rows which we're going to loop through
-				aiRows = undefined
-				# use only filtered rows
-				if bFiltered == true
-					aiRows = oSettings.aiDisplay
-				else
-					aiRows = oSettings.aiDisplayMaster
-				# all row numbers
-				# set up data array   
-				asResultData = new Array
-				i = 0
-				c = aiRows.length
-				while i < c
-					iRow = aiRows[i]
-					aData = @fnGetData(iRow)
-					sValue = aData[iColumn]
-					# ignore empty values?
-					if bIgnoreEmpty == true and sValue.length == 0
-						i++
-						continue
-					else if bUnique == true and jQuery.inArray(sValue, asResultData) > -1
-						i++
-						continue
-					else
-						asResultData.push sValue
-					i++
-
-				# Sort lexicographically before returning
-				asResultData.sort (a, b)->
-					return a.toLowerCase().localeCompare(b.toLowerCase());
 				
-			
-			fnCreateSelect = (aData) ->
-				r = '<select><option value=""></option>'
-				i = undefined
-				iLen = aData.length
-				i = 0
-				while i < iLen
-					r += '<option value="' + aData[i] + '">' + aData[i] + '</option>'
-					i++
-				r + '</select>'
-				
-			oTable = @$("table").dataTable oLanguage:
-				sSearch: "Filter results: " #rename summary table's search bar
+			# Create a variable to hold the variables needed for filtering inside the initComplete function scope
+			filterHandles = {
+				table: @$("table"),
+				configs: @configs,
+				columnFilters: @columnFilters
+			}
+			oTable = @$("table").dataTable 
+				oLanguage:
+					sSearch: "Filter results: " #rename summary table's search bar
+				initComplete: ->
+					@api().columns().every ->
+						column = this
+						# Default is to add a filter to each column
+						# So only skip filtering if filter is false
+						config = filterHandles.configs[column.index()]
+						if !config.filter? || config.filter
+							# Create select element in the filter row
+							select = document.createElement('select')
+							$(select).appendTo(filterHandles.table.find("tr.bv_colFilters th").eq(column.index()).empty())
 
-			if @columnFilters? && @columnFilters
-				configs = @configs
-				this.$('thead tr.bv_colFilters th').each (i) ->
-					# Default is to add a filter to each column
-					# So only skip filtering if filter is false
-					if !configs[i].filter? || configs[i].filter
-						@innerHTML = fnCreateSelect(oTable.fnGetColumnData(i))
-						$('select', this).change ->
-							oTable.fnFilter "^"+$(this).val()+"$", i, true
-							return
+							# Add default option
+							select.add new Option('')
+
+							# Apply listener for user change in value
+							select.addEventListener 'change', ->
+								column.search(select.value, exact: true).draw()
+
+							# Add list of options
+							column.data().unique().sort().each (d, j) ->
+								select.add new Option(d)
+								return
 						return
+					return
 
 		@
 

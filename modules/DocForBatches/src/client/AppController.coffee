@@ -18,7 +18,8 @@ class AppController extends Backbone.View
 
 	template: _.template($('#DocForBatchesAppControllerView').html())
 
-	initialize: ->
+	initialize: (options) ->
+		@options = options
 		$(@el).html @template()
 #		@user = this.options.user;
 		@render();
