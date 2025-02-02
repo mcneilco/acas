@@ -768,6 +768,8 @@ client.cmpdreg.serverSettings.liveDesign.url=http://localhost:8010/ld-chem
 
 client.cmpdreg.serverSettings.maxStandardizationDisplay=20000
 
+# Sets cookie maxAge to 1440 minutes = 24 hours
+server.sessionTimeOutMinutes=1440
 
 # About configs
 client.about.acas.version=0.0.0
