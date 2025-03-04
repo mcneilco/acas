@@ -229,8 +229,20 @@ class AssignedPropertyController extends AbstractFormController
 	events:
 		"change .bv_dbProperty": "handleDbPropertyChanged"
 		"keyup .bv_defaultVal": "handleDefaultValChanged"
+		"change .bv_defaultVal": "handleDefaultValChanged"
+		"change .bv_defaultValSelect": "handleDefaultValChanged"
 		"click .bv_deleteProperty": "clear"
 
+	dbPropertyUrls:
+		"Lot Chemist": "scientists"
+		"Parent Stereo Category": "stereoCategories"
+		"Project": "projects"
+		"Lot Physical State": "physicalStates"
+		"Lot Purity Measured By": "purityMeasuredBys"
+		"Lot Purity Operator": "operators"
+		"Lot Solution Amount Units": "solutionUnits"
+		"Units": "units"
+	
 	initialize: (options) ->
 		@options = options
 		unless @model?
@@ -248,10 +260,13 @@ class AssignedPropertyController extends AbstractFormController
 		$(@el).html @template(@model.attributes)
 		@$('.bv_sdfProperty').html(@model.get('sdfProperty'))
 		@setupDbPropertiesSelect()
-		@$('.bv_defaultVal').val @model.get('defaultVal')
+		@setupInput()
+		if @dbPropertyUrl?
+			@selectListController.setSelectedCode @model.get('defaultVal')
+		else
+			@$('.bv_defaultVal').val @model.get('defaultVal')
 		if @model.get('dbProperty') is "none"
 			@$('.bv_defaultVal').attr 'disabled', 'disabled'
-		@showDatePicker()
 
 		@
 
@@ -298,18 +313,51 @@ class AssignedPropertyController extends AbstractFormController
 		else
 			@model.set required: false
 		@model.set dbProperty: dbProp
-		@showDatePicker()
+		@setupInput()
 
 		@trigger 'assignedDbPropChanged'
 
 	handleDefaultValChanged: ->
-		@model.set defaultVal: UtilityFunctions::getTrimmedInput @$('.bv_defaultVal')
+		if @dbPropertyUrl?
+			@model.set defaultVal: @selectListController.getSelectedCode()
+		else
+			@model.set defaultVal: UtilityFunctions::getTrimmedInput @$('.bv_defaultVal')
 
 	clear: =>
 		@model.destroy()
 		@trigger 'modelRemoved'
 	
-	showDatePicker: =>
+	setupSelect: ->
+		@selectList = new PickListList()
+		@selectList.url = "/cmpdreg/" + @dbPropertyUrl
+		@selectListController = new PickListSelect2Controller
+			el: @$('.bv_defaultValSelect')
+			collection: @selectList
+			insertFirstOption: new PickList
+				code: ""
+				name: "Select"
+			selectedCode: ""
+	
+	setupInput: =>
+		# Alter input depending on dbProperty
+		dbProp = @model.get('dbProperty')
+		if @dbPropertyUrls[dbProp]? || dbProp.includes("Units")
+			@dbPropertyUrl = @dbPropertyUrls[@model.get('dbProperty')]
+			if !@dbPropertyUrl?
+				@dbPropertyUrl = @dbPropertyUrls["Units"]
+			@setupSelect()
+			@$('.bv_defaultValSelect').show()
+			@$('.bv_defaultVal').hide()
+		else
+			@dbPropertyUrl = null
+			@$('.bv_defaultValSelect').hide()
+			if @selectListController?
+				@$('.bv_defaultValSelect').select2('destroy')
+				@selectListController.remove()
+				@selectListController.unbind()
+				@selectListController = null
+			@$('.bv_defaultVal').show()
+		# Show date picker if dbProperty is a date
 		if @model.get('dbProperty').includes("Lot Synthesis Date")
 			@$('.bv_defaultVal').datepicker();
 			@$('.bv_defaultVal').datepicker( "option", "dateFormat", "yy-mm-dd" );
