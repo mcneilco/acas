@@ -251,6 +251,7 @@ class AssignedPropertyController extends AbstractFormController
 		@$('.bv_defaultVal').val @model.get('defaultVal')
 		if @model.get('dbProperty') is "none"
 			@$('.bv_defaultVal').attr 'disabled', 'disabled'
+		@showDatePicker()
 
 		@
 
@@ -297,6 +298,7 @@ class AssignedPropertyController extends AbstractFormController
 		else
 			@model.set required: false
 		@model.set dbProperty: dbProp
+		@showDatePicker()
 
 		@trigger 'assignedDbPropChanged'
 
@@ -306,6 +308,15 @@ class AssignedPropertyController extends AbstractFormController
 	clear: =>
 		@model.destroy()
 		@trigger 'modelRemoved'
+	
+	showDatePicker: =>
+		if @model.get('dbProperty').includes("Lot Synthesis Date")
+			@$('.bv_defaultVal').datepicker();
+			@$('.bv_defaultVal').datepicker( "option", "dateFormat", "yy-mm-dd" );
+			@$('.bv_defaultVal').attr('placeholder', 'YYYY-MM-DD')
+		else
+			@$('.bv_defaultVal').datepicker('destroy');
+			@$('.bv_defaultVal').attr('placeholder', '')
 
 class AssignedPropertiesListController extends AbstractFormController
 	template: _.template($("#AssignedPropertiesListView").html())
