@@ -125,7 +125,6 @@ class SaltBrowserController extends Backbone.View
 		"click .bv_cancelCreate": "handleCancelCreateClicked"
 		"click .bv_okayCreateButton":"handleOkayCreateClicked"
 		"click .bv_backConfirmCreate":"handleBackConfirmCreateClicked"
-		"click .bv_cancelConfirmCreate":"handleCancelConfirmCreateClicked"
 		"click .bv_saveSaltButton":"handleSaveSaltButtonClicked"
 		# Edit Salt Button Events
 		"click .bv_editSalt": "handleEditSaltClicked"
@@ -351,11 +350,6 @@ class SaltBrowserController extends Backbone.View
 		@$('.bv_confirmCreateSalt').hide()
 		@$('.bv_createSalt').show()
 		@$('.bv_createNotifications').hide()
-
-	handleCancelConfirmCreateClicked: => 
-		@$('.bv_confirmCreateSalt').hide()
-		@$('.bv_saltBrowserCoreContainer').show()
-		@$('bv_saltBrowserCore').show()
 
 	# Non Dry Run Method to Register Salt Reviewed by User
 	handleSaveSaltButtonClicked: =>
