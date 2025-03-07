@@ -166,7 +166,28 @@ class SaltBrowserController extends Backbone.View
 			el: @$('.bv_fieldNotifications')
 			showPreview: false
 		@$('.bv_fieldNotifications').hide()
+		@checkAllowCmpdRegistration()
 
+	checkAllowCmpdRegistration: ->
+		$.ajax
+			type: 'GET'
+			url: "/cmpdReg/allowCmpdRegistration"
+			success: (allowRegResp) =>
+				if !allowRegResp.allowCmpdRegistration
+					@$('.bv_createNewSaltBtn').prop 'disabled', true
+					@$('.bv_downloadSaltBtn').prop 'disabled', true
+					@$('.bv_disableCmpdRegistrationMessage').show()
+					@$('.bv_disableCmpdRegistrationMessage').html allowRegResp.message.replace("Compounds", "Salts")
+					@allowCmpdRegistration = false
+				else
+					@allowCmpdRegistration = true
+			error: (err) =>
+				@$('.bv_createNewSaltBtn').prop 'disabled', true
+				@$('.bv_downloadSaltBtn').prop 'disabled', true
+				@$('.bv_disableCmpdRegistrationMessage').show()
+				@$('.bv_disableCmpdRegistrationMessage').html JSON.parse(err.responseText).message.replace("Compounds", "Salts")
+				@allowCmpdRegistration = false
+	
 	setupSaltSummaryTable: (salts) =>
 		@destroySaltSummaryTable()
 
@@ -194,6 +215,8 @@ class SaltBrowserController extends Backbone.View
 		$('.bv_saltController').html @saltController.render().el
 		$(".bv_saltController").removeClass("hide")
 		$(".bv_saltControllerContainer").removeClass("hide")
+		if !@allowCmpdRegistration
+			@$('.bv_saltControllerContainer .bv_editSalt').prop 'disabled', true
 
 		# Request JSON Used to Render Image of Salt
 		requestJSON = {
