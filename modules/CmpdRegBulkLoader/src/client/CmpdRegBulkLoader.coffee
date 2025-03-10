@@ -337,12 +337,13 @@ class AssignedPropertyController extends AbstractFormController
 				code: ""
 				name: "Select"
 			selectedCode: ""
+			backendSearch: false
 	
 	setupInput: =>
 		# Alter input depending on dbProperty
 		dbProp = @model.get('dbProperty')
 		if @dbPropertyUrls[dbProp]? || dbProp.includes("Units")
-			@dbPropertyUrl = @dbPropertyUrls[@model.get('dbProperty')]
+			@dbPropertyUrl = @dbPropertyUrls[dbProp]
 			if !@dbPropertyUrl?
 				@dbPropertyUrl = @dbPropertyUrls["Units"]
 			@setupSelect()
@@ -358,7 +359,7 @@ class AssignedPropertyController extends AbstractFormController
 				@selectListController = null
 			@$('.bv_defaultVal').show()
 		# Show date picker if dbProperty is a date
-		if @model.get('dbProperty').includes("Lot Synthesis Date")
+		if dbProp.includes("Lot Synthesis Date")
 			@$('.bv_defaultVal').datepicker();
 			@$('.bv_defaultVal').datepicker( "option", "dateFormat", "yy-mm-dd" );
 			@$('.bv_defaultVal').attr('placeholder', 'YYYY-MM-DD')
