@@ -366,8 +366,10 @@ class PickListSelect2Controller extends PickListSelectController
 			allowClear: true
 			width: @width
 
-		# Conditionally add the ajax property
-		if @collection.url?
+		# Conditionally add the ajax property to enable backend searching
+		# If a url is provided, backend search is enabled by default but
+		# can be toggled off by setting the 'backendSearch' option to false
+		if @collection.url? && (!@options.backendSearch? || @options.backendSearch is true)
 			select2Options.ajax = 
 				url: (params) =>
 					if !params.term?
