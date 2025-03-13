@@ -90,3 +90,7 @@
     border-color: #b94a48;
     border-style: solid;
 }
+
+.bv_propInfo .form-inline {
+    clear: both;
+}
