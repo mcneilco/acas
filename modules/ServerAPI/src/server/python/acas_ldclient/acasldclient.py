@@ -265,7 +265,7 @@ def get_user(client, username, use_acas_only_acl_groups = True):
 
 def get_projects(client):
     logger.info("get_projects")
-    ld_projects = client.projects()      
+    ld_projects = client.projects(include_users=False)
 
     projects = list(map(ld_project_to_acas, ld_projects))
 
