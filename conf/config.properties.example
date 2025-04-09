@@ -767,6 +767,9 @@ client.cmpdreg.serverSettings.liveDesign.preprocessorSettings=
 client.cmpdreg.serverSettings.liveDesign.url=http://localhost:8010/ld-chem
 
 client.cmpdreg.serverSettings.maxStandardizationDisplay=20000
+server.acas.externalStructureProcessingBatchSize=100
+server.acas.standardizationBatchSize=1000
+client.cmpdreg.serverSettings.checkForDryRunStandardizationDelay=60000
 
 # Sets cookie maxAge to 1440 minutes = 24 hours
 server.sessionTimeOutMinutes=1440
