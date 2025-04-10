@@ -619,7 +619,7 @@ server.curveRender.plotPointsOnOverlay=false
 # Restrict experiment search by project
 server.service.projects.restrictExperiments=true
 
-server.flyway.location=com.labsynch.labseer.db.migration.postgres,db/migration/postgres,db/migration/indigo/postgres
+server.flyway.location=com.labsynch.labseer.db.migration.postgres,db/migration/postgres,db/migration/bbchem/postgres
 
 server.chemistry.package=rdkit
 server.acas.batchSize=250
@@ -752,8 +752,8 @@ client.cmpdreg.serverSettings.disableTubeCreationIfNoBarcode=false
 client.cmpdreg.serverSettings.checkACASDependenciesByContainerCode=false
 client.cmpdreg.serverSettings.jchemVersion=16.4.25.0
 client.cmpdreg.serverSettings.databaseType=postgres
-client.cmpdreg.serverSettings.standardizeStructure=false
-client.cmpdreg.serverSettings.useExternalStandardizerConfig=false
+client.cmpdreg.serverSettings.standardizeStructure=true
+client.cmpdreg.serverSettings.useExternalStandardizerConfig=true
 client.cmpdreg.serverSettings.standardizerConfigFilePath=/home/runner/build/conf/standardizerConfig.xml
 client.cmpdreg.serverSettings.orderSelectLists=true
 client.cmpdreg.serverSettings.registerNoStructureCompoundsAsUniqueParents=false
@@ -763,8 +763,8 @@ client.cmpdreg.marvin.marvinImplicitH=heteroterm
 client.cmpdreg.marvin.sketchBondLength=20
 client.cmpdreg.marvin.delayShowStep2Next=750
 client.cmpdreg.marvin.exportFormat=mol:V3
-client.cmpdreg.serverSettings.liveDesign.preprocessorSettings=
-client.cmpdreg.serverSettings.liveDesign.url=http://localhost:8010/ld-chem
+client.cmpdreg.serverSettings.liveDesign.preprocessorSettings={"output_format":"MOL","process_options":{"hash_scheme":"ALL_LAYERS","ignore_errors":false,"output_formats":["registration_hash","smiles","sdf","no_stereo_hash"],"process_attachment_point_structures":true,"process_star_atom_structure":true},"standardizer_actions":{"CHIRAL_FLAG_0_MEANING":"UNGROUPED_ARE_ABSOLUTE","CHOOSE_CANONICAL_TAUTOMER":true,"CLEAR_INVALID_WEDGE_BONDS":true,"EXPLICIT_HYDROGENS":"REMOVE_ALL","GENERATE_COORDINATES":"FULL_ALIGNED","HEAVY_HYDROGEN_DT":false,"KEEP_ONLY_LARGEST_STRUCTURE":true,"NEUTRALIZE":true,"REMOVE_PROPERTIES":false,"RESOLVE_AMBIGUOUS_TAUTOMERS":false,"STRIP_AND_GROUPS_ON_SINGLE_ATOM":true,"TRANSFORMATIONS":[]},"timeout":590}
+client.cmpdreg.serverSettings.liveDesign.url=https://qa-demo-25-2-beta.dev.bb.schrodinger.com/ld-chem
 
 client.cmpdreg.serverSettings.maxStandardizationDisplay=20000
 server.acas.externalStructureProcessingBatchSize=100
