@@ -768,6 +768,18 @@ client.cmpdreg.serverSettings.liveDesign.url=http://localhost:8010/ld-chem
 
 client.cmpdreg.serverSettings.maxStandardizationDisplay=20000
 
+# Configures how many compounds are sent to the external structure processing service per request.
+server.acas.externalStructureProcessingBatchSize=100
+
+# Configures how many compounds are processed at a time when standardizing structures.
+# Structures are processed with 10 parallel processes
+# So with the default settings, 1000 compounds are split into groups of 10 and 100 are requested to the external service at a time.
+server.acas.standardizationBatchSize=1000
+
+# Configures how often a check is done to see if standardizaiton dry run is running.
+# If standardizaiton dry run is running then a worker will pick up and contribute to dry run after a default of 60 seconds.
+client.cmpdreg.serverSettings.checkForDryRunStandardizationDelay=60000
+
 # Sets cookie maxAge to 1440 minutes = 24 hours
 server.sessionTimeOutMinutes=1440
 
