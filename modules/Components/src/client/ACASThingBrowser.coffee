@@ -276,7 +276,10 @@ class ThingSummaryTableController extends Backbone.View
 			 	# Remove space from key name
 				filterClass = "bv_filter_" + config.key.replace(/\s/g, '')
 				@$(".bv_colFilters").append("<th style=\"width: 125px;\" class=\"bv_thingBrowserFilter "+filterClass+"\"></th>")
-		
+		else
+			# Remove the filter row
+			@$(".bv_colFilters").remove()
+
 		if @collection.length is 0
 			@$(".bv_noMatchingThingsFoundMessage").removeClass "hide"
 			# display message indicating no results were found

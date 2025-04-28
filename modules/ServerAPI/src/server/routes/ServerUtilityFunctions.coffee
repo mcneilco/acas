@@ -604,14 +604,19 @@ class LabelList extends Backbone.Collection
 					(if (rd is "") then rd else -1)
 			else
 				current = @getCurrent()
-				bestLabel = _.max current, (lab) ->
-					rd = lab.get 'recordedDate'
-					(if (rd is "") then rd else -1)
+				if current.length > 0
+					bestLabel = _.max current, (lab) ->
+						rd = lab.get 'recordedDate'
+						(if (rd is "") then rd else -1)
+				else
+					bestLabel = undefined
 		return bestLabel
 
 	pickBestName: ->
 		preferredNames = _.filter @getCurrent(), (lab) ->
 			lab.get('preferred') && (lab.get('lsType') == "name")
+		if preferredNames.length == 0
+			return undefined
 		bestLabel = _.max preferredNames, (lab) ->
 			rd = lab.get 'recordedDate'
 			(if (rd is "") then Infinity else rd)
