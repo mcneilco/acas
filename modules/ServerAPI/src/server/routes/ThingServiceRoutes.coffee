@@ -740,7 +740,10 @@ exports.validateName = (req, resp) ->
 			json: true
 		, (error, response, json) =>
 			if !error && response.statusCode == 202
-				resp.json json
+				if json?
+					resp.json json
+				else
+					resp.json {}
 			else if response.statusCode == 409
 				console.log "not unique name"
 				console.log json
