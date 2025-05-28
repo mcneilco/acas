@@ -510,7 +510,7 @@ server.sel.validateDoseResponseCurves=true
 # the config below is recommended for new installations
 # server.sel.supportedOperators=>,<,>=,<=,=
 # the config below matches the original hard-coded behavior
-server.sel.supportedOperators=>,<,=
+server.sel.supportedOperators=>,<
 
 # Default protocol/experiment description when loaded through experiment loader
 # server.sel.protocolDescription=${client.protocol.label} created by generic data parser
