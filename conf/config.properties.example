@@ -506,6 +506,12 @@ server.sel.protocolStatus=created
 server.sel.assayStage=unassigned
 server.sel.validateDoseResponseCurves=true
 
+# Supported operator types, to add additional operator types you may need to update modules/GenericDataParser/conf/genericDataParserConfJSON.coffee
+# the config below is recommended for new installations
+# server.sel.supportedOperators=>,<,>=,<=,=
+# the config below matches the original hard-coded behavior
+server.sel.supportedOperators=>,<
+
 # Default protocol/experiment description when loaded through experiment loader
 # server.sel.protocolDescription=${client.protocol.label} created by generic data parser
 # server.sel.experimentDescription=${client.experiment.label} created by generic data parser
