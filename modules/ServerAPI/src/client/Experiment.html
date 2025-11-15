@@ -1,45 +1,45 @@
 <script type="text/template" id="ExperimentBaseView" xmlns="http://www.w3.org/1999/html">
 
-    <div class="span9 bv_openInQueryToolWrapper">
+    <div class="col-md-9 bv_openInQueryToolWrapper">
         <a class="bv_openInQueryToolLink btn pull-right" style="margin-bottom:15px;" target="_blank">Open in <span class="bv_queryToolDisplayName"></span></a>
     </div>
-    <div class="span12">
+    <div class="col-md-12">
         <div class="form-horizontal">
-            <div class="control-group">
-                <label class="control-label"><i class="glyphicon glyphicon-lock bv_lock"></i> Status</label>
-                <div class="controls">
-                    <select class="bv_status select-picker" style="width:350px;">
+            <div class="form-group">
+                <label class="control-label col-sm-2"><i class="glyphicon glyphicon-lock bv_lock"></i> Status</label>
+                <div class="col-sm-10">
+                    <select class="bv_status select-picker form-control" style="width:336px;">
                     </select>
                 </div>
             </div>
-            <div class="control-group">
-                <label class="control-label">Code</label>
-                <div class="controls">
-                    <span class="form-control-static bv_experimentCode" style="width:336px;">autofill when saved</span>
+            <div class="form-group">
+                <label class="control-label col-sm-2">Code</label>
+                <div class="col-sm-10">
+                    <input class="bv_experimentCode form-control" style="width:336px;" type="text" placeholder="autofill when saved" disabled readonly>
                 </div>
             </div>
-            <div class="control-group bv_group_experimentName">
-                <label class="control-label bv_experimentNameLabel" style="margin-top:17px;">*<%- window.conf.experiment.label %> Name</label>
-                <div class="controls" style="width:300px;">
+            <div class="form-group bv_group_experimentName">
+                <label class="control-label col-sm-2 bv_experimentNameLabel" style="margin-top:17px;">*<%- window.conf.experiment.label %> Name</label>
+                <div class="col-sm-10" style="width:300px;">
                     <input type="checkbox" name="bv_exptNameChkbx" class="bv_exptNameChkbx" style="margin-top:-3px;margin-right:2px;" checked="checked"><span class="bv_exptNameChkbxLabel">Same as <%- window.conf.experiment.label %> code</span>
-                    <input class="bv_experimentName" style="width:336px; margin-top:5px;" type="text" placeholder="">
+                    <input class="bv_experimentName form-control" style="width:336px; margin-top:5px;" type="text" placeholder="">
                 </div>
             </div>
         </div>
 
 
         <div class="form-horizontal">
-            <div class="control-group bv_group_scientist">
-                <label class="control-label">*Scientist</label>
-                <div class="controls">
-                    <select class="bv_scientist" style="width:350px;"></select>
+            <div class="form-group bv_group_scientist">
+                <label class="control-label col-sm-2">*Scientist</label>
+                <div class="col-sm-10">
+                    <select class="bv_scientist form-control" style="width:336px;"></select>
                 </div>
             </div>
-            <div class="control-group bv_group_completionDate">
-                <label class="control-label">*Date</label>
-                <div class="controls">
-                    <div class="input-group date" id="dp3" data-date="" data-date format="yy-mm-dd">
-                        <input class="bv_completionDate" type="text" value="" placeholder="yyyy-mm-dd" style="width:310px;">
+            <div class="form-group bv_group_completionDate">
+                <label class="control-label col-sm-2">*Date</label>
+                <div class="col-sm-10">
+                    <div class="input-group date" id="dp3" data-date="" data-date format="yy-mm-dd" style="width:336px;">
+                        <input class="bv_completionDate form-control" type="text" value="" placeholder="yyyy-mm-dd">
                         <span class="input-group-addon bv_completionDateIcon"><i class="glyphicon glyphicon-th"></i></span>
                     </div>
                 </div>
@@ -49,42 +49,42 @@
 
 
         <div class="form-horizontal">
-            <div class="control-group bv_group_protocolCode">
-                <label class="control-label ">*<%- window.conf.protocol.label %></label>
-                <div class="controls">
-                    <select class="bv_protocolCode" style="width:350px;">
+            <div class="form-group bv_group_protocolCode">
+                <label class="control-label col-sm-2">*<%- window.conf.protocol.label %></label>
+                <div class="col-sm-10">
+                    <select class="bv_protocolCode form-control" style="width:336px;">
                     </select>
                     <span class="bv_spinner"></span>
                 </div>
-                <div class="controls">
+                <div class="col-sm-10 col-sm-offset-2">
                     <button type="button" class="btn bv_useProtocolParameters hide" style="margin-top:5px;">Use Parameters</button>
                 </div>
             </div>
         </div>
 
         <div class="form-horizontal">
-            <div class="control-group bv_group_projectCode">
-                <label class="control-label bv_projectLabel">*Project</label>
-                <div class="controls">
-                    <select class="bv_projectCode" style="width:350px;"></select>
+            <div class="form-group bv_group_projectCode">
+                <label class="control-label col-sm-2 bv_projectLabel">*Project</label>
+                <div class="col-sm-10">
+                    <select class="bv_projectCode form-control" style="width:336px;"></select>
                 </div>
             </div>
-            <div class="control-group bv_group_notebook">
-                <label class="control-label bv_notebookLabel">*Notebook</label>
-                <div class="controls">
-                    <input class="bv_notebook" style="width:336px;" type="text" placeholder="" />
+            <div class="form-group bv_group_notebook">
+                <label class="control-label col-sm-2 bv_notebookLabel">*Notebook</label>
+                <div class="col-sm-10">
+                    <input class="bv_notebook form-control" style="width:336px;" type="text" placeholder="" />
                 </div>
             </div>
-            <div class="control-group bv_group_notebookPage">
-                <label class="control-label bv_notebookPageLabel">Notebook Page</label>
-                <div class="controls">
-                    <input class="bv_notebookPage" style="width:336px;" type="text" placeholder="" />
+            <div class="form-group bv_group_notebookPage">
+                <label class="control-label col-sm-2 bv_notebookPageLabel">Notebook Page</label>
+                <div class="col-sm-10">
+                    <input class="bv_notebookPage form-control" style="width:336px;" type="text" placeholder="" />
                 </div>
             </div>
-            <div class="control-group bv_group_tags">
-                <label class="control-label">Key Words</label>
-                <div class="controls">
-                    <input class="bv_tags" type="text" data-role="tagsinput" placeholder="Add tags" />
+            <div class="form-group bv_group_tags">
+                <label class="control-label col-sm-2">Key Words</label>
+                <div class="col-sm-10">
+                    <input class="bv_tags form-control" type="text" data-role="tagsinput" placeholder="Add tags" />
                 </div>
             </div>
         </div>
@@ -96,38 +96,36 @@
     <p><i>The columns shown below are the columns that were uploaded with this experiment. They are not editable, but will be updated if the experiment is reloaded.</i></p>
     <div class="bv_endpointTable"></div>
 
-    <div class="span12 bv_group_shortDescription" style="margin-left:0px;">
-        <div style="margin-bottom:5px;">Short Description</div>
-        <textarea rows="2" class="bv_shortDescription" style="width:650px;resize:none;margin-bottom:20px;" placeholder="Short Description"></textarea>
-    </div>
+        <div class="bv_group_shortDescription" style="margin-left:15px;margin-bottom:20px;">
+            <label style="margin-bottom:8px;font-weight:500;color:#333;">Short Description</label>
+            <textarea rows="2" class="bv_shortDescription form-control" style="width:650px;resize:none;" placeholder="Short Description"></textarea>
+        </div>
 
-    <div class="span12 bv_group_details" style="margin-left:0px;">
-        <div style="margin-bottom:5px;"><%- window.conf.experiment.label %> Details</div>
-        <textarea rows="7" class="bv_details" style="width:650px; max-width:650px;margin-bottom:20px;" placeholder="<%- window.conf.experiment.label %> Details"></textarea>
-    </div>
+        <div class="bv_group_details" style="margin-left:15px;margin-bottom:20px;">
+            <label style="margin-bottom:8px;font-weight:500;color:#333;"><%- window.conf.experiment.label %> Details</label>
+            <textarea rows="7" class="bv_details form-control" style="width:650px;max-width:650px;" placeholder="<%- window.conf.experiment.label %> Details"></textarea>
+        </div>
 
-    <div class="span12 bv_group_comments" style="margin-left:0px;">
-        <div style="margin-bottom:5px;">Comments</div>
-        <textarea rows="7" class="bv_comments" style="width:650px; max-width:650px;margin-bottom:20px;" placeholder="Comments"></textarea>
-    </div>
+        <div class="bv_group_comments" style="margin-left:15px;margin-bottom:20px;">
+            <label style="margin-bottom:8px;font-weight:500;color:#333;">Comments</label>
+            <textarea rows="7" class="bv_comments form-control" style="width:650px;max-width:650px;" placeholder="Comments"></textarea>
+        </div>
 
-    <div class="bv_custom_experiment_metadata"  style="width:650px; max-width:650px;margin-bottom:20px;" ></div>
-    <div class="row span12" style="margin-left:0px;">
-        <div class="control-group bv_group_attachFile span8" style="margin-bottom:30px;margin-left:0px;">
-            <div style="margin-bottom:5px;font-weight:bold;">Attach Files</div>
-            <div class="controls" style="margin-left:0px;">
-                <span class ="bv_group_fileType" style="margin-left:6px;margin-bottom:5px;">File Type</span>
-                <span style="margin-left:77px;margin-bottom:5px;">File Name</span>
-                <div class="bv_attachFileList" style="width:670px;"></div>
-            </div>
+    <div class="bv_custom_experiment_metadata" style="width:650px; max-width:650px;margin-bottom:20px;"></div>
+
+    <div class="form-group bv_group_attachFile" style="margin-bottom:0px;">
+        <div style="margin-bottom:5px;font-weight:bold;">Attach Files</div>
+        <div class="col-sm-12">
+            <span class="bv_group_fileType" style="margin-left:6px;margin-bottom:5px;">File Type</span>
+            <span style="margin-left:77px;margin-bottom:5px;">File Name</span>
+            <div class="bv_attachFileList" style="width:670px;"></div>
         </div>
     </div>
     <!-- SAVE AND CANCEL -->
-    <div class="span10" style="width:650px;margin-left:0px;">
-        <div class="span12" style="margin-left:25px;margin-top:25px;">
-            <button type="button" class="btn btn-success bv_save pull-right" style="margin-right:10px;">Save</button>
-            <button type="button" class="btn bv_newEntity pull-right" style="margin-right:5px;">Clear Form</button>
-            <button type="button" class="btn btn-danger bv_cancel pull-right" style="margin-right:5px;margin-left:5px;"disabled="disabled">Cancel</button>
+    <div class="col-md-10 bv_saveAndCancelButtons" style="width:650px;margin-left:25px;margin-top:25px;">
+        <button type="button" class="btn btn-success bv_save pull-right" style="margin-right:10px;">Save</button>
+        <button type="button" class="btn btn-default bv_newEntity pull-right" style="margin-right:5px;">Clear Form</button>
+        <button type="button" class="btn btn-danger bv_cancel pull-right" style="margin-right:5px;margin-left:5px;">Cancel</button>
             <div class="bv_updateComplete pull-right hide" style="padding-top:5px;color:#62c462;"></div>
             <div class="bv_saving pull-right hide" style="padding-top:5px;color:red;">Saving...</div>
             <div class="bv_saveFailed pull-right hide" style="padding-top:5px;color:red;">Save Failed</div>
