@@ -1,15 +1,16 @@
 <script type="text/template" id="ProtocolSimpleSearchView" xmlns="http://www.w3.org/1999/html">
     <div class="navbar" style="margin-bottom: 0px; ">
-        <div class="navbar-inner" style="border-bottom-left-radius:	0px; border-bottom-right-radius:	0px;">
+        <div class="container-fluid" style="border-bottom-left-radius:	0px; border-bottom-right-radius:	0px;">
             <!-- <form class="navbar-search pull-left"> -->
-            <div class="control-group" style="margin-top: 5px; margin-bottom: 5px;">
-                <div class="input-append">
-                    <input class="bv_protocolSearchTerm" style="
+            <div class="form-group" style="margin-top: 5px; margin-bottom: 5px;">
+                <div class="input-group">
+                    <input class="bv_protocolSearchTerm form-control" style="
 							padding-right: 14px;
 							border-top-left-radius: 15px;
 							border-bottom-left-radius: 15px;
 							" type="text" placeholder="Search for <%- window.conf.protocol.label %>s">
-                    <button class="btn bv_doSearch add-on" style="
+                    <span class="input-group-btn">
+                        <button class="btn btn-default bv_doSearch" style="
 							border-top-right-radius: 15px;
 							border-bottom-right-radius: 15px;
 							height: 30px;

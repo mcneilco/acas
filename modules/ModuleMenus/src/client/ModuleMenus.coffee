@@ -148,12 +148,12 @@ class ModuleMenusController extends Backbone.View
 	handleToggleMenus: =>
 		if @$('.bv_moduleMenuWellWrapper').is ':hidden'
 			@$('.bv_moduleMenuWellWrapper').show()
-			@$('.bv_mainModuleWellWrapper').removeClass 'span11'
-			@$('.bv_mainModuleWellWrapper').addClass 'span9'
+			@$('.bv_mainModuleWellWrapper').removeClass 'col-md-11'
+			@$('.bv_mainModuleWellWrapper').addClass 'col-md-9'
 		else
 			@$('.bv_moduleMenuWellWrapper').hide()
-			@$('.bv_mainModuleWellWrapper').removeClass 'span9'
-			@$('.bv_mainModuleWellWrapper').addClass 'span11'
+			@$('.bv_mainModuleWellWrapper').removeClass 'col-md-9'
+			@$('.bv_mainModuleWellWrapper').addClass 'col-md-11'
 
 # Fast User Switching Methods
 

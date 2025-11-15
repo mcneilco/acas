@@ -1,21 +1,24 @@
 <script type="text/template" id="CmpdRegBulkLoaderAppView" xmlns="http://www.w3.org/1999/html">
 
     <div class="navbar navbar-inverse navbar-fixed-top">
-        <div class="navbar-inner">
-            <div class="container-fluid">
-                <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-                    <!--<span class="icon-bar"></span>-->
-                    <!--<span class="icon-bar"></span>-->
-                    <!--<span class="icon-bar"></span>-->
-                </a>
-                <a class="brand bv_headerName" href="/CmpdRegBulkLoader"></a>
-                <p class="navbar-text pull-right bv_userInfo" style="">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand bv_headerName" href="/CmpdRegBulkLoader"></a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar-collapse">
+                <p class="navbar-text navbar-right bv_userInfo" style="">
                     Welcome
                     <a href="#" class="navbar-link bv_loginUserFirstName">First Name</a>
                     <a href="#" class="navbar-link bv_loginUserLastName">Last Name</a>
-                    <a href="/logout" class="btn btn-small bv_logout" style="margin-top:0px;margin-left:5px;">Logout</a>
+                    <a href="/logout" class="btn btn-sm bv_logout" style="margin-top:0px;margin-left:5px;">Logout</a>
                 </p>
-                <ul class="nav nav-pills pull-right">
+                <ul class="nav navbar-nav navbar-right">
                     <li class="dropdown">
                         <a class="dropdown-toggle bv_registerDropdown" role="button" data-toggle="dropdown" href="#">Register
                             <b class="caret" style="margin-top:7px;"></b>

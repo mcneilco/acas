@@ -269,7 +269,7 @@ class AuthorRoleListController extends Backbone.View
 		@$('button').not('.dontdisable').attr 'disabled', 'disabled'
 		@$('select').not('.dontdisable').attr 'disabled', 'disabled'
 		@$("textarea").not('.dontdisable').attr 'disabled', 'disabled'
-		@$(".bv_activationDateIcon").not('.dontdisable').addClass "uneditable-input"
+		@$(".bv_activationDateIcon").not('.dontdisable').addClass "form-control-static"
 		@$(".bv_activationDateIcon").not('.dontdisable').on "click", ->
 			return false
 		@$(".bv_group_tags input").not('.dontdisable').prop "placeholder", ""

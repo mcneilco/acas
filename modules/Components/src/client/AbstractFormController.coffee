@@ -47,7 +47,7 @@ class AbstractFormController extends Backbone.View
 
 		_.each errors, (err) =>
 			unless @$('.bv_'+err.attribute).attr('disabled') is 'disabled'
-				@$('.bv_group_'+err.attribute).addClass 'input_error error'
+				@$('.bv_group_'+err.attribute).addClass 'input_error error has-error'
 				@trigger 'notifyError',  owner: this.errorOwnerName, errorLevel: 'error', message: err.message
 		@trigger 'invalid'
 
@@ -55,7 +55,7 @@ class AbstractFormController extends Backbone.View
 		errorElms = @$('.input_error')
 		@trigger 'clearErrors', @errorOwnerName
 		_.each errorElms, (ee) =>
-			$(ee).removeClass 'input_error error'
+			$(ee).removeClass 'input_error error has-error'
 
 	isValid: ->
 		@model.isValid()

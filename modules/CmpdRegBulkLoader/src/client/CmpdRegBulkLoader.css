@@ -46,7 +46,7 @@
     margin-left:0px;
 }
 
-.bv_browseSdfFile form.fileupload div.row.fileupload-buttonbar div.span7.bv_manualFileSelect{
+.bv_browseSdfFile form.fileupload div.row.fileupload-buttonbar div.col-md-7.bv_manualFileSelect{
     padding-left:0px !important;
     margin-left:0px !important;
 }
@@ -70,7 +70,7 @@
     line-height: 18px;
 }
 
-.bv_browseSdfFile form.fileupload table.table.bv_fileInfo tbody.files tr.template-upload.fade.in td.cancel button.btn.btn-warning.bv_cancelFile i.icon-ban-circle.icon-white{
+.bv_browseSdfFile form.fileupload table.table.bv_fileInfo tbody.files tr.template-upload.fade.in td.cancel button.btn.btn-warning.bv_cancelFile i.glyphicon.glyphicon-ban-circle{
     display:none;
 }
 

@@ -462,7 +462,7 @@ class ACASLabelSequenceController extends AbstractFormController
 		@$(".bv_cancel").hide()
 		@$(".bv_newEntity").hide()
 		@$('button').attr 'disabled', 'disabled'
-		@$(".bv_startDateIcon").addClass "uneditable-input"
+		@$(".bv_startDateIcon").addClass "form-control-static"
 		@$(".bv_startDateIcon").on "click", ->
 			return false
 		@disableAllInputs()

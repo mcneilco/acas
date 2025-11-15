@@ -307,8 +307,17 @@ class BaseEntityController extends AbstractThingFormController #TODO: check to s
 		if bestName?
 			@$('.bv_'+subclass+'Name').val bestName.get('labelText')
 		@$('.bv_scientist').val(@model.getScientist().escape('codeValue'))
-		@$('.bv_'+subclass+'Code').html(@model.escape('codeName'))
-		@$('.bv_'+subclass+'Kind').html(@model.escape('lsKind')) #should get value from protocol create form
+		# Handle both input fields and span elements for Code and Kind
+		codeElement = @$('.bv_'+subclass+'Code')
+		if codeElement.is('input')
+			codeElement.val(@model.escape('codeName') || '')
+		else
+			codeElement.html(@model.escape('codeName'))
+		kindElement = @$('.bv_'+subclass+'Kind')
+		if kindElement.is('input')
+			kindElement.val(@model.escape('lsKind') || 'default')
+		else
+			kindElement.html(@model.escape('lsKind')) #should get value from protocol create form
 		@$('.bv_details').val(@model.getDetails().escape('clobValue'))
 		@$('.bv_comments').val(@model.getComments().escape('clobValue'))
 		saveNotebook = true #default

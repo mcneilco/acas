@@ -1,13 +1,13 @@
 <script type="text/template" id="LSFileChooserView">
 	<form class="fileupload" action="server/php/" method="POST" enctype="multipart/form-data">
 		<div class="row fileupload-buttonbar">
-			<div class="span7 bv_manualFileSelect" style="padding-left:50px;">
+			<div class="col-md-7 bv_manualFileSelect" style="padding-left:50px;">
 				<span class="btn fileinput-button">
 					<span>Browse Files...</span>
 					<input type="file" name="files[]" multiple>
 				</span>
 			</div>
-			<div class="span7 well <%- dropZoneClassId %>" style="display: none; text-align: center">
+			<div class="col-md-7 well <%- dropZoneClassId %>" style="display: none; text-align: center">
 				<h4 class='bv_dragOverMessage'><%- dragOverMessage %></h4>
 			</div>
 			<% if (allowMultipleFiles) { %>
@@ -43,7 +43,7 @@
         {% } %}
         <td class="cancel" style='width: 9em;'>{% if (!i) { %}
             <button class="btn btn-warning bv_cancelFile">
-                <i class="icon-ban-circle icon-white"></i>
+                <i class="glyphicon glyphicon-ban-circle"></i>
                 <span>{%=locale.fileupload.cancel%}</span>
             </button>
         {% } %}</td>

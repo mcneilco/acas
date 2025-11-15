@@ -449,8 +449,8 @@ class ProtocolBaseController extends BaseEntityController
 
 	setupSelRequiredAttrCheckboxes: (attr) =>
 		camelCaseAttrCode = attr.code.replace /\s(.)/g, (match, group1) -> group1.toUpperCase()
-		@$('.bv_selRequiredAttributesSection').append '<div class="control-group bv_group_'+camelCaseAttrCode+'">
-		<label class="control-label" style="padding-top:2px;">'+attr.name+' Required</label><div class="controls"><input type="checkbox" name="bv_'+camelCaseAttrCode+'" class="bv_'+camelCaseAttrCode+'"/></div></div>'
+		@$('.bv_selRequiredAttributesSection').append '<div class="form-group bv_group_'+camelCaseAttrCode+'">
+		<label class="control-label col-sm-2" style="padding-top:2px;">'+attr.name+' Required</label><div class="col-sm-10"><input type="checkbox" name="bv_'+camelCaseAttrCode+'" class="bv_'+camelCaseAttrCode+'"/></div></div>'
 
 		currentVal = @model.getSelRequiredAttr attr.code
 		if currentVal.get('codeValue') is "true"

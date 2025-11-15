@@ -1,13 +1,13 @@
 extends layout
 block content
     div.navbar.navbar-inverse.navbar-fixed-top
-        div.navbar-inner
-            div.container-fluid
-                a.brand(href="#{logoLink}") #{logoText}
+        div.container-fluid
+            div.navbar-header
+                a.navbar-brand(href="#{logoLink}") #{logoText}
 
     div.container.loginContainer
-        div.span8.offset1
+        div.col-md-8.col-md-offset-1
             h3 #{permissionDeniedText}
             div.alert.alert-danger Sorry, you were denied permission to ACAS, please contact your administrator with the error message below.
         - if (message != "")
-            div.span7.offset1.alert.alert-error.loginError #{message}
+            div.col-md-7.col-md-offset-1.alert.alert-danger.loginError #{message}

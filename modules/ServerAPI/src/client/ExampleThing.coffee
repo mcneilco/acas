@@ -382,7 +382,7 @@ class ExampleThingController extends AbstractThingFormController
 	displayInReadOnlyMode: =>
 		@$(".bv_saveThing").hide()
 		@$('button').attr 'disabled', 'disabled'
-		@$(".bv_completionDateIcon").addClass "uneditable-input"
+		@$(".bv_completionDateIcon").addClass "form-control-static"
 		@$(".bv_completionDateIcon").on "click", ->
 			return false
 		@disableAllInputs()
