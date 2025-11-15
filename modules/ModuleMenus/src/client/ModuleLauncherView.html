@@ -1,24 +1,26 @@
 <script type="text/template" id="ModuleLauncherMenuView">
-    <span>
-        <a class="bv_menuName" href="#"><%- menuName %></a>
+    <span style="display: block; padding: 3px 12px;">
+        <a class="bv_menuName" href="#" style="color: #337ab7; text-decoration: none;"><%- menuName %></a>
         <span class="bv_menuName_disabled text-muted hide"><%- menuName %></span>
-        <i class="bv_isLoaded glyphicon glyphicon-pencil"></i>
-        <i class="bv_isDirty glyphicon glyphicon-asterisk" style="margin-top: 2px;"></i>
-        <i class="bv_isLocked glyphicon glyphicon-lock" style="margin-top: 2px;"></i>
+        <span class="pull-right">
+            <i class="bv_isLoaded glyphicon glyphicon-pencil" style="margin-left: 5px; color: #5cb85c;" title="Loaded"></i>
+            <i class="bv_isDirty glyphicon glyphicon-asterisk" style="margin-left: 5px; color: #f0ad4e;" title="Has changes"></i>
+            <i class="bv_isLocked glyphicon glyphicon-lock" style="margin-left: 5px; color: #d9534f;" title="Locked"></i>
+        </span>
     </span>
 </script>
 
 <script type="text/template" id="ModuleLauncherMenuListView">
-    <ul class="bv_navList nav nav-list">
+    <ul class="bv_navList nav nav-pills nav-stacked" style="margin-bottom: 5px;">
     </ul>
-    <div class="bv_expandControls">
-        <img class="bv_expandAll" src="/img/expand_modules.png" />
-        <img class="bv_collapseAll hide" src="/img/collapse_modules.png" />
+    <div class="bv_expandControls" style="text-align: center; padding: 10px; border-top: 1px solid #ddd; margin-top: 10px;">
+        <img class="bv_expandAll" src="/img/expand_modules.png" style="cursor: pointer; margin: 0 5px;" />
+        <img class="bv_collapseAll hide" src="/img/collapse_modules.png" style="cursor: pointer; margin: 0 5px;" />
     </div>
 </script>
 
 <script type="text/template" id="ModuleLauncherMenuCollapsibleHeaderView">
-    <div class="bv_moduleCategory nav-header"><span class="bv_caret bv_caret_expand">&#x25B8;</span><span class="bv_caret bv_caret_collapse hide">&#x25BE;</span></div>
+    <div class="bv_moduleCategory list-group-item-heading" style="padding: 5px 12px; font-weight: bold; color: #555; border-bottom: 1px solid #ddd; cursor: pointer; margin-bottom: 2px;"><span class="bv_caret bv_caret_expand">&#x25B8;</span><span class="bv_caret bv_caret_collapse hide">&#x25BE;</span></div>
     <ul class="bv_modules hide"></ul>
 </script>
 

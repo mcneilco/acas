@@ -137,3 +137,9 @@ body {
     top: 75px;
     left: 265px;
 }
+
+.bv_externalACASModules li a {
+    padding-top: 15px;
+    padding-bottom: 15px;
+    line-height: 20px;
+}
