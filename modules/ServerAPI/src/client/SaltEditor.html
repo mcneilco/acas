@@ -1,56 +1,55 @@
 <script type="text/template" id="SaltEditorView" xmlns="http://www.w3.org/1999/html">
     <h4 class="title">ACAS Salt</h4>
-    <div class="span12">
+    <div class="col-md-12">
         <div class="form-horizontal">
-            <div class="control-group bv_group_saltName">
-                <label class="control-label">*Salt Name</label>
-                <div class="controls">
-                    <input class="bv_saltName" style="width:336px;" type="text"/>
-                    </select>
+            <div class="form-group bv_group_saltName">
+                <label class="control-label col-sm-2">*Salt Name</label>
+                <div class="col-sm-10">
+                    <input class="bv_saltName form-control" style="width:336px;" type="text"/>
                 </div>
             </div>
-            <div class="control-group bv_group_abbrev">
-                <label class="control-label">*Abbreviation</label>
-                <div class="controls">
-                    <input class="bv_abbrev" style="width:336px;" type="text"/>
+            <div class="form-group bv_group_abbrev">
+                <label class="control-label col-sm-2">*Abbreviation</label>
+                <div class="col-sm-10">
+                    <input class="bv_abbrev form-control" style="width:336px;" type="text"/>
                 </div>
             </div>
-            <div class="control-group bv_group_formula">
-                <label class="control-label">*Formula</label>
-                <div class="controls">
-                    <input class="bv_formula" style="width:336px;" type="text">
+            <div class="form-group bv_group_formula">
+                <label class="control-label col-sm-2">*Formula</label>
+                <div class="col-sm-10">
+                    <input class="bv_formula form-control" style="width:336px;" type="text">
                 </div>
             </div>
-            <div class="control-group bv_group_molWeight">
-                <label class="control-label">*Molecular Weight</label>
-                <div class="controls">
-                    <input class="bv_molWeight" style="width:336px;" type="text">
+            <div class="form-group bv_group_molWeight">
+                <label class="control-label col-sm-2">*Molecular Weight</label>
+                <div class="col-sm-10">
+                    <input class="bv_molWeight form-control" style="width:336px;" type="text">
                 </div>
             </div>
-            <div class="control-group bv_group_charge">
-                <label class="control-label">Charge</label>
-                <div class="controls">
-                    <input class="bv_charge" style="width:336px;" type="text">
+            <div class="form-group bv_group_charge">
+                <label class="control-label col-sm-2">Charge</label>
+                <div class="col-sm-10">
+                    <input class="bv_charge form-control" style="width:336px;" type="text">
                 </div>
             </div>
-            <div class="control-group bv_group_structure">
-                <label class="control-label">Structure</label>
-                <div class="controls">
+            <div class="form-group bv_group_structure">
+                <label class="control-label col-sm-2">Structure</label>
+                <div class="col-sm-10">
                     <div class="bv_structureHolder"></div>
                 </div>
             </div>
         </div>
 
-        <div class="span10">
-            <div>
-                <button type="button" class="btn btn-success bv_save pull-right" style="margin-right:17px;">Save</button>
-                <button type="button" class="btn btn-danger bv_cancel pull-right" style="margin-right:5px;margin-left:5px;"disabled="disabled">Cancel</button>
-                <div class="bv_saveComplete pull-right hide" style="padding-right:5px;padding-top:5px;color:#62c462;"></div>
-                <div class="bv_saving pull-right hide" style="padding-right:5px;padding-top:5px;color:red;">Saving...</div>
-                <div class="bv_saveFailed pull-right hide" style="padding-right:5px;padding-top:5px;color:red;">Save Failed</div>
-                <div class="bv_canceling pull-right hide" style="padding-top:5px;color:red;margin-right:5px;">Canceling...</div>
-                <div class="bv_cancelComplete pull-right hide" style="padding-top:5px;color:#62c462;margin-right:5px;">Cancel Complete</div>
-            </div>
+        </div>
+        
+        <div class="col-md-10 bv_saveAndCancelButtons" style="margin-left:25px;margin-top:25px;">
+            <button type="button" class="btn btn-success bv_save pull-right" style="margin-right:17px;">Save</button>
+            <button type="button" class="btn btn-danger bv_cancel pull-right" style="margin-right:5px;margin-left:5px;" disabled="disabled">Cancel</button>
+            <div class="bv_saveComplete pull-right" style="display: none; padding-right:5px;padding-top:5px;color:#62c462;"></div>
+            <div class="bv_saving pull-right" style="display: none; padding-right:5px;padding-top:5px;color:red;">Saving...</div>
+            <div class="bv_saveFailed pull-right" style="display: none; padding-right:5px;padding-top:5px;color:red;">Save Failed</div>
+            <div class="bv_canceling pull-right" style="display: none; padding-top:5px;color:red;margin-right:5px;">Canceling...</div>
+            <div class="bv_cancelComplete pull-right" style="display: none; padding-top:5px;color:#62c462;margin-right:5px;">Cancel Complete</div>
         </div>
 
 
@@ -67,8 +66,8 @@
                     <p>Are you sure you would like to clear the form? Any unsaved changes will be lost.</p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn-danger bv_cancelClear" data-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn bv_confirmClear">Clear Form</button>
+                    <button type="button" class="btn btn-danger bv_cancelClear" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-default bv_confirmClear">Clear Form</button>
                 </div>
             </div>
         </div>

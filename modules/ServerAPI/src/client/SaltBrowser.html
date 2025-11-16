@@ -124,9 +124,9 @@
             <br>
             <br>
             <label for="abbrevName">Abbreviation: </label><br>
-            <input type="text" id="abbrevName" name="abbrevName" class="bv_abbrevName"><br>
+            <input type="text" id="abbrevName" name="abbrevName" class="bv_abbrevName form-control" style="width: 180px;"><br>
             <label for="saltName">Name:</label><br>
-            <input type="text" id="saltName" name="saltName" class="bv_saltNameCreate">
+            <input type="text" id="saltName" name="saltName" class="bv_saltNameCreate form-control" style="width: 280px;">
             <br>
             <div class='bv_createNotifications row col-md-7' style="padding: 10px;"></div>
         </div>
@@ -135,7 +135,7 @@
 		      <a href="#" class="btn bv_cancelCreate">Back</a>
 		      <a href="#" class="btn bv_confirmCreateSaltButton">Next</a>
 			  </span>
-		    <span class="bv_okayCreateButton hide">
+		    <span class="bv_okayCreateButton" style="display: none;">
 			    <a href="#" class="btn bv_okayCreate">Okay</a>
 		    </span>
         </div>
@@ -147,15 +147,15 @@
         </div>
         <div class="bv_confirmCreateBody body">
             <label for="abbrevName">Abbreviation: </label><br>
-            <input type="text" id="abbrevName" name="abbrevName" class="bv_abbrevNameConfirm">
+            <input type="text" id="abbrevName" name="abbrevName" class="bv_abbrevNameConfirm form-control" style="width: 180px;">
             <label for="saltName">Name: </label><br>
-            <input type="text" id="saltName" name="saltName" class="bv_saltNameConfirm">
+            <input type="text" id="saltName" name="saltName" class="bv_saltNameConfirm form-control" style="width: 280px;">
             <label for="saltFormula">Formula: </label><br>
-            <input type="text" id="saltFormula" name="saltFormula" class="bv_saltFormulaConfirm" readonly>
+            <input type="text" id="saltFormula" name="saltFormula" class="bv_saltFormulaConfirm form-control" style="width: 250px;" readonly>
             <label for="saltWeight">Weight: </label><br>
-            <input type="text" id="saltWeight" name="saltWeight" class="bv_saltWeightConfirm" readonly>
+            <input type="text" id="saltWeight" name="saltWeight" class="bv_saltWeightConfirm form-control" style="width: 150px;" readonly>
             <label for="saltCharge">Charge: </label><br>
-            <input type="text" id="saltCharge" name="saltCharge" class="bv_saltChargeConfirm" readonly>
+            <input type="text" id="saltCharge" name="saltCharge" class="bv_saltChargeConfirm form-control" style="width: 100px;" readonly>
             <label for="saltStruct">Structure: </label><br>
             <div class="bv_saltStructConfirm"></div>
         </div>
@@ -190,7 +190,7 @@
 
 
     <!-- Edit Salt Section: Change Values-->
-    <div class="hide bv_editSaltWindow">
+    <div class="bv_editSaltWindow" style="display: none;">
         <div class="header">
             <h3>Edit Salt</h3>
         </div>
@@ -200,11 +200,11 @@
             <p><i>Use the sketcher to specify the molecular structure of the salt. Pay close attention to charges as they will be used in calculating Lot Molecular Weight. Use the + and - buttons to add positive or negative charges</i></p>
             <br>
             <label for="abbrevName">Abbreviation: </label>
-            <input type="text" id="abbrevNameEdit" name="abbrevNameEdit" class="bv_abbrevNameEdit"><br>
+            <input type="text" id="abbrevNameEdit" name="abbrevNameEdit" class="bv_abbrevNameEdit form-control" style="width: 280px;"><br>
             <label for="saltName">Name:</label>
-            <input type="text" id="saltNameEdit" name="saltNameEdit" class="bv_saltNameEdit">
+            <input type="text" id="saltNameEdit" name="saltNameEdit" class="bv_saltNameEdit form-control" style="width: 280px;">
             <br>
-            <div class='bv_fieldNotifications row span7' style="padding: 10px;"></div>
+            <div class='bv_fieldNotifications row col-md-7' style="padding: 10px;"></div>
         </div>
         <div class="footer">
             <span class="bv_createButtons">
@@ -220,15 +220,15 @@
         </div>
         <div class="body">
             <label for="abbrevName">Abbreviation: </label><br>
-            <input type="text" id="abbrevName" name="abbrevName" class="bv_abbrevNameEditConfirm" readonly><br>
+            <input type="text" id="abbrevName" name="abbrevName" class="bv_abbrevNameEditConfirm form-control" style="width: 280px;" readonly><br>
             <label for="saltName">Name: </label><br>
-            <input type="text" id="saltName" name="saltName" class="bv_saltNameEditConfirm" readonly>
+            <input type="text" id="saltName" name="saltName" class="bv_saltNameEditConfirm form-control" style="width: 280px;" readonly>
             <label for="saltFormula">Formula: </label><br>
-            <input type="text" id="saltFormula" name="saltFormula" class="bv_saltFormulaEditConfirm" readonly>
+            <input type="text" id="saltFormula" name="saltFormula" class="bv_saltFormulaEditConfirm form-control" style="width: 250px;" readonly>
             <label for="saltWeight">Weight: </label><br>
-            <input type="text" id="saltWeight" name="saltWeight" class="bv_saltWeightEditConfirm" readonly>
+            <input type="text" id="saltWeight" name="saltWeight" class="bv_saltWeightEditConfirm form-control" style="width: 150px;" readonly>
             <label for="saltCharge">Charge: </label><br>
-            <input type="text" id="saltCharge" name="saltCharge" class="bv_saltChargeEditConfirm" readonly>
+            <input type="text" id="saltCharge" name="saltCharge" class="bv_saltChargeEditConfirm form-control" style="width: 100px;" readonly>
             <label for="saltStruct">Structure: </label><br>
             <div class="bv_saltStructEditConfirm"></div>
             <br>
@@ -302,11 +302,21 @@
                             </tr>
                         </table>
                     </div>
+                    <div class="bv_saltDeletedSuccessfullyMessage" style="display: none;">
+                        <p>Salt <span class="bv_saltCodeName"></span> has successfully been deleted</p>
+                    </div>
+                    <div class="bv_errorDeletingSaltMessage" style="display: none;">
+                        <p>An error occured deleting Salt <span class="bv_saltCodeName"></span>. Server Message: </p>
+                        <p class="bv_deleteErrorMessage"></p>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <div class="bv_deleteButtons">
                         <button type="button" class="btn btn-primary bv_cancelDelete">Cancel</button>
                         <button type="button" class="btn btn-danger bv_confirmDeleteSaltButton">Delete Salt</button>
+                    </div>
+                    <div class="bv_okayDeleteButton" style="display: none;">
+                        <button type="button" class="btn btn-primary bv_okayDelete">Okay</button>
                     </div>
                 </div>
             </div>

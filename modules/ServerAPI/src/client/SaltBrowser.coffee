@@ -462,6 +462,7 @@ class SaltBrowserController extends Backbone.View
 	handleDeleteSaltClicked: =>
 		@$(".bv_saltUserName").html @saltController.model.get("name") 
 		@$(".bv_deleteButtons").show()
+		@$(".bv_okayDeleteButton").hide()
 		@$(".bv_errorDeletingSaltMessage").hide()
 		@$(".bv_deleteWarningMessage").show()
 		@$(".bv_deletingStatusIndicator").hide()
@@ -483,14 +484,15 @@ class SaltBrowserController extends Backbone.View
 
 		$.ajax(
 			url: "/api/cmpdRegAdmin/salts/#{@saltController.model.get("id")}", 
-			type: 'DELETE', 
+			type: 'DELETE',
+			dataType: 'text',
 			success: (result) =>
-				@$(".bv_deleteSaltStatus").show()
+				@$(".bv_okayDeleteButton").show()
 				@$(".bv_deletingStatusIndicator").hide()
 				@$(".bv_saltDeletedSuccessfullyMessage").show()
 				@searchController.doSearch("*")
 			error: (errorMsg) =>
-				@$(".bv_deleteSaltStatus").show()
+				@$(".bv_okayDeleteButton").show()
 				@$(".bv_deletingStatusIndicator").hide()
 				@$(".bv_deleteErrorMessage").html errorMsg.responseText
 				@$(".bv_errorDeletingSaltMessage").show()
@@ -502,7 +504,6 @@ class SaltBrowserController extends Backbone.View
 
 	handleOkayDeleteButtonClicked: =>
 		@$(".bv_confirmDeleteSalt").modal('hide')
-		@$(".bv_deleteSaltStatus").hide()
 
 	handleEditSaltClicked: =>
 		@editFieldNotificationController.clearAllNotificiations()
