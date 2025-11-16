@@ -115,9 +115,9 @@ class BasicFileValidateAndSaveController extends Backbone.View
 	validateParseFile: =>
 		if @parseFileUploaded and not @$(".bv_next").attr('disabled')
 			@notificationController.clearAllNotificiations()
-			@$('.bv_validateStatusDropDown').modal
+			@$('.bv_validateStatusDropDown').modal({
 				backdrop: "static"
-			@$('.bv_validateStatusDropDown').modal "show"
+			}).modal("show")
 			dataToPost = @prepareDataToPost(true)
 			$.ajax
 				type: 'POST'
@@ -131,9 +131,9 @@ class BasicFileValidateAndSaveController extends Backbone.View
 	parseAndSave: =>
 		if @parseFileUploaded and @filePassedValidation
 			@notificationController.clearAllNotificiations()
-			@$('.bv_saveStatusDropDown').modal
+			@$('.bv_saveStatusDropDown').modal({
 				backdrop: "static"
-			@$('.bv_saveStatusDropDown').modal("show")
+			}).modal("show")
 			dataToPost = @prepareDataToPost(false)
 			$.ajax
 				type: 'POST'
@@ -280,6 +280,7 @@ class BasicFileValidateAndSaveController extends Backbone.View
 	handleFormInvalid: =>
 		@$(".bv_next").attr 'disabled', 'disabled'
 		@$(".bv_save").attr 'disabled', 'disabled'
+		@$(".bv_back").removeAttr 'disabled'  # Ensure back button stays enabled
 		@$('.bv_notifications').show()
 
 	handleFormValid: =>
