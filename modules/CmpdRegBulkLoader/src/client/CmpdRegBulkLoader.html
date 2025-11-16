@@ -3,47 +3,47 @@
     <div class="navbar navbar-inverse navbar-fixed-top">
         <div class="container-fluid">
             <div class="navbar-header">
-                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand bv_headerName" href="/CmpdRegBulkLoader"></a>
+                <a class="bv_headerName navbar-brand" href="/">ACAS</a>
             </div>
-            <div class="collapse navbar-collapse" id="navbar-collapse">
-                <p class="navbar-text navbar-right bv_userInfo" style="">
-                    Welcome
-                    <a href="#" class="navbar-link bv_loginUserFirstName">First Name</a>
-                    <a href="#" class="navbar-link bv_loginUserLastName">Last Name</a>
-                    <a href="/logout" class="btn btn-sm bv_logout" style="margin-top:0px;margin-left:5px;">Logout</a>
-                </p>
-                <ul class="nav navbar-nav navbar-right">
-                    <li class="dropdown">
-                        <a class="dropdown-toggle bv_registerDropdown" role="button" data-toggle="dropdown" href="#">Register
-                            <b class="caret" style="margin-top:7px;"></b>
-                        </a>
-                        <ul class="dropdown-menu" role="menu" >
-                            <li role="presentation">
-                                <!--<a class="bv_singleRegDropdown" role="menuitem" href="#">Single Compound Registration</a>-->
-                                <a class="bv_bulkRegDropdown" role="menuitem" href="#">Bulk Compound Registration</a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li>
-                        <a class="bv_searchNavOption" href="#">Search</a>
-                    </li>
-                    <li class="dropdown bv_adminDropdownWrapper">
-                        <a class="dropdown-toggle bv_adminDropdown" role="button" data-toggle="dropdown" href="#">Admin
-                            <b class="caret" style="margin-top:7px;"></b>
-                        </a>
-                        <ul class="dropdown-menu" role="menu">
-                            <li role="presentation">
-                                <a class="bv_purgeFileDropdown" role="menuitem" href="#">Purge Files</a>
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
+            
+            <div class="navbar-collapse">
+                <div class="navbar-right" style="display: flex; align-items: center;">
+                    <ul class="nav navbar-nav" style="margin-bottom: 0;">
+                        <li class="dropdown">
+                            <a class="dropdown-toggle bv_registerDropdown" role="button" data-toggle="dropdown" href="#">Register
+                                <b class="caret"></b>
+                            </a>
+                            <ul class="dropdown-menu" role="menu" >
+                                <li role="presentation">
+                                    <!--<a class="bv_singleRegDropdown" role="menuitem" href="#">Single Compound Registration</a>-->
+                                    <a class="bv_bulkRegDropdown" role="menuitem" tabindex="-1" href="#">Bulk Compound Registration</a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li>
+                            <a class="bv_searchNavOption" href="#">Search</a>
+                        </li>
+                        <li class="dropdown bv_adminDropdownWrapper">
+                            <a class="dropdown-toggle bv_adminDropdown" role="button" data-toggle="dropdown" href="#">Admin
+                                <b class="caret"></b>
+                            </a>
+                            <ul class="dropdown-menu" role="menu">
+                                <li role="presentation">
+                                    <a class="bv_purgeFileDropdown" role="menuitem" tabindex="-1" href="#">Purge Files</a>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <div class="navbar-text bv_userInfo" style="margin-right: 15px; margin-left: 15px;">
+                        <span>Logged in as</span>
+                        <span class="bv_username">
+                            <a href="#" class="navbar-link bv_loginUserFirstName" style="margin-left: 5px;">First Name</a>
+                            <a href="#" class="navbar-link bv_loginUserLastName">Last Name</a>
+                            <select class="bv_fastUserSelect form-control" style="display: inline-block; width: auto; margin: 0 5px; height: 30px; padding: 2px 8px; font-size: 12px;"></select>
+                        </span>
+                            <a href="/logout" class="btn btn-primary btn-sm navbar-btn bv_logout" style="margin-left: 10px;">Logout</a>
+                    </div>
+                </div>
 
             </div><!--/.nav-collapse -->
         </div>
@@ -72,19 +72,23 @@
         <div class="well" style="background:#FFFFFF;height:310px;margin-bottom:10px;">
             <div class="">Select an SD file:</div>
             <span>
-                <div class="well bv_browseSdfFile" style="padding-bottom:5px; height:35px; padding-top:10px;margin-left:0px;"></div>
-                <div class="">
-                    <div class="form-group col-md-6">
-                        <label style="font-weight:bold;">Detected SDF Properties</label>
-                        <textarea class="bv_detectedSdfPropertiesList form-control" rows="9" style="resize:none;" disabled="disabled" placeholder="No file uploaded."></textarea>
+                <div class="well bv_browseSdfFile" style="padding-bottom:5px; height:50px; padding-top:10px;margin-left:0px;"></div>
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="form-group">
+                            <label style="font-weight:bold;">Detected SDF Properties</label>
+                            <textarea class="bv_detectedSdfPropertiesList form-control" rows="7" style="resize:none;" disabled="disabled" placeholder="No file uploaded."></textarea>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <!--<label>Records Read:</label>-->
-                        <div style="margin-bottom:1px;">Records Read:
-                            <span class="bv_recordsRead">0</span></div>
-                        <!--<input type="text" disabled="disabled"/>-->
-                        <button type="button" class="btn bv_readMore" style="margin-top:4px;">Read 100 More</button>
-                        <button type="button" class="btn bv_readAll" style="width:120px;margin-top:4px;margin-left:6px;">Read All</button>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <!--<label>Records Read:</label>-->
+                            <div style="margin-bottom:1px;">Records Read:
+                                <span class="bv_recordsRead">0</span></div>
+                            <!--<input type="text" disabled="disabled"/>-->
+                            <button type="button" class="btn btn-default bv_readMore" style="margin-top:4px;">Read 100 More</button>
+                            <button type="button" class="btn btn-default bv_readAll" style="width:120px;margin-top:4px;margin-left:6px;">Read All</button>
+                        </div>
                     </div>
                 </div>
             </span>
