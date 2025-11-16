@@ -51,6 +51,8 @@
     margin-left:0px !important;
 }
 
+
+
 .bv_browseSdfFile form.fileupload table.table.bv_fileInfo tbody.files tr.template-upload.fade.in td{
     border-top-width:0px;
     margin-bottom:100px;
@@ -75,12 +77,18 @@
 }
 
 .bv_bulkReg .bv_configuration .select2 {
-    margin-left:6px;
+    width: 100% !important;
 }
 
 .bv_bulkReg .bv_assignProperties .select2 {
-    margin-left:20px !important;
     width: 307px !important;
+}
+
+/* Ensure all form controls in assign properties have consistent widths */
+.bv_assignProperties .form-control {
+    width: 300px !important;
+    min-width: 300px !important;
+    max-width: 300px !important;
 }
 
 .bv_bulkReg .error .select2-selection__rendered {
@@ -93,4 +101,55 @@
 
 .bv_propInfo .form-inline {
     clear: both;
+}
+
+/* Remove fixed width - using col-md-10 Bootstrap class instead */
+
+/* Allow columns to overflow their Bootstrap constraints for fixed width inputs */
+.bv_assignProperties .col-md-4 {
+    overflow: visible;
+    min-width: 320px;
+}
+
+/* Allow SDF Property labels to use their inline text-align style */
+.bv_assignProperties .bv_sdfProperty {
+    padding-right: 15px;
+}
+
+/* Ensure assigned properties list and form elements use full width within the well */
+.bv_assignProperties .bv_assignedPropertiesList {
+    width: 100% !important;
+}
+
+.bv_assignProperties .bv_unassignedProperties {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+.bv_assignProperties .form-group {
+    width: 100% !important;
+}
+
+/* Ensure delete buttons are properly styled and visible */
+.bv_assignProperties .bv_deleteProperty {
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 1;
+    color: #000;
+    text-shadow: 0 1px 0 #fff;
+    opacity: 0.4;
+    cursor: pointer;
+    background: transparent;
+    border: 0;
+    -webkit-appearance: none;
+    padding: 0;
+    margin-top: 2px;
+}
+
+.bv_assignProperties .bv_deleteProperty:hover,
+.bv_assignProperties .bv_deleteProperty:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+    opacity: 0.6;
 }

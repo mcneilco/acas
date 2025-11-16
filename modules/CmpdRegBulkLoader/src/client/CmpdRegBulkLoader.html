@@ -52,33 +52,33 @@
 
     <div class="container" style="margin-left:15px;">
         <div class="bv_bulkReg"></div>
-        <div class="bv_bulkRegSummary hide"></div>
-        <div class="bv_bulkValSummary hide"></div>
-        <div class="bv_purgeFiles hide"></div>
+        <div class="bv_bulkRegSummary" style="display: none;"></div>
+        <div class="bv_bulkValSummary" style="display: none;"></div>
+        <div class="bv_purgeFiles" style="display: none;"></div>
     </div>
 
 </script>
 
 <script type="text/template" id="BulkRegCmpdsView" xmlns="http://www.w3.org/1999/html">
-    <div class="alert bv_disableCmpdRegistrationMessage span6 offset3 hide"></div>
+    <div class="alert bv_disableCmpdRegistrationMessage col-md-6 col-md-offset-3" style="display: none;"></div>
     <div class="bv_detectSdfProperties"></div>
     <div class="bv_assignSdfProperties"></div>
 </script>
 
 <script type="text/template" id="DetectSdfPropertiesView" xmlns="http://www.w3.org/1999/html">
 
-    <div class="span9">
+    <div class="col-md-10">
         <h3>Bulk Compound Registration</h3>
         <div class="well" style="background:#FFFFFF;height:310px;margin-bottom:10px;">
             <div class="">Select an SD file:</div>
             <span>
                 <div class="well bv_browseSdfFile" style="padding-bottom:5px; height:35px; padding-top:10px;margin-left:0px;"></div>
                 <div class="">
-                    <div class="form-group span6" style="margin-left:0px;">
+                    <div class="form-group col-md-6">
                         <label style="font-weight:bold;">Detected SDF Properties</label>
-                        <textarea class="bv_detectedSdfPropertiesList" rows="9" style="width:545px; resize:none;" disabled="disabled" placeholder="No file uploaded."></textarea>
+                        <textarea class="bv_detectedSdfPropertiesList form-control" rows="9" style="resize:none;" disabled="disabled" placeholder="No file uploaded."></textarea>
                     </div>
-                    <div class="form-group" style="margin-left:0px;">
+                    <div class="form-group">
                         <!--<label>Records Read:</label>-->
                         <div style="margin-bottom:1px;">Records Read:
                             <span class="bv_recordsRead">0</span></div>
@@ -94,94 +94,109 @@
 </script>
 
 <script type="text/template" id="AssignSdfPropertiesView" xmlns="http://www.w3.org/1999/html">
-    <div class="span9 bv_configuration">
+    <div class="col-md-10 bv_configuration">
         <h4 style="font-size:16px;">Configuration</h4>
         <div class="well" style="background:#FFFFFF;padding-top:25px;padding-bottom:0px;">
-            <div class="form-horizontal" style="margin-left:0px;width:410px;">
-                <div class="control-group bv_group_labelPrefix" style="margin-bottom:25px;width:400px;margin-right:0px;">
-                    <label class="control-label" style="width:100px;">Prefix</label>
-                    <div class="controls" style="margin-left:10px;width:420px;">
-                        <select class="bv_labelPrefix" style="width:300px;margin-left:6px;">
+            <div class="form-horizontal">
+                <div class="form-group bv_group_labelPrefix">
+                    <label class="control-label col-sm-3">Prefix</label>
+                    <div class="col-sm-6">
+                        <select class="bv_labelPrefix form-control">
                         </select>
                     </div>
                 </div>
             </div>
-            <div class="form-horizontal" style="margin-left:0px;width:410px;">
-                <div class="control-group bv_group_dbProject" style="margin-bottom:25px;width:400px;margin-right:0px;">
-                    <label class="control-label" style="width:100px;">DB Project</label>
-                    <div class="controls" style="margin-left:10px;width:420px;">
-                        <select class="bv_dbProject" style="width:300px;margin-left:6px;">
+            <div class="form-horizontal">
+                <div class="form-group bv_group_dbProject">
+                    <label class="control-label col-sm-3">DB Project</label>
+                    <div class="col-sm-6">
+                        <select class="bv_dbProject form-control">
                         </select>
                     </div>
                 </div>
             </div>
 
-            <div class="form-horizontal" style="margin-left:0px;">
-                <div class="control-group bv_group_fileDate" style="margin-bottom:25px;margin-right:0px;">
-                    <label class="control-label" style="width:100px;">File Date</label>
-                    <div class="controls" style="margin-left:10px;width:420px;">
-                        <div class="input-append date" id="dp3" data-date="" data-date format="yy-mm-dd">
-                            <input class="bv_fileDate" type="text" value="" placeholder="yyyy-mm-dd" style="width:259px;margin-left:6px;">
-                            <span class="add-on bv_fileDateIcon"><i class="icon-th"></i></span>
+            <div class="form-horizontal">
+                <div class="form-group bv_group_fileDate">
+                    <label class="control-label col-sm-3">File Date</label>
+                    <div class="col-sm-6">
+                        <div class="input-group date" id="dp3" data-date="" data-date format="yy-mm-dd">
+                            <input class="bv_fileDate form-control" type="text" value="" placeholder="yyyy-mm-dd">
+                            <span class="input-group-addon bv_fileDateIcon"><i class="glyphicon glyphicon-th"></i></span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="form-horizontal" style="margin-left:0px;">
-                <div class="control-group bv_group_useTemplate" style="margin-bottom:25px;margin-right:0px;">
-                    <label class="control-label" style="width:100px;">Use Template</label>
-                    <div class="controls" style="margin-left:10px;width:420px;">
-                        <select class="bv_useTemplate" style="width:300px;margin-left:6px;">
+            <div class="form-horizontal">
+                <div class="form-group bv_group_useTemplate">
+                    <label class="control-label col-sm-3">Use Template</label>
+                    <div class="col-sm-6">
+                        <select class="bv_useTemplate form-control">
                         </select>
+                        <div class="bv_templateWarning"></div>
                     </div>
-                    <div class="bv_templateWarning"></div>
                 </div>
             </div>
 
         </div>
     </div>
-    <div class="span9 bv_assignProperties hide">
+    <div class="col-md-10 bv_assignProperties" style="display: none;">
         <h4 style="font-size:16px;">Assign SDF Properties</h4>
         <div class="well" style="background:#FFFFFF;padding-bottom:10px;">
             <div class="well">
                 <span>Assign the SDF Properties to their paired database column. Database columns requiring a default value are shown with an asterisk* in the drop-down list. Default values will assign a value to a database entry when that matching SDF property is null or missing.</span>
             </div>
             <!--<div class="span12 well well-small">-->
-            <div class="span12" style="margin-left:0px;">
-                <span class="span2" style="margin-left:0px;margin-bottom:5px;font-weight:bold;font-size:15px;text-align:right;">SDF Property</span>
-                <span class="span3" style="margin-left:25px;margin-bottom:5px;font-weight:bold;font-size:15px;width:305px;">Database Property</span>
-                <span class="span2" style="margin-left:25px;margin-bottom:5px;font-weight:bold;font-size:15px;">Default Value</span>
+            <div class="row">
+                <div class="col-md-3">
+                    <span style="font-weight:bold;font-size:15px;text-align:right;display:block;">SDF Property</span>
+                </div>
+                <div class="col-md-4">
+                    <span style="font-weight:bold;font-size:15px;display:block;">Database Property</span>
+                </div>
+                <div class="col-md-3">
+                    <span style="font-weight:bold;font-size:15px;display:block;">Default Value</span>
+                </div>
+                <div class="col-md-2"></div>
             </div>
 
-            <div class="span9" style="height:1px;width:830px;margin-bottom:10px;margin-left:0px;background-color:#f5f5f5;"></div>
+            <div class="row">
+                <div class="col-md-12">
+                    <hr style="margin: 10px 0;">
+                </div>
+            </div>
             <!--</div>-->
 
             <div class="bv_assignedPropertiesList"></div>
-            <span class="form-inline">The following required database properties still need to be assigned:</span>
-            <span class="form-inline">
-                <textarea class="bv_unassignedProperties" rows="5" style="width:816px; resize:none;margin-top:5px;color:red;" disabled="disabled" placeholder="All required database properties have been assigned."></textarea>
-            </span>
+            <div class="form-group">
+                <label>The following required database properties still need to be assigned:</label>
+                <textarea class="bv_unassignedProperties form-control" rows="5" style="resize:none;color:red;" disabled="disabled" placeholder="All required database properties have been assigned."></textarea>
+            </div>
         </div>
 
     </div>
 
-    <div class="span9 bv_saveOptions hide" style="margin-top:5px;margin-bottom:15px;">
-        <!--<span class="span5"></span>-->
+    <div class="col-md-10 bv_saveOptions" style="display: none; margin-top:5px;margin-bottom:15px;">
         <div class="">
-            <span class="checkbox" style="padding-left:10px;">
-                <input type="checkbox"class="bv_saveTemplate" style="margin-right: 0px;margin-left: 0px;margin-top:12px;"/>Save Template
-                <span class="control-group bv_group_templateName">
-                    <input class="bv_templateName" style="width:286px;margin-left:7px;" type="text" placeholder="Template Name" disabled="disabled"/>
-                </span>
-            </span>
-            <span class = "bv_valCmpdsContainer"><button type="button" class="btn btn-success bv_valCmpds pull-right" disabled="disabled">Validate Compounds</button></span>
-            <div class="bv_validating pull-right hide" style="margin-right:5px; padding-top:5px;color:red;">Validating...</div>
-            <span class = "hide bv_regCmpdsContainer"><button type="button" class="btn btn-success bv_regCmpds pull-right" disabled="disabled">Register Compounds</button></span>
-            <div class="bv_registering pull-right hide" style="margin-right:5px; padding-top:5px;color:red;">Registering...</div>
-            <!--<div class="bv_errorMessage pull-right hide" style="margin-right:5px; padding-top:5px;color:red;"></div>-->
+            <div class="checkbox" style="display: inline-block; margin-right: 15px;">
+                <label>
+                    <input type="checkbox" class="bv_saveTemplate" style="margin-right: 5px;"/>Save Template
+                </label>
+            </div>
+            <div class="form-group bv_group_templateName" style="display: inline-block; margin-right: 15px;">
+                <input class="bv_templateName form-control" type="text" placeholder="Template Name" disabled="disabled" style="width: 200px;"/>
+            </div>
+            <div class="bv_valCmpdsContainer pull-right">
+                <button type="button" class="btn btn-success bv_valCmpds" disabled="disabled">Validate Compounds</button>
+            </div>
+            <div class="bv_validating pull-right hide" style="margin-right: 5px; color:red;">Validating...</div>
+            <div class="bv_regCmpdsContainer pull-right" style="display: none;">
+                <button type="button" class="btn btn-success bv_regCmpds" disabled="disabled">Register Compounds</button>
+            </div>
+            <div class="bv_registering pull-right" style="display: none; margin-right: 5px; color:red;">Registering...</div>
         </div>
-        <div class="alert alert-warning bv_overwriteWarning hide" role="alert" style="margin-top:10px;width:375px;">
+        <div class="alert alert-warning bv_overwriteWarning" role="alert" style="display: none; margin-top:10px;width:375px;">
             <span class="bv_overwriteMessage"></span>
             <span class="bv_overwrite">
                 <label class="radio inline" style="padding-top:0px;margin-left:10px;">
@@ -212,19 +227,31 @@
 
 <script type="text/template" id="AssignedPropertyView" xmlns="http://www.w3.org/1999/html">
 
-    <div class="form-inline" style="margin-bottom:10px;margin-left:0px;">
-        <span class="bv_sdfProperty span2" style="margin-top:5px;margin-left:0px;text-align:right;overflow-wrap:break-word;">Corporate ID</span>
-        <span class="control-group bv_group_dbProperty">
-            <select class="bv_dbProperty span3"></select>
-        </span>
-        <span class="control-group bv_group_defaultVal">
-            <input class="bv_defaultVal span2" style="margin-left:20px;width:270px;" type="text"/>
-            <select class="bv_defaultValSelect hide" style="width:300px;margin-left:6px;">
-        </span>
-        <button class="close bv_deleteProperty hide" style="margin-top:1px;">&times;</button>
+    <div class="row" style="margin-bottom: 10px;">
+        <div class="col-md-3">
+            <span class="bv_sdfProperty" style="text-align:right;display:block;padding-top:7px;word-wrap:break-word;">Corporate ID</span>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group bv_group_dbProperty">
+                <select class="bv_dbProperty form-control" style="width:100%;"></select>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group bv_group_defaultVal">
+                <input class="bv_defaultVal form-control" type="text" style="width:100%;"/>
+                <select class="bv_defaultValSelect form-control" style="display: none; width:100%;">
+            </div>
+        </div>
+        <div class="col-md-2">
+            <button class="close bv_deleteProperty" style="display: none; margin-top: 5px;">&times;</button>
+        </div>
     </div>
-    <div class="span9" style="height:1px;width:830px;margin-bottom:10px;margin-left:0px;background-color:#f5f5f5;"></div>
-
+    <div class="row">
+        <div class="col-md-12">
+            <hr style="margin: 5px 0;">
+        </div>
+    </div>
+a
 </script>
 
 <script type="text/template" id="AssignedPropertiesListView" xmlns="http://www.w3.org/1999/html">
@@ -237,7 +264,7 @@
 </script>
 
 <script type="text/template" id="BulkRegCmpdsSummaryView" xmlns="http://www.w3.org/1999/html">
-    <div class="span9">
+    <div class="col-md-10">
         <h3>Bulk Compound Registration Complete</h3>
         <h4 style="font-size:16px;">Registration Summary:</h4>
         <div class="well" style="background:#FFFFFF;margin-bottom:10px;">
@@ -250,7 +277,7 @@
 </script>
 
 <script type="text/template" id="BulkValCmpdsSummaryView" xmlns="http://www.w3.org/1999/html">
-    <div class="span9">
+    <div class="col-md-10">
         <h3>Validation Complete</h3>
         <h4 style="font-size:16px;">Validation Summary:</h4>
         <div class="well" style="background:#FFFFFF;margin-bottom:10px;">
@@ -291,7 +318,7 @@
 </script>
 
 <script type="text/template" id="PurgeFilesView" xmlns="http://www.w3.org/1999/html">
-    <div class="span9">
+    <div class="col-md-10">
         <h3>Purge Files</h3>
         <div class="well" style="background:#FFFFFF;margin-bottom:10px;">
             <span>
@@ -299,10 +326,10 @@
             </span>
             <div class="bv_fileTableController"></div>
         </div>
-        <div class="span9" style="margin-left:0px;">
+        <div class="col-md-10" style="margin-left:0px;">
             <button type="button" class="btn bv_purgeFileBtn pull-right">Purge File</button>
         </div>
-        <div class="well bv_purgeSummaryWrapper span9 hide" style="background:#FFFFFF;width:830px;margin-top:10px;margin-bottom:10px;margin-left:0px;">
+        <div class="well bv_purgeSummaryWrapper col-md-10" style="display: none; background:#FFFFFF;width:830px;margin-top:10px;margin-bottom:10px;margin-left:0px;">
             <div class="bv_purgeSummary"></div>
             <div class="bv_downloadPurgedFile" style="margin-top:15px;">Click to download the original purged file:
                 <a class="bv_purgedFileName"></a>
@@ -311,39 +338,45 @@
         </div>
     </div>
 
-    <div class='modal bv_dependencyCheckModal hide'>
-        <div class="modal-header">
-            <h3>Checking dependencies</h3>
-        </div>
-        <div class="modal-body">
-            <div>
-                <br />
-                <div class="progress progress-striped active">
-                    <div class="bar" style="width: 100%;"></div>
+    <div class='modal fade bv_dependencyCheckModal' style="display: none;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Checking dependencies</h3>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <br />
+                        <div class="progress progress-striped active">
+                            <div class="progress-bar" style="width: 100%;"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="modal hide bv_showDependenciesModal">
-        <div class="modal-header">
-            <h4 class="bv_showDependenciesTitle"></h4>
-        </div>
-        <div class="modal-body">
-            <div class="bv_purgeWarningMessage">
-                <span class="bv_dependenciesSummary"></span>
-            </div>
-            <div class="bv_deletingStatusIndicator hide">
-                <table width="100%"></table>
-                <tr>
-                    <td style="text-align: center; width: 100%">
-                        <h4>Deleting <%- window.conf.experiment.label %></h4>
-                        <div class="progress progress-striped active" style="width: 100%;">
-                            <div class="bar" style="width: 100%;"></div>
-                        </div>
-                    </td>
-                </tr>
-            </div>
+    <div class="modal fade bv_showDependenciesModal" style="display: none;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="bv_showDependenciesTitle"></h4>
+                </div>
+                <div class="modal-body">
+                    <div class="bv_purgeWarningMessage">
+                        <span class="bv_dependenciesSummary"></span>
+                    </div>
+                    <div class="bv_deletingStatusIndicator" style="display: none;">
+                        <table width="100%"></table>
+                        <tr>
+                            <td style="text-align: center; width: 100%">
+                                <h4>Deleting <%- window.conf.experiment.label %></h4>
+                                <div class="progress progress-striped active" style="width: 100%;">
+                                    <div class="progress-bar" style="width: 100%;"></div>
+                                </div>
+                            </td>
+                        </tr>
+                    </div>
             <!--<div class="bv_filePurgedSuccessfullyMessage hide">-->
                 <!--<p>The file <span class="bv_requestedPurgeFileName"></span> has successfully been purged</p>-->
             <!--</div>-->
@@ -357,17 +390,21 @@
 		      <a href="#" class="btn btn-danger bv_confirmPurgeFileButton">Purge File</a>
 		      <a href="#" class="btn btn-primary bv_okay">OK</a>
 			  </span>
-            <span class="bv_purging hide" style="color:red;">Purging...</span>
+            <span class="bv_purging" style="display: none; color:red;">Purging...</span>
         </div>
     </div>
 
-    <div class='modal bv_dependenciesCheckErrorModal hide'>
-        <div class="modal-header">
-            <button type="button" class="close bv_closeSaveFailedModal" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only"></span></button>
-            <h4 style="color:red;margin-top:0px;margin-bottom:0px;">Error</h4>
-        </div>
-        <div class="modal-body">
-            <div class="bv_dependenciesCheckError"></div>
+    <div class='modal fade bv_dependenciesCheckErrorModal' style="display: none;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close bv_closeSaveFailedModal" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only"></span></button>
+                    <h4 style="color:red;margin-top:0px;margin-bottom:0px;">Error</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="bv_dependenciesCheckError"></div>
+                </div>
+            </div>
         </div>
     </div>
 
