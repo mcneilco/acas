@@ -708,11 +708,14 @@ class AssignSdfPropertiesController extends Backbone.View
 
 	showValidationErrors: (errors) =>
 		for err in errors
-			@$('.bv_group_'+err.attribute).addClass 'input_error error'
+			@$('.bv_group_'+err.attribute).addClass 'input_error error has-error'
 			@$('.bv_group_'+err.attribute).attr('data-toggle', 'tooltip')
 			@$('.bv_group_'+err.attribute).attr('data-placement', 'bottom')
-			@$('.bv_group_'+err.attribute).attr('data-original-title', err.message)
-			@$("[data-toggle=tooltip]").tooltip();
+			@$('.bv_group_'+err.attribute).attr('title', err.message)
+			@$('.bv_group_'+err.attribute).tooltip({
+				container: 'body',
+				trigger: 'hover focus'
+			})
 
 	clearValidationErrorStyles: =>
 		errorElms = @$('.input_error')
