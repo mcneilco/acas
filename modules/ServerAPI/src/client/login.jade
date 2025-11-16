@@ -6,27 +6,30 @@ block content
                 span.navbar-brand #{logoText}
 
     div.container.loginContainer
-        div.col-md-8.col-md-offset-1
-            h3 Please Login
-            div.well
-                - var action = "/login"
-                if redirectUrl
-                    - var action = '/login?redirect_url=' + redirectUrl
-                form.form-horizontal(action="#{action}", method="post")
-                    div.form-group
-                        label.control-label.col-sm-3 Username:
-                        div.col-sm-9
-                            input.form-control(type="text", name="username")
-                    div.form-group
-                        label.control-label.col-sm-3 Password:
-                        div.col-sm-9
-                            input.form-control(type="password", name="password")
-                    hr.loginDivider
-                    div.form-group
-                        div.col-sm-offset-3.col-sm-9
-                            input.btn.btn-primary(type="submit", value="Submit")
-                            - if (resetPasswordOption)
-                                a.forgotPasswordLink(href="/passwordReset") Forgot your password?
+        div.row
+            div.col-md-6.col-md-offset-3.col-sm-8.col-sm-offset-2
+                div.panel.panel-default
+                    div.panel-heading
+                        h3.panel-title Please Login
+                    div.panel-body
+                        - var action = "/login"
+                        if redirectUrl
+                            - var action = '/login?redirect_url=' + redirectUrl
+                        form.form-horizontal(action="#{action}", method="post", role="form")
+                            div.form-group
+                                label.control-label.col-sm-3(for="username") Username:
+                                div.col-sm-9
+                                    input.form-control(type="text", name="username", id="username", required, autofocus)
+                            div.form-group
+                                label.control-label.col-sm-3(for="password") Password:
+                                div.col-sm-9
+                                    input.form-control(type="password", name="password", id="password", required)
+                            div.form-group
+                                div.col-sm-offset-3.col-sm-9
+                                    button.btn.btn-primary.btn-block(type="submit") Sign In
+                                    - if (resetPasswordOption)
+                                        p.help-block.text-center
+                                            a(href="/passwordReset") Forgot your password?
         - if (redirectUrl)
             div.col-md-7.col-md-offset-1.alert.alert-success.loginError After login you will be redirected to #{redirectUrl}
         - if (message == "Your new password is set.")
