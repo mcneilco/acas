@@ -649,6 +649,50 @@ class StandardizationController extends Backbone.View
 		# @$('.bv_standardizationReasonPanel').hide()
 		@setupCurrentSettingsController()
 
+	# Modal state tracking
+	modalState:
+		dryRunModal: null
+		standardizationModal: null
+		completeModal: null
+
+	# Clean up specific modal and its backdrop
+	cleanupSpecificModal: (modalSelector) ->
+		modal = @$(modalSelector)
+		if modal.length > 0
+			# Remove this specific modal's backdrop
+			modal.data('bs.modal')?.$backdrop?.remove()
+			# If this is the only modal, clean up body state
+			if @$('.modal.in').length <= 1
+				$('body').removeClass('modal-open')
+
+	# Hide a specific modal with proper cleanup
+	hideStandardizationModal: (modalSelector, callback) ->
+		modal = @$(modalSelector)
+		if modal.length > 0 and modal.hasClass('in')
+			modal.on 'hidden.bs.modal.standardization', =>
+				modal.off 'hidden.bs.modal.standardization'
+				@cleanupSpecificModal(modalSelector)
+				callback?()
+			modal.modal 'hide'
+		else
+			@cleanupSpecificModal(modalSelector)
+			callback?()
+
+	# Show standardization complete modal with data
+	showStandardizationCompleteModal: (report) ->
+		@$('.bv_standardizationCompleteRecordedDate').html UtilityFunctions::convertMSToYMDDate report.recordedDate
+		@$('.bv_standardizationCompleteStructuresStandardizedCount').html report.structuresStandardizedCount
+		@$('.bv_standardizationCompleteStandardizationErrorCount').html report.standardizationErrorCount
+		@$('.bv_standardizationCompleteRegistrationErrorCount').html report.registrationErrorCount
+		@$('.bv_standardizationCompleteChangedStructureCount').html report.changedStructureCount
+		@$('.bv_standardizationCompleteDisplayChangeCount').html report.displayChangeCount
+		@$('.bv_standardizationCompleteNewDuplicateCount').html report.newDuplicateCount
+		@$('.bv_standardizationCompleteAsDrawnDisplayChangeCount').html report.asDrawnDisplayChangeCount
+		@$('.bv_standardizationCompleteExistingDuplicateCount').html report.existingDuplicateCount
+		@$('.bv_standardizationCompleteModal').modal
+			backdrop: 'static'
+		@$('.bv_standardizationCompleteModal').modal 'show'
+
 	openStandardizationControllerSocket: ->
 		unless @socket?
 			@socket = io '/standardizationController:connected'
@@ -664,33 +708,15 @@ class StandardizationController extends Backbone.View
 
 			@socket.on 'dryRunOrStandardizationComplete', (runType, report) =>
 				if runType is 'dryRun'
-					@$('.bv_executingStandardizationDryRunModal').modal 'hide'
-					@initialize()
+					@hideStandardizationModal('.bv_executingStandardizationDryRunModal', => @initialize())
 				else if runType is 'standardization'
-					@$('.bv_executingStandardizationModal').modal 'hide'
-					@$('.bv_standardizationCompleteRecordedDate').html UtilityFunctions::convertMSToYMDDate report.recordedDate
-					@$('.bv_standardizationCompleteStructuresStandardizedCount').html report.structuresStandardizedCount
-					@$('.bv_standardizationCompleteStandardizationErrorCount').html report.standardizationErrorCount
-					@$('.bv_standardizationCompleteRegistrationErrorCount').html report.registrationErrorCount
-					@$('.bv_standardizationCompleteChangedStructureCount').html report.changedStructureCount
-					@$('.bv_standardizationCompleteDisplayChangeCount').html report.displayChangeCount
-					@$('.bv_standardizationCompleteNewDuplicateCount').html report.newDuplicateCount
-					@$('.bv_standardizationCompleteAsDrawnDisplayChangeCount').html report.asDrawnDisplayChangeCount
-					@$('.bv_standardizationCompleteExistingDuplicateCount').html report.existingDuplicateCount
-					@$('.bv_standardizationCompleteModal').modal
-						backdrop: 'static'
-					@$('.bv_standardizationCompleteModal').modal 'show'
+					@hideStandardizationModal('.bv_executingStandardizationModal', => @showStandardizationCompleteModal(report))
 
 			@socket.on 'dryRunOrStandardizationError', (runType, report) =>
 				if runType is 'dryRun'
-					@$('.bv_executingStandardizationDryRunModal').modal 'hide'
-					@$('.bv_executeDryRunError').show()
+					@hideStandardizationModal('.bv_executingStandardizationDryRunModal', => @$('.bv_executeDryRunError').show())
 				else if runType is 'standardization'
-					@$('.bv_executingStandardizationModal').modal 'hide'
-					@$('.bv_executeStandardizationError').show()
-				# @$('.bv_standardizationDryRunReportStats').hide()
-				# @$('.bv_standardizationDryRunReport').hide()
-				# @$('.bv_downloadStandardizationDryRunFiles').hide()
+					@hideStandardizationModal('.bv_executingStandardizationModal', => @$('.bv_executeStandardizationError').show())
 				@$('.bv_standardizerControlsWrapper').hide()
 
 	setupCurrentSettingsController: ->
@@ -793,8 +819,7 @@ class StandardizationController extends Backbone.View
 
 	handleStandardizationCompleteModalCloseClicked: ->
 		#refreshes standardization history summary table and last dry run report summary table
-		@$('.bv_standardizationCompleteModal').modal 'hide'
-		@initialize()
+		@hideStandardizationModal('.bv_standardizationCompleteModal', => @initialize())
 
 	enableExecuteButtons: ->
 		@$('.bv_executeDryRun').removeAttr 'disabled'
