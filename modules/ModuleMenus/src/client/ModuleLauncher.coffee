@@ -132,16 +132,18 @@ class ModuleLauncherMenuCollapsibleHeaderController extends Backbone.View
 		@$('.bv_modules').append el
 
 	handleClick: =>
-		@$('.bv_modules').slideToggle 200
-		@$('.bv_caret').toggle()
+		if @$('.bv_modules').is(':visible')
+			@collapse()
+		else
+			@expand()
 
 	collapse: ->
-		@$('.bv_modules').hide()
+		@$('.bv_modules').slideUp(200)
 		@$('.bv_caret_collapse').hide()
 		@$('.bv_caret_expand').show()
 
 	expand: ->
-		@$('.bv_modules').show()
+		@$('.bv_modules').slideDown(200)
 		@$('.bv_caret_expand').hide()
 		@$('.bv_caret_collapse').show()
 
