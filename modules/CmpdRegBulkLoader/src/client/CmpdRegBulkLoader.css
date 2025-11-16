@@ -132,24 +132,6 @@
 
 /* Ensure delete buttons are properly styled and visible */
 .bv_assignProperties .bv_deleteProperty {
-    font-size: 18px;
-    font-weight: bold;
-    line-height: 1;
-    color: #000;
-    text-shadow: 0 1px 0 #fff;
-    opacity: 0.4;
-    cursor: pointer;
-    background: transparent;
-    border: 0;
-    -webkit-appearance: none;
-    padding: 0;
-    margin-top: 2px;
-}
-
-.bv_assignProperties .bv_deleteProperty:hover,
-.bv_assignProperties .bv_deleteProperty:focus {
-    color: #000;
-    text-decoration: none;
-    cursor: pointer;
-    opacity: 0.6;
+    /* Allow Bootstrap button styling to work properly */
+    margin-top: 2px !important;
 }

@@ -155,10 +155,10 @@
                 <div class="col-md-4">
                     <span style="font-weight:bold;font-size:15px;display:block;">Database Property</span>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <span style="font-weight:bold;font-size:15px;display:block;">Default Value</span>
                 </div>
-                <div class="col-md-2"></div>
+                <div class="col-md-1"></div>
             </div>
 
             <div class="row">
@@ -236,22 +236,20 @@
                 <select class="bv_dbProperty form-control" style="width:100%;"></select>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="form-group bv_group_defaultVal">
+        <div class="col-md-4" style="position: relative;">
+            <div class="form-group bv_group_defaultVal" style="display: inline-block; width: calc(100% - 25px);">
                 <input class="bv_defaultVal form-control" type="text" style="width:100%;"/>
-                <select class="bv_defaultValSelect form-control" style="display: none; width:100%;">
+                <select class="bv_defaultValSelect form-control" style="display: none; width:100%;"></select>
             </div>
+            <button class="bv_deleteProperty" style="display: none; position: absolute; right: -20px; top: 5px; padding: 0; border: none; background: transparent; color: #666; font-size: 16px; cursor: pointer;" title="Delete Property">&times;</button>
         </div>
-        <div class="col-md-2">
-            <button class="close bv_deleteProperty" style="display: none; margin-top: 5px;">&times;</button>
-        </div>
+        <div class="col-md-1"></div>
     </div>
     <div class="row">
         <div class="col-md-12">
             <hr style="margin: 5px 0;">
         </div>
     </div>
-a
 </script>
 
 <script type="text/template" id="AssignedPropertiesListView" xmlns="http://www.w3.org/1999/html">
