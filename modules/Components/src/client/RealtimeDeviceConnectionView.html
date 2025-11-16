@@ -7,11 +7,11 @@
 
     <form class="form-horizontal hide bv_formContainer">
         <div class="row" style="margin-left:-93px;">
-            <div class="control-group">
-                <label class="control-label">
+            <div class="form-group">
+                <label class="control-label col-sm-2">
                     Device:
                 </label>
-                <div class="controls">
+                <div class="col-sm-10">
                     <select class="bv_deviceSelectContainer"></select>
                     <span class="label label-info bv_connecting hide">Connecting</span>
                     <span class="label label-success bv_connected hide">Connected</span>
@@ -19,9 +19,9 @@
                         <span class="label label-info ">Disconnected</span>
                         <a href="#" class="bv_reconnect" style="padding-left: 0.3em;">Reconnect</a>
                     </span>
-                    <span class="label label-error bv_deviceNotConnected hide">Device Not Connected</span>
-                    <span class="label label-error bv_deviceServerOffline hide">Device Server Offline</span>
-                    <span class="label label-error bv_deviceServerInUse hide">Currently In Use</span>
+                    <span class="label label-danger bv_deviceNotConnected hide">Device Not Connected</span>
+                    <span class="label label-danger bv_deviceServerOffline hide">Device Server Offline</span>
+                    <span class="label label-danger bv_deviceServerInUse hide">Currently In Use</span>
                     <span class="bv_deviceServerInUseButIdle hide">
                         <span class="label label-info">
                             Reserved by: <span class="bv_deviceUsedBy"></span>
@@ -29,13 +29,13 @@
                         <a href="#" class="bv_kickUserOff" style="padding-left: 0.3em;">Kick them off?</a>
                     </span>
 
-                    <a href="#" class="bv_disconnect btn hide" >Disconnect</a>
-                    <a href="#" class="bv_zeroBalance btn hide">Zero Balance</a>
+                    <a href="#" class="bv_disconnect btn btn-default hide" >Disconnect</a>
+                    <a href="#" class="bv_zeroBalance btn btn-default hide">Zero Balance</a>
                 </div>
             </div>
         </div>
         <div class="row" style="margin-left:0px;">
-            <div class="control-group bv_subformContainer">
+            <div class="form-group bv_subformContainer">
 
             </div>
         </div>
@@ -74,7 +74,7 @@
 
     <div class="modal hide bv_disconnectedByAnotherUser">
         <div class="modal-header">
-            <h4><i class="icon-exclamation-sign" style="margin-top: 5px;"></i></h4>
+            <h4><i class="glyphicon glyphicon-exclamation-sign" style="margin-top: 5px;"></i></h4>
         </div>
         <div class="modal-body">
             You have been disconnected from the device by: <span class="bv_disconnectingUserName"></span>

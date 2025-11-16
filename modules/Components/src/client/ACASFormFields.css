@@ -7,3 +7,57 @@
     font-style: italic;
     color: #aaa;
 }
+
+/* Hide duplicate validation messages */
+.desc-inline.help-block {
+    display: none;
+}
+
+/* Reduce spacing between form fields and help text */
+.help-block {
+    margin-top: 2px;
+    margin-bottom: 5px;
+}
+
+/* Hide tooltip wrapper when its button is hidden */
+.bv_tooltipWrapper:has(.btn[style*="display: none"]) {
+    display: none !important;
+}
+
+/* Fallback for browsers that don't support :has() - hide wrapper when button is hidden */
+.bv_tooltipWrapper .btn[style*="display: none"] {
+    display: none !important;
+}
+
+.bv_tooltipWrapper .btn[style*="display: none"] + * {
+    display: none !important;
+}
+
+.bv_tooltipWrapper:not(:has(.btn:not([style*="display: none"]))) {
+    display: none !important;
+}
+
+/* Remove double margin from nested form groups */
+.form-group:has(.form-group) {
+    margin-bottom: 0;
+}
+
+
+
+/* Bootstrap 3 Select2 widget fixes for ACAS form fields */
+.form-horizontal .select2-container {
+    width: 100% !important;
+}
+
+.form-horizontal .select2-container .select2-selection--single {
+    height: 34px;
+}
+
+/* Ensure Select2 works properly in form groups */
+.form-group .select2-container {
+    width: 100% !important;
+}
+
+.form-group .select2-container .select2-selection--single {
+    height: 34px;
+}

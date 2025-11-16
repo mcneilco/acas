@@ -18,7 +18,7 @@ class ACASFormAbstractFieldController extends Backbone.View
 	###
 
 	tagName: "DIV"
-	className: "control-group"
+	className: "form-group"
 
 #Subclass to supply
 #	template: _.template($("#ACASFormLSLabelFieldView").html())
@@ -83,14 +83,14 @@ class ACASFormAbstractFieldController extends Backbone.View
 
 	setError: (message) ->
 		@errorSet = true
-		$(@el).addClass "error"
-		@$('.help-inline').removeClass 'hide'
-		@$('.help-inline').html message
+		$(@el).addClass "has-error"
+		@$('.help-block').removeClass 'hide'
+		@$('.help-block').html message
 		@trigger 'validationFail', message
 
 	clearError: ->
-		$(@el).removeClass "error"
-		@$('.help-inline').addClass 'hide'
+		$(@el).removeClass "has-error"
+		@$('.help-block').addClass 'hide'
 		@errorSet = false
 
 	applyOptions: ->

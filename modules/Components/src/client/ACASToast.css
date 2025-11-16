@@ -127,6 +127,6 @@
 .toast-container .toast.error .t-title {
     color: #eee;
 }
-.toast-container .toast.error .icon-remove {
+.toast-container .toast.error .glyphicon-remove {
     color: #eee;
 }
