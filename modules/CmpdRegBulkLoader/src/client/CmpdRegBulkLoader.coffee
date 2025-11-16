@@ -402,55 +402,46 @@ class AssignedPropertiesListController extends AbstractFormController
 
 
 
-class AssignSdfPropertiesController extends Backbone.View
-	template: _.template($("#AssignSdfPropertiesView").html())
+class ConfigurationController extends Backbone.View
+	template: _.template($("#ConfigurationView").html())
 
 	events:
 		"change .bv_dbProject": "handleDbProjectChanged"
 		"change .bv_labelPrefix": "handleLabelPrefixChanged"
 		"keyup .bv_fileDate": "handleFileDateChanged"
-		"change .bv_fileDate": "handleFileDateChanged" #have this here too for when you set date using date icon
+		"change .bv_fileDate": "handleFileDateChanged"
 		"click .bv_fileDateIcon": "handleFileDateIconClicked"
 		"change .bv_useTemplate": "handleTemplateChanged"
-		"change .bv_saveTemplate": "handleSaveTemplateCheckboxChanged"
-		"keyup .bv_templateName": "handleNameTemplateChanged"
-		"change .bv_overwrite": "handleOverwriteRadioSelectChanged"
-		"click .bv_regCmpds": "handleRegCmpdsClicked"
-		"click .bv_valCmpds": "handleValCmpdsClicked"
 
 	initialize: (options) ->
 		@options = options
-		@fileName = null
 		@project = false
+		if window.conf.cmpdReg.showFileDate
+			@fileDate = null
+		@getAndFormatTemplateOptions()
+
+	render: ->
 		$(@el).empty()
 		$(@el).html @template()
-		@getAndFormatTemplateOptions()
 		if window.conf.cmpdReg.showFileDate
 			@$('.bv_group_fileDate').show()
-			@fileDate = null
-			@$('.bv_fileDate').datepicker();
-			@$('.bv_fileDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
+			@$('.bv_fileDate').datepicker()
+			@$('.bv_fileDate').datepicker( "option", "dateFormat", "yy-mm-dd" )
 		else
 			@$('.bv_group_fileDate').hide()
 		if window.conf.cmpdReg.showProjectSelect
+			@$('.bv_group_dbProject').show()
 			@setupProjectSelect()
 		else
 			@$('.bv_group_dbProject').hide()
 		if window.AppLaunchParams.cmpdRegConfig.serverSettings.corpParentFormat? and window.AppLaunchParams.cmpdRegConfig.serverSettings.corpParentFormat == 'ACASLabelSequence'
+			@$('.bv_group_labelPrefix').show()
 			@setupPrefixSelect()
 		else
 			@$('.bv_group_labelPrefix').hide()
-		if window.conf.cmpdRegBulkLoader.validationMode.enable
-			@$('.bv_regCmpdsContainer').hide()
-			@$('.bv_valCmpdsContainer').show()
-		else 
-			@$('.bv_regCmpdsContainer').show()
-			@$('.bv_valCmpdsContainer').hide()
-			
-		@isValid()
+		@
 
-		@setupAssignedPropertiesListController()
-
+	# Template and project setup methods from AssignSdfPropertiesController
 	getAndFormatTemplateOptions: ->
 		$.ajax
 			type: 'GET'
@@ -462,7 +453,7 @@ class AssignSdfPropertiesController extends Backbone.View
 			error: (err) =>
 				@serviceReturn = null
 
-	translateIntoPicklistFormat:  ->
+	translateIntoPicklistFormat: ->
 		templatePickList = new PickListList()
 		@templates.each (temp) =>
 			option = new PickList()
@@ -494,9 +485,85 @@ class AssignSdfPropertiesController extends Backbone.View
 				code: "unassigned"
 				name: "Select Project"
 			selectedCode: "unassigned"
+		@projectList.fetch()
 
 	setupPrefixSelect: ->
 		@prefixList = new PickListList()
+		@prefixList.url = "/cmpdreg/labelPrefixes"
+		@prefixListController = new PickListSelect2Controller
+			el: @$('.bv_labelPrefix')
+			collection: @prefixList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Prefix"
+			selectedCode: "unassigned"
+		@prefixList.fetch()
+
+	handleDbProjectChanged: ->
+		project = @projectListController.getSelectedCode()
+		@project = project
+		@trigger 'projectChanged', project
+
+	handleLabelPrefixChanged: ->
+		labelPrefix = @prefixListController.getSelectedModel()
+		@labelPrefix = labelPrefix.attributes
+		@labelPrefix.labelPrefix = labelPrefix.get('name')
+
+	handleFileDateChanged: ->
+		if UtilityFunctions::getTrimmedInput(@$('.bv_fileDate')) is ""
+			@fileDate = null
+		else
+			@fileDate = UtilityFunctions::convertYMDDateToMs(UtilityFunctions::getTrimmedInput @$('.bv_fileDate'))
+
+	handleFileDateIconClicked: =>
+		@$( ".bv_fileDate" ).datepicker( "show" )
+
+	handleTemplateChanged: ->
+		templateName = @templateListController.getSelectedCode()
+		if templateName is "none"
+			mappings = new AssignedPropertiesList()
+		else
+			mappings = new AssignedPropertiesList (JSON.parse(@templates.findWhere({templateName: templateName}).get('jsonTemplate')))
+		@trigger 'templateChanged', templateName, mappings
+
+class AssignSdfPropertiesController extends Backbone.View
+	template: _.template($("#AssignSdfPropertiesView").html())
+
+	events:
+		"change .bv_saveTemplate": "handleSaveTemplateCheckboxChanged"
+		"keyup .bv_templateName": "handleNameTemplateChanged"
+		"change .bv_overwrite": "handleOverwriteRadioSelectChanged"
+		"click .bv_regCmpds": "handleRegCmpdsClicked"
+		"click .bv_valCmpds": "handleValCmpdsClicked"
+
+	initialize: (options) ->
+		@options = options
+		@fileName = null
+		$(@el).empty()
+		$(@el).html @template()
+		if window.conf.cmpdRegBulkLoader.validationMode.enable
+			@$('.bv_regCmpdsContainer').hide()
+			@$('.bv_valCmpdsContainer').show()
+		else 
+			@$('.bv_regCmpdsContainer').show()
+			@$('.bv_valCmpdsContainer').hide()
+			
+		@isValid()
+
+		@setupAssignedPropertiesListController()
+
+	getAndFormatTemplateOptions: ->
+		$.ajax
+			type: 'GET'
+			url: "/api/cmpdRegBulkLoader/templates/"+window.AppLaunchParams.loginUser.username
+			dataType: 'json'
+			success: (response) =>
+				@templates = new Backbone.Collection response
+				@translateIntoPicklistFormat()
+			error: (err) =>
+				@serviceReturn = null
+
+
 		@prefixList.url = "/cmpdreg/labelPrefixes"
 		@prefixListController = new PickListSelect2Controller
 			el: @$('.bv_labelPrefix')
@@ -547,36 +614,7 @@ class AssignSdfPropertiesController extends Backbone.View
 			@fileName = newFile.name
 			@originalFileName = newFile.originalName
 
-	handleDbProjectChanged: ->
-		#this function only gets called if project select is shown in the configuration part of the GUI
-		project = @projectListController.getSelectedCode()
-		@project = project # set the selected
-		@isValid()
-		@trigger 'projectChanged', project
 
-	handleLabelPrefixChanged: ->
-		labelPrefix = @prefixListController.getSelectedModel()
-		@labelPrefix = labelPrefix.attributes
-		@labelPrefix.labelPrefix = labelPrefix.get('name')
-		@isValid()
-
-	handleFileDateChanged: ->
-		if UtilityFunctions::getTrimmedInput(@$('.bv_fileDate')) is ""
-			@fileDate = null
-		else
-			@fileDate = UtilityFunctions::convertYMDDateToMs(UtilityFunctions::getTrimmedInput @$('.bv_fileDate'))
-		@isValid()
-
-	handleFileDateIconClicked: =>
-		@$( ".bv_fileDate" ).datepicker( "show" )
-
-	handleTemplateChanged: ->
-		templateName = @templateListController.getSelectedCode()
-		if templateName is "none"
-			mappings = new AssignedPropertiesList()
-		else
-			mappings = new AssignedPropertiesList (JSON.parse(@templates.findWhere({templateName: templateName}).get('jsonTemplate')))
-		@trigger 'templateChanged', templateName, mappings
 
 	handleSaveTemplateCheckboxChanged: ->
 		saveTemplateChecked = @$('.bv_saveTemplate').is(":checked")
@@ -634,16 +672,9 @@ class AssignSdfPropertiesController extends Backbone.View
 		unless validAp
 			validCheck = false
 		otherErrors = []
-		if window.conf.cmpdReg.showProjectSelect
-			otherErrors.push @getProjectErrors()...
-		if window.conf.cmpdReg.showFileDate
-			otherErrors.push @getFileDateErrors()...
-		if window.AppLaunchParams.cmpdRegConfig.serverSettings.corpParentFormat? and window.AppLaunchParams.cmpdRegConfig.serverSettings.corpParentFormat == 'ACASLabelSequence'
-			otherErrors.push @getPrefixErrors()...
 		if @assignedPropertiesList?
 			otherErrors.push @assignedPropertiesList.checkDuplicates()...
 			otherErrors.push @assignedPropertiesList.checkSaltProperties()...
-		otherErrors.push @getTemplateErrors()...
 		@showValidationErrors(otherErrors)
 		unless @$('.bv_unassignedProperties').html() == ""
 			validCheck = false
@@ -658,21 +689,7 @@ class AssignSdfPropertiesController extends Backbone.View
 
 		validCheck
 
-	getProjectErrors: ->
-		projectError = []
-		if @projectListController.getSelectedCode() is "unassigned" or @projectListController.getSelectedCode() is null
-			projectError.push
-				attribute: 'dbProject'
-				message: 'Project must be selected'
-		projectError
 
-	getPrefixErrors: ->
-		prefixError = []
-		if @prefixListController.getSelectedCode() is "unassigned" or @prefixListController.getSelectedCode() is null
-			prefixError.push
-				attribute: 'labelPrefix'
-				message: 'Prefix must be selected'
-		prefixError
 
 	validateAssignedProperties: ->
 		validCheck = true
@@ -683,28 +700,7 @@ class AssignSdfPropertiesController extends Backbone.View
 					validCheck = false
 		validCheck
 
-	getFileDateErrors: ->
-		fileDateErrors = []
-		if _.isNaN(@fileDate) and @fileDate != null
-			fileDateErrors.push
-				attribute: 'fileDate'
-				message: "File date must be a valid date"
-		fileDateErrors
 
-	getTemplateErrors: ->
-		templateErrors = []
-		saveTemplateChecked = @$('.bv_saveTemplate').is(":checked")
-		if saveTemplateChecked
-			if UtilityFunctions::getTrimmedInput(@$('.bv_templateName')) is ""
-				templateErrors. push
-					attribute: 'templateName'
-					message: 'The template name must be set'
-
-			else if @$('.bv_overwriteWarning').is(":visible") and @$('input[name="bv_overwrite"]:checked').val() is "no"
-				templateErrors. push
-					attribute: 'templateName'
-					message: 'The template name should be unique'
-		templateErrors
 
 	showValidationErrors: (errors) =>
 		for err in errors
@@ -913,6 +909,22 @@ class BulkRegCmpdsController extends Backbone.View
 			@trigger 'saveComplete', saveSummary
 		@assignSdfPropertiesController.on 'validateComplete', (saveSummary) =>
 			@trigger 'validateComplete', saveSummary
+		
+		# Setup configuration controller in left column
+		@setupConfigurationController()
+
+	setupConfigurationController: =>
+		@configurationController = new ConfigurationController
+			el: @$('.bv_configurationSection')
+		@configurationController.on 'templateChanged', (templateName, mappings) =>
+			@detectSdfPropertiesController.handleTemplateChanged(templateName, mappings)
+		@configurationController.on 'projectChanged', (project) =>
+			@assignSdfPropertiesController.project = project
+		@configurationController.on 'fileDateChanged', (fileDate) =>
+			@assignSdfPropertiesController.fileDate = fileDate
+		@configurationController.on 'labelPrefixChanged', (labelPrefix) =>
+			@assignSdfPropertiesController.labelPrefix = labelPrefix
+		@configurationController.render()
 
 	handleSdfPropertiesDetected: (properties) =>
 		@$('.bv_templateWarning').hide()
