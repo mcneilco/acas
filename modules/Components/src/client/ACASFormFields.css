@@ -49,6 +49,16 @@
     width: 100% !important;
 }
 
+/* Bootstrap Tags Input width fixes for ACAS form fields */
+.form-horizontal .bootstrap-tagsinput {
+    width: 100% !important;
+    max-width: 280px !important;
+}
+
+.form-horizontal .bootstrap-tagsinput input {
+    max-width: 200px !important;
+}
+
 .form-horizontal .select2-container .select2-selection--single {
     height: 34px;
 }
