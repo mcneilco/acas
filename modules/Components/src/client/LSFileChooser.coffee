@@ -109,13 +109,13 @@ class LSFileChooserController extends Backbone.View
 		self = @
 		# this is a work around for hiding the delete button after files are uploaded
 		unless @options.hideDelete
-			@$('.delete').show()
+			@$('.delete').removeClass('hidden').show()
 		_.each(data.result.files, (result) ->
 			self.listOfFileModels.push(new LSFileChooserModel({fileNameOnServer: result.name}))
 		)
 		this.trigger('fileUploader:uploadComplete', data.result.files[0])
 		if (@requiresValidation)
-			@$('.dv_validatingProgressBar').show("slide")
+			@$('.dv_validatingProgressBar').removeClass('hidden').show()
 		@delegateEvents()
 
 		#window.notificationController.addInfo("file uploaded!")
@@ -125,12 +125,12 @@ class LSFileChooserController extends Backbone.View
 		window.notificationController.addError("file upload failed!")
 	
 	filePassedServerValidation: ->
-		@$('.bv_status').addClass('icon-ok-sign')
+		@$('.bv_status').addClass('glyphicon glyphicon-ok-sign')
 		#window.notificationController.addInfo("file is valid!")
 		@$('.dv_validatingProgressBar').hide("slide")
 		
 	fileFailedServerValidation: ->
-		@$('.bv_status').addClass('icon-exclamation-sign')
+		@$('.bv_status').addClass('glyphicon glyphicon-exclamation-sign')
 		#window.notificationController.addError("file is invalid!")
 		@$('.dv_validatingProgressBar').hide("slide")
 
@@ -150,6 +150,9 @@ class LSFileChooserController extends Backbone.View
 			autoUpload: self.autoUpload
 			dropZone:  @$('.' + self.dropZoneClassId)
 			maxNumberOfFiles: @maxNumberOfFiles
+			progressall: (e, data) ->
+				progress = parseInt(data.loaded / data.total * 100, 10)
+				$('.progress .progress-bar').css('width', progress + '%')
 		})
 		
 		@$('.' + @dropZoneClassId).bind('mouseover', (e) -> @mouseIsInDropField = true)

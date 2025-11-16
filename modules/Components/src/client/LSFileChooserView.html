@@ -27,19 +27,22 @@
         <td class="name" width="500px;""><span>{%=file.originalName%}</span></td>
         <td class="size"><span>{%=o.formatFileSize(file.size)%}</span></td>
         {% if (file.error) { %}
-            <td class="error" colspan="2"><span class="label label-important">{%=locale.fileupload.error%}</span> {%=locale.fileupload.errors[file.error] || file.error%}</td>
-        {% } else if (o.files.valid && !i) { %}
+            <td class="error" colspan="2"><span class="label label-danger">{%=locale.fileupload.error%}</span> {%=locale.fileupload.errors[file.error] || file.error%}</td>
+        {% } else { %}
             <td>
-                <div class="progress progress-success progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="bar" style="width:0%;"></div></div>
+                <div class="progress progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" style="height: 40px; margin-bottom: 0; background-color: #f5f5f5; border: 2px solid #ddd; border-radius: 6px; overflow: hidden; width: 100%; min-width: 200px;">
+                    <div class="progress-bar progress-bar-success" style="width:0%; height: 100%; background-color: #5cb85c !important; transition: width 0.6s ease; display: block; font-size: 14px; line-height: 40px; text-align: center; color: white; font-weight: bold;">
+                        <span class="sr-only">0% Complete</span>
+                        Uploading...
+                    </div>
+                </div>
             </td>
             <td class="start">{% if (!o.options.autoUpload) { %}
                 <button class="btn btn-primary">
-                    <i class="icon-upload icon-white"></i>
+                    <i class="glyphicon glyphicon-upload"></i>
                     <span>{%=locale.fileupload.start%}</span>
                 </button>
             {% } %}</td>
-        {% } else { %}
-            <td colspan="2"></td>
         {% } %}
         <td class="cancel" style='width: 9em;'>{% if (!i) { %}
             <button class="btn btn-warning bv_cancelFile">
@@ -58,7 +61,7 @@
             <td></td>
             <td class="name"><span>{%=file.originalName%}</span></td>
             <td class="size"><span>{%=o.formatFileSize(file.size)%}</span></td>
-            <td class="error" colspan="2"><span class="label label-important">{%=locale.fileupload.error%}</span> {%=locale.fileupload.errors[file.error] || file.error%}</td>
+            <td class="error" colspan="2"><span class="label label-danger">{%=locale.fileupload.error%}</span> {%=locale.fileupload.errors[file.error] || file.error%}</td>
         {% } else { %}
             <td class="preview" valign="middle">
             	<i class='bv_status'></i>
@@ -71,14 +74,14 @@
             <td class="size"><span>{%=o.formatFileSize(file.size)%}</span></td>
             <td colspan="2">
             
-            	<div class="progress progress-striped progress-info active dv_validatingProgressBar hide" >
-    				<div class="bar" style="width: 100%;"><strong>validating file…</strong></div>
+            	<div class="progress progress-striped active dv_validatingProgressBar hidden" >
+    				<div class="progress-bar progress-bar-info" style="width: 100%;"><strong>validating file…</strong></div>
     			</div>
             </td>
         {% } %}
-        <td class="delete hide" style='width: 7em;'>
+        <td class="delete hidden" style='width: 7em;'>
             <button class="btn btn-danger bv_deleteFile" data-type="{%=file.delete_type%}" data-url="{%=file.delete_url%}">
-                <i class="icon-trash icon-white"></i>
+                <i class="glyphicon glyphicon-trash"></i>
                 <span>{%=locale.fileupload.destroy%}</span>
             </button>
             
