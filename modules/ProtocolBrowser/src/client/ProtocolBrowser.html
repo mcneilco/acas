@@ -1,35 +1,36 @@
 <script type="text/template" id="ProtocolSimpleSearchView" xmlns="http://www.w3.org/1999/html">
-    <div class="navbar" style="margin-bottom: 0px; ">
-        <div class="container-fluid" style="border-bottom-left-radius:	0px; border-bottom-right-radius:	0px;">
-            <!-- <form class="navbar-search pull-left"> -->
-            <div class="form-group" style="margin-top: 5px; margin-bottom: 5px;">
-                <div class="input-group">
-                    <input class="bv_protocolSearchTerm form-control" style="
+	<div class="navbar" style="margin-bottom: 0px; background-color: #f8f8f8; border: 1px solid #e7e7e7;">
+		<div class="container-fluid" style="border-bottom-left-radius:	0px; border-bottom-right-radius:	0px;">
+			<!-- <form class="navbar-search pull-left"> -->
+				<div class="form-group" style="margin-top: 5px; margin-bottom: 5px;">
+					<div class="input-group pull-left" style="width: 300px;">
+						<input class="bv_protocolSearchTerm form-control" style="
 							padding-right: 14px;
 							border-top-left-radius: 15px;
 							border-bottom-left-radius: 15px;
 							" type="text" placeholder="Search for <%- window.conf.protocol.label %>s">
-                    <span class="input-group-btn">
-                        <button class="btn btn-default bv_doSearch" style="
-							border-top-right-radius: 15px;
-							border-bottom-right-radius: 15px;
-							height: 30px;
-							margin-top: 0px;
-							background-color: #fff;
-							border-left: 0px;
-							border-bottom: 1px solid #cccccc;
-							border-right: 1px solid #cccccc;
-							border-top: 1px solid #cccccc;
-              box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
-              width: 2.5em; padding-right: 0.8em;transition: border 0.2s linear 0s, box-shadow 0.2s linear 0s;" type="button" disabled>
-                        <i class="icon-search bv_doSearchIcon"></i>
-                        <i class="icon-remove bv_clearSearchIcon hide"></i>
-                    </button>
-                </div>
-            </div>
-            <!-- </form> -->
-        </div>
-    </div>
+						<span class="input-group-btn">
+							<button class="btn btn-default bv_doSearch" style="
+								border-top-right-radius: 15px;
+								border-bottom-right-radius: 15px;
+								height: 34px;
+								margin-top: 0px;
+								background-color: #fff;
+								border-left: 0px;
+								border-bottom: 1px solid #cccccc;
+								border-right: 1px solid #cccccc;
+								border-top: 1px solid #cccccc;
+                  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
+                  transition: border 0.2s linear 0s, box-shadow 0.2s linear 0s;" type="button" disabled>
+								<i class="glyphicon glyphicon-search bv_doSearchIcon"></i>
+								<i class="glyphicon glyphicon-remove bv_clearSearchIcon" style="display: none;"></i>
+							</button>
+						</span>
+					</div>
+				</div>
+			<!-- </form> -->
+		</div>
+	</div>
 
 </script>
 
@@ -79,18 +80,18 @@
                 <tbody>
                 <tr>
                     <td style="text-align: center; width: 100%; align-content: center; height: 250px;">
-                        <h5 class="bv_noMatchesFoundMessage hide">No Matching <%- window.conf.protocol.label %>s Found</h5>
-                        <h5 class="bv_moreSpecificProtocolSearchNeeded hide">A more specific search term is required.</h5>
-                        <h5 class="bv_errorOccurredPerformingSearch hide">An error occurred while searching for the <%- window.conf.protocol.label %>.</h5>
+                        <h5 class="bv_noMatchesFoundMessage" style="display: none;">No Matching <%- window.conf.protocol.label %>s Found</h5>
+                        <h5 class="bv_moreSpecificProtocolSearchNeeded" style="display: none;">A more specific search term is required.</h5>
+                        <h5 class="bv_errorOccurredPerformingSearch" style="display: none;">An error occurred while searching for the <%- window.conf.protocol.label %>.</h5>
 
                         <div class="bv_protocolBrowserSearchInstructions">
-                            <i class="icon-search bv_doSearchIcon"></i>
+                            <i class="glyphicon glyphicon-search bv_doSearchIcon"></i>
                             <%- window.conf.protocol.label %> Browser
                         </div>
-                        <div class="hide bv_searchingProtocolsMessage" style="margin: auto;">
+                        <div class="bv_searchingProtocolsMessage" style="display: none; margin: auto;">
                             <h5>Searching for Protocols containing text "<i class="bv_protSearchTerm"></i>"</h5>
                             <div class="progress progress-striped active " style="width: 90%; margin: auto;">
-                                <div class="bar" style="width: 100%; margin: auto;"></div>
+                                <div class="progress-bar" style="width: 100%; margin: auto;"></div>
                             </div>
                         </div>
                     </td>
@@ -99,12 +100,12 @@
             </table>
         </div>
 
-        <div class="bv_protocolTableController hide" style="margin: 0px; padding: 10px; overflow: auto;"></div>
+        <div class="bv_protocolTableController" style="display: none; margin: 0px; padding: 10px; overflow: auto;"></div>
     </div>
     <!--
     <h5>Selected Protocol Details</h5>
     -->
-    <div class="well well-small bv_protocolBaseControllerContainer hide" style="margin-top: 10px;">
+    <div class="well well-sm bv_protocolBaseControllerContainer" style="display: none; margin-top: 10px;">
         <div>
             <button class="btn btn-danger bv_deleteProtocol">Delete</button>
             <button class="btn btn-success bv_createExperiment pull-right" style="margin-left:0.5em;">Create <%- window.conf.experiment.label %></button>
@@ -112,50 +113,55 @@
             <button class="btn bv_editProtocol pull-right" style="margin-left: 0.5em;">Edit</button>
             <button class="btn bv_downloadSELFile pull-right">Download Template</button>
             <br/>
-            <div class="bv_downloadTemplateWarning hide" style="color: red; font-size: 12px; text-align: right;">Could not download template file</div>
-            <div class="bv_downloadTemplateSuccess hide" style="color: green; font-size: 12px; text-align: right;">Template file downloaded successfully</div>
+            <div class="bv_downloadTemplateWarning" style="display: none; color: red; font-size: 12px; text-align: right;">Could not download template file</div>
+            <div class="bv_downloadTemplateSuccess" style="display: none; color: green; font-size: 12px; text-align: right;">Template file downloaded successfully</div>
         </div>
         <hr />
         <div class="">
-            <div class="bv_protocolBaseController row hide" style="margin-left:0px;"></div>
+            <div class="bv_protocolBaseController row" style="display: none; margin-left:0px;"></div>
         </div>
     </div>
 
-    <div class="modal hide bv_confirmDeleteProtocol">
-        <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-            <h3>Delete <%- window.conf.protocol.label %></h3>
-        </div>
-        <div class="modal-body">
-            <div class="bv_deleteWarningMessage">
-                <p>Are you sure you would like to delete <%- window.conf.protocol.label %>: <span class="bv_protocolCodeName"></span>?</p>
+    <div class="modal fade bv_confirmDeleteProtocol" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4>Delete <%- window.conf.protocol.label %></h4>
+                </div>
+                <div class="modal-body">
+                    <div class="bv_deleteWarningMessage">
+                        <p>Are you sure you would like to delete <%- window.conf.protocol.label %>: <span class="bv_protocolCodeName"></span>?</p>
+                    </div>
+                    <div class="bv_deletingStatusIndicator" style="display: none;">
+                        <table width="100%">
+                            <tr>
+                                <td style="text-align: center; width: 100%">
+                                    <h4>Deleting <%- window.conf.protocol.label %></h4>
+                                    <div class="progress progress-striped active" style="width: 100%;">
+                                        <div class="progress-bar" style="width: 100%;"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="bv_protocolDeletedSuccessfullyMessage" style="display: none;">
+                        <p><%- window.conf.protocol.label %> <span class="bv_protocolCodeName"></span> has successfully been deleted</p>
+                    </div>
+                    <div class="bv_errorDeletingProtocolMessage" style="display: none;">
+                        <p>An error occurred deleting <%- window.conf.protocol.label %> <span class="bv_protocolCodeName"></span>.  Please contact support for additional help.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="bv_deleteButtons">
+                        <button type="button" class="btn btn-primary bv_cancelDelete">Cancel</button>
+                        <button type="button" class="btn btn-danger bv_confirmDeleteProtocolButton">Delete <%- window.conf.protocol.label %></button>
+                    </div>
+                    <div class="bv_okayButton" style="display: none;">
+                        <button type="button" class="btn btn-primary bv_cancelDelete">Okay</button>
+                    </div>
+                </div>
             </div>
-            <div class="bv_deletingStatusIndicator hide">
-                <table width="100%"></table>
-                <tr>
-                    <td style="text-align: center; width: 100%">
-                        <h4>Deleting <%- window.conf.protocol.label %></h4>
-                        <div class="progress progress-striped active" style="width: 100%;">
-                            <div class="bar" style="width: 100%;"></div>
-                        </div>
-                    </td>
-                </tr>
-            </div>
-            <div class="bv_protocolDeletedSuccessfullyMessage hide">
-                <p><%- window.conf.protocol.label %> <span class="bv_protocolCodeName"></span> has successfully been deleted</p>
-            </div>
-            <div class="bv_errorDeletingProtocolMessage hide">
-                <p>An error occurred deleting <%- window.conf.protocol.label %> <span class="bv_protocolCodeName"></span>.  Please contact support for additional help.</p>
-            </div>
-        </div>
-        <div class="modal-footer">
-		    <span class="bv_deleteButtons">
-		      <a href="#" class="btn btn-primary bv_cancelDelete">Cancel</a>
-		      <a href="#" class="btn btn-danger bv_confirmDeleteProtocolButton">Delete <%- window.conf.protocol.label %></a>
-			  </span>
-		    <span class="bv_okayButton hide">
-			    <a href="#" class="btn btn-primary bv_cancelDelete">Okay</a>
-		    </span>
         </div>
     </div>
 </script>

@@ -213,8 +213,8 @@ class SaltBrowserController extends Backbone.View
 			readOnly: true
 
 		$('.bv_saltController').html @saltController.render().el
-		$(".bv_saltController").removeClass("hide")
-		$(".bv_saltControllerContainer").removeClass("hide")
+		$(".bv_saltController").show()
+		$(".bv_saltControllerContainer").show()
 		if !@allowCmpdRegistration
 			@$('.bv_saltControllerContainer .bv_editSalt').prop 'disabled', true
 
@@ -695,9 +695,9 @@ class SaltBrowserController extends Backbone.View
 			@saltSummaryTable.remove()
 		if @saltController?
 			@saltController.remove()
-		$(".bv_saltController").addClass("hide")
-		$(".bv_saltControllerContainer").addClass("hide")
-		$(".bv_noMatchingSaltsFoundMessage").addClass("hide")
+		$(".bv_saltController").hide()
+		$(".bv_saltControllerContainer").hide()
+		$(".bv_noMatchingSaltsFoundMessage").hide()
 
 	render: =>
 		@

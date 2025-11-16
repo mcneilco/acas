@@ -1,35 +1,35 @@
 <script type="text/template" id="ThingSimpleSearchView" xmlns="http://www.w3.org/1999/html">
-    <div class="navbar" style="margin-bottom: 0px; ">
-        <div class="navbar-inner" style="border-bottom-left-radius:	0px; border-bottom-right-radius:	0px;">
-            <div class="control-group" style="margin-top: 5px; margin-bottom: 5px;">
-                <div class="input-append">
-                    <input class="bv_thingSearchTerm" style="
-							padding-right: 14px;
-							border-top-left-radius: 15px;
-							border-bottom-left-radius: 15px;
-							" type="text" placeholder="Search for <%-thingName%>s">
-                    <button class="btn bv_doSearch add-on" style="
-							border-top-right-radius: 15px;
-							border-bottom-right-radius: 15px;
-							height: 30px;
-							margin-top: 0px;
-							background-color: #fff;
-							border-left: 0px;
-							border-bottom: 1px solid #cccccc;
-							border-right: 1px solid #cccccc;
-							border-top: 1px solid #cccccc;
-              box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
-              width: 2.5em; padding-right: 0.8em;transition: border 0.2s linear 0s, box-shadow 0.2s linear 0s;" type="button" disabled>
-                        <i class="icon-search bv_doSearchIcon"></i>
-                        <i class="icon-remove bv_clearSearchIcon hide"></i>
-                    </button>
+    <div class="navbar" style="margin-bottom: 0px; background-color: #f8f8f8; border: 1px solid #e7e7e7;">
+        <div class="container-fluid" style="border-bottom-left-radius:	0px; border-bottom-right-radius:	0px;">
+            <div class="form-group" style="margin-top: 5px; margin-bottom: 5px;">
+                <div class="input-group pull-left" style="width: 300px;">
+                    <input class="bv_thingSearchTerm form-control" style="
+					padding-right: 14px;
+					border-top-left-radius: 15px;
+					border-bottom-left-radius: 15px;
+					" type="text" placeholder="Search for <%-thingName%>s">
+                    <span class="input-group-btn">
+                        <button class="btn btn-default bv_doSearch" style="
+						border-top-right-radius: 15px;
+						border-bottom-right-radius: 15px;
+						height: 34px;
+						margin-top: 0px;
+						background-color: #fff;
+						border-left: 0px;
+						border-bottom: 1px solid #cccccc;
+						border-right: 1px solid #cccccc;
+						border-top: 1px solid #cccccc;
+                  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
+                  transition: border 0.2s linear 0s, box-shadow 0.2s linear 0s;" type="button" disabled>
+                            <i class="glyphicon glyphicon-search bv_doSearchIcon"></i>
+                            <i class="glyphicon glyphicon-remove bv_clearSearchIcon" style="display: none;"></i>
+                        </button>
+                    </span>
                 </div>
             </div>
         </div>
     </div>
 </script>
-
-
 <script type="text/template" id="ThingSummaryTableView" xmlns="http://www.w3.org/1999/html">
     <table class="table table-bordered table-striped table-hover" style="margin: 0px; padding: 0px; border: 0px; width: 100%; ">
         <thead style="">
@@ -57,18 +57,18 @@
                 <tbody>
                 <tr>
                     <td style="text-align: center; width: 100%; align-content: center; height: 250px;">
-                        <h5 class="bv_noMatchingThingsFoundMessage hide">No Matching <%-thingName%>s Found</h5>
-                        <h5 class="bv_moreSpecificThingSearchNeeded hide">A more specific search term is required.</h5>
-                        <h5 class="bv_errorOccurredPerformingSearch hide">An error occurred while searching for <%-thingName%>s.</h5>
+                        <h5 class="bv_noMatchingThingsFoundMessage" style="display: none;">No Matching <%-thingName%>s Found</h5>
+                        <h5 class="bv_moreSpecificThingSearchNeeded" style="display: none;">A more specific search term is required.</h5>
+                        <h5 class="bv_errorOccurredPerformingSearch" style="display: none;">An error occurred while searching for <%-thingName%>s.</h5>
 
                         <div class="bv_thingBrowserSearchInstructions">
-                            <i class="icon-search bv_doSearchIcon"></i>
+                            <i class="glyphicon glyphicon-search bv_doSearchIcon"></i>
                             <%-thingName%> Browser
                         </div>
-                        <div class="hide bv_searchingThingsMessage" style="margin: auto;">
+                        <div class="bv_searchingThingsMessage" style="display: none; margin: auto;">
                             <h5>Searching for <%-thingName%>s containing text "<i class="bv_exptSearchTerm"></i>"</h5>
                             <div class="progress progress-striped active " style="width: 90%; margin: auto;">
-                                <div class="bar" style="width: 100%; margin: auto;"></div>
+                                <div class="progress-bar" style="width: 100%; margin: auto;"></div>
                             </div>
                         </div>
                     </td>
@@ -77,54 +77,60 @@
                 </tbody>
             </table>
         </div>
-        <div class="bv_thingTableController hide" style="margin:0px; padding:10px; overflow: auto; overflow: auto;"></div>
+        <div class="bv_thingTableController" style="display: none; margin:0px; padding:10px; overflow: auto;"></div>
         <label class="bv_maxThingBrowserSearchResultsReached" style="margin-left:10px;"></label>
     </div>
-    <div class="well well-small bv_thingControllerContainer hide" style="margin-top: 10px;">
+    <div class="well well-sm bv_thingControllerContainer" style="display: none; margin-top: 10px;">
         <div>
             <button class="btn btn-danger bv_deleteThing">Delete</button>
             <button class="btn bv_editThing pull-right">Edit</button>
         </div>
         <hr style="margin-top:40px;"/>
-        <div class="row-fluid">
+        <div class="row">
             <div class="bv_thingControllerWrapper"></div>
         </div>
     </div>
 
-    <div class="modal hide bv_confirmDeleteThing">
-        <div class="modal-header">
-            <h3>Delete <%-thingName%></h3>
-        </div>
-        <div class="modal-body">
-            <div class="bv_deleteWarningMessage">
-                <p>Are you sure you would like to delete <%-thingName%>: <span class="bv_thingUserName"></span>?</p>
+    <div class="modal fade bv_confirmDeleteThing" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4>Delete <%-thingName%></h4>
+                </div>
+                <div class="modal-body">
+                    <div class="bv_deleteWarningMessage">
+                        <p>Are you sure you would like to delete <%-thingName%>: <span class="bv_thingUserName"></span>?</p>
+                    </div>
+                    <div class="bv_deletingStatusIndicator" style="display: none;">
+                        <table width="100%">
+                            <tr>
+                                <td style="text-align: center; width: 100%">
+                                    <h4>Deleting <%-thingName%></h4>
+                                    <div class="progress progress-striped active" style="width: 100%;">
+                                        <div class="progress-bar" style="width: 100%;"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="bv_thingDeletedSuccessfullyMessage" style="display: none;">
+                        <p><%-thingName%> <span class="bv_thingCodeName"></span> has successfully been deleted</p>
+                    </div>
+                    <div class="bv_errorDeletingThingMessage" style="display: none;">
+                        <p>An error occured deleting <%-thingName%> <span class="bv_thingCodeName"></span>.  Please contact support for additional help.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="bv_deleteButtons">
+                        <button type="button" class="btn btn-primary bv_cancelDelete">Cancel</button>
+                        <button type="button" class="btn btn-danger bv_confirmDeleteThingButton">Delete <%-thingName%></button>
+                    </div>
+                    <div class="bv_okayButton" style="display: none;">
+                        <button type="button" class="btn btn-primary bv_cancelDelete">Okay</button>
+                    </div>
+                </div>
             </div>
-            <div class="bv_deletingStatusIndicator hide">
-                <table width="100%"></table>
-                <tr>
-                    <td style="text-align: center; width: 100%">
-                        <h4>Deleting <%-thingName%></h4>
-                        <div class="progress progress-striped active" style="width: 100%;">
-                            <div class="bar" style="width: 100%;"></div>
-                        </div>
-                    </td>
-                </tr>
-            </div>
-            <div class="bv_thingDeletedSuccessfullyMessage hide">
-                <p><%-thingName%> <span class="bv_thingCodeName"></span> has successfully been deleted</p>
-            </div>
-            <div class="bv_errorDeletingThingMessage hide">
-                <p>An error occured deleting <%-thingName%> <span class="bv_thingCodeName"></span>.  Please contact support for additional help.</p>
-            </div>
-        </div>
-        <div class="modal-footer">
-		    <span class="bv_deleteButtons">
-		      <a href="#" class="btn btn-primary bv_cancelDelete">Cancel</a>
-		      <a href="#" class="btn btn-danger bv_confirmDeleteThingButton">Delete <%-thingName%></a>
-			  </span>
-		    <span class="bv_okayButton hide">
-			    <a href="#" class="btn btn-primary bv_cancelDelete">Okay</a>
-		    </span>
         </div>
     </div>
 </script>

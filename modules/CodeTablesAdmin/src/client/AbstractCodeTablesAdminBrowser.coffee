@@ -217,7 +217,7 @@ class AbstractCodeTablesAdminBrowserController extends Backbone.View
 	setupCodeTablesAdminSummaryTable: (codeTablesAdmins) =>
 		@destroyCodeTablesAdminSummaryTable()
 
-		@$(".bv_searchingCodeTablesAdminsMessage").addClass "hide"
+		@$(".bv_searchingCodeTablesAdminsMessage").hide()
 		if codeTablesAdmins is null
 			@$(".bv_errorOccurredPerformingSearch").show()
 
@@ -225,7 +225,7 @@ class AbstractCodeTablesAdminBrowserController extends Backbone.View
 			@$(".bv_noMatchingCodeTablesAdminsFoundMessage").show()
 			@$(".bv_codeTablesAdminTableController").html ""
 		else
-			@$(".bv_searchCodeTablesAdminsStatusIndicator").addClass "hide"
+			@$(".bv_searchCodeTablesAdminsStatusIndicator").hide()
 			@$(".bv_codeTablesAdminTableController").show()
 			@codeTablesAdminSummaryTable = new CodeTablesAdminSummaryTableController
 				collection: new CodeTablesAdminList codeTablesAdmins
@@ -244,7 +244,7 @@ class AbstractCodeTablesAdminBrowserController extends Backbone.View
 			readOnly: true
 
 		@$('.bv_codeTablesAdminController').html @codeTablesAdminController.render().el
-		@$(".bv_codeTablesAdminController").removeClass("hide")
+		@$(".bv_codeTablesAdminController").show()
 		@$(".bv_codeTablesAdminControllerContainer").show()
 		@$('.bv_editCodeTablesAdmin').show()
 		@$('.bv_deleteCodeTablesAdmin').show()
@@ -252,29 +252,29 @@ class AbstractCodeTablesAdminBrowserController extends Backbone.View
 	handleSearchRequested: =>
 		@$(".bv_codeTablesAdminTableController").hide()
 		@$(".bv_codeTablesAdminControllerContainer").hide()
-		@$(".bv_errorOccurredPerformingSearch").addClass "hide"
+		@$(".bv_errorOccurredPerformingSearch").hide()
 		codeTablesAdminSearchTerm = $.trim(@$(".bv_codeTablesAdminSearchTerm").val())
 		if codeTablesAdminSearchTerm isnt ""
-			@$(".bv_noMatchingCodeTablesAdminsFoundMessage").addClass "hide"
-			@$(".bv_codeTablesAdminBrowserSearchInstructions").addClass "hide"
-			@$(".bv_searchCodeTablesAdminsStatusIndicator").removeClass "hide"
+			@$(".bv_noMatchingCodeTablesAdminsFoundMessage").hide()
+			@$(".bv_codeTablesAdminBrowserSearchInstructions").hide()
+			@$(".bv_searchCodeTablesAdminsStatusIndicator").show()
 			if !window.conf.browser.enableSearchAll and codeTablesAdminSearchTerm is "*"
 				@$(".bv_moreSpecificCodeTablesAdminSearchNeeded").show()
 			else
 				@$(".bv_searchingCodeTablesAdminsMessage").show()
 				@$(".bv_codeTablesAdminSearchTerm").html _.escape(codeTablesAdminSearchTerm)
-				@$(".bv_moreSpecificCodeTablesAdminSearchNeeded").addClass "hide"
+				@$(".bv_moreSpecificCodeTablesAdminSearchNeeded").hide()
 				@searchController.doSearch codeTablesAdminSearchTerm
 		
 	handleDeleteCodeTablesAdminClicked: =>
 		@$(".bv_codeTablesAdminCodeName").html @codeTablesAdminController.model.escape("code")
-		@$(".bv_deleteButtons").removeClass "hide"
-		@$(".bv_okayButton").addClass "hide"
+		@$(".bv_deleteButtons").show()
+		@$(".bv_okayButton").hide()
 		@$(".bv_errorDeletingCodeTablesAdminMessage").hide()
 		@$(".bv_deleteWarningMessage").show()
 		@$(".bv_deletingStatusIndicator").hide()
 		@$(".bv_codeTablesAdminDeletedSuccessfullyMessage").hide()
-		@$(".bv_confirmDeleteCodeTablesAdmin").removeClass "hide"
+		@$(".bv_confirmDeleteCodeTablesAdmin").show()
 		@$('.bv_confirmDeleteCodeTablesAdmin').modal({
 			keyboard: false,
 			backdrop: true
@@ -323,9 +323,9 @@ class AbstractCodeTablesAdminBrowserController extends Backbone.View
 		if @codeTablesAdminController?
 			@codeTablesAdminController.remove()
 			
-		@$(".bv_codeTablesAdminController").addClass("hide")
+		@$(".bv_codeTablesAdminController").hide()
 		@$(".bv_codeTablesAdminControllerContainer").hide()
-		@$(".bv_noMatchingCodeTablesAdminsFoundMessage").addClass("hide")
+		@$(".bv_noMatchingCodeTablesAdminsFoundMessage").hide()
 
 	render: =>
 		@
@@ -335,7 +335,7 @@ class AbstractCodeTablesAdminBrowserController extends Backbone.View
 
 	createCodeTablesAdminController: (mdl) =>
 		@$('.bv_codeTablesAdminBrowserWrapper').hide()
-		@$('.bv_codeTablesAdminControllerWrapper').removeClass('hide').show()
+		@$('.bv_codeTablesAdminControllerWrapper').show()
 		if @codeTablesAdminController?
 			@codeTablesAdminController.undelegateEvents()
 			@$(".bv_codeTablesAdminControllerWrapper").html ""
