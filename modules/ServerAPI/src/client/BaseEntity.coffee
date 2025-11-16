@@ -646,6 +646,9 @@ class BaseEntityController extends AbstractThingFormController #TODO: check to s
 
 	handleConfirmClearClicked: =>
 		@$('.bv_confirmClearEntity').modal('hide')
+		# Fix Bootstrap 3 backdrop remaining issue
+		$('body').removeClass('modal-open')
+		$('.modal-backdrop').remove()
 		if @model.get('lsKind') is "default" #base protocol/experiment
 			@model = null
 			@completeInitialization()
