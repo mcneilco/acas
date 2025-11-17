@@ -414,10 +414,8 @@ class ModelFitTypeController extends Backbone.View
 			unless @$('.bv_'+err.attribute).attr('disabled') is 'disabled'
 				@$('.bv_group_'+err.attribute).attr('data-toggle', 'tooltip')
 				@$('.bv_group_'+err.attribute).attr('data-placement', 'bottom')
-				@$('.bv_group_'+err.attribute).attr('data-original-title', err.message)
-				#				@$('.bv_group_'+err.attribute).tooltip();
-				@$("[data-toggle=tooltip]").tooltip();
-				@$("body").tooltip selector: '.bv_group_'+err.attribute
+				@$('.bv_group_'+err.attribute).attr('title', err.message)
+				@$('.bv_group_'+err.attribute).tooltip()
 				@$('.bv_group_'+err.attribute).addClass 'input_error error'
 				@trigger 'notifyError',  owner: this.errorOwnerName, errorLevel: 'error', message: err.message
 
