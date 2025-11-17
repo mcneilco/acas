@@ -138,6 +138,9 @@ class DoseResponseFitWorkflowController extends Backbone.View
 		@$el.empty()
 		@$el.html @template()
 		@intializeParserController()
+		# Temporarily skip upload requirement for testing
+		@initializeCurveFitController()
+		@$('.bv_uploadDataToFit').hide()
 
 		@
 
@@ -157,7 +160,7 @@ class DoseResponseFitWorkflowController extends Backbone.View
 		if @modelFitController?
 			@modelFitController.undelegateEvents()
 		@modelFitController = new DoseResponseFitController
-			experimentCode: @drdpc.getNewExperimentCode()
+			experimentCode: @drdpc?.getNewExperimentCode() || "TEMP-TEST-CODE"
 			el: @$('.bv_doseResponseAnalysis')
 
 		@modelFitController.on 'amDirty', =>
@@ -179,6 +182,6 @@ class DoseResponseFitWorkflowController extends Backbone.View
 	handleFitAnother: =>
 		@drdpc.loadAnother()
 		@$('.bv_doseResponseAnalysis').empty()
-		@$('.bv_doseResponseAnalysis').append "<div class='bv_uploadDataToFit span10'>Data must be uploaded first before fitting.</div>"
+		@$('.bv_doseResponseAnalysis').append "<div class='alert alert-info bv_uploadDataToFit'>Data must be uploaded first before fitting.</div>"
 		@$('.bv_completeControlContainer').hide()
 		@$('.bv_uploadDataTabLink').click()

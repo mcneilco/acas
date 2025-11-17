@@ -458,10 +458,10 @@ class DoseResponseAnalysisController extends Backbone.View
 			if resultValue != null
 				res = resultValue.get('clobValue')
 				if res == ""
-					@$('.bv_resultsContainer').hide()
+					@$('.bv_resultsContainer').addClass('hidden')
 				else
 					@$('.bv_modelFitResultsHTML').html(res)
-					@$('.bv_resultsContainer').show()
+					@$('.bv_resultsContainer').removeClass('hidden')
 		else
 			@$('.bv_resultsContainer').hide()
 
@@ -472,14 +472,14 @@ class DoseResponseAnalysisController extends Backbone.View
 			@setReadyForFit()
 
 	setNotReadyForFit: ->
-		@$('.bv_fitOptionWrapper').hide()
-		@$('.bv_resultsContainer').hide()
-		@$('.bv_analyzeExperimentToFit').show()
+		@$('.bv_fitOptionWrapper').addClass('hidden')
+		@$('.bv_resultsContainer').addClass('hidden')
+		@$('.bv_analyzeExperimentToFit').removeClass('hidden')
 
 	setReadyForFit: =>
 		@setupModelFitTypeController()
-		@$('.bv_fitOptionWrapper').show()
-		@$('.bv_analyzeExperimentToFit').hide()
+		@$('.bv_fitOptionWrapper').removeClass('hidden')
+		@$('.bv_analyzeExperimentToFit').addClass('hidden')
 		@handleStatusChanged()
 
 	primaryAnalysisCompleted: ->
@@ -586,7 +586,7 @@ class DoseResponseAnalysisController extends Backbone.View
 			@$('.bv_fitModelButton').html "Re-Fit"
 		@$('.bv_modelFitResultsHTML').html(json.results.htmlSummary)
 		@$('.bv_modelFitStatus').html(json.results.status)
-		@$('.bv_resultsContainer').show()
+		@$('.bv_resultsContainer').removeClass('hidden')
 		@$('.bv_fitStatusDropDown').modal("hide")
 
 class DoseResponsePlotCurveLL4 extends Backbone.Model

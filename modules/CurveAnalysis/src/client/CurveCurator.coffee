@@ -11,7 +11,13 @@ class DoseResponseKnockoutPanelController extends Backbone.View
 			if key.keyCode == 13
 				@$('.bv_doseResponseKnockoutPanelOKBtn').click()
 		@$('.bv_doseResponseKnockoutPanelOKBtn').on "click", =>
-			@handleDoseResponseKnockoutPanelHidden()
+			@$('.bv_doseResponseKnockoutPanel').modal('hide')
+			# Wait for modal to be fully hidden before cleanup
+			@$('.bv_doseResponseKnockoutPanel').on 'hidden.bs.modal.knockout', =>
+				@$('.bv_doseResponseKnockoutPanel').off 'hidden.bs.modal.knockout'
+				$('.modal-backdrop').remove()
+				$('body').removeClass('modal-open')
+				@handleDoseResponseKnockoutPanelHidden()
 		@
 
 	show: =>
@@ -447,7 +453,9 @@ class CurveEditorController extends Backbone.View
 		@model.on 'sync', @handleModelSync.bind(@)
 
 	handleModelSync: =>
-		UtilityFunctions::hideProgressModal @$('.bv_statusDropDown')
+		@$('.bv_statusDropDown').modal('hide')
+		$('.modal-backdrop').remove()
+		$('body').removeClass('modal-open')
 		@render()
 
 	handlePointsChanged: =>
@@ -484,15 +492,21 @@ class CurveEditorController extends Backbone.View
 			error: @handleUpdateError)
 
 	handleResetError: =>
-		UtilityFunctions::hideProgressModal @$('.bv_statusDropDown')
+		@$('.bv_statusDropDown').modal('hide')
+		$('.modal-backdrop').remove()
+		$('body').removeClass('modal-open')
 		@trigger 'curveUpdateError'
 
 	handleSaveError: =>
-		UtilityFunctions::hideProgressModal @$('.bv_statusDropDown')
+		@$('.bv_statusDropDown').modal('hide')
+		$('.modal-backdrop').remove()
+		$('body').removeClass('modal-open')
 		@trigger 'curveUpdateError'
 
 	handleUpdateError: =>
-		UtilityFunctions::hideProgressModal @$('.bv_statusDropDown')
+		@$('.bv_statusDropDown').modal('hide')
+		$('.modal-backdrop').remove()
+		$('body').removeClass('modal-open')
 		@trigger 'curveUpdateError'
 
 	handleSaveSuccess: =>
@@ -591,6 +605,13 @@ class CurveEditorDirtyPanelController extends Backbone.View
 		@$('.bv_curveEditorDirtyPanel').on "keypress", (key)=>
 			if key.keyCode == 13
 				@$('.bv_curveEditorDirtyPanelOKBtn').click()
+		@$('.bv_curveEditorDirtyPanelOKBtn').on "click", =>
+			@$('.bv_curveEditorDirtyPanel').modal('hide')
+			# Wait for modal to be fully hidden before cleanup
+			@$('.bv_curveEditorDirtyPanel').on 'hidden.bs.modal.dirty', =>
+				@$('.bv_curveEditorDirtyPanel').off 'hidden.bs.modal.dirty'
+				$('.modal-backdrop').remove()
+				$('body').removeClass('modal-open')
 		@$('.bv_doseResponseKnockoutPanel').on "hidden", =>
 			#placeholder
 		@
@@ -853,6 +874,9 @@ class CurveCuratorController extends Backbone.View
 	render: =>
 		@$el.empty()
 		@$el.html @template()
+
+		@$('.bv_eperimentLockedOKBtn').on "click", =>
+			@$('.bv_experimentLocked').modal('hide')
 
 		if @model?
 			if @locked
