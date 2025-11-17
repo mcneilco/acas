@@ -1,80 +1,85 @@
 <script type="text/template" id="ProjectView" xmlns="http://www.w3.org/1999/html">
 
-    <div class="col-md-12">
-        <div class="form-horizontal">
-            <div class="form-group">
-                <label class="control-label col-sm-2">Status</label>
-                <div class="col-sm-10">
-                    <select class="bv_status form-control" style="width:350px;">
-                    </select>
-                </div>
-            </div>
-            <div class="form-group bv_group_projectCode">
-                <label class="control-label col-sm-2">Project Code</label>
-                <div class="col-sm-10">
-                    <input class="bv_projectCode form-control" style="width:336px;" type="text" placeholder="Autofilled if empty" />
-                </div>
-            </div>
-            <div class="form-group bv_group_projectName">
-                <label class="control-label col-sm-2">*Project Name</label>
-                <div class="col-sm-10">
-                    <input class="bv_projectName form-control" style="width:336px;" type="text" placeholder="">
-                </div>
-            </div>
-            <div class="form-group bv_group_projectAlias" style="margin-bottom:10px;">
-                <label class="control-label col-sm-2">*Project Alias</label>
-                <div class="col-sm-10">
-                    <input class="bv_projectAlias form-control" style="width:336px;" type="text" placeholder="">
-                </div>
-            </div>
-            <div class="form-group bv_group_restrictedData" style="margin-bottom:10px;">
-                <div class="col-sm-offset-2 col-sm-10">
-                    <div class="checkbox">
-                        <label>
-                            <input type="checkbox" name="bv_restrictedData" class="bv_restrictedData" />Restricted Data
-                        </label>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="row">
+                <!-- Left Column: Form Fields -->
+                <div class="col-md-4">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="control-label col-sm-4">Status</label>
+                            <div class="col-sm-8">
+                                <select class="bv_status form-control" style="max-width:280px;width:100%;">
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group bv_group_projectCode">
+                            <label class="control-label col-sm-4">Project Code</label>
+                            <div class="col-sm-8">
+                                <input class="bv_projectCode form-control" style="max-width:280px;width:100%;" type="text" placeholder="Autofilled if empty" />
+                            </div>
+                        </div>
+                        <div class="form-group bv_group_projectName">
+                            <label class="control-label col-sm-4">*Project Name</label>
+                            <div class="col-sm-8">
+                                <input class="bv_projectName form-control" style="max-width:280px;width:100%;" type="text" placeholder="">
+                            </div>
+                        </div>
+                        <div class="form-group bv_group_projectAlias" style="margin-bottom:10px;">
+                            <label class="control-label col-sm-4">*Project Alias</label>
+                            <div class="col-sm-8">
+                                <input class="bv_projectAlias form-control" style="max-width:280px;width:100%;" type="text" placeholder="">
+                            </div>
+                        </div>
+                        <div class="form-group bv_group_restrictedData" style="margin-bottom:10px;">
+                            <div class="col-sm-offset-4 col-sm-8">
+                                <div class="checkbox">
+                                    <label>
+                                        <input type="checkbox" name="bv_restrictedData" class="bv_restrictedData" />Restricted Data
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group bv_group_startDate">
+                            <label class="control-label col-sm-4">Start Date</label>
+                            <div class="col-sm-8">
+                                <div class="input-group date" id="dp3" data-date="" data-date format="yy-mm-dd" style="max-width:280px;width:100%;">
+                                    <input class="bv_startDate form-control" type="text" value="" placeholder="yyyy-mm-dd">
+                                    <span class="input-group-addon bv_startDateIcon"><i class="glyphicon glyphicon-th"></i></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group bv_group_tags" style="margin-bottom:10px;">
+                            <label class="control-label col-sm-4">Key Words</label>
+                            <div class="col-sm-8">
+                                <input class="bv_tags form-control" style="max-width:280px;width:100%;" type="text" data-role="tagsinput" placeholder="Add tags" />
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label col-sm-4">Project Leader</label>
+                            <div class="col-sm-8">
+                                <span class="bv_projectLeaderList"></span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="form-group bv_group_startDate">
-                <label class="control-label col-sm-2">Start Date</label>
-                <div class="col-sm-10">
-                    <div class="input-group date" id="dp3" data-date="" data-date format="yy-mm-dd" style="width:336px;">
-                        <input class="bv_startDate form-control" type="text" value="" placeholder="yyyy-mm-dd">
-                        <span class="input-group-addon bv_startDateIcon"><i class="glyphicon glyphicon-th"></i></span>
+                
+                <!-- Right Column: Text Areas -->
+                <div class="col-md-8">
+                    <div class="bv_group_shortDescription" style="margin-bottom:20px;">
+                        <label style="margin-bottom:8px;font-weight:500;color:#333;">Short Description</label>
+                        <textarea rows="3" class="bv_shortDescription form-control" style="width:100%;max-width:100%;" placeholder="Short Description"></textarea>
                     </div>
-                </div>
-            </div>
 
-            <div class="form-group bv_group_tags" style="margin-bottom:10px;">
-                <label class="control-label col-sm-2">Key Words</label>
-                <div class="col-sm-10">
-                    <input class="bv_tags form-control" style="width:336px;" type="text" data-role="tagsinput" placeholder="Add tags" />
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label class="control-label col-sm-2">Project Leader</label>
-                <div class="col-sm-10">
-                    <span class="bv_projectLeaderList"></span>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label class="control-label col-sm-2" style="font-weight:500;color:#333;">Short Description</label>
-                <div class="col-sm-10">
-                    <textarea rows="2" class="bv_shortDescription form-control" style="width:650px;resize:none;" placeholder=""></textarea>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label class="control-label col-sm-2" style="font-weight:500;color:#333;">Project Details</label>
-                <div class="col-sm-10">
-                    <textarea rows="7" class="bv_projectDetails form-control" style="width:650px; max-width:650px;" placeholder="Project Details"></textarea>
+                    <div class="bv_group_projectDetails" style="margin-bottom:20px;">
+                        <label style="margin-bottom:8px;font-weight:500;color:#333;">Project Details</label>
+                        <textarea rows="7" class="bv_projectDetails form-control" style="width:100%;max-width:100%;" placeholder="Project Details"></textarea>
+                    </div>
                 </div>
             </div>
         </div>
-
     </div>
 
     <div class="form-horizontal">
