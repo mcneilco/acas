@@ -529,13 +529,18 @@ class AuthorEditorController extends AbstractFormController
 		@$('.bv_closeModalButton').removeAttr('disabled')
 
 	handleCancelClearClicked: =>
-		@$('.bv_confirmClearEntity').modal('hide')
+		# Modal will be dismissed automatically via data-dismiss="modal"
 
 	handleConfirmClearClicked: =>
-		@$('.bv_confirmClearEntity').modal('hide')
-		@model = null
-		@completeInitialization()
+		# Reset form without destroying DOM - much cleaner approach
+		@clearForm()
 		@trigger 'amClean'
+
+	clearForm: =>
+		@model = new Author()
+		@setBindings()
+		@render()
+		@$('.bv_save').attr('disabled', 'disabled')
 
 	handleCancelClicked: =>
 		if @model.isNew()
