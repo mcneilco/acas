@@ -7,38 +7,38 @@
             </div>
             <div class="row">
                 <!-- Left Column: Form Fields -->
-                <div class="col-md-4 col-sm-12">
+                <div class="col-xl-4 col-lg-5 col-md-12 col-sm-12" style="min-width: 320px;">
                     <div class="form-horizontal">
                         <div class="form-group">
                             <label class="control-label col-sm-4"><i class="glyphicon glyphicon-lock bv_lock"></i> Status</label>
                             <div class="col-sm-8">
-                                <select class="bv_status select-picker form-control" style="width:280px;">
+                                <select class="bv_status select-picker form-control" style="max-width:280px;width:100%;">
                                 </select>
                             </div>
                         </div>
                         <div class="form-group">
                             <label class="control-label col-sm-4">Code</label>
                             <div class="col-sm-8">
-                                <input class="bv_experimentCode form-control" style="width:280px;" type="text" placeholder="autofill when saved" disabled readonly>
+                                <input class="bv_experimentCode form-control" style="max-width:280px;width:100%;" type="text" placeholder="autofill when saved" disabled readonly>
                             </div>
                         </div>
                         <div class="form-group bv_group_experimentName">
                             <label class="control-label col-sm-4 bv_experimentNameLabel" style="margin-top:17px;">*<%- window.conf.experiment.label %> Name</label>
                             <div class="col-sm-8">
                                 <input type="checkbox" name="bv_exptNameChkbx" class="bv_exptNameChkbx" style="margin-top:-3px;margin-right:2px;" checked="checked"><span class="bv_exptNameChkbxLabel">Same as <%- window.conf.experiment.label %> code</span>
-                                <input class="bv_experimentName form-control" style="width:280px; margin-top:5px;" type="text" placeholder="">
+                                <input class="bv_experimentName form-control" style="max-width:280px;width:100%; margin-top:5px;" type="text" placeholder="">
                             </div>
                         </div>
                         <div class="form-group bv_group_scientist">
                             <label class="control-label col-sm-4">*Scientist</label>
                             <div class="col-sm-8">
-                                <select class="bv_scientist form-control" style="width:280px;"></select>
+                                <select class="bv_scientist form-control" style="max-width:280px;width:100%;"></select>
                             </div>
                         </div>
                         <div class="form-group bv_group_completionDate">
                             <label class="control-label col-sm-4">*Date</label>
                             <div class="col-sm-8">
-                                <div class="input-group date" id="dp3" data-date="" data-date format="yy-mm-dd" style="width:280px;">
+                                <div class="input-group date" id="dp3" data-date="" data-date format="yy-mm-dd" style="max-width:280px;width:100%;">
                                     <input class="bv_completionDate form-control" type="text" value="" placeholder="yyyy-mm-dd">
                                     <span class="input-group-addon bv_completionDateIcon"><i class="glyphicon glyphicon-th"></i></span>
                                 </div>
@@ -47,7 +47,7 @@
                         <div class="form-group bv_group_protocolCode">
                             <label class="control-label col-sm-4">*<%- window.conf.protocol.label %></label>
                             <div class="col-sm-8">
-                                <select class="bv_protocolCode form-control" style="width:280px;">
+                                <select class="bv_protocolCode form-control" style="max-width:280px;width:100%;">
                                 </select>
                                 <span class="bv_spinner"></span>
                                 <button type="button" class="btn bv_useProtocolParameters hide" style="margin-top:5px;">Use Parameters</button>
@@ -56,32 +56,32 @@
                         <div class="form-group bv_group_projectCode">
                             <label class="control-label col-sm-4 bv_projectLabel">*Project</label>
                             <div class="col-sm-8">
-                                <select class="bv_projectCode form-control" style="width:280px;"></select>
+                                <select class="bv_projectCode form-control" style="max-width:280px;width:100%;"></select>
                             </div>
                         </div>
                         <div class="form-group bv_group_notebook">
                             <label class="control-label col-sm-4 bv_notebookLabel">*Notebook</label>
                             <div class="col-sm-8">
-                                <input class="bv_notebook form-control" style="width:280px;" type="text" placeholder="" />
+                                <input class="bv_notebook form-control" style="max-width:280px;width:100%;" type="text" placeholder="" />
                             </div>
                         </div>
                         <div class="form-group bv_group_notebookPage">
                             <label class="control-label col-sm-4 bv_notebookPageLabel">Notebook Page</label>
                             <div class="col-sm-8">
-                                <input class="bv_notebookPage form-control" style="width:280px;" type="text" placeholder="" />
+                                <input class="bv_notebookPage form-control" style="max-width:280px;width:100%;" type="text" placeholder="" />
                             </div>
                         </div>
                         <div class="form-group bv_group_tags" style="margin-bottom:10px;">
                             <label class="control-label col-sm-4">Key Words</label>
                             <div class="col-sm-8">
-                                <input class="bv_tags form-control" style="width:280px;max-width:280px;" type="text" data-role="tagsinput" placeholder="Add tags" />
+                                <input class="bv_tags form-control" style="max-width:280px;width:100%;" type="text" data-role="tagsinput" placeholder="Add tags" />
                             </div>
                         </div>
                     </div>
                 </div>
                 
                 <!-- Right Column: Text Areas and File Attachments -->
-                <div class="col-md-8">
+                <div class="col-xl-8 col-lg-7 col-md-12">
                     <div class="bv_group_shortDescription" style="margin-bottom:20px;">
                         <label style="margin-bottom:8px;font-weight:500;color:#333;">Short Description</label>
                         <textarea rows="3" class="bv_shortDescription form-control" style="width:100%;max-width:100%;" placeholder="Short Description"></textarea>
