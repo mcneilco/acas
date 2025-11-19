@@ -70,3 +70,24 @@
 .btn-group.open .btn-grey.dropdown-toggle {
     background-color: #999999;
 }
+
+/* Style OpenExperimentInQueryTool buttons when used in navbar */
+.navbar .bv_openExperimentInQueryToolPlaceholder .btn {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    margin-right: 5px;
+}
+
+.navbar .bv_openExperimentInQueryToolPlaceholder .btn-group {
+    margin-bottom: 0 !important;
+}
+
+.navbar .bv_openExperimentInQueryToolPlaceholder .bv_getLinkQueryTool {
+    margin-bottom: 0 !important;
+}
+
+.navbar .bv_openExperimentInQueryToolPlaceholder input {
+    margin-top: 0;
+    margin-bottom: 0;
+    height: 30px;
+}
