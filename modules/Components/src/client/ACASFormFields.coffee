@@ -136,6 +136,12 @@ class ACASFormAbstractFieldController extends Backbone.View
 	
 	showFormLabelTooltip: ->
 		@$('.label-tooltip').removeClass 'hide'
+		# Reinitialize tooltip after setting title and showing element
+		# Check if tooltip exists before destroying to avoid error
+		tooltipElement = @$('.label-tooltip')
+		if tooltipElement.data('bs.tooltip')?
+			tooltipElement.tooltip('destroy')
+		tooltipElement.tooltip()
 
 	handleToolTipMouseover: ->
 		@$('.label-tooltip').tooltip('show')

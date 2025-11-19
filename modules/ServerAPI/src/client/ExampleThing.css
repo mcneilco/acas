@@ -15,3 +15,40 @@
 .bv_ExampleThingController .form-horizontal {
     max-width: 800px;
 }
+
+/* Ensure handsontable takes full width */
+.bv_ExampleThingController .bv_tableWrapper {
+    width: 100% !important;
+}
+
+.bv_ExampleThingController .handsontable {
+    width: 100% !important;
+}
+
+.bv_ExampleThingController .htCenter {
+    width: 100% !important;
+}
+
+/* Force handsontable internal elements to use full width */
+.bv_ExampleThingController .wtHolder {
+    width: 100% !important;
+}
+
+.bv_ExampleThingController .wtHider {
+    width: 100% !important;
+}
+
+.bv_ExampleThingController .wtSpreader {
+    width: 100% !important;
+}
+
+.bv_ExampleThingController .htCore {
+    width: 100% !important;
+}
+
+/* Ensure all handsontable clones also use full width */
+.bv_ExampleThingController .ht_clone_top,
+.bv_ExampleThingController .ht_clone_bottom,
+.bv_ExampleThingController .ht_clone_left {
+    width: 100% !important;
+}
