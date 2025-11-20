@@ -94,7 +94,7 @@ class UtilityFunctions
 					if $(tab).hasClass "active"
 						controller.$('.tab-pane.active').prepend '<div class="col-md-12" style="margin-left:0px;"><h3>'+$(tabHeader).html()+'</h3></div>'
 					else
-						controller.$('.tab-pane.active').append '<hr class="col-md-12" style="margin-left:0px;"/>'\";
+						controller.$('.tab-pane.active').append '<hr class="col-md-12" style="margin-left:0px;"/>'
 						controller.$('.tab-pane.active').append '<div class="col-md-12" style="margin-left:0px;"><h3>'+$(tabHeader).html()+'</h3></div>'
 						controller.$('.tab-pane.active').append $(tab).html()
 		controller.$('.nav.nav-tabs').hide()
