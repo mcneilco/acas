@@ -78,7 +78,7 @@
                         <textarea rows="7" class="bv_projectDetails form-control" style="width:100%;max-width:100%;" placeholder="Project Details"></textarea>
                     </div>
 
-                    <div class="bv_group_attachFile" style="margin-bottom:30px;">
+                    <div class="bv_group_attachFile" style="margin-bottom:60px;">
                         <label style="margin-bottom:8px;font-weight:500;color:#333;">Attach Files</label>
                         <div style="margin-bottom:5px;">
                             <span class="bv_group_fileType" style="margin-right:20px;">File Type</span>
@@ -297,29 +297,43 @@
 </script>
 
 <script type="text/template" id="ProjectUserView" xmlns="http://www.w3.org/1999/html">
-    <div class="col-sm-5 bv_projectUserWrapper" style="width:510px;">
-        <span class="form-group bv_group_user">
-            <select class="bv_user form-control" style="margin-right:10px;margin-bottom:9px;width:350px;display: inline-block;"></select>
-            <button class="close bv_deleteProjectUser" style="margin-right:130px;margin-top:3px;color: #777;">&times;</button>
-        </span>
+    <div class="row bv_projectUserWrapper" style="margin-bottom: 10px;">
+        <div class="col-sm-11">
+            <select class="bv_user form-control"></select>
+        </div>
+        <div class="col-sm-1">
+            <button class="close bv_deleteProjectUser" style="color: #777;">&times;</button>
+        </div>
     </div>
 </script>
 
 <script type="text/template" id="ProjectUserListView" xmlns="http://www.w3.org/1999/html">
-    <span class="bv_projectUserInfo pull-right"></span>
-    <button class="btn btn-default bv_addProjectUserButton" style="margin-left: 290px;">Add User</button>
+    <div class="bv_projectUserInfo"></div>
+    <div class="row" style="margin-top: 15px;">
+        <div class="col-sm-11">
+            <button class="btn btn-default bv_addProjectUserButton pull-right">Add User</button>
+        </div>
+        <div class="col-sm-1"></div>
+    </div>
 </script>
 
 <script type="text/template" id="ProjectAdminView" xmlns="http://www.w3.org/1999/html">
-    <div class="col-sm-5 bv_projectAdminWrapper" style="width:510px;">
-        <span class="form-group bv_group_admin">
-            <select class="bv_admin form-control" style="margin-right:10px;margin-bottom:9px;width:350px;display: inline-block;"></select>
-            <button class="close bv_deleteProjectAdmin" style="margin-right:130px;margin-top:3px;color: #777;">&times;</button>
-        </span>
+    <div class="row bv_projectAdminWrapper" style="margin-bottom: 10px;">
+        <div class="col-sm-11">
+            <select class="bv_admin form-control"></select>
+        </div>
+        <div class="col-sm-1">
+            <button class="close bv_deleteProjectAdmin" style="color: #777;">&times;</button>
+        </div>
     </div>
 </script>
 
 <script type="text/template" id="ProjectAdminListView" xmlns="http://www.w3.org/1999/html">
-    <span class="bv_projectAdminInfo pull-right"></span>
-    <button class="btn btn-default bv_addProjectAdminButton" style="margin-left: 290px;">Add Admin</button>
+    <div class="bv_projectAdminInfo"></div>
+    <div class="row" style="margin-top: 15px;">
+        <div class="col-sm-11">
+            <button class="btn btn-default bv_addProjectAdminButton pull-right">Add Admin</button>
+        </div>
+        <div class="col-sm-1"></div>
+    </div>
 </script>
