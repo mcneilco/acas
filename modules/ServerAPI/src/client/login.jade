@@ -30,9 +30,12 @@ block content
                                     - if (resetPasswordOption)
                                         p.help-block.text-center
                                             a(href="/passwordReset") Forgot your password?
-        - if (redirectUrl)
-            div.col-md-7.col-md-offset-1.alert.alert-success.loginError After login you will be redirected to #{redirectUrl}
-        - if (message == "Your new password is set.")
-            div.col-md-7.col-md-offset-1.alert.alert-success.loginError #{message}
-        - else if (message != "")
-            div.col-md-7.col-md-offset-1.alert.alert-danger.loginError #{message}
+            - if (redirectUrl)
+                div.col-md-6.col-md-offset-3.col-sm-8.col-sm-offset-2
+                    div.alert.alert-success.loginError After login you will be redirected to #{redirectUrl}
+            - if (message == "Your new password is set.")
+                div.col-md-6.col-md-offset-3.col-sm-8.col-sm-offset-2
+                    div.alert.alert-success.loginError #{message}
+            - else if (message != "")
+                div.col-md-6.col-md-offset-3.col-sm-8.col-sm-offset-2
+                    div.alert.alert-danger.loginError #{message}
