@@ -39,6 +39,7 @@ class LSFileChooserController extends Backbone.View
 			'handleFileAddedEvent',
 			'fileUploadComplete',
 			'fileUploadFailed',
+			'handleFileValidationFailed',
 			'canAcceptAnotherFile',
 			'filePassedServerValidation')
 
@@ -96,8 +97,11 @@ class LSFileChooserController extends Backbone.View
 		@trigger 'fileDeleted'
 
 	handleDeleteFileUIChanges: ->
-		@$('.bv_manualFileSelect').show("slide")
 		@currentNumberOfFiles--
+		# Ensure counter doesn't go below zero
+		if @currentNumberOfFiles < 0
+			@currentNumberOfFiles = 0
+		@$('.bv_manualFileSelect').show("slide")
 		this.trigger('fileUploader:removedFile')
 		
 	handleFileAddedEvent: (e, data) ->
@@ -133,6 +137,15 @@ class LSFileChooserController extends Backbone.View
 		@$('.bv_status').addClass('glyphicon glyphicon-exclamation-sign')
 		#window.notificationController.addError("file is invalid!")
 		@$('.dv_validatingProgressBar').hide("slide")
+	
+	handleFileValidationFailed: (e, data) ->
+		# Re-render template to show error message
+		@$('.files').empty()
+		@$('.fileupload').fileupload('add', data)
+		# Decrement counter for failed file and show browse button if space available
+		@currentNumberOfFiles--
+		if @canAcceptAnotherFile()
+			@$('.bv_manualFileSelect').show()
 
 	render: ->
 		self = @
@@ -167,6 +180,9 @@ class LSFileChooserController extends Backbone.View
 		@$('.fileupload').bind('fileUploadFailed', @fileUploadComplete)
 		@$('.fileupload').bind('fileuploaddestroyed', @handleDeleteFileUIChanges)
 		#@$('.fileupload').bind('fileuploadstopped', @handleDeleteFileUIChanges)
+		
+		# Handle file validation failures (e.g., wrong file type)
+		@$('.fileupload').bind('fileuploadprocessfail', @handleFileValidationFailed)
 
 		if @maxNumberOfFiles == 1
 			@$(".fileinput-button input").attr("multiple", false)

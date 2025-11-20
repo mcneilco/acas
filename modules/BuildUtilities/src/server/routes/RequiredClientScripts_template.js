@@ -10,6 +10,7 @@ exports.requiredScripts = [
 	'/lib/jqueryFileUpload-10.32.0/js/jquery.iframe-transport.js',
 	'/lib/jqueryFileUpload-10.32.0/js/jquery.fileupload.js',
 	'/lib/jqueryFileUpload-10.32.0/js/jquery.fileupload-process.js',
+	'/lib/jqueryFileUpload-10.32.0/js/jquery.fileupload-validate.js',
 	'/lib/jqueryFileUpload-10.32.0/js/jquery.fileupload-ui.js',
 	'/lib/jqueryFileUpload/js/locale.js',
 	'/lib/jquery-ui-1.14.1.custom/jquery-ui.min.js',
