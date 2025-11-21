@@ -218,6 +218,7 @@ class ACASFormStateTableController extends Backbone.View
 			afterValidate: @handleAfterValidate
 			afterCreateRow: @handleRowCreated
 			afterSelection: @handleSelection
+			afterRender: @handleAfterRender
 			minSpareRows: @minSpareRows,
 			allowInsertRow: true
 			contextMenu: contextMenu
@@ -603,16 +604,24 @@ class ACASFormStateTableController extends Backbone.View
 
 		return newValue
 
+	handleAfterRender: =>
+		# Handle row selection styling after table is fully rendered
+		# This is safer than doing DOM manipulation in hotCells callback
+		if @selectedCell? && @hot?
+			try
+				selectedRow = @selectedCell[0]
+				$(@hot.rootElement).find('td').removeClass('selectedRow')
+				$(@hot.rootElement).find("tr:nth-child(#{selectedRow + 1}) td").addClass('selectedRow')
+			catch error
+				console.debug("Error updating row selection:", error)
+
 	hotCells: (row, col, prop) =>
 		cellProperties = {}
 		if @tableReadOnly
 			cellProperties.readOnly = true
-		if @hot?
-			cell = $(@hot.getCell(row, col))
-			cell.removeClass('selectedRow')
-			if @selectedCell?
-				if row == @selectedCell[0]
-					cell.parent().find('td').addClass('selectedRow')
+		
+		# In Handsontable 6.2.2+, avoid DOM manipulation in cells callback
+		# Instead handle styling in afterRender event
 		if @enableRowIndex? && @enableRowIndex == row
 			cellProperties = {}
 		return cellProperties

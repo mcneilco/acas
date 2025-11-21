@@ -885,10 +885,57 @@ class ACASFormLSFileValueFieldController extends ACASFormAbstractFieldController
 			if !displayText?
 				displayText = fileValue
 			if @displayInline
-				@$('.bv_file').html '<img src="'+window.conf.datafiles.downloadurl.prefix+encodeURIComponent(fileValue)+'" alt="'+ displayText+'">'
+				imageUrl = window.conf.datafiles.downloadurl.prefix+encodeURIComponent(fileValue)
+				@$('.bv_file').html '''
+					<div class="bv_inlineImageContainer">
+						<img class="bv_inlineImageThumbnail" src="''' + imageUrl + '''" alt="''' + displayText + '''" 
+							 title="Click to view full size">
+						<div class="bv_inlineImageOverlay" style="display: none;">
+							<img class="bv_inlineImageFull" src="''' + imageUrl + '''" alt="''' + displayText + '''">
+							<button type="button" class="close bv_closeImageOverlay" aria-label="Close">
+								<span aria-hidden="true">&times;</span>
+							</button>
+						</div>
+					</div>'''
+				# Small delay to ensure DOM is ready
+				setTimeout((() => @setupImageInteractions()), 10)
 			else
 				@$('.bv_file').html '<a href="'+window.conf.datafiles.downloadurl.prefix+encodeURIComponent(fileValue)+'">'+displayText+'</a>'
 			@$('.bv_deleteSavedFile').show()
+
+	setupImageInteractions: ->
+		container = @$('.bv_inlineImageContainer')
+		
+		# Click thumbnail to show full size overlay
+		container.find('.bv_inlineImageThumbnail').off('click').on 'click', (e) =>
+			e.preventDefault()
+			container.find('.bv_inlineImageOverlay').show()
+			
+		# Click overlay background to hide
+		container.find('.bv_inlineImageOverlay').off('click').on 'click', (e) =>
+			if e.target == e.currentTarget
+				container.find('.bv_inlineImageOverlay').hide()
+		
+		# Direct handler for close button - try multiple approaches
+		closeBtn = container.find('.bv_closeImageOverlay')
+		closeBtn.off('click').on 'click', (e) =>
+			e.preventDefault()
+			e.stopPropagation()
+			console.log('Close button clicked') # Debug log
+			container.find('.bv_inlineImageOverlay').hide()
+			return false
+		
+		# Also handle clicks on the span inside the close button
+		closeBtn.find('span').off('click').on 'click', (e) =>
+			e.preventDefault()
+			e.stopPropagation()
+			console.log('Close span clicked') # Debug log
+			container.find('.bv_inlineImageOverlay').hide()
+			return false
+				
+		# Prevent clicking the full image from closing overlay
+		container.find('.bv_inlineImageFull').off('click').on 'click', (e) =>
+			e.stopPropagation()
 
 	createNewFileChooser: ->
 		if @fileController?

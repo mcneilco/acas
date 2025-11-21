@@ -71,3 +71,131 @@
 .form-group .select2-container .select2-selection--single {
     height: 34px;
 }
+
+/* Fix Select2 clear button positioning */
+.select2-container--default .select2-selection--single .select2-selection__clear {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 16px;
+    color: #999;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    z-index: 1;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__clear:hover {
+    color: #333;
+}
+
+/* Ensure arrow stays on the right */
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    position: absolute;
+    right: 1px;
+    top: 1px;
+    bottom: 1px;
+    width: 20px;
+}
+
+/* Fix Select2 clear button positioning */
+.select2-container--default .select2-selection--single .select2-selection__clear {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 16px;
+    color: #999;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    z-index: 1;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__clear:hover {
+    color: #333;
+}
+
+/* Ensure arrow stays on the right */
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    position: absolute;
+    right: 1px;
+    top: 1px;
+    bottom: 1px;
+    width: 20px;
+}
+
+/* Inline image display with thumbnail and full-size overlay */
+.bv_inlineImageContainer {
+    position: relative;
+    display: inline-block;
+}
+
+.bv_inlineImageThumbnail {
+    max-width: 400px;
+    max-height: 300px;
+    width: auto;
+    height: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 4px;
+    background-color: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,.1);
+    cursor: pointer;
+    transition: box-shadow 0.2s ease;
+}
+
+.bv_inlineImageThumbnail:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,.2);
+}
+
+.bv_inlineImageOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.8);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.bv_inlineImageFull {
+    max-width: 90%;
+    max-height: 90%;
+    width: auto;
+    height: auto;
+    border-radius: 4px;
+    box-shadow: 0 4px 20px rgba(0,0,0,.5);
+    cursor: default;
+}
+
+.bv_closeImageOverlay {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    font-size: 30px;
+    font-weight: bold;
+    color: #fff;
+    background: none;
+    border: none;
+    cursor: pointer;
+    z-index: 10000;
+    padding: 0;
+    width: auto;
+    height: auto;
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+}
+
+.bv_closeImageOverlay:hover {
+    opacity: 1;
+}
