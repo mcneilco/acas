@@ -39,7 +39,7 @@ class ModuleMenusController extends Backbone.View
 			collection: @moduleLauncherList
 
 		unless window.conf.roologin.showpasswordchange
-			@$('.bv_changePassword').hide()
+			@$('.bv_changePassword').addClass('hide')
 
 		@moduleLauncherMenuListController.render()
 		@moduleLauncherListController.render()
@@ -47,14 +47,14 @@ class ModuleMenusController extends Backbone.View
 		if window.conf.moduleMenus.summaryStats
 			@$('.bv_summaryStats').load('/dataFiles/summaryStatistics/summaryStatistics.html')
 		else
-			@$('.bv_summaryStats').hide()
+			@$('.bv_summaryStats').addClass('hide')
 
 		if window.AppLaunchParams.moduleLaunchParams?
 			@moduleLauncherMenuListController.launchModule window.AppLaunchParams.moduleLaunchParams.moduleName
 		else if window.conf.moduleMenus?.moduleAutoLaunchName?
 			@$(".bv_launch_#{window.conf.moduleMenus.moduleAutoLaunchName}").click()
 		else
-			@$('.bv_homePageWrapper').show()
+			@$('.bv_homePageWrapper').removeClass('hide')
 
 		if window.conf.moduleMenus.logoText?
 			logoInfo = window.conf.moduleMenus.logoText
@@ -74,15 +74,15 @@ class ModuleMenusController extends Backbone.View
 
 		if window.conf.require.login
 			if @fastUserSwitchingAllowed()
-				@$('.bv_loginUserFirstName').hide()
-				@$('.bv_loginUserLastName').hide()
+				@$('.bv_loginUserFirstName').addClass('hide')
+				@$('.bv_loginUserLastName').addClass('hide')
 				@setupFastUserSwitching()
 			else
-				@$('.bv_fastUserSelect').hide()
+				@$('.bv_fastUserSelect').addClass('hide')
 				@$('.bv_loginUserFirstName').html _.escape(window.AppLaunchParams.loginUser.firstName)
 				@$('.bv_loginUserLastName').html _.escape(window.AppLaunchParams.loginUser.lastName)
 		else
-			@$('.bv_userInfo').hide()
+			@$('.bv_userInfo').addClass('hide')
 
 	render: =>
 		if window.AppLaunchParams.deployMode?
@@ -134,24 +134,24 @@ class ModuleMenusController extends Backbone.View
 		, 10000		
 
 	handleHome: =>
-		$('.bv_mainModuleWrapper').hide()
-		$('.bv_homePageWrapper').show()
+		$('.bv_mainModuleWrapper').addClass('hide')
+		$('.bv_homePageWrapper').removeClass('hide')
 
 	handleHideMenus: =>
-		@$('.bv_moduleMenuWellWrapper').hide()
-		@$('.bv_showModuleMenuControl').show()
+		@$('.bv_moduleMenuWellWrapper').addClass('hide')
+		@$('.bv_showModuleMenuControl').removeClass('hide')
 
 	handleShowMenus: =>
-		@$('.bv_showModuleMenuControl').hide()
-		@$('.bv_moduleMenuWellWrapper').show()
+		@$('.bv_showModuleMenuControl').addClass('hide')
+		@$('.bv_moduleMenuWellWrapper').removeClass('hide')
 
 	handleToggleMenus: =>
 		if @$('.bv_moduleMenuWellWrapper').is ':hidden'
-			@$('.bv_moduleMenuWellWrapper').show()
+			@$('.bv_moduleMenuWellWrapper').removeClass('hide')
 			@$('.bv_mainModuleWellWrapper').removeClass 'col-md-11'
 			@$('.bv_mainModuleWellWrapper').addClass 'col-md-9'
 		else
-			@$('.bv_moduleMenuWellWrapper').hide()
+			@$('.bv_moduleMenuWellWrapper').addClass('hide')
 			@$('.bv_mainModuleWellWrapper').removeClass 'col-md-9'
 			@$('.bv_mainModuleWellWrapper').addClass 'col-md-11'
 

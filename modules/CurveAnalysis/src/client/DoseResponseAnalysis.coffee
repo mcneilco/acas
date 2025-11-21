@@ -270,9 +270,9 @@ class ModelFitTypeController extends Backbone.View
 		@setupTransformationUnitsSelect()
 		modelFitType = @model.getModelFitType().get('codeValue')
 		if modelFitType is "unassigned"
-			@$('.bv_modelFitTransformationWrapper').hide()
+			@$('.bv_modelFitTransformationWrapper').addClass('hide')
 		else
-			@$('.bv_modelFitTransformationWrapper').show()
+			@$('.bv_modelFitTransformationWrapper').removeClass('hide')
 		@setupParameterController(modelFitType)
 
 	setupModelFitTypeSelect: =>
@@ -353,12 +353,12 @@ class ModelFitTypeController extends Backbone.View
 	handleModelFitTypeChanged: =>
 		modelFitType = @$('.bv_modelFitType').val()
 		if modelFitType is "unassigned"
-			@$('.bv_modelFitTransformationWrapper').hide()
+			@$('.bv_modelFitTransformationWrapper').addClass('hide')
 			@fitTransformationListController.setSelectedCode "Select Fit Transformation"
 			@transformationUnitsListController.setSelectedCode "unassigned"
 			@updateModel()
 		else
-			@$('.bv_modelFitTransformationWrapper').show()
+			@$('.bv_modelFitTransformationWrapper').removeClass('hide')
 		@setupParameterController(modelFitType)
 		@updateModel()
 		@modelFitTypeListController.trigger 'change'
@@ -463,7 +463,7 @@ class DoseResponseAnalysisController extends Backbone.View
 					@$('.bv_modelFitResultsHTML').html(res)
 					@$('.bv_resultsContainer').removeClass('hidden')
 		else
-			@$('.bv_resultsContainer').hide()
+			@$('.bv_resultsContainer').addClass('hide')
 
 	testReadyForFit: =>
 		if @model.getAnalysisStatus().get('codeValue') != "complete"
@@ -516,20 +516,20 @@ class DoseResponseAnalysisController extends Backbone.View
 			@parameterController.model.on 'change', => @validateModelFitTab()
 		modelFitType = @model.getModelFitType().get('codeValue')
 		if modelFitType is "unassigned"
-			@$('.bv_fitModelButton').hide()
+			@$('.bv_fitModelButton').addClass('hide')
 		else
-			@$('.bv_fitModelButton').show()
+			@$('.bv_fitModelButton').removeClass('hide')
 
 	handleModelFitTypeChanged: =>
 		modelFitType = @modelFitTypeController.modelFitTypeListController.getSelectedCode()
 		if modelFitType is "unassigned"
-			@$('.bv_fitModelButton').hide()
-			@$('.bv_modelFitTransformationWrapper').hide()
+			@$('.bv_fitModelButton').addClass('hide')
+			@$('.bv_modelFitTransformationWrapper').addClass('hide')
 			if @modelFitTypeController.parameterController?
 				@modelFitTypeController.parameterController.undelegateEvents()
 		else
-			@$('.bv_fitModelButton').show()
-			@$('.bv_modelFitTransformationWrapper').show()
+			@$('.bv_fitModelButton').removeClass('hide')
+			@$('.bv_modelFitTransformationWrapper').removeClass('hide')
 			if @modelFitTypeController.parameterController?
 				@modelFitTypeController.parameterController.on 'valid', @validateModelFitTab
 				@modelFitTypeController.parameterController.on 'invalid', @validateModelFitTab

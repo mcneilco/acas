@@ -19,10 +19,10 @@ class AbstractFormController extends Backbone.View
 	lockEditingForSessionKey: null
 
 	show: ->
-		$(@el).show()
+		$(@el).removeClass('hide')
 
 	hide: ->
-		$(@el).hide()
+		$(@el).addClass('hide')
 
 	cancel: ->
 		@clearValidationErrorStyles()

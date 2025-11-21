@@ -27,20 +27,20 @@ class SaltSimpleSearchController extends AbstractFormController
 			@$(".bv_doSearch").attr("disabled", true)
 
 	handleDoSearchClicked: =>
-		$(".bv_saltTableController").hide()
-		$(".bv_errorOccurredPerformingSearch").hide()
+		$(".bv_saltTableController").addClass('hide')
+		$(".bv_errorOccurredPerformingSearch").addClass('hide')
 		saltSearchTerm = $.trim(@$(".bv_saltSearchTerm").val())
 		$(".bv_exptSearchTerm").val ""
 		if saltSearchTerm isnt ""
-			$(".bv_noMatchingSaltsFoundMessage").hide()
-			$(".bv_saltBrowserSearchInstructions").hide()
-			$(".bv_searchSaltsStatusIndicator").show()
+			$(".bv_noMatchingSaltsFoundMessage").addClass('hide')
+			$(".bv_saltBrowserSearchInstructions").addClass('hide')
+			$(".bv_searchSaltsStatusIndicator").removeClass('hide')
 			if !window.conf.browser.enableSearchAll and saltSearchTerm is "*"
-				$(".bv_moreSpecificSaltSearchNeeded").show()
+				$(".bv_moreSpecificSaltSearchNeeded").removeClass('hide')
 			else 
-				$(".bv_searchingSaltsMessage").show()
+				$(".bv_searchingSaltsMessage").removeClass('hide')
 				$(".bv_exptSearchTerm").html _.escape(saltSearchTerm)
-				$(".bv_moreSpecificSaltSearchNeeded").hide()
+				$(".bv_moreSpecificSaltSearchNeeded").addClass('hide')
 				@doSearch saltSearchTerm
 
 	doSearch: (saltSearchTerm) => 
@@ -99,9 +99,9 @@ class SaltSummaryTableController extends Backbone.View
 		@template = _.template($('#SaltSummaryTableView').html())
 		$(@el).html @template
 		if @collection.models.length is 0
-			$(".bv_noMatchingSaltsFoundMessage").show()
+			$(".bv_noMatchingSaltsFoundMessage").removeClass('hide')
 		else
-			$(".bv_noMatchingSaltsFoundMessage").hide()
+			$(".bv_noMatchingSaltsFoundMessage").addClass('hide')
 			@collection.each (salt) =>
 				prsc = new SaltRowSummaryController
 					model: salt
@@ -155,17 +155,17 @@ class SaltBrowserController extends Backbone.View
 		@notificationController = new LSNotificationController
 			el: @$('.bv_notifications')
 			showPreview: false
-		@$('.bv_notifications').hide()
+		@$('.bv_notifications').addClass('hide')
 
 		@createNotificationController = new LSNotificationController
 			el: @$('.bv_createNotifications')
 			showPreview: false
-		@$('.bv_createNotifications').hide()
+		@$('.bv_createNotifications').addClass('hide')
 
 		@editFieldNotificationController = new LSNotificationController
 			el: @$('.bv_fieldNotifications')
 			showPreview: false
-		@$('.bv_fieldNotifications').hide()
+		@$('.bv_fieldNotifications').addClass('hide')
 		@checkAllowCmpdRegistration()
 
 	checkAllowCmpdRegistration: ->
@@ -176,7 +176,7 @@ class SaltBrowserController extends Backbone.View
 				if !allowRegResp.allowCmpdRegistration
 					@$('.bv_createNewSaltBtn').prop 'disabled', true
 					@$('.bv_downloadSaltBtn').prop 'disabled', true
-					@$('.bv_disableCmpdRegistrationMessage').show()
+					@$('.bv_disableCmpdRegistrationMessage').removeClass('hide')
 					@$('.bv_disableCmpdRegistrationMessage').html allowRegResp.message.replace("Compounds", "Salts")
 					@allowCmpdRegistration = false
 				else
@@ -184,23 +184,23 @@ class SaltBrowserController extends Backbone.View
 			error: (err) =>
 				@$('.bv_createNewSaltBtn').prop 'disabled', true
 				@$('.bv_downloadSaltBtn').prop 'disabled', true
-				@$('.bv_disableCmpdRegistrationMessage').show()
+				@$('.bv_disableCmpdRegistrationMessage').removeClass('hide')
 				@$('.bv_disableCmpdRegistrationMessage').html JSON.parse(err.responseText).message.replace("Compounds", "Salts")
 				@allowCmpdRegistration = false
 	
 	setupSaltSummaryTable: (salts) =>
 		@destroySaltSummaryTable()
 
-		$(".bv_searchingSaltsMessage").hide()
+		$(".bv_searchingSaltsMessage").addClass('hide')
 		if salts is null
-			@$(".bv_errorOccurredPerformingSearch").show()
+			@$(".bv_errorOccurredPerformingSearch").removeClass('hide')
 
 		else if salts.length is 0
-			@$(".bv_noMatchingSaltsFoundMessage").show()
+			@$(".bv_noMatchingSaltsFoundMessage").removeClass('hide')
 			@$(".bv_saltTableController").html ""
 		else
-			$(".bv_searchSaltsStatusIndicator").hide()
-			@$(".bv_saltTableController").show()
+			$(".bv_searchSaltsStatusIndicator").addClass('hide')
+			@$(".bv_saltTableController").removeClass('hide')
 			@saltSummaryTable = new SaltSummaryTableController
 				collection: new SaltList salts
 			@saltSummaryTable.on "selectedRowUpdated", @selectedSaltUpdated
@@ -213,8 +213,8 @@ class SaltBrowserController extends Backbone.View
 			readOnly: true
 
 		$('.bv_saltController').html @saltController.render().el
-		$(".bv_saltController").show()
-		$(".bv_saltControllerContainer").show()
+		$(".bv_saltController").removeClass('hide')
+		$(".bv_saltControllerContainer").removeClass('hide')
 		if !@allowCmpdRegistration
 			@$('.bv_saltControllerContainer .bv_editSalt').prop 'disabled', true
 
@@ -239,11 +239,11 @@ class SaltBrowserController extends Backbone.View
 				pngImage = '<img src="' + pngSrc + '" />'
 				@$('.bv_structureHolder').html pngImage
 
-				if window.conf.roles.cmpdreg.adminRole?
-					adminRoles = window.conf.roles.cmpdreg.adminRole.split(",")
-					if UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, adminRoles)
-						@$('.bv_editSalt').show()
-						@$('.bv_deleteSalt').show()
+			if window.conf.roles.cmpdreg.adminRole?
+				adminRoles = window.conf.roles.cmpdreg.adminRole.split(",")
+				if UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, adminRoles)
+					@$('.bv_editSalt').removeClass('hide')
+					@$('.bv_deleteSalt').removeClass('hide')
 			error: (result) =>
 				console.log(result)
 		)
@@ -256,9 +256,9 @@ class SaltBrowserController extends Backbone.View
 		@$('.bv_abbrevName').val ""
 		@$('.bv_saltNameCreate').val ""
 
-		@$('.bv_saltBrowserCoreContainer').hide()
-		@$('bv_saltBrowserCore').hide()
-		@$('.bv_createSalt').show()
+		@$('.bv_saltBrowserCoreContainer').addClass('hide')
+		@$('bv_saltBrowserCore').addClass('hide')
+		@$('.bv_createSalt').removeClass('hide')
 
 		# Chemical Structure Controller Set by Sketcher Config Setting 
 		@chemicalStructureController = UtilityFunctions::getNewSystemChemicalSketcherController(window.conf.cmpdreg.sketcher)
@@ -285,7 +285,7 @@ class SaltBrowserController extends Backbone.View
 			console.log(saltName)
 			console.log(saltStruct)
 			# Need to Alert User of Empty Fields Somehow 
-			@$('.bv_createNotifications').show()
+			@$('.bv_createNotifications').removeClass('hide')
 			@createNotificationController.clearAllNotificiations()
 			@createNotificationController.addNotifications(@errorOwnerName, [{"errorLevel": "error", "message": "Please fill in structure, name, and abbrev fields!" }])
 		if (fieldsFilled)
@@ -309,19 +309,19 @@ class SaltBrowserController extends Backbone.View
 					console.log(result)
 					console.log(result.length)
 					if result.length > 1 # If there's an error / warning and no salt 
-						@$('.bv_createNotifications').show()
+						@$('.bv_createNotifications').removeClass('hide')
 						@createNotificationController.clearAllNotificiations()
 						for feedback in result
 							@createNotificationController.addNotifications(@errorOwnerName, [{"errorLevel": feedback.level, "message":feedback.message}])
 					else if result["formula"] == ""
-						@$('.bv_createNotifications').show()
+						@$('.bv_createNotifications').removeClass('hide')
 						@createNotificationController.clearAllNotificiations()
 						@createNotificationController.addNotifications(@errorOwnerName, [{"errorLevel": "error", "message": "No salt structure provided!" }])
 					else 
-						@$('.bv_createNotifications').hide()
+						@$('.bv_createNotifications').addClass('hide')
 						# Need to Parse Result Values Into Form Fields 
-						@$('.bv_createSalt').hide()
-						@$('.bv_confirmCreateSalt').show()
+						@$('.bv_createSalt').addClass('hide')
+						@$('.bv_confirmCreateSalt').removeClass('hide')
 
 						@$('.bv_abbrevNameConfirm').val result.abbrev
 						@$('.bv_saltNameConfirm').val result.name
@@ -350,14 +350,14 @@ class SaltBrowserController extends Backbone.View
 								@$('.bv_saltStructConfirm').html pngImage 
 							error: (result) =>
 								console.log(result)
-								@$('.bv_saltStructConfirm').hide()
+								@$('.bv_saltStructConfirm').addClass('hide')
 
 					)
 
 				error: (errorMsg) =>
 					console.log(errorMsg)
-					@$('.bv_createSalt').hide()
-					@$('.bv_errorCreatingSaltMessage').show()
+					@$('.bv_createSalt').addClass('hide')
+					@$('.bv_errorCreatingSaltMessage').removeClass('hide')
 					errorData = JSON.parse(errorMsg.responseText)
 					errorContainer = @$('.bv_createSaltErrorMessageHolder')
 					errorContainer.empty()
@@ -370,9 +370,9 @@ class SaltBrowserController extends Backbone.View
 			)
 
 	handleBackConfirmCreateClicked: => 
-		@$('.bv_confirmCreateSalt').hide()
-		@$('.bv_createSalt').show()
-		@$('.bv_createNotifications').hide()
+		@$('.bv_confirmCreateSalt').addClass('hide')
+		@$('.bv_createSalt').removeClass('hide')
+		@$('.bv_createNotifications').addClass('hide')
 
 	# Non Dry Run Method to Register Salt Reviewed by User
 	handleSaveSaltButtonClicked: =>
@@ -410,16 +410,16 @@ class SaltBrowserController extends Backbone.View
 				contentType: 'application/json'
 				dataType: 'json'
 				success: (result) => # Succesfull Registration! 
-					@$('.bv_confirmCreateSalt').hide()
-					@$('.bv_saltBrowserCoreContainer').show()
-					@$('bv_saltBrowserCore').show()
+					@$('.bv_confirmCreateSalt').addClass('hide')
+					@$('.bv_saltBrowserCoreContainer').removeClass('hide')
+					@$('bv_saltBrowserCore').removeClass('hide')
 					# Reload Search
 					@searchController.doSearch("*")
-					@$('.bv_createNotifications').hide()
+					@$('.bv_createNotifications').addClass('hide')
 				error: (errorMsg) =>
 					console.log(errorMsg)
-					@$('.bv_confirmCreateSalt').hide()
-					@$('.bv_errorCreatingSaltMessage').show()
+					@$('.bv_confirmCreateSalt').addClass('hide')
+					@$('.bv_errorCreatingSaltMessage').removeClass('hide')
 					errorData = JSON.parse(errorMsg.responseText)
 					errorContainer = @$('.bv_createSaltErrorMessageHolder')
 					errorContainer.empty()
@@ -429,14 +429,14 @@ class SaltBrowserController extends Backbone.View
 						errorMessage = error.message
 						errorList.append("<li>#{errorMessage}</li>")
 					errorContainer.append(errorList)
-					@$('.bv_createNotifications').hide()
+					@$('.bv_createNotifications').addClass('hide')
 			)
 
 
 	handleCancelCreateClicked: =>
-		@$(".bv_createSalt").hide()
-		@$('.bv_saltBrowserCoreContainer').show()
-		@$('bv_saltBrowserCore').show()
+		@$(".bv_createSalt").addClass('hide')
+		@$('.bv_saltBrowserCoreContainer').removeClass('hide')
+		@$('bv_saltBrowserCore').removeClass('hide')
 
 	handleDownloadSaltClicked: =>
 		# Calls Custom Route to Download SDF of All Salts Registered 
@@ -461,13 +461,13 @@ class SaltBrowserController extends Backbone.View
 	
 	handleDeleteSaltClicked: =>
 		@$(".bv_saltUserName").html @saltController.model.get("name") 
-		@$(".bv_deleteButtons").show()
-		@$(".bv_okayDeleteButton").hide()
-		@$(".bv_errorDeletingSaltMessage").hide()
-		@$(".bv_deleteWarningMessage").show()
-		@$(".bv_deletingStatusIndicator").hide()
-		@$(".bv_saltDeletedSuccessfullyMessage").hide()
-		$(".bv_confirmDeleteSalt").show()
+		@$(".bv_deleteButtons").removeClass('hide')
+		@$(".bv_okayDeleteButton").addClass('hide')
+		@$(".bv_errorDeletingSaltMessage").addClass('hide')
+		@$(".bv_deleteWarningMessage").removeClass('hide')
+		@$(".bv_deletingStatusIndicator").addClass('hide')
+		@$(".bv_saltDeletedSuccessfullyMessage").addClass('hide')
+		$(".bv_confirmDeleteSalt").removeClass('hide')
 		$('.bv_confirmDeleteSalt').modal({
 			keyboard: false,
 			backdrop: true
@@ -478,24 +478,24 @@ class SaltBrowserController extends Backbone.View
 		# If there are no dependent lots, then allow the user to confirm and proceed with the delete
 
 	handleConfirmDeleteSaltClicked: =>
-		@$(".bv_deleteWarningMessage").hide()
-		@$(".bv_deletingStatusIndicator").show()
-		@$(".bv_deleteButtons").hide()
+		@$(".bv_deleteWarningMessage").addClass('hide')
+		@$(".bv_deletingStatusIndicator").removeClass('hide')
+		@$(".bv_deleteButtons").addClass('hide')
 
 		$.ajax(
 			url: "/api/cmpdRegAdmin/salts/#{@saltController.model.get("id")}", 
 			type: 'DELETE',
 			dataType: 'text',
 			success: (result) =>
-				@$(".bv_okayDeleteButton").show()
-				@$(".bv_deletingStatusIndicator").hide()
-				@$(".bv_saltDeletedSuccessfullyMessage").show()
+				@$(".bv_okayDeleteButton").removeClass('hide')
+				@$(".bv_deletingStatusIndicator").addClass('hide')
+				@$(".bv_saltDeletedSuccessfullyMessage").removeClass('hide')
 				@searchController.doSearch("*")
 			error: (errorMsg) =>
-				@$(".bv_okayDeleteButton").show()
-				@$(".bv_deletingStatusIndicator").hide()
+				@$(".bv_okayDeleteButton").removeClass('hide')
+				@$(".bv_deletingStatusIndicator").addClass('hide')
 				@$(".bv_deleteErrorMessage").html errorMsg.responseText
-				@$(".bv_errorDeletingSaltMessage").show()
+				@$(".bv_errorDeletingSaltMessage").removeClass('hide')
 
 		)
 
@@ -507,10 +507,10 @@ class SaltBrowserController extends Backbone.View
 
 	handleEditSaltClicked: =>
 		@editFieldNotificationController.clearAllNotificiations()
-		@$('.bv_saltBrowserCoreContainer').hide()
-		@$('bv_saltBrowserCore').hide()
+		@$('.bv_saltBrowserCoreContainer').addClass('hide')
+		@$('bv_saltBrowserCore').addClass('hide')
 		@$()
-		@$('.bv_editSaltWindow').show()
+		@$('.bv_editSaltWindow').removeClass('hide')
 
 		currAbbrev = @saltController.model.get("abbrev")
 		@$('.bv_abbrevNameEdit').val currAbbrev
@@ -531,7 +531,7 @@ class SaltBrowserController extends Backbone.View
 
 
 	handleConfirmEditSaltClicked: =>
-		@$('.bv_fieldNotifications').show()
+		@$('.bv_fieldNotifications').removeClass('hide')
 
 		# Get Mol
 		saltStruct = await @chemicalStructureController.getMol()
@@ -550,8 +550,8 @@ class SaltBrowserController extends Backbone.View
 
 			dryrun = true
 
-			@$('.bv_fieldNotifications').hide()
-			@$('.bv_notifications').show()
+			@$('.bv_fieldNotifications').addClass('hide')
+			@$('.bv_notifications').removeClass('hide')
 			@notificationController.clearAllNotificiations() 
 
 			$.ajax(
@@ -562,13 +562,13 @@ class SaltBrowserController extends Backbone.View
 				contentType: 'application/json'
 				dataType: 'json'
 				success: (result) =>
-					@$(".bv_editSaltWindow").hide()
-					@$(".bv_confirmEditSalt").show()
+					@$(".bv_editSaltWindow").addClass('hide')
+					@$(".bv_confirmEditSalt").removeClass('hide')
 					
 					for feedback in result
 						@notificationController.addNotifications(@errorOwnerName, [{"errorLevel": feedback.level, "message":feedback.message}])
 						if feedback.level == "error"
-							@$(".bv_editSaltButton").hide()
+							@$(".bv_editSaltButton").addClass('hide')
 
 					# This AJAX Call is Used to Collect Calculations of Newly Proposed Salt
 					$.ajax(
@@ -607,21 +607,21 @@ class SaltBrowserController extends Backbone.View
 									@$('.bv_saltStructEditConfirm').html pngImage 
 								error: (result) =>
 									console.log(result)
-									@$(".bv_editSaltWindow").hide()
-									@$(".bv_errorEditingSaltMessage").show()
+									@$(".bv_editSaltWindow").addClass('hide')
+									@$(".bv_errorEditingSaltMessage").removeClass('hide')
 									@$(".bv_errorEditingSaltMessage").html result
 
 							)
 						errors: (result) =>
 							console.log(result)
-							@$(".bv_editSaltWindow").hide()
-							@$(".bv_errorEditingSaltMessage").show()
+							@$(".bv_editSaltWindow").addClass('hide')
+							@$(".bv_errorEditingSaltMessage").removeClass('hide')
 							@$(".bv_errorEditingSaltMessage").html result
 					)
 
 				error: (result) =>
-					@$(".bv_editSaltWindow").hide()
-					@$(".bv_errorEditingSaltMessage").show()
+					@$(".bv_editSaltWindow").addClass('hide')
+					@$(".bv_errorEditingSaltMessage").removeClass('hide')
 					@$(".bv_errorEditingSaltMessage").html result
 			)
 	
@@ -649,56 +649,56 @@ class SaltBrowserController extends Backbone.View
 			contentType: 'application/json'
 			dataType: 'json'
 			success: (result) =>
-				@$(".bv_confirmEditSalt").hide()
-				@$('.bv_notifications').hide()
-				@$(".bv_editSaltStatus").show()
-				@$(".bv_saltEditedSuccessfullyMessage").show()
-				@$('.bv_saltBrowserCoreContainer').show()
-				@$('bv_saltBrowserCore').show()
+				@$(".bv_confirmEditSalt").addClass('hide')
+				@$('.bv_notifications').addClass('hide')
+				@$(".bv_editSaltStatus").removeClass('hide')
+				@$(".bv_saltEditedSuccessfullyMessage").removeClass('hide')
+				@$('.bv_saltBrowserCoreContainer').removeClass('hide')
+				@$('bv_saltBrowserCore').removeClass('hide')
 				@searchController.doSearch("*")
 			error: (result) =>
-				@$(".bv_confirmEditSalt").hide()
-				@$(".bv_editSaltStatus").show()
-				@$(".bv_errorEditingSaltMessage").show()
+				@$(".bv_confirmEditSalt").addClass('hide')
+				@$(".bv_editSaltStatus").removeClass('hide')
+				@$(".bv_errorEditingSaltMessage").removeClass('hide')
 				@$(".bv_errorEditingSaltMessage").html result
 		)
 	
 	handleOkayEditButtonClicked: => 
-		@$('.bv_editSaltStatus').hide()
-		@$('.bv_notifications').hide()
-		@$('.bv_saltBrowserCoreContainer').show()
-		@$('bv_saltBrowserCore').show()
+		@$('.bv_editSaltStatus').addClass('hide')
+		@$('.bv_notifications').addClass('hide')
+		@$('.bv_saltBrowserCoreContainer').removeClass('hide')
+		@$('bv_saltBrowserCore').removeClass('hide')
 
 	handleBackConfirmEditClicked: => 
-		@$(".bv_editSaltButton").show()
-		@$('.bv_notifications').hide()
-		@$('.bv_confirmEditSalt').hide()
-		@$('.bv_editSaltWindow').show()
+		@$(".bv_editSaltButton").removeClass('hide')
+		@$('.bv_notifications').addClass('hide')
+		@$('.bv_confirmEditSalt').addClass('hide')
+		@$('.bv_editSaltWindow').removeClass('hide')
 		
 
 	handleCancelConfirmEditClicked: =>
-		@$(".bv_editSaltButton").show()
-		@$('.bv_confirmEditSalt').hide()
-		@$('.bv_editSaltWindow').hide()
-		@$('.bv_notifications').hide()
-		@$('.bv_saltBrowserCoreContainer').show()
-		@$('bv_saltBrowserCore').show()
+		@$(".bv_editSaltButton").removeClass('hide')
+		@$('.bv_confirmEditSalt').addClass('hide')
+		@$('.bv_editSaltWindow').addClass('hide')
+		@$('.bv_notifications').addClass('hide')
+		@$('.bv_saltBrowserCoreContainer').removeClass('hide')
+		@$('bv_saltBrowserCore').removeClass('hide')
 
 	handleCancelEditSaltClicked: =>
-		@$(".bv_editSaltButton").show()
-		@$(".bv_editSaltWindow").hide()
-		@$('.bv_notifications').hide()
-		@$('.bv_saltBrowserCoreContainer').show()
-		@$('bv_saltBrowserCore').show()
+		@$(".bv_editSaltButton").removeClass('hide')
+		@$(".bv_editSaltWindow").addClass('hide')
+		@$('.bv_notifications').addClass('hide')
+		@$('.bv_saltBrowserCoreContainer').removeClass('hide')
+		@$('bv_saltBrowserCore').removeClass('hide')
 
 	destroySaltSummaryTable: =>
 		if @saltSummaryTable?
 			@saltSummaryTable.remove()
 		if @saltController?
 			@saltController.remove()
-		$(".bv_saltController").hide()
-		$(".bv_saltControllerContainer").hide()
-		$(".bv_noMatchingSaltsFoundMessage").hide()
+		$(".bv_saltController").addClass('hide')
+		$(".bv_saltControllerContainer").addClass('hide')
+		$(".bv_noMatchingSaltsFoundMessage").addClass('hide')
 
 	render: =>
 		@

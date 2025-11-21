@@ -59,7 +59,7 @@ class BasicFileValidateAndSaveController extends Backbone.View
 			@reportFileController.render()
 			@handleAttachReportFileChanged()
 		else
-			@$('.bv_reportFileFeature').hide()
+			@$('.bv_reportFileFeature').addClass('hide')
 
 
 		if @loadImagesFile
@@ -74,7 +74,7 @@ class BasicFileValidateAndSaveController extends Backbone.View
 			@imagesFileController.render()
 			@handleAttachImagesFileChanged()
 		else
-			@$('.bv_imagesFileFeature').hide()
+			@$('.bv_imagesFileFeature').addClass('hide')
 
 
 		@showFileSelectPhase()
@@ -225,63 +225,63 @@ class BasicFileValidateAndSaveController extends Backbone.View
 		@$('.bv_deleteFile').click()
 
 	showFileSelectPhase: ->
-		@$('.bv_resultStatus').hide()
+		@$('.bv_resultStatus').addClass('hide')
 		@$('.bv_resultStatus').html("")
-		@$('.bv_htmlSummary').hide()
+		@$('.bv_htmlSummary').addClass('hide')
 		@$('.bv_htmlSummary').html('')
-		@$('.bv_fileUploadWrapper').show()
-		@$('.bv_nextControlContainer').show()
-		@$('.bv_saveControlContainer').hide()
-		@$('.bv_completeControlContainer').hide()
-		@$('.bv_notifications').hide()
-		@$('.bv_csvPreviewContainer').hide()
-		@$('.bv_preProcessorHTMLSummary').hide()
+		@$('.bv_fileUploadWrapper').removeClass('hide')
+		@$('.bv_nextControlContainer').removeClass('hide')
+		@$('.bv_saveControlContainer').addClass('hide')
+		@$('.bv_completeControlContainer').addClass('hide')
+		@$('.bv_notifications').addClass('hide')
+		@$('.bv_csvPreviewContainer').addClass('hide')
+		@$('.bv_preProcessorHTMLSummary').addClass('hide')
 		@$('.bv_preProcessorHTMLSummary').hide('')
 
 	handleAttachReportFileChanged: ->
 		attachReportFile = @$('.bv_attachReportFile').is(":checked")
 		if attachReportFile
-			@$('.bv_reportFileWrapper').show()
+			@$('.bv_reportFileWrapper').removeClass('hide')
 		else
 			@handleReportFileRemoved()
-			@$('.bv_reportFileWrapper').hide()
+			@$('.bv_reportFileWrapper').addClass('hide')
 			@reportFileController.render()
 
 	handleAttachImagesFileChanged: ->
 		attachImagesFile = @$('.bv_attachImagesFile').is(":checked")
 		if attachImagesFile
-			@$('.bv_imagesFileWrapper').show()
+			@$('.bv_imagesFileWrapper').removeClass('hide')
 		else
 			@handleImagesFileRemoved()
-			@$('.bv_imagesFileWrapper').hide()
+			@$('.bv_imagesFileWrapper').addClass('hide')
 			@imagesFileController.render()
 
 
 	showFileUploadPhase: ->
-		@$('.bv_resultStatus').show()
-		@$('.bv_htmlSummary').show()
-		@$('.bv_fileUploadWrapper').hide()
-		@$('.bv_nextControlContainer').hide()
-		@$('.bv_saveControlContainer').show()
-		@$('.bv_completeControlContainer').hide()
-		@$('.bv_notifications').show()
+		@$('.bv_resultStatus').removeClass('hide')
+		@$('.bv_htmlSummary').removeClass('hide')
+		@$('.bv_fileUploadWrapper').addClass('hide')
+		@$('.bv_nextControlContainer').addClass('hide')
+		@$('.bv_saveControlContainer').removeClass('hide')
+		@$('.bv_completeControlContainer').addClass('hide')
+		@$('.bv_notifications').removeClass('hide')
 
 	showFileUploadCompletePhase: ->
-		@$('.bv_resultStatus').show()
-		@$('.bv_htmlSummary').show()
-		@$('.bv_csvPreviewContainer').hide()
-		@$('.bv_preProcessorHTMLSummary').hide()
-		@$('.bv_fileUploadWrapper').hide()
-		@$('.bv_nextControlContainer').hide()
-		@$('.bv_saveControlContainer').hide()
-		@$('.bv_completeControlContainer').show()
-		@$('.bv_notifications').show()
+		@$('.bv_resultStatus').removeClass('hide')
+		@$('.bv_htmlSummary').removeClass('hide')
+		@$('.bv_csvPreviewContainer').addClass('hide')
+		@$('.bv_preProcessorHTMLSummary').addClass('hide')
+		@$('.bv_fileUploadWrapper').addClass('hide')
+		@$('.bv_nextControlContainer').addClass('hide')
+		@$('.bv_saveControlContainer').addClass('hide')
+		@$('.bv_completeControlContainer').removeClass('hide')
+		@$('.bv_notifications').removeClass('hide')
 
 	handleFormInvalid: =>
 		@$(".bv_next").attr 'disabled', 'disabled'
 		@$(".bv_save").attr 'disabled', 'disabled'
 		@$(".bv_back").removeAttr 'disabled'  # Ensure back button stays enabled
-		@$('.bv_notifications').show()
+		@$('.bv_notifications').removeClass('hide')
 
 	handleFormValid: =>
 		@$(".bv_next").removeAttr 'disabled'
@@ -290,7 +290,7 @@ class BasicFileValidateAndSaveController extends Backbone.View
 	showPreProcessorHTMLSUmmary: (preProcessorSummaryHTML) ->
 		console.log "showing here"
 		@$('.bv_preProcessorHTMLSummary').html(preProcessorSummaryHTML)
-		@$('.bv_preProcessorHTMLSummary').show()
+		@$('.bv_preProcessorHTMLSummary').removeClass('hide')
 
 	showCSVPreview: (csv) ->
 		@$('.csvPreviewTHead').empty()
@@ -308,7 +308,7 @@ class BasicFileValidateAndSaveController extends Backbone.View
 					rowCells = csvRows[r].split(',')
 					for val in rowCells
 						@$('.csvPreviewTBody tr:last').append "<td>"+val+"</td>"
-				@$('.bv_csvPreviewContainer').show()
+				@$('.bv_csvPreviewContainer').removeClass('hide')
 
 	getNewExperimentCode: ->
 		@newExperimentCode

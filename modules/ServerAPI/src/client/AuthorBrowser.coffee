@@ -32,20 +32,20 @@ class AuthorSimpleSearchController extends AbstractFormController
 			@$(".bv_doSearch").attr("disabled", true)
 
 	handleDoSearchClicked: =>
-		$(".bv_authorTableController").hide()
-		$(".bv_errorOccurredPerformingSearch").hide()
+		$(".bv_authorTableController").addClass('hide')
+		$(".bv_errorOccurredPerformingSearch").addClass('hide')
 		authorSearchTerm = $.trim(@$(".bv_authorSearchTerm").val())
 		$(".bv_exptSearchTerm").val ""
 		if authorSearchTerm isnt ""
-			$(".bv_noMatchingAuthorsFoundMessage").hide()
-			$(".bv_authorBrowserSearchInstructions").hide()
-			$(".bv_searchAuthorsStatusIndicator").show()
+			$(".bv_noMatchingAuthorsFoundMessage").addClass('hide')
+			$(".bv_authorBrowserSearchInstructions").addClass('hide')
+			$(".bv_searchAuthorsStatusIndicator").removeClass('hide')
 			if !window.conf.browser.enableSearchAll and authorSearchTerm is "*"
-				$(".bv_moreSpecificAuthorSearchNeeded").show()
+				$(".bv_moreSpecificAuthorSearchNeeded").removeClass('hide')
 			else
-				$(".bv_searchingAuthorsMessage").show()
+				$(".bv_searchingAuthorsMessage").removeClass('hide')
 				$(".bv_exptSearchTerm").html _.escape(authorSearchTerm)
-				$(".bv_moreSpecificAuthorSearchNeeded").hide()
+				$(".bv_moreSpecificAuthorSearchNeeded").addClass('hide')
 				@doSearch authorSearchTerm
 
 	doSearch: (authorSearchTerm) =>
@@ -109,10 +109,10 @@ class AuthorSummaryTableController extends Backbone.View
 		@template = _.template($('#AuthorSummaryTableView').html())
 		$(@el).html @template
 		if @collection.models.length is 0
-			$(".bv_noMatchingAuthorsFoundMessage").show()
+			$(".bv_noMatchingAuthorsFoundMessage").removeClass('hide')
 			# display message indicating no results were found
 		else
-			$(".bv_noMatchingAuthorsFoundMessage").hide()
+			$(".bv_noMatchingAuthorsFoundMessage").addClass('hide')
 			@collection.each (auth) =>
 				prsc = new AuthorRowSummaryController
 					model: auth
@@ -147,16 +147,16 @@ class AuthorBrowserController extends Backbone.View
 	setupAuthorSummaryTable: (authors) =>
 		@destroyAuthorSummaryTable()
 
-		$(".bv_searchingAuthorsMessage").hide()
+		$(".bv_searchingAuthorsMessage").addClass('hide')
 		if authors is null
-			@$(".bv_errorOccurredPerformingSearch").show()
+			@$(".bv_errorOccurredPerformingSearch").removeClass('hide')
 
 		else if authors.length is 0
-			@$(".bv_noMatchingAuthorsFoundMessage").show()
+			@$(".bv_noMatchingAuthorsFoundMessage").removeClass('hide')
 			@$(".bv_authorTableController").html ""
 		else
-			$(".bv_searchAuthorsStatusIndicator").hide()
-			@$(".bv_authorTableController").show()
+			$(".bv_searchAuthorsStatusIndicator").addClass('hide')
+			@$(".bv_authorTableController").removeClass('hide')
 			@authorSummaryTable = new AuthorSummaryTableController
 				collection: new AuthorList authors
 
@@ -170,51 +170,51 @@ class AuthorBrowserController extends Backbone.View
 			readOnly: true
 
 		$('.bv_authorController').html @authorController.render().el
-		$(".bv_authorController").show()
-		$(".bv_authorControllerContainer").show()
+		$(".bv_authorController").removeClass('hide')
+		$(".bv_authorControllerContainer").removeClass('hide')
 
-		@$('.bv_editAuthor').show()
+		@$('.bv_editAuthor').removeClass('hide')
 		if window.conf.author?.editingRoles?
 			editingRoles = window.conf.author.editingRoles.split(",")
 			if !UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, editingRoles)
-				@$('.bv_editAuthor').hide()
+				@$('.bv_editAuthor').addClass('hide')
 
-		@$('.bv_deleteAuthor').show()
+		@$('.bv_deleteAuthor').removeClass('hide')
 		if window.conf.author?.deletingRoles?
 			deletingRoles= window.conf.author.deletingRoles.split(",")
 			if !UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, deletingRoles)
-				@$('.bv_deleteAuthor').hide()
+				@$('.bv_deleteAuthor').addClass('hide')
 
 	handleDeleteAuthorClicked: =>
 		@$(".bv_authorUserName").html @authorController.model.escape("userName")
-		@$(".bv_deleteButtons").show()
-		@$(".bv_okayButton").hide()
-		@$(".bv_errorDeletingAuthorMessage").hide()
-		@$(".bv_deleteWarningMessage").show()
-		@$(".bv_deletingStatusIndicator").hide()
-		@$(".bv_authorDeletedSuccessfullyMessage").hide()
-		$(".bv_confirmDeleteAuthor").show()
+		@$(".bv_deleteButtons").removeClass('hide')
+		@$(".bv_okayButton").addClass('hide')
+		@$(".bv_errorDeletingAuthorMessage").addClass('hide')
+		@$(".bv_deleteWarningMessage").removeClass('hide')
+		@$(".bv_deletingStatusIndicator").addClass('hide')
+		@$(".bv_authorDeletedSuccessfullyMessage").addClass('hide')
+		$(".bv_confirmDeleteAuthor").removeClass('hide')
 		$('.bv_confirmDeleteAuthor').modal({
 			keyboard: false,
 			backdrop: true
 		})
 
 	handleConfirmDeleteAuthorClicked: =>
-		@$(".bv_deleteWarningMessage").hide()
-		@$(".bv_deletingStatusIndicator").show()
-		@$(".bv_deleteButtons").hide()
+		@$(".bv_deleteWarningMessage").addClass('hide')
+		@$(".bv_deletingStatusIndicator").removeClass('hide')
+		@$(".bv_deleteButtons").addClass('hide')
 		$.ajax(
 			url: "/api/authors/#{@authorController.model.get("id")}",
 			type: 'DELETE',
 			success: (result) =>
-				@$(".bv_okayButton").show()
-				@$(".bv_deletingStatusIndicator").hide()
-				@$(".bv_authorDeletedSuccessfullyMessage").show()
+				@$(".bv_okayButton").removeClass('hide')
+				@$(".bv_deletingStatusIndicator").addClass('hide')
+				@$(".bv_authorDeletedSuccessfullyMessage").removeClass('hide')
 				@searchController.handleDoSearchClicked()
 			error: (result) =>
-				@$(".bv_okayButton").show()
-				@$(".bv_deletingStatusIndicator").hide()
-				@$(".bv_errorDeletingAuthorMessage").show()
+				@$(".bv_okayButton").removeClass('hide')
+				@$(".bv_deletingStatusIndicator").addClass('hide')
+				@$(".bv_errorDeletingAuthorMessage").removeClass('hide')
 		)
 
 	handleCancelDeleteClicked: =>
@@ -228,9 +228,9 @@ class AuthorBrowserController extends Backbone.View
 			@authorSummaryTable.remove()
 		if @authorController?
 			@authorController.remove()
-		$(".bv_authorController").hide()
-		$(".bv_authorControllerContainer").hide()
-		$(".bv_noMatchingAuthorsFoundMessage").hide()
+		$(".bv_authorController").addClass('hide')
+		$(".bv_authorControllerContainer").addClass('hide')
+		$(".bv_noMatchingAuthorsFoundMessage").addClass('hide')
 
 	render: =>
 

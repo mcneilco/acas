@@ -52,13 +52,13 @@
                   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
                   transition: border 0.2s linear 0s, box-shadow 0.2s linear 0s;" type="button" disabled>
 								<i class="glyphicon glyphicon-search bv_doSearchIcon"></i>
-								<i class="glyphicon glyphicon-remove bv_clearSearchIcon" style="display: none;"></i>
+								<i class="glyphicon glyphicon-remove bv_clearSearchIcon hide"></i>
 							</button>
 						</span>
 					</div>
 					<button class="btn btn-primary bv_downloadFiles pull-right" style="margin-top: 0px;">Download All Files</button>
-					<div class="bv_downloadWarning" style="display: none; color: red; font-size: 12px; text-align: right;">Could not download files</div>
-					<div class="bv_downloadSuccess" style="display: none; color: green; font-size: 12px; text-align: right;">Downloaded successfully</div>
+					<div class="bv_downloadWarning hide" style="color: red; font-size: 12px; text-align: right;">Could not download files</div>
+					<div class="bv_downloadSuccess hide" style="color: green; font-size: 12px; text-align: right;">Downloaded successfully</div>
 				</div>
 			<!-- </form> -->
 		</div>
@@ -137,20 +137,20 @@
 			<div class="bv_searchExperimentsStatusIndicator" style="height: 280px;">
 				<table width="100%">
 					<thead>
-					<tr><td style="display: none;">placeholder</td></tr>
+					<tr><td class="hide">placeholder</td></tr>
 					</thead>
 					<tbody>
 					<tr>
 						<td style="text-align: center; width: 100%; align-content: center; height: 250px;">
-					<h5 class="bv_noMatchingExperimentsFoundMessage" style="display: none;">No Matching <%- window.conf.experiment.label %>s Found</h5>
-                            <h5 class="bv_moreSpecificExperimentSearchNeeded" style="display: none;">A more specific search term is required.</h5>
-					<h5 class="bv_errorOccurredPerformingSearch" style="display: none;">An error occurred while searching for the <%- window.conf.experiment.label %>.</h5>
+					<h5 class="bv_noMatchingExperimentsFoundMessage hide">No Matching <%- window.conf.experiment.label %>s Found</h5>
+                            <h5 class="bv_moreSpecificExperimentSearchNeeded hide">A more specific search term is required.</h5>
+					<h5 class="bv_errorOccurredPerformingSearch hide">An error occurred while searching for the <%- window.conf.experiment.label %>.</h5>
 
 					<div class="bv_experimentBrowserSearchInstructions">
 						<i class="glyphicon glyphicon-search bv_doSearchIcon"></i>
 						<%- window.conf.experiment.label %> Browser
 					</div>
-					<div class="bv_searchingExperimentsMessage" style="display: none; margin: auto;">
+					<div class="bv_searchingExperimentsMessage hide" style="margin: auto;">
 						<h5>Searching for <%- window.conf.experiment.label %>s containing text "<i class="bv_experimentSearchTerm"></i>"</h5>
 						<div class="progress progress-striped active " style="width: 90%; margin: auto;">
 							<div class="progress-bar" style="width: 100%; margin: auto;"></div>
@@ -163,23 +163,23 @@
 				</table>
 			</div>
 
-		<div class="bv_experimentTableController" style="display: none; margin:0px; padding:10px; overflow: auto;"></div>
+		<div class="bv_experimentTableController hide" style="margin:0px; padding:10px; overflow: auto;"></div>
 	</div>
 	<!--
 	<h5>Selected Experiment Details</h5>
 	-->
-	<div class="well well-sm bv_experimentBaseControllerContainer" style="display: none; margin-top: 10px;">
+	<div class="well well-sm bv_experimentBaseControllerContainer hide" style="margin-top: 10px;">
 		<div>
             <button class="btn btn-danger bv_deleteExperiment">Delete</button>
             <% if (includeDuplicateAndEdit) { %>
-            <button class="btn bv_duplicateExperiment pull-right" style="display: none; margin-left: 0.5em;">Duplicate</button>
+            <button class="btn bv_duplicateExperiment pull-right hide" style="margin-left: 0.5em;">Duplicate</button>
             <button class="btn bv_editExperiment pull-right">Edit</button>
             <% } %>
 			<div class="bv_openExperimentInQueryToolPlaceholder pull-right" style="margin-right: 5px;"></div>
 		</div>
         <hr />
 		<div class="">
-			<div class="bv_experimentBaseController row" style="display: none; margin-left:0px;"></div>
+			<div class="bv_experimentBaseController row hide" style="margin-left:0px;"></div>
 		</div>
 	</div>
 
@@ -194,7 +194,7 @@
 					<div class="bv_deleteWarningMessage">
 						<p>Are you sure you would like to delete <%- window.conf.experiment.label %>: <span class="bv_experimentCodeName"></span>?</p>
 					</div>
-					<div class="bv_deletingStatusIndicator" style="display: none;">
+					<div class="bv_deletingStatusIndicator hide">
 						<table width="100%">
 							<tr>
 								<td style="text-align: center; width: 100%">
@@ -206,10 +206,10 @@
 							</tr>
 						</table>
 					</div>
-					<div class="bv_experimentDeletedSuccessfullyMessage" style="display: none;">
+					<div class="bv_experimentDeletedSuccessfullyMessage hide">
 						<p><%- window.conf.experiment.label %> <span class="bv_experimentCodeName"></span> has successfully been deleted</p>
 					</div>
-					<div class="bv_errorDeletingExperimentMessage" style="display: none;">
+					<div class="bv_errorDeletingExperimentMessage hide">
 						<p>An error occured deleting <%- window.conf.experiment.label %> <span class="bv_experimentCodeName"></span>.  Please contact support for additional help.</p>
 					</div>
 				</div>
@@ -218,7 +218,7 @@
 				      <button type="button" class="btn btn-primary bv_cancelDelete">Cancel</button>
 				      <button type="button" class="btn btn-danger bv_confirmDeleteExperimentButton">Delete <%- window.conf.experiment.label %></button>
 				    </div>
-				    <div class="bv_okayButton" style="display: none;">
+				    <div class="bv_okayButton hide">
 					    <button type="button" class="btn btn-primary bv_cancelDelete">Okay</button>
 				    </div>
 				</div>

@@ -422,25 +422,25 @@ class CurveEditorController extends Backbone.View
 			@$('.bv_curveErrors').html @model.get('curveErrors')
 			@$('.bv_category').html @model.get('category')
 			if @model.get('algorithmFlagStatus') == ''
-				@$('.bv_pass').show()
-				@$('.bv_fail').hide()
+				@$('.bv_pass').removeClass('hide')
+				@$('.bv_fail').addClass('hide')
 			else
-				@$('.bv_pass').hide()
-				@$('.bv_fail').show()
+				@$('.bv_pass').addClass('hide')
+				@$('.bv_fail').removeClass('hide')
 
 			if @model.get('userFlagStatus') == ''
-				@$('.bv_na').show()
-				@$('.bv_thumbsUp').hide()
-				@$('.bv_thumbsDown').hide()
+				@$('.bv_na').removeClass('hide')
+				@$('.bv_thumbsUp').addClass('hide')
+				@$('.bv_thumbsDown').addClass('hide')
 			else
 				if @model.get('userFlagStatus') == 'approved'
-					@$('.bv_na').hide()
-					@$('.bv_thumbsUp').show()
-					@$('.bv_thumbsDown').hide()
+					@$('.bv_na').addClass('hide')
+					@$('.bv_thumbsUp').removeClass('hide')
+					@$('.bv_thumbsDown').addClass('hide')
 				else
-					@$('.bv_na').hide()
-					@$('.bv_thumbsUp').hide()
-					@$('.bv_thumbsDown').show()
+					@$('.bv_na').addClass('hide')
+					@$('.bv_thumbsUp').addClass('hide')
+					@$('.bv_thumbsDown').removeClass('hide')
 		else
 			@$el.html "No curve selected"
 
@@ -665,37 +665,37 @@ class CurveSummaryController extends Backbone.View
 			@$('.bv_flagUser').attr 'disabled', 'disabled'
 
 		if @model.get('algorithmFlagStatus') == 'no fit'
-			@$('.bv_pass').hide()
-			@$('.bv_fail').show()
+			@$('.bv_pass').addClass('hide')
+			@$('.bv_fail').removeClass('hide')
 		else
-			@$('.bv_pass').show()
-			@$('.bv_fail').hide()
+			@$('.bv_pass').removeClass('hide')
+			@$('.bv_fail').addClass('hide')
 		if @model.get('userFlagStatus') == ''
-			@$('.bv_na').show()
-			@$('.bv_thumbsUp').hide()
-			@$('.bv_thumbsDown').hide()
+			@$('.bv_na').removeClass('hide')
+			@$('.bv_thumbsUp').addClass('hide')
+			@$('.bv_thumbsDown').addClass('hide')
 			@$('.bv_flagUser').removeClass('btn-success')
 			@$('.bv_flagUser').removeClass('btn-danger')
 			@$('.bv_flagUser').addClass('btn-grey')
 		else
 			if @model.get('userFlagStatus') == 'approved'
-				@$('.bv_na').hide()
-				@$('.bv_thumbsUp').show()
-				@$('.bv_thumbsDown').hide()
+				@$('.bv_na').addClass('hide')
+				@$('.bv_thumbsUp').removeClass('hide')
+				@$('.bv_thumbsDown').addClass('hide')
 				@$('.bv_flagUser').addClass('btn-success')
 				@$('.bv_flagUser').removeClass('btn-danger')
 				@$('.bv_flagUser').removeClass('btn-grey')
 			else
-				@$('.bv_na').hide()
-				@$('.bv_thumbsUp').hide()
-				@$('.bv_thumbsDown').show()
+				@$('.bv_na').addClass('hide')
+				@$('.bv_thumbsUp').addClass('hide')
+				@$('.bv_thumbsDown').removeClass('hide')
 				@$('.bv_flagUser').removeClass('btn-success')
 				@$('.bv_flagUser').addClass('btn-danger')
 				@$('.bv_flagUser').removeClass('btn-grey')
 		if @model.get 'dirty'
-			@$('.bv_dirty').show()
+			@$('.bv_dirty').removeClass('hide')
 		else
-			@$('.bv_dirty').hide()
+			@$('.bv_dirty').addClass('hide')
 
 		@$('.bv_compoundCode').html _.escape(@model.get('curveAttributes').compoundCode)
 #		@model.on 'change', @render

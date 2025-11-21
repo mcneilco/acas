@@ -193,11 +193,11 @@ class DocForBatchesController extends Backbone.View
 
 		if @model.isNew()
 			@$('.bv_title').html("New Document Annotations")
-			@$(".bv_deleteButton").hide()
+			@$(".bv_deleteButton").addClass('hide')
 			@$(".bv_saveButton").html("Save")
 		else
 			@$('.bv_title').html("Edit Document Annotations")
-			@$(".bv_deleteButton").show()
+			@$(".bv_deleteButton").removeClass('hide')
 			@$(".bv_saveButton").html("Update")
 		@
 

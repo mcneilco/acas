@@ -12,7 +12,7 @@ class DoseResponseDataParserController extends BasicFileValidateAndSaveControlle
 	handleSaveReturnSuccess: (json) =>
 		super(json)
 		@trigger 'dataUploadComplete'
-		@$('.bv_completeControlContainer').hide()
+		@$('.bv_completeControlContainer').addClass('hide')
 
 
 
@@ -58,9 +58,9 @@ class DoseResponseFitController extends Backbone.View
 
 		if drapType is "unassigned"
 			@$('.bv_analysisParameterForm').empty()
-			@$('.bv_fitModelButton').hide()
+			@$('.bv_fitModelButton').addClass('hide')
 		else
-			@$('.bv_fitModelButton').show()
+			@$('.bv_fitModelButton').removeClass('hide')
 			if @options? && @options.initialAnalysisParameters?
 				drap = new drapType @options.initialAnalysisParameters, parametersOptions
 			else
@@ -121,9 +121,9 @@ class DoseResponseFitController extends Backbone.View
 		else
 			htmlSummary = "Internal error please contact your administrator"
 		@$('.bv_modelFitResultsHTML').html(htmlSummary)
-		@$('.bv_resultsContainer').show()
-		@$('.bv_fitModelButton').hide()
-		@$('.bv_fitOptionWrapper').hide()
+		@$('.bv_resultsContainer').removeClass('hide')
+		@$('.bv_fitModelButton').addClass('hide')
+		@$('.bv_fitOptionWrapper').addClass('hide')
 		@$('.bv_fitStatusDropDown').modal("hide")
 		@trigger 'fitComplete'
 		@trigger 'amClean'
@@ -140,7 +140,7 @@ class DoseResponseFitWorkflowController extends Backbone.View
 		@intializeParserController()
 		# Temporarily skip upload requirement for testing
 		@initializeCurveFitController()
-		@$('.bv_uploadDataToFit').hide()
+		@$('.bv_uploadDataToFit').addClass('hide')
 
 		@
 
@@ -176,12 +176,12 @@ class DoseResponseFitWorkflowController extends Backbone.View
 		@trigger 'amDirty'
 
 	handleFitComplete: =>
-		@$('.bv_completeControlContainer').show()
-		@drdpc.$('.bv_loadAnother').hide()
+		@$('.bv_completeControlContainer').removeClass('hide')
+		@drdpc.$('.bv_loadAnother').addClass('hide')
 
 	handleFitAnother: =>
 		@drdpc.loadAnother()
 		@$('.bv_doseResponseAnalysis').empty()
 		@$('.bv_doseResponseAnalysis').append "<div class='alert alert-info bv_uploadDataToFit'>Data must be uploaded first before fitting.</div>"
-		@$('.bv_completeControlContainer').hide()
+		@$('.bv_completeControlContainer').addClass('hide')
 		@$('.bv_uploadDataTabLink').click()
