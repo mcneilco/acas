@@ -204,11 +204,13 @@
         </div>
     </div>
 
-    <div class="modal hide bv_confirmDeleteExperimentModal">
-        <div class="modal-header">
-            <button type="button" class="close bv_closeDeleteExperimentModal" data-dismiss="modal" aria-hidden="true">&times;</button>
-            <h3>Delete <%- window.conf.experiment.label %></h3>
-        </div>
+    <div class="modal fade bv_confirmDeleteExperimentModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close bv_closeDeleteExperimentModal" data-dismiss="modal">&times;</button>
+                    <h3>Delete <%- window.conf.experiment.label %></h3>
+                </div>
         <div class="modal-body">
             <div class="bv_deleteWarningMessage">
                 <p>Are you sure you would like to delete this <%- window.conf.experiment.label %>?</p>
@@ -239,6 +241,8 @@
 		    <span class="bv_okayButton hide" data-dismiss="modal">
 			    <a href="#" class="btn bv_closeDeleteExperimentModal">Okay</a>
 		    </span>
+        </div>
+            </div>
         </div>
     </div>
 

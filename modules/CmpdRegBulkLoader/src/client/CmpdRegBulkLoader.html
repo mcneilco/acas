@@ -52,15 +52,15 @@
 
     <div class="container-fluid" style="margin-left:15px; margin-right:15px;">
         <div class="bv_bulkReg"></div>
-        <div class="bv_bulkRegSummary" style="display: none;"></div>
-        <div class="bv_bulkValSummary" style="display: none;"></div>
-        <div class="bv_purgeFiles" style="display: none;"></div>
+        <div class="bv_bulkRegSummary hide"></div>
+        <div class="bv_bulkValSummary hide"></div>
+        <div class="bv_purgeFiles hide"></div>
     </div>
 
 </script>
 
 <script type="text/template" id="BulkRegCmpdsView" xmlns="http://www.w3.org/1999/html">
-    <div class="alert bv_disableCmpdRegistrationMessage col-md-6 col-md-offset-3" style="display: none;"></div>
+    <div class="alert bv_disableCmpdRegistrationMessage col-md-6 col-md-offset-3 hide"></div>
     <div class="row">
         <div class="col-md-4 bv_leftColumn">
             <div class="bv_detectSdfProperties"></div>
@@ -94,13 +94,13 @@
             </div>
         </div>
     </div>
-    <div class="bv_detectedSdfProperties" style="display: none;">
+    <div class="bv_detectedSdfProperties hide">
         <div class="bv_detectedSdfPropertiesList"></div>
     </div>
 </script>
 
 <script type="text/template" id="AssignSdfPropertiesView" xmlns="http://www.w3.org/1999/html">
-    <div class="bv_assignProperties" style="display: none;">
+    <div class="bv_assignProperties hide">
         <h4 style="font-size:16px;">Assign SDF Properties</h4>
         <div class="well" style="background:#FFFFFF;padding-bottom:10px;">
             <div class="well">
@@ -130,7 +130,7 @@
             </div>
         </div>
     </div>
-    <div class="bv_saveOptions" style="display: none; margin-top:5px;margin-bottom:15px;">
+    <div class="bv_saveOptions hide" style="margin-top:5px;margin-bottom:15px;">
         <div class="">
             <div class="checkbox" style="display: inline-block; margin-right: 15px;">
                 <label>
@@ -144,12 +144,12 @@
                 <button type="button" class="btn btn-success bv_valCmpds" disabled="disabled">Validate Compounds</button>
             </div>
             <div class="bv_validating pull-right hide" style="margin-right: 5px; color:red;">Validating...</div>
-            <div class="bv_regCmpdsContainer pull-right" style="display: none;">
+            <div class="bv_regCmpdsContainer pull-right hide">
                 <button type="button" class="btn btn-success bv_regCmpds" disabled="disabled">Register Compounds</button>
             </div>
-            <div class="bv_registering pull-right" style="display: none; margin-right: 5px; color:red;">Registering...</div>
+            <div class="bv_registering pull-right hide" style="margin-right: 5px; color:red;">Registering...</div>
         </div>
-        <div class="alert alert-warning bv_overwriteWarning" role="alert" style="display: none; margin-top:10px;width:375px;">
+        <div class="alert alert-warning bv_overwriteWarning hide" role="alert" style="margin-top:10px;width:375px;">
             <span class="bv_overwriteMessage"></span>
             <span class="bv_overwrite">
                 <label class="radio inline" style="padding-top:0px;margin-left:10px;">
@@ -225,9 +225,9 @@
         <div class="col-md-4" style="position: relative;">
             <div class="form-group bv_group_defaultVal" style="display: inline-block; width: calc(100% - 25px);">
                 <input class="bv_defaultVal form-control" type="text" style="width:100%;"/>
-                <select class="bv_defaultValSelect form-control" style="display: none; width:100%;"></select>
+                <select class="bv_defaultValSelect form-control hide" style="width:100%;"></select>
             </div>
-            <button class="bv_deleteProperty" style="display: none; position: absolute; right: -20px; top: 5px; padding: 0; border: none; background: transparent; color: #666; font-size: 16px; cursor: pointer;" title="Delete Property">&times;</button>
+            <button class="bv_deleteProperty hide" style="position: absolute; right: -20px; top: 5px; padding: 0; border: none; background: transparent; color: #666; font-size: 16px; cursor: pointer;" title="Delete Property">&times;</button>
         </div>
         <div class="col-md-1"></div>
     </div>
@@ -313,7 +313,7 @@
         <div class="col-md-10" style="margin-left:0px;">
             <button type="button" class="btn bv_purgeFileBtn pull-right">Purge File</button>
         </div>
-        <div class="well bv_purgeSummaryWrapper col-md-10" style="display: none; background:#FFFFFF;width:830px;margin-top:10px;margin-bottom:10px;margin-left:0px;">
+        <div class="well bv_purgeSummaryWrapper col-md-10 hide" style="background:#FFFFFF;width:830px;margin-top:10px;margin-bottom:10px;margin-left:0px;">
             <div class="bv_purgeSummary"></div>
             <div class="bv_downloadPurgedFile" style="margin-top:15px;">Click to download the original purged file:
                 <a class="bv_purgedFileName"></a>
@@ -322,7 +322,7 @@
         </div>
     </div>
 
-    <div class='modal fade bv_dependencyCheckModal' style="display: none;">
+    <div class='modal fade bv_dependencyCheckModal'>
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -340,7 +340,7 @@
         </div>
     </div>
 
-    <div class="modal fade bv_showDependenciesModal" style="display: none;">
+    <div class="modal fade bv_showDependenciesModal">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -350,7 +350,7 @@
                     <div class="bv_purgeWarningMessage">
                         <span class="bv_dependenciesSummary"></span>
                     </div>
-                    <div class="bv_deletingStatusIndicator" style="display: none;">
+                    <div class="bv_deletingStatusIndicator hide">
                         <table width="100%"></table>
                         <tr>
                             <td style="text-align: center; width: 100%">
@@ -374,11 +374,11 @@
 		      <a href="#" class="btn btn-danger bv_confirmPurgeFileButton">Purge File</a>
 		      <a href="#" class="btn btn-primary bv_okay">OK</a>
 			  </span>
-            <span class="bv_purging" style="display: none; color:red;">Purging...</span>
+            <span class="bv_purging hide" style="color:red;">Purging...</span>
         </div>
     </div>
 
-    <div class='modal fade bv_dependenciesCheckErrorModal' style="display: none;">
+    <div class='modal fade bv_dependenciesCheckErrorModal'>
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -424,9 +424,9 @@
         <div class="col-md-4" style="position: relative;">
             <div class="form-group bv_group_defaultVal" style="display: inline-block; width: calc(100% - 25px);">
                 <input class="bv_defaultVal form-control" type="text" style="width:100%;"/>
-                <select class="bv_defaultValSelect form-control" style="display: none; width:100%;"></select>
+                <select class="bv_defaultValSelect form-control hide" style="width:100%;"></select>
             </div>
-            <button class="bv_deleteProperty" style="display: none; position: absolute; right: -20px; top: 5px; padding: 0; border: none; background: transparent; color: #666; font-size: 16px; cursor: pointer;" title="Delete Property">&times;</button>
+            <button class="bv_deleteProperty hide" style="position: absolute; right: -20px; top: 5px; padding: 0; border: none; background: transparent; color: #666; font-size: 16px; cursor: pointer;" title="Delete Property">&times;</button>
         </div>
         <div class="col-md-1"></div>
     </div>
@@ -512,7 +512,7 @@
         <div class="col-md-10" style="margin-left:0px;">
             <button type="button" class="btn bv_purgeFileBtn pull-right">Purge File</button>
         </div>
-        <div class="well bv_purgeSummaryWrapper col-md-10" style="display: none; background:#FFFFFF;width:830px;margin-top:10px;margin-bottom:10px;margin-left:0px;">
+        <div class="well bv_purgeSummaryWrapper col-md-10 hide" style="background:#FFFFFF;width:830px;margin-top:10px;margin-bottom:10px;margin-left:0px;">
             <div class="bv_purgeSummary"></div>
             <div class="bv_downloadPurgedFile" style="margin-top:15px;">Click to download the original purged file:
                 <a class="bv_purgedFileName"></a>
@@ -521,7 +521,7 @@
         </div>
     </div>
 
-    <div class='modal fade bv_dependencyCheckModal' style="display: none;">
+    <div class='modal fade bv_dependencyCheckModal'>
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -539,7 +539,7 @@
         </div>
     </div>
 
-    <div class="modal fade bv_showDependenciesModal" style="display: none;">
+    <div class="modal fade bv_showDependenciesModal">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -549,7 +549,7 @@
                     <div class="bv_purgeWarningMessage">
                         <span class="bv_dependenciesSummary"></span>
                     </div>
-                    <div class="bv_deletingStatusIndicator" style="display: none;">
+                    <div class="bv_deletingStatusIndicator hide">
                         <table width="100%"></table>
                         <tr>
                             <td style="text-align: center; width: 100%">
@@ -573,11 +573,11 @@
 		      <a href="#" class="btn btn-danger bv_confirmPurgeFileButton">Purge File</a>
 		      <a href="#" class="btn btn-primary bv_okay">OK</a>
 			  </span>
-            <span class="bv_purging" style="display: none; color:red;">Purging...</span>
+            <span class="bv_purging hide" style="color:red;">Purging...</span>
         </div>
     </div>
 
-    <div class='modal fade bv_dependenciesCheckErrorModal' style="display: none;">
+    <div class='modal fade bv_dependenciesCheckErrorModal'>
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">

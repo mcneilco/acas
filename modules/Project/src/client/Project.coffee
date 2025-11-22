@@ -288,7 +288,7 @@ class ProjectLeaderController extends AbstractFormController
 			newModel = new ProjectLeader
 				scientist: scientist
 			@model.set "ignored", true
-			@$('.bv_projectLeaderWrapper').hide()
+			@$('.bv_projectLeaderWrapper').addClass('hide')
 			@trigger 'addNewModel', newModel
 		else
 			@model.set
@@ -298,7 +298,7 @@ class ProjectLeaderController extends AbstractFormController
 	clear: =>
 		if @model.get('id')?
 			@model.set "ignored", true
-			@$('.bv_projectLeaderWrapper').hide()
+			@$('.bv_projectLeaderWrapper').addClass('hide')
 		else
 			@model.destroy()
 		@trigger 'amDirty'
@@ -411,7 +411,7 @@ class ProjectUserController extends AbstractFormController
 			newModel = new ProjectUser
 				user: user
 			@model.set "ignored", true
-			@$('.bv_projectUserWrapper').hide()
+			@$('.bv_projectUserWrapper').addClass('hide')
 			@trigger 'addNewModel', newModel
 		else
 			@model.set
@@ -421,7 +421,7 @@ class ProjectUserController extends AbstractFormController
 	clear: =>
 		if @model.get('saved') is true
 			@model.set "ignored", true
-			@$('.bv_projectUserWrapper').hide()
+			@$('.bv_projectUserWrapper').addClass('hide')
 		else
 			@model.destroy()
 		@trigger 'amDirty'
@@ -534,7 +534,7 @@ class ProjectAdminController extends AbstractFormController
 			newModel = new ProjectAdmin
 				admin: admin
 			@model.set "ignored", true
-			@$('.bv_projectAdminWrapper').hide()
+			@$('.bv_projectAdminWrapper').addClass('hide')
 			@trigger 'addNewModel', newModel
 		else
 			@model.set
@@ -544,7 +544,7 @@ class ProjectAdminController extends AbstractFormController
 	clear: =>
 		if @model.get('saved') is true
 			@model.set "ignored", true
-			@$('.bv_projectAdminWrapper').hide()
+			@$('.bv_projectAdminWrapper').addClass('hide')
 		else
 			@model.destroy()
 		@trigger 'amDirty'
@@ -737,9 +737,9 @@ class ProjectController extends AbstractFormController
 
 		if @model.isNew()
 			@$('.bv_status').attr 'disabled', 'disabled'
-			@$('.bv_manageUserPermissions').hide()
+			@$('.bv_manageUserPermissions').addClass('hide')
 			if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, [window.conf.roles.acas.adminRole]
-				@$('.bv_saveBeforeManagingPermissions').show()
+				@$('.bv_saveBeforeManagingPermissions').removeClass('hide')
 		else
 			@updateEditable()
 		if @readOnly is true
@@ -748,23 +748,23 @@ class ProjectController extends AbstractFormController
 		@$('.bv_cancel').attr('disabled','disabled')
 		if @model.isNew()
 			@$('.bv_save').html("Save")
-			@$('.bv_newEntity').hide()
+			@$('.bv_newEntity').addClass('hide')
 		else
 			@$('.bv_save').html("Update")
-			@$('.bv_newEntity').show()
+			@$('.bv_newEntity').removeClass('hide')
 		@
 
 	handleSaveFailed: =>
-		@$('.bv_saveFailed').show()
-		@$('.bv_saveComplete').hide()
-		@$('.bv_saving').hide()
+		@$('.bv_saveFailed').removeClass('hide')
+		@$('.bv_saveComplete').addClass('hide')
+		@$('.bv_saving').addClass('hide')
 
 	modelSaveCallback: (method, model) =>
-		@$('.bv_save').show()
+		@$('.bv_save').removeClass('hide')
 		@$('.bv_save').attr('disabled', 'disabled')
 		unless @$('.bv_saveFailed').is(":visible")
-			@$('.bv_saveComplete').show()
-			@$('.bv_saving').hide()
+			@$('.bv_saveComplete').removeClass('hide')
+			@$('.bv_saving').addClass('hide')
 		@setupAttachFileListController()
 		@setupProjectLeaderListController()
 		@adminRole =
@@ -780,10 +780,10 @@ class ProjectController extends AbstractFormController
 	modelChangeCallback: (method, model) =>
 		@trigger 'amDirty'
 		@checkFormValid()
-		@$('.bv_saveComplete').hide()
-		@$('.bv_saveFailed').hide()
+		@$('.bv_saveComplete').addClass('hide')
+		@$('.bv_saveFailed').addClass('hide')
 		@$('.bv_cancel').removeAttr('disabled')
-		@$('.bv_cancelComplete').hide()
+		@$('.bv_cancelComplete').addClass('hide')
 
 	setupProjectStatusSelect: ->
 		@statusList = new PickListList()
@@ -839,8 +839,8 @@ class ProjectController extends AbstractFormController
 		@attachFileListController.render()
 		@attachFileListController.on 'amDirty', =>
 			@trigger 'amDirty' #need to put this after the first time @attachFileListController is rendered or else the module will always start off dirty
-			@$('.bv_saveComplete').hide()
-			@$('.bv_saveFailed').hide()
+			@$('.bv_saveComplete').addClass('hide')
+			@$('.bv_saveFailed').addClass('hide')
 			@checkFormValid()
 
 	setupProjectLeaderListController: ->
@@ -865,8 +865,8 @@ class ProjectController extends AbstractFormController
 		@projectLeaderListController.render()
 		@projectLeaderListController.on 'amDirty', =>
 			@trigger 'amDirty'
-			@$('.bv_saveComplete').hide()
-			@$('.bv_saveFailed').hide()
+			@$('.bv_saveComplete').addClass('hide')
+			@$('.bv_saveFailed').addClass('hide')
 			@checkFormValid()
 
 	setupProjectUserListController: ->
@@ -896,8 +896,8 @@ class ProjectController extends AbstractFormController
 				@projectUserListController.render()
 				@projectUserListController.on 'amDirty', =>
 					@trigger 'amDirty'
-					@$('.bv_saveComplete').hide()
-					@$('.bv_saveFailed').hide()
+					@$('.bv_saveComplete').addClass('hide')
+					@$('.bv_saveFailed').addClass('hide')
 					@checkFormValid()
 
 	setupProjectAdminListController: ->
@@ -928,15 +928,15 @@ class ProjectController extends AbstractFormController
 				@projectAdminListController.render()
 				@projectAdminListController.on 'amDirty', =>
 					@trigger 'amDirty'
-					@$('.bv_saveComplete').hide()
-					@$('.bv_saveFailed').hide()
+					@$('.bv_saveComplete').addClass('hide')
+					@$('.bv_saveFailed').addClass('hide')
 					@checkFormValid()
 
 	setupIsRestrictedCheckbox: ->
 		if window.conf.projectEditor.restrictedCheckbox.show
-			@$('.bv_group_restrictedData').show()
+			@$('.bv_group_restrictedData').removeClass('hide')
 		else
-			@$('.bv_group_restrictedData').hide()
+			@$('.bv_group_restrictedData').addClass('hide')
 		if @model.get('is restricted').get('value') is "false"
 			@$('.bv_restrictedData').removeAttr 'checked'
 		else
@@ -959,18 +959,18 @@ class ProjectController extends AbstractFormController
 			if UtilityFunctions::testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [@adminRole]) or UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, [window.conf.roles.acas.adminRole])
 				@enableAllInputs()
 				@$('.bv_projectCode').attr 'disabled', 'disabled'
-				@$('.bv_manageUserPermissions').show()
-				@$('.bv_saveBeforeManagingPermissions').hide()
+				@$('.bv_manageUserPermissions').removeClass('hide')
+				@$('.bv_saveBeforeManagingPermissions').addClass('hide')
 			else
 				@enableLimitedEditing()
-				@$('.bv_manageUserPermissions').hide()
+				@$('.bv_manageUserPermissions').addClass('hide')
 		else
 			@disableAllInputs()
 			@$('.bv_newEntity').removeAttr('disabled')			
 			if UtilityFunctions::testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [@adminRole]) or UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, [window.conf.roles.acas.adminRole])
-				@$('.bv_manageUserPermissions').show()
+				@$('.bv_manageUserPermissions').removeClass('hide')
 			else
-				@$('.bv_manageUserPermissions').hide()
+				@$('.bv_manageUserPermissions').addClass('hide')
 		@$('.bv_status').attr 'disabled', 'disabled' #for now, don't allow status editing
 
 	enableLimitedEditing: ->
@@ -1026,14 +1026,14 @@ class ProjectController extends AbstractFormController
 			@model = null
 			@completeInitialization()
 		else
-			@$('.bv_canceling').show()
+			@$('.bv_canceling').removeClass('hide')
 			@model.fetch
 				success: @handleCancelComplete
 		@trigger 'amClean'
 
 	handleCancelComplete: =>
-		@$('.bv_canceling').hide()
-		@$('.bv_cancelComplete').show()
+		@$('.bv_canceling').addClass('hide')
+		@$('.bv_cancelComplete').removeClass('hide')
 
 	updateModel: =>
 		@model.get("project name").set("labelText", UtilityFunctions::getTrimmedInput @$('.bv_projectName'))
@@ -1047,12 +1047,12 @@ class ProjectController extends AbstractFormController
 	handleSaveClicked: =>
 		@callNameValidationService()
 
-		@$('.bv_saving').show()
-		@$('.bv_saveFailed').hide()
-		@$('.bv_saveComplete').hide()
+		@$('.bv_saving').removeClass('hide')
+		@$('.bv_saveFailed').addClass('hide')
+		@$('.bv_saveComplete').addClass('hide')
 
 	callNameValidationService: ->
-		@$('.bv_saving').show()
+		@$('.bv_saving').removeClass('hide')
 		@$('.bv_save').attr('disabled', 'disabled')
 		reformattedModel = @model.clone()
 		reformattedModel.reformatBeforeSaving()
@@ -1080,16 +1080,16 @@ class ProjectController extends AbstractFormController
 			@handleValidateError(validateResp)
 		else if validateResp is "validate name failed"
 			alert 'There was an error validating the project name. Please try again and/or enter a different name.'
-			@$('.bv_saving').hide()
-			@$('.bv_saveFailed').show()
+			@$('.bv_saving').addClass('hide')
+			@$('.bv_saveFailed').removeClass('hide')
 		else
 			@saveProjectAndRoles()
 
 	handleValidateError: (err) =>
 		if err?[0]?.errorLevel? and err?[0]?.matchingThingCodeName?
 			alert "The requested project name has already been registered as #{err[0].matchingThingCodeName}. Please choose a new project name."
-		@$('.bv_saving').hide()
-		@$('.bv_saveFailed').show()
+		@$('.bv_saving').addClass('hide')
+		@$('.bv_saveFailed').removeClass('hide')
 		
 	saveProjectAndRoles: =>
 		@prepareToSaveAttachedFiles()
@@ -1283,9 +1283,9 @@ class ProjectController extends AbstractFormController
 			@displayInReadOnlyMode()
 
 	displayInReadOnlyMode: =>
-		@$(".bv_save").hide()
-		@$(".bv_cancel").hide()
-		@$(".bv_newEntity").hide()		
+		@$(".bv_save").addClass('hide')
+		@$(".bv_cancel").addClass('hide')
+		@$(".bv_newEntity").addClass('hide')		
 		@$('button').attr 'disabled', 'disabled'
 		@$(".bv_startDateIcon").addClass "uneditable-input"
 		@$(".bv_startDateIcon").on "click", ->

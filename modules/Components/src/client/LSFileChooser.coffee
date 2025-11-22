@@ -84,14 +84,14 @@ class LSFileChooserController extends Backbone.View
 	
 	handleDragOverDocument: ->
 		if @canAcceptAnotherFile()
-			@$('.bv_manualFileSelect').hide()
-			@$('.' + @.options.dropZoneClassId).show()    
+			@$('.bv_manualFileSelect').removeClass('in').addClass('hide')
+			@$('.' + @.options.dropZoneClassId).addClass('fade in')    
 	
 	handleDragLeaveDocument: ->
 		if !@mouseIsInDropField
 			if @canAcceptAnotherFile()
-				@$('.' + @.options.dropZoneClassId).hide()
-				@$('.bv_manualFileSelect').show()
+				@$('.' + @.options.dropZoneClassId).removeClass('in')
+				@$('.bv_manualFileSelect').removeClass('hide').addClass('fade in')
 
 	handleFileValueChanged: ->
 		@trigger 'fileDeleted'
@@ -101,25 +101,25 @@ class LSFileChooserController extends Backbone.View
 		# Ensure counter doesn't go below zero
 		if @currentNumberOfFiles < 0
 			@currentNumberOfFiles = 0
-		@$('.bv_manualFileSelect').show("slide")
+		@$('.bv_manualFileSelect').removeClass('hide').addClass('fade in')
 		this.trigger('fileUploader:removedFile')
 		
 	handleFileAddedEvent: (e, data) ->
 		@currentNumberOfFiles++
 		unless @canAcceptAnotherFile()
-			@$('.bv_manualFileSelect').hide("slide")
+			@$('.bv_manualFileSelect').removeClass('in').addClass('hide')
 
 	fileUploadComplete:(e, data) ->
 		self = @
 		# this is a work around for hiding the delete button after files are uploaded
 		unless @options.hideDelete
-			@$('.delete').removeClass('hidden').show()
+			@$('.delete').addClass('fade in')
 		_.each(data.result.files, (result) ->
 			self.listOfFileModels.push(new LSFileChooserModel({fileNameOnServer: result.name}))
 		)
 		this.trigger('fileUploader:uploadComplete', data.result.files[0])
 		if (@requiresValidation)
-			@$('.dv_validatingProgressBar').removeClass('hidden').show()
+			@$('.dv_validatingProgressBar').addClass('fade in')
 		@delegateEvents()
 
 		#window.notificationController.addInfo("file uploaded!")
@@ -131,12 +131,12 @@ class LSFileChooserController extends Backbone.View
 	filePassedServerValidation: ->
 		@$('.bv_status').addClass('glyphicon glyphicon-ok-sign')
 		#window.notificationController.addInfo("file is valid!")
-		@$('.dv_validatingProgressBar').hide("slide")
+		@$('.dv_validatingProgressBar').removeClass('in')
 		
 	fileFailedServerValidation: ->
 		@$('.bv_status').addClass('glyphicon glyphicon-exclamation-sign')
 		#window.notificationController.addError("file is invalid!")
-		@$('.dv_validatingProgressBar').hide("slide")
+		@$('.dv_validatingProgressBar').removeClass('in')
 	
 	handleFileValidationFailed: (e, data) ->
 		# Re-render template to show error message
@@ -145,7 +145,7 @@ class LSFileChooserController extends Backbone.View
 		# Decrement counter for failed file and show browse button if space available
 		@currentNumberOfFiles--
 		if @canAcceptAnotherFile()
-			@$('.bv_manualFileSelect').show()
+			@$('.bv_manualFileSelect').removeClass('hide').addClass('fade in')
 
 	render: ->
 		self = @

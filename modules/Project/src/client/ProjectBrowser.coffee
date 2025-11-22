@@ -43,20 +43,20 @@ class ProjectSimpleSearchController extends AbstractFormController
 			@$(".bv_doSearch").attr("disabled", true)
 
 	handleDoSearchClicked: =>
-		$(".bv_projectTableController").hide()
-		$(".bv_errorOccurredPerformingSearch").hide()
+		$(".bv_projectTableController").addClass('hide')
+		$(".bv_errorOccurredPerformingSearch").addClass('hide')
 		projectSearchTerm = $.trim(@$(".bv_projectSearchTerm").val())
 		$(".bv_projectSearchTerm").val ""
 		if projectSearchTerm isnt ""
-			$(".bv_noMatchingProjectsFoundMessage").hide()
-			$(".bv_projectBrowserSearchInstructions").hide()
-			$(".bv_searchProjectsStatusIndicator").show()
+			$(".bv_noMatchingProjectsFoundMessage").addClass('hide')
+			$(".bv_projectBrowserSearchInstructions").addClass('hide')
+			$(".bv_searchProjectsStatusIndicator").removeClass('hide')
 			if !window.conf.browser.enableSearchAll and projectSearchTerm is "*"
-				$(".bv_moreSpecificProjectSearchNeeded").show()
+				$(".bv_moreSpecificProjectSearchNeeded").removeClass('hide')
 			else
-				$(".bv_searchingProjectsMessage").show()
+				$(".bv_searchingProjectsMessage").removeClass('hide')
 				$(".bv_projectSearchTerm").html _.escape(projectSearchTerm)
-				$(".bv_moreSpecificProjectSearchNeeded").hide()
+				$(".bv_moreSpecificProjectSearchNeeded").addClass('hide')
 				@doSearch projectSearchTerm
 
 	doSearch: (projectSearchTerm) =>
@@ -140,10 +140,10 @@ class ProjectSummaryTableController extends Backbone.View
 		@template = _.template($('#ProjectSummaryTableView').html())
 		$(@el).html @template
 		if @collection.models.length is 0
-			$(".bv_noMatchingProjectsFoundMessage").show()
+			$(".bv_noMatchingProjectsFoundMessage").removeClass('hide')
 			# display message indicating no results were found
 		else
-			$(".bv_noMatchingProjectsFoundMessage").hide()
+			$(".bv_noMatchingProjectsFoundMessage").addClass('hide')
 			@collection.each (proj) =>
 				prsc = new ProjectRowSummaryController
 					model: proj
@@ -183,16 +183,16 @@ class ProjectBrowserController extends Backbone.View
 	setupProjectSummaryTable: (projects) =>
 		@destroyProjectSummaryTable()
 
-		$(".bv_searchingProjectsMessage").hide()
+		$(".bv_searchingProjectsMessage").addClass('hide')
 		if projects is null
-			@$(".bv_errorOccurredPerformingSearch").show()
+			@$(".bv_errorOccurredPerformingSearch").removeClass('hide')
 
 		else if projects.length is 0
-			@$(".bv_noMatchingProjectsFoundMessage").show()
+			@$(".bv_noMatchingProjectsFoundMessage").removeClass('hide')
 			@$(".bv_projectTableController").html ""
 		else
-			$(".bv_searchProjectsStatusIndicator").hide()
-			@$(".bv_projectTableController").show()
+			$(".bv_searchProjectsStatusIndicator").addClass('hide')
+			@$(".bv_projectTableController").removeClass('hide')
 			@projectSummaryTable = new ProjectSummaryTableController
 				collection: new ProjectList projects
 
@@ -206,53 +206,53 @@ class ProjectBrowserController extends Backbone.View
 			readOnly: true
 
 		$('.bv_projectController').html @projectController.render().el
-		$(".bv_projectController").show()
-		$(".bv_projectControllerContainer").show()
+		$(".bv_projectController").removeClass('hide')
+		$(".bv_projectControllerContainer").removeClass('hide')
 		if project.get('project status').get('value') is "deleted"
-			@$('.bv_deleteProject').hide()
-			@$('.bv_editProject').hide() #TODO for future releases, add in hiding duplicateProject
+			@$('.bv_deleteProject').addClass('hide')
+			@$('.bv_editProject').addClass('hide') #TODO for future releases, add in hiding duplicateProject
 		else
-			@$('.bv_editProject').show()
-			@$('.bv_deleteProject').show()
+			@$('.bv_editProject').removeClass('hide')
+			@$('.bv_deleteProject').removeClass('hide')
 #TODO: make deleting project privilege a config
 #			if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["admin"]
-#				@$('.bv_deleteProject').show() #TODO for future releases, add in showing duplicateProject
+#				@$('.bv_deleteProject').removeClass('hide') #TODO for future releases, add in showing duplicateProject
 #	#			if window.AppLaunchParams.loginUser.username is @protocolController.model.get("recordedBy")
 #	#				console.log "user is protocol creator"
 #			else
-#				@$('.bv_deleteProject').hide()
+#				@$('.bv_deleteProject').addClass('hide')
 
 	handleDeleteProjectClicked: =>
 		@$(".bv_projectCodeName").html @projectController.model.escape("codeName")
-		@$(".bv_deleteButtons").show()
-		@$(".bv_okayButton").hide()
-		@$(".bv_errorDeletingProjectMessage").hide()
-		@$(".bv_deleteWarningMessage").show()
-		@$(".bv_deletingStatusIndicator").hide()
-		@$(".bv_projectDeletedSuccessfullyMessage").hide()
-		$(".bv_confirmDeleteProject").show()
+		@$(".bv_deleteButtons").removeClass('hide')
+		@$(".bv_okayButton").addClass('hide')
+		@$(".bv_errorDeletingProjectMessage").addClass('hide')
+		@$(".bv_deleteWarningMessage").removeClass('hide')
+		@$(".bv_deletingStatusIndicator").addClass('hide')
+		@$(".bv_projectDeletedSuccessfullyMessage").addClass('hide')
+		$(".bv_confirmDeleteProject").removeClass('hide')
 		$('.bv_confirmDeleteProject').modal({
 			keyboard: false,
 			backdrop: true
 		})
 
 	handleConfirmDeleteProjectClicked: =>
-		@$(".bv_deleteWarningMessage").hide()
-		@$(".bv_deletingStatusIndicator").show()
-		@$(".bv_deleteButtons").hide()
+		@$(".bv_deleteWarningMessage").addClass('hide')
+		@$(".bv_deletingStatusIndicator").removeClass('hide')
+		@$(".bv_deleteButtons").addClass('hide')
 		$.ajax(
 			url: "/api/projects/#{@projectController.model.get("id")}",
 			type: 'DELETE',
 			success: (result) =>
-				@$(".bv_okayButton").show()
-				@$(".bv_deletingStatusIndicator").hide()
-				@$(".bv_projectDeletedSuccessfullyMessage").show()
+				@$(".bv_okayButton").removeClass('hide')
+				@$(".bv_deletingStatusIndicator").addClass('hide')
+				@$(".bv_projectDeletedSuccessfullyMessage").removeClass('hide')
 				@searchController.handleDoSearchClicked()
 #@destroyProjectSummaryTable()
 			error: (result) =>
-				@$(".bv_okayButton").show()
-				@$(".bv_deletingStatusIndicator").hide()
-				@$(".bv_errorDeletingProjectMessage").show()
+				@$(".bv_okayButton").removeClass('hide')
+				@$(".bv_deletingStatusIndicator").addClass('hide')
+				@$(".bv_errorDeletingProjectMessage").removeClass('hide')
 		)
 
 	handleCancelDeleteClicked: =>
@@ -273,9 +273,9 @@ class ProjectBrowserController extends Backbone.View
 			@projectSummaryTable.remove()
 		if @projectController?
 			@projectController.remove()
-		$(".bv_projectController").hide()
-		$(".bv_projectControllerContainer").hide()
-		$(".bv_noMatchingProjectsFoundMessage").hide()
+		$(".bv_projectController").addClass('hide')
+		$(".bv_projectControllerContainer").addClass('hide')
+		$(".bv_noMatchingProjectsFoundMessage").addClass('hide')
 
 	render: =>
 

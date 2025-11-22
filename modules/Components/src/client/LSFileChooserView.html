@@ -1,13 +1,13 @@
 <script type="text/template" id="LSFileChooserView">
 	<form class="fileupload" action="server/php/" method="POST" enctype="multipart/form-data">
 		<div class="row fileupload-buttonbar">
-			<div class="col-md-7 bv_manualFileSelect">
+			<div class="col-md-7 bv_manualFileSelect fade in">
 				<span class="btn btn-default fileinput-button">
 					<span>Browse Files...</span>
 					<input type="file" name="files[]" multiple>
 				</span>
 			</div>
-			<div class="col-md-7 well <%- dropZoneClassId %>" style="display: none; text-align: center">
+			<div class="col-md-7 well <%- dropZoneClassId %> hide" style="text-align: center">
 				<h4 class='bv_dragOverMessage'><%- dragOverMessage %></h4>
 			</div>
 			<% if (allowMultipleFiles) { %>
@@ -73,12 +73,12 @@
             <td class="size"><span>{%=o.formatFileSize(file.size)%}</span></td>
             <td colspan="2">
             
-            	<div class="progress progress-striped active dv_validatingProgressBar hidden" >
+            	<div class="progress progress-striped active dv_validatingProgressBar fade" >
     				<div class="progress-bar progress-bar-info" style="width: 100%;"><strong>validating file…</strong></div>
     			</div>
             </td>
         {% } %}
-        <td class="delete hidden" style='width: 7em;'>
+        <td class="delete fade" style='width: 7em;'>
             <button class="btn btn-danger bv_deleteFile" data-type="{%=file.delete_type%}" data-url="{%=file.delete_url%}">
                 <i class="glyphicon glyphicon-trash"></i>
                 <span>{%=locale.fileupload.destroy%}</span>

@@ -87,13 +87,13 @@
                         <div class="bv_attachFileList" style="width:100%;"></div>
                     </div>
 
-                    <div class="bv_saveBeforeManagingPermissions" style="display: none;margin-bottom:20px;">
+                    <div class="bv_saveBeforeManagingPermissions hide" style="margin-bottom:20px;">
                         <div style="padding:10px;background-color:#f9f9f9;border-radius:4px;">
                             Manage user permissions by editing project after it is saved.
                         </div>
                     </div>
                     
-                    <div class="bv_manageUserPermissions" style="display: none;margin-bottom:20px;">
+                    <div class="bv_manageUserPermissions hide" style="margin-bottom:20px;">
                         <div class="panel-group" style="width:100%;">
                             <div class="panel panel-default">
                                 <div class="panel-heading">
@@ -133,11 +133,11 @@
             <button type="button" class="btn btn-success bv_save" style="margin-right:10px;">Save</button>
             <button type="button" class="btn btn-default bv_newEntity" style="margin-right:5px;">Clear Form</button>
             <button type="button" class="btn btn-danger bv_cancel" style="margin-right:5px;" disabled="disabled">Cancel</button>
-            <div class="bv_saveComplete" style="display: none; padding-right:5px;padding-top:5px;color:#62c462;"></div>
-            <div class="bv_saving" style="display: none; padding-right:5px;padding-top:5px;color:red;">Saving...</div>
-            <div class="bv_saveFailed" style="display: none; padding-right:5px;padding-top:5px;color:red;">Save Failed</div>
-            <div class="bv_canceling" style="display: none; padding-top:5px;color:red;margin-right:5px;">Canceling...</div>
-            <div class="bv_cancelComplete" style="display: none; padding-top:5px;color:#62c462;margin-right:5px;">Cancel Complete</div>
+            <div class="bv_saveComplete hide" style="padding-right:5px;padding-top:5px;color:#62c462;"></div>
+            <div class="bv_saving hide" style="padding-right:5px;padding-top:5px;color:red;">Saving...</div>
+            <div class="bv_saveFailed hide" style="padding-right:5px;padding-top:5px;color:red;">Save Failed</div>
+            <div class="bv_canceling hide" style="padding-top:5px;color:red;margin-right:5px;">Canceling...</div>
+            <div class="bv_cancelComplete hide" style="padding-top:5px;color:#62c462;margin-right:5px;">Cancel Complete</div>
         </div>
     </div>
 
@@ -157,7 +157,7 @@
         </div>
     </div>
 
-    <div class="modal fade bv_syncingRolesModal" style="display: none;" tabindex="-1" role="dialog" aria-labelledby="" aria-hidden="true">
+    <div class="modal fade bv_syncingRolesModal" tabindex="-1" role="dialog" aria-labelledby="" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -246,7 +246,7 @@
                     <div class="bv_deleteWarningMessage">
                         <p>Are you sure you would like to delete this project?</p>
                     </div>
-                    <div class="bv_deletingStatusIndicator" style="display: none;">
+                    <div class="bv_deletingStatusIndicator hide">
                         <table width="100%">
                             <tr>
                                 <td style="text-align: center; width: 100%">
@@ -258,10 +258,10 @@
                             </tr>
                         </table>
                     </div>
-                    <div class="bv_projectDeletedSuccessfullyMessage" style="display: none;">
+                    <div class="bv_projectDeletedSuccessfullyMessage hide">
                         <p>The Project <span class="bv_projectCodeName"></span> has been successfully deleted</p>
                     </div>
-                    <div class="bv_errorDeletingProjectMessage" style="display: none;">
+                    <div class="bv_errorDeletingProjectMessage hide">
                         <p>An error occurred deleting Project <span class="bv_projectCodeName"></span>.  Please contact support for additional help.</p>
                     </div>
                 </div>
@@ -270,7 +270,7 @@
 			      <button type="button" class="btn btn-primary bv_cancelDelete">Cancel</button>
 			      <button type="button" class="btn btn-danger bv_confirmDeleteProjectButton">Delete Project</button>
 				  </span>
-			    <span class="bv_okayButton" style="display: none;" data-dismiss="modal">
+			    <span class="bv_okayButton hide" data-dismiss="modal">
 				    <button type="button" class="btn btn-default bv_closeDeleteProjectModal">Okay</button>
 			    </span>
                 </div>

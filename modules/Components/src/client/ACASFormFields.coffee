@@ -879,7 +879,7 @@ class ACASFormLSFileValueFieldController extends ACASFormAbstractFieldController
 		fileValue = @getModel().escape('value')
 		if @isEmpty()
 			@createNewFileChooser()
-			@$('.bv_deleteSavedFile').hide()
+			@$('.bv_deleteSavedFile').addClass('hide')
 		else
 			displayText = @getModel().escape('comments')
 			if !displayText?
@@ -890,7 +890,7 @@ class ACASFormLSFileValueFieldController extends ACASFormAbstractFieldController
 					<div class="bv_inlineImageContainer">
 						<img class="bv_inlineImageThumbnail" src="''' + imageUrl + '''" alt="''' + displayText + '''" 
 							 title="Click to view full size">
-						<div class="bv_inlineImageOverlay" style="display: none;">
+						<div class="bv_inlineImageOverlay hide">
 							<img class="bv_inlineImageFull" src="''' + imageUrl + '''" alt="''' + displayText + '''">
 							<button type="button" class="close bv_closeImageOverlay" aria-label="Close">
 								<span aria-hidden="true">&times;</span>
@@ -901,7 +901,7 @@ class ACASFormLSFileValueFieldController extends ACASFormAbstractFieldController
 				setTimeout((() => @setupImageInteractions()), 10)
 			else
 				@$('.bv_file').html '<a href="'+window.conf.datafiles.downloadurl.prefix+encodeURIComponent(fileValue)+'">'+displayText+'</a>'
-			@$('.bv_deleteSavedFile').show()
+			@$('.bv_deleteSavedFile').removeClass('hide')
 
 	setupImageInteractions: ->
 		container = @$('.bv_inlineImageContainer')
@@ -909,12 +909,12 @@ class ACASFormLSFileValueFieldController extends ACASFormAbstractFieldController
 		# Click thumbnail to show full size overlay
 		container.find('.bv_inlineImageThumbnail').off('click').on 'click', (e) =>
 			e.preventDefault()
-			container.find('.bv_inlineImageOverlay').show()
+			container.find('.bv_inlineImageOverlay').removeClass('hide')
 			
 		# Click overlay background to hide
 		container.find('.bv_inlineImageOverlay').off('click').on 'click', (e) =>
 			if e.target == e.currentTarget
-				container.find('.bv_inlineImageOverlay').hide()
+				container.find('.bv_inlineImageOverlay').addClass('hide')
 		
 		# Direct handler for close button - try multiple approaches
 		closeBtn = container.find('.bv_closeImageOverlay')
@@ -922,7 +922,7 @@ class ACASFormLSFileValueFieldController extends ACASFormAbstractFieldController
 			e.preventDefault()
 			e.stopPropagation()
 			console.log('Close button clicked') # Debug log
-			container.find('.bv_inlineImageOverlay').hide()
+			container.find('.bv_inlineImageOverlay').addClass('hide')
 			return false
 		
 		# Also handle clicks on the span inside the close button
@@ -930,7 +930,7 @@ class ACASFormLSFileValueFieldController extends ACASFormAbstractFieldController
 			e.preventDefault()
 			e.stopPropagation()
 			console.log('Close span clicked') # Debug log
-			container.find('.bv_inlineImageOverlay').hide()
+			container.find('.bv_inlineImageOverlay').addClass('hide')
 			return false
 				
 		# Prevent clicking the full image from closing overlay
@@ -967,11 +967,11 @@ class ACASFormLSFileValueFieldController extends ACASFormAbstractFieldController
 	enableInput: ->
 		super()
 		if !@isEmpty()
-			@$('.bv_deleteSavedFile').show()
+			@$('.bv_deleteSavedFile').removeClass('hide')
 	
 	disableInput: ->
 		super()
-		@$('.bv_deleteSavedFile').hide()
+		@$('.bv_deleteSavedFile').addClass('hide')
 
 	handleFileRemoved: =>
 		@setEmptyValue()
@@ -979,7 +979,7 @@ class ACASFormLSFileValueFieldController extends ACASFormAbstractFieldController
 
 	handleDeleteSavedFile: =>
 		@handleFileRemoved()
-		@$('.bv_deleteSavedFile').hide()
+		@$('.bv_deleteSavedFile').addClass('hide')
 		@createNewFileChooser()
 
 
@@ -1004,7 +1004,7 @@ class ACASFormLSBlobValueFieldController extends ACASFormLSFileValueFieldControl
 		fileValue = @getModel().escape('value')
 		if @isEmpty()
 			@createNewFileChooser()
-			@$('.bv_deleteSavedFile').hide()
+			@$('.bv_deleteSavedFile').addClass('hide')
 		else
 			displayText = @getModel().escape('comments')
 			if !displayText?
@@ -1020,7 +1020,7 @@ class ACASFormLSBlobValueFieldController extends ACASFormLSFileValueFieldControl
 					@$('.bv_file').html '<a href="/api/thingvalues/downloadThingBlobValueByID/'+id+'">'+displayText+'</a>'
 				else
 					@$('.bv_file').html '<a href="data:application/octet-stream;base64,'+@arrayToBase64String(fileValue)+'" download="'+displayText+'">'+displayText+'</a>'
-			@$('.bv_deleteSavedFile').show()
+			@$('.bv_deleteSavedFile').removeClass('hide')
 
 	setEmptyValue: ->
 		@getModel().set

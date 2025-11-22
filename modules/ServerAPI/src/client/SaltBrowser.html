@@ -23,7 +23,7 @@
                     box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
                     transition: border 0.2s linear 0s, box-shadow 0.2s linear 0s;" type="button" disabled>
                                 <i class="glyphicon glyphicon-search bv_doSearchIcon"></i>
-                                <i class="glyphicon glyphicon-remove bv_clearSearchIcon" style="display: none;"></i>
+                                <i class="glyphicon glyphicon-remove bv_clearSearchIcon hide"></i>
                             </button>
                         </span>
                     </div>
@@ -70,20 +70,20 @@
             <div class="bv_searchSaltsStatusIndicator" style="height: 280px;">
                 <table width="100%">
                     <thead>
-                    <tr><td style="display: none;">placeholder</td></tr>
+                    <tr><td class="hide">placeholder</td></tr>
                     </thead>
                     <tbody>
                     <tr>
                         <td style="text-align: center; width: 100%; align-content: center; height: 250px;">
-                            <h5 class="bv_noMatchingSaltsFoundMessage" style="display: none;">No Matching Salts Found</h5>
-                            <h5 class="bv_moreSpecificSaltSearchNeeded" style="display: none;">A more specific search term is required.</h5>
-                            <h5 class="bv_errorOccurredPerformingSearch" style="display: none;">An error occurred while searching for the salt.</h5>
+                            <h5 class="bv_noMatchingSaltsFoundMessage hide">No Matching Salts Found</h5>
+                            <h5 class="bv_moreSpecificSaltSearchNeeded hide">A more specific search term is required.</h5>
+                            <h5 class="bv_errorOccurredPerformingSearch hide">An error occurred while searching for the salt.</h5>
 
                             <div class="bv_saltBrowserSearchInstructions">
                                 <i class="glyphicon glyphicon-search bv_doSearchIcon"></i>
                                 Salt Browser
                             </div>
-                            <div class="bv_searchingSaltsMessage" style="display: none; margin: auto;">
+                            <div class="bv_searchingSaltsMessage hide" style="margin: auto;">
                                 <h5>Searching for Salts containing text "<i class="bv_saltSearchTerm"></i>"</h5>
                                 <div class="progress progress-striped active " style="width: 90%; margin: auto;">
                                     <div class="progress-bar" style="width: 100%; margin: auto;"></div>
@@ -96,23 +96,23 @@
                 </table>
             </div>
 
-            <div class="bv_saltTableController" style="display: none; margin:0px; padding:10px; overflow: auto;"></div>
+            <div class="bv_saltTableController hide" style="margin:0px; padding:10px; overflow: auto;"></div>
         </div>
-        <div class="well well-sm bv_saltControllerContainer" style="display: none; margin-top: 10px;">
+        <div class="well well-sm bv_saltControllerContainer hide" style="margin-top: 10px;">
             <div>
-                <button class="btn btn-danger bv_deleteSalt" style="display: none;">Delete</button>
-                <button class="btn bv_editSalt pull-right" style="display: none;">Edit</button>
+                <button class="btn btn-danger bv_deleteSalt hide">Delete</button>
+                <button class="btn bv_editSalt pull-right hide">Edit</button>
             </div>
             <hr style="margin-top:40px;"/>
             <div class="row">
-                <div class="bv_saltController" style="display: none;"></div>
+                <div class="bv_saltController hide"></div>
             </div>
         </div>
-        <div class="alert bv_disableCmpdRegistrationMessage col-md-6 col-md-offset-3" style="display: none;"></div>
+        <div class="alert bv_disableCmpdRegistrationMessage col-md-6 col-md-offset-3 hide"></div>
     </div>
 
     <!-- CREATE SALT SECTION -->
-    <div class="bv_createSalt" style="display: none;">
+    <div class="bv_createSalt hide">
         <div class="header">
             <h3>Register New Salt</h3>
         </div>
@@ -135,13 +135,13 @@
 		      <a href="#" class="btn btn-primary bv_cancelCreate">Back</a>
 		      <a href="#" class="btn btn-primary bv_confirmCreateSaltButton">Next</a>
 			  </span>
-		    <span class="bv_okayCreateButton" style="display: none;">
+		    <span class="bv_okayCreateButton hide">
 			    <a href="#" class="btn bv_okayCreate">Okay</a>
 		    </span>
         </div>
     </div>
     <!-- Confirmation of Values Section -->
-    <div class="bv_confirmCreateSalt" style="display: none;">
+    <div class="bv_confirmCreateSalt hide">
         <div class="header">
             <h3>Confirm Register of New Salt</h3>
         </div>
@@ -167,7 +167,7 @@
         </div>
     </div>
     <!-- Creating Salt Section Section -->
-    <div class="bv_createStatusIndicator" style="display: none;">
+    <div class="bv_createStatusIndicator hide">
         <table width="100%">
             <tr>
                 <td style="text-align: center; width: 100%">
@@ -180,17 +180,17 @@
         </table>
     </div>
     <!-- Success of Create Salt Section -->
-    <div class="bv_saltCreatedSuccessfullyMessage" style="display: none;">
+    <div class="bv_saltCreatedSuccessfullyMessage hide">
         <p>Salt <span class="bv_saltCodeName"></span> has successfully been created</p>
     </div>
-    <div class="bv_errorCreatingSaltMessage" style="display: none;">
+    <div class="bv_errorCreatingSaltMessage hide">
         <p>An error occured creating Salt <span class="bv_saltCodeName"></span>.  Please contact support for additional help.</p>
         <p class="bv_createSaltErrorMessageHolder"></p>
     </div>
 
 
     <!-- Edit Salt Section: Change Values-->
-    <div class="bv_editSaltWindow" style="display: none;">
+    <div class="bv_editSaltWindow hide">
         <div class="header">
             <h3>Edit Salt</h3>
         </div>
@@ -214,7 +214,7 @@
         </div>
     </div>
     <!-- Edit Salt Section: Confirm Changes-->
-    <div class="bv_confirmEditSalt" style="display: none;">
+    <div class="bv_confirmEditSalt hide">
         <div class="header">
             <h3>Edit Salt: Review Dependencies</h3>
         </div>
@@ -242,7 +242,7 @@
             <br>
         </div>
         <!-- Edit Status Indicator -->
-        <div class="bv_editStatusIndicator" style="display: none;">
+        <div class="bv_editStatusIndicator hide">
             <table width="100%">
                 <tr>
                     <td style="text-align: center; width: 100%">
@@ -259,21 +259,21 @@
 		      <a href="#" class="btn btn-success bv_editSaltButton">Update</a>
         </div>
     </div>
-    <div class="bv_editSaltStatus" style="display: none;">
+    <div class="bv_editSaltStatus hide">
         <div class="body">
             <!-- Successful Edit Message -->
             <!-- <div class="bv_saltEditedSuccessfullyMessage hide">
                 <p>Salt <span class="bv_saltCodeName"></span> has successfully been edited</p>
             </div> -->
             <!-- Error Edit Message -->
-            <div class="bv_errorEditingSaltMessage" style="display: none;">
+            <div class="bv_errorEditingSaltMessage hide">
                 <p>An error occured editing Salt <span class="bv_saltCodeName"></span>.  Please contact support for additional help.</p>
             </div>
             <br>
         </div>
         <div class="footer">
 		    <span class="bv_editConfirmButtons">
-              <a href="#" class="btn bv_okayEditButton" style="display: none;">Okay</a>
+              <a href="#" class="btn bv_okayEditButton hide">Okay</a>
 			  </span>
         </div>
     </div>
@@ -290,7 +290,7 @@
                     <div class="bv_deleteWarningMessage">
                         <p>Are you sure you would like to delete salt: <span class="bv_saltUserName"></span>?</p>
                     </div>
-                    <div class="bv_deletingStatusIndicator" style="display: none;">
+                    <div class="bv_deletingStatusIndicator hide">
                         <table width="100%">
                             <tr>
                                 <td style="text-align: center; width: 100%">
@@ -302,10 +302,10 @@
                             </tr>
                         </table>
                     </div>
-                    <div class="bv_saltDeletedSuccessfullyMessage" style="display: none;">
+                    <div class="bv_saltDeletedSuccessfullyMessage hide">
                         <p>Salt <span class="bv_saltCodeName"></span> has successfully been deleted</p>
                     </div>
-                    <div class="bv_errorDeletingSaltMessage" style="display: none;">
+                    <div class="bv_errorDeletingSaltMessage hide">
                         <p>An error occured deleting Salt <span class="bv_saltCodeName"></span>. Server Message: </p>
                         <p class="bv_deleteErrorMessage"></p>
                     </div>
@@ -315,7 +315,7 @@
                         <button type="button" class="btn btn-primary bv_cancelDelete">Cancel</button>
                         <button type="button" class="btn btn-danger bv_confirmDeleteSaltButton">Delete Salt</button>
                     </div>
-                    <div class="bv_okayDeleteButton" style="display: none;">
+                    <div class="bv_okayDeleteButton hide">
                         <button type="button" class="btn btn-primary bv_okayDelete">Okay</button>
                     </div>
                 </div>
@@ -332,10 +332,10 @@
                     <h4>Delete Salt</h4>
                 </div>
                 <div class="modal-body">
-                    <div class="bv_saltDeletedSuccessfullyMessage" style="display: none;">
+                    <div class="bv_saltDeletedSuccessfullyMessage hide">
                         <p>Salt <span class="bv_saltCodeName"></span> has successfully been deleted</p>
                     </div>
-                    <div class="bv_errorDeletingSaltMessage" style="display: none;">
+                    <div class="bv_errorDeletingSaltMessage hide">
                         <p>An error occured deleting Salt<span class="bv_saltCodeName"></span>. Server Message: </p>
                         <p class="bv_deleteErrorMessage"></p>
                     </div>

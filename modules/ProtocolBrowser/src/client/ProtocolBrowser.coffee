@@ -31,20 +31,20 @@ class ProtocolSimpleSearchController extends AbstractFormController
 			@$(".bv_doSearch").attr("disabled", true)
 
 	handleDoSearchClicked: =>
-		$(".bv_protocolTableController").hide()
-		$(".bv_errorOccurredPerformingSearch").hide()
+		$(".bv_protocolTableController").addClass('hide')
+		$(".bv_errorOccurredPerformingSearch").addClass('hide')
 		protocolSearchTerm = $.trim(@$(".bv_protocolSearchTerm").val())
 		$(".bv_protSearchTerm").val ""
 		if protocolSearchTerm isnt ""
-			$(".bv_noMatchesFoundMessage").hide()
-			$(".bv_protocolBrowserSearchInstructions").hide()
-			$(".bv_searchProtocolsStatusIndicator").show()
+			$(".bv_noMatchesFoundMessage").addClass('hide')
+			$(".bv_protocolBrowserSearchInstructions").addClass('hide')
+			$(".bv_searchProtocolsStatusIndicator").removeClass('hide')
 			if !window.conf.browser.enableSearchAll and protocolSearchTerm is "*"
-				$(".bv_moreSpecificProtocolSearchNeeded").show()
+				$(".bv_moreSpecificProtocolSearchNeeded").removeClass('hide')
 			else
-				$(".bv_searchingProtocolsMessage").show()
+				$(".bv_searchingProtocolsMessage").removeClass('hide')
 				$(".bv_protSearchTerm").html _.escape(protocolSearchTerm)
-				$(".bv_moreSpecificProtocolSearchNeeded").hide()
+				$(".bv_moreSpecificProtocolSearchNeeded").addClass('hide')
 				@doSearch protocolSearchTerm
 
 	doSearch: (protocolSearchTerm) =>
@@ -127,10 +127,10 @@ class ProtocolSummaryTableController extends Backbone.View
 		@template = _.template($('#ProtocolSummaryTableView').html())
 		$(@el).html @template
 		if @collection.models.length is 0
-			@$(".bv_noMatchesFoundMessage").show()
+			@$(".bv_noMatchesFoundMessage").removeClass('hide')
 			# display message indicating no results were found
 		else
-			@$(".bv_noMatchesFoundMessage").hide()
+			@$(".bv_noMatchesFoundMessage").addClass('hide')
 			@collection.each (prot) =>
 				canViewDeleted = @canViewDeleted(prot)
 				if prot.getStatus().get('codeValue') is 'deleted'
@@ -196,16 +196,16 @@ class ProtocolBrowserController extends Backbone.View
 
 	setupProtocolSummaryTable: (protocols) =>
 		@destroyProtocolSummaryTable()
-		$(".bv_searchingProtocolsMessage").hide()
+		$(".bv_searchingProtocolsMessage").addClass('hide')
 		if protocols is null
-			@$(".bv_errorOccurredPerformingSearch").show()
+			@$(".bv_errorOccurredPerformingSearch").removeClass('hide')
 
 		else if protocols.length is 0
-			@$(".bv_noMatchesFoundMessage").show()
+			@$(".bv_noMatchesFoundMessage").removeClass('hide')
 			@$(".bv_protocolTableController").html ""
 		else
-			$(".bv_searchProtocolsStatusIndicator").hide()
-			@$(".bv_protocolTableController").show()
+			$(".bv_searchProtocolsStatusIndicator").addClass('hide')
+			@$(".bv_protocolTableController").removeClass('hide')
 			if window.conf.protocol?.mainControllerClassName? and window.conf.protocol.mainControllerClassName is "EnhancedProtocolBaseController"
 				protocolListClass = "EnhancedProtocolList"
 			else
@@ -246,28 +246,28 @@ class ProtocolBrowserController extends Backbone.View
 	showMasterView: =>
 		protocol = @protocolController.model
 		$('.bv_protocolBaseController').html @protocolController.render().el
-		$(".bv_protocolBaseController").show()
-		$(".bv_protocolBaseControllerContainer").show()
+		$(".bv_protocolBaseController").removeClass('hide')
+		$(".bv_protocolBaseControllerContainer").removeClass('hide')
 		if protocol.getStatus().get('codeValue') is "deleted"
-			@$('.bv_deleteProtocol').hide()
-			@$('.bv_editProtocol').hide()
-			@$('.bv_duplicateProtocol').hide()
-			@$('.bv_createExperiment').hide()
+			@$('.bv_deleteProtocol').addClass('hide')
+			@$('.bv_editProtocol').addClass('hide')
+			@$('.bv_duplicateProtocol').addClass('hide')
+			@$('.bv_createExperiment').addClass('hide')
 		else
-			@$('.bv_duplicateProtocol').show()
-			@$('.bv_createExperiment').show()
+			@$('.bv_duplicateProtocol').removeClass('hide')
+			@$('.bv_createExperiment').removeClass('hide')
 			if @canEdit()
-				@$('.bv_editProtocol').show()
-				@$('.bv_duplicateProtocol').show()
-				@$('.bv_createExperiment').show()
+				@$('.bv_editProtocol').removeClass('hide')
+				@$('.bv_duplicateProtocol').removeClass('hide')
+				@$('.bv_createExperiment').removeClass('hide')
 			else
-				@$('.bv_editProtocol').hide()
-				@$('.bv_duplicateProtocol').hide()
-				@$('.bv_createExperiment').hide()
+				@$('.bv_editProtocol').addClass('hide')
+				@$('.bv_duplicateProtocol').addClass('hide')
+				@$('.bv_createExperiment').addClass('hide')
 			if @canDelete()
-				@$('.bv_deleteProtocol').show()
+				@$('.bv_deleteProtocol').removeClass('hide')
 			else
-				@$('.bv_deleteProtocol').hide()
+				@$('.bv_deleteProtocol').addClass('hide')
 
 	getParentProtocol: (codeName) =>
 		$.ajax
@@ -346,35 +346,35 @@ class ProtocolBrowserController extends Backbone.View
 		else
 			code = @protocolController.model.escape('codeName')
 		@$(".bv_protocolCodeName").html code
-		@$(".bv_deleteButtons").show()
-		@$(".bv_okayButton").hide()
-		@$(".bv_errorDeletingProtocolMessage").hide()
-		@$(".bv_deleteWarningMessage").show()
-		@$(".bv_deletingStatusIndicator").hide()
-		@$(".bv_protocolDeletedSuccessfullyMessage").hide()
-		$(".bv_confirmDeleteProtocol").show()
+		@$(".bv_deleteButtons").removeClass('hide')
+		@$(".bv_okayButton").addClass('hide')
+		@$(".bv_errorDeletingProtocolMessage").addClass('hide')
+		@$(".bv_deleteWarningMessage").removeClass('hide')
+		@$(".bv_deletingStatusIndicator").addClass('hide')
+		@$(".bv_protocolDeletedSuccessfullyMessage").addClass('hide')
+		$(".bv_confirmDeleteProtocol").removeClass('hide')
 		$('.bv_confirmDeleteProtocol').modal({
 			keyboard: false,
 			backdrop: true
 		})
 
 	handleConfirmDeleteProtocolClicked: =>
-		@$(".bv_deleteWarningMessage").hide()
-		@$(".bv_deletingStatusIndicator").show()
-		@$(".bv_deleteButtons").hide()
+		@$(".bv_deleteWarningMessage").addClass('hide')
+		@$(".bv_deletingStatusIndicator").removeClass('hide')
+		@$(".bv_deleteButtons").addClass('hide')
 		$.ajax(
 			url: "/api/protocols/browser/#{@protocolController.model.get("id")}",
 			type: 'DELETE',
 			success: (result) =>
-				@$(".bv_okayButton").show()
-				@$(".bv_deletingStatusIndicator").hide()
-				@$(".bv_protocolDeletedSuccessfullyMessage").show()
+				@$(".bv_okayButton").removeClass('hide')
+				@$(".bv_deletingStatusIndicator").addClass('hide')
+				@$(".bv_protocolDeletedSuccessfullyMessage").removeClass('hide')
 				@searchController.handleDoSearchClicked()
 		#@destroyProtocolSummaryTable()
 			error: (result) =>
-				@$(".bv_okayButton").show()
-				@$(".bv_deletingStatusIndicator").hide()
-				@$(".bv_errorDeletingProtocolMessage").show()
+				@$(".bv_okayButton").removeClass('hide')
+				@$(".bv_deletingStatusIndicator").addClass('hide')
+				@$(".bv_errorDeletingProtocolMessage").removeClass('hide')
 		)
 
 	handleCancelDeleteClicked: =>
@@ -443,9 +443,9 @@ class ProtocolBrowserController extends Backbone.View
 			@protocolSummaryTable.remove()
 		if @protocolController?
 			@protocolController.remove()
-		$(".bv_protocolBaseController").hide()
-		$(".bv_protocolBaseControllerContainer").hide()
-		$(".bv_noMatchesFoundMessage").hide()
+		$(".bv_protocolBaseController").addClass('hide')
+		$(".bv_protocolBaseControllerContainer").addClass('hide')
+		$(".bv_noMatchesFoundMessage").addClass('hide')
 
 	downloadSELFile: =>	
 		dataToPost =
@@ -484,14 +484,14 @@ class ProtocolBrowserController extends Backbone.View
 				document.body.removeChild(downloadLink)
 
 				# update GUI to indicate succesful download
-				$(".bv_downloadTemplateWarning").hide()
-				$(".bv_downloadTemplateSuccess").show()
+				$(".bv_downloadTemplateWarning").addClass('hide')
+				$(".bv_downloadTemplateSuccess").removeClass('hide')
 			error: (err) =>
 				console.log "getTemplateSELFile() error:" + err
 				
 				#Update GUI to indicate files could not be downloaded
-				$(".bv_downloadTemplateSuccess").hide()
-				$(".bv_downloadTemplateWarning").show()
+				$(".bv_downloadTemplateSuccess").addClass('hide')
+				$(".bv_downloadTemplateWarning").removeClass('hide')
 
 	
 

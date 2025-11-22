@@ -260,26 +260,26 @@ class ProtocolBaseController extends BaseEntityController
 		$(@el).empty()
 		$(@el).html @template(@model.attributes)
 		if window.conf.protocol?.showAssayTreeRule? and window.conf.protocol.showAssayTreeRule is true
-			@$('.bv_group_assayTreeRule').show()
+			@$('.bv_group_assayTreeRule').removeClass('hide')
 		else
-			@$('.bv_group_assayTreeRule').hide()
+			@$('.bv_group_assayTreeRule').addClass('hide')
 		if window.conf.protocol?.hideFields? and window.conf.protocol.hideFields != null
 			for field in window.conf.protocol.hideFields.split(",")
 				field = $.trim field
 				console.log field
-				@$('.bv_group_'+field).hide()
+				@$('.bv_group_'+field).addClass('hide')
 		@model.on 'notUniqueName', =>
 			@$('.bv_protocolSaveFailed').modal('show')
 			$('.bv_closeSaveFailedModal').removeAttr('disabled')
-			@$('.bv_saveFailed').show()
+			@$('.bv_saveFailed').removeClass('hide')
 			#			@$('.bv_protocolSaveFailed').on 'hide.bs.modal', =>
-			#				@$('.bv_saveFailed').hide()
+			#				@$('.bv_saveFailed').addClass('hide')
 			$('.bv_protocolSaveFailed').on 'hidden', =>
-				@$('.bv_saveFailed').hide()
+				@$('.bv_saveFailed').addClass('hide')
 			.bind(@)
 		.bind(@)
 		@model.on 'saveFailed', =>
-			@$('.bv_saveFailed').show()
+			@$('.bv_saveFailed').removeClass('hide')
 		.bind(@)
 		@setupStatusSelect()
 		@setupScientistSelect()
@@ -287,7 +287,7 @@ class ProtocolBaseController extends BaseEntityController
 		@setUpAssayStageSelect()
 		@setupAttachFileListController()
 		if window.conf.protocol?.save?.project? and !window.conf.protocol.save.project
-			@$('.bv_group_projectCode').hide()
+			@$('.bv_group_projectCode').addClass('hide')
 		else
 			@setupProjectSelect()
 		@setupSelRequiredAttrs()
@@ -345,30 +345,30 @@ class ProtocolBaseController extends BaseEntityController
 			@$('.bv_maxY').val(@model.getCurveDisplayMax().get('numericValue'))
 			@$('.bv_minY').val(@model.getCurveDisplayMin().get('numericValue'))
 		else
-			@$('.bv_group_curveDisplayWrapper').hide()
+			@$('.bv_group_curveDisplayWrapper').addClass('hide')
 		showRequiredEntityType = false
 		if window.conf.protocol?.requiredEntityType?.save?
 			showRequiredEntityType = window.conf.protocol.requiredEntityType.save
 		if showRequiredEntityType
 			@setupRequiredEntityType()
 		else
-			@$('.bv_group_requiredEntityType').hide()
+			@$('.bv_group_requiredEntityType').addClass('hide')
 		super()
 		@
 
 	modelSyncCallback: =>
 		unless @model.get('subclass')?
 			@model.set subclass: 'protocol'
-		@$('.bv_saving').hide()
+		@$('.bv_saving').addClass('hide')
 		if @$('.bv_saveFailed').is(":visible") or @$('.bv_cancelComplete').is(":visible")
-			@$('.bv_updateComplete').hide()
+			@$('.bv_updateComplete').addClass('hide')
 			@trigger 'amDirty'
 		else
-			@$('.bv_updateComplete').show()
+			@$('.bv_updateComplete').removeClass('hide')
 		unless @model.get('lsKind') is "default"
-			@$('.bv_newEntity').hide()
-			@$('.bv_cancel').hide()
-			@$('.bv_save').hide()
+			@$('.bv_newEntity').addClass('hide')
+			@$('.bv_cancel').addClass('hide')
+			@$('.bv_save').addClass('hide')
 		@trigger 'amClean'
 		@render()
 		if @model.get('lsType') is "default"
@@ -796,11 +796,11 @@ class EndpointListController extends AbstractFormController
 			@$(".bv_endpointColumnRemove").remove()
 			#remove add endpoint button
 			@$(".bv_addEndpoint").remove()
-			@$(".bv_endpointManagerInstructions").hide()
+			@$(".bv_endpointManagerInstructions").addClass('hide')
 		
 		if @options.newProtocol == true
-			@$(".bv_downloadFiles").hide()
-			@$(".bv_endpointManagerInstructions").hide()
+			@$(".bv_downloadFiles").addClass('hide')
+			@$(".bv_endpointManagerInstructions").addClass('hide')
 			@endpointControllers = [] # initialize empty endpoint controller list since it won't be automatically made for new protocol 
 
 		#check whether or not to display time and concentration columns in the endpoint table
@@ -810,7 +810,7 @@ class EndpointListController extends AbstractFormController
 		if @options.readOnly == false && @options.newProtocol == false 	#Only render experiments if the protocol is not new and is not read only 
 			@getExperimentsForProtocol()
 		else #if the table isn't rendered, don't render the download files button either
-			@$(".bv_downloadFiles").hide() 
+			@$(".bv_downloadFiles").addClass('hide') 
 			if @options.view == "experiment"
 				@getEndpointTable()
 
@@ -864,8 +864,8 @@ class EndpointListController extends AbstractFormController
 			
 	getExperimentSummaryTable: =>
 		#hide previously shown warnings/success text
-		@$(".bv_downloadSuccess").hide()
-		@$(".bv_downloadWarning").hide()
+		@$(".bv_downloadSuccess").addClass('hide')
+		@$(".bv_downloadWarning").addClass('hide')
 
 		protocolCode = @model.escape('codeName')	
 		@setupExperimentSummaryTable @protocolExperiments
@@ -884,7 +884,7 @@ class EndpointListController extends AbstractFormController
 			@.addOne(lsState)
 			if @options.readOnly == true
 				#hide remove buttons
-				@$(".bv_remove_row").hide()				
+				@$(".bv_remove_row").addClass('hide')				
 
 	resetBackgroundColor: (tr) => 
 		# Reset the background color of all rows
@@ -934,8 +934,8 @@ class EndpointListController extends AbstractFormController
 		protocolCode = @model.escape('codeName')
 
 		#hide previously shown warnings/success text associated w/ previous table
-		@$(".bv_downloadSuccess").hide()
-		@$(".bv_downloadWarning").hide()
+		@$(".bv_downloadSuccess").addClass('hide')
+		@$(".bv_downloadWarning").addClass('hide')
 
 		filtered_experiments = [] #keep track of the filtered experiments
 		#we'll need to filter out experiments that don't contain the endpoint
@@ -1138,9 +1138,9 @@ class EndpointListController extends AbstractFormController
 		if experiments.length == 0
 			@$(".bv_experimentTableController").empty() 
 			@$(".bv_experimentTableController").append "There are no matching experiments using this protocol and endpoint."
-			@$(".bv_downloadFiles").hide()
+			@$(".bv_downloadFiles").addClass('hide')
 		else
-			@$(".bv_downloadFiles").show()
+			@$(".bv_downloadFiles").removeClass('hide')
 	
 	downloadFiles: => 
 		#copied from downloadFiles in ExperimentBrowser.coffee
@@ -1200,15 +1200,15 @@ class EndpointListController extends AbstractFormController
 				a.click();
 
 				#Update GUI to indicate succesful download
-				@$(".bv_downloadWarning").hide()
-				@$(".bv_downloadSuccess").show()
+				@$(".bv_downloadWarning").addClass('hide')
+				@$(".bv_downloadSuccess").removeClass('hide')
 
 			error: (err) =>
 				console.log "Could not download files" + err
 
 				#Update GUI to indicate files could not be downloaded
-				@$(".bv_downloadSuccess").hide()
-				@$(".bv_downloadWarning").show()
+				@$(".bv_downloadSuccess").addClass('hide')
+				@$(".bv_downloadWarning").removeClass('hide')
 				@serviceReturn = null
 			dataType: 'json'
 
@@ -1337,15 +1337,15 @@ class EndpointListController extends AbstractFormController
 				document.body.removeChild(downloadLink)
 
 				#Update GUI to indicate succesful download
-				$(".bv_downloadTemplateWarning").hide()
-				$(".bv_downloadTemplateSuccess").show()
+				$(".bv_downloadTemplateWarning").addClass('hide')
+				$(".bv_downloadTemplateSuccess").removeClass('hide')
 
 			error: (err) =>
 				console.log "getTemplateSELFile() error:" + err
 				
 				#Update GUI to indicate files could not be downloaded
-				$(".bv_downloadTemplateSuccess").hide()
-				$(".bv_downloadTemplateWarning").show()
+				$(".bv_downloadTemplateSuccess").addClass('hide')
+				$(".bv_downloadTemplateWarning").removeClass('hide')
 				
 
 
