@@ -1,147 +1,149 @@
 <script type="text/template" id="ProtocolBaseView" xmlns="http://www.w3.org/1999/html">
 
     <div class="row">
-        <div class="col-md-12">
-            <div class="row">
-                <!-- Left Column: Form Fields -->
-                <div class="col-xl-4 col-lg-5 col-md-12 col-sm-12" style="min-width: 320px;">
+        <div class="col-lg-6 col-md-12">
             <div class="form-horizontal">
             <div class="form-group">
-                <label class="control-label col-sm-4"><i class="glyphicon glyphicon-lock bv_lock"></i> Status</label>
-                <div class="col-sm-8">
-                    <select class="bv_status form-control" style="width:280px;">
+                <label class="control-label col-sm-3"><i class="glyphicon glyphicon-lock bv_lock"></i> Status</label>
+                <div class="col-sm-9">
+                    <select class="bv_status form-control" style="width:100%;">
                     </select>
                 </div>
             </div>
             <div class="form-group bv_group_protocolName">
-                <label class="control-label col-sm-4">*<%- window.conf.protocol.label %> Name</label>
-                <div class="col-sm-8">
-                    <input class="bv_protocolName form-control" style="width:280px;" type="text" placeholder="">
+                <label class="control-label col-sm-3">*<%- window.conf.protocol.label %> Name</label>
+                <div class="col-sm-9">
+                    <input class="bv_protocolName form-control" style="width:100%;" type="text" placeholder="">
                 </div>
             </div>
             <div class="form-group">
-                <label class="control-label col-sm-4">Code</label>
-                <div class="col-sm-8">
-                    <input class="bv_protocolCode form-control" style="width:280px;" type="text" placeholder="autofill when saved" disabled readonly>
+                <label class="control-label col-sm-3">Code</label>
+                <div class="col-sm-9">
+                    <input class="bv_protocolCode form-control" style="width:100%;" type="text" placeholder="autofill when saved" disabled readonly>
                 </div>
             </div>
             <div class="form-group">
-                <label class="control-label col-sm-4">Kind</label>
-                <div class="col-sm-8">
-                    <input class="bv_protocolKind form-control" style="width:280px;" type="text" placeholder="autofill from <%- window.conf.protocol.label %> create form" disabled readonly>
+                <label class="control-label col-sm-3">Kind</label>
+                <div class="col-sm-9">
+                    <input class="bv_protocolKind form-control" style="width:100%;" type="text" placeholder="autofill from <%- window.conf.protocol.label %> create form" disabled readonly>
                 </div>
             </div>
-        <div class="form-group bv_group_assayTreeRule hide">
-            <label class="control-label col-sm-4">Assay Tree Rule</label>
-            <div class="col-sm-8">
-                <input class="bv_assayTreeRule form-control" style="width:280px;" type="text" placeholder="" />
+            <div class="form-group bv_group_assayTreeRule hide">
+                <label class="control-label col-sm-3">Assay Tree Rule</label>
+                <div class="col-sm-9">
+                    <input class="bv_assayTreeRule form-control" style="width:100%;" type="text" placeholder="" />
+                </div>
             </div>
-        </div>
 
             <div class="form-group bv_group_scientist">
-                <label class="control-label col-sm-4">*Scientist</label>
-                <div class="col-sm-8">
-                    <select class="bv_scientist form-control" style="width:280px;"></select>
+                <label class="control-label col-sm-3">*Scientist</label>
+                <div class="col-sm-9">
+                    <select class="bv_scientist form-control" style="width:100%;"></select>
                 </div>
             </div>
             <div class="form-group bv_group_creationDate">
-                <label class="control-label col-sm-4">*Date</label>
-                <div class="col-sm-8">
-                    <div class="input-group date" id="dp3" data-date="" data-date format="yy-mm-dd" style="width:280px;">
+                <label class="control-label col-sm-3">*Date</label>
+                <div class="col-sm-9">
+                    <div class="input-group date" id="dp3" data-date="" data-date format="yy-mm-dd" style="width:100%;">
                         <input class="bv_creationDate form-control" type="text" value="" placeholder="yyyy-mm-dd">
                         <span class="input-group-addon bv_creationDateIcon"><i class="glyphicon glyphicon-th"></i></span>
                     </div>
                 </div>
             </div>
             <div class="form-group bv_group_projectCode">
-                <label class="control-label col-sm-4 bv_projectLabel">Project</label>
-                <div class="col-sm-8">
-                    <select class="bv_projectCode form-control" style="width:280px;"></select>
+                <label class="control-label col-sm-3 bv_projectLabel">Project</label>
+                <div class="col-sm-9">
+                    <select class="bv_projectCode form-control" style="width:100%;"></select>
                     <i class="glyphicon glyphicon-info-sign" style="margin-left:4px;" title="If a project is specified then the protocol can only be used with the specified project."></i>
                 </div>
             </div>
             <div class="form-group bv_group_notebook">
-                <label class="control-label col-sm-4 bv_notebookLabel">*Notebook</label>
-                <div class="col-sm-8">
-                    <input class="bv_notebook form-control" style="width:280px;" type="text" placeholder="" />
+                <label class="control-label col-sm-3 bv_notebookLabel">*Notebook</label>
+                <div class="col-sm-9">
+                    <input class="bv_notebook form-control" style="width:100%;" type="text" placeholder="" />
                 </div>
             </div>
             <div class="form-group bv_group_notebookPage">
-                <label class="control-label col-sm-4 bv_notebookPageLabel">Notebook Page</label>
-                <div class="col-sm-8">
-                    <input class="bv_notebookPage form-control" style="width:280px;" type="text" placeholder="" />
+                <label class="control-label col-sm-3 bv_notebookPageLabel">Notebook Page</label>
+                <div class="col-sm-9">
+                    <input class="bv_notebookPage form-control" style="width:100%;" type="text" placeholder="" />
                 </div>
             </div>
             <div class="form-group bv_group_tags" style="margin-bottom:10px;">
-                <label class="control-label col-sm-4">Key Words</label>
-                <div class="col-sm-8">
-                    <input class="bv_tags form-control" style="width:280px;max-width:280px;" type="text" data-role="tagsinput" placeholder="Add tags" />
+                <label class="control-label col-sm-3">Key Words</label>
+                <div class="col-sm-9">
+                    <input class="bv_tags form-control" style="width:100%;" type="text" data-role="tagsinput" placeholder="Add tags" />
                 </div>
             </div>
 
             <div class="form-group bv_group_assayStage">
-                <label class="control-label col-sm-4">Assay Stage</label>
-                <div class="col-sm-8">
-                    <select class="bv_assayStage form-control" style="width:280px;"></select>
+                <label class="control-label col-sm-3">Assay Stage</label>
+                <div class="col-sm-9">
+                    <select class="bv_assayStage form-control" style="width:100%;"></select>
                 </div>
             </div>
 
             <div class="form-group bv_group_requiredEntityType">
-                <label class="control-label col-sm-4 bv_requiredEntityTypeLabel">Required Entity Type</label>
-                <div class="col-sm-8">
-                    <select class="bv_requiredEntityType form-control" style="width:280px;"></select>
+                <label class="control-label col-sm-3 bv_requiredEntityTypeLabel">Required Entity Type</label>
+                <div class="col-sm-9">
+                    <select class="bv_requiredEntityType form-control" style="width:100%;"></select>
                 </div>
             </div>
-                <div class="form-group">
-                    <label class="control-label col-sm-4">Curve Display</label>
-                    <div class="col-sm-8">
-                        <div class="form-inline">
-                            <div class="bv_group_maxY" style="display: inline-block; margin-right: 15px;">
-                                <label class="control-label" style="display: block; margin-bottom: 5px;">Y Axis Max</label>
-                                <input class="bv_maxY form-control" type="text" style="width: 120px;" placeholder=""/>
-                            </div>
-                            <div class="bv_group_minY" style="display: inline-block;">
-                                <label class="control-label" style="display: block; margin-bottom: 5px;">Y Axis Min</label>
-                                <input class="bv_minY form-control" type="text" style="width: 120px;" placeholder=""/>
-                            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-3">Curve Display</label>
+                <div class="col-sm-9">
+                    <div class="form-inline">
+                        <div class="bv_group_maxY" style="display: inline-block; margin-right: 15px;">
+                            <label class="control-label" style="display: block; margin-bottom: 5px;">Y Axis Max</label>
+                            <input class="bv_maxY form-control" type="text" style="width: 120px;" placeholder=""/>
+                        </div>
+                        <div class="bv_group_minY" style="display: inline-block;">
+                            <label class="control-label" style="display: block; margin-bottom: 5px;">Y Axis Min</label>
+                            <input class="bv_minY form-control" type="text" style="width: 120px;" placeholder=""/>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-        
-                <!-- Right Column: Text Areas and File Attachments -->
-                <div class="col-xl-8 col-lg-7 col-md-12">
-            <div class="bv_group_shortDescription" style="margin-bottom:20px;">
-                <label style="margin-bottom:8px;font-weight:500;color:#333;">Short Description</label>
-                <textarea rows="3" class="bv_shortDescription form-control" style="width:100%;max-width:100%;" placeholder="Short Description"></textarea>
+
+            <div class="form-group bv_group_shortDescription" style="margin-bottom:20px;">
+                <label class="control-label col-sm-3">Short Description</label>
+                <div class="col-sm-9">
+                    <textarea rows="3" class="bv_shortDescription form-control" style="width:100%;" placeholder="Short Description"></textarea>
+                </div>
             </div>
 
-            <div class="bv_group_assayPrinciple" style="margin-bottom:20px;">
-                <label style="margin-bottom:8px;font-weight:500;color:#333;">Assay Principle</label>
-                <textarea rows="3" class="bv_assayPrinciple form-control" style="width:100%;max-width:100%;" placeholder="Assay Principle"></textarea>
+            <div class="form-group bv_group_assayPrinciple" style="margin-bottom:20px;">
+                <label class="control-label col-sm-3">Assay Principle</label>
+                <div class="col-sm-9">
+                    <textarea rows="3" class="bv_assayPrinciple form-control" style="width:100%;" placeholder="Assay Principle"></textarea>
+                </div>
             </div>
 
-            <div class="bv_group_details" style="margin-bottom:20px;">
-                <label style="margin-bottom:8px;font-weight:500;color:#333;"><%- window.conf.protocol.label %> Details</label>
-                <textarea rows="3" class="bv_details form-control" style="width:100%;max-width:100%;" placeholder="<%- window.conf.protocol.label %> Details"></textarea>
+            <div class="form-group bv_group_details" style="margin-bottom:20px;">
+                <label class="control-label col-sm-3"><%- window.conf.protocol.label %> Details</label>
+                <div class="col-sm-9">
+                    <textarea rows="3" class="bv_details form-control" style="width:100%;" placeholder="<%- window.conf.protocol.label %> Details"></textarea>
+                </div>
             </div>
 
-            <div class="bv_group_comments" style="margin-bottom:20px;">
-                <label style="margin-bottom:8px;font-weight:500;color:#333;">Comments</label>
-                <textarea rows="3" class="bv_comments form-control" style="width:100%;max-width:100%;" placeholder="Comments"></textarea>
+            <div class="form-group bv_group_comments" style="margin-bottom:20px;">
+                <label class="control-label col-sm-3">Comments</label>
+                <div class="col-sm-9">
+                    <textarea rows="3" class="bv_comments form-control" style="width:100%;" placeholder="Comments"></textarea>
+                </div>
             </div>
 
             <div class="form-group bv_group_attachFile" style="margin-bottom:0px;">
-                <div style="margin-bottom:5px;font-weight:bold;">Attach Files</div>
+                <label class="control-label col-sm-3">Attach Files</label>
                 <div class="col-sm-9">
-                    <span class ="bv_group_fileType" style="margin-left:6px;margin-bottom:5px;">File Type</span>
-                    <span style="margin-left:77px;margin-bottom:5px;">File Name</span>
+                    <div style="margin-bottom:5px;">
+                        <span class ="bv_group_fileType" style="margin-right:20px;">File Type</span>
+                        <span>File Name</span>
+                    </div>
                     <div class="bv_attachFileList" style="width:100%;"></div>
                 </div>
             </div>
             </div>
-        </div>
     </div>
     
     <div class="row">

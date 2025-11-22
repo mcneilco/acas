@@ -1,45 +1,49 @@
 <script type="text/template" id="ExampleThingView" xmlns="http://www.w3.org/1999/html">
     <div class="container-fluid">
         <h5><span style="margin-left:20px;margin-top:30px;">Thing Registration</span></h5>
-        <div class="row">
-            <!-- Left Column: Thing ID through Example File -->
-            <div class="col-xl-4 col-lg-5 col-md-12 col-sm-12" style="min-width: 320px;">
-                <div class="form-horizontal">
-                    <div class="form-group">
-                        <label class="control-label col-sm-4">Thing ID</label>
-                        <div class="col-sm-8">
-                            <span class="form-control-static bv_thingCode">Autofilled when saved</span>
-                        </div>
-                    </div>
-                    <div class="form-group bv_thingName"></div>
-                    <div class="form-group bv_scientist"></div>
-                    <div class="form-group bv_scientistDate"></div>
-                    <div class="form-group bv_color"></div>
-                    <div class="form-group bv_notebook"></div>
-                    <div class="form-group bv_file"></div>
+        <div class="form-horizontal">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Thing ID</label>
+                <div class="col-sm-8">
+                    <span class="form-control-static bv_thingCode">Autofilled when saved</span>
+                </div>
+            </div>
+            <div class="form-group bv_thingName"></div>
+            <div class="form-group bv_scientist"></div>
+            <div class="form-group bv_scientistDate"></div>
+            <div class="form-group bv_color"></div>
+            <div class="form-group bv_notebook"></div>
+            <div class="form-group bv_file"></div>
+            
+            <div class="form-group">
+                <div class="col-sm-12">
+                    <h5>Example Multiple Aliases</h5>
+                    <p class="help-block">Add alternative names or identifiers for this thing. These aliases can be used to reference the same entity.</p>
+                </div>
+            </div>
+            <div class="form-group bv_aliasWrapper"></div>
+            
+            <div class="form-group bv_multiFileWrapper"></div>
+            
+            <div class="form-group">
+                <div class="col-sm-12">
+                    <h5>Associated Projects</h5>
+                    <p class="help-block">Select one or more projects that this thing is associated with or referenced by.</p>
+                </div>
+            </div>
+            <div class="form-group bv_associatedProjects"></div>
+            
+            <div class="form-group">
+                <label class="control-label col-sm-3">Data Table</label>
+                <div class="col-sm-9">
+                    <div class="bv_dataTable"></div>
                 </div>
             </div>
             
-            <!-- Right Column: Aliases through State Display -->
-            <div class="col-xl-8 col-lg-7 col-md-12 col-sm-12">
-                <div class="form-horizontal">
-                    <div class="form-group bv_aliasWrapper"></div>
-                    <div class="form-group bv_multiFileWrapper"></div>
-                    <div class="form-group bv_associatedProjects"></div>
-                    
-                    <div class="form-group">
-                        <label class="control-label col-sm-3">Data Table</label>
-                        <div class="col-sm-9">
-                            <div class="bv_dataTable"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="control-label col-sm-3">State Display</label>
-                        <div class="col-sm-9">
-                            <div class="bv_stateDisplayTable"></div>
-                        </div>
-                    </div>
+            <div class="form-group">
+                <label class="control-label col-sm-3">State Display</label>
+                <div class="col-sm-9">
+                    <div class="bv_stateDisplayTable"></div>
                 </div>
             </div>
         </div>
