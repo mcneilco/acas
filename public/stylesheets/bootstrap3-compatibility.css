@@ -24,6 +24,7 @@
     padding-top: 7px;
     margin-bottom: 0;
     text-align: right;
+    font-weight: 400 !important; /* Medium weight, more refined look */
 }
 
 /* Fix button spacing */
@@ -50,26 +51,6 @@
     min-height: 34px;
 }
 
-/* Fix bootstrap-tagsinput width to match other form controls */
-.bootstrap-tagsinput {
-    max-width: 336px !important;
-    width: 336px !important;
-}
-
-/* Bootstrap tagsinput compatibility */
-.bootstrap-tagsinput {
-    display: block;
-    width: 100%;
-    min-height: 34px;
-    padding: 6px 12px;
-    font-size: 14px;
-    line-height: 1.42857143;
-    color: #555;
-    background-color: #fff;
-    background-image: none;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
 
 /* Fix navbar collapse for mobile */
 .navbar-toggle {
