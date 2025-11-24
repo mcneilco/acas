@@ -194,8 +194,8 @@ class PickListSelectController extends Backbone.View
 			@selectedCode = @getSelectedCode()
 		
 		# hack to fix IE bug where select doesn't work when dynamically inserted
-		$(@el).hide()
-		$(@el).show()
+		$(@el).addClass('hide')
+		$(@el).removeClass('hide')
 		@rendered = true
 
 	addOne: (enm) =>
@@ -563,7 +563,7 @@ class EditablePickListSelectController extends Backbone.View
 				@$('.bv_tooltipWrapper').removeAttr('data-original-title')
 		else
 			# This is set us not editable so remove the add option button
-			@$('.bv_addOptionBtn').hide()
+			@$('.bv_addOptionBtn').addClass('hide')
 
 	getSelectedCode: ->
 		@pickListController.getSelectedCode()
@@ -611,21 +611,21 @@ class EditablePickListSelectController extends Backbone.View
 			@pickListController.collection.add newPickList
 			@pickListController.setSelectedCode(newPickList.get('code'))
 			@trigger 'change'
-			@$('.bv_errorMessage').hide()
+			@$('.bv_errorMessage').addClass('hide')
 			@addPanelController.hideModal()
 
 		else
-			@$('.bv_errorMessage').show()
+			@$('.bv_errorMessage').removeClass('hide')
 
 		if @options.autoSave? && @options.autoSave
 			@saveNewOption ()=>
 				
 
 	hideAddOptionButton: ->
-		@$('.bv_addOptionBtn').hide()
+		@$('.bv_addOptionBtn').addClass('hide')
 
 	showAddOptionButton: ->
-		@$('.bv_addOptionBtn').show()
+		@$('.bv_addOptionBtn').removeClass('hide')
 
 	saveNewOption: (callback) =>
 		code = @pickListController.getSelectedCode()
@@ -661,59 +661,6 @@ class EditablePickListSelectController extends Backbone.View
 
 	applyFilters: () =>
 		@pickListController.applyFilters()
-
-#	setupContextMenu: ->
-#		$.fn.contextMenu = (settings) ->
-#
-#			# get left location of the context menu
-#			getLeftLocation = (e) ->
-#				relativeMouseWidth = e.pageX - $(window).scrollLeft()
-#				absoluteMouseWidth = e.pageX
-#				pageWidth = $(window).width()
-#				menuWidth = $(settings.menuSelector).width()
-#
-#				if relativeMouseWidth + menuWidth > pageWidth and menuWidth < relativeMouseWidth
-#					# opening menu would pass the side of the current view of the page
-#					return absoluteMouseWidth - menuWidth
-#				else
-#					return absoluteMouseWidth
-#
-#			# get top location of the context menu
-#			getTopLocation = (e) ->
-#				relativeMouseHeight = e.pageY - $(window).scrollTop()
-#				absoluteMouseHeight = e.pageY
-#				pageHeight = $(window).height()
-#				menuHeight = $(settings.menuSelector).height()
-#
-#				if relativeMouseHeight + menuHeight > pageHeight and menuHeight < relativeMouseHeight
-#					# opening menu would pass the bottom of the current view of the page
-#					return absoluteMouseHeight - menuHeight
-#				else
-#					return absoluteMouseHeight
-#
-#			return @each(->
-#				$(this).on "contextmenu", (e) ->
-#					$(settings.menuSelector).data("invokedOn", $(e.target)).show().css(
-#						position: "absolute"
-#						left: getLeftLocation(e)
-#						top: getTopLocation(e)
-#					).off("click").on "click", (e) ->
-#						$(this).hide()
-#						invokedOn = $(this).data("invokedOn")
-#						$selectedMenu = $(e.target)
-#						settings.menuSelected.call this, invokedOn, $selectedMenu
-#
-#					return false #hides the browser's generic context menu
-#
-#				$(document).click ->
-#					$(settings.menuSelector).hide()
-#
-#			)
-#		@$('.bv_addOptionBtn').contextMenu
-#			menuSelector: ".bv_contextMenu"
-#			menuSelected: (invokedOn, selectedMenu) ->
-#				msg = "You selected the menu item '" + selectedMenu.text() + "' on the value '" + invokedOn.text() + "'"
-#				alert msg
 
 class EditablePickListSelect2Controller extends EditablePickListSelectController
 	setupEditablePickList: ->

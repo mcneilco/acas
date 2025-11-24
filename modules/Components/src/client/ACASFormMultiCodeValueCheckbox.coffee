@@ -147,9 +147,9 @@ class ACASFormMultiCodeValueCheckboxController extends ACASFormAbstractFieldCont
     
     renderModelContent: ->
         if @checkboxControllerList.length == 0
-            @$('.bv_noValuesToDisplay').show()
+            @$('.bv_noValuesToDisplay').removeClass('hide')
         else
-            @$('.bv_noValuesToDisplay').hide()
+            @$('.bv_noValuesToDisplay').addClass('hide')
         @checkboxControllerList.forEach (controller) ->
             controller.renderModelContent()
 

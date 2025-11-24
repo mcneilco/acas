@@ -335,13 +335,13 @@ class ACASFormStateTableController extends Backbone.View
 		return newState
 
 	show: =>
-		$(@el).show()
+		$(@el).removeClass('hide')
 		@hot.render()
 		if @selectedCell?
 			@selectCell(...@selectedCell)
 		
 	hide: ->
-		$(@el).hide()
+		$(@el).addClass('hide')
 
 	getCurrentStates: ->
 		@thingRef.get('lsStates').getStatesByTypeAndKind @tableDef.stateType, @tableDef.stateKind
@@ -365,7 +365,7 @@ class ACASFormStateTableController extends Backbone.View
 			rowNumber: rowNumber
 			rowNumberKind: @rowNumberKind
 		@stateTableFormControllersCollection[rowNumber] = formController
-		formController.hide()
+		formController.addClass('hide')
 
 	renderState: (state) ->
 		rowNum = @getRowNumberForState(state)
@@ -560,14 +560,14 @@ class ACASFormStateTableController extends Backbone.View
 		$(@el).find("td").removeClass("selectedRow")
 		@selectedCell = [row, column, row2, column2]
 		if @hasFormWrapper?
-			$(@el).find(".bv_moreDetails").show()
+			$(@el).find(".bv_moreDetails").removeClass('hide')
 			for cont, index in @stateTableFormControllersCollection
 				if cont?
 					if index == row
-						$(@el).find(".bv_moreDetails").hide()
-						cont.show()
+						$(@el).find(".bv_moreDetails").addClass('hide')
+						cont.removeClass('hide')
 					else 
-						cont.hide()
+						cont.addClass('hide')
 
 	setCodeForName: (value, nameToLookup) ->
 		if @pickLists[value.get('lsKind')]?
@@ -762,10 +762,10 @@ class ACASFormStateTableFormController extends Backbone.View
 	show: ->
 		for modelKey, formField of @formFields
 			formField.renderModelContent()
-		$(@el).show()
+		$(@el).removeClass('hide')
 
 	hide: ->
-		$(@el).hide()
+		$(@el).addClass('hide')
 		
 	disableInput: ->
 		Object.keys(@formFields).forEach (key) =>

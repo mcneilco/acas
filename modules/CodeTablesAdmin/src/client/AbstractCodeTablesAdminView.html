@@ -1,41 +1,43 @@
 <script type="text/template" id="AbstractCodeTablesAdminView" xmlns="http://www.w3.org/1999/html">
-    <div class="form-horizontal">
-        <div class="form-group bv_group_codeTablesAdminCode">
-            <label class="control-label col-sm-2">*<%-upperDisplayName%> Code</label>
-            <div class="col-sm-10">
-                <input class="form-control bv_codeTablesAdminCode" style="width:336px;" type="text" placeholder="" />
-            </div>
-        </div>
-        <div class="form-group bv_group_codeTablesAdminName">
-            <label class="control-label col-sm-2">*<%-upperDisplayName%> Name</label>
-            <div class="col-sm-10">
-                <input class="form-control bv_codeTablesAdminName" style="width:336px;" type="text" placeholder="">
-            </div>
-        </div>
-        <div class="form-group bv_group_codeTablesAdminIgnore">
-            <div class="col-sm-offset-2 col-sm-10">
-                <div class="checkbox">
-                    <label>
-                        <input type="checkbox" name="bv_codeTablesAdminIgnore" class="bv_codeTablesAdminIgnore"> Ignored
-                    </label>
+    <div class="row">
+        <div class="col-lg-4 col-md-6 col-sm-8">
+            <div class="form-horizontal">
+                <div class="form-group bv_group_codeTablesAdminCode">
+                    <label class="control-label col-sm-4">*<%-upperDisplayName%> Code</label>
+                    <div class="col-sm-8">
+                        <input class="form-control bv_codeTablesAdminCode" type="text" placeholder="" />
+                    </div>
                 </div>
-            </div>
-        </div>
-        
-        <!-- SAVE AND CANCEL -->
-        <div class="form-group" style="margin-top:25px;">
-            <div class="col-sm-offset-2 col-sm-10">
-                <div style="width:336px;">
-                    <button type="button" class="btn bv_backToCodeTablesAdminBrowserBtn">Back</button>
-                    <div class="pull-right">
-                        <button type="button" class="btn btn-success bv_save" style="margin-left:10px;">Save</button>
-                        <!--<button type="button" class="btn bv_newEntity" style="margin-left:5px;">Clear Form</button>-->
-                        <button type="button" class="btn btn-danger bv_cancel" style="margin-left:5px;" disabled="disabled">Cancel</button>
-                        <div class="bv_saveComplete hide" style="padding-left:5px;padding-top:5px;color:#62c462;display:inline-block;"></div>
-                        <div class="bv_saving hide" style="padding-left:5px;padding-top:5px;color:red;display:inline-block;">Saving...</div>
-                        <div class="bv_saveFailed hide" style="padding-left:5px;padding-top:5px;color:red;display:inline-block;">Save Failed</div>
-                        <div class="bv_canceling hide" style="padding-top:5px;color:red;margin-left:5px;display:inline-block;">Canceling...</div>
-                        <div class="bv_cancelComplete hide" style="padding-top:5px;color:#62c462;margin-left:5px;display:inline-block;">Cancel Complete</div>
+                <div class="form-group bv_group_codeTablesAdminName">
+                    <label class="control-label col-sm-4">*<%-upperDisplayName%> Name</label>
+                    <div class="col-sm-8">
+                        <input class="form-control bv_codeTablesAdminName" type="text" placeholder="">
+                    </div>
+                </div>
+                <div class="form-group bv_group_codeTablesAdminIgnore">
+                    <div class="col-sm-offset-4 col-sm-8">
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" name="bv_codeTablesAdminIgnore" class="bv_codeTablesAdminIgnore"> Ignored
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- SAVE AND CANCEL -->
+                <div class="form-group" style="margin-top:25px;">
+                    <div class="col-sm-12">
+                        <button type="button" class="btn bv_backToCodeTablesAdminBrowserBtn">Back</button>
+                        <div class="pull-right">
+                            <button type="button" class="btn btn-success bv_save" style="margin-left:10px;">Save</button>
+                            <!--<button type="button" class="btn bv_newEntity" style="margin-left:5px;">Clear Form</button>-->
+                            <button type="button" class="btn btn-danger bv_cancel" style="margin-left:5px;" disabled="disabled">Cancel</button>
+                            <div class="bv_saveComplete hide" style="padding-left:5px;padding-top:5px;color:#62c462;display:inline-block;"></div>
+                            <div class="bv_saving hide" style="padding-left:5px;padding-top:5px;color:red;display:inline-block;">Saving...</div>
+                            <div class="bv_saveFailed hide" style="padding-left:5px;padding-top:5px;color:red;display:inline-block;">Save Failed</div>
+                            <div class="bv_canceling hide" style="padding-top:5px;color:red;margin-left:5px;display:inline-block;">Canceling...</div>
+                            <div class="bv_cancelComplete hide" style="padding-top:5px;color:#62c462;margin-left:5px;display:inline-block;">Cancel Complete</div>
+                        </div>
                     </div>
                 </div>
             </div>

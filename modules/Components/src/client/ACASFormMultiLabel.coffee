@@ -30,7 +30,7 @@ class ACASFormMultiLabelController extends Backbone.View
 
 	handleRemoveLabelButtonClicked: ->
 		@labelController.setEmptyValue()
-		$(@el).hide()
+		$(@el).addClass('hide')
 
 
 class ACASFormMultiLabelListController extends ACASFormAbstractFieldController

@@ -188,20 +188,20 @@ class LSNotificationController extends Backbone.View
 			@addNotification note
 	
 	addError: (message) ->
-		@$('.bv_notificationMessagePreview').hide()
+		@$('.bv_notificationMessagePreview').addClass('hide')
 		@$('.bv_notificationMessagePreview').html(message)
 		if @showPreview then @$('.bv_notificationMessagePreview').show("slide", @hideMessagePreview)
-		if @showOnMessageAdd then @$('.bv_notificationMessages').show()
+		if @showOnMessageAdd then @$('.bv_notificationMessages').removeClass('hide')
 		@errorController.notificationsList.add(new LSNotificationMessageModel({content: message}))
 	
 	getErrorCount: ->
 		return @errorController.notificationsList.size()
 	
 	addWarning: (message) ->
-		@$('.bv_notificationMessagePreview').hide()
+		@$('.bv_notificationMessagePreview').addClass('hide')
 		@$('.bv_notificationMessagePreview').html(message)
 		if @showPreview then @$('.bv_notificationMessagePreview').show("slide", @hideMessagePreview)
-		if @showOnMessageAdd then @$('.bv_notificationMessages').show()
+		if @showOnMessageAdd then @$('.bv_notificationMessages').removeClass('hide')
 		@warningController.notificationsList.add(new LSNotificationMessageModel({content: message}))
 	
 	getWarningCount: ->
@@ -209,10 +209,10 @@ class LSNotificationController extends Backbone.View
 	
 	addInfo: (message) ->
 		self = @
-		@$('.bv_notificationMessagePreview').hide()
+		@$('.bv_notificationMessagePreview').addClass('hide')
 		@$('.bv_notificationMessagePreview').html(message)
 		if @showPreview then @$('.bv_notificationMessagePreview').show("slide", @hideMessagePreview)
-		if @showOnMessageAdd then @$('.bv_notificationMessages').show()
+		if @showOnMessageAdd then @$('.bv_notificationMessages').removeClass('hide')
 		@infoController.notificationsList.add(new LSNotificationMessageModel({content: message}))
 	
 	hideMessagePreview: ->

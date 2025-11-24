@@ -284,10 +284,10 @@ class ThingSummaryTableController extends Backbone.View
 		collectionData = if @collection.models? then @collection.models else @collection
 		
 		if collectionData.length is 0
-			@$(".bv_noMatchingThingsFoundMessage").show()
+			@$(".bv_noMatchingThingsFoundMessage").removeClass('hide')
 			# display message indicating no results were found
 		else
-			@$(".bv_noMatchingThingsFoundMessage").hide()
+			@$(".bv_noMatchingThingsFoundMessage").addClass('hide')
 			exampleModel = new @options.thingModelClass()
 			collectionData.forEach (flattenedThing) =>
 				prsc = new ACASThingBrowserRowSummaryController
@@ -365,11 +365,11 @@ class ACASThingBrowserController extends Backbone.View
 	showOne: (cl) =>
 		cls = ["bv_noMatchingThingsFoundMessage", "bv_moreSpecificThingSearchNeeded", "bv_errorOccurredPerformingSearch", "bv_thingBrowserSearchInstructions", "bv_searchingThingsMessage"]
 		for c in cls
-			@$("."+c).hide()
+			@$("."+c).addClass('hide')
 		if cl?
-			@$("."+cl).show()
-		@$(".bv_thingTableController").hide()
-		@$(".bv_searchThingsStatusIndicator").show()
+			@$("."+cl).removeClass('hide')
+		@$(".bv_thingTableController").addClass('hide')
+		@$(".bv_searchThingsStatusIndicator").removeClass('hide')
 
 	moreSpecificSearchRequired: =>
 		@showOne("bv_moreSpecificThingSearchNeeded")
@@ -384,9 +384,9 @@ class ACASThingBrowserController extends Backbone.View
 		if response.maxResults <= response.numberOfResults
 			msg = "Browser results were limited to the first " + response.maxResults + " entries out of " + response.numberOfResults + " results"
 			@$('.bv_maxThingBrowserSearchResultsReached').html msg
-			@$(".bv_maxThingBrowserSearchResultsReached").show()
+			@$(".bv_maxThingBrowserSearchResultsReached").removeClass('hide')
 		else 
-			@$(".bv_maxThingBrowserSearchResultsReached").hide()
+			@$(".bv_maxThingBrowserSearchResultsReached").addClass('hide')
 
 		if results is null
 			@showOne("bv_errorOccurredPerformingSearch")
@@ -394,8 +394,8 @@ class ACASThingBrowserController extends Backbone.View
 		else if results.length is 0
 			@showOne("bv_noMatchingThingsFoundMessage")
 		else
-			@$(".bv_searchThingsStatusIndicator").hide()
-			@$(".bv_thingTableController").show() 
+			@$(".bv_searchThingsStatusIndicator").addClass('hide')
+			@$(".bv_thingTableController").removeClass('hide') 
 
 			@thingSummaryTable = new ThingSummaryTableController
 				collection: results
@@ -434,51 +434,51 @@ class ACASThingBrowserController extends Backbone.View
 
 	renderController: () =>
 		@thingController.render()
-		@$(".bv_thingController").show()
-		@$(".bv_thingControllerContainer").show()
+		@$(".bv_thingController").removeClass('hide')
+		@$(".bv_thingControllerContainer").removeClass('hide')
 
-		@$('.bv_editThing').show()
+		@$('.bv_editThing').removeClass('hide')
 		if window.conf.thing?.editingRoles?
 			editingRoles = window.conf.thing.editingRoles.split(",")
 			if !UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, editingRoles)
-				@$('.bv_editThing').hide()
+				@$('.bv_editThing').addClass('hide')
 
 		if window.conf.thing?.deletingRoles?
 			deletingRoles= window.conf.thing.deletingRoles.split(",")
 			if !UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, deletingRoles)
-				@$('.bv_deleteThing').hide()
+				@$('.bv_deleteThing').addClass('hide')
 			
 
 	handleDeleteThingClicked: =>
 		@$(".bv_thingUserName").html @thingController.model.get("codeName")
-		@$(".bv_deleteButtons").show()
-		@$(".bv_okayButton").hide()
-		@$(".bv_errorDeletingThingMessage").hide()
-		@$(".bv_deleteWarningMessage").show()
-		@$(".bv_deletingStatusIndicator").hide()
-		@$(".bv_thingDeletedSuccessfullyMessage").hide()
-		@$(".bv_confirmDeleteThing").show()
+		@$(".bv_deleteButtons").removeClass('hide')
+		@$(".bv_okayButton").addClass('hide')
+		@$(".bv_errorDeletingThingMessage").addClass('hide')
+		@$(".bv_deleteWarningMessage").removeClass('hide')
+		@$(".bv_deletingStatusIndicator").addClass('hide')
+		@$(".bv_thingDeletedSuccessfullyMessage").addClass('hide')
+		@$(".bv_confirmDeleteThing").removeClass('hide')
 		@$('.bv_confirmDeleteThing').modal({
 			keyboard: false,
 			backdrop: true
 		})
 
 	handleConfirmDeleteThingClicked: =>
-		@$(".bv_deleteWarningMessage").hide()
-		@$(".bv_deletingStatusIndicator").show()
-		@$(".bv_deleteButtons").hide()
+		@$(".bv_deleteWarningMessage").addClass('hide')
+		@$(".bv_deletingStatusIndicator").removeClass('hide')
+		@$(".bv_deleteButtons").addClass('hide')
 		$.ajax(
 			url: "/api/things/#{@thingController.model.get("lsKind")}/#{@thingController.model.get("lsType")}/#{@thingController.model.get("id")}",
 			type: 'DELETE',
 			success: (result) =>
-				@$(".bv_okayButton").show()
-				@$(".bv_deletingStatusIndicator").hide()
-				@$(".bv_thingDeletedSuccessfullyMessage").show()
+				@$(".bv_okayButton").removeClass('hide')
+				@$(".bv_deletingStatusIndicator").addClass('hide')
+				@$(".bv_thingDeletedSuccessfullyMessage").removeClass('hide')
 				@searchController.handleDoSearchClicked()
 			error: (result) =>
-				@$(".bv_okayButton").show()
-				@$(".bv_deletingStatusIndicator").hide()
-				@$(".bv_errorDeletingThingMessage").show()
+				@$(".bv_okayButton").removeClass('hide')
+				@$(".bv_deletingStatusIndicator").addClass('hide')
+				@$(".bv_errorDeletingThingMessage").removeClass('hide')
 		)
 
 	handleCancelDeleteClicked: =>
@@ -493,9 +493,9 @@ class ACASThingBrowserController extends Backbone.View
 			@thingSummaryTable.remove()
 		if @thingController?
 			@thingController.remove()
-		@$(".bv_thingController").hide()
-		@$(".bv_thingControllerContainer").hide()
-		@$(".bv_noMatchingThingsFoundMessage").hide()
+		@$(".bv_thingController").addClass('hide')
+		@$(".bv_thingControllerContainer").addClass('hide')
+		@$(".bv_noMatchingThingsFoundMessage").addClass('hide')
 
 	render: =>
 
