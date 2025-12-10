@@ -58,7 +58,7 @@ class CodeTablesAdminSimpleSearchController extends AbstractFormController
 		unless codeTablesAdminSearchTerm is ""
 			$.ajax
 				type: 'GET'
-				url: @searchUrl + codeTablesAdminSearchTerm
+				url: @searchUrl + encodeURIComponent(codeTablesAdminSearchTerm)
 				dataType: "json"
 				data:
 					testMode: false

@@ -199,7 +199,7 @@ class ExperimentSimpleSearchController extends AbstractFormController
 		unless experimentSearchTerm is ""
 			$.ajax
 				type: 'GET'
-				url: @searchUrl + experimentSearchTerm
+				url: @searchUrl + encodeURIComponent(experimentSearchTerm)
 				dataType: "json"
 				data:
 					testMode: false

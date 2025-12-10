@@ -308,7 +308,7 @@ class AuthorEditorController extends AbstractFormController
 				if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
 					$.ajax
 						type: 'GET'
-						url: "/api/authorByUsername/"+window.AppLaunchParams.moduleLaunchParams.code
+						url: "/api/authorByUsername/"+encodeURIComponent(window.AppLaunchParams.moduleLaunchParams.code)
 						dataType: 'json'
 						error: (err) =>
 							alert 'Could not get author object with this code. Creating a new author'
