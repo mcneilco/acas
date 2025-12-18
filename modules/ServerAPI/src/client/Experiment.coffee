@@ -386,7 +386,7 @@ class ExperimentBaseController extends BaseEntityController
 					else
 						$.ajax
 							type: 'GET'
-							url: "/api/experiments/codename/"+window.AppLaunchParams.moduleLaunchParams.code
+							url: "/api/experiments/codename/"+encodeURIComponent(window.AppLaunchParams.moduleLaunchParams.code)
 							dataType: 'json'
 							error: (err) =>
 								alert 'Could not get experiment for code in this URL, creating new one'
@@ -707,7 +707,7 @@ class ExperimentBaseController extends BaseEntityController
 			@$('.bv_spinner').spin('aligned')
 			$.ajax
 				type: 'GET'
-				url: "/api/protocols/codename/"+code
+				url: "/api/protocols/codename/"+encodeURIComponent(code)
 				success: (json) =>
 					@$('.bv_spinner').spin(false)
 					@$('.bv_protocolCode').removeAttr('disabled')

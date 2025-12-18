@@ -67,7 +67,7 @@ class ProjectSimpleSearchController extends AbstractFormController
 		unless projectSearchTerm is ""
 			$.ajax
 				type: 'GET'
-				url: @searchUrl + projectSearchTerm
+				url: @searchUrl + encodeURIComponent(projectSearchTerm)
 				dataType: "json"
 				data:
 					testMode: false

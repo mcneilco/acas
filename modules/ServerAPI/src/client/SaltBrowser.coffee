@@ -50,7 +50,7 @@ class SaltSimpleSearchController extends AbstractFormController
 		unless saltSearchTerm is "" 
 			$.ajax(
 				type: 'GET'
-				url: @genericSearchUrl + "/search/" + saltSearchTerm
+				url: @genericSearchUrl + "/search/" + encodeURIComponent(saltSearchTerm)
 				contentType: "application/json"
 				dataType: "json"
 				success: (salt) =>

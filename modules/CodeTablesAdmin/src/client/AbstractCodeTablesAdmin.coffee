@@ -52,7 +52,7 @@ class AbstractCodeTablesAdminController extends AbstractFormController
 				if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
 					$.ajax
 						type: 'GET'
-						url: @model.urlRoot + '/codeName/'+window.AppLaunchParams.moduleLaunchParams.code
+						url: @model.urlRoot + '/codeName/'+encodeURIComponent(window.AppLaunchParams.moduleLaunchParams.code)
 						dataType: 'json'
 						error: (err) =>
 							alert "Error getting #{@codeType} for code in this URL. Creating a new project"

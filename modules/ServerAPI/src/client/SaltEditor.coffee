@@ -37,7 +37,7 @@ class SaltEditorController extends AbstractFormController
 				if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
 					$.ajax
 						type: 'GET'
-						url: "/api/cmpdRegAdmin/salts/"+window.AppLaunchParams.moduleLaunchParams.code
+						url: "/api/cmpdRegAdmin/salts/"+encodeURIComponent(window.AppLaunchParams.moduleLaunchParams.code)
 						dataType: 'json'
 						error: (err) =>
 							alert 'Could not get salt object with this code. Creating a new salt'
