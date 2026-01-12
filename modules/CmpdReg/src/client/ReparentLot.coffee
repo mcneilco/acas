@@ -72,10 +72,10 @@ class ReparentLotController extends Backbone.View
 		@.trigger("back")
 
 	hide: ->
-		$(this.el).hide()
+		$(this.el).addClass('hide')
 
 	show: ->
-		$(this.el).show()
+		$(this.el).removeClass('hide')
 
 	reparentDryRunReturn: (data) ->
 		@.trigger('clearErrors', "ReparentLotController");
@@ -87,7 +87,7 @@ class ReparentLotController extends Backbone.View
 		@$(".bv_dependencySummary").html(dependencySummary);
 
 		# Show the summary
-		@$(".bv_dependencySummary").show();
+		@$(".bv_dependencySummary").removeClass('hide');
 		
 	handleBackToCregButtonClicked: ->
 		window.location.href = 	window.configuration.serverConnection.baseServerURL
@@ -158,7 +158,7 @@ class ReparentLotController extends Backbone.View
 
 		errorSummary = "<h3>Errors</h3><ul>"
 		# Currently we don't have any error cases so we alway show the reparent lot button on successful service call.
-		@$('.reparentLotButton').show();
+		@$('.reparentLotButton').removeClass('hide');
 		errorSummary += "<li>None</li>"
 		errorSummary += "</ul>"
 
@@ -176,9 +176,9 @@ class ReparentLotController extends Backbone.View
 		me = this
 		_.each(classes, (c) ->
 			if c == className
-				me.$("." + c).show()
+				me.$("."+c).removeClass('hide')
 			else
-				me.$("." + c).hide()
+				me.$("."+c).addClass('hide')
 		)
 	
 	reparentDryRunError: (xhr, status, error) ->
@@ -226,17 +226,17 @@ class ReparentLotController extends Backbone.View
 		@$(".bv_reparentLotSuccess .bv_reparentLotSuccessSummary").html(successSummary)
 
 		# Hide all buttons
-		@$(".reparentLotButtons").hide()
+		@$(".reparentLotButtons").addClass('hide')
 
 		# Hide form title
-		@$(".bv_reparentLotTitle").hide()
+		@$(".bv_reparentLotTitle").addClass('hide')
 
 		# Show success message
 		@showOne('bv_reparentLotSuccess')
 
 	reparentLotError: (xhr, status, error) ->
 		# Hide the reparent lot button and disable it
-		@$(".reparentLotButton").hide()
+		@$(".reparentLotButton").addClass('hide')
 		@$(".reparentLotButton").attr("disabled", "disabled")
 		
 		message = "Error reparenting #{@lotLabel}"

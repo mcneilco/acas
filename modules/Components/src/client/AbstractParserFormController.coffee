@@ -34,5 +34,5 @@ class AbstractParserFormController extends AbstractFormController
 
 	enableAllInputs: ->
 		super()
-		@$('.bv_csvPreviewContainer').hide()
+		@$('.bv_csvPreviewContainer').addClass('hide')
 

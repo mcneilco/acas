@@ -131,40 +131,40 @@ class BasicThingValidateAndSaveController extends Backbone.View
 		setTimeout fn , 200
 
 	showInputPhase: ->
-		@$('.bv_resultStatus').hide()
+		@$('.bv_resultStatus').addClass('hide')
 		@$('.bv_resultStatus').html("")
-		@$('.bv_htmlSummary').hide()
+		@$('.bv_htmlSummary').addClass('hide')
 		@$('.bv_htmlSummary').html('')
-		@$('.bv_nextControlContainer').show()
-		@$('.bv_saveControlContainer').hide()
-		@$('.bv_completeControlContainer').hide()
-		@$('.bv_notifications').hide()
-		@$('.bv_csvPreviewContainer').hide()
-		@$('.bv_preProcessorHTMLSummary').hide()
+		@$('.bv_nextControlContainer').removeClass('hide')
+		@$('.bv_saveControlContainer').addClass('hide')
+		@$('.bv_completeControlContainer').addClass('hide')
+		@$('.bv_notifications').addClass('hide')
+		@$('.bv_csvPreviewContainer').addClass('hide')
+		@$('.bv_preProcessorHTMLSummary').addClass('hide')
 		@$('.bv_preProcessorHTMLSummary').hide('')
 
 	showValidatingPhase: ->
-		@$('.bv_resultStatus').show()
-		@$('.bv_htmlSummary').show()
-		@$('.bv_nextControlContainer').hide()
-		@$('.bv_saveControlContainer').show()
-		@$('.bv_completeControlContainer').hide()
-		@$('.bv_notifications').show()
+		@$('.bv_resultStatus').removeClass('hide')
+		@$('.bv_htmlSummary').removeClass('hide')
+		@$('.bv_nextControlContainer').addClass('hide')
+		@$('.bv_saveControlContainer').removeClass('hide')
+		@$('.bv_completeControlContainer').addClass('hide')
+		@$('.bv_notifications').removeClass('hide')
 
 	showValidationCompletePhase: ->
-		@$('.bv_resultStatus').show()
-		@$('.bv_htmlSummary').show()
-		@$('.bv_csvPreviewContainer').hide()
-		@$('.bv_preProcessorHTMLSummary').hide()
-		@$('.bv_nextControlContainer').hide()
-		@$('.bv_saveControlContainer').hide()
-		@$('.bv_completeControlContainer').show()
-		@$('.bv_notifications').show()
+		@$('.bv_resultStatus').removeClass('hide')
+		@$('.bv_htmlSummary').removeClass('hide')
+		@$('.bv_csvPreviewContainer').addClass('hide')
+		@$('.bv_preProcessorHTMLSummary').addClass('hide')
+		@$('.bv_nextControlContainer').addClass('hide')
+		@$('.bv_saveControlContainer').addClass('hide')
+		@$('.bv_completeControlContainer').removeClass('hide')
+		@$('.bv_notifications').removeClass('hide')
 
 	handleFormInvalid: =>
 		@$(".bv_next").attr 'disabled', 'disabled'
 		@$(".bv_save").attr 'disabled', 'disabled'
-		@$('.bv_notifications').show()
+		@$('.bv_notifications').removeClass('hide')
 
 	handleFormValid: =>
 		@$(".bv_next").removeAttr 'disabled'
@@ -173,7 +173,7 @@ class BasicThingValidateAndSaveController extends Backbone.View
 	showPreProcessorHTMLSUmmary: (preProcessorSummaryHTML) ->
 		console.log "showing here"
 		@$('.bv_preProcessorHTMLSummary').html(preProcessorSummaryHTML)
-		@$('.bv_preProcessorHTMLSummary').show()
+		@$('.bv_preProcessorHTMLSummary').removeClass('hide')
 
 	showCSVPreview: (csv) ->
 		@$('.csvPreviewTHead').empty()
@@ -191,4 +191,4 @@ class BasicThingValidateAndSaveController extends Backbone.View
 					rowCells = csvRows[r].split(',')
 					for val in rowCells
 						@$('.csvPreviewTBody tr:last').append "<td>"+val+"</td>"
-				@$('.bv_csvPreviewContainer').show()
+				@$('.bv_csvPreviewContainer').removeClass('hide')

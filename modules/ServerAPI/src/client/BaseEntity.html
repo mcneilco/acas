@@ -1,40 +1,40 @@
 <script type="text/template" id="BaseEntityView" xmlns="http://www.w3.org/1999/html">
 
-    <div class="span10">
+    <div class="col-md-10">
         <div class="form-horizontal">
-            <div class="control-group">
-                <label class="control-label"><i class="icon-lock bv_lock"></i> Status</label>
-                <div class="controls">
-                    <select class="bv_status select-picker" style="width:350px;">
+            <div class="form-group">
+                <label class="control-label col-sm-2"><i class="glyphicon glyphicon-lock bv_lock"></i> Status</label>
+                <div class="col-sm-10">
+                    <select class="bv_status form-control" style="width:350px;">
                     </select>
                 </div>
             </div>
-            <div class="control-group bv_group_entityName">
-                <label class="control-label">*Entity Name</label>
-                <div class="controls">
-                    <input class="bv_entityName" style="width:336px;" type="text" placeholder="">
+            <div class="form-group bv_group_entityName">
+                <label class="control-label col-sm-2">*Entity Name</label>
+                <div class="col-sm-10">
+                    <input class="bv_entityName form-control" style="width:336px;" type="text" placeholder="">
                 </div>
             </div>
-            <div class="control-group">
-                <label class="control-label">Entity Code</label>
-                <div class="controls">
-                    <span class="uneditable-input bv_entityCode" style="width:336px;">autofill when saved</span>
+            <div class="form-group">
+                <label class="control-label col-sm-2">Entity Code</label>
+                <div class="col-sm-10">
+                    <span class="form-control-static bv_entityCode" style="width:336px;">autofill when saved</span>
                 </div>
             </div>
-            <div class="control-group">
-                <label class="control-label">Entity Kind</label>
-                <div class="controls">
-                    <span class="uneditable-input bv_entityKind" style="width:336px;">autofill from <%- window.conf.protocol.label %> create form</span>
+            <div class="form-group">
+                <label class="control-label col-sm-2">Entity Kind</label>
+                <div class="col-sm-10">
+                    <span class="form-control-static bv_entityKind" style="width:336px;">autofill from <%- window.conf.protocol.label %> create form</span>
                 </div>
             </div>
         </div>
 
 
         <div class="form-horizontal">
-            <div class="control-group bv_group_scientist">
-                <label class="control-label">*Scientist</label>
-                <div class="controls">
-                    <select class="bv_scientist" style="width:350px;"></select>
+            <div class="form-group bv_group_scientist">
+                <label class="control-label col-sm-2">*Scientist</label>
+                <div class="col-sm-10">
+                    <select class="bv_scientist form-control" style="width:350px;"></select>
                 </div>
             </div>
             <!--<div class="control-group bv_group_completionDate">-->
@@ -42,7 +42,7 @@
             <!--<div class="controls">-->
             <!--<div class="input-append date" id="dp3" data-date="" data-date format="yy-mm-dd">-->
             <!--<input class="bv_completionDate" type="text" value="" placeholder="yyyy-mm-dd" style="width:310px;">-->
-            <!--<span class="add-on bv_completionDateIcon"><i class="icon-th"></i></span>-->
+            <!--<span class=\"input-group-addon bv_completionDateIcon\"><i class=\"glyphicon glyphicon-th\"></i></span>-->
             <!--</div>-->
             <!--</div>-->
             <!--</div>-->
@@ -50,39 +50,46 @@
 
 
         <div class="form-horizontal">
-            <div class="control-group bv_group_notebook">
-                <label class="control-label bv_notebookLabel">*Notebook</label>
-                <div class="controls">
-                    <input class="bv_notebook" style="width:336px;" type="text" placeholder="" />
+            <div class="form-group bv_group_notebook">
+                <label class="control-label col-sm-2 bv_notebookLabel">*Notebook</label>
+                <div class="col-sm-10">
+                    <input class="bv_notebook form-control" style="width:336px;" type="text" placeholder="" />
                 </div>
             </div>
-            <div class="control-group bv_group_notebookPage">
-                <label class="control-label bv_notebookPageLabel">Notebook Page</label>
-                <div class="controls">
-                    <input class="bv_notebookPage" style="width:336px;" type="text" placeholder="" />
+            <div class="form-group bv_group_notebookPage">
+                <label class="control-label col-sm-2 bv_notebookPageLabel">Notebook Page</label>
+                <div class="col-sm-10">
+                    <input class="bv_notebookPage form-control" style="width:336px;" type="text" placeholder="" />
                 </div>
             </div>
-            <div class="control-group bv_group_tags">
-                <label class="control-label">Key Words</label>
-                <div class="controls">
-                    <input class="bv_tags" type="text" data-role="tagsinput" placeholder="Add tags" />
+            <div class="form-group bv_group_tags">
+                <label class="control-label col-sm-2">Key Words</label>
+                <div class="col-sm-10">
+                    <input class="bv_tags form-control" type="text" data-role="tagsinput" placeholder="Add tags" />
                 </div>
             </div>
         </div>
 
     </div>
 
-    <div>
-        <div class="span10">Short Description</div>
-        <textarea rows="2" class="bv_shortDescription" style="width:650px;resize:none;" placeholder="Short Description"></textarea>
+    <div class="form-group">
+        <label class="control-label col-sm-2">Short Description</label>
+        <div class="col-sm-10">
+            <textarea rows="2" class="bv_shortDescription form-control" style="width:650px;resize:none;" placeholder="Short Description"></textarea>
+        </div>
     </div>
 
-    <div>
-        <div class="span10">Entity Details</div>
-        <textarea rows="7" class="bv_details" style="width:650px;" placeholder="Entity Details"></textarea>    </div>
-    <div>
-        <div class="span10">Comments</div>
-        <textarea rows="7" class="bv_comments" style="width:650px;" placeholder="Comments"></textarea>
+    <div class="form-group">
+        <label class="control-label col-sm-2">Entity Details</label>
+        <div class="col-sm-10">
+            <textarea rows="7" class="bv_details form-control" style="width:650px;" placeholder="Entity Details"></textarea>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-sm-2">Comments</label>
+        <div class="col-sm-10">
+            <textarea rows="7" class="bv_comments form-control" style="width:650px;" placeholder="Comments"></textarea>
+        </div>
     </div>
 
     <!-- SAVE AND CANCEL -->
@@ -105,22 +112,22 @@
                 </div>
                 <div class="modal-body" style="padding-left:0px;">
                     <div class="form-horizontal">
-                        <div class="control-group bv_group_newOptionLabel">
-                            <label class="control-label bv_parameter">Parameter</label>
-                            <div class="controls">
-                                <input class="bv_newOptionLabel" style="width:325px;" type="text" placeholder="Label text" />
+                        <div class="form-group bv_group_newOptionLabel">
+                            <label class="control-label col-sm-3 bv_parameter">Parameter</label>
+                            <div class="col-sm-9">
+                                <input class="bv_newOptionLabel form-control" style="width:325px;" type="text" placeholder="Label text" />
                             </div>
                         </div>
-                        <div class="control-group bv_group_newOptionDescription">
-                            <label class="control-label">Description</label>
-                            <div class="controls">
-                                <input class="bv_newOptionDescription" style="width:325px;" type="text" placeholder="Enter description here." />
+                        <div class="form-group bv_group_newOptionDescription">
+                            <label class="control-label col-sm-3">Description</label>
+                            <div class="col-sm-9">
+                                <input class="bv_newOptionDescription form-control" style="width:325px;" type="text" placeholder="Enter description here." />
                             </div>
                         </div>
-                        <div class="control-group bv_group_newOptionComments">
-                            <label class="control-label">Comments</label>
-                            <div class="controls">
-                                <input class="bv_newOptionComments" style="width:325px;" type="text" placeholder="Enter comments here." />
+                        <div class="form-group bv_group_newOptionComments">
+                            <label class="control-label col-sm-3">Comments</label>
+                            <div class="col-sm-9">
+                                <input class="bv_newOptionComments form-control" style="width:325px;" type="text" placeholder="Enter comments here." />
                             </div>
                         </div>
                     </div>

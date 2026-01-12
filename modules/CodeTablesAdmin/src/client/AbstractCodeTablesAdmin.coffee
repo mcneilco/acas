@@ -91,9 +91,9 @@ class AbstractCodeTablesAdminController extends AbstractFormController
 			upperPluralDisplayName: @upperPluralDisplayName
 		$(@el).html(@template(toDisplay))
 		if @showIgnore
-			@$(".bv_group_codeTablesAdminIgnore").show()
+			@$(".bv_group_codeTablesAdminIgnore").removeClass('hide')
 		else
-			@$(".bv_group_codeTablesAdminIgnore").hide()
+			@$(".bv_group_codeTablesAdminIgnore").addClass('hide')
 		@notificationController = new LSNotificationController
 			el: @$('.bv_notifications')
 			showPreview: false
@@ -115,31 +115,31 @@ class AbstractCodeTablesAdminController extends AbstractFormController
 
 		if @model.isNew()
 			@$('.bv_save').html("Save")
-#			@$('.bv_newEntity').hide()
+#			@$('.bv_newEntity').addClass('hide')
 		else
 			@$('.bv_save').html("Update")
-		#			@$('.bv_newEntity').show()
+		#			@$('.bv_newEntity').removeClass('hide')
 		@$('.bv_codeTablesAdminName').val @model.get('name')
 
 		if @readOnly is true
 			@displayInReadOnlyMode()
-			@$('.bv_backToCodeTablesAdminBrowserBtn').hide()
+			@$('.bv_backToCodeTablesAdminBrowserBtn').addClass('hide')
 		@$('.bv_save').attr('disabled','disabled')
 		@$('.bv_cancel').attr('disabled','disabled')
 
 		@
 
 	handleSaveFailed: =>
-		@$('.bv_saveFailed').show()
-		@$('.bv_saveComplete').hide()
-		@$('.bv_saving').hide()
+		@$('.bv_saveFailed').removeClass('hide')
+		@$('.bv_saveComplete').addClass('hide')
+		@$('.bv_saving').addClass('hide')
 
 	modelSaveCallback: (method, model) =>
-		@$('.bv_save').show()
+		@$('.bv_save').removeClass('hide')
 		@$('.bv_save').attr('disabled', 'disabled')
 		unless @$('.bv_saveFailed').is(":visible")
-			@$('.bv_saveComplete').show()
-			@$('.bv_saving').hide()
+			@$('.bv_saveComplete').removeClass('hide')
+			@$('.bv_saving').addClass('hide')
 		@$('.bv_cancel').removeAttr 'disabled'
 		@render()
 		@trigger 'amClean'
@@ -147,10 +147,10 @@ class AbstractCodeTablesAdminController extends AbstractFormController
 	modelChangeCallback: (method, model) =>
 		@trigger 'amDirty'
 		@checkFormValid()
-		@$('.bv_saveComplete').hide()
-		@$('.bv_saveFailed').hide()
+		@$('.bv_saveComplete').addClass('hide')
+		@$('.bv_saveFailed').addClass('hide')
 		@$('.bv_cancel').removeAttr('disabled')
-		@$('.bv_cancelComplete').hide()
+		@$('.bv_cancelComplete').addClass('hide')
 
 	handleCodeTablesAdminCodeNameChanged: =>
 		code = UtilityFunctions::getTrimmedInput @$('.bv_codeTablesAdminCode')
@@ -185,14 +185,14 @@ class AbstractCodeTablesAdminController extends AbstractFormController
 			@model = null
 			@completeInitialization()
 		else
-			@$('.bv_canceling').show()
+			@$('.bv_canceling').removeClass('hide')
 			@model.fetch
 				success: @handleCancelComplete
 		@trigger 'amClean'
 
 	handleCancelComplete: =>
-		@$('.bv_canceling').hide()
-		@$('.bv_cancelComplete').show()
+		@$('.bv_canceling').addClass('hide')
+		@$('.bv_cancelComplete').removeClass('hide')
 
 	handleCodeTablesAdminNameChanged: =>
 		@model.set("name", UtilityFunctions::getTrimmedInput @$('.bv_codeTablesAdminName'))
@@ -203,13 +203,13 @@ class AbstractCodeTablesAdminController extends AbstractFormController
 	handleSaveClicked: =>
 		@callNameValidationService()
 
-		@$('.bv_saving').show()
-		@$('.bv_saveFailed').hide()
-		@$('.bv_saveComplete').hide()
+		@$('.bv_saving').removeClass('hide')
+		@$('.bv_saveFailed').addClass('hide')
+		@$('.bv_saveComplete').addClass('hide')
 
 
 	callNameValidationService: =>
-		@$('.bv_saving').show()
+		@$('.bv_saving').removeClass('hide')
 		@$('.bv_save').attr('disabled', 'disabled')
 		validateURL = @model.urlRoot + '/validateBeforeSave'
 		dataToPost =
@@ -227,14 +227,14 @@ class AbstractCodeTablesAdminController extends AbstractFormController
 	handleValidateError: (err) =>
 		if err?[0]?.errorLevel? and err[0].errorLevel is "ERROR"
 			alert "The requested code has already been used"
-		@$('.bv_saving').hide()
-		@$('.bv_saveFailed').show()
+		@$('.bv_saving').addClass('hide')
+		@$('.bv_saveFailed').removeClass('hide')
 
 	handleValidateReturn: (validateResp) =>
 		if validateResp?[0]?.errorLevel?
 			alert "The requested #{@codeType} #{@codeKind} code has already been registered. Please choose a new #{@codeType} #{@codeKind} code."
-			@$('.bv_saving').hide()
-			@$('.bv_saveFailed').show()
+			@$('.bv_saving').addClass('hide')
+			@$('.bv_saveFailed').removeClass('hide')
 		else
 			@saveCodeTablesAdmin()
 
@@ -264,9 +264,9 @@ class AbstractCodeTablesAdminController extends AbstractFormController
 			@displayInReadOnlyMode()
 
 	displayInReadOnlyMode: =>
-		@$(".bv_save").hide()
-		@$(".bv_cancel").hide()
-		#		@$(".bv_newEntity").hide()
+		@$(".bv_save").addClass('hide')
+		@$(".bv_cancel").addClass('hide')
+		#		@$(".bv_newEntity").addClass('hide')
 		@$('button').attr 'disabled', 'disabled'
 		@disableAllInputs()
 

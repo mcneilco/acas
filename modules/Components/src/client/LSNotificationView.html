@@ -1,38 +1,40 @@
 <script type="text/template" id="LSNotificationView">
-<div class='bv_notificationContainer accordion'>
-	<div class="accordion-group">
-		<div class="accordion-heading">
-			<div class="accordion-toggle bv_notificationCountContainer" >
+<div class='bv_notificationContainer panel-group'>
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<div class="panel-title bv_notificationCountContainer" >
 				<span class='bv_errorNotificationCountContainer'></span>
 				<span class='bv_warningNotificationCountContainer'></span>
 				<span class='bv_infoNotificationCountContainer'></span>
 				<div class="bv_notificationMessagePreview" style="float: right;"></div>
 			</div>
         </div>
-        <div class="accordion-body hide  bv_notificationMessages">
-            <div class='bv_errorNotificationMessages'></div>
-            <div class='bv_warningNotificationMessages'></div>
-            <div class='bv_infoNotificationMessages'></div>
+        <div class="panel-collapse collapse bv_notificationMessages">
+            <div class="panel-body">
+                <div class='bv_errorNotificationMessages'></div>
+                <div class='bv_warningNotificationMessages'></div>
+                <div class='bv_infoNotificationMessages'></div>
+            </div>
         </div>
 
 	</div>
 </script>
 
 <script type="text/template" id="LSErrorNotificationCount">
-	<span class='badge badge-important bv_notificationsCount'>
+	<span class='badge bv_notificationsCount' style='background-color: #d9534f;'>
 		<%- count %>
 	</span>
 	&nbsp;
 </script>
 
 <script type="text/template" id="LSErrorNotificationMessage">
-	<div class='alert alert-error'>
+	<div class='alert alert-danger'>
 		<%- message %>
 	</div>
 </script>
 
 <script type="text/template" id="LSWarningNotificationCount">
-	<span class='badge badge-warning bv_notificationsCount'>
+	<span class='badge bv_notificationsCount' style='background-color: #f0ad4e;'>
 		<%- count %>
 	</span>
 	&nbsp;
@@ -45,7 +47,7 @@
 </script>
 
 <script type="text/template" id="LSInfoNotificationCount">
-	<span class='badge badge-info bv_notificationsCount'>
+	<span class='badge bv_notificationsCount' style='background-color: #5bc0de;'>
 		<%- count %>
 	</span>
 	&nbsp;

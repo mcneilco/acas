@@ -10,7 +10,7 @@
     display: flex !important;
 }
 
-.bv_endpointTable span.help-inline {
+.bv_endpointTable span.help-block {
     position: absolute !important;
 }
 

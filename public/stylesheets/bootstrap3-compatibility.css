@@ -1,0 +1,223 @@
+/* Bootstrap 2 to 3 Compatibility CSS */
+/* This file provides compatibility styles to ensure Bootstrap 3 works correctly with existing ACAS code */
+
+/* Fix navbar styling for Bootstrap 3 */
+.navbar-text.navbar-right {
+    margin-right: 15px;
+}
+
+.navbar-brand {
+    color: #fff !important;
+}
+
+.navbar-brand:hover {
+    color: #ccc !important;
+}
+
+/* Ensure proper spacing for form elements */
+.form-horizontal .form-group {
+    margin-left: -15px;
+    margin-right: -15px;
+}
+
+.form-horizontal .control-label {
+    padding-top: 7px;
+    margin-bottom: 0;
+    text-align: right;
+    font-weight: 400 !important; /* Medium weight, more refined look */
+}
+
+/* Fix button spacing */
+.btn {
+    margin-right: 5px;
+}
+
+/* Ensure proper grid spacing */
+.row {
+    margin-left: -15px;
+    margin-right: -15px;
+}
+
+.col-md-3, .col-md-8, .col-md-9, .col-md-10, .col-md-11 {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* Maintain proper input styling */
+.form-control-static {
+    padding-top: 7px;
+    padding-bottom: 7px;
+    margin-bottom: 0;
+    min-height: 34px;
+}
+
+
+/* Fix navbar collapse for mobile */
+.navbar-toggle {
+    background-color: transparent;
+    background-image: none;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    float: right;
+    margin-bottom: 8px;
+    margin-right: 15px;
+    margin-top: 8px;
+    padding: 9px 10px;
+    position: relative;
+}
+
+.navbar-toggle .icon-bar {
+    background-color: #fff;
+    display: block;
+    height: 2px;
+    width: 22px;
+    border-radius: 1px;
+}
+
+.navbar-toggle .icon-bar + .icon-bar {
+    margin-top: 4px;
+}
+
+/* Alert styling compatibility */
+.alert {
+    border-radius: 4px;
+    margin-bottom: 20px;
+    padding: 15px;
+}
+
+/* Well styling for Bootstrap 3 */
+.well {
+    background-color: #f5f5f5;
+    border: 1px solid #e3e3e3;
+    border-radius: 4px;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+    min-height: 20px;
+    padding: 19px;
+}
+
+/* Input group styling */
+.input-group-addon {
+    background-color: #eee;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    color: #555;
+    display: table-cell;
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 1;
+    padding: 6px 12px;
+    text-align: center;
+    vertical-align: middle;
+    white-space: nowrap;
+    width: 1%;
+}
+
+.input-group-btn {
+    position: relative;
+    font-size: 0;
+    white-space: nowrap;
+    width: 1%;
+    vertical-align: middle;
+    display: table-cell;
+}
+
+/* Fix dropdown menu positioning */
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+    display: none;
+    float: left;
+    min-width: 160px;
+    padding: 5px 0;
+    margin: 2px 0 0;
+    font-size: 14px;
+    text-align: left;
+    list-style: none;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+}
+
+/* Navigation fixes */
+.nav > li > a {
+    position: relative;
+    display: block;
+    padding: 10px 15px;
+}
+
+.nav > li > a:hover,
+.nav > li > a:focus {
+    text-decoration: none;
+    background-color: #eee;
+}
+
+/* Glyphicon positioning */
+.glyphicon {
+    position: relative;
+    top: 1px;
+    display: inline-block;
+    font-family: 'Glyphicons Halflings';
+    font-style: normal;
+    font-weight: normal;
+    line-height: 1;
+}
+
+/* Modal fixes */
+.modal-content {
+    background-color: #fff;
+    border: 1px solid #999;
+    border-radius: 6px;
+    box-shadow: 0 3px 9px rgba(0, 0, 0, 0.5);
+    outline: 0;
+    position: relative;
+}
+
+.modal-header {
+    border-bottom: 1px solid #e5e5e5;
+    min-height: 16.42857143px;
+    padding: 15px;
+}
+
+.modal-body {
+    position: relative;
+    padding: 15px;
+}
+
+/* Responsive utilities */
+@media (max-width: 767px) {
+    .col-md-3, .col-md-8, .col-md-9, .col-md-10, .col-md-11 {
+        width: 100%;
+    }
+}
+
+@media (min-width: 768px) {
+    .col-md-3 {
+        width: 25%;
+    }
+    .col-md-8 {
+        width: 66.66666667%;
+    }
+    .col-md-9 {
+        width: 75%;
+    }
+    .col-md-10 {
+        width: 83.33333333%;
+    }
+    .col-md-11 {
+        width: 91.66666667%;
+    }
+}
+
+.nav-header {
+    display: block;
+    font-size: 11px;
+    font-weight: bold;
+    line-height: 20px;
+    color: #999999;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+}

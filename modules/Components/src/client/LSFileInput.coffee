@@ -45,7 +45,7 @@ class LSFileInputController extends Backbone.View
 		@trigger('fileInput:uploadComplete', nameOnServer)
 		
 	handleFileChooserUploadFailed: ->
-		@$('.bv_status').addClass('icon-exclamation-sign')
+		@$('.bv_status').addClass('glyphicon glyphicon-exclamation-sign')
 	
 	handleFileChooserRemovedFile: ->
 		@trigger('fileInput:removedFile')

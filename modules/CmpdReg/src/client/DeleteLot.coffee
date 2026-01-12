@@ -70,13 +70,13 @@ class DeleteLotController extends Backbone.View
 		@$(".bv_dependencySummary").html(dependencySummary);
 
 		# Show the summary
-		@$(".bv_dependencySummary").show();
+		@$(".bv_dependencySummary").removeClass('hide');
 
 		# Show the delete button if user can delete
 		if data.lot?.acls?.delete
-			@$('.deleteLotButton').show()
+			@$('.deleteLotButton').removeClass('hide')
 		else
-			@$('.deleteLotButton').hide()
+			@$('.deleteLotButton').addClass('hide')
 		
 	handleBackToCregButtonClicked: ->
 		window.location.href = 	window.configuration.serverConnection.baseServerURL
@@ -205,9 +205,9 @@ class DeleteLotController extends Backbone.View
 		me = this
 		_.each(classes, (c) ->
 			if c == className
-				me.$("." + c).show()
+				me.$("."+c).removeClass('hide')
 			else
-				me.$("." + c).hide()
+				me.$("."+c).addClass('hide')
 		)
 	
 	dependencyCheckError:  (data) ->
@@ -230,10 +230,10 @@ class DeleteLotController extends Backbone.View
 		@$(".bv_remainingLotsOnParentLinks").html(@lotSummary)
 
 		# Hide all buttons
-		@$(".deleteLotButtons").hide()
+		@$(".deleteLotButtons").addClass('hide')
 
 		# Hide form title
-		@$(".bv_deleteLotTitle").hide()
+		@$(".bv_deleteLotTitle").addClass('hide')
 
 		# Show success message
 		@showOne('bv_deleteLotSuccess')

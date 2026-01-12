@@ -6,7 +6,7 @@
         There was an error getting the standardization history. Please contact an administrator.
     </div>
 
-    <div class="span12 standardizerControlsWrapper bv_standardizerControlsWrapper">
+    <div class="col-md-12 standardizerControlsWrapper bv_standardizerControlsWrapper">
         <button class="btn bv_refresh pull-right">Refresh</button>
         <button class="btn bv_executeStandardization pull-right">Execute Standardization</button>
         <button class="btn bv_executeDryRun pull-right">Execute Standardization Dry Run</button>
@@ -15,51 +15,61 @@
 
     <div class="bv_standardizationDryRunReportStats"></div>
     <div class="bv_standardizationDryRunReport"></div>
-    <div class="alert bv_executeDryRunError hide">
+    <div class="alert bv_executeDryRunError hidden">
         There was an error executing the dry run. Please contact an administrator.
     </div>
-    <div class="alert bv_executeStandardizationError hide">
+    <div class="alert bv_executeStandardizationError hidden">
         There was an error executing the standardization. Please contact an administrator.
     </div>
 
-    <div class="modal bv_executingStandardizationDryRunModal hide">
-        <div class="modal-header">
-            <h3>Running Dry Run</h3>
-        </div>
-        <div class="modal-body">
-            <div>
-                <br />
-                <div class="progress progress-striped active">
-                    <div class="bar" style="width: 100%;"></div>
+    <div class="modal fade bv_executingStandardizationDryRunModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Running Dry Run</h4>
                 </div>
-                <div>
-                    If you close this window, the dry run will continue. You can view the results later by reloading this module.
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal bv_executingStandardizationModal hide">
-        <div class="modal-header">
-            <h3>Running Standardization</h3>
-        </div>
-        <div class="modal-body">
-            <div>
-                <br />
-                <div class="progress progress-striped active">
-                    <div class="bar" style="width: 100%;"></div>
-                </div>
-                <div>
-                    If you close this window, the standardization will continue. You can view the results later by reloading this module.
+                <div class="modal-body">
+                    <div>
+                        <br />
+                        <div class="progress">
+                            <div class="progress-bar progress-bar-striped active" style="width: 100%;"></div>
+                        </div>
+                        <div>
+                            If you close this window, the dry run will continue. You can view the results later by reloading this module.
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="modal bv_standardizationCompleteModal hide">
-        <div class="modal-header">
-            <h3>Standardization Complete</h3>
+    <div class="modal fade bv_executingStandardizationModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Running Standardization</h4>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <br />
+                        <div class="progress">
+                            <div class="progress-bar progress-bar-striped active" style="width: 100%;"></div>
+                        </div>
+                        <div>
+                            If you close this window, the standardization will continue. You can view the results later by reloading this module.
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+    </div>
+
+    <div class="modal fade bv_standardizationCompleteModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Standardization Complete</h4>
+                </div>
         <div class="modal-body">
             <div>
                 Summary
@@ -76,8 +86,10 @@
                 </ul>
             </div>
         </div>
-        <div class="modal-footer">
-            <button type="button" class="btn bv_standardizationCompleteModalCloseBtn">Close</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default bv_standardizationCompleteModalCloseBtn">Close</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -147,10 +159,12 @@
         </tbody>
     </table>
 
-    <div class="modal bv_standardizationHistoryModal hide">
-        <div class="modal-header">
-            <h3>Standardization History Table Attributes</h3>
-        </div>
+    <div class="modal fade bv_standardizationHistoryModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Standardization History Table Attributes</h4>
+                </div>
         <div class="modal-body">
             <div>
                 <ul>
@@ -167,8 +181,10 @@
                 </ul>
             </div>
         </div>
-        <div class="modal-footer">
-            <button type="button" class="btn bv_standardizationHistoryModalCloseBtn">Close</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default bv_standardizationHistoryModalCloseBtn">Close</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -186,10 +202,12 @@
         There was an error getting the summary of the latest standardization dry run results. Please contact an administrator.
     </div>
 
-    <div class="modal bv_dryRunResultsModal hide">
-        <div class="modal-header">
-            <h3>Dry Run Results Table Attributes</h3>
-        </div>
+    <div class="modal fade bv_dryRunResultsModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Dry Run Results Table Attributes</h4>
+                </div>
         <div class="modal-body">
             <div>
                 <ul>
@@ -203,8 +221,10 @@
                 </ul>
             </div>
         </div>
-        <div class="modal-footer">
-            <button type="button" class="btn bv_dryRunResultsModalCloseBtn">Close</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default bv_dryRunResultsModalCloseBtn">Close</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -233,202 +253,207 @@
     <form class = "form-horizontal">
         <fieldset>
             <legend>Dry Run Report</legend>
-            <div class="control-group bv_group_standardizationStatus">
-                <label class="control-label">Standardization Status</label>
-                <div class="controls">
-                    <label class="radio inline">
+            <div class="form-group bv_group_standardizationStatus">
+                <label class="control-label col-sm-3">Standardization Status</label>
+                <div class="col-sm-9">
+                    <label class="radio-inline">
                         <input type="radio" name="standardizationStatuses" value="ERROR">
                             Error
                     </label>
-                    <label class="radio inline">
+                    <label class="radio-inline">
                         <input type="radio" name="standardizationStatuses" value="WARNING">
                             Warning
                     </label>
-                    <label class="radio inline">
+                    <label class="radio-inline">
                         <input type="radio" name="standardizationStatuses" value="SUCCESS">
                             Success
                     </label>
-                    <label class="radio inline">
+                    <label class="radio-inline">
                         <input type="radio" name="standardizationStatuses" value="blank" checked>
                             No filter
                     </label>
                 </div>
             </div>
-            <div class="control-group bv_group_registrationStatus">
-                <label class="control-label">Registration Status</label>
-                <div class="controls">
-                    <label class="radio inline">
+            <div class="form-group bv_group_registrationStatus">
+                <label class="control-label col-sm-3">Registration Status</label>
+                <div class="col-sm-9">
+                    <label class="radio-inline">
                         <input type="radio" name="registrationStatuses" value="ERROR">
                             Error
                     </label>
-                    <label class="radio inline">
+                    <label class="radio-inline">
                         <input type="radio" name="registrationStatuses" value="WARNING">
                             Warning
                     </label>
-                    <label class="radio inline">
+                    <label class="radio-inline">
                         <input type="radio" name="registrationStatuses" value="SUCCESS">
                             Success
                     </label>
-                    <label class="radio inline">
+                    <label class="radio-inline">
                         <input type="radio" name="registrationStatuses" value="blank" checked>
                             No filter
                     </label>
                 </div>
             </div>
-            <div class="control-group bv_group_changedStructure">
-                <label class="control-label">Structure Change</label>
-                <div class="controls">
-                    <label class="radio inline">
+            <div class="form-group bv_group_changedStructure">
+                <label class="control-label col-sm-3">Structure Change</label>
+                <div class="col-sm-9">
+                    <label class="radio-inline">
                         <input type="radio" name="changedStructure" value="true">
                             True
                     </label>
-                    <label class="radio inline">
+                    <label class="radio-inline">
                         <input type="radio" name="changedStructure" value="false">
                             False
                     </label>
-                    <label class="radio inline">
+                    <label class="radio-inline">
                         <input type="radio" name="changedStructure" value="blank" checked>
                             No filter
                     </label>
                 </div>
             </div>
-            <div class="control-group bv_group_asDrawnDisplayChange">
-                <label class="control-label">As Drawn Display Change</label>
-                <div class="controls">
-                    <label class="radio inline">
+            <div class="form-group bv_group_asDrawnDisplayChange">
+                <label class="control-label col-sm-3">As Drawn Display Change</label>
+                <div class="col-sm-9">
+                    <label class="radio-inline">
                         <input type="radio" name="asDrawnDisplayChange" value="true">
                             True
                     </label>
-                    <label class="radio inline">
+                    <label class="radio-inline">
                         <input type="radio" name="asDrawnDisplayChange" value="false">
                             False
                     </label>
-                    <label class="radio inline">
+                    <label class="radio-inline">
                         <input type="radio" name="asDrawnDisplayChange" value="blank" checked>
                             No filter
                     </label>
                 </div>
             </div>
-            <div class="control-group bv_group_displayChange">
-                <label class="control-label">Display Change</label>
-                <div class="controls">
-                    <label class="radio inline">
+            <div class="form-group bv_group_displayChange">
+                <label class="control-label col-sm-3">Display Change</label>
+                <div class="col-sm-9">
+                    <label class="radio-inline">
                         <input type="radio" name="displayChange" value="true">
                             True
                     </label>
-                    <label class="radio inline">
+                    <label class="radio-inline">
                         <input type="radio" name="displayChange" value="false">
                             False
                     </label>
-                    <label class="radio inline">
+                    <label class="radio-inline">
                         <input type="radio" name="displayChange" value="blank" checked>
                             No filter
                     </label>
                 </div>
             </div>
-            <div class="control-group bv_group_hasNewDuplicates">
-                <label class="control-label">Has New Duplicates</label>
-                <div class="controls">
-                    <label class="radio inline">
+            <div class="form-group bv_group_hasNewDuplicates">
+                <label class="control-label col-sm-3">Has New Duplicates</label>
+                <div class="col-sm-9">
+                    <label class="radio-inline">
                         <input type="radio" name="hasNewDuplicates" value="true">
                             True
                     </label>
-                    <label class="radio inline">
+                    <label class="radio-inline">
                         <input type="radio" name="hasNewDuplicates" value="false">
                             False
                     </label>
-                    <label class="radio inline">
+                    <label class="radio-inline">
                         <input type="radio" name="hasNewDuplicates" value="blank" checked>
                             No filter
                     </label>
                 </div>
             </div>
-            <div class="control-group bv_group_hasExistingDuplicates">
-                <label class="control-label">Has Existing Duplicates</label>
-                <div class="controls">
-                    <label class="radio inline">
+            <div class="form-group bv_group_hasExistingDuplicates">
+                <label class="control-label col-sm-3">Has Existing Duplicates</label>
+                <div class="col-sm-9">
+                    <label class="radio-inline">
                         <input type="radio" name="hasExistingDuplicates" value="true">
                             True
                     </label>
-                    <label class="radio inline">
+                    <label class="radio-inline">
                         <input type="radio" name="hasExistingDuplicates" value="false">
                             False
                     </label>
-                    <label class="radio inline">
+                    <label class="radio-inline">
                         <input type="radio" name="hasExistingDuplicates" value="blank" checked>
                             No filter
                     </label>
                 </div>
             </div>
-            <div class="control-group bv_group_newMolWeight">
-                <label class="control-label">New Mol Weight</label>
-                <div class="controls">
-                    <div class="input-prepend newMolWeight">
-                        <!-- <span class="add-on"></span> -->
-                        <select class="add-on" style="height:30px;">
-                            <option>></option>
-                            <option><</option>
-                            <option>=</option>
-                          </select>
-                        <input class="span5" type="number">
+            <div class="form-group bv_group_newMolWeight">
+                <label class="control-label col-sm-3">New Mol Weight</label>
+                <div class="col-sm-9">
+                    <div class="input-group newMolWeight">
+                        <div class="input-group-btn">
+                            <select class="form-control" style="height:30px;">
+                                <option>></option>
+                                <option><</option>
+                                <option>=</option>
+                            </select>
+                        </div>
+                        <input class="form-control" type="number" style="width: 100px;">
                     </div>
                 </div>
             </div>
-            <div class="control-group bv_group_oldMolWeight">
-                <label class="control-label">Old Mol Weight</label>
-                <div class="controls">
-                    <div class="input-prepend oldMolWeight">
-                        <!-- <span class="add-on"></span> -->
-                        <select class="add-on" style="height:30px;">
-                            <option>></option>
-                            <option><</option>
-                            <option>=</option>
-                          </select>
-                        <input class="span5" type="number">
+            <div class="form-group bv_group_oldMolWeight">
+                <label class="control-label col-sm-3">Old Mol Weight</label>
+                <div class="col-sm-9">
+                    <div class="input-group oldMolWeight">
+                        <div class="input-group-btn">
+                            <select class="form-control" style="height:30px;">
+                                <option>></option>
+                                <option><</option>
+                                <option>=</option>
+                            </select>
+                        </div>
+                        <input class="form-control" type="number" style="width: 100px;">
                     </div>
                 </div>
             </div>
-            <div class="control-group bv_group_deltaMolWeight">
-                <label class="control-label">Delta Mol Weight</label>
-                <div class="controls">
-                    <div class="input-prepend deltaMolWeight">
-                        <!-- <span class="add-on"></span> -->
-                        <select class="add-on" style="height:30px;">
-                            <option>></option>
-                            <option><</option>
-                            <option>=</option>
-                          </select>
-                        <input class="span5" type="number">
+            <div class="form-group bv_group_deltaMolWeight">
+                <label class="control-label col-sm-3">Delta Mol Weight</label>
+                <div class="col-sm-9">
+                    <div class="input-group deltaMolWeight">
+                        <div class="input-group-btn">
+                            <select class="form-control" style="height:30px;">
+                                <option>></option>
+                                <option><</option>
+                                <option>=</option>
+                            </select>
+                        </div>
+                        <input class="form-control" type="number" style="width: 100px;">
                     </div>
                 </div>
             </div>    
-            <div class="control-group bv_group_corpNames">
-                <label class="control-label">Corp Names</label>
-                <div class="controls">
-                    <label class="radio inline">
+            <div class="form-group bv_group_corpNames">
+                <label class="control-label col-sm-3">Corp Names</label>
+                <div class="col-sm-9">
+                    <label class="radio-inline">
                         <input type="radio" name="includeCorpNames" value="true">
                             Include
                     </label>
-                    <label class="radio inline">
+                    <label class="radio-inline">
                         <input type="radio" name="includeCorpNames" value="false">
                             Exclude
                     </label>
-                    <label class="radio inline">
+                    <label class="radio-inline">
                         <input type="radio" name="includeCorpNames" value="blank" checked>
                             No filter
                     </label>
                 </div>
-                <div class="controls">
-                    <textarea rows="3" class="corpNames" style="padding-top:5px;"></textarea>
+                <div class="col-sm-9 col-sm-offset-3">
+                    <textarea rows="3" class="form-control corpNames" style="padding-top:5px;"></textarea>
                 </div>
             </div>
-            <div class="input-prepend maxResults">
-                <button class="btn btn-success bv_search" type="button">
-                    <span class="bv_searchRunning hide"><i class="fa fa-spinner fa-pulse fa-fw"></i></span>
-                    <span class = "bv_searchText">Fetch sample</span>
-                </button>
-                <input class="span6" placeholder="Max results" type="number" step="1" value=100>
-                <span class="add-on bv_searchResultCount"></span>
+            <div class="input-group maxResults">
+                <div class="input-group-btn">
+                    <button class="btn btn-success bv_search" type="button">
+                        <span class="bv_searchRunning hidden"><i class="fa fa-spinner fa-pulse fa-fw"></i></span>
+                        <span class = "bv_searchText">Fetch sample</span>
+                    </button>
+                </div>
+                <input class="form-control" placeholder="Max results" type="number" step="1" value=100>
+                <span class="input-group-addon bv_searchResultCount"></span>
             </div>
         </fieldset>
       </form>
@@ -525,24 +550,29 @@
 
 <script type="text/template" id="DownloadDryRunResultsView" xmlns="http://www.w3.org/1999/html">
     <button type="button" class="btn btn-primary bv_download">
-        <span class="bv_running hide"><i class="fa fa-spinner fa-pulse fa-fw"></i></span>
+        <span class="bv_running hidden"><i class="fa fa-spinner fa-pulse fa-fw"></i></span>
         <span class = "bv_runAllText">Download search results as SDF</span>
     </button>
 </script>
 
 <script type="text/template" id="StandardizationReasonPanelView" xmlns="http://www.w3.org/1999/html">
-    <div class="modal bv_standardizationReasonPanel hide" style="width:900px";>
-        <div class="modal-header">
-            <h4>Standardization Reason</h4>
-        </div>
-        <div class="controls modal-body">
-            <label>Reason for standardization:</label>
-            <textarea rows="2" class="bv_reasonForStandardization" style="width:800px;height:140px;" placeholder=""></textarea>
-
-        </div>
-        <div class="modal-footer">
-          <button class="btn bv_standardizationReasonPanelCancelBtn" aria-hidden="true">Cancel</button>
-          <button class="btn bv_standardizationReasonPanelExecuteBtn" aria-hidden="true" disabled="disabled" >Execute</button>
+    <div class="modal fade bv_standardizationReasonPanel" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Standardization Reason</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Reason for standardization:</label>
+                        <textarea rows="2" class="form-control bv_reasonForStandardization" style="height:140px;" placeholder=""></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default bv_standardizationReasonPanelCancelBtn">Cancel</button>
+                    <button class="btn btn-primary bv_standardizationReasonPanelExecuteBtn" disabled="disabled">Execute</button>
+                </div>
+            </div>
         </div>
     </div>
 </script>

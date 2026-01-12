@@ -341,10 +341,10 @@ class ExampleThingController extends AbstractThingFormController
 			return
 
 		@fillFieldsFromModels()
-		@$('.bv_saveThing').show()
+		@$('.bv_saveThing').removeClass('hide')
 		@$('.bv_saveThing').attr('disabled', 'disabled')
-		@$('.bv_saveThingComplete').show()
-		@$('.bv_updatingThing').hide()
+		@$('.bv_saveThingComplete').removeClass('hide')
+		@$('.bv_updatingThing').addClass('hide')
 		@trigger 'amClean'
 		@trigger 'thingSaved'
 		if !@options.readOnly?
@@ -358,7 +358,7 @@ class ExampleThingController extends AbstractThingFormController
 
 	modelChangeCallback: (method, model) =>
 		@trigger 'amDirty'
-		@$('.bv_saveThingComplete').hide()
+		@$('.bv_saveThingComplete').addClass('hide')
 
 	updateModel: =>
 
@@ -373,16 +373,16 @@ class ExampleThingController extends AbstractThingFormController
 	handleUpdateThing: =>
 		@model.prepareToSave()
 		@model.reformatBeforeSaving()
-		@$('.bv_updatingThing').show()
+		@$('.bv_updatingThing').removeClass('hide')
 		@$('.bv_saveThingComplete').html('Update Complete.')
 		@$('.bv_saveThing').attr('disabled', 'disabled')
 		if @model.isNew() then @socket.emit 'savingNewLock', @errorOwnerName
 		@model.save()
 
 	displayInReadOnlyMode: =>
-		@$(".bv_saveThing").hide()
+		@$(".bv_saveThing").addClass('hide')
 		@$('button').attr 'disabled', 'disabled'
-		@$(".bv_completionDateIcon").addClass "uneditable-input"
+		@$(".bv_completionDateIcon").addClass "form-control-static"
 		@$(".bv_completionDateIcon").on "click", ->
 			return false
 		@disableAllInputs()
@@ -395,12 +395,12 @@ class ExampleThingController extends AbstractThingFormController
 
 	handleNewEntitySaveActive: =>
 		@$('.bv_saveThing').attr 'disabled', 'disabled'
-		@$('.bv_saveLocked').show()
+		@$('.bv_saveLocked').removeClass('hide')
 
 	handleNewEntitySavingComplete: =>
 		console.log "handleNewEntitySavingComplete"
 		@$('.bv_saveThing').removeAttr 'disabled'
-		@$('.bv_saveLocked').hide()
+		@$('.bv_saveLocked').addClass('hide')
 
 #TODO add thing interaction to project with field
 

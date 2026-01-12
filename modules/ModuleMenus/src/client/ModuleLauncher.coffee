@@ -53,21 +53,21 @@ class ModuleLauncherMenuController extends Backbone.View
 			if @model.get('isActive') then $(@el).addClass "active"
 			else $(@el).removeClass "active"
 
-			@$('.bv_isLoaded').hide()
+			@$('.bv_isLoaded').addClass('hide')
 			if @model.get('isDirty')
-				@$('.bv_isDirty').show()
+				@$('.bv_isDirty').removeClass('hide')
 			else
-				@$('.bv_isDirty').hide()
+				@$('.bv_isDirty').addClass('hide')
 			if @model.get('isLocked')
-				@$('.bv_isLocked').show()
+				@$('.bv_isLocked').removeClass('hide')
 			else
-				@$('.bv_isLocked').hide()
+				@$('.bv_isLocked').addClass('hide')
 		else
-			@$('.bv_menuName').hide()
-			@$('.bv_menuName_disabled').show()
-			@$('.bv_isLoaded').hide()
-			@$('.bv_isDirty').hide()
-			@$('.bv_isLocked').hide()
+			@$('.bv_menuName').addClass('hide')
+			@$('.bv_menuName_disabled').removeClass('hide')
+			@$('.bv_isLoaded').addClass('hide')
+			@$('.bv_isDirty').addClass('hide')
+			@$('.bv_isLocked').addClass('hide')
 
 		if @model.has 'requireUserRoles'
 			userRoles = []
@@ -80,8 +80,8 @@ class ModuleLauncherMenuController extends Backbone.View
 					userRoles.push r
 			if !UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, userRoles
 				$(@el).attr 'title', "User is not authorized to use this feature"
-				@$('.bv_menuName').hide()
-				@$('.bv_menuName_disabled').hide()
+				@$('.bv_menuName').addClass('hide')
+				@$('.bv_menuName_disabled').addClass('hide')
 
 
 		@
@@ -104,7 +104,7 @@ class ModuleLauncherMenuHeaderController extends Backbone.View
 
 	render: =>
 		if (@model.get('requireUserRoles')? and !UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, @model.get('requireUserRoles'))
-			$(@el).hide()
+			$(@el).addClass('hide')
 		else
 			$(@el).html(@model.get('menuName'))
 
@@ -120,7 +120,7 @@ class ModuleLauncherMenuCollapsibleHeaderController extends Backbone.View
 
 	render: =>
 		if (@model.get('requireUserRoles')? and !UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, @model.get('requireUserRoles'))
-			$(@el).hide()
+			$(@el).addClass('hide')
 		else
 			$(@el).empty()
 			$(@el).html @template()
@@ -132,18 +132,20 @@ class ModuleLauncherMenuCollapsibleHeaderController extends Backbone.View
 		@$('.bv_modules').append el
 
 	handleClick: =>
-		@$('.bv_modules').slideToggle 200
-		@$('.bv_caret').toggle()
+		if @$('.bv_modules').is(':visible')
+			@collapse()
+		else
+			@expand()
 
 	collapse: ->
-		@$('.bv_modules').hide()
-		@$('.bv_caret_collapse').hide()
-		@$('.bv_caret_expand').show()
+		@$('.bv_modules').slideUp(200)
+		@$('.bv_caret_collapse').addClass('hide')
+		@$('.bv_caret_expand').removeClass('hide')
 
 	expand: ->
-		@$('.bv_modules').show()
-		@$('.bv_caret_expand').hide()
-		@$('.bv_caret_collapse').show()
+		@$('.bv_modules').slideDown(200)
+		@$('.bv_caret_expand').addClass('hide')
+		@$('.bv_caret_collapse').removeClass('hide')
 
 class ModuleLauncherMenuListController extends Backbone.View
 	events:
@@ -165,7 +167,7 @@ class ModuleLauncherMenuListController extends Backbone.View
 		$(@el).html @template()
 		@collection.each @addOne
 		if @collapsibleHeaders.length < 2
-			@$('.bv_expandAll').hide()
+			@$('.bv_expandAll').addClass('hide')
 		@$('.bv_notTopHeader:eq(0)').removeClass "bv_notTopHeader"
 		
 		@
@@ -208,14 +210,14 @@ class ModuleLauncherMenuListController extends Backbone.View
 	handleExpandAll: =>
 		for header in @collapsibleHeaders
 			header.expand()
-		@$('.bv_expandAll').hide()
-		@$('.bv_collapseAll').show()
+		@$('.bv_expandAll').addClass('hide')
+		@$('.bv_collapseAll').removeClass('hide')
 
 	handleCollapseAll: =>
 		for header in @collapsibleHeaders
 			header.collapse()
-		@$('.bv_collapseAll').hide()
-		@$('.bv_expandAll').show()
+		@$('.bv_collapseAll').addClass('hide')
+		@$('.bv_expandAll').removeClass('hide')
 
 class ModuleLauncherController extends Backbone.View
 	tagName: 'div'
@@ -231,16 +233,16 @@ class ModuleLauncherController extends Backbone.View
 		$(@el).html @template()
 		$(@el).addClass('bv_'+@model.get('mainControllerClassName'))
 		if @model.get('isActive')
-			$(@el).show()
+			$(@el).removeClass('hide')
 		else
-			$(@el).hide()
+			$(@el).addClass('hide')
 
 		@
 
 	handleActivation:  =>
-		$(@el).show()
-		$('.bv_mainModuleWrapper').show()
-		$('.bv_homePageWrapper').hide()
+		$(@el).removeClass('hide')
+		$('.bv_mainModuleWrapper').removeClass('hide')
+		$('.bv_homePageWrapper').addClass('hide')
 		unless @model.get('isLoaded')
 			unless window.AppLaunchParams.testMode
 				@moduleController = new window[@model.get('mainControllerClassName')]({el: @$('.bv_moduleContent')})
@@ -256,7 +258,7 @@ class ModuleLauncherController extends Backbone.View
 				@model.set isLoaded: true
 
 	handleDeactivation:  =>
-		$(@el).hide()
+		$(@el).addClass('hide')
 
 class ModuleLauncherListController extends Backbone.View
 

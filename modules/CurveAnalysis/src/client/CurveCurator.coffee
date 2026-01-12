@@ -11,7 +11,13 @@ class DoseResponseKnockoutPanelController extends Backbone.View
 			if key.keyCode == 13
 				@$('.bv_doseResponseKnockoutPanelOKBtn').click()
 		@$('.bv_doseResponseKnockoutPanelOKBtn').on "click", =>
-			@handleDoseResponseKnockoutPanelHidden()
+			@$('.bv_doseResponseKnockoutPanel').modal('hide')
+			# Wait for modal to be fully hidden before cleanup
+			@$('.bv_doseResponseKnockoutPanel').on 'hidden.bs.modal.knockout', =>
+				@$('.bv_doseResponseKnockoutPanel').off 'hidden.bs.modal.knockout'
+				$('.modal-backdrop').remove()
+				$('body').removeClass('modal-open')
+				@handleDoseResponseKnockoutPanelHidden()
 		@
 
 	show: =>
@@ -416,25 +422,25 @@ class CurveEditorController extends Backbone.View
 			@$('.bv_curveErrors').html @model.get('curveErrors')
 			@$('.bv_category').html @model.get('category')
 			if @model.get('algorithmFlagStatus') == ''
-				@$('.bv_pass').show()
-				@$('.bv_fail').hide()
+				@$('.bv_pass').removeClass('hide')
+				@$('.bv_fail').addClass('hide')
 			else
-				@$('.bv_pass').hide()
-				@$('.bv_fail').show()
+				@$('.bv_pass').addClass('hide')
+				@$('.bv_fail').removeClass('hide')
 
 			if @model.get('userFlagStatus') == ''
-				@$('.bv_na').show()
-				@$('.bv_thumbsUp').hide()
-				@$('.bv_thumbsDown').hide()
+				@$('.bv_na').removeClass('hide')
+				@$('.bv_thumbsUp').addClass('hide')
+				@$('.bv_thumbsDown').addClass('hide')
 			else
 				if @model.get('userFlagStatus') == 'approved'
-					@$('.bv_na').hide()
-					@$('.bv_thumbsUp').show()
-					@$('.bv_thumbsDown').hide()
+					@$('.bv_na').addClass('hide')
+					@$('.bv_thumbsUp').removeClass('hide')
+					@$('.bv_thumbsDown').addClass('hide')
 				else
-					@$('.bv_na').hide()
-					@$('.bv_thumbsUp').hide()
-					@$('.bv_thumbsDown').show()
+					@$('.bv_na').addClass('hide')
+					@$('.bv_thumbsUp').addClass('hide')
+					@$('.bv_thumbsDown').removeClass('hide')
 		else
 			@$el.html "No curve selected"
 
@@ -447,7 +453,9 @@ class CurveEditorController extends Backbone.View
 		@model.on 'sync', @handleModelSync.bind(@)
 
 	handleModelSync: =>
-		UtilityFunctions::hideProgressModal @$('.bv_statusDropDown')
+		@$('.bv_statusDropDown').modal('hide')
+		$('.modal-backdrop').remove()
+		$('body').removeClass('modal-open')
 		@render()
 
 	handlePointsChanged: =>
@@ -484,15 +492,21 @@ class CurveEditorController extends Backbone.View
 			error: @handleUpdateError)
 
 	handleResetError: =>
-		UtilityFunctions::hideProgressModal @$('.bv_statusDropDown')
+		@$('.bv_statusDropDown').modal('hide')
+		$('.modal-backdrop').remove()
+		$('body').removeClass('modal-open')
 		@trigger 'curveUpdateError'
 
 	handleSaveError: =>
-		UtilityFunctions::hideProgressModal @$('.bv_statusDropDown')
+		@$('.bv_statusDropDown').modal('hide')
+		$('.modal-backdrop').remove()
+		$('body').removeClass('modal-open')
 		@trigger 'curveUpdateError'
 
 	handleUpdateError: =>
-		UtilityFunctions::hideProgressModal @$('.bv_statusDropDown')
+		@$('.bv_statusDropDown').modal('hide')
+		$('.modal-backdrop').remove()
+		$('body').removeClass('modal-open')
 		@trigger 'curveUpdateError'
 
 	handleSaveSuccess: =>
@@ -591,6 +605,13 @@ class CurveEditorDirtyPanelController extends Backbone.View
 		@$('.bv_curveEditorDirtyPanel').on "keypress", (key)=>
 			if key.keyCode == 13
 				@$('.bv_curveEditorDirtyPanelOKBtn').click()
+		@$('.bv_curveEditorDirtyPanelOKBtn').on "click", =>
+			@$('.bv_curveEditorDirtyPanel').modal('hide')
+			# Wait for modal to be fully hidden before cleanup
+			@$('.bv_curveEditorDirtyPanel').on 'hidden.bs.modal.dirty', =>
+				@$('.bv_curveEditorDirtyPanel').off 'hidden.bs.modal.dirty'
+				$('.modal-backdrop').remove()
+				$('body').removeClass('modal-open')
 		@$('.bv_doseResponseKnockoutPanel').on "hidden", =>
 			#placeholder
 		@
@@ -644,37 +665,37 @@ class CurveSummaryController extends Backbone.View
 			@$('.bv_flagUser').attr 'disabled', 'disabled'
 
 		if @model.get('algorithmFlagStatus') == 'no fit'
-			@$('.bv_pass').hide()
-			@$('.bv_fail').show()
+			@$('.bv_pass').addClass('hide')
+			@$('.bv_fail').removeClass('hide')
 		else
-			@$('.bv_pass').show()
-			@$('.bv_fail').hide()
+			@$('.bv_pass').removeClass('hide')
+			@$('.bv_fail').addClass('hide')
 		if @model.get('userFlagStatus') == ''
-			@$('.bv_na').show()
-			@$('.bv_thumbsUp').hide()
-			@$('.bv_thumbsDown').hide()
+			@$('.bv_na').removeClass('hide')
+			@$('.bv_thumbsUp').addClass('hide')
+			@$('.bv_thumbsDown').addClass('hide')
 			@$('.bv_flagUser').removeClass('btn-success')
 			@$('.bv_flagUser').removeClass('btn-danger')
 			@$('.bv_flagUser').addClass('btn-grey')
 		else
 			if @model.get('userFlagStatus') == 'approved'
-				@$('.bv_na').hide()
-				@$('.bv_thumbsUp').show()
-				@$('.bv_thumbsDown').hide()
+				@$('.bv_na').addClass('hide')
+				@$('.bv_thumbsUp').removeClass('hide')
+				@$('.bv_thumbsDown').addClass('hide')
 				@$('.bv_flagUser').addClass('btn-success')
 				@$('.bv_flagUser').removeClass('btn-danger')
 				@$('.bv_flagUser').removeClass('btn-grey')
 			else
-				@$('.bv_na').hide()
-				@$('.bv_thumbsUp').hide()
-				@$('.bv_thumbsDown').show()
+				@$('.bv_na').addClass('hide')
+				@$('.bv_thumbsUp').addClass('hide')
+				@$('.bv_thumbsDown').removeClass('hide')
 				@$('.bv_flagUser').removeClass('btn-success')
 				@$('.bv_flagUser').addClass('btn-danger')
 				@$('.bv_flagUser').removeClass('btn-grey')
 		if @model.get 'dirty'
-			@$('.bv_dirty').show()
+			@$('.bv_dirty').removeClass('hide')
 		else
-			@$('.bv_dirty').hide()
+			@$('.bv_dirty').addClass('hide')
 
 		@$('.bv_compoundCode').html _.escape(@model.get('curveAttributes').compoundCode)
 #		@model.on 'change', @render
@@ -853,6 +874,9 @@ class CurveCuratorController extends Backbone.View
 	render: =>
 		@$el.empty()
 		@$el.html @template()
+
+		@$('.bv_eperimentLockedOKBtn').on "click", =>
+			@$('.bv_experimentLocked').modal('hide')
 
 		if @model?
 			if @locked

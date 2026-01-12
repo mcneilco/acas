@@ -431,23 +431,23 @@ class ExperimentBaseController extends BaseEntityController
 		if window.conf.experiment?.hideFields? and window.conf.experiment.hideFields != null
 			for field in window.conf.experiment.hideFields.split(",")
 				field = $.trim field
-				@$('.bv_group_'+field).hide()
+				@$('.bv_group_'+field).addClass('hide')
 		@model.on 'notUniqueName', =>
 #			@$('.bv_exptLink').attr("href", "/api/experiments/experimentName/"+@model.get('lsLabels').pickBestName().get('labelText'))
 #TODO: redirect user to experiment browser with a list of experiments with same name
 			@$('.bv_experimentSaveFailed').modal('show')
 			@$('.bv_closeSaveFailedModal').removeAttr('disabled')
-			@$('.bv_saveFailed').show()
+			@$('.bv_saveFailed').removeClass('hide')
 			@$('.bv_experimentSaveFailed').on 'hide.bs.modal', =>
-				@$('.bv_saveFailed').hide()
+				@$('.bv_saveFailed').addClass('hide')
 		@model.on 'saveFailed', =>
-			@$('.bv_saveFailed').show()
+			@$('.bv_saveFailed').removeClass('hide')
 		@setupStatusSelect()
 		@setupScientistSelect()
 		@setupTagList()
 		@setupProtocolSelect(@options.protocolFilter, @options.protocolKindFilter)
 		if window.conf.save?.project? and window.conf.save.project.toLowerCase() is "false"
-			@$('.bv_group_projectCode').hide()
+			@$('.bv_group_projectCode').addClass('hide')
 		else
 			@setupProjectSelect()
 		@setupAttachFileListController()
@@ -479,13 +479,13 @@ class ExperimentBaseController extends BaseEntityController
 		super()
 		if @model.isNew()
 			@$('.bv_experimentName').attr('disabled','disabled')
-			@$('.bv_openInQueryToolWrapper').hide()
+			@$('.bv_openInQueryToolWrapper').addClass('hide')
 		else
 			@setupExptNameChkbx()
 			if @model.getStatus().get('codeValue') is 'deleted'
-				@$('.bv_openInQueryToolWrapper').hide()
+				@$('.bv_openInQueryToolWrapper').addClass('hide')
 			else
-				@$('.bv_openInQueryToolWrapper').show()
+				@$('.bv_openInQueryToolWrapper').removeClass('hide')
 			@$('.bv_queryToolDisplayName').html _.escape(window.conf.service.result.viewer.displayName)
 			@$('.bv_openInQueryToolLink').attr 'href', "/openExptInQueryTool?experiment="+@model.get('codeName')
 			#we don't want to render the endpoint controller if the experiment is new, so we only load it on existing experiments
@@ -493,21 +493,21 @@ class ExperimentBaseController extends BaseEntityController
 			if window.conf.protocol.endpointManager.enabled == true
 				@endpointListController.render()
 				# we want to hide the associated experiment section to avoid excessive spacing
-				@$(".bv_associatedExperimentSection").hide()
+				@$(".bv_associatedExperimentSection").addClass('hide')
 		@
 
 	modelSyncCallback: =>
 		unless @model.get('subclass')?
 			@model.set subclass: 'experiment'
-		@$('.bv_saving').hide()
+		@$('.bv_saving').addClass('hide')
 		@render()
 		if @$('.bv_saveFailed').is(":visible") or @$('.bv_cancelComplete').is(":visible")
-			@$('.bv_updateComplete').hide()
+			@$('.bv_updateComplete').addClass('hide')
 			@trigger 'amDirty'
 		else if @$('.bv_cancelComplete').is(":visible")
 			@trigger 'amClean'
 		else
-			@$('.bv_updateComplete').show()
+			@$('.bv_updateComplete').removeClass('hide')
 			@trigger 'amClean'
 			@model.trigger 'saveSuccess'
 		@setupAttachFileListController()
@@ -754,7 +754,7 @@ class ExperimentBaseController extends BaseEntityController
 		@$( ".bv_completionDate" ).datepicker( "show" )
 
 	handleSaveClicked: =>
-		@$('.bv_saveFailed').hide()
+		@$('.bv_saveFailed').addClass('hide')
 		if @model.isNew() and @$('.bv_exptNameChkbx').is(":checked")
 			@getNextLabelSequence()
 		else
@@ -797,7 +797,7 @@ class ExperimentBaseController extends BaseEntityController
 
 	displayInReadOnlyMode: =>
 		super()
-		@$('.bv_openInQueryToolWrapper').hide()
+		@$('.bv_openInQueryToolWrapper').addClass('hide')
 	
 	setupEndpointsController: =>
 		# Hack to get Protocol working with Thing-based ACASFormStateTable classes

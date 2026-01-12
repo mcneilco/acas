@@ -5,8 +5,8 @@ class StandardizationCurrentSettingsController extends Backbone.View
 		@options = options
 		$(@el).empty()
 		$(@el).html @template()
-		@$('.bv_getCurrentSettingsError').hide()
-		@$('.bv_currentSettingsTable').hide()
+		@$('.bv_getCurrentSettingsError').addClass('hide')
+		@$('.bv_currentSettingsTable').addClass('hide')
 		@getCurrentSettings()
 
 	getCurrentSettings: ->
@@ -14,10 +14,10 @@ class StandardizationCurrentSettingsController extends Backbone.View
 			type: 'GET'
 			url: "/cmpdReg/getStandardizationSettings"
 			success: (currentSettings) =>
-				@$('.bv_currentSettingsTable').show()
+				@$('.bv_currentSettingsTable').removeClass('hide')
 				@setupCurrentSettingsTable currentSettings
 			error: (err) =>
-				@$('.bv_getCurrentSettingsError').show()
+				@$('.bv_getCurrentSettingsError').removeClass('hide')
 
 	setupCurrentSettingsTable: (settings) ->
 
@@ -87,7 +87,7 @@ class DownloadDryResultsController extends Backbone.View
 		return header.split(';')[1].split('=')[1]
 
 	handleDownloadClicked: (event) =>
-		@$('.bv_running').show()
+		@$('.bv_running').removeClass('hide')
 		@$('.bv_download').addClass("disabled")
 		url = "/cmpdReg/standardizationDryRunSearchExport"
 		modelData = @options.searchModel.toJSON()
@@ -111,11 +111,11 @@ class DownloadDryResultsController extends Backbone.View
 			document.body.appendChild(a);
 			a.click();
 			window.URL.revokeObjectURL(url);
-			@$('.bv_running').hide()
+			@$('.bv_running').addClass('hide')
 			@$('.bv_download').removeClass("disabled")
 		)
 		.catch(() => 
-			@$('.bv_running').hide()
+			@$('.bv_running').addClass('hide')
 			@$('.bv_download').removeClass("disabled")
 			alert('Failed to fetch Dry Run results.sdf')
 		);
@@ -227,8 +227,8 @@ class StandardizationDryRunReportStatsController extends Backbone.View
 		@options = options
 		$(@el).empty()
 		$(@el).html @template()
-		@$('.bv_standardizationDryRunReportStatsTable').hide()
-		@$('.bv_getDryRunReportStatsError').hide()
+		@$('.bv_standardizationDryRunReportStatsTable').addClass('hide')
+		@$('.bv_getDryRunReportStatsError').addClass('hide')
 
 		@$("body").tooltip selector: '.bv_structuresStandardizedCountPopover'
 
@@ -239,10 +239,10 @@ class StandardizationDryRunReportStatsController extends Backbone.View
 			type: 'GET'
 			url: "/cmpdReg/standardizationDryRunStats"
 			success: (dryRunStats) =>
-				@$('.bv_standardizationDryRunReportStatsTable').show()
+				@$('.bv_standardizationDryRunReportStatsTable').removeClass('hide')
 				@setupDryRunStatsTable dryRunStats
 			error: (err) =>
-				@$('.bv_getDryRunReportStatsError').show()
+				@$('.bv_getDryRunReportStatsError').removeClass('hide')
 
 	setupDryRunStatsTable: (stats) ->
 		@$('.bv_standardizationDryRunReportStatsTable').dataTable
@@ -466,46 +466,46 @@ class StandardizationDryRunReportSummaryController extends Backbone.View
 		$(@el).empty()
 		$(@el).html @template()
 		@$(".bv_dryRunSearchController").html @standardizationDryRunReportSearchController.render().el
-		@$('.bv_exceededMaxDisplayLimit').hide()
-		@$('.bv_getStandardizationDryRunReportError').hide()
+		@$('.bv_exceededMaxDisplayLimit').addClass('hide')
+		@$('.bv_getStandardizationDryRunReportError').addClass('hide')
 		@
 	@
 
 	handleSearchClicked: ->
 		@standardizationDryRunReportSearchController.updateSearchCount()
 		.then((count) =>
-			@$('.bv_searchRunning').show()
+			@$('.bv_searchRunning').removeClass('hide')
 			@$('.bv_search').addClass("disabled")
 			maxResults = @standardizationDryRunReportSearchController.model.get("maxResults")
 			@$('.bv_loadingStandardizationDryRunReportText').text("Please wait, fetching #{Math.min(count, if maxResults == null then Infinity else maxResults)} results")
-			@$('.bv_loadingStandardizationDryRunReport').show()
+			@$('.bv_loadingStandardizationDryRunReport').removeClass('hide')
 			requestData = @standardizationDryRunReportSearchController.model.toJSON()
 			@standardizationDryRunReportSearchController.getDryRunSearch(false)
 			.then((json) =>
-				@$('.bv_searchRunning').hide()
+				@$('.bv_searchRunning').addClass('hide')
 				@$('.bv_search').removeClass("disabled")
-				@$('.bv_loadingStandardizationDryRunReport').hide()
+				@$('.bv_loadingStandardizationDryRunReport').addClass('hide')
 				if @standardizationDryRunReportSummaryTableController?
 					@standardizationDryRunReportSummaryTableController.undelegateEvents()
-				@$(".bv_standardizationDryRunReportTable").show()
+				@$(".bv_standardizationDryRunReportTable").removeClass('hide')
 				@standardizationDryRunReportSummaryTableController = new StandardizationDryRunReportSummaryTableController
 					collection: new Backbone.Collection json
 				@$(".bv_standardizationDryRunReportTable").html @standardizationDryRunReportSummaryTableController.render().el
 			)
 			.catch((error) => 
-				@$('.bv_searchRunning').hide()
+				@$('.bv_searchRunning').addClass('hide')
 				@$('.bv_search').removeClass("disabled")
-				@$('.bv_loadingStandardizationDryRunReport').hide()
-				@$('.bv_getStandardizationDryRunReportError').show()
-				@$('.bv_standardizerControlsWrapper').hide()
+				@$('.bv_loadingStandardizationDryRunReport').addClass('hide')
+				@$('.bv_getStandardizationDryRunReportError').removeClass('hide')
+				@$('.bv_standardizerControlsWrapper').addClass('hide')
 			)
 		)
 		.catch((error) =>
-			@$('.bv_searchRunning').hide()
+			@$('.bv_searchRunning').addClass('hide')
 			@$('.bv_search').removeClass("disabled")
-			@$('.bv_loadingStandardizationDryRunReport').hide()
-			@$('.bv_getStandardizationDryRunReportError').show()
-			@$('.bv_standardizerControlsWrapper').hide()
+			@$('.bv_loadingStandardizationDryRunReport').addClass('hide')
+			@$('.bv_getStandardizationDryRunReportError').removeClass('hide')
+			@$('.bv_standardizerControlsWrapper').addClass('hide')
 			console.error(error)
 		)
 		
@@ -634,10 +634,10 @@ class StandardizationController extends Backbone.View
 		@openStandardizationControllerSocket()
 		$(@el).empty()
 		$(@el).html @template()
-		@$('.bv_standardizerControlsWrapper').hide()
-		@$('.bv_getStandardizationHistoryError').hide()
-		@$('.bv_executeDryRunError').hide()
-		@$('.bv_executeStandardizationError').hide()
+		@$('.bv_standardizerControlsWrapper').addClass('hide')
+		@$('.bv_getStandardizationHistoryError').addClass('hide')
+		@$('.bv_executeDryRunError').addClass('hide')
+		@$('.bv_executeStandardizationError').addClass('hide')
 		@standardizationReasonPanel = new StandardizationReasonPanelController
 			el: @$('.bv_standardizationReasonPanelView')
 		@standardizationReasonPanel.on 'readyForExecution', (reason) =>
@@ -646,8 +646,52 @@ class StandardizationController extends Backbone.View
 			@enableExecuteButtons()
 
 		@standardizationReasonPanel.render()
-		# @$('.bv_standardizationReasonPanel').hide()
+		# @$('.bv_standardizationReasonPanel').addClass('hide')
 		@setupCurrentSettingsController()
+
+	# Modal state tracking
+	modalState:
+		dryRunModal: null
+		standardizationModal: null
+		completeModal: null
+
+	# Clean up specific modal and its backdrop
+	cleanupSpecificModal: (modalSelector) ->
+		modal = @$(modalSelector)
+		if modal.length > 0
+			# Remove this specific modal's backdrop
+			modal.data('bs.modal')?.$backdrop?.remove()
+			# If this is the only modal, clean up body state
+			if @$('.modal.in').length <= 1
+				$('body').removeClass('modal-open')
+
+	# Hide a specific modal with proper cleanup
+	hideStandardizationModal: (modalSelector, callback) ->
+		modal = @$(modalSelector)
+		if modal.length > 0 and modal.hasClass('in')
+			modal.on 'hidden.bs.modal.standardization', =>
+				modal.off 'hidden.bs.modal.standardization'
+				@cleanupSpecificModal(modalSelector)
+				callback?()
+			modal.modal 'hide'
+		else
+			@cleanupSpecificModal(modalSelector)
+			callback?()
+
+	# Show standardization complete modal with data
+	showStandardizationCompleteModal: (report) ->
+		@$('.bv_standardizationCompleteRecordedDate').html UtilityFunctions::convertMSToYMDDate report.recordedDate
+		@$('.bv_standardizationCompleteStructuresStandardizedCount').html report.structuresStandardizedCount
+		@$('.bv_standardizationCompleteStandardizationErrorCount').html report.standardizationErrorCount
+		@$('.bv_standardizationCompleteRegistrationErrorCount').html report.registrationErrorCount
+		@$('.bv_standardizationCompleteChangedStructureCount').html report.changedStructureCount
+		@$('.bv_standardizationCompleteDisplayChangeCount').html report.displayChangeCount
+		@$('.bv_standardizationCompleteNewDuplicateCount').html report.newDuplicateCount
+		@$('.bv_standardizationCompleteAsDrawnDisplayChangeCount').html report.asDrawnDisplayChangeCount
+		@$('.bv_standardizationCompleteExistingDuplicateCount').html report.existingDuplicateCount
+		@$('.bv_standardizationCompleteModal').modal
+			backdrop: 'static'
+		@$('.bv_standardizationCompleteModal').modal 'show'
 
 	openStandardizationControllerSocket: ->
 		unless @socket?
@@ -664,34 +708,16 @@ class StandardizationController extends Backbone.View
 
 			@socket.on 'dryRunOrStandardizationComplete', (runType, report) =>
 				if runType is 'dryRun'
-					@$('.bv_executingStandardizationDryRunModal').modal 'hide'
-					@initialize()
+					@hideStandardizationModal('.bv_executingStandardizationDryRunModal', => @initialize())
 				else if runType is 'standardization'
-					@$('.bv_executingStandardizationModal').modal 'hide'
-					@$('.bv_standardizationCompleteRecordedDate').html UtilityFunctions::convertMSToYMDDate report.recordedDate
-					@$('.bv_standardizationCompleteStructuresStandardizedCount').html report.structuresStandardizedCount
-					@$('.bv_standardizationCompleteStandardizationErrorCount').html report.standardizationErrorCount
-					@$('.bv_standardizationCompleteRegistrationErrorCount').html report.registrationErrorCount
-					@$('.bv_standardizationCompleteChangedStructureCount').html report.changedStructureCount
-					@$('.bv_standardizationCompleteDisplayChangeCount').html report.displayChangeCount
-					@$('.bv_standardizationCompleteNewDuplicateCount').html report.newDuplicateCount
-					@$('.bv_standardizationCompleteAsDrawnDisplayChangeCount').html report.asDrawnDisplayChangeCount
-					@$('.bv_standardizationCompleteExistingDuplicateCount').html report.existingDuplicateCount
-					@$('.bv_standardizationCompleteModal').modal
-						backdrop: 'static'
-					@$('.bv_standardizationCompleteModal').modal 'show'
+					@hideStandardizationModal('.bv_executingStandardizationModal', => @showStandardizationCompleteModal(report))
 
 			@socket.on 'dryRunOrStandardizationError', (runType, report) =>
 				if runType is 'dryRun'
-					@$('.bv_executingStandardizationDryRunModal').modal 'hide'
-					@$('.bv_executeDryRunError').show()
+					@hideStandardizationModal('.bv_executingStandardizationDryRunModal', => @$('.bv_executeDryRunError').removeClass('hide'))
 				else if runType is 'standardization'
-					@$('.bv_executingStandardizationModal').modal 'hide'
-					@$('.bv_executeStandardizationError').show()
-				# @$('.bv_standardizationDryRunReportStats').hide()
-				# @$('.bv_standardizationDryRunReport').hide()
-				# @$('.bv_downloadStandardizationDryRunFiles').hide()
-				@$('.bv_standardizerControlsWrapper').hide()
+					@hideStandardizationModal('.bv_executingStandardizationModal', => @$('.bv_executeStandardizationError').removeClass('hide'))
+				@$('.bv_standardizerControlsWrapper').addClass('hide')
 
 	setupCurrentSettingsController: ->
 		if @currentSettingsController?
@@ -710,7 +736,7 @@ class StandardizationController extends Backbone.View
 			type: 'GET'
 			url: "/cmpdReg/getStandardizationHistory"
 			success: (history) =>
-				@$('.bv_standardizerControlsWrapper').show()
+				@$('.bv_standardizerControlsWrapper').removeClass('hide')
 				mostRecentHistoryEntry = _.max history, (row) =>
 					row.id
 				runningDryRunOrStandardization = @isDryRunOrStandardizationInProgress mostRecentHistoryEntry
@@ -720,7 +746,7 @@ class StandardizationController extends Backbone.View
 					@setupExecuteButtons mostRecentHistoryEntry
 					@setupLastDryRunReportSummary(mostRecentHistoryEntry)
 			error: (err) =>
-				@$('.bv_getStandardizationHistoryError').show()
+				@$('.bv_getStandardizationHistoryError').removeClass('hide')
 
 	isDryRunOrStandardizationInProgress: (mostRecentHistoryEntry) ->
 		if !mostRecentHistoryEntry?
@@ -765,13 +791,13 @@ class StandardizationController extends Backbone.View
 	setupLastDryRunReportSummary: (mostRecentHistory)->		
 		if mostRecentHistory? and mostRecentHistory.dryRunStatus == "complete" and mostRecentHistory.standardizationStatus != "complete"
 			@setupLastDryRunReportStatsSummaryTable()
-			@$(".bv_standardizationDryRunReportStats").show()
+			@$(".bv_standardizationDryRunReportStats").removeClass('hide')
 			@standardizationDryRunReportSummaryController = new StandardizationDryRunReportSummaryController
 				mostRecentHistory: mostRecentHistory
 			@$(".bv_standardizationDryRunReport").html @standardizationDryRunReportSummaryController.render().el
-			@$(".bv_standardizationDryRunReport").show()
+			@$(".bv_standardizationDryRunReport").removeClass('hide')
 		else
-			@$(".bv_standardizationDryRunReportStats").hide()
+			@$(".bv_standardizationDryRunReportStats").addClass('hide')
 
 		
 	setupLastDryRunReportStatsSummaryTable: ->
@@ -789,12 +815,11 @@ class StandardizationController extends Backbone.View
 
 	handleExecuteStandardizationClicked: =>
 		@disableExecuteButtons()
-		@standardizationReasonPanel.show()
+		@standardizationReasonPanel.removeClass('hide')
 
 	handleStandardizationCompleteModalCloseClicked: ->
 		#refreshes standardization history summary table and last dry run report summary table
-		@$('.bv_standardizationCompleteModal').modal 'hide'
-		@initialize()
+		@hideStandardizationModal('.bv_standardizationCompleteModal', => @initialize())
 
 	enableExecuteButtons: ->
 		@$('.bv_executeDryRun').removeAttr 'disabled'

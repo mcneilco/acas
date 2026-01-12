@@ -1,17 +1,23 @@
 extends layout
 block content
-    div.navbar.navbar-inverse.navbar-fixed-top
-        div.navbar-inner
-            div.container-fluid
-                div.brand #{logoText}
+    nav.navbar.navbar-inverse.navbar-fixed-top
+        div.container-fluid
+            div.navbar-header
+                a.navbar-brand #{logoText}
 
     div.container.externalLinkContainer
-        div.span8.offset1
-            h3 Redirect notice
-            div.well.alert.alert-warn
-                - if (redirectUrl)
-                    div You are being redirected to an external site 
-                        a(href="#{redirectUrl}") #{redirectUrl}
-                br
-                div If you do not want to be redirected you can return 
-                    a(href="#{homeUrl}") home
+        div.row
+            div.col-md-6.col-md-offset-3.col-sm-8.col-sm-offset-2
+                div.panel.panel-default
+                    div.panel-heading
+                        h3.panel-title Redirect Notice
+                    div.panel-body
+                        - if (redirectUrl)
+                            div.alert.alert-warning
+                                strong External Redirect
+                                p You are being redirected to an external site:
+                                p.text-center
+                                    a.btn.btn-link(href="#{redirectUrl}", target="_blank") #{redirectUrl}
+                        div.text-center
+                            p If you do not want to be redirected, you can:
+                            a.btn.btn-primary(href="#{homeUrl}") Return Home

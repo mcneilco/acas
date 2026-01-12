@@ -2,7 +2,7 @@
     <div style="display: inline-block">
         <div class="btn-group pull-right" style="display: inline-block; margin-bottom: 10px;">
             <span class="btn-group bv_openInQueryTool" style="margin-right:5px;">
-                <button type="button" class="btn btn-default bv_openInQueryToolButton dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <button type="button" class="btn btn-primary bv_openInQueryToolButton dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     Open In <span class="caret"></span>
                 </button>
                 <ul class="dropdown-menu bv_viewerOptions">
@@ -12,22 +12,22 @@
                 </ul>
             </span>
             <span class="bv_getLinkQueryTool" style="margin-right:5px; margin-bottom:10px;">
-                <button type="button" class="btn btn-default bv_getLinkQueryToolButton">
+                <button type="button" class="btn btn-primary bv_getLinkQueryToolButton">
                     Generate Link
                 </button>
             </span>
-            <div class="hide bv_getLinkResults pull-right" style="display: none;">
-                <input type="text" class="bv_exptLink" name="exptLink" value="" readonly style="margin-right:5px;">
-                <button type="button" class="btn btn-default bv_copyExptLink" style="margin-bottom: 10px;">
+            <span class="bv_getLinkResults hide" style="margin-right:5px;">
+                <input type="text" class="bv_exptLink" name="exptLink" value="" readonly style="margin-right:5px; width: 300px;">
+                <button type="button" class="btn btn-primary bv_copyExptLink">
                     Copy Link
                 </button>
-            </div>
-        </div>
-        <div class="hide bv_generatingLink">
-            <h5>Generating Link...</h5>
-            <div class="progress progress-striped active " style="width: 90%; margin: auto;">
-                <div class="bar" style="width: 100%; margin: auto;"></div>
-            </div>
+            </span>
+            <span class="bv_generatingLink hide" style="margin-left: 10px;">
+                <span style="margin-right: 10px; vertical-align: middle;">Generating Link...</span>
+                <div class="progress progress-striped active" style="width: 150px; height: 20px; display: inline-block; vertical-align: middle; margin: 0;">
+                    <div class="progress-bar" style="width: 100%;"></div>
+                </div>
+            </span>
         </div>
     </div>
 </script>

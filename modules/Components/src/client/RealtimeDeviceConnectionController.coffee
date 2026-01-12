@@ -220,7 +220,7 @@ class RealtimeDeviceConnectionController extends Backbone.View
 		@$(".bv_deviceInUse").modal "hide"
 
 	handleDismissDisconnectMessage: =>
-		@$(".bv_disconnectedByAUserMessage").hide()
+		@$(".bv_disconnectedByAUserMessage").addClass('hide')
 
 	displayInUseModal: =>
 		@$(".bv_alreadyConnectedUserName").html _.escape(@userNameOfConnectedUser)

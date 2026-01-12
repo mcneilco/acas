@@ -1,6 +1,5 @@
 body {
     padding-top: 60px;
-    padding-bottom: 40px;
 }
 .sidebar-nav {
     padding: 9px 0;
@@ -136,4 +135,10 @@ body {
     position: absolute;
     top: 75px;
     left: 265px;
+}
+
+.bv_externalACASModules li a {
+    padding-top: 15px;
+    padding-bottom: 15px;
+    line-height: 20px;
 }

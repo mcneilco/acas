@@ -2,19 +2,19 @@
         xmlns="http://www.w3.org/1999/html">
 
 	<div class="form-horizontal">
-		<div class="control-group bv_group_protocolCode">
+		<div class="form-group bv_group_protocolCode">
 			<label class="control-label ">*<%- window.conf.protocol.label %> Kind</label>
 			<div class="controls">
 				<select class="bv_protocolKind" style="width:417px;"></select>
 			</div>
 		</div>
-		<div class="control-group bv_group_protocolName">
+		<div class="form-group bv_group_protocolName">
 			<label class="control-label ">*<%- window.conf.protocol.label %> Name</label>
 			<div class="controls">
 				<select class="bv_protocolName" style="width:417px;"></select>
 			</div>
 		</div>
-		<div class="control-group">
+		<div class="form-group">
 			<label class="control-label"><%- window.conf.experiment.label %> Code</label>
 			<div class="controls">
 				<input class="bv_experimentCode" type="text" placeholder="EXPT-00000000" style="width:336px;"/>
@@ -28,37 +28,37 @@
 </script>
 
 <script type="text/template" id="ExperimentSimpleSearchView" xmlns="http://www.w3.org/1999/html">
-	<div class="navbar" style="margin-bottom: 0px; ">
-		<div class="navbar-inner" style="border-bottom-left-radius:	0px; border-bottom-right-radius:	0px;">
+	<div class="navbar" style="margin-bottom: 0px; background-color: #f8f8f8; border: 1px solid #e7e7e7;">
+		<div class="container-fluid" style="border-bottom-left-radius:	0px; border-bottom-right-radius:	0px;">
 			<!-- <form class="navbar-search pull-left"> -->
-				<div class="control-group" style="margin-top: 5px; margin-bottom: 5px;">
-					<div class="input-append">
-						<input class="bv_experimentSearchTerm" style="
+				<div class="form-group" style="margin-top: 5px; margin-bottom: 5px;">
+					<div class="input-group pull-left" style="width: 300px;">
+						<input class="bv_experimentSearchTerm form-control" style="
 							padding-right: 14px;
 							border-top-left-radius: 15px;
 							border-bottom-left-radius: 15px;
 							" type="text" placeholder="Search for <%- window.conf.experiment.label.toLowerCase() %>s">
-						<button class="btn bv_doSearch add-on" style="
-							border-top-right-radius: 15px;
-							border-bottom-right-radius: 15px;
-							height: 30px;
-							margin-top: 0px;
-							background-color: #fff;
-							border-left: 0px;
-							border-bottom: 1px solid #cccccc;
-							border-right: 1px solid #cccccc;
-							border-top: 1px solid #cccccc;
-              box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
-              width: 2.5em; padding-right: 0.8em;transition: border 0.2s linear 0s, box-shadow 0.2s linear 0s;" type="button" disabled>
-							<i class="icon-search bv_doSearchIcon"></i>
-							<i class="icon-remove bv_clearSearchIcon hide"></i>
-						</button>
-						<button class="btn bv_downloadFiles" style="float: right; margin-top: auto; margin-bottom: auto;">Download All Files</button>
-						<br/>
-						<div class="bv_downloadWarning hide" style="color: red; font-size: 12px; text-align: right;">Could not download files</div>
-						<div class="bv_downloadSuccess hide" style="color: green; font-size: 12px; text-align: right;">Downloaded successfully</div>
-
+						<span class="input-group-btn">
+							<button class="btn btn-default bv_doSearch" style="
+								border-top-right-radius: 15px;
+								border-bottom-right-radius: 15px;
+								height: 34px;
+								margin-top: 0px;
+								background-color: #fff;
+								border-left: 0px;
+								border-bottom: 1px solid #cccccc;
+								border-right: 1px solid #cccccc;
+								border-top: 1px solid #cccccc;
+                  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
+                  transition: border 0.2s linear 0s, box-shadow 0.2s linear 0s;" type="button" disabled>
+								<i class="glyphicon glyphicon-search bv_doSearchIcon"></i>
+								<i class="glyphicon glyphicon-remove bv_clearSearchIcon hide"></i>
+							</button>
+						</span>
 					</div>
+					<button class="btn btn-primary bv_downloadFiles pull-right" style="margin-top: 0px;">Download All Files</button>
+					<div class="bv_downloadWarning hide" style="color: red; font-size: 12px; text-align: right;">Could not download files</div>
+					<div class="bv_downloadSuccess hide" style="color: green; font-size: 12px; text-align: right;">Downloaded successfully</div>
 				</div>
 			<!-- </form> -->
 		</div>
@@ -69,19 +69,19 @@
 <script type="text/template" id="ExperimentDetailSearchView" xmlns="http://www.w3.org/1999/html">
 
 	<div class="form-horizontal">
-		<div class="control-group bv_group_protocolCode">
+		<div class="form-group bv_group_protocolCode">
 			<label class="control-label ">*<%- window.conf.protocol.label %> Kind</label>
 			<div class="controls">
 				<select class="bv_protocolKind" style="width:417px;"></select>
 			</div>
 		</div>
-		<div class="control-group bv_group_protocolName">
+		<div class="form-group bv_group_protocolName">
 			<label class="control-label ">*<%- window.conf.protocol.label %> Name</label>
 			<div class="controls">
 				<select class="bv_protocolName" style="width:417px;"></select>
 			</div>
 		</div>
-		<div class="control-group">
+		<div class="form-group">
 			<label class="control-label"><%- window.conf.experiment.label %> Code</label>
 			<div class="controls">
 				<input class="bv_experimentCode" type="text" placeholder="EXPT-00000000" style="width:336px;"/>
@@ -137,25 +137,25 @@
 			<div class="bv_searchExperimentsStatusIndicator" style="height: 280px;">
 				<table width="100%">
 					<thead>
-					<tr><td style="display: none;">placeholder</td></tr>
+					<tr><td class="hide">placeholder</td></tr>
 					</thead>
 					<tbody>
 					<tr>
 						<td style="text-align: center; width: 100%; align-content: center; height: 250px;">
-							<h5 class="bv_noMatchingExperimentsFoundMessage hide">No Matching <%- window.conf.experiment.label %>s Found</h5>
+					<h5 class="bv_noMatchingExperimentsFoundMessage hide">No Matching <%- window.conf.experiment.label %>s Found</h5>
                             <h5 class="bv_moreSpecificExperimentSearchNeeded hide">A more specific search term is required.</h5>
-							<h5 class="bv_errorOccurredPerformingSearch hide">An error occurred while searching for the <%- window.conf.experiment.label %>.</h5>
+					<h5 class="bv_errorOccurredPerformingSearch hide">An error occurred while searching for the <%- window.conf.experiment.label %>.</h5>
 
-							<div class="bv_experimentBrowserSearchInstructions">
-								<i class="icon-search bv_doSearchIcon"></i>
-								<%- window.conf.experiment.label %> Browser
-							</div>
-							<div class="hide bv_searchingExperimentsMessage" style="margin: auto;">
-								<h5>Searching for <%- window.conf.experiment.label %>s containing text "<i class="bv_exptSearchTerm"></i>"</h5>
-								<div class="progress progress-striped active " style="width: 90%; margin: auto;">
-									<div class="bar" style="width: 100%; margin: auto;"></div>
-								</div>
-							</div>
+					<div class="bv_experimentBrowserSearchInstructions">
+						<i class="glyphicon glyphicon-search bv_doSearchIcon"></i>
+						<%- window.conf.experiment.label %> Browser
+					</div>
+					<div class="bv_searchingExperimentsMessage hide" style="margin: auto;">
+						<h5>Searching for <%- window.conf.experiment.label %>s containing text "<i class="bv_experimentSearchTerm"></i>"</h5>
+						<div class="progress progress-striped active " style="width: 90%; margin: auto;">
+							<div class="progress-bar" style="width: 100%; margin: auto;"></div>
+						</div>
+					</div>
 						</td>
 					</tr>
 					</tbody>
@@ -163,12 +163,12 @@
 				</table>
 			</div>
 
-		<div class="bv_experimentTableController hide" style="margin:0px; padding:10px; overflow: auto; overflow: auto;"></div>
+		<div class="bv_experimentTableController hide" style="margin:0px; padding:10px; overflow: auto;"></div>
 	</div>
 	<!--
 	<h5>Selected Experiment Details</h5>
 	-->
-	<div class="well well-small bv_experimentBaseControllerContainer hide" style="margin-top: 10px;">
+	<div class="well well-sm bv_experimentBaseControllerContainer hide" style="margin-top: 10px;">
 		<div>
             <button class="btn btn-danger bv_deleteExperiment">Delete</button>
             <% if (includeDuplicateAndEdit) { %>
@@ -183,41 +183,46 @@
 		</div>
 	</div>
 
-	<div class="modal hide bv_confirmDeleteExperiment">
-		<div class="modal-header">
-			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-			<h3>Delete <%- window.conf.experiment.label %></h3>
-		</div>
-		<div class="modal-body">
-			<div class="bv_deleteWarningMessage">
-				<p>Are you sure you would like to delete <%- window.conf.experiment.label %>: <span class="bv_experimentCodeName"></span>?</p>
+	<div class="modal fade bv_confirmDeleteExperiment" tabindex="-1" role="dialog" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					<h4>Delete <%- window.conf.experiment.label %></h4>
+				</div>
+				<div class="modal-body">
+					<div class="bv_deleteWarningMessage">
+						<p>Are you sure you would like to delete <%- window.conf.experiment.label %>: <span class="bv_experimentCodeName"></span>?</p>
+					</div>
+					<div class="bv_deletingStatusIndicator hide">
+						<table width="100%">
+							<tr>
+								<td style="text-align: center; width: 100%">
+									<h4>Deleting <%- window.conf.experiment.label %></h4>
+									<div class="progress progress-striped active" style="width: 100%;">
+										<div class="progress-bar" style="width: 100%;"></div>
+									</div>
+								</td>
+							</tr>
+						</table>
+					</div>
+					<div class="bv_experimentDeletedSuccessfullyMessage hide">
+						<p><%- window.conf.experiment.label %> <span class="bv_experimentCodeName"></span> has successfully been deleted</p>
+					</div>
+					<div class="bv_errorDeletingExperimentMessage hide">
+						<p>An error occured deleting <%- window.conf.experiment.label %> <span class="bv_experimentCodeName"></span>.  Please contact support for additional help.</p>
+					</div>
+				</div>
+				<div class="modal-footer">
+				    <div class="bv_deleteButtons">
+				      <button type="button" class="btn btn-primary bv_cancelDelete">Cancel</button>
+				      <button type="button" class="btn btn-danger bv_confirmDeleteExperimentButton">Delete <%- window.conf.experiment.label %></button>
+				    </div>
+				    <div class="bv_okayButton hide">
+					    <button type="button" class="btn btn-primary bv_cancelDelete">Okay</button>
+				    </div>
+				</div>
 			</div>
-			<div class="bv_deletingStatusIndicator hide">
-				<table width="100%"></table>
-				<tr>
-					<td style="text-align: center; width: 100%">
-						<h4>Deleting <%- window.conf.experiment.label %></h4>
-						<div class="progress progress-striped active" style="width: 100%;">
-							<div class="bar" style="width: 100%;"></div>
-						</div>
-					</td>
-				</tr>
-			</div>
-			<div class="bv_experimentDeletedSuccessfullyMessage hide">
-				<p><%- window.conf.experiment.label %> <span class="bv_experimentCodeName"></span> has successfully been deleted</p>
-			</div>
-			<div class="bv_errorDeletingExperimentMessage hide">
-				<p>An error occured deleting <%- window.conf.experiment.label %> <span class="bv_experimentCodeName"></span>.  Please contact support for additional help.</p>
-			</div>
-		</div>
-		<div class="modal-footer">
-		    <span class="bv_deleteButtons">
-		      <a href="#" class="btn btn-primary bv_cancelDelete">Cancel</a>
-		      <a href="#" class="btn btn-danger bv_confirmDeleteExperimentButton">Delete <%- window.conf.experiment.label %></a>
-			  </span>
-		    <span class="bv_okayButton hide">
-			    <a href="#" class="btn btn-primary bv_cancelDelete">Okay</a>
-		    </span>
 		</div>
 	</div>
 </script>

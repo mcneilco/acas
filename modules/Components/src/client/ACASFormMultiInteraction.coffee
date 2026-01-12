@@ -43,7 +43,7 @@ class ACASFormMultiInteractionController extends Backbone.View
 
 	handleRemoveInteractionButtonClicked: ->
 		@interactionController.setEmptyValue()
-		$(@el).hide()
+		$(@el).addClass('hide')
 
 
 class ACASFormMultiInteractionListController extends ACASFormAbstractFieldController

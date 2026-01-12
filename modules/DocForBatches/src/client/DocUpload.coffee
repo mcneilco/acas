@@ -54,20 +54,20 @@ class DocUploadController extends AbstractFormController
 		@setBindings()
 		# do this here because we don't want to do this on re-render
 		unless @model.isNew()
-			@$('.bv_fileInput').hide()
+			@$('.bv_fileInput').addClass('hide')
 			if @model.get('docType') is 'file'
 				$('.bv_currentFileRadio').prop('checked', true)
 				@$('.bv_currentFileName').html(@model.escape('currentFileName'))
 			else
-				@.$('.bv_currentDocContainer').hide()
+				@.$('.bv_currentDocContainer').addClass('hide')
 				$('.bv_urlRadio').prop('checked', true)
 				@$('.bv_url').val(@model.get('url'))
 
 	render: =>
 		@fileInputController.render()
-		if @model.isNew() then @.$('.bv_currentDocContainer').hide()
+		if @model.isNew() then @.$('.bv_currentDocContainer').addClass('hide')
 		unless @$('.bv_urlRadio').is(":checked")
-			@$('.bv_urlInputWrapper').hide()
+			@$('.bv_urlInputWrapper').addClass('hide')
 
 		@
 

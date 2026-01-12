@@ -270,9 +270,9 @@ class ModelFitTypeController extends Backbone.View
 		@setupTransformationUnitsSelect()
 		modelFitType = @model.getModelFitType().get('codeValue')
 		if modelFitType is "unassigned"
-			@$('.bv_modelFitTransformationWrapper').hide()
+			@$('.bv_modelFitTransformationWrapper').addClass('hide')
 		else
-			@$('.bv_modelFitTransformationWrapper').show()
+			@$('.bv_modelFitTransformationWrapper').removeClass('hide')
 		@setupParameterController(modelFitType)
 
 	setupModelFitTypeSelect: =>
@@ -353,12 +353,12 @@ class ModelFitTypeController extends Backbone.View
 	handleModelFitTypeChanged: =>
 		modelFitType = @$('.bv_modelFitType').val()
 		if modelFitType is "unassigned"
-			@$('.bv_modelFitTransformationWrapper').hide()
+			@$('.bv_modelFitTransformationWrapper').addClass('hide')
 			@fitTransformationListController.setSelectedCode "Select Fit Transformation"
 			@transformationUnitsListController.setSelectedCode "unassigned"
 			@updateModel()
 		else
-			@$('.bv_modelFitTransformationWrapper').show()
+			@$('.bv_modelFitTransformationWrapper').removeClass('hide')
 		@setupParameterController(modelFitType)
 		@updateModel()
 		@modelFitTypeListController.trigger 'change'
@@ -414,10 +414,8 @@ class ModelFitTypeController extends Backbone.View
 			unless @$('.bv_'+err.attribute).attr('disabled') is 'disabled'
 				@$('.bv_group_'+err.attribute).attr('data-toggle', 'tooltip')
 				@$('.bv_group_'+err.attribute).attr('data-placement', 'bottom')
-				@$('.bv_group_'+err.attribute).attr('data-original-title', err.message)
-				#				@$('.bv_group_'+err.attribute).tooltip();
-				@$("[data-toggle=tooltip]").tooltip();
-				@$("body").tooltip selector: '.bv_group_'+err.attribute
+				@$('.bv_group_'+err.attribute).attr('title', err.message)
+				@$('.bv_group_'+err.attribute).tooltip()
 				@$('.bv_group_'+err.attribute).addClass 'input_error error'
 				@trigger 'notifyError',  owner: this.errorOwnerName, errorLevel: 'error', message: err.message
 
@@ -460,12 +458,12 @@ class DoseResponseAnalysisController extends Backbone.View
 			if resultValue != null
 				res = resultValue.get('clobValue')
 				if res == ""
-					@$('.bv_resultsContainer').hide()
+					@$('.bv_resultsContainer').addClass('hidden')
 				else
 					@$('.bv_modelFitResultsHTML').html(res)
-					@$('.bv_resultsContainer').show()
+					@$('.bv_resultsContainer').removeClass('hidden')
 		else
-			@$('.bv_resultsContainer').hide()
+			@$('.bv_resultsContainer').addClass('hide')
 
 	testReadyForFit: =>
 		if @model.getAnalysisStatus().get('codeValue') != "complete"
@@ -474,14 +472,14 @@ class DoseResponseAnalysisController extends Backbone.View
 			@setReadyForFit()
 
 	setNotReadyForFit: ->
-		@$('.bv_fitOptionWrapper').hide()
-		@$('.bv_resultsContainer').hide()
-		@$('.bv_analyzeExperimentToFit').show()
+		@$('.bv_fitOptionWrapper').addClass('hidden')
+		@$('.bv_resultsContainer').addClass('hidden')
+		@$('.bv_analyzeExperimentToFit').removeClass('hidden')
 
 	setReadyForFit: =>
 		@setupModelFitTypeController()
-		@$('.bv_fitOptionWrapper').show()
-		@$('.bv_analyzeExperimentToFit').hide()
+		@$('.bv_fitOptionWrapper').removeClass('hidden')
+		@$('.bv_analyzeExperimentToFit').addClass('hidden')
 		@handleStatusChanged()
 
 	primaryAnalysisCompleted: ->
@@ -518,20 +516,20 @@ class DoseResponseAnalysisController extends Backbone.View
 			@parameterController.model.on 'change', => @validateModelFitTab()
 		modelFitType = @model.getModelFitType().get('codeValue')
 		if modelFitType is "unassigned"
-			@$('.bv_fitModelButton').hide()
+			@$('.bv_fitModelButton').addClass('hide')
 		else
-			@$('.bv_fitModelButton').show()
+			@$('.bv_fitModelButton').removeClass('hide')
 
 	handleModelFitTypeChanged: =>
 		modelFitType = @modelFitTypeController.modelFitTypeListController.getSelectedCode()
 		if modelFitType is "unassigned"
-			@$('.bv_fitModelButton').hide()
-			@$('.bv_modelFitTransformationWrapper').hide()
+			@$('.bv_fitModelButton').addClass('hide')
+			@$('.bv_modelFitTransformationWrapper').addClass('hide')
 			if @modelFitTypeController.parameterController?
 				@modelFitTypeController.parameterController.undelegateEvents()
 		else
-			@$('.bv_fitModelButton').show()
-			@$('.bv_modelFitTransformationWrapper').show()
+			@$('.bv_fitModelButton').removeClass('hide')
+			@$('.bv_modelFitTransformationWrapper').removeClass('hide')
 			if @modelFitTypeController.parameterController?
 				@modelFitTypeController.parameterController.on 'valid', @validateModelFitTab
 				@modelFitTypeController.parameterController.on 'invalid', @validateModelFitTab
@@ -588,7 +586,7 @@ class DoseResponseAnalysisController extends Backbone.View
 			@$('.bv_fitModelButton').html "Re-Fit"
 		@$('.bv_modelFitResultsHTML').html(json.results.htmlSummary)
 		@$('.bv_modelFitStatus').html(json.results.status)
-		@$('.bv_resultsContainer').show()
+		@$('.bv_resultsContainer').removeClass('hidden')
 		@$('.bv_fitStatusDropDown').modal("hide")
 
 class DoseResponsePlotCurveLL4 extends Backbone.Model

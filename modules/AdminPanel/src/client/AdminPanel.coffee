@@ -17,7 +17,7 @@ class AdminPanelController extends AbstractFormController
 
 		@showConnectionStatus()
 		setInterval(@showConnectionStatus,5000)
-		@$('.bv_checkConnection').hide()
+		@$('.bv_checkConnection').addClass('hide')
 		recursivelyIterateAndDisplayValues(window.conf)
 
 		@
@@ -34,13 +34,13 @@ class AdminPanelController extends AbstractFormController
 		@$('.bv_connectionStatus').addClass('bv_statusConnected')
 		@$('.bv_connectionStatus').removeClass('bv_statusDisconnected')
 		@$('.bv_connectionStatus').html "connected"
-		@$('.bv_checkConnection').hide()
+		@$('.bv_checkConnection').addClass('hide')
 
 	handleConnectionFailure: =>
 		@$('.bv_connectionStatus').addClass('bv_statusDisconnected')
 		@$('.bv_connectionStatus').removeClass('bv_statusConnected')
 		@$('.bv_connectionStatus').html "disconnected"
-		@$('.bv_checkConnection').show()
+		@$('.bv_checkConnection').removeClass('hide')
 		
 
 recursivelyIterateAndDisplayValues = (dict) ->
