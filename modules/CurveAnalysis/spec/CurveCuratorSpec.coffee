@@ -268,7 +268,7 @@ describe "Curve Curator Module testing", ->
 				runs ->
 					@kpc.on 'observationSelected', (observation) =>
 						@observationSelected = observation
-					@kpc.show()
+					@kpc.removeClass('hide')
 				waitsFor =>
 					@kpc.$("option").length > 0
 			it "should return an observation when the ok button is clicked", ->

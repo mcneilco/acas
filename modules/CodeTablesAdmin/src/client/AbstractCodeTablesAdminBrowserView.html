@@ -1,18 +1,19 @@
 <script type="text/template" id="CodeTablesAdminSimpleSearchView" xmlns="http://www.w3.org/1999/html">
-    <div class="navbar" style="margin-bottom: 0px; ">
-        <div class="navbar-inner" style="border-bottom-left-radius:	0px; border-bottom-right-radius:	0px;">
+    <div class="navbar" style="margin-bottom: 0px; background-color: #f8f8f8; border: 1px solid #e7e7e7;">
+        <div class="container-fluid" style="border-bottom-left-radius:	0px; border-bottom-right-radius:	0px;">
             <!-- <form class="navbar-search pull-left"> -->
-            <div class="control-group" style="margin-top: 5px; margin-bottom: 5px;">
-                <div class="input-append span3">
-                    <input class="bv_codeTablesAdminSearchTerm" style="
-							padding-right: 14px;
-							border-top-left-radius: 15px;
-							border-bottom-left-radius: 15px;
-							" type="text" placeholder="Search for <%-pluralDisplayName%>">
-                    <button class="btn bv_doSearch add-on" style="
+            <div class="form-group" style="margin-top: 5px; margin-bottom: 5px;">
+                <div class="input-group pull-left" style="width: 300px;">
+                    <input class="bv_codeTablesAdminSearchTerm form-control" style="
+						padding-right: 14px;
+						border-top-left-radius: 15px;
+						border-bottom-left-radius: 15px;
+						" type="text" placeholder="Search for <%-pluralDisplayName%>">
+                    <span class="input-group-btn">
+                        <button class="btn btn-default bv_doSearch" style="
 							border-top-right-radius: 15px;
 							border-bottom-right-radius: 15px;
-							height: 30px;
+							height: 34px;
 							margin-top: 0px;
 							background-color: #fff;
 							border-left: 0px;
@@ -20,12 +21,13 @@
 							border-right: 1px solid #cccccc;
 							border-top: 1px solid #cccccc;
               box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
-              width: 2.5em; padding-right: 0.8em;transition: border 0.2s linear 0s, box-shadow 0.2s linear 0s;" type="button" disabled>
-                        <i class="icon-search bv_doSearchIcon"></i>
-                        <i class="icon-remove bv_clearSearchIcon hide"></i>
-                    </button>
+              transition: border 0.2s linear 0s, box-shadow 0.2s linear 0s;" type="button" disabled>
+                            <i class="glyphicon glyphicon-search bv_doSearchIcon"></i>
+                            <i class="glyphicon glyphicon-remove bv_clearSearchIcon hide"></i>
+                        </button>
+                    </span>
                 </div>
-                <button type="button" class="btn bv_createNewCodeTablesAdminBtn pull-right" style="margin-top:0px;">Create New <%-upperDisplayName%></button>
+                <button type="button" class="btn btn-primary bv_createNewCodeTablesAdminBtn pull-right" style="margin-top:0px;">Create New <%-upperDisplayName%></button>
             </div>
             <!-- </form> -->
         </div>
@@ -63,7 +65,7 @@
             <div class="bv_searchCodeTablesAdminsStatusIndicator" style="height: 280px;">
                 <table width="100%">
                     <thead>
-                    <tr><td style="display: none;">placeholder</td></tr>
+                    <tr><td class="hide">placeholder</td></tr>
                     </thead>
                     <tbody>
                     <tr>
@@ -73,13 +75,13 @@
                             <h5 class="bv_errorOccurredPerformingSearch hide">An error occurred while searching for the <%-displayName%>.</h5>
 
                             <div class="bv_codeTablesAdminBrowserSearchInstructions">
-                                <i class="icon-search bv_doSearchIcon"></i>
+                                <i class="glyphicon glyphicon-search bv_doSearchIcon"></i>
                                 <%-upperDisplayName%> Browser
                             </div>
-                            <div class="hide bv_searchingCodeTablesAdminsMessage" style="margin: auto;">
+                            <div class="bv_searchingCodeTablesAdminsMessage hide" style="margin: auto;">
                                 <h5>Searching for <%-upperPluralDisplayName%> containing text "<i class="bv_codeTablesAdminSearchTerm"></i>"</h5>
                                 <div class="progress progress-striped active " style="width: 90%; margin: auto;">
-                                    <div class="bar" style="width: 100%; margin: auto;"></div>
+                                    <div class="progress-bar" style="width: 100%; margin: auto;"></div>
                                 </div>
                             </div>
                         </td>
@@ -91,7 +93,7 @@
 
             <div class="bv_codeTablesAdminTableController hide" style="margin:0px; padding:10px; overflow: auto; overflow: auto;"></div>
         </div>
-        <div class="well well-small bv_codeTablesAdminControllerContainer hide" style="margin-top: 10px;">
+        <div class="well well-sm bv_codeTablesAdminControllerContainer hide" style="margin-top: 10px;">
             <div>
                 <button class="btn btn-danger bv_deleteCodeTablesAdmin">Delete</button>
                 <button class="btn bv_duplicateCodeTablesAdmin pull-right hide" style="margin-left: 0.5em;">Duplicate</button>
@@ -103,12 +105,14 @@
             </div>
         </div>
 
-        <div class="modal hide bv_confirmDeleteCodeTablesAdmin">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>Delete <%-upperDisplayName%></h3>
-            </div>
-            <div class="modal-body">
+        <div class="modal fade bv_confirmDeleteCodeTablesAdmin" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4>Delete <%-upperDisplayName%></h4>
+                    </div>
+                    <div class="modal-body">
                 <div class="bv_deleteWarningMessage">
                     <p>Are you sure you would like to delete <%-displayName%>: <span class="bv_codeTablesAdminCodeName"></span>?</p>
                 </div>
@@ -118,7 +122,7 @@
                         <td style="text-align: center; width: 100%">
                             <h4>Deleting <%-upperDisplayName%></h4>
                             <div class="progress progress-striped active" style="width: 100%;">
-                                <div class="bar" style="width: 100%;"></div>
+                                <div class="progress-bar" style="width: 100%;"></div>
                             </div>
                         </td>
                     </tr>
@@ -130,15 +134,17 @@
                     <p class="bv_deleteCodeTablesGenericMessage">An error occured deleting this <%-upperDisplayName%>. Server Message:</p>
                     <p class="bv_deleteCodeTablesAdminErrorMessageHolder"></p>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <span class="bv_deleteButtons">
-                  <a href="#" class="btn btn-primary bv_cancelDelete">Cancel</a>
-                  <a href="#" class="btn btn-danger bv_confirmDeleteCodeTablesAdminButton">Delete <%-upperDisplayName%></a>
-                  </span>
-                <span class="bv_okayButton hide">
-                    <a href="#" class="btn btn-primary bv_cancelDelete">Okay</a>
-                </span>
+                    </div>
+                    <div class="modal-footer">
+                        <span class="bv_deleteButtons">
+                          <a href="#" class="btn btn-primary bv_cancelDelete">Cancel</a>
+                          <a href="#" class="btn btn-danger bv_confirmDeleteCodeTablesAdminButton">Delete <%-upperDisplayName%></a>
+                          </span>
+                        <span class="bv_okayButton hide">
+                            <a href="#" class="btn btn-primary bv_cancelDelete">Okay</a>
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

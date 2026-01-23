@@ -1,3 +1,8 @@
 .bv_multiFiles .bv_fileType {
     width: auto !important;
 }
+
+.multiFileListWell {
+    min-height: 120px;
+}
+

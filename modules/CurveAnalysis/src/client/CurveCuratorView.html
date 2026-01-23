@@ -1,25 +1,25 @@
 <script type="text/template" id="CurveSummaryView" xmlns="http://www.w3.org/1999/html">
-    <div class="bv_group_thumbnail">
+    <div class="bv_group_thumbnail" style="padding-right:0px;">
         <img class="bv_thumbnail" src="<%- curveUrl %>" />
     </div>
 <div style="margin-top:7px;">
     <span class="btn-group bv_group_flagUser">
         <button type="button" class="btn btn-grey btn-mini bv_flagUser dropdown-toggle" style="height:19px;padding-top:0px;border-top:0px;margin-left:5px;margin-top:3px;margin-bottom:2px;border-radius: 9px;" data-toggle="dropdown" aria-expanded="false">
-            <span class="bv_thumbsUp"><i class="icon-thumbs-up icon-white"></i></span>
-            <span class="bv_thumbsDown"><i class="icon-thumbs-down icon-white"></i></span>
+            <span class="bv_thumbsUp"><i class="glyphicon glyphicon-thumbs-up"></i></span>
+            <span class="bv_thumbsDown"><i class="glyphicon glyphicon-thumbs-down"></i></span>
             <span class="bv_na" style="margin-top:5px;font-size: 11.844px;font-weight: bold;">NA</span>
             <span class="caret" style="margin-top:6px;border-top-color:#FFFFFF"></span>
         </button>
 
         <ul class="dropdown-menu bv_dropdown" role="menu" style="min-width:75px;">
             <li class="bv_userApprove"><a>
-                <span class="badge badge-success" title="User approved." style="background-color:#51A351;">
-                    <i class="icon-thumbs-up icon-white"></i>
+                <span class="label label-success" title="User approved." style="background-color:#51A351;">
+                    <i class="glyphicon glyphicon-thumbs-up"></i>
                 </span>
             </a></li>
             <li class="bv_userReject"><a href="#">
-                <span class="badge badge-important" title="User rejected." style="background-color:#DA5057;">
-                <i class="icon-thumbs-down icon-white"></i>
+                <span class="label label-danger" title="User rejected." style="background-color:#DA5057;">
+                <i class="glyphicon glyphicon-thumbs-down"></i>
                 </span>
             </a></li>
             <li class="bv_userNA"><a href="#">
@@ -31,8 +31,8 @@
     <span class="bv_dirty pull-right" style="margin-right:5px;margin-top:0px;margin-bottom:5px;">
         <span class="" title="Curve has been edited." style="font-size:34px;color:#DA5057;">*</span>
     </span>
-    <span class="bv_pass pull-right" style="margin-right:5px;margin-top:0px;margin-bottom:5px;"><span class="badge badge-success" title="Algorithm approved." style="background-color:#55B779;"><i class="icon-ok icon-white"></i></span></span>
-    <span class="bv_fail pull-right" style="margin-right:5px;margin-top:0px;margin-bottom:5px;"><span class="badge badge-important" title="Algorithm not approved." style="background-color:#DA5057;"><i class="icon-remove icon-white"></i></span></span>
+    <span class="bv_pass pull-right" style="margin-right:5px;margin-top:0px;margin-bottom:5px;"><span class="label label-success" title="Algorithm approved." style="background-color:#55B779;"><i class="glyphicon glyphicon-ok"></i></span></span>
+    <span class="bv_fail pull-right" style="margin-right:5px;margin-top:0px;margin-bottom:5px;"><span class="label label-danger" title="Algorithm not approved." style="background-color:#DA5057;"><i class="glyphicon glyphicon-remove"></i></span></span>
     <span class="bv_compoundCode" style="margin-left:10px;margin-top:6px;margin-bottom:5px;margin-right:0!important;width:140px;"></span>
 </div>
 </script>
@@ -40,259 +40,295 @@
 
 
 <script type="text/template" id="CurveEditorDirtyPanelView" xmlns="http://www.w3.org/1999/html">
-    <div class="modal hide bv_curveEditorDirtyPanel">
-        <div class="modal-header">
-            <h4>Curve has been edited</h4>
-        </div>
-        <div class="controls modal-body">
-            Please Reset or Save to continue
-        </div>
-        <div class="modal-footer">
-            <button class="btn bv_curveEditorDirtyPanelOKBtn" data-dismiss="modal" aria-hidden="true">OK</button>
+    <div class="modal fade bv_curveEditorDirtyPanel" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Curve has been edited</h4>
+                </div>
+                <div class="modal-body">
+                    Please Reset or Save to continue
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default bv_curveEditorDirtyPanelOKBtn" aria-hidden="true">OK</button>
+                </div>
+            </div>
         </div>
     </div>
 </script>
 
 <script type="text/template" id="CurveSummaryListView" xmlns="http://www.w3.org/1999/html">
-    <div class="span4" style="margin-left:5px;width:300px;height:720px;">
+    <div class="col-md-12" style="">
         <div class="bv_curveEditorDirtyPanel"></div>
-        <div class="bv_curveSummaries well well-small" style="background-color:#ffffff;width:275px;height:600px;margin-bottom:0;"></div>
+        <div class="bv_curveSummaries well" style="background-color:#ffffff;height:calc(100vh - 300px);max-height:650px;min-height:400px;overflow-y:auto;"></div>
     </div>
 </script>
 
 <script type="text/template" id="DoseResponseKnockoutPanelView" xmlns="http://www.w3.org/1999/html">
-    <div class="modal hide bv_doseResponseKnockoutPanel">
-        <div class="modal-header">
-            <h4>Flag points</h4>
-        </div>
-        <div class="controls modal-body">
-            Reason for flagging: <select class="bv_dataDictPicklist" style="width:350px;"></select>
-        </div>
-        <div class="modal-footer">
-            <button class="btn bv_doseResponseKnockoutPanelOKBtn" data-dismiss="modal" aria-hidden="true">OK</button>
+    <div class="modal fade bv_doseResponseKnockoutPanel" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Flag points</h4>
+                </div>
+                <div class="modal-body">
+                    Reason for flagging: <select class="form-control bv_dataDictPicklist" style="width:350px;display:inline-block;"></select>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default bv_doseResponseKnockoutPanelOKBtn" aria-hidden="true">OK</button>
+                </div>
+            </div>
         </div>
     </div>
 </script>
 
 <script type="text/template" id="DoseResponsePlotView" xmlns="http://www.w3.org/1999/html">
 
-    <div class="bv_plotWindow" style="height:348px;width:600px;">plot view</div>
+    <div class="bv_plotWindow" style="height:auto;min-height:350px;max-height:500px;width:100%;min-width:300px;">plot view</div>
     <div class="bv_doseResponseKnockoutPanel"></div>
 </script>
 
 <script type="text/template" id="CurveEditorView" xmlns="http://www.w3.org/1999/html">
 
-    <div class="span6" style="margin-left:0;">
-
-        <div class="span3" style="width:600px;margin-top:0px;margin-bottom:10px;">
+<div class="row">
+    <!-- Column 1: Category, Plot, Model Fit Summary -->
+    <div class="col-xl-9 col-lg-8 col-md-12 col-sm-12">
+        <!-- Category and Status Section -->
+        <div style="margin-top:0px;margin-bottom:10px;">
             <span class="pull-left" style="margin-top:10px;margin-right:10px;"><strong>Category:</strong></span>
-            <div class="well well-small bv_category pull-left" style="background-color:#ffffff;overflow:auto;margin-bottom:0;width:210px;"></div>
-            <div class="bv_pass pull-right" style="margin-left:10px;margin-top:10px;"><span class="badge badge-success" title="Algorithm approved." style="background-color:#55B779;"><i class="icon-ok icon-white"></i></span></div>
-            <div class="bv_fail pull-right" style="margin-left:10px;margin-top:10px;"><span class="badge badge-important" title="Algorithm not approved." style="background-color:#DA5057;"><i class="icon-remove icon-white"></i></span></div>
+            <span class="bv_category pull-left" style="margin-top:10px;margin-right:20px;"></span>
+            <div class="bv_pass pull-right" style="margin-left:10px;margin-top:10px;"><span class="label label-success" title="Algorithm approved." style="background-color:#55B779;"><i class="glyphicon glyphicon-ok"></i></span></div>
+            <div class="bv_fail pull-right" style="margin-left:10px;margin-top:10px;"><span class="label label-danger" title="Algorithm not approved." style="background-color:#DA5057;"><i class="glyphicon glyphicon-remove"></i></span></div>
             <span class="pull-right" style="margin-top:10px;"><strong>Algorithm:</strong></span>
-            <div class="bv_thumbsUp pull-right" style="margin-left:10px;margin-top:10px;margin-right:10px;"><span class="badge badge-success" title="User approved." style="background-color:#55B779;"><i class="icon-thumbs-up icon-white"></i></span></div>
-            <div class="bv_thumbsDown pull-right" style="margin-left:10px;margin-top:10px;margin-right:10px;"><span class="badge badge-important" title="User not approved." style="background-color:#DA5057;"><i class="icon-thumbs-down icon-white"></i></span></div>
-            <div class="bv_na pull-right" style="margin-top:10px;margin-left:10px;margin-right:10px;"><span class="badge" title="User not curated.">NA</span></div>
+            <div class="bv_thumbsUp pull-right" style="margin-left:10px;margin-top:10px;margin-right:10px;"><span class="label label-success" title="User approved." style="background-color:#55B779;"><i class="glyphicon glyphicon-thumbs-up"></i></span></div>
+            <div class="bv_thumbsDown pull-right" style="margin-left:10px;margin-top:10px;margin-right:10px;"><span class="label label-danger" title="User not approved." style="background-color:#DA5057;"><i class="glyphicon glyphicon-thumbs-down"></i></span></div>
+            <div class="bv_na pull-right" style="margin-top:10px;margin-left:10px;margin-right:10px;"><span class="label label-default" title="User not curated.">NA</span></div>
             <span class="pull-right" style="margin-top:10px;"><strong>User approved:</strong></span>
         </div>
 
-        <div class="bv_plotWindowWrapper span6"></div>
+        <!-- Plot Window -->
+        <div class="bv_plotWindowWrapper" style="margin-bottom:15px;width:100%;height:auto;min-height:350px;max-height:500px;"></div>
 
-    </div>
-
-    <div class="bv_fitOptionWrapper span5" style="margin-left:60px;width:370px;">
-        <div class="bv_analysisParameterForm"></div>
-    </div>
-
-    <div class="bv_curveFitParameters"></div>
-
-    <div class="pull-right" style="width:370px;">
-
-        <div class="span4 pull-left" style="margin-left:0;">
-            <h5 class="span2" style="width:120px;margin-top:0px;margin-left:0;margin-bottom:0;">Reported Values:</h5>
-            <div class="well well-small bv_compoundCode" style="background-color:#ffffff;overflow:auto;margin-bottom:4px;width:230px;padding-top:2px;padding-bottom:2px;"></div>
-            <div class="well well-small bv_reportedValues" style="background-color:#ffffff;height:90px;margin-bottom:10px;padding-top:1px;padding-bottom:18px;"></div>
-        </div>
-
-        <div class="span4 pull-left" style="margin-left:0;">
-            <h5 style="margin-top:0;">Parameter Std. Errors:</h5>
-            <div class="well well-small bv_parameterStdErrors" style="background-color:#ffffff;height:110px;overflow:auto;margin-bottom:10px;"></div>
-        </div>
-
-        <div class="span4 pull-left" style="margin-left:0;">
-            <h5 style="margin-top:0;">Fit Metrics:</h5>
-            <div class="well well-small bv_curveErrors" style="background-color:#ffffff;height:70px;overflow:auto;margin-bottom:10px;"></div>
-        </div>
-
-        <div class="span4" style="margin-left:0;">
-            <button class="btn btn-danger bv_reject" style="width:90px;padding-left:0;padding-right:0;" type="button">
-                Reject
-                <i class="icon-thumbs-down icon-white"></i>
-            </button>
-            <button class="btn btn-success bv_approve" style="width:90px;padding-left:0;padding-right:0;" type="button">
-                Approve
-                <i class="icon-thumbs-up icon-white"></i>
-            </button>
-            <button class="btn btn-default bv_reset" style="width:90px;padding-left:0;padding-right:0;" type="button">
-                Reset
-                <i class="icon-refresh"></i>
-            </button>
-            <button class="btn btn-primary bv_update" style="width:88px;padding-left:0;padding-right:0;"  type="button">
-                Save
-            </button>
-        </div>
-    </div>
-    </div>
-
-    <div class="span4 pull-left" style="margin-left:0px">
-        <div class="span5" style="width:602px;">
+        <!-- Model Fit Summary -->
+        <div>
             <h5 style="margin-top:10px;">Model Fit Summary:</h5>
-            <div class="well well-small bv_fitSummary" style="background-color:#ffffff;height:280px;overflow:auto;margin-bottom:10px;"></div>
+            <div class="well well-sm bv_fitSummary" style="background-color:#ffffff;height:280px;max-height:350px;min-height:200px;overflow:auto;margin-bottom:10px;padding:0;"></div>
         </div>
     </div>
 
-    <div class="span5" style="margin-left:0px;">
-        <!--<div class="span5" style="width:450px;margin-left:170px;">-->
-                        <!--<button class="btn btn-danger bv_reject" style="width:90px;padding-left:0;padding-right:0;" type="button">-->
-                            <!--Reject-->
-                            <!--<i class="icon-thumbs-down icon-white"></i>-->
-                        <!--</button>-->
-                        <!--<button class="btn btn-success bv_approve" style="width:90px;padding-left:0;padding-right:0;" type="button">-->
-                            <!--Approve-->
-                            <!--<i class="icon-thumbs-up icon-white"></i>-->
-                        <!--</button>-->
-                        <!--<button class="btn btn-default bv_reset" style="width:90px;padding-left:0;padding-right:0;" type="button">-->
-                            <!--Reset-->
-                            <!--<i class="icon-refresh"></i>-->
-                        <!--</button>-->
-                        <!--<button class="btn btn-primary bv_update" style="width:88px;padding-left:0;padding-right:0;"  type="button">-->
-                            <!--Save-->
-                        <!--</button>-->
-                <!--</div>-->
-            <!--</div>-->
-    </div>
-
-
-    <div class="modal bv_statusDropDown hide">
-        <div class="modal-header">
-            <h3>Loading</h3>
+    <!-- Column 2: Controls and Data -->
+    <div class="col-xl-3 col-lg-4 col-md-12 col-sm-12">
+        <!-- Row 1: Fit Options -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="bv_fitOptionWrapper" style="margin-bottom:15px;">
+                    <div class="bv_analysisParameterForm"></div>
+                </div>
+            </div>
         </div>
-        <div class="modal-body">
-            <div>
-                <br />
-                <div class="progress progress-striped active">
-                    <div class="bar" style="width:100%"></div>
+
+        <!-- Row 3: Reported Values -->
+        <div class="row">
+            <div class="col-md-12">
+                <div style="margin-bottom:15px;">
+                    <h5>Reported Values: <span class="bv_compoundCode" style="font-weight:normal;"></span></h5>
+                    <div class="well well-small bv_reportedValues" style="background-color:#ffffff;height:90px;max-height:120px;min-height:70px;margin-bottom:10px;padding:0;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 4: Parameter Std. Errors -->
+        <div class="row">
+            <div class="col-md-12">
+                <div style="margin-bottom:15px;">
+                    <h5>Parameter Std. Errors:</h5>
+                    <div class="well well-sm bv_parameterStdErrors" style="background-color:#ffffff;height:110px;max-height:150px;min-height:80px;overflow:auto;margin-bottom:10px;padding:0;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 5: Fit Metrics -->
+        <div class="row">
+            <div class="col-md-12">
+                <div style="margin-bottom:15px;">
+                    <h5>Fit Metrics:</h5>
+                    <div class="well well-sm bv_curveErrors" style="background-color:#ffffff;height:70px;max-height:100px;min-height:50px;overflow:auto;margin-bottom:10px;padding:0;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 6: Action Buttons -->
+        <div class="row">
+            <div class="col-md-12">
+                <div style="white-space:nowrap;overflow:hidden;">
+                    <button class="btn btn-danger bv_reject" style="width:auto;max-width:115px;min-width:75px;padding-left:8px;padding-right:8px;padding-top:6px;padding-bottom:6px;margin-bottom:5px;margin-right:3px;display:inline-block;font-size:13px;" type="button">
+                        Reject
+                        <i class="glyphicon glyphicon-thumbs-down"></i>
+                    </button>
+                    <button class="btn btn-success bv_approve" style="width:auto;max-width:115px;min-width:75px;padding-left:8px;padding-right:8px;padding-top:6px;padding-bottom:6px;margin-bottom:5px;margin-right:3px;display:inline-block;font-size:13px;" type="button">
+                        Approve
+                        <i class="glyphicon glyphicon-thumbs-up"></i>
+                    </button>
+                    <button class="btn btn-default bv_reset" style="width:auto;max-width:115px;min-width:75px;padding-left:8px;padding-right:8px;padding-top:6px;padding-bottom:6px;margin-bottom:5px;margin-right:3px;display:inline-block;font-size:13px;" type="button">
+                        Reset
+                        <i class="icon-refresh"></i>
+                    </button>
+                    <button class="btn btn-primary bv_update" style="width:auto;max-width:115px;min-width:75px;padding-left:8px;padding-right:8px;padding-top:6px;padding-bottom:6px;margin-bottom:5px;display:inline-block;font-size:13px;" type="button">
+                        Save
+                    </button>
                 </div>
             </div>
         </div>
     </div>
+
+
+    <div class="modal fade bv_statusDropDown" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Loading</h4>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <br />
+                        <div class="progress progress-striped active">
+                            <div class="progress-bar" style="width:100%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 </script>
 
 <script type="text/template" id="CurveCuratorView" xmlns="http://www.w3.org/1999/html">
-    <div class=" well well-small span12" style="background-color:#FFFFFF;width:1315px;height:750px;padding-top:10px;padding-bottom:0;">
-
-        <div class="span3" style="margin-left:0;width:300px;">
-            <div class="form-horizontal" style="margin-bottom:10px;">
-                <div class="control-group bv_group_category" style="margin-bottom:10px;">
-                    <label class="control-label" style="width:65px;">Category:</label>
-                    <div class="controls" style="margin-left:80px;">
-                        <select class="bv_filterBy">
-                            <option>Sigmoid</option>
-                            <option>All</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="control-group bv_group_sortBy" style="margin-bottom:10px;">
-                    <label class="control-label" style="width:65px;">Sort By:</label>
-                    <div class="controls" style="margin-left:70px;">
-                        <select class="bv_sortBy" style="margin-left:10px;">
-                            <option>Compound ID</option>
-                        </select>
-                    </div>
-                    <div style="margin-top:15px;margin-left:5px;">
-                        <div class="pull-left">
-                        <label class="radio" style="padding-left:25px;">
-                            <input type="radio" name="bv_sortDirection" class="bv_sortDirection_ascending" value="ascending" style=""/>Ascending
-                        </label>
+    <div style="background-color:#FFFFFF;min-height:calc(100vh - 100px);padding:15px;border:1px solid #e3e3e3;border-radius:4px;width:100%;box-sizing:border-box;">
+        <div class="row">
+            <!-- Column 1: Controls and Curve List -->
+            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-12">
+                <div class="form-horizontal" style="margin-bottom:10px;">
+                    <div class="form-group bv_group_category" style="margin-bottom:10px;">
+                        <label class="control-label col-sm-4 col-xs-12">Category:</label>
+                        <div class="col-sm-8 col-xs-12">
+                            <select class="form-control bv_filterBy">
+                                <option>Sigmoid</option>
+                                <option>All</option>
+                            </select>
                         </div>
-                        <div class="pull-left" style="margin-left:10px;">
-                        <label class="radio" style="padding-left:25px;">
-                            <input type="radio" name="bv_sortDirection" class="bv_sortDirection_descending" value="descending" style="margin-right:5px;"/>Descending
-                        </label>
+                    </div>
+                    <div class="form-group bv_group_sortBy" style="margin-bottom:10px;">
+                        <label class="control-label col-sm-4 col-xs-12">Sort By:</label>
+                        <div class="col-sm-8 col-xs-12">
+                            <select class="form-control bv_sortBy">
+                                <option>Compound ID</option>
+                            </select>
                         </div>
-                        <button class = "btn btn-mini btn-default bv_approve_uncurated pull-right" type="button">Approve NAs</button>
+                    </div>
+                    <div style="margin-top:10px;">
+                        <label class="radio-inline">
+                            <input type="radio" name="bv_sortDirection" class="bv_sortDirection_ascending" value="ascending" />Ascending
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="bv_sortDirection" class="bv_sortDirection_descending" value="descending" />Descending
+                        </label>
+                        <button class="btn btn-xs btn-default bv_approve_uncurated" type="button" style="float:right; margin-left:5px;">Approve NAs</button>
+                    </div>
+                </div>
+                <div class="bv_curveList"></div>
+            </div>
+            
+            <!-- Column 2: Curve Editor Content (takes remaining width) -->
+            <div class="col-xl-10 col-lg-9 col-md-8 col-sm-12">
+                <div class="bv_curveEditor"></div>
+            </div>
+        </div>
+    </div>
+
+        <div class="modal fade bv_curveCuratorDropDown" tabindex="-1" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Loading</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div>
+                            <br />
+                            <div class="progress progress-striped active">
+                                <div class="progress-bar" style="width:100%"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="bv_curveList" ></div>
         </div>
 
-        <div class="bv_curveEditor span11" ></div>
-
-        <div class="modal bv_curveCuratorDropDown hide">
-            <div class="modal-header">
-                <h3>Loading</h3>
-            </div>
-            <div class="modal-body">
-                <div>
-                    <br />
-                    <div class="progress progress-striped active">
-                        <div class="bar" style="width:100%"></div>
+        <div class="modal fade bv_badExperimentCode" tabindex="-1" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Error</h4>
+                    </div>
+                    <div class="modal-body">
+                        Can not find <%- window.conf.experiment.label %> code supplied in URL
+                        <div>
+                            <br />
+                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="modal bv_badExperimentCode hide">
-            <div class="modal-header">
-                <h3>Error</h3>
-            </div>
-            <div class="modal-body">
-                Can not find <%- window.conf.experiment.label %> code supplied in URL
-                <div>
-                    <br />
-                 </div>
-            </div>
-        </div>
-
-        <div class="modal bv_experimentLocked hide">
-            <div class="modal-header">
-                <h3><span class="icon-lock" style="padding-top:5px;"></span>
-                    Locked
-                </h3>
-            </div>
-            <div class="modal-body">
-                This <%- window.conf.experiment.label %> is locked for editing. You can can look around and adjust settings but you cannot save curations until the <%- window.conf.experiment.label %> is unlocked.
-                <div>
-                    <br />
-                 </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn bv_eperimentLockedOKBtn" data-dismiss="modal" aria-hidden="true">OK</button>
-            </div>
-        </div>
-
-        <div class="modal bv_badCurveID hide">
-            <div class="modal-header">
-                <h3>Error</h3>
-            </div>
-            <div class="modal-body">
-                Could not load curve detail
-                <div>
-                    <br />
+        <div class="modal fade bv_experimentLocked" tabindex="-1" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title"><span class="glyphicon glyphicon-lock" style="padding-top:5px;"></span>
+                            Locked
+                        </h4>
+                    </div>
+                    <div class="modal-body">
+                        This <%- window.conf.experiment.label %> is locked for editing. You can can look around and adjust settings but you cannot save curations until the <%- window.conf.experiment.label %> is unlocked.
+                        <div>
+                            <br />
+                         </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-default bv_eperimentLockedOKBtn" aria-hidden="true">OK</button>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="modal bv_badCurveUpdate hide">
-            <div class="modal-header">
-                <h3>Error</h3>
+        <div class="modal fade bv_badCurveID" tabindex="-1" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Error</h4>
+                    </div>
+                    <div class="modal-body">
+                        Could not load curve detail
+                        <div>
+                            <br />
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="modal-body">
-                An error occured performing requested action
-                <div>
-                    <br />
+        </div>
+
+        <div class="modal fade bv_badCurveUpdate" tabindex="-1" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Error</h4>
+                    </div>
+                    <div class="modal-body">
+                        An error occured performing requested action
+                        <div>
+                            <br />
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

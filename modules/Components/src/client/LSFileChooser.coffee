@@ -39,6 +39,7 @@ class LSFileChooserController extends Backbone.View
 			'handleFileAddedEvent',
 			'fileUploadComplete',
 			'fileUploadFailed',
+			'handleFileValidationFailed',
 			'canAcceptAnotherFile',
 			'filePassedServerValidation')
 
@@ -83,39 +84,42 @@ class LSFileChooserController extends Backbone.View
 	
 	handleDragOverDocument: ->
 		if @canAcceptAnotherFile()
-			@$('.bv_manualFileSelect').hide()
-			@$('.' + @.options.dropZoneClassId).show()    
+			@$('.bv_manualFileSelect').removeClass('in').addClass('hide')
+			@$('.' + @.options.dropZoneClassId).addClass('fade in')    
 	
 	handleDragLeaveDocument: ->
 		if !@mouseIsInDropField
 			if @canAcceptAnotherFile()
-				@$('.' + @.options.dropZoneClassId).hide()
-				@$('.bv_manualFileSelect').show()
+				@$('.' + @.options.dropZoneClassId).removeClass('in')
+				@$('.bv_manualFileSelect').removeClass('hide').addClass('fade in')
 
 	handleFileValueChanged: ->
 		@trigger 'fileDeleted'
 
 	handleDeleteFileUIChanges: ->
-		@$('.bv_manualFileSelect').show("slide")
 		@currentNumberOfFiles--
+		# Ensure counter doesn't go below zero
+		if @currentNumberOfFiles < 0
+			@currentNumberOfFiles = 0
+		@$('.bv_manualFileSelect').removeClass('hide').addClass('fade in')
 		this.trigger('fileUploader:removedFile')
 		
 	handleFileAddedEvent: (e, data) ->
 		@currentNumberOfFiles++
 		unless @canAcceptAnotherFile()
-			@$('.bv_manualFileSelect').hide("slide")
+			@$('.bv_manualFileSelect').removeClass('in').addClass('hide')
 
 	fileUploadComplete:(e, data) ->
 		self = @
 		# this is a work around for hiding the delete button after files are uploaded
 		unless @options.hideDelete
-			@$('.delete').show()
+			@$('.delete').addClass('fade in')
 		_.each(data.result.files, (result) ->
 			self.listOfFileModels.push(new LSFileChooserModel({fileNameOnServer: result.name}))
 		)
 		this.trigger('fileUploader:uploadComplete', data.result.files[0])
 		if (@requiresValidation)
-			@$('.dv_validatingProgressBar').show("slide")
+			@$('.dv_validatingProgressBar').addClass('fade in')
 		@delegateEvents()
 
 		#window.notificationController.addInfo("file uploaded!")
@@ -125,14 +129,23 @@ class LSFileChooserController extends Backbone.View
 		window.notificationController.addError("file upload failed!")
 	
 	filePassedServerValidation: ->
-		@$('.bv_status').addClass('icon-ok-sign')
+		@$('.bv_status').addClass('glyphicon glyphicon-ok-sign')
 		#window.notificationController.addInfo("file is valid!")
-		@$('.dv_validatingProgressBar').hide("slide")
+		@$('.dv_validatingProgressBar').removeClass('in')
 		
 	fileFailedServerValidation: ->
-		@$('.bv_status').addClass('icon-exclamation-sign')
+		@$('.bv_status').addClass('glyphicon glyphicon-exclamation-sign')
 		#window.notificationController.addError("file is invalid!")
-		@$('.dv_validatingProgressBar').hide("slide")
+		@$('.dv_validatingProgressBar').removeClass('in')
+	
+	handleFileValidationFailed: (e, data) ->
+		# Re-render template to show error message
+		@$('.files').empty()
+		@$('.fileupload').fileupload('add', data)
+		# Decrement counter for failed file and show browse button if space available
+		@currentNumberOfFiles--
+		if @canAcceptAnotherFile()
+			@$('.bv_manualFileSelect').removeClass('hide').addClass('fade in')
 
 	render: ->
 		self = @
@@ -150,6 +163,9 @@ class LSFileChooserController extends Backbone.View
 			autoUpload: self.autoUpload
 			dropZone:  @$('.' + self.dropZoneClassId)
 			maxNumberOfFiles: @maxNumberOfFiles
+			progressall: (e, data) ->
+				progress = parseInt(data.loaded / data.total * 100, 10)
+				$('.progress .progress-bar').css('width', progress + '%')
 		})
 		
 		@$('.' + @dropZoneClassId).bind('mouseover', (e) -> @mouseIsInDropField = true)
@@ -164,6 +180,9 @@ class LSFileChooserController extends Backbone.View
 		@$('.fileupload').bind('fileUploadFailed', @fileUploadComplete)
 		@$('.fileupload').bind('fileuploaddestroyed', @handleDeleteFileUIChanges)
 		#@$('.fileupload').bind('fileuploadstopped', @handleDeleteFileUIChanges)
+		
+		# Handle file validation failures (e.g., wrong file type)
+		@$('.fileupload').bind('fileuploadprocessfail', @handleFileValidationFailed)
 
 		if @maxNumberOfFiles == 1
 			@$(".fileinput-button input").attr("multiple", false)

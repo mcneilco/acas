@@ -86,12 +86,12 @@ class SaltEditorController extends AbstractFormController
 		if @model.isNew()
 			@$('.bv_name').removeAttr 'disabled'
 			@$('.bv_save').html("Save")
-			@$('.bv_newEntity').hide()
+			@$('.bv_newEntity').addClass('hide')
 		else
 			@$('.bv_name').attr 'disabled', 'disabled'
 			@$('.bv_save').html("Update")
-			@$('.bv_newEntity').show()
-			@$('.bv_cancel').hide()
+			@$('.bv_newEntity').removeClass('hide')
+			@$('.bv_cancel').addClass('hide')
 		@$('.bv_save').attr('disabled', 'disabled')
 		@$('.bv_cancel').attr('disabled','disabled')
 
@@ -102,15 +102,15 @@ class SaltEditorController extends AbstractFormController
 
 	modelSyncCallback: =>
 		@trigger 'amClean'
-		@$('.bv_saving').hide()
-		@$('.bv_saveComplete').show()
+		@$('.bv_saving').addClass('hide')
+		@$('.bv_saveComplete').removeClass('hide')
 		@render()
 
 	modelChangeCallback: =>
 		@trigger 'amDirty'
-		@$('.bv_saveComplete').hide()
+		@$('.bv_saveComplete').addClass('hide')
 		@$('.bv_cancel').removeAttr('disabled')
-		@$('.bv_cancelComplete').hide()
+		@$('.bv_cancelComplete').addClass('hide')
 
 	updateModel: =>
 
@@ -120,8 +120,8 @@ class SaltEditorController extends AbstractFormController
 		else
 			@$('.bv_saveComplete').html "Update Complete"
 		@$('.bv_save').attr('disabled', 'disabled')
-		@$('.bv_saving').show()
-		@$('.bv_cancel').hide()
+		@$('.bv_saving').removeClass('hide')
+		@$('.bv_cancel').addClass('hide')
 		console.log "handleSaveClicked"
 		@model.save null,
 			success: (model, response) ->
@@ -151,14 +151,14 @@ class SaltEditorController extends AbstractFormController
 			@model = null
 			@completeInitialization()
 		else
-			@$('.bv_canceling').show()
+			@$('.bv_canceling').removeClass('hide')
 			@model.fetch
 				success: @handleCancelComplete
 		@trigger 'amClean'
 
 	handleCancelComplete: =>
-		@$('.bv_canceling').hide()
-		@$('.bv_cancelComplete').show()
+		@$('.bv_canceling').addClass('hide')
+		@$('.bv_cancelComplete').removeClass('hide')
 
 	validationError: =>
 		super()
@@ -173,8 +173,8 @@ class SaltEditorController extends AbstractFormController
 			@displayInReadOnlyMode()
 
 	displayInReadOnlyMode: =>
-		@$(".bv_save").hide()
-		@$(".bv_cancel").hide()
+		@$(".bv_save").addClass('hide')
+		@$(".bv_cancel").addClass('hide')
 		@disableAllInputs()
 
 

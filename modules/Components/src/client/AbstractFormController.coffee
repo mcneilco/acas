@@ -19,10 +19,10 @@ class AbstractFormController extends Backbone.View
 	lockEditingForSessionKey: null
 
 	show: ->
-		$(@el).show()
+		$(@el).removeClass('hide')
 
 	hide: ->
-		$(@el).hide()
+		$(@el).addClass('hide')
 
 	cancel: ->
 		@clearValidationErrorStyles()
@@ -47,7 +47,11 @@ class AbstractFormController extends Backbone.View
 
 		_.each errors, (err) =>
 			unless @$('.bv_'+err.attribute).attr('disabled') is 'disabled'
-				@$('.bv_group_'+err.attribute).addClass 'input_error error'
+				@$('.bv_group_'+err.attribute).addClass 'input_error error has-error'
+				@$('.bv_group_'+err.attribute).attr('data-toggle', 'tooltip')
+				@$('.bv_group_'+err.attribute).attr('data-placement', 'bottom')
+				@$('.bv_group_'+err.attribute).attr('title', err.message)
+				@$('.bv_group_'+err.attribute).tooltip()
 				@trigger 'notifyError',  owner: this.errorOwnerName, errorLevel: 'error', message: err.message
 		@trigger 'invalid'
 
@@ -55,7 +59,12 @@ class AbstractFormController extends Backbone.View
 		errorElms = @$('.input_error')
 		@trigger 'clearErrors', @errorOwnerName
 		_.each errorElms, (ee) =>
-			$(ee).removeClass 'input_error error'
+			$(ee).removeClass 'input_error error has-error'
+			$(ee).removeAttr('data-toggle')
+			$(ee).removeAttr('data-placement')
+			$(ee).removeAttr('title')
+			$(ee).tooltip('destroy')
+				# Ignore tooltip destroy errors
 
 	isValid: ->
 		@model.isValid()

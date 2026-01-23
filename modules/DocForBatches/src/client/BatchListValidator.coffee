@@ -70,7 +70,7 @@ class BatchNameList extends Backbone.Collection
 class BatchNameController extends Backbone.View
 	template: _.template($("#BatchNameView").html())
 	tagName: "tr"
-	className: "batchNameView control-group"
+	className: "batchNameView form-group"
 	events:
 		"click .bv_removeBatch": "clear"
 		"change .bv_comment": "updateComment"

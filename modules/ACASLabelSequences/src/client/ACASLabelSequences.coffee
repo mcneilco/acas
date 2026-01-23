@@ -113,7 +113,7 @@ class ACASLabelSequenceRoleController extends AbstractFormController
 			newModel = new ACASLabelSequenceRole
 				lsRole: role
 			@model.set "ignored", true
-			@$('.bv_labelSequenceRoleWrapper').hide()
+			@$('.bv_labelSequenceRoleWrapper').addClass('hide')
 			@trigger 'addNewModel', newModel
 		else
 			@model.set
@@ -123,7 +123,7 @@ class ACASLabelSequenceRoleController extends AbstractFormController
 	clear: =>
 		if @model.get('id')?
 			@model.set "ignored", true
-			@$('.bv_labelSequenceRoleWrapper').hide()
+			@$('.bv_labelSequenceRoleWrapper').addClass('hide')
 		else
 			@model.destroy()
 		@trigger 'amDirty'
@@ -182,10 +182,8 @@ class ACASLabelSequenceRoleListController extends Backbone.View
 			unless @$('.bv_'+err.attribute).attr('disabled') is 'disabled'
 				@$('.bv_group_'+err.attribute).attr('data-toggle', 'tooltip')
 				@$('.bv_group_'+err.attribute).attr('data-placement', 'bottom')
-				@$('.bv_group_'+err.attribute).attr('data-original-title', err.message)
-				#				@$('.bv_group_'+err.attribute).tooltip();
-				@$("[data-toggle=tooltip]").tooltip();
-				@$("body").tooltip selector: '.bv_group_'+err.attribute
+				@$('.bv_group_'+err.attribute).attr('title', err.message)
+				@$('.bv_group_'+err.attribute).tooltip()
 				@$('.bv_group_'+err.attribute).addClass 'input_error error'
 				@trigger 'notifyError',  owner: this.errorOwnerName, errorLevel: 'error', message: err.message
 
@@ -298,37 +296,37 @@ class ACASLabelSequenceController extends AbstractFormController
 		@$('.bv_cancel').attr('disabled','disabled')
 		if @model.isNew()
 			@$('.bv_save').html("Save")
-			@$('.bv_newEntity').hide()
+			@$('.bv_newEntity').addClass('hide')
 		else
 			@$('.bv_save').html("Update")
-			@$('.bv_newEntity').show()
+			@$('.bv_newEntity').removeClass('hide')
 		@
 
 	handleSaveFailed: =>
-		@$('.bv_saveFailed').show()
-		@$('.bv_saveComplete').hide()
-		@$('.bv_saving').hide()
+		@$('.bv_saveFailed').removeClass('hide')
+		@$('.bv_saveComplete').addClass('hide')
+		@$('.bv_saving').addClass('hide')
 
 	modelSaveCallback: (method, model) =>
-		@$('.bv_save').hide()
-		@$('.bv_cancel').hide()
+		@$('.bv_save').addClass('hide')
+		@$('.bv_cancel').addClass('hide')
 		@$('.bv_save').attr('disabled', 'disabled')
 		unless @$('.bv_saveFailed').is(":visible")
-			@$('.bv_saveComplete').show()
-			@$('.bv_saving').hide()
+			@$('.bv_saveComplete').removeClass('hide')
+			@$('.bv_saving').addClass('hide')
 		@$('input').prop 'disabled', true
 		@$('select').prop 'disabled', true
-		@$('.bv_addLabelSequenceRoleButton').hide()
+		@$('.bv_addLabelSequenceRoleButton').addClass('hide')
 		@render()
 		@trigger 'amClean'
 
 	modelChangeCallback: (method, model) =>
 		@trigger 'amDirty'
 		@checkFormValid()
-		@$('.bv_saveComplete').hide()
-		@$('.bv_saveFailed').hide()
+		@$('.bv_saveComplete').addClass('hide')
+		@$('.bv_saveFailed').addClass('hide')
 		@$('.bv_cancel').removeAttr('disabled')
-		@$('.bv_cancelComplete').hide()
+		@$('.bv_cancelComplete').addClass('hide')
 
 	setupACASLabelSequenceRoleListController: ->
 		if @acasLabelSequenceRoleListController?
@@ -351,8 +349,8 @@ class ACASLabelSequenceController extends AbstractFormController
 		@acasLabelSequenceRoleListController.render()
 		@acasLabelSequenceRoleListController.on 'amDirty', =>
 			@trigger 'amDirty'
-			@$('.bv_saveComplete').hide()
-			@$('.bv_saveFailed').hide()
+			@$('.bv_saveComplete').addClass('hide')
+			@$('.bv_saveFailed').addClass('hide')
 			@checkFormValid()
 
 	setupLabelTypeAndKindSelect: ->
@@ -382,14 +380,14 @@ class ACASLabelSequenceController extends AbstractFormController
 			@model = null
 			@completeInitialization()
 		else
-			@$('.bv_canceling').show()
+			@$('.bv_canceling').removeClass('hide')
 			@model.fetch
 				success: @handleCancelComplete
 		@trigger 'amClean'
 
 	handleCancelComplete: =>
-		@$('.bv_canceling').hide()
-		@$('.bv_cancelComplete').show()
+		@$('.bv_canceling').addClass('hide')
+		@$('.bv_cancelComplete').removeClass('hide')
 
 	updateModel: =>
 		@model.set("labelPrefix", UtilityFunctions::getTrimmedInput @$('.bv_labelPrefix'))
@@ -411,9 +409,9 @@ class ACASLabelSequenceController extends AbstractFormController
 
 	handleSaveClicked: =>
 		@saveLabelSequence()
-		@$('.bv_saving').show()
-		@$('.bv_saveFailed').hide()
-		@$('.bv_saveComplete').hide()
+		@$('.bv_saving').removeClass('hide')
+		@$('.bv_saveFailed').addClass('hide')
+		@$('.bv_saveComplete').addClass('hide')
 
 	saveLabelSequence: =>
 		@prepareToSaveLabelSequenceRoles()
@@ -458,13 +456,10 @@ class ACASLabelSequenceController extends AbstractFormController
 			@displayInReadOnlyMode()
 
 	displayInReadOnlyMode: =>
-		@$(".bv_save").hide()
-		@$(".bv_cancel").hide()
-		@$(".bv_newEntity").hide()
+		@$(".bv_save").addClass('hide')
+		@$(".bv_cancel").addClass('hide')
+		@$(".bv_newEntity").addClass('hide')
 		@$('button').attr 'disabled', 'disabled'
-		@$(".bv_startDateIcon").addClass "uneditable-input"
-		@$(".bv_startDateIcon").on "click", ->
-			return false
 		@disableAllInputs()
 
 	checkFormValid: =>

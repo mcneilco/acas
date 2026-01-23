@@ -76,7 +76,7 @@ class UtilityFunctions
 		for textarea in controller.$('textarea')
 			text = $(textarea).val().replace(/\r?\n/g,'<br/>')
 			$(textarea).after '<div style="width:650px; border:1px solid #cccccc; padding:6px;margin-bottom:20px;">'+text+'</div>'
-			$(textarea).hide()
+			$(textarea).addClass('hide')
 		
 	setInputsWidthToValue: (controller) =>
 		# increase size of text boxes to fit data
@@ -92,12 +92,12 @@ class UtilityFunctions
 				#find tab header
 				if $(tabHeader).attr("href") is "#"+$(tab).attr('id')
 					if $(tab).hasClass "active"
-						controller.$('.tab-pane.active').prepend '<div class="span12" style="margin-left:0px;"><h3>'+$(tabHeader).html()+'</h3></div>'
+						controller.$('.tab-pane.active').prepend '<div class="col-md-12" style="margin-left:0px;"><h3>'+$(tabHeader).html()+'</h3></div>'
 					else
-						controller.$('.tab-pane.active').append '<hr class="span12" style="margin-left:0px;"/>'
-						controller.$('.tab-pane.active').append '<div class="span12" style="margin-left:0px;"><h3>'+$(tabHeader).html()+'</h3></div>'
+						controller.$('.tab-pane.active').append '<hr class="col-md-12" style="margin-left:0px;"/>'
+						controller.$('.tab-pane.active').append '<div class="col-md-12" style="margin-left:0px;"><h3>'+$(tabHeader).html()+'</h3></div>'
 						controller.$('.tab-pane.active').append $(tab).html()
-		controller.$('.nav.nav-tabs').hide()
+		controller.$('.nav.nav-tabs').addClass('hide')
 
 	roundTwoDecimalPlaces: (num) ->
 		if isNaN(num) or num is null

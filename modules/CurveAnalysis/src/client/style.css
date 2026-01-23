@@ -6,12 +6,14 @@
 
 .bv_curveCurator .bv_curveList .bv_curveSummaries {
     /*height: 684px;*/
-    width: 265px;
+    width: 100%;
+    min-width: 290px;
     overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .bv_curveCurator .bv_curveSummary {
-    width: 250px;
+    width: calc(100% - 10px);
     height: 155px !important;
     margin-bottom: 10px;
     border-color: #e3e3e3;
@@ -21,8 +23,7 @@
 
 
 .bv_curveCurator .bv_curveEditor {
-    margin-left: 0;
-    width: 1010px;
+    /* Let Bootstrap grid handle sizing */
 }
 
 .bv_curveCurator .bv_plotWindow {
@@ -68,4 +69,25 @@
 
 .btn-group.open .btn-grey.dropdown-toggle {
     background-color: #999999;
+}
+
+/* Style OpenExperimentInQueryTool buttons when used in navbar */
+.navbar .bv_openExperimentInQueryToolPlaceholder .btn {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    margin-right: 5px;
+}
+
+.navbar .bv_openExperimentInQueryToolPlaceholder .btn-group {
+    margin-bottom: 0 !important;
+}
+
+.navbar .bv_openExperimentInQueryToolPlaceholder .bv_getLinkQueryTool {
+    margin-bottom: 0 !important;
+}
+
+.navbar .bv_openExperimentInQueryToolPlaceholder input {
+    margin-top: 0;
+    margin-bottom: 0;
+    height: 30px;
 }

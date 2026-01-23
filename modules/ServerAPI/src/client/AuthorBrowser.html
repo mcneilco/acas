@@ -1,34 +1,34 @@
 <script type="text/template" id="AuthorSimpleSearchView" xmlns="http://www.w3.org/1999/html">
-    <div class="navbar" style="margin-bottom: 0px; ">
-        <div class="navbar-inner" style="border-bottom-left-radius:	0px; border-bottom-right-radius:	0px;">
-            <div class="control-group" style="margin-top: 5px; margin-bottom: 5px;">
-                <div class="input-append">
-                    <input class="bv_authorSearchTerm" style="
-							padding-right: 14px;
-							border-top-left-radius: 15px;
-							border-bottom-left-radius: 15px;
-							" type="text" placeholder="Search for authors">
-                    <button class="btn bv_doSearch add-on" style="
-							border-top-right-radius: 15px;
-							border-bottom-right-radius: 15px;
-							height: 30px;
-							margin-top: 0px;
-							background-color: #fff;
-							border-left: 0px;
-							border-bottom: 1px solid #cccccc;
-							border-right: 1px solid #cccccc;
-							border-top: 1px solid #cccccc;
-              box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
-              width: 2.5em; padding-right: 0.8em;transition: border 0.2s linear 0s, box-shadow 0.2s linear 0s;" type="button" disabled>
-                        <i class="icon-search bv_doSearchIcon"></i>
-                        <i class="icon-remove bv_clearSearchIcon hide"></i>
-                    </button>
+    <div class="navbar" style="margin-bottom: 0px; background-color: #f8f8f8; border: 1px solid #e7e7e7;">
+        <div class="container-fluid" style="border-bottom-left-radius:	0px; border-bottom-right-radius:	0px;">
+            <div class="form-group" style="margin-top: 5px; margin-bottom: 5px;">
+                <div class="input-group pull-left" style="width: 300px;">
+                    <input class="bv_authorSearchTerm form-control" style="
+					padding-right: 14px;
+					border-top-left-radius: 15px;
+					border-bottom-left-radius: 15px;
+					" type="text" placeholder="Search for authors">
+                    <span class="input-group-btn">
+                        <button class="btn btn-default bv_doSearch" style="
+						border-top-right-radius: 15px;
+						border-bottom-right-radius: 15px;
+						height: 34px;
+						margin-top: 0px;
+						background-color: #fff;
+						border-left: 0px;
+						border-bottom: 1px solid #cccccc;
+						border-right: 1px solid #cccccc;
+						border-top: 1px solid #cccccc;
+                  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
+                  transition: border 0.2s linear 0s, box-shadow 0.2s linear 0s;" type="button" disabled>
+                            <i class="glyphicon glyphicon-search bv_doSearchIcon"></i>
+                            <i class="glyphicon glyphicon-remove bv_clearSearchIcon hide"></i>
+                        </button>
+                    </span>
                 </div>
             </div>
         </div>
-    </div>
-
-</script>
+    </div></script>
 
 <script type="text/template" id="AuthorRowSummaryView" xmlns="http://www.w3.org/1999/html">
     <td class='bv_userName'><%-userName%></td>
@@ -61,7 +61,7 @@
         <div class="bv_searchAuthorsStatusIndicator" style="height: 280px;">
             <table width="100%">
                 <thead>
-                <tr><td style="display: none;">placeholder</td></tr>
+                <tr><td class="hide">placeholder</td></tr>
                 </thead>
                 <tbody>
                 <tr>
@@ -71,13 +71,13 @@
                         <h5 class="bv_errorOccurredPerformingSearch hide">An error occurred while searching for the author.</h5>
 
                         <div class="bv_authorBrowserSearchInstructions">
-                            <i class="icon-search bv_doSearchIcon"></i>
+                            <i class="glyphicon glyphicon-search bv_doSearchIcon"></i>
                             Author Browser
                         </div>
-                        <div class="hide bv_searchingAuthorsMessage" style="margin: auto;">
-                            <h5>Searching for Authors containing text "<i class="bv_exptSearchTerm"></i>"</h5>
+                        <div class="bv_searchingAuthorsMessage hide" style="margin: auto;">
+                            <h5>Searching for Authors containing text "<i class="bv_authorSearchTerm"></i>"</h5>
                             <div class="progress progress-striped active " style="width: 90%; margin: auto;">
-                                <div class="bar" style="width: 100%; margin: auto;"></div>
+                                <div class="progress-bar" style="width: 100%; margin: auto;"></div>
                             </div>
                         </div>
                     </td>
@@ -87,53 +87,59 @@
             </table>
         </div>
 
-        <div class="bv_authorTableController hide" style="margin:0px; padding:10px; overflow: auto; overflow: auto;"></div>
+        <div class="bv_authorTableController hide" style="margin:0px; padding:10px; overflow: auto;"></div>
     </div>
-    <div class="well well-small bv_authorControllerContainer hide" style="margin-top: 10px;">
+    <div class="well well-sm bv_authorControllerContainer hide" style="margin-top: 10px;">
         <div>
             <button class="btn btn-danger bv_deleteAuthor">Delete</button>
             <button class="btn bv_editAuthor pull-right">Edit</button>
         </div>
         <hr style="margin-top:40px;"/>
-        <div class="row-fluid">
+        <div class="row">
             <div class="bv_authorController hide"></div>
         </div>
     </div>
 
-    <div class="modal hide bv_confirmDeleteAuthor">
-        <div class="modal-header">
-            <h3>Delete Author</h3>
-        </div>
-        <div class="modal-body">
-            <div class="bv_deleteWarningMessage">
-                <p>Are you sure you would like to delete author: <span class="bv_authorUserName"></span>?</p>
+    <div class="modal fade bv_confirmDeleteAuthor" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4>Delete Author</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="bv_deleteWarningMessage">
+                        <p>Are you sure you would like to delete author: <span class="bv_authorUserName"></span>?</p>
+                    </div>
+                    <div class="bv_deletingStatusIndicator hide">
+                        <table width="100%">
+                            <tr>
+                                <td style="text-align: center; width: 100%">
+                                    <h4>Deleting Author</h4>
+                                    <div class="progress progress-striped active" style="width: 100%;">
+                                        <div class="progress-bar" style="width: 100%;"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="bv_authorDeletedSuccessfullyMessage hide">
+                        <p>Author <span class="bv_authorCodeName"></span> has successfully been deleted</p>
+                    </div>
+                    <div class="bv_errorDeletingAuthorMessage hide">
+                        <p>An error occured deleting Author <span class="bv_authorCodeName"></span>.  Please contact support for additional help.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="bv_deleteButtons">
+                        <button type="button" class="btn btn-primary bv_cancelDelete">Cancel</button>
+                        <button type="button" class="btn btn-danger bv_confirmDeleteAuthorButton">Delete Author</button>
+                    </div>
+                    <div class="bv_okayButton hide">
+                        <button type="button" class="btn btn-primary bv_cancelDelete">Okay</button>
+                    </div>
+                </div>
             </div>
-            <div class="bv_deletingStatusIndicator hide">
-                <table width="100%"></table>
-                <tr>
-                    <td style="text-align: center; width: 100%">
-                        <h4>Deleting Author</h4>
-                        <div class="progress progress-striped active" style="width: 100%;">
-                            <div class="bar" style="width: 100%;"></div>
-                        </div>
-                    </td>
-                </tr>
-            </div>
-            <div class="bv_authorDeletedSuccessfullyMessage hide">
-                <p>Author <span class="bv_authorCodeName"></span> has successfully been deleted</p>
-            </div>
-            <div class="bv_errorDeletingAuthorMessage hide">
-                <p>An error occured deleting Author <span class="bv_authorCodeName"></span>.  Please contact support for additional help.</p>
-            </div>
-        </div>
-        <div class="modal-footer">
-		    <span class="bv_deleteButtons">
-		      <a href="#" class="btn btn-primary bv_cancelDelete">Cancel</a>
-		      <a href="#" class="btn btn-danger bv_confirmDeleteAuthorButton">Delete Author</a>
-			  </span>
-		    <span class="bv_okayButton hide">
-			    <a href="#" class="btn btn-primary bv_cancelDelete">Okay</a>
-		    </span>
         </div>
     </div>
 </script>

@@ -26,18 +26,18 @@ class OpenExperimentInQueryToolController extends Backbone.View
     handleOpenInQueryToolClicked: =>
         unless @$('.bv_openInQueryToolButton').hasClass 'dropdown-toggle'
             # Add Generating Link Loading Mask 
-            @$('.bv_generatingLink').show()
+            @$('.bv_generatingLink').removeClass('hide')
             # Call to Route to Get URL 
             $.ajax
                 type: 'GET'
                 url: "/api/getLinkExptQueryTool?experiment=#{@code}"
                 success: (response) => 
                     # Take Away Generating Progress Mask 
-                    @$('.bv_generatingLink').hide()
+                    @$('.bv_generatingLink').addClass('hide')
                     UtilityFunctions::openURL(response)
                 error: (err) =>
                     # Take Away Generating Progress Mask 
-                    @$('.bv_generatingLink').hide()
+                    @$('.bv_generatingLink').addClass('hide')
                     toast = new ACASToast
                         type: "error"
                         title: "Cannot Open Experiment"
@@ -48,20 +48,20 @@ class OpenExperimentInQueryToolController extends Backbone.View
 
     handleGetLinkQueryToolClicked: => 
         # Add Generating Link Loading Mask 
-        @$('.bv_generatingLink').show()
+        @$('.bv_generatingLink').removeClass('hide')
         # Call to Route to Get URL 
         $.ajax
             type: 'GET'
             url: "/api/getLinkExptQueryTool?experiment=#{@code}"
             success: (response) => 
                 # Take Away Generating Progress Mask 
-                @$('.bv_generatingLink').hide()
-                @$('.bv_getLinkResults').show()
+                @$('.bv_generatingLink').addClass('hide')
+                @$('.bv_getLinkResults').removeClass('hide')
                 @$('.bv_exptLink').val(response)
                 @$('.bv_getLinkQueryToolButton').attr("disabled", true)
             error: (err) =>
                 # Take Away Generating Progress Mask 
-                @$('.bv_generatingLink').hide()
+                @$('.bv_generatingLink').addClass('hide')
                 toast = new ACASToast
                     type: "error"
                     title: "Cannot Generate Link"
@@ -102,6 +102,6 @@ class OpenExperimentInQueryToolController extends Backbone.View
         else
             @$('.bv_openInQueryToolButton').removeAttr 'data-toggle', 'dropdown'
             @$('.bv_openInQueryToolButton').removeClass 'dropdown-toggle'
-            @$('.bv_openInQueryToolButton .caret').hide()
+            @$('.bv_openInQueryToolButton .caret').addClass('hide')
             @$('.bv_openInQueryToolButton').html("Open In " + window.conf.service.result.viewer.displayName)
             @$('.bv_openInQueryTool').removeClass "btn-group"

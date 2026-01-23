@@ -133,8 +133,8 @@ class BasicFileController extends AbstractFormController
 
 	handleFileUpload: (file) =>
 		if @autoAddAttachFileModel
-			@$('.bv_delete').show()
-			@$('td.delete').hide()
+			@$('.bv_delete').removeClass('hide')
+			@$('td.delete').addClass('hide')
 		@model.set fileValue: file.name
 		@trigger 'fileUploaded'
 		@trigger 'amDirty'
@@ -144,7 +144,7 @@ class BasicFileController extends AbstractFormController
 			@model.destroy()
 		else
 			@model.set "ignored", true
-			@$('.bv_fileInfoWrapper').hide()
+			@$('.bv_fileInfoWrapper').addClass('hide')
 		@trigger 'removeFile'
 		@trigger 'amDirty'
 
@@ -258,10 +258,10 @@ class AttachFileController extends BasicFileController
 		unless uneditableFileTypes?
 			uneditableFileTypes = ""
 		if uneditableFileTypes.indexOf(@model.get('fileType'))>-1 and @model.get('id')?
-			@$('.bv_delete').hide()
+			@$('.bv_delete').addClass('hide')
 			@$('.bv_fileType').attr 'disabled', 'disabled'
 		else
-			@$('.bv_delete').show()
+			@$('.bv_delete').removeClass('hide')
 			@$('.bv_fileType').removeAttr 'disabled'
 		@
 
@@ -289,7 +289,7 @@ class AttachFileController extends BasicFileController
 			newModel.set
 				fileType: @$('.bv_fileType').val()
 			@model.set "ignored", true
-			@$('.bv_fileInfoWrapper').hide()
+			@$('.bv_fileInfoWrapper').addClass('hide')
 			@trigger 'addNewModel', newModel
 
 
@@ -377,10 +377,8 @@ class ExperimentAttachFileListController extends AttachFileListController
 			unless @$('.bv_'+err.attribute).attr('disabled') is 'disabled'
 				@$('.bv_group_'+err.attribute).attr('data-toggle', 'tooltip')
 				@$('.bv_group_'+err.attribute).attr('data-placement', 'bottom')
-				@$('.bv_group_'+err.attribute).attr('data-original-title', err.message)
-				#				@$('.bv_group_'+err.attribute).tooltip();
-				@$("[data-toggle=tooltip]").tooltip();
-				@$("body").tooltip selector: '.bv_group_'+err.attribute
+				@$('.bv_group_'+err.attribute).attr('title', err.message)
+				@$('.bv_group_'+err.attribute).tooltip()
 				@$('.bv_group_'+err.attribute).addClass 'input_error error'
 				@trigger 'notifyError',  owner: this.errorOwnerName, errorLevel: 'error', message: err.message
 

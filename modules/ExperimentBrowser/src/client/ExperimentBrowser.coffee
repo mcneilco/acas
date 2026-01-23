@@ -88,7 +88,7 @@ class ExperimentSearchController extends AbstractFormController
 		@protocolNameList = new PickListList()
 		@protocolNameList.url = "/api/protocolCodes/"
 		@protocolNameListController = new PickListSelectController
-			el: @$('.bv_protocolName')
+			el: @$('.bv_protocolName')	
 			collection: @protocolNameList
 			insertFirstOption: new PickList
 				code: "any"
@@ -112,12 +112,12 @@ class ExperimentSearchController extends AbstractFormController
 			el: $('.bv_experimentBaseController')
 		#protocolFilter: "?protocolKind=FLIPR"
 		experimentController.render()
-		$(".bv_experimentBaseController").show()
+		$(".bv_experimentBaseController").removeClass('hide')
 
 
 	setupExperimentSummaryTable: (experiments) =>
-		#@$(".bv_searchStatusIndicator").addClass "hide"
-		$(".bv_experimentTableController").removeClass "hide"
+		#@$(".bv_searchStatusIndicator").addClass('hide')
+		$(".bv_experimentTableController").removeClass('hide')
 		if window.conf.experiment?.mainControllerClassName? and window.conf.experiment.mainControllerClassName is "EnhancedExperimentBaseController"
 			experimentListClass = "EnhancedExperimentList"
 		else
@@ -175,20 +175,20 @@ class ExperimentSimpleSearchController extends AbstractFormController
 			@$(".bv_doSearch").attr("disabled", true)
 
 	handleDoSearchClicked: =>
-		$(".bv_experimentTableController"+@domSuffix).addClass "hide"
-		$(".bv_errorOccurredPerformingSearch"+@domSuffix).addClass "hide"
+		$(".bv_experimentTableController"+@domSuffix).addClass('hide')
+		$(".bv_errorOccurredPerformingSearch"+@domSuffix).addClass('hide')
 		experimentSearchTerm = $.trim(@$(".bv_experimentSearchTerm").val())
 		$(".bv_exptSearchTerm"+@domSuffix).val ""
 		if experimentSearchTerm isnt ""
-			$(".bv_noMatchingExperimentsFoundMessage"+@domSuffix).addClass "hide"
-			$(".bv_experimentBrowserSearchInstructions"+@domSuffix).addClass "hide"
-			$(".bv_searchExperimentsStatusIndicator"+@domSuffix).removeClass "hide"
+			$(".bv_noMatchingExperimentsFoundMessage"+@domSuffix).addClass('hide')
+			$(".bv_experimentBrowserSearchInstructions"+@domSuffix).addClass('hide')
+			$(".bv_searchExperimentsStatusIndicator"+@domSuffix).removeClass('hide')
 			if !window.conf.browser.enableSearchAll and experimentSearchTerm is "*"
-				$(".bv_moreSpecificExperimentSearchNeeded").removeClass "hide"
+				$(".bv_moreSpecificExperimentSearchNeeded").removeClass('hide')
 			else
-				$(".bv_searchingExperimentsMessage").removeClass "hide"
+				$(".bv_searchingExperimentsMessage").removeClass('hide')
 				$(".bv_exptSearchTerm").html _.escape(experimentSearchTerm)
-				$(".bv_moreSpecificExperimentSearchNeeded").addClass "hide"
+				$(".bv_moreSpecificExperimentSearchNeeded").addClass('hide')
 				@doSearch experimentSearchTerm
 
 	doSearch: (experimentSearchTerm) =>
@@ -292,10 +292,10 @@ class ExperimentSummaryTableController extends Backbone.View
 		unless window.conf.save?.project? and window.conf.save.project.toLowerCase() is "false"
 			@$('.bv_protocolNameHeader').after '<th style="width: 175px;">Project</th>'
 		if @collection.models.length is 0
-			$(".bv_noMatchingExperimentsFoundMessage"+@domSuffix).removeClass "hide"
+			$(".bv_noMatchingExperimentsFoundMessage"+@domSuffix).removeClass('hide')
 			# display message indicating no results were found
 		else
-			$(".bv_noMatchingExperimentsFoundMessage"+@domSuffix).addClass "hide"
+			$(".bv_noMatchingExperimentsFoundMessage"+@domSuffix).addClass('hide')
 			@collection.each (exp) =>
 				canViewDeleted = @canViewDeleted(exp)
 				if exp.getStatus().get('codeValue') is 'deleted' || exp.getStatus().get('codeValue') is 'overwritten'
@@ -415,31 +415,31 @@ class ExperimentBrowserController extends Backbone.View
 				a.click();
 
 				#Update GUI to indicate succesful download
-				$(".bv_downloadWarning").hide()
-				$(".bv_downloadSuccess").show()
+				$(".bv_downloadWarning").addClass('hide')
+				$(".bv_downloadSuccess").removeClass('hide')
 
 			error: (err) =>
 				console.log "Could not download files" + err
 
 				#Update GUI to indicate files could not be downloaded
-				$(".bv_downloadSuccess").hide()
-				$(".bv_downloadWarning").show()
+				$(".bv_downloadSuccess").addClass('hide')
+				$(".bv_downloadWarning").removeClass('hide')
 				@serviceReturn = null
 			dataType: 'json'
 
 	setupExperimentSummaryTable: (experiments) =>
 		@destroyExperimentSummaryTable()
 
-		$(".bv_searchingExperimentsMessage").addClass "hide"
+		$(".bv_searchingExperimentsMessage").addClass('hide')
 		if experiments is null
-			@$(".bv_errorOccurredPerformingSearch").removeClass "hide"
+			@$(".bv_errorOccurredPerformingSearch").removeClass('hide')
 
 		else if experiments.length is 0
-			@$(".bv_noMatchingExperimentsFoundMessage").removeClass "hide"
+			@$(".bv_noMatchingExperimentsFoundMessage").removeClass('hide')
 			@$(".bv_experimentTableController").html ""
 		else
-			$(".bv_searchExperimentsStatusIndicator").addClass "hide"
-			@$(".bv_experimentTableController").removeClass "hide"
+			$(".bv_searchExperimentsStatusIndicator").addClass('hide')
+			@$(".bv_experimentTableController").removeClass('hide')
 			if window.conf.experiment?.mainControllerClassName? and window.conf.experiment.mainControllerClassName is "EnhancedExperimentBaseController"
 				experimentListClass = "EnhancedExperimentList"
 			else
@@ -451,7 +451,7 @@ class ExperimentBrowserController extends Backbone.View
 			$(".bv_experimentTableController").html @experimentSummaryTable.render().el
 
 	selectedExperimentUpdated: (experiment) =>
-		@$('.bv_getLinkResults').hide()
+		@$('.bv_getLinkResults').addClass('hide')
 		@trigger "selectedExperimentUpdated"
 		$.ajax
 			type: 'GET'
@@ -488,17 +488,17 @@ class ExperimentBrowserController extends Backbone.View
 
 		#hide the Open in Data Viewer button
 		console.log "hiding bv_openInQueryToolWrapper"
-		@experimentController.$('.bv_openInQueryToolWrapper').hide()
+		@experimentController.$('.bv_openInQueryToolWrapper').addClass('hide')
 		if experiment.get('lsKind') is "Bio Activity Screen"
 			@experimentController.$('.bv_experimentNameLabel').html "*Parent Experiment Name"
-			@experimentController.$('.bv_group_protocolCode').hide()
-		$(".bv_experimentBaseController").removeClass("hide")
-		$(".bv_experimentBaseControllerContainer").removeClass("hide")
+			@experimentController.$('.bv_group_protocolCode').addClass('hide')
+		$(".bv_experimentBaseController").removeClass('hide')
+		$(".bv_experimentBaseControllerContainer").removeClass('hide')
 		$('.bv_experimentBaseController').html @experimentController.render().el
 		if experiment.getStatus().get('codeValue') is "deleted" || experiment.getStatus().get('codeValue') is "overwritten"
-			@$('.bv_openInQueryTool').hide()
-			@$('.bv_deleteExperiment').hide()
-			@$('.bv_editExperiment').hide() #TODO for future releases, add in hiding duplicateExperiment
+			@$('.bv_openInQueryTool').addClass('hide')
+			@$('.bv_deleteExperiment').addClass('hide')
+			@$('.bv_editExperiment').addClass('hide') #TODO for future releases, add in hiding duplicateExperiment
 		else
 			code = @getExperimentCode()
 			@openExperimentInQueryToolController = new OpenExperimentInQueryToolController
@@ -506,13 +506,13 @@ class ExperimentBrowserController extends Backbone.View
 				experimentStatus: @experimentController.model.getStatus().get('codeValue')
 			$('.bv_openExperimentInQueryToolPlaceholder').html @openExperimentInQueryToolController.render().el
 			if @canEdit()
-				@$('.bv_editExperiment').show()
+				@$('.bv_editExperiment').removeClass('hide')
 			else
-				@$('.bv_editExperiment').hide()
+				@$('.bv_editExperiment').addClass('hide')
 			if @canDelete()
-				@$('.bv_deleteExperiment').show()
+				@$('.bv_deleteExperiment').removeClass('hide')
 			else
-				@$('.bv_deleteExperiment').hide()
+				@$('.bv_deleteExperiment').addClass('hide')
 
 	canEdit: ->
 		if @experimentController.model.getScientist().get('codeValue') is "unassigned"
@@ -574,35 +574,35 @@ class ExperimentBrowserController extends Backbone.View
 		code = @getExperimentCode() 
 
 		@$(".bv_experimentCodeName").html code
-		@$(".bv_deleteButtons").removeClass "hide"
-		@$(".bv_okayButton").addClass "hide"
-		@$(".bv_errorDeletingExperimentMessage").addClass "hide"
-		@$(".bv_deleteWarningMessage").removeClass "hide"
-		@$(".bv_deletingStatusIndicator").addClass "hide"
-		@$(".bv_experimentDeletedSuccessfullyMessage").addClass "hide"
-		$(".bv_confirmDeleteExperiment").removeClass "hide"
+		@$(".bv_deleteButtons").removeClass('hide')
+		@$(".bv_okayButton").addClass('hide')
+		@$(".bv_errorDeletingExperimentMessage").addClass('hide')
+		@$(".bv_deleteWarningMessage").removeClass('hide')
+		@$(".bv_deletingStatusIndicator").addClass('hide')
+		@$(".bv_experimentDeletedSuccessfullyMessage").addClass('hide')
+		$(".bv_confirmDeleteExperiment").removeClass('hide')
 		$('.bv_confirmDeleteExperiment').modal({
 			keyboard: false,
 			backdrop: true
 		})
 
 	handleConfirmDeleteExperimentClicked: =>
-		@$(".bv_deleteWarningMessage").addClass "hide"
-		@$(".bv_deletingStatusIndicator").removeClass "hide"
-		@$(".bv_deleteButtons").addClass "hide"
+		@$(".bv_deleteWarningMessage").addClass('hide')
+		@$(".bv_deletingStatusIndicator").removeClass('hide')
+		@$(".bv_deleteButtons").addClass('hide')
 		$.ajax(
 			url: "/api/experiments/#{@experimentController.model.get("id")}",
 			type: 'DELETE',
 			success: (result) =>
-				@$(".bv_okayButton").removeClass "hide"
-				@$(".bv_deletingStatusIndicator").addClass "hide"
-				@$(".bv_experimentDeletedSuccessfullyMessage").removeClass "hide"
+				@$(".bv_okayButton").removeClass('hide')
+				@$(".bv_deletingStatusIndicator").addClass('hide')
+				@$(".bv_experimentDeletedSuccessfullyMessage").removeClass('hide')
 				@searchController.handleDoSearchClicked()
 		#@destroyExperimentSummaryTable()
 			error: (result) =>
-				@$(".bv_okayButton").removeClass "hide"
-				@$(".bv_deletingStatusIndicator").addClass "hide"
-				@$(".bv_errorDeletingExperimentMessage").removeClass "hide"
+				@$(".bv_okayButton").removeClass('hide')
+				@$(".bv_deletingStatusIndicator").addClass('hide')
+				@$(".bv_errorDeletingExperimentMessage").removeClass('hide')
 		)
 
 	handleCancelDeleteClicked: =>
@@ -652,9 +652,9 @@ class ExperimentBrowserController extends Backbone.View
 			@experimentSummaryTable.remove()
 		if @experimentController?
 			@experimentController.remove()
-		$(".bv_experimentBaseController").addClass("hide")
-		$(".bv_experimentBaseControllerContainer").addClass("hide")
-		$(".bv_noMatchingExperimentsFoundMessage").addClass("hide")
+		$(".bv_experimentBaseController").addClass('hide')
+		$(".bv_experimentBaseControllerContainer").addClass('hide')
+		$(".bv_noMatchingExperimentsFoundMessage").addClass('hide')
 
 	render: =>
 
