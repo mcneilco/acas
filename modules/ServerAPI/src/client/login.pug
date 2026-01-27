@@ -10,9 +10,8 @@ block content
             h3 Please Login
             div.well
                 - var action = "/login"
-                if redirectUrl
-                    - var action = '/login?redirect_url=' + redirectUrl
-                form.form-horizontal(action="#{action}", method="post")
+                - if (redirectUrl) action = '/login?redirect_url=' + redirectUrl
+                form.form-horizontal(action=action, method="post")
                     div.control-group
                         label.control-label Username:
                         div.controls

@@ -4,7 +4,7 @@ block content
 
 
 
-    script
+    script.
         window.AppLaunchParams = !{JSON.stringify(AppLaunchParams)};
         $(function() {
             var currentWindowOnload = window.onload;
@@ -19,7 +19,7 @@ block content
                 // App = new app.AppView
                 window.servicesHostPrefix = "";
                 //TODO
-                window.appController = new #{controller}({
+                window.appController = new !{controller}({
                                 el: $('#appContainer')
                             });
                 window.appController.render();

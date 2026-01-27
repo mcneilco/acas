@@ -33,7 +33,7 @@ startApp = ->
 	app.set 'port', config.all.server.nodeapi.port
 	app.set 'listenHost', config.all.server.nodeapi.listenHost
 	app.set 'views', __dirname + '/views'
-	app.set 'view engine', 'jade'
+	app.set 'view engine', 'pug'
 	app.use(logger('dev'))
 	app.use(methodOverride())
 
