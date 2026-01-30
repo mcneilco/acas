@@ -481,12 +481,18 @@ class ExperimentBaseController extends BaseEntityController
 		# Populate audit information
 		@$('.bv_recordedBy').text(@model.get('recordedBy'))
 		
-		if @model.get('modifiedBy')?
-			@$('.bv_modifiedBy').text(@model.get('modifiedBy'))
-			@$('.bv_modifiedByInfo').show()
-		else
-			@$('.bv_modifiedByInfo').hide()
-			
+		# Helper to show/hide audit fields
+		setAuditField = (field, value, isDate = false) =>
+			if value?
+				@$(".bv_#{field}").text(if isDate then UtilityFunctions::convertMSToYMDDate(value) else value)
+				@$(".bv_#{field}Info").show()
+			else
+				@$(".bv_#{field}Info").hide()
+		
+		setAuditField('recordedDate', @model.get('recordedDate'), true)
+		setAuditField('modifiedBy', @model.get('modifiedBy'))
+		setAuditField('modifiedDate', @model.get('modifiedDate'), true)
+
 		if @model.isNew()
 			@$('.bv_experimentName').attr('disabled','disabled')
 			@$('.bv_openInQueryToolWrapper').hide()
