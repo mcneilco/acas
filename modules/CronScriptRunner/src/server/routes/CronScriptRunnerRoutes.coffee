@@ -14,7 +14,8 @@ exports.setupRoutes = (app, loginRoutes) ->
 # Must call through services. Direct function calls won't work because we have to keep global cron hash
 
 config = require '../conf/compiled/conf.js'
-request = require 'request'
+serverUtilityFunctions = require './ServerUtilityFunctions.js'
+request = serverUtilityFunctions.requestAdapter
 CRON_CONFIG_PREFIX = "CONF_CRON"
 
 addJobsOnStartup = ->
@@ -40,7 +41,8 @@ addJobsOnStartup = ->
 
 	# Get existing jobs
 	if not global.specRunnerTestmode
-		request.get
+		request(
+			method: 'GET'
 			url: persistenceURL
 			json: true
 		, (error, response, body) =>
@@ -56,6 +58,7 @@ addJobsOnStartup = ->
 						setupNewCron newCron
 			else
 				console.log 'Failed to get list of existing cronjobs, error:' + error + '\n body: ' + body
+		)
 
 
 exports.getAllCronScriptRunner = (req, resp) ->
@@ -78,7 +81,8 @@ exports.postCronScriptRunner = (req, resp) ->
 		persistenceURL = config.all.client.service.persistence.fullpath + "cronjobs"
 		if not unsavedReq.numberOfExecutions
 			unsavedReq.numberOfExecutions = 0
-		request.post
+		request(
+			method: 'POST'
 			url: persistenceURL
 			json: true
 			body: unsavedReq
@@ -99,6 +103,7 @@ exports.postCronScriptRunner = (req, resp) ->
 			else
 				resp.statusCode = 500
 				resp.end response.body
+		)
 
 exports.putCronScriptRunner = (req, resp) ->
 	if (req.query.testMode is true) or (global.specRunnerTestmode is true)
@@ -163,7 +168,8 @@ updateCronScriptRunner = (code, newSpec, callback) ->
 	#Skip if cron defined in config
 	delete cronJob.spec.running
 	if code.indexOf CRON_CONFIG_PREFIX < 0
-		request.put
+		request(
+			method: 'PUT'
 			url: persistenceURL + code
 			json: true
 			body: cronJob.spec
@@ -175,6 +181,7 @@ updateCronScriptRunner = (code, newSpec, callback) ->
 				callback null, cronJob.spec
 			else
 				callback "Failed put request to server: " + body
+		)
 	else
 		if not cronJob.spec.ignored and cronJob.spec.active? and cronJob.spec.active
 			setupNewCron cronJob

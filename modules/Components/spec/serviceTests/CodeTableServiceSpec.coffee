@@ -1,5 +1,6 @@
 assert = require 'assert'
-request = require 'request'
+serverUtilityFunctions = require '../../../../routes/ServerUtilityFunctions.js'
+request = serverUtilityFunctions.requestAdapter
 _ = require 'underscore'
 codeTablePostTestJSON = require '../testFixtures/codeTablePostTestJSON.js'
 codeTablePutTestJSON = require '../testFixtures/codeTablePutTestJSON.js'
