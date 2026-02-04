@@ -1,4 +1,7 @@
 path = require 'path'
+config = require '../conf/compiled/conf.js'
+serverUtilityFunctions = require './ServerUtilityFunctions.js'
+request = serverUtilityFunctions.requestAdapter
 
 exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.post '/api/cmpdRegBulkLoader/registerCmpds', exports.registerCmpds
@@ -26,7 +29,6 @@ exports.setupRoutes = (app, loginRoutes) ->
 
 exports.cmpdRegBulkLoaderIndex = (req, res) ->
 	scriptPaths = require './RequiredClientScripts.js'
-	config = require '../conf/compiled/conf.js'
 
 	global.specRunnerTestmode = if global.stubsMode then true else false
 	scriptsToLoad = scriptPaths.requiredScripts.concat(scriptPaths.applicationScripts)
@@ -58,8 +60,6 @@ exports.getCmpdRegBulkLoaderTemplates = (req, resp) ->
 		cmpdRegBulkLoaderTestJSON = require '../public/javascripts/spec/testFixtures/CmpdRegBulkLoaderServiceTestJSON.js'
 		resp.end JSON.stringify cmpdRegBulkLoaderTestJSON.templates
 	else
-		config = require '../conf/compiled/conf.js'
-		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"bulkload/templates?userName="+req.params.user
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
@@ -68,8 +68,6 @@ exports.getFilesToPurge = (req, resp) ->
 		cmpdRegBulkLoaderTestJSON = require '../public/javascripts/spec/testFixtures/CmpdRegBulkLoaderServiceTestJSON.js'
 		resp.end JSON.stringify cmpdRegBulkLoaderTestJSON.filesToPurge
 	else
-		config = require '../conf/compiled/conf.js'
-		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"bulkload/files"
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
@@ -84,13 +82,10 @@ exports.cmpdRegBulkLoaderReadSdf = (req, resp) ->
 		else
 			resp.end JSON.stringify cmpdRegBulkLoaderTestJSON.propertiesList3
 	else
-		serverUtilityFunctions = require './ServerUtilityFunctions.js'
-		config = require '../conf/compiled/conf.js'
 		uploadsPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path
 		filePath = uploadsPath + req.body.fileName
 		req.body.fileName = filePath
 		baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"bulkload/getSdfProperties"
-		request = require 'request'
 		request(
 			method: 'POST'
 			url: baseurl
@@ -112,9 +107,7 @@ exports.saveTemplate = (req, resp) ->
 		cmpdRegBulkLoaderTestJSON = require '../public/javascripts/spec/testFixtures/CmpdRegBulkLoaderServiceTestJSON.js'
 		resp.end JSON.stringify cmpdRegBulkLoaderTestJSON.savedTemplateReturn
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"bulkload/templates/saveTemplate"
-		request = require 'request'
 		request(
 			method: 'POST'
 			url: baseurl
@@ -137,9 +130,7 @@ exports.validationProperties = (req, resp) ->
 		resp.json json
 
 exports.validationPropertiesInternal = (reqObject, callback) ->
-	config = require '../conf/compiled/conf.js'
 	baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"bulkload/validationProperties"
-	request = require 'request'
 	request(
 		method: 'POST'
 		url: baseurl
@@ -159,7 +150,6 @@ exports.validationPropertiesInternal = (reqObject, callback) ->
 
 exports.getScientistsInternal = (callback) ->
 	loginRoutes = require './loginRoutes.js'
-	config = require '../conf/compiled/conf.js'
 	roleName = null
 	if config.all.client.roles.cmpdreg.chemistRole? && config.all.client.roles.cmpdreg.chemistRole != ""
 		roleName = config.all.client.roles.cmpdreg.chemistRole
@@ -183,8 +173,6 @@ exports.registerCmpds = (req, resp) ->
 		zip = new JSZip()
 
 		for rFile in json.reportFiles
-			serverUtilityFunctions = require './ServerUtilityFunctions.js'
-			config = require '../conf/compiled/conf.js'
 			splitNames = rFile.split (path.sep+"cmpdreg_bulkload"+path.sep)
 			rFileName = splitNames[1]
 			rFileName = rFileName.replace(path.sep, '');
@@ -242,9 +230,7 @@ exports.registerCmpds = (req, resp) ->
 							if missingProjectCodes.length > 0
 								_.extend(_.findWhere(req.body.mappings, { dbProperty: 'Project' }), {invalidValues: missingProjectCodes});
 
-							config = require '../conf/compiled/conf.js'
 							baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"bulkload/registerSdf"
-							request = require 'request'
 							request(
 								method: 'POST'
 								url: baseurl
@@ -266,8 +252,6 @@ exports.registerCmpds = (req, resp) ->
 
 	moveSdfFile = (req, resp, callback) ->
 		fileName = req.body.fileName
-		serverUtilityFunctions = require './ServerUtilityFunctions.js'
-		config = require '../conf/compiled/conf.js'
 		fs = require 'fs'
 		uploadsPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path
 		oldPath = uploadsPath + fileName
@@ -308,9 +292,7 @@ exports.checkFileDependencies = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
 		resp.end JSON.stringify "File has 10 parents and 10 lots"
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"bulkload/checkDependencies"
-		request = require 'request'
 		request(
 			method: 'POST'
 			url: baseurl
@@ -333,9 +315,7 @@ exports.purgeFile = (req, resp) ->
 		resp.end JSON.stringify "Successful purge in stubsMode."
 	else
 		req.setTimeout 86400000
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"bulkload/purge"
-		request = require 'request'
 		request(
 			method: 'POST'
 			url: baseurl
@@ -375,7 +355,6 @@ exports.getLotsByBulkLoadFileID = (req, resp) ->
 		resp.end JSON.stringify error
 
 exports.getLotsByBulkLoadFileIDInternal = (bulkFileID) ->
-	config = require '../conf/compiled/conf.js'
 	baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"bulkload/getLotsByBulkLoadFileID?bulkLoadFileID=" +bulkFileID
 	response = await fetch(baseurl)
 	checkStatus response
@@ -384,7 +363,6 @@ exports.getLotsByBulkLoadFileIDInternal = (bulkFileID) ->
 
 exports.getSDFFromBulkLoadFileId = (req, resp) ->
 	req.setTimeout 86400000
-	config = require '../conf/compiled/conf.js'
 	try
 		lotCorpNames = await exports.getLotsByBulkLoadFileIDInternal req.params.bulkFileID
 

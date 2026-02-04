@@ -1,3 +1,7 @@
+config = require '../conf/compiled/conf.js'
+serverUtilityFunctions = require './ServerUtilityFunctions.js'
+request = serverUtilityFunctions.requestAdapter
+
 exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.get '/api/things/:lsType/:lsKind', exports.thingsByTypeKind
 	app.get '/api/things/getMultipleKinds/:lsType/:lsKindsList', exports.thingsByTypeAndKinds
@@ -78,7 +82,6 @@ exports.getThingValueById = (req, resp) ->
 		resp.json value
 		
 exports.getlsValuesByIdInternal = (id, params, callback) ->
-	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	baseurl = config.all.client.service.persistence.fullpath+"lsthingvalues/"+id
 	if params? && params.format?
 		baseurl += "?format=#{params.format}"
@@ -107,7 +110,6 @@ exports.bufferToStream = (buffer) ->
 	stream
 
 exports.getlsValuesInternal = (id, params, callback) ->
-	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	baseurl = config.all.client.service.persistence.fullpath+"lsthingvalues/"+id
 	if params? && params.format?
 		baseurl += "?format=#{params.format}"
@@ -119,7 +121,6 @@ exports.thingsByTypeKind = (req, resp) ->
 		thingServiceTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
 		resp.end JSON.stringify thingServiceTestJSON.batchList
 	else
-		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind
 		stubFlag = "with=stub"
 		codeTableFlag = "with=codetable"
@@ -197,7 +198,6 @@ exports.getThingsByTypeAndKindAndLabelTypeAndLabelTextInternal = (thingType, thi
 exports.getThingsByTypeKindAndLabelTypeKindTextInternal = (searchParams, opts, callback) ->
 	baseurl = config.all.client.service.persistence.fullpath+'lsthings/genericInteractionSearch'
 	console.log baseurl
-	request = require 'request'
 	if opts.format?
 		params =
 			with: opts.format
@@ -226,7 +226,6 @@ getThingByTypeAndKind = (lsType, lsKind, stub, callback) =>
 		baseurl += "?with=stub"
 		console.log "baseurl for getting multiple"
 		console.log baseurl
-	request = require 'request'
 	request(
 		method: 'GET'
 		url: baseurl
@@ -247,7 +246,6 @@ exports.thingsByTypeAndKinds = (req, resp) ->
 		thingServiceTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
 		resp.end JSON.stringify thingServiceTestJSON.batchList
 	else
-		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		kinds = req.params.lsKindsList.split(";") #lsKindsList = semi-colon delimited list
 		index = 0
 		fetchedThings = []
@@ -281,7 +279,6 @@ exports.thingByCodeName = (req, resp) ->
 #		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
 #		resp.json thingTestJSON.thingParent
 #	else
-#		config = require '../conf/compiled/conf.js'
 #		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind+"/"+req.params.code
 #		if req.query.nestedstub
 #			nestedstub = "with=nestedstub"
@@ -305,7 +302,6 @@ exports.getThingInternal = (lsType, lsKind, format, testMode, codeName, callback
 		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+lsType+"/"+lsKind+"/"+ encodeURIComponent codeName
 		if format?
 			baseurl += "?with=#{format}"
-		request = require 'request'
 		request(
 			method: 'GET'
 			url: baseurl
@@ -340,7 +336,6 @@ getThing = (req, codeName, callback) ->
 		else if req.query.stub
 			stub = "with=stub"
 			baseurl += "?#{stub}"
-		request = require 'request'
 		request(
 			method: 'GET'
 			url: baseurl
@@ -359,12 +354,10 @@ getThing = (req, codeName, callback) ->
 
 
 updateThing = (thing, testMode, callback) ->
-	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	if testMode or global.specRunnerTestmode
 		callback thing
 	else
 		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+thing.lsType+"/"+thing.lsKind+"/"+thing.codeName+ "?with=nestedfull"
-		request = require 'request'
 		request(
 			method: 'PUT'
 			url: baseurl
@@ -438,7 +431,6 @@ exports.bulkPostThingsSaveFile = (req, resp) ->
 
 postThing = (isBatch, req, resp) ->
 	console.log "post thing parent"
-	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	if config.all.client.solr?.updateSolrForThings?
 		updateSolr = config.all.client.solr.updateSolrForThings
 	else
@@ -509,7 +501,6 @@ postThing = (isBatch, req, resp) ->
 				baseurl += "/?parentIdOrCodeName="+req.params.parentCode
 			else
 				baseurl += "?with=nestedfull"
-			request = require 'request'
 			request(
 				method: 'POST'
 				url: baseurl
@@ -732,7 +723,6 @@ exports.validateName = (req, resp) ->
 		resp.json true
 	else
 		baseurl = config.all.client.service.persistence.fullpath+"lsthings/validate"
-		request = require 'request'
 		request(
 			method: 'POST'
 			url: baseurl
@@ -760,7 +750,6 @@ exports.getAssemblies = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
 		resp.json []
 	else
-		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind+"/getcomposites/"+req.params.componentCode
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
@@ -823,7 +812,6 @@ exports.getThingCodesFromNamesOrCodes = (codeRequest, callback) ->
 		console.log postBody
 		console.log url
 		console.log queryParams
-		request = require 'request'
 		request(
 			method: 'POST'
 			url: url
@@ -876,7 +864,6 @@ exports.genericThingSearch = (req, resp) ->
 		#		baseurl = config.all.client.service.persistence.fullpath+"lsthings/search?lsType=batch&q="+req.params.searchTerm
 		console.log "generic thing search baseurl"
 		console.log baseurl
-		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 exports.advancedThingSearch = (req, resp) ->
@@ -896,7 +883,6 @@ exports.advancedThingSearch = (req, resp) ->
 				resp.json results
 
 exports.advancedThingSearchInternal = (input, format, callback) ->
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"lsthings/genericBrowserSearch"
 		if format?
 			baseurl += "?with=#{format}"
@@ -1011,7 +997,6 @@ exports.getThingsByCodeNamesInternal = (reqBody, lsType, lsKind, query, callback
 		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
 		callback thingTestJSON.thingParent
 	else
-		request = require 'request'
 		options =
 			method: 'POST'
 			url: config.all.client.service.persistence.fullpath+"/lsthings/#{lsType}/#{lsKind}/codeNames/jsonArray"
@@ -1027,7 +1012,6 @@ exports.getThingsByCodeNamesInternal = (reqBody, lsType, lsKind, query, callback
 				callback body
 
 exports.getThingKinds = (req, resp) ->
-	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	baseurl = config.all.client.service.persistence.fullpath+"thingkinds"
 	serverUtilityFunctions.getFromACASServerInternal baseurl, (statusCode, kinds) ->
 		codeTables = []
@@ -1040,7 +1024,6 @@ exports.getThingKinds = (req, resp) ->
 		resp.json codeTables
 
 exports.getTransaction = (req, resp) ->
-	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	baseurl = config.all.client.service.persistence.fullpath+"lstransactions/"+req.params.id
 	serverUtilityFunctions.getFromACASServer baseurl, resp
 
@@ -1051,8 +1034,6 @@ exports.postThings = (req, resp) ->
 				resp.json err
 				
 exports.postThingsInternal = (input, callback) ->
-	request = require 'request'
-	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	baseurl = config.all.client.service.persistence.fullpath+"lsthings/jsonArray"
 	requestOptions = 
 		method: 'POST'

@@ -1,4 +1,7 @@
 _ = require "underscore"
+config = require '../conf/compiled/conf.js'
+serverUtilityFunctions = require './ServerUtilityFunctions.js'
+request = serverUtilityFunctions.requestAdapter
 
 exports.setupAPIRoutes = (app) ->
 	app.get '/api/codetables/:type/:kind', exports.getCodeTableValues
@@ -19,9 +22,7 @@ exports.getAllCodeTableValues = (req, resp) ->
 		codeTableServiceTestJSON = require '../public/javascripts/spec/Components/testFixtures/codeTableServiceTestJSON.js'
 		resp.end JSON.stringify codeTableServiceTestJSON['codes']
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = "#{config.all.client.service.persistence.fullpath}ddictvalues?format=codetable"
-		request = require 'request'
 		request(
 			method: 'GET'
 			url: baseurl
@@ -51,12 +52,10 @@ exports.getCodeTableValuesInternal = (type, kind, query, cb) ->
 			console.warn('Deprecation warning: Please provide the query parameter using the new parameter order. The old order will be removed in a future release.')
 			cb = query
 			query = null
-		config = require '../conf/compiled/conf.js'
 		baseurl = "#{config.all.client.service.persistence.fullpath}ddictvalues/all/#{type}/#{kind}/codetable"
 		qs = {}
 		if query?
 			qs = query
-		request = require 'request'
 		request(
 			method: 'GET'
 			url: baseurl
@@ -83,9 +82,7 @@ exports.postCodeTableInternal = (codeTableEntry, callback) ->
 		callback 201, JSON.stringify codeTablePostTestJSON.codeEntry
 	else
 		console.log "attempting to post new code table value"
-		config = require '../conf/compiled/conf.js'
 		baseurl = "#{config.all.client.service.persistence.fullpath}ddictvalues/codetable"
-		request = require 'request'
 		request(
 			method: 'POST'
 			url: baseurl
@@ -110,11 +107,9 @@ exports.putCodeTableInternal = (codeTableEntry, callback) ->
 		codeTablePostTestJSON = require '../public/javascripts/spec/Components/testFixtures/codeTablePutTestJSON.js'
 		resp.end JSON.stringify codeTablePostTestJSON.codeEntry
 	else
-		config = require '../conf/compiled/conf.js'
 		putId = codeTableEntry.id
 		baseurl = "#{config.all.client.service.persistence.fullpath}ddictvalues/codetable/#{putId}"
 
-		request = require 'request'
 		request(
 			method: 'PUT'
 			url: baseurl
@@ -136,16 +131,13 @@ exports.deleteCodeTable = (req, resp) ->
 		resp.end JSON.stringify response
 
 exports.deleteCodeTableInternal = (codeTableEntry, callback) ->
-	config = require '../conf/compiled/conf.js'
 	console.log "#{config.all.client.service.persistence.fullpath}ddictvalues/#{codeTableEntry.id}"
 	if global.specRunnerTestmode
 		codeTablePostTestJSON = require '../public/javascripts/spec/Components/testFixtures/codeTablePostTestJSON.js'
 		callback 201, JSON.stringify codeTablePostTestJSON.codeEntry
 	else
 		console.log "attempting to delete code table value"
-		config = require '../conf/compiled/conf.js'
 		baseurl = "#{config.all.client.service.persistence.fullpath}ddictvalues/#{codeTableEntry.id}"
-		request = require 'request'
 		request(
 			method: 'DELETE'
 			url: baseurl
