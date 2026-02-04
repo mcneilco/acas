@@ -1,5 +1,6 @@
 assert = require 'assert'
-request = require 'request'
+serverUtilityFunctions = require '../../../../routes/ServerUtilityFunctions.js'
+request = serverUtilityFunctions.requestAdapter
 _ = require 'underscore'
 fs = require 'fs'
 config = require '../../../../conf/compiled/conf.js'

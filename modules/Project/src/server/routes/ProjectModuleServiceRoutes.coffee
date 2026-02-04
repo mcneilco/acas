@@ -76,7 +76,8 @@ saveRolekinds = (rolekind, callback) ->
 	rolekindUrl = config.all.client.service.persistence.fullpath+"setup/rolekinds"
 	console.log "rolekind"
 	console.log rolekind
-	request = require 'request'
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+	request = serverUtilityFunctions.requestAdapter
 	request(
 		method: 'POST'
 		url: rolekindUrl
@@ -100,7 +101,8 @@ saveLsroles = (lsroles, callback) ->
 	lsrolesUrl = config.all.client.service.persistence.fullpath+"setup/lsroles"
 	console.log "lsroles"
 	console.log lsroles
-	request = require 'request'
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+	request = serverUtilityFunctions.requestAdapter
 	request(
 		method: 'POST'
 		url: lsrolesUrl

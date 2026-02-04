@@ -1,8 +1,9 @@
 assert = require 'assert'
-request = require 'request'
+acasHome = '../../../..'
+serverUtilityFunctions = require "#{acasHome}/routes/ServerUtilityFunctions.js"
+request = serverUtilityFunctions.requestAdapter
 _ = require 'underscore'
 fs = require 'fs'
-acasHome = '../../../..'
 config = require "#{acasHome}/conf/compiled/conf.js"
 csUtilities = require "#{acasHome}/src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js"
 
