@@ -2454,8 +2454,24 @@ exports.requestAdapter = (options, callback) ->
 		method = options.method or 'GET'
 		body = options.body
 		json = options.json
+		form = options.form
 		headers = options.headers or {}
 		qs = options.qs
+		
+		# Handle old request library pattern: json can be both a boolean flag and the body data
+		if json? and typeof json is 'object'
+			body = json
+			json = true
+		
+		# Handle form option (application/x-www-form-urlencoded)
+		if form?
+			params = new URLSearchParams()
+			for key, value of form
+				params.append(key, value)
+			body = params.toString()
+			headers['Content-Type'] = 'application/x-www-form-urlencoded'
+			json = false
+		
 		# For piping pattern, copy headers from incomingRequest if provided
 		if options.incomingRequest?
 			# Copy relevant headers from the incoming request
@@ -2542,6 +2558,7 @@ exports.requestAdapter = (options, callback) ->
 		method: method
 		body: if method is 'GET' or method is 'HEAD' then undefined else body
 		headers: headers
+		redirect: 'manual' # Don't follow redirects automatically (old request library behavior)
 	})
 	.then (response) ->
 		# Check if response has content (status 204 or Content-Length: 0 means no content)
@@ -2560,9 +2577,14 @@ exports.requestAdapter = (options, callback) ->
 		parsePromise.then (responseBody) ->
 			return { response: response, body: responseBody }
 	.then (result) ->
+		# Convert fetch Headers to plain object for compatibility with old request library
+		headersObj = {}
+		result.response.headers.forEach (value, key) ->
+			headersObj[key] = value
+		
 		requestResponse =
 			statusCode: result.response.status
-			headers: result.response.headers
+			headers: headersObj
 			body: result.body
 
 		# Old request library only passed errors for network failures, not HTTP status codes
