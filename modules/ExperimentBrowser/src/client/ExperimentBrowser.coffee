@@ -265,6 +265,7 @@ class ExperimentRowSummaryController extends Backbone.View
 			protocolCode: protocolCode
 			protocolName: protocolBestName
 			scientist: @model.getScientist().get('codeValue')
+			uploader: @model.get('recordedBy')
 			status: @model.getStatus().get("codeValue")
 			analysisStatus: @model.getAnalysisStatus().get("codeValue")
 			completionDate: date
