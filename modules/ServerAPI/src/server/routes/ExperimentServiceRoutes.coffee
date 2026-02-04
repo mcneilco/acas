@@ -63,7 +63,7 @@ serverUtilityFunctions = require './ServerUtilityFunctions.js'
 csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
 _ = require 'underscore'
 config = require '../conf/compiled/conf.js'
-request = require 'request'
+request = serverUtilityFunctions.requestAdapter
 
 exports.experimentByCodename = (req, resp) ->
 	console.log req.params.code

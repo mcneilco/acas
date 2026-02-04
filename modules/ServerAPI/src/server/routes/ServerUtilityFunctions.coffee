@@ -2448,12 +2448,14 @@ exports.requestAdapter = (options, callback) ->
 		body = undefined
 		json = false
 		headers = {}
+		qs = undefined
 	else
 		url = options.url
 		method = options.method or 'GET'
 		body = options.body
 		json = options.json
 		headers = options.headers or {}
+		qs = options.qs
 		# For piping pattern, copy headers from incomingRequest if provided
 		if options.incomingRequest?
 			# Copy relevant headers from the incoming request
@@ -2461,6 +2463,13 @@ exports.requestAdapter = (options, callback) ->
 				# Skip host header as it should be for the target server
 				if headerName.toLowerCase() isnt 'host'
 					headers[headerName] = headerValue
+		
+		# Handle query string parameters (qs option)
+		if qs?
+			urlObj = new URL(url)
+			for key, value of qs
+				urlObj.searchParams.append(key, value)
+			url = urlObj.toString()
 
 	# If called without callback, create a proxy stream (for piping pattern)
 	if not callback?
@@ -2535,8 +2544,14 @@ exports.requestAdapter = (options, callback) ->
 		headers: headers
 	})
 	.then (response) ->
-		# Parse response body based on json flag
-		parsePromise = if json
+		# Check if response has content (status 204 or Content-Length: 0 means no content)
+		contentLength = response.headers.get('content-length')
+		hasContent = response.status isnt 204 and contentLength isnt '0'
+		
+		# Parse response body based on json flag and whether there's content
+		parsePromise = if not hasContent
+			Promise.resolve(null)
+		else if json
 			response.json().catch -> response.text()
 		else
 			response.text()
@@ -2556,5 +2571,8 @@ exports.requestAdapter = (options, callback) ->
 	.catch (error) ->
 		# Only network/connection errors go here
 		callback(error, null, null)
+		# 	statusMessage: error.message or 'Network error'
+		# 	headers: {}
+		# callback(error, errorResponse, null)
 
 AppLaunchParams = loginUser:username:"acas"

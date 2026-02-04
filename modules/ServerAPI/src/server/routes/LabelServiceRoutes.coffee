@@ -15,7 +15,8 @@ exports.getNextLabelSequence = (req, resp) ->
 exports.getNextLabelSequenceInternal = (labelSequence, callback) ->
 	config = require '../conf/compiled/conf.js'
 	baseurl = config.all.client.service.persistence.fullpath+"labelsequences/getLabels"
-	request = require 'request'
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+	request = serverUtilityFunctions.requestAdapter
 	request(
 		method: 'POST'
 		url: baseurl
