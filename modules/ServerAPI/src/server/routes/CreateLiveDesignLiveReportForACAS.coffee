@@ -23,7 +23,8 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/getLiveReportContentByExperimentName/:experimentName', loginRoutes.ensureAuthenticated, exports.getLiveReportContentByExperimentName
 
 config = require '../conf/compiled/conf.js'
-request = require 'request'
+serverUtilityFunctions = require './ServerUtilityFunctions.js'
+request = serverUtilityFunctions.requestAdapter
 _ = require 'underscore'
 
 exports.redirectToNewLiveDesignLiveReportForExperiment = (req, resp) ->

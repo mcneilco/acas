@@ -1,7 +1,3 @@
-config = require '../conf/compiled/conf.js'
-serverUtilityFunctions = require './ServerUtilityFunctions.js'
-request = serverUtilityFunctions.requestAdapter
-
 exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.get '/api/things/:lsType/:lsKind', exports.thingsByTypeKind
 	app.get '/api/things/getMultipleKinds/:lsType/:lsKindsList', exports.thingsByTypeAndKinds
@@ -73,8 +69,11 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/thingvalues/downloadThingBlobValueByID/:id', loginRoutes.ensureAuthenticated, exports.downloadThingBlobValueByID
 
 
-request = require 'request'
 config = require '../conf/compiled/conf.js'
+serverUtilityFunctions = require './ServerUtilityFunctions.js'
+request = serverUtilityFunctions.requestAdapter
+csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
+_ = require 'underscore'
 
 exports.getThingValueById = (req, resp) ->
 	exports.getlsValuesByIdInternal req.params.id, req.query, (statusCode, value) ->
@@ -131,10 +130,6 @@ exports.thingsByTypeKind = (req, resp) ->
 			if req.query.labelType?
 				baseurl += "&labelType=#{req.query.labelType}"
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
-
-serverUtilityFunctions = require './ServerUtilityFunctions.js'
-csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
-_ = require 'underscore'
 
 exports.getThingsByTypeKindAndLabelTypeKindTextQuery = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
