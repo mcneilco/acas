@@ -16,8 +16,8 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/thingTypeAndKinds/codeTable', loginRoutes.ensureAuthenticated, exports.getThingTypeAndKindCodeTables
 
 config = require '../conf/compiled/conf.js'
-request = require 'request'
 serverUtilityFunctions = require './ServerUtilityFunctions.js'
+request = serverUtilityFunctions.requestAdapter
 _ = require 'underscore'
 
 exports.getAllLabelSequences = (req, resp) ->

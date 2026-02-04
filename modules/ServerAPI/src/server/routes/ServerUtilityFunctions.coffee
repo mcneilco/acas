@@ -145,7 +145,7 @@ exports.runRFunction = (req, rScript, rFunction, returnFunction, preValidationFu
 	exports.runRFunctionOutsideRequest req.body.user, req.body, rScript, rFunction, returnFunction, preValidationFunction, testMode, serviceRapacheFullPath
 
 exports.runRFunctionOutsideRequest = (username, argumentsJSON, rScript, rFunction, returnFunction, preValidationFunction, testMode, serviceRapacheFullPath) ->
-	request = require 'request'
+	request = exports.requestAdapter
 	config = require '../conf/compiled/conf.js'
 	if !serviceRapacheFullPath?
 		serviceRapacheFullPath = config.all.client.service.rapache.fullpath
@@ -174,7 +174,8 @@ exports.runRFunctionOutsideRequest = (username, argumentsJSON, rScript, rFunctio
 		console.log JSON.stringify(runRFunctionServiceTestJSON.runRFunctionResponse.hasError)
 		returnFunction.call @, JSON.stringify(runRFunctionServiceTestJSON.runRFunctionResponse)
 	else
-		request.post
+		request(
+			method: 'POST'
 			timeout: 86400000
 			url: serviceRapacheFullPath + "runfunction"
 			json: true
@@ -213,6 +214,7 @@ exports.runRFunctionOutsideRequest = (username, argumentsJSON, rScript, rFunctio
 						csUtilities.logUsage "Returned success from R function: "+rFunction, "NA", username
 				catch error
 					console.log error
+		)
 
 
 exports.runRScript = (rScript) ->
@@ -273,7 +275,7 @@ exports.getFromACASServer = (baseurl, resp) ->
 		resp.json json
 
 exports.getFromACASServerInternal = (baseurl, callback) ->
-	request = require 'request'
+	request = exports.requestAdapter
 	request(
 		method: 'GET'
 		url: baseurl
@@ -298,7 +300,7 @@ exports.getRestrictedEntityFromACASServerInternal = (baseurl, username,  project
 	userObject={'user':'username':username}
 	csUtilities.getProjectsInternal userObject, (statusCode, userProjects) =>
 		if statusCode == 200
-			request = require 'request'
+			request = exports.requestAdapter
 			_ = require 'underscore'
 			userProjectCodes = _.pluck userProjects, "code"
 			request(
@@ -408,7 +410,7 @@ exports.createLSTransaction2 = (date, options, callback) ->
 			version: 0
 	else
 		config = require '../conf/compiled/conf.js'
-		request = require 'request'
+		request = exports.requestAdapter
 		body = _.extend {recordedDate: date}, options
 		options =
 			method: 'POST'
@@ -436,7 +438,7 @@ exports.updateLSTransaction = (transaction, callback) ->
 			version: 0
 	else
 		config = require '../conf/compiled/conf.js'
-		request = require 'request'
+		request = exports.requestAdapter
 		body = transaction
 		options =
 			method: 'PUT'
@@ -2430,5 +2432,129 @@ exports.ContainerTube = ContainerTube
 exports.AnalysisGroup = AnalysisGroup
 exports.AnalysisGroupList = AnalysisGroupList
 exports.LocationContainer = LocationContainer
+
+# Request adapter that provides a request-like interface using fetch
+# Handles both callback-based and streaming/proxy patterns
+{ PassThrough } = require 'stream'
+http = require 'http'
+https = require 'https'
+{ URL } = require 'url'
+
+exports.requestAdapter = (options, callback) ->
+	# Handle different ways options can be passed
+	if typeof options is 'string'
+		url = options
+		method = 'GET'
+		body = undefined
+		json = false
+		headers = {}
+	else
+		url = options.url
+		method = options.method or 'GET'
+		body = options.body
+		json = options.json
+		headers = options.headers or {}
+		# For piping pattern, copy headers from incomingRequest if provided
+		if options.incomingRequest?
+			# Copy relevant headers from the incoming request
+			for headerName, headerValue of options.incomingRequest.headers
+				# Skip host header as it should be for the target server
+				if headerName.toLowerCase() isnt 'host'
+					headers[headerName] = headerValue
+
+	# If called without callback, create a proxy stream (for piping pattern)
+	if not callback?
+		urlObj = new URL(url)
+		isHttps = urlObj.protocol is 'https:'
+		requestModule = if isHttps then https else http
+		
+		reqOptions = 
+			hostname: urlObj.hostname
+			port: urlObj.port or (if isHttps then 443 else 80)
+			path: urlObj.pathname + (urlObj.search or '')
+			method: method
+			headers: headers
+		
+		# Create a duplex stream that can be both written to and read from
+		{ Duplex } = require 'stream'
+		
+		proxyStream = new Duplex(
+			write: (chunk, encoding, callback) ->
+				if not @httpRequest?
+					@httpRequest = requestModule.request reqOptions, (res) =>
+						# When we get the response, start piping it to the readable side
+						res.on 'data', (chunk) =>
+							@push(chunk)
+						res.on 'end', () =>
+							@push(null) # Signal end of readable stream
+						res.on 'error', (error) =>
+							@emit('error', error)
+					
+					@httpRequest.on 'error', (error) =>
+						@emit('error', error)
+				
+				# Write the chunk to the HTTP request
+				@httpRequest.write(chunk, encoding, callback)
+			
+			read: (size) ->
+				# This is handled by the response data pushing
+				return
+			
+			final: (callback) ->
+				# Called when the writable side is ending
+				if @httpRequest?
+					@httpRequest.end(callback)
+				else
+					# For GET requests with no body
+					@httpRequest = requestModule.request reqOptions, (res) =>
+						res.on 'data', (chunk) =>
+							@push(chunk)
+						res.on 'end', () =>
+							@push(null)
+						res.on 'error', (error) =>
+							@emit('error', error)
+					
+					@httpRequest.on 'error', (error) =>
+						@emit('error', error)
+						
+					@httpRequest.end()
+					callback()
+		)
+		
+		return proxyStream
+	
+	# Callback-based pattern using fetch
+	if json and body
+		headers['Content-Type'] = 'application/json'
+		if typeof body is 'object' and body isnt null and typeof body isnt 'string'
+			body = JSON.stringify(body)
+
+	fetch(url, {
+		method: method
+		body: if method is 'GET' or method is 'HEAD' then undefined else body
+		headers: headers
+	})
+	.then (response) ->
+		# Parse response body based on json flag
+		parsePromise = if json
+			response.json().catch -> response.text()
+		else
+			response.text()
+		
+		# Return both response and body
+		parsePromise.then (responseBody) ->
+			return { response: response, body: responseBody }
+	.then (result) ->
+		requestResponse =
+			statusCode: result.response.status
+			headers: result.response.headers
+			body: result.body
+
+		# Old request library only passed errors for network failures, not HTTP status codes
+		# HTTP errors (4xx, 5xx) should be handled by checking response.statusCode
+		callback(null, requestResponse, result.body)
+	.catch (error) ->
+		# Only network/connection errors go here
+		callback(error, null, null)
 
 AppLaunchParams = loginUser:username:"acas"

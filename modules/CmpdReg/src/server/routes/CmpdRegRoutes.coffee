@@ -61,9 +61,9 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/cmpdReg/renderMolStructureBase64', loginRoutes.ensureAuthenticated, exports.renderMolStructureBase64CmpdReg
 
 _ = require 'underscore'
-request = require 'request'
 config = require '../conf/compiled/conf.js'
 serverUtilityFunctions = require './ServerUtilityFunctions.js'
+request = serverUtilityFunctions.requestAdapter
 loginRoutes = require './loginRoutes.js'
 authorRoutes = require './AuthorRoutes.js'
 experimentServiceRoutes = require './ExperimentServiceRoutes.js'
@@ -146,9 +146,22 @@ exports.structureSearch = (req, resp) ->
 		req.body.projects = allowedProjectCodes
 		console.log req.body
 		cmpdRegCall = config.all.client.service.persistence.fullpath + '/structuresearch/'
-		req.pipe(request[req.method.toLowerCase()](
+		request(
+			method: req.method
 			url: cmpdRegCall
-			json: req.body)).pipe resp
+			body: JSON.stringify req.body
+			json: true
+		, (error, response, json) =>
+			if !error
+				resp.statusCode = response.statusCode
+				resp.setHeader('Content-Type', 'application/json')
+				resp.end JSON.stringify json
+			else
+				console.log 'got ajax error trying to search structures'
+				console.log error
+				resp.statusCode = 500
+				resp.end JSON.stringify {error: "something went wrong :("}
+		)
 
 exports.searchCmpds = (req, resp) ->
 	authorRoutes.allowedProjectsInternal req.user, (statusCode, allowedUserProjects) ->
@@ -695,7 +708,7 @@ exports.getMultipleFilePicker = (req, resp) ->
 
 exports.fileSave = (req, resp) ->
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/filesave'
-	req.pipe(request[req.method.toLowerCase()](cmpdRegCall)).pipe(resp)
+	req.pipe(request({url: cmpdRegCall, method: req.method, incomingRequest: req})).pipe(resp)
 
 exports.saveMetaLot = (req, resp) ->
 	metaLot = req.body;
@@ -890,8 +903,6 @@ exports.exportLotToSDF = (req, resp) ->
 
 exports.exportSearchResults = (req, resp) ->
 	path = require 'path'
-	serverUtilityFunctions = require './ServerUtilityFunctions.js'
-
 
 	# Get the lots from the req.body
 	foundCompounds = req.body.foundCompounds
@@ -1065,10 +1076,10 @@ exports.swapParentStructures = (req, resp) ->
 		body: JSON.stringify req.body
 		json: true
 		timeout: 6000000
-	, (error, response, data) =>
+	, (error, response, json) =>
 		if !error
 			resp.statusCode = response.statusCode
-			resp.json data
+			resp.json json
 		else
 			console.log 'got ajax error trying to swap parent structures'
 			console.log error
@@ -1079,7 +1090,6 @@ exports.swapParentStructures = (req, resp) ->
 	)
 
 exports.updateLotMetadata = (req, resp) ->
-	request = require 'request'
 	config = require '../conf/compiled/conf.js'
 	console.log 'in update lot metaData'
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parentLot/updateLot/metadata'
@@ -1191,7 +1201,6 @@ exports.ketcherConvertSmiles = (req, resp) ->
 	else
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"/structureServices/molconvert"
-		request = require 'request'
 		data =
 			structure: req.query.smiles
 			inputFormat: 'smiles'
@@ -1219,7 +1228,6 @@ exports.ketcherLayout = (req, resp) ->
 	else
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"/structureServices/clean"
-		request = require 'request'
 		data =
 			structure: req.body.moldata
 			parameters:
@@ -1250,7 +1258,6 @@ exports.ketcherCalculateCip = (req, resp) ->
 	else
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"/structureServices/cipStereoInfo"
-		request = require 'request'
 		data =
 			structure: req.body.moldata
 		request(
@@ -1344,7 +1351,6 @@ exports.renderMolStructureBase64CmpdReg = (req, resp) ->
 		width = req.body.width
 	config = require '../conf/compiled/conf.js'
 	baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"structureimage/convertMol/base64?hsize=#{height}&wsize=#{width}&format=#{format}"
-	request = require 'request'
 	request(
 		method: 'POST'
 		url: baseurl
