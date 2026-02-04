@@ -4,10 +4,10 @@ _ = require 'underscore'
 preferredEntityCodeService = require '../routes/PreferredEntityCodeService.js'
 codeTableRoutes = require './CodeTableServiceRoutes.js'
 config = require '../conf/compiled/conf.js'
+request = serverUtilityFunctions.requestAdapter
 RUN_CUSTOM_FLAG = "0"
 fs = require('fs')
 parse = require('csv-parse')
-request = require 'request'
 
 
 exports.setupAPIRoutes = (app) ->
@@ -143,9 +143,7 @@ exports.getContainersInLocation = (req, resp) ->
 		if req.query.containerKind?
 			queryParams.push "containerKind="+req.query.containerKind
 		queryString = queryParams.join "&"
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainersInLocation?"+queryString
-		request = require 'request'
 		request(
 			method: 'POST'
 			url: baseurl
@@ -169,9 +167,7 @@ exports.getContainersInLocationWithTypeAndKind = (req, resp) ->
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getContainersInLocationResponse
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainersInLocation?containerType=location&containerKind=default"
-		request = require 'request'
 		request(
 			method: 'POST'
 			url: baseurl
@@ -195,9 +191,7 @@ exports.getContainersInLocationWithTypeAndKindInternal = (values, callback) ->
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getContainersInLocationResponse
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainersInLocation?containerType=location&containerKind=default"
-		request = require 'request'
 		request(
 			method: 'POST'
 			url: baseurl
@@ -295,7 +289,6 @@ exports.getContainerCodesByLabelsLikeMaxResultsInternal = (requestObject, callba
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getContainerCodesByLabelsResponse
 	else
-		config = require '../conf/compiled/conf.js'
 
 		containerLabels = requestObject.containerLabels
 		containerType = requestObject.containerType
@@ -324,7 +317,6 @@ exports.getContainerCodesByLabelsLikeMaxResultsInternal = (requestObject, callba
 		queryString = queryParams.join "&"
 		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainerCodesByLabels?"+queryString
 		console.debug 'base url: ', baseurl
-		request = require 'request'
 		request(
 			method: 'POST'
 			url: baseurl
@@ -350,7 +342,6 @@ exports.getContainerCodesByLabelsInternal = (containerCodesJSON, containerType, 
 	else
 		console.warn "getContainerCodesByLabelsInternal is deprecated please use getContainerCodesByLabelsLikeMaxResultsInternal"
 		console.debug 'incoming getContainerCodesByLabelsInternal request: ', JSON.stringify(containerCodesJSON), containerType, containerKind, labelType, labelKind
-		config = require '../conf/compiled/conf.js'
 
 		likeParameter = null
 		maxResults = null
@@ -381,9 +372,7 @@ exports.getContainersInBoxPositionInternal = (values, callback) ->
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getContainersInLocationResponse
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainersInLocation?containerType=container&containerKind=tube"
-		request = require 'request'
 		request(
 			method: 'POST'
 			url: baseurl
@@ -408,9 +397,7 @@ exports.getWellCodesByPlateBarcodes = (req, resp) ->
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getWellCodesByPlateBarcodesResponse
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers/getWellCodesByPlateBarcodes"
-		request = require 'request'
 		request(
 			method: 'POST'
 			url: baseurl
@@ -433,9 +420,7 @@ exports.getWellCodesByPlateBarcodesInternal = (plateBarcodes, callback) ->
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		callback inventoryServiceTestJSON.getWellCodesByPlateBarcodesResponse
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers/getWellCodesByPlateBarcodes"
-		request = require 'request'
 		request(
 			method: 'POST'
 			url: baseurl
@@ -466,9 +451,7 @@ exports.getWellContentInternal = (wellCodeNames, callback) ->
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		callback inventoryServiceTestJSON.getWellContentResponse
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers/getWellContent"
-		request = require 'request'
 		console.debug 'calling service', baseurl
 		request(
 			method: 'POST'
@@ -710,10 +693,8 @@ exports.getContainersByCodeNamesInternal = (codeNamesJSON, callback) ->
 		resp.json inventoryServiceTestJSON.getContainersByCodeNames
 	else
 		console.debug 'incoming getContainersByCodeNamesInternal request: ', JSON.stringify(codeNamesJSON)
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainersByCodeNames"
 		console.debug 'base url: ', baseurl
-		request = require 'request'
 		request(
 			method: 'POST'
 			url: baseurl
@@ -743,9 +724,7 @@ exports.getDefinitionContainersByContainerCodeNamesInternal = (codeNamesJSON, ca
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getDefinitionContainersByContainerCodeNames
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers/getDefinitionContainersByContainerCodeNames"
-		request = require 'request'
 		request(
 			method: 'POST'
 			url: baseurl
@@ -795,9 +774,7 @@ exports.getBreadCrumbByContainerCodeInternal = (codeNamesJSON, delimeter, callba
 			inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 			resp.json inventoryServiceTestJSON.getBreadCrumbByContainerCodeResponse
 		else
-			config = require '../conf/compiled/conf.js'
 			baseurl = config.all.client.service.rapache.fullpath+"/getBreadCrumbByContainerCode?delimeter="+encodeURIComponent(delimeter)
-			request = require 'request'
 			request(
 				method: 'POST'
 				url: baseurl
@@ -832,10 +809,8 @@ exports.getWellCodesByContainerCodesInternal = (codeNamesJSON, callback) ->
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getWellCodesByContainerCodesResponse
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers/getWellCodesByContainerCodes"
 		console.debug 'base url: ', baseurl
-		request = require 'request'
 		request(
 			method: 'POST'
 			url: baseurl
@@ -898,11 +873,9 @@ exports.updateContainersInternal = (containers, callback) ->
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.updateContainersResponse
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers/jsonArray"
 		console.debug 'incoming updateContainersInternal request: ', containers
 		console.debug "base url: #{baseurl}"
-		request = require 'request'
 		request(
 			method: 'PUT'
 			url: baseurl
@@ -928,7 +901,6 @@ exports.getAllContainers = (req, resp) ->
 		containerTestJSON = require '../public/javascripts/spec/testFixtures/ContainerServiceTestJSON.js'
 		resp.json containerTestJSON.container
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers"
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
@@ -941,7 +913,6 @@ exports.containersByTypeKind = (req, resp) ->
 		resp.json json
 
 exports.containersByTypeKindInternal = (lsType, lsKind, format, stub, testMode, callback) ->
-	config = require '../conf/compiled/conf.js'
 	if testMode or global.specRunnerTestmode
 		thingServiceTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
 		callback JSON.stringify(thingServiceTestJSON.batchList), 200
@@ -953,7 +924,6 @@ exports.containersByTypeKindInternal = (lsType, lsKind, format, stub, testMode, 
 			else if format == "stub"
 				baseurl += "&format=stub"
 
-		request = require 'request'
 		request(
 			method: 'GET'
 			url: baseurl
@@ -976,14 +946,11 @@ exports.containerByCodeName = (req, resp) ->
 		containerTestJSON = require '../public/javascripts/spec/testFixtures/ContainerServiceTestJSON.js'
 		resp.json containerTestJSON.container
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers/"+req.params.code
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 exports.containerByCodeNameInteral = (containerCodeName, callback) ->
-	config = require '../conf/compiled/conf.js'
 	baseurl = config.all.client.service.persistence.fullpath+"containers/" + containerCodeName
-	request = require 'request'
 	request(
 		method: 'GET'
 		url: baseurl
@@ -1002,9 +969,7 @@ updateContainer = (container, testMode, callback) ->
 	if testMode or global.specRunnerTestmode
 		callback container
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers/"+container.code
-		request = require 'request'
 		request(
 			method: 'PUT'
 			url: baseurl
@@ -1024,7 +989,6 @@ updateContainer = (container, testMode, callback) ->
 postContainer = (req, resp) ->
 	req.setTimeout 86400000
 	console.debug "post container"
-	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	containerToSave = req.body
 	if containerToSave.transactionOptions?
 		transactionOptions = containerToSave.transactionOptions
@@ -1071,9 +1035,7 @@ postContainer = (req, resp) ->
 		if req.query.testMode or global.specRunnerTestmode
 			checkFilesAndUpdate containerToSave
 		else
-			config = require '../conf/compiled/conf.js'
 			baseurl = config.all.client.service.persistence.fullpath+"containers"
-			request = require 'request'
 			request(
 				method: 'POST'
 				url: baseurl
@@ -1140,9 +1102,7 @@ exports.validateContainerNameInternal = (container, callback) ->
 		containerTestJSON = require '../public/javascripts/spec/testFixtures/ContainerServiceTestJSON.js'
 		resp.json true
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers/validate"
-		request = require 'request'
 		request(
 			method: 'POST'
 			url: baseurl
@@ -1169,13 +1129,11 @@ exports.validateContainerName = (req, resp) ->
 		containerTestJSON = require '../public/javascripts/spec/testFixtures/ContainerServiceTestJSON.js'
 		resp.json true
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers/validate"
 		#		if req.params.componentOrAssembly is "component"
 		#			baseurl += "?uniqueName=true"
 		#		else #is assembly
 		#			baseurl += "?uniqueName=true&uniqueInteractions=true&orderMatters=true&forwardAndReverseAreSame=true"
-		request = require 'request'
 		console.debug "validate container name body"
 		console.debug req.body
 		console.debug req.body.container
@@ -1227,7 +1185,6 @@ exports.getContainerCodesFromNamesOrCodes = (codeRequest, callback) ->
 
 		callback response
 	else
-		config = require '../conf/compiled/conf.js'
 		#TODO: replace with new url
 		baseurl = config.all.client.service.persistence.fullpath+"containers/getCodeNameFromNameRequest?"
 		#		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainerCodesByLabels?"
@@ -1235,7 +1192,6 @@ exports.getContainerCodesFromNamesOrCodes = (codeRequest, callback) ->
 		postBody = requests: codeRequest.requests
 		console.debug postBody
 		console.debug url
-		request = require 'request'
 		request(
 			method: 'POST'
 			url: url
@@ -1266,13 +1222,11 @@ getContainerCodesFromLabels = (req, callback) ->
 		callback response
 
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainerCodesByLabels?"
 		url = baseurl+"containerType=#{req.body.containerType}&containerKind=#{req.body.containerKind}"
 		postBody = req.body.labels
 		console.debug postBody
 		console.debug url
-		request = require 'request'
 		request(
 			method: 'POST'
 			url: url
@@ -1298,13 +1252,11 @@ exports.getContainerCodesFromLabelsInternal = (barcodes, containerType, containe
 			label: 'test label'
 		callback response
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainerCodesByLabels?"
 		url = baseurl+"containerType=#{containerType}&containerKind=#{containerKind}"
 		postBody = barcodes
 		console.debug postBody
 		console.debug url
-		request = require 'request'
 		request(
 			method: 'POST'
 			url: url
@@ -1361,10 +1313,8 @@ exports.updateWellContentInternal = (wellContent, copyPreviousValues, callCustom
 		resp.json inventoryServiceTestJSON.getContainerCodesByLabelsResponse
 	else
 		console.debug 'incoming updateWellContentInternal request: ', JSON.stringify(wellContent)
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers/updateWellContent?copyPreviousValues="+copyPreviousValues
 		console.debug 'base url: ', baseurl
-		request = require 'request'
 		request(
 			method: 'POST'
 			url: baseurl
@@ -1403,9 +1353,7 @@ exports.updateAmountInWellInternal = (updateAmountInfo, callback) ->
 	else
 		console.log "updateAmountInfo"
 		console.log updateAmountInfo
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers/updateAmountInWell"
-		request = require 'request'
 		request(
 			method: 'POST'
 			url: baseurl
@@ -1447,10 +1395,8 @@ exports.moveToLocationInternal = (input, callCustom, updateLocationHistory, call
 			resp.json inventoryServiceTestJSON.moveToLocationResponse
 		else
 			console.debug 'incoming moveToLocationJSON request: ', JSON.stringify(input)
-			config = require '../conf/compiled/conf.js'
 			baseurl = config.all.client.service.persistence.fullpath+"containers/moveToLocation"
 			console.debug 'base url: ', baseurl
-			request = require 'request'
 			console.log 'request into moveToLocation'
 			console.log input
 			request(
@@ -1872,9 +1818,7 @@ exports.searchContainersInternal = (input, callback) ->
 		resp.json inventoryServiceTestJSON.searchContainersInternalResponse
 	else
 		console.debug "incoming searchContainers request: '#{JSON.stringify(input)}'"
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers/searchContainers"
-		request = require 'request'
 		request(
 			method: 'POST'
 			url: baseurl
@@ -2016,7 +1960,6 @@ exports.getContainerLocationHistoryInternal = (labels, containerType, containerK
 
 exports.getOrCreateContainer = (container, callback) ->
 	label = container.lsLabels[0].labelText
-	request = require 'request'
 	request.post
 		url: "http://localhost:"+config.all.server.nodeapi.port+"/api/getContainersByLabels?containerType=#{container.lsType}&containerKind=#{container.lsKind}"
 		json: true
@@ -2179,9 +2122,7 @@ exports.getContainerCodeNamesByContainerValueInternal = (requestObject, callback
 			queryParams.push "maxResults="+requestObject.maxResults
 		queryString = queryParams.join "&"
 		console.log 'request object in getContainerCodeNamesByContainerValue', requestObject
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainerCodeNamesByContainerValue?"+queryString
-		request = require 'request'
 		console.debug 'calling service', baseurl
 		request(
 			method: 'POST'
@@ -2208,7 +2149,6 @@ exports.createTube = (req, resp) ->
 		resp.json json
 
 exports.createTubeInternal = (input, callCustom, callback) ->
-	config = require '../conf/compiled/conf.js'
 	baseurl = config.all.client.service.persistence.fullpath + "containers/createTube"
 	if input.createdDate?
 		if typeof(input.createdDate) != "number"
@@ -2223,7 +2163,6 @@ exports.createTubeInternal = (input, callCustom, callback) ->
 	if config.all.client.compoundInventory.enforceUppercaseBarcodes
 		input.barcode = input.barcode.toUpperCase()
 		console.warn input.barcode
-	request = require 'request'
 	request(
 		method: 'POST'
 		url: baseurl
@@ -2257,7 +2196,6 @@ exports.createTubes = (req, resp) ->
 		resp.json json
 
 exports.createTubesInternal = (tubes, callCustom, callback) ->
-	config = require '../conf/compiled/conf.js'
 	baseurl = config.all.client.service.persistence.fullpath + "containers/createTubes"
 	_.each(tubes, (tube) ->
 		if tube.createdDate?
@@ -2277,7 +2215,6 @@ exports.createTubesInternal = (tubes, callCustom, callback) ->
 			tube.barcode = tube.barcode.toUpperCase()
 			console.warn tube.barcode
 		)
-	request = require 'request'
 	request(
 		method: 'POST'
 		url: baseurl
@@ -2319,10 +2256,8 @@ exports.throwInTrash = (req, resp) ->
 
 exports.throwInTrashInternal = (input, callCustom, callback) ->
 	#exports.updateContainerHistoryLogsInternal(input, (json, statusCode) ->
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath + "containers/throwInTrash"
 		console.log baseurl
-		request = require 'request'
 		request(
 			method: 'POST'
 			url: baseurl
@@ -2540,9 +2475,7 @@ exports.getContainerStatesByContainerValueInternal = (requestObject, callback) =
 			value: requestObject.value
 		}
 
-	config = require '../conf/compiled/conf.js'
 	baseurl = config.all.client.service.persistence.fullpath+"containerstates/getContainerStatesByContainerValue?"+queryString
-	request = require 'request'
 	request(
 		method: 'POST'
 		url: baseurl
@@ -2595,10 +2528,8 @@ exports.getTubesFromBatchCodeInternal = (input, callback) =>
 			]
 		}
 
-	config = require '../conf/compiled/conf.js'
 	baseurl = config.all.client.service.persistence.fullpath+"containers/advancedSearchContainers?with=codeTable&labelType=barcode"
 	console.log 'baseurl', baseurl
-	request = require 'request'
 	request(
 		method: 'POST'
 		url: baseurl
@@ -3429,7 +3360,6 @@ exports.saveWellToWellInteractionsInternal = (interactionsToSave, user, callback
 						formattedItx.lsStates = itx.interactionStates
 					formattedItxList.push formattedItx
 				baseurl = config.all.client.service.persistence.fullpath+"itxcontainercontainers/jsonArray"
-				request = require 'request'
 				request(
 					method: 'POST'
 					url: baseurl
@@ -3737,10 +3667,8 @@ exports.checkBatchDependencies = (req, resp) =>
 exports.checkBatchDependenciesInternal = (input, callback) =>
 	batchCodes = input
 
-	config = require '../conf/compiled/conf.js'
 	baseurl = config.all.client.service.persistence.fullpath+"compounds/checkBatchDependencies"
 	console.log 'baseurl', baseurl
-	request = require 'request'
 	request(
 		method: 'POST'
 		url: baseurl
@@ -3838,9 +3766,7 @@ exports.getLocationCodesByBreadcrumbArrayInternal = (input, callback) =>
 	if !(input.rootLabel)?
 		callback null, 500
 
-	config = require '../conf/compiled/conf.js'
 	baseurl = config.all.client.service.persistence.fullpath+"containers/getLocationCodesByBreadcrumbArray?rootLabel=#{input.rootLabel}"
-	request = require 'request'
 	request(
 		method: 'POST'
 		url: baseurl
@@ -4033,9 +3959,7 @@ createNewLocationInTree = (newLocationObject, parentLocationCode, callback) =>
 	model.prepareToSave newLocationObject.user
 	model.reformatBeforeSaving()
 
-	config = require '../conf/compiled/conf.js'
 	baseurl = config.all.client.service.persistence.fullpath+"containers"
-	request = require 'request'
 	request(
 		method: 'POST'
 		url: baseurl
