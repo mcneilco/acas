@@ -49,6 +49,7 @@ exports.getGroupsJSON = (callback) ->
 				groups: project.groups
 			groupsJSON.projects.push projectGroups
 		callback groupsJSON, acasGroupsAndProjects
+	)
 
 
 exports.getProjectsJSON = (callback) ->
@@ -76,6 +77,7 @@ exports.getProjectsJSON = (callback) ->
 				project_desc: project.name
 			projectsJSON.projects.push projectEntry
 		callback projectsJSON
+	)
 
 exports.getConfigJSON = (callback) ->
 	config = require '../conf/compiled/conf.js'
