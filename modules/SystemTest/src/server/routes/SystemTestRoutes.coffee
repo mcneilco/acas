@@ -20,7 +20,8 @@ exports.setupRoutes = (app, loginRoutes) ->
 
 ACAS_HOME=".."
 config = require "#{ACAS_HOME}/conf/compiled/conf.js"
-request = require('request')
+serverUtilityFunctions = require "#{ACAS_HOME}/routes/ServerUtilityFunctions.js"
+request = serverUtilityFunctions.requestAdapter
 _ = require 'underscore'
 fs = require 'fs'
 path = require 'path'
@@ -423,7 +424,6 @@ exports.getOrCreateGlobalProjectRoleInternal = (callback) ->
 					created: false
 				}
 			else
-				request = require('request')
 				options =
 					method: 'POST'
 					url: "#{config.all.server.nodeapi.path}/api/projects/createRoleKindAndName"
@@ -511,7 +511,6 @@ exports.deleteGlobalProjectInternal = (callback) ->
 				}
 
 exports.getCmpds = (callback) ->
-	request = require('request')
 	options =
 		method: 'GET'
 		url: 	config.all.client.service.cmpdReg.persistence.fullpath + "/metalots/corpName/SYSTEST-000000001-1"
