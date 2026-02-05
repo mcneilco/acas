@@ -2435,166 +2435,171 @@ exports.LocationContainer = LocationContainer
 
 # Request adapter that provides a request-like interface using fetch
 # Handles both callback-based and streaming/proxy patterns
-{ PassThrough } = require 'stream'
 http = require 'http'
 https = require 'https'
 { URL } = require 'url'
 
-exports.requestAdapter = (options, callback) ->
-	# Handle different ways options can be passed
+# Helper: Parse options into normalized request parameters
+parseRequestOptions = (options) ->
 	if typeof options is 'string'
-		url = options
-		method = 'GET'
-		body = undefined
-		json = false
-		headers = {}
-		qs = undefined
-	else
-		url = options.url
-		method = options.method or 'GET'
-		body = options.body
-		json = options.json
-		form = options.form
-		headers = options.headers or {}
-		qs = options.qs
-		
-		# Handle old request library pattern: json can be both a boolean flag and the body data
-		if json? and typeof json is 'object'
-			body = json
-			json = true
-		
-		# Handle form option (application/x-www-form-urlencoded)
-		if form?
-			params = new URLSearchParams()
-			for key, value of form
-				params.append(key, value)
-			body = params.toString()
-			headers['Content-Type'] = 'application/x-www-form-urlencoded'
-			json = false
-		
-		# For piping pattern, copy headers from incomingRequest if provided
-		if options.incomingRequest?
-			# Copy relevant headers from the incoming request
-			for headerName, headerValue of options.incomingRequest.headers
-				# Skip host header as it should be for the target server
-				if headerName.toLowerCase() isnt 'host'
-					headers[headerName] = headerValue
-		
-		# Handle query string parameters (qs option)
-		if qs?
-			urlObj = new URL(url)
-			for key, value of qs
-				urlObj.searchParams.append(key, value)
-			url = urlObj.toString()
-
-	# If called without callback, create a proxy stream (for piping pattern)
-	if not callback?
-		urlObj = new URL(url)
-		isHttps = urlObj.protocol is 'https:'
-		requestModule = if isHttps then https else http
-		
-		reqOptions = 
-			hostname: urlObj.hostname
-			port: urlObj.port or (if isHttps then 443 else 80)
-			path: urlObj.pathname + (urlObj.search or '')
-			method: method
-			headers: headers
-		
-		# Create a duplex stream that can be both written to and read from
-		{ Duplex } = require 'stream'
-		
-		proxyStream = new Duplex(
-			write: (chunk, encoding, callback) ->
-				if not @httpRequest?
-					@httpRequest = requestModule.request reqOptions, (res) =>
-						# When we get the response, start piping it to the readable side
-						res.on 'data', (chunk) =>
-							@push(chunk)
-						res.on 'end', () =>
-							@push(null) # Signal end of readable stream
-						res.on 'error', (error) =>
-							@emit('error', error)
-					
-					@httpRequest.on 'error', (error) =>
-						@emit('error', error)
-				
-				# Write the chunk to the HTTP request
-				@httpRequest.write(chunk, encoding, callback)
-			
-			read: (size) ->
-				# This is handled by the response data pushing
-				return
-			
-			final: (callback) ->
-				# Called when the writable side is ending
-				if @httpRequest?
-					@httpRequest.end(callback)
-				else
-					# For GET requests with no body
-					@httpRequest = requestModule.request reqOptions, (res) =>
-						res.on 'data', (chunk) =>
-							@push(chunk)
-						res.on 'end', () =>
-							@push(null)
-						res.on 'error', (error) =>
-							@emit('error', error)
-					
-					@httpRequest.on 'error', (error) =>
-						@emit('error', error)
-						
-					@httpRequest.end()
-					callback()
-		)
-		
-		return proxyStream
+		return {
+			url: options
+			method: 'GET'
+			body: undefined
+			json: false
+			headers: {}
+			qs: undefined
+		}
 	
-	# Callback-based pattern using fetch
-	if json and body
-		headers['Content-Type'] = 'application/json'
-		if typeof body is 'object' and body isnt null and typeof body isnt 'string'
-			body = JSON.stringify(body)
-
-	fetch(url, {
-		method: method
-		body: if method is 'GET' or method is 'HEAD' then undefined else body
+	# Normalize json option (can be boolean or object body)
+	json = options.json
+	body = options.body
+	if json? and typeof json is 'object'
+		body = json
+		json = true
+	
+	# Build headers
+	headers = options.headers or {}
+	
+	# Handle form data
+	if options.form?
+		params = new URLSearchParams()
+		for key, value of options.form
+			params.append(key, value)
+		body = params.toString()
+		headers['Content-Type'] = 'application/x-www-form-urlencoded'
+		json = false
+	
+	# Copy headers from incoming request if proxying
+	if options.incomingRequest?
+		for headerName, headerValue of options.incomingRequest.headers
+			unless headerName.toLowerCase() is 'host'
+				headers[headerName] = headerValue
+	
+	# Build URL with query string
+	url = options.url
+	if options.qs?
+		urlObj = new URL(url)
+		for key, value of options.qs
+			urlObj.searchParams.append(key, value)
+		url = urlObj.toString()
+	
+	return {
+		url: url
+		method: options.method or 'GET'
+		body: body
+		json: json
 		headers: headers
-		redirect: 'manual' # Don't follow redirects automatically (old request library behavior)
-	})
-	.then (response) ->
-		# Check if response has content (status 204 or Content-Length: 0 means no content)
-		contentLength = response.headers.get('content-length')
-		hasContent = response.status isnt 204 and contentLength isnt '0'
-		
-		# Parse response body based on json flag and whether there's content
-		parsePromise = if not hasContent
-			Promise.resolve(null)
-		else if json
-			response.json().catch -> response.text()
-		else
-			response.text()
-		
-		# Return both response and body
-		parsePromise.then (responseBody) ->
-			return { response: response, body: responseBody }
-	.then (result) ->
-		# Convert fetch Headers to plain object for compatibility with old request library
-		headersObj = {}
-		result.response.headers.forEach (value, key) ->
-			headersObj[key] = value
-		
-		requestResponse =
-			statusCode: result.response.status
-			headers: headersObj
-			body: result.body
+	}
 
-		# Old request library only passed errors for network failures, not HTTP status codes
-		# HTTP errors (4xx, 5xx) should be handled by checking response.statusCode
-		callback(null, requestResponse, result.body)
-	.catch (error) ->
-		# Only network/connection errors go here
-		callback(error, null, null)
-		# 	statusMessage: error.message or 'Network error'
-		# 	headers: {}
-		# callback(error, errorResponse, null)
+# Helper: Parse response body based on json flag
+parseResponseBody = (response, wantJson) ->
+	# Always get text first (can only read body stream once)
+	response.text().then (text) ->
+		# Empty response
+		return null unless text
+		
+		# Parse JSON if requested
+		if wantJson
+			try
+				return JSON.parse(text)
+			catch error
+				console.error "Failed to parse JSON response from #{response.url}: #{error.message}"
+				console.error "Response text:", text.substring(0, 200)
+				throw error
+		
+		# Return as text
+		return text
+
+# Helper: Convert fetch Response to request-compatible response object
+buildResponseObject = (response, parsedBody) ->
+	# Convert Headers to plain object
+	headers = {}
+	response.headers.forEach (value, key) ->
+		headers[key] = value
+	
+	return {
+		statusCode: response.status
+		headers: headers
+		body: parsedBody
+	}
+
+exports.requestAdapter = (options, callback) ->
+	parsed = parseRequestOptions(options)
+	
+	# Streaming mode (no callback)
+	unless callback?
+		return createStreamingRequest(parsed)
+	
+	# Callback mode - prepare request body
+	if parsed.json and parsed.body?
+		parsed.headers['Content-Type'] = 'application/json'
+		if typeof parsed.body is 'object'
+			parsed.body = JSON.stringify(parsed.body)
+	
+	# Make fetch request
+	fetchOptions = {
+		method: parsed.method
+		headers: parsed.headers
+		redirect: 'manual'
+	}
+	
+	# Only include body for methods that support it
+	unless parsed.method in ['GET', 'HEAD']
+		fetchOptions.body = parsed.body
+	
+	fetch(parsed.url, fetchOptions)
+		.then (response) ->
+			parseResponseBody(response, parsed.json).then (parsedBody) ->
+				responseObj = buildResponseObject(response, parsedBody)
+				callback(null, responseObj, parsedBody)
+		.catch (error) ->
+			console.error "Request failed for #{parsed.url}:", error.message
+			callback(error, null, null)
+
+# Create streaming request using http/https modules
+createStreamingRequest = (parsed) ->
+	urlObj = new URL(parsed.url)
+	isHttps = urlObj.protocol is 'https:'
+	requestModule = if isHttps then https else http
+	
+	reqOptions = {
+		hostname: urlObj.hostname
+		port: urlObj.port or (if isHttps then 443 else 80)
+		path: urlObj.pathname + (urlObj.search or '')
+		method: parsed.method
+		headers: parsed.headers
+	}
+	
+	{ Duplex } = require 'stream'
+	
+	new Duplex(
+		write: (chunk, encoding, callback) ->
+			unless @httpRequest?
+				@httpRequest = requestModule.request reqOptions, (res) =>
+					res.on 'data', (chunk) => @push(chunk)
+					res.on 'end', => @push(null)
+					res.on 'error', (error) => @emit('error', error)
+				@httpRequest.on 'error', (error) => @emit('error', error)
+			
+			@httpRequest.write(chunk, encoding, callback)
+		
+		read: (size) ->
+			# Handled by response data events
+			return
+		
+		final: (callback) ->
+			if @httpRequest?
+				@httpRequest.end(callback)
+			else
+				# GET requests with no body
+				@httpRequest = requestModule.request reqOptions, (res) =>
+					res.on 'data', (chunk) => @push(chunk)
+					res.on 'end', => @push(null)
+					res.on 'error', (error) => @emit('error', error)
+				@httpRequest.on 'error', (error) => @emit('error', error)
+				@httpRequest.end()
+				callback()
+	)
 
 AppLaunchParams = loginUser:username:"acas"
