@@ -26,7 +26,7 @@ startApp = ->
 	passport = require 'passport'
 	util = require 'util'
 	LocalStrategy = require('passport-local').Strategy
-	SamlStrategy = require('passport-saml').Strategy;
+	SamlStrategy = require('@node-saml/passport-saml').Strategy;
 	global.deployMode = config.all.client.deployMode
 
 	console.log "log level set to '#{console.level}'"
