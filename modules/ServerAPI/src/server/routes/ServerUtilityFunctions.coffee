@@ -2582,10 +2582,12 @@ createStreamingRequest = (parsed) ->
 	
 	{ Duplex } = require 'stream'
 	
-	new Duplex(
+	stream = new Duplex(
 		write: (chunk, encoding, callback) ->
 			unless @httpRequest?
 				@httpRequest = requestModule.request reqOptions, (res) =>
+					# Store response for header forwarding
+					@httpResponse = res
 					res.on 'data', (chunk) => @push(chunk)
 					res.on 'end', => @push(null)
 					res.on 'error', (error) => @emit('error', error)
@@ -2603,6 +2605,8 @@ createStreamingRequest = (parsed) ->
 			else
 				# GET requests with no body
 				@httpRequest = requestModule.request reqOptions, (res) =>
+					# Store response for header forwarding
+					@httpResponse = res
 					res.on 'data', (chunk) => @push(chunk)
 					res.on 'end', => @push(null)
 					res.on 'error', (error) => @emit('error', error)
@@ -2610,5 +2614,46 @@ createStreamingRequest = (parsed) ->
 				@httpRequest.end()
 				callback()
 	)
+	
+	# Override pipe to automatically forward HTTP headers
+	originalPipe = stream.pipe.bind(stream)
+	stream.pipe = (destination, options) ->
+		# If piping to an HTTP response, forward headers when they arrive
+		if destination.writeHead? and typeof destination.writeHead is 'function'
+			handleResponse = (res) ->
+				# Whitelist safe headers to forward (avoid exposing internal/security headers)
+				safeHeaders = {}
+				headersToForward = [
+					'content-type'
+					'content-length'
+					'content-disposition'
+					'content-encoding'
+					'content-language'
+					'content-range'
+					'cache-control'
+					'expires'
+					'etag'
+					'last-modified'
+					'accept-ranges'
+				]
+				
+				for header in headersToForward
+					if res.headers[header]?
+						safeHeaders[header] = res.headers[header]
+				
+				destination.writeHead(res.statusCode, safeHeaders)
+			
+			# If response already received, forward immediately
+			if stream.httpResponse?
+				handleResponse(stream.httpResponse)
+			else
+				# Wait for response
+				stream.once 'data', ->
+					if stream.httpResponse?
+						handleResponse(stream.httpResponse)
+		
+		originalPipe(destination, options)
+	
+	stream
 
 AppLaunchParams = loginUser:username:"acas"
