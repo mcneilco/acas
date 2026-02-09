@@ -2,6 +2,7 @@ path = require 'path'
 config = require '../conf/compiled/conf.js'
 serverUtilityFunctions = require './ServerUtilityFunctions.js'
 request = serverUtilityFunctions.requestAdapter
+{ Readable } = require 'stream'
 
 exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.post '/api/cmpdRegBulkLoader/registerCmpds', exports.registerCmpds
@@ -379,7 +380,8 @@ exports.getSDFFromBulkLoadFileId = (req, resp) ->
 			"content-length": response.headers.get('content-length'),
 			"content-type": response.headers.get('content-type'),
 		})
-		response.body.pipe(resp);
+		# Convert Web Streams ReadableStream to Node.js stream
+		Readable.fromWeb(response.body).pipe(resp)
 	catch err
 		console.log "Error calling service: " + err
 		resp.statusCode = 500

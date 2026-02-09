@@ -2493,18 +2493,22 @@ parseRequestOptions = (options) ->
 	}
 
 # Helper: Parse response body based on json flag
-parseResponseBody = (response, wantJson) ->
+parseResponseBody = (response, wantJson, url) ->
 	# Always get text first (can only read body stream once)
-	response.text().then (text) ->
+	textPromise = response.text()
+	
+	textPromise.then (text) ->
 		# Empty response
-		return null unless text
+		unless text
+			return null
 		
 		# Parse JSON if requested
 		if wantJson
 			try
-				return JSON.parse(text)
+				parsed = JSON.parse(text)
+				return parsed
 			catch error
-				console.error "Failed to parse JSON response from #{response.url}: #{error.message}"
+				console.error "Failed to parse JSON response from #{url}: #{error.message}"
 				console.error "Response text:", text.substring(0, 200)
 				throw error
 		
@@ -2533,7 +2537,10 @@ exports.requestAdapter = (options, callback) ->
 	
 	# Callback mode - prepare request body
 	if parsed.json and parsed.body?
-		parsed.headers['Content-Type'] = 'application/json'
+		# Set Content-Type header (case-insensitive check to avoid duplicates)
+		hasContentType = Object.keys(parsed.headers).some (key) -> key.toLowerCase() is 'content-type'
+		unless hasContentType
+			parsed.headers['Content-Type'] = 'application/json'
 		if typeof parsed.body is 'object'
 			parsed.body = JSON.stringify(parsed.body)
 	
@@ -2548,13 +2555,15 @@ exports.requestAdapter = (options, callback) ->
 	unless parsed.method in ['GET', 'HEAD']
 		fetchOptions.body = parsed.body
 	
-	fetch(parsed.url, fetchOptions)
+	fetchPromise = fetch(parsed.url, fetchOptions)
+	
+	fetchPromise
 		.then (response) ->
-			parseResponseBody(response, parsed.json).then (parsedBody) ->
+			parsePromise = parseResponseBody(response, parsed.json, parsed.url)
+			parsePromise.then (parsedBody) ->
 				responseObj = buildResponseObject(response, parsedBody)
 				callback(null, responseObj, parsedBody)
 		.catch (error) ->
-			console.error "Request failed for #{parsed.url}:", error.message
 			callback(error, null, null)
 
 # Create streaming request using http/https modules
