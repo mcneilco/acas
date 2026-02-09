@@ -1,5 +1,3 @@
-global.fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
-
 # Simple class to store acls
 class Acls
 	constructor: (read, write, del) ->
