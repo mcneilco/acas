@@ -2,10 +2,106 @@
     padding-top: 40px;
 }
 
+.loginLogo {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.ssoSection {
+    margin-bottom: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 380px;
+    position: relative;
+    left: -10px;
+}
+
+.ssoSection h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #333;
+    font-weight: 600;
+}
+
+.ssoSection p {
+    margin-bottom: 10px;
+    color: #666;
+    font-size: 14px;
+}
+
+.ssoButton {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-align: center;
+    position: relative;
+}
+
+.ssoButton i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    margin-top: -7px;
+}
+
+.loginDividerOr {
+    border-top: 1px solid #DADADA;
+    color: #888;
+    margin: 16px 0 12px;
+    position: relative;
+    text-align: center;
+}
+
+.loginDividerOr span {
+    background: #f5f5f5;
+    padding: 0 10px;
+    position: relative;
+    top: -10px;
+}
+
 .loginDivider {
     border-color: #DADADA;
     color: #DADADA;
     background-color: #DADADA;
+    margin: 20px 0;
+}
+
+.loginInputGroup .input-prepend input {
+    height: 40px;
+    line-height: 40px;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.loginInputGroup .input-prepend .add-on {
+    min-width: 28px;
+    text-align: center;
+    height: 40px;
+    line-height: 40px;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.loginInputGroup .input-prepend .add-on i {
+    display: inline-block;
+    vertical-align: middle;
+    position: relative;
+    top: -1px;
+}
+
+.loginContainer .form-horizontal .controls {
+    margin-left: auto;
+    margin-right: auto;
+    width: 380px;
+    position: relative;
+    left: -10px;
+}
+
+.loginContainer .form-horizontal .control-label {
+    width: 0;
 }
 
 .forgotPasswordLink {
@@ -13,7 +109,7 @@
 }
 
 .loginError {
-    width: 719px;
+    width: auto;
 }
 
 .loginLink {
