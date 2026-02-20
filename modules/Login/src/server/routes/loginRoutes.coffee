@@ -10,6 +10,8 @@ exports.setupAPIRoutes = (app) ->
 exports.setupRoutes = (app, passport) ->
 	# Unified login page - shows both SSO (if configured) and direct login options
 	app.get '/login', exports.loginPage
+	# /login/direct is legacy from when we had separate pages for SSO and direct login, but we keep it for backwards compatibility in case anyone has it bookmarked or linked
+	app.get '/login/direct', exports.loginPage
 	app.post '/login',
 		passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }), exports.loginPost
 	# SSO callback endpoint (if SAML is configured)
