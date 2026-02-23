@@ -12,7 +12,10 @@ block content
                     img(src="/img/acas_logo.png", alt="ACAS", width="220")
                 - if (ssoAvailable)
                     div.ssoSection
-                        a.btn.btn-info.ssoButton(href="/login/sso", role="button")
+                        - var ssoHref = '/login/sso'
+                        if redirectUrl
+                            - ssoHref = '/login/sso?redirect_url=' + redirectUrl
+                        a.btn.btn-info.ssoButton(href="#{ssoHref}", role="button")
                             i.icon-lock &nbsp;
                             | Log In with Single Sign-On (SSO)
                         div.loginDividerOr
