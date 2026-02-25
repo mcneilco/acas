@@ -19,7 +19,8 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/cmpdReg/standardizationExecute', loginRoutes.ensureAuthenticated, exports.standardizationExecution
 
 _ = require 'underscore'
-request = require 'request'
+serverUtilityFunctions = require './ServerUtilityFunctions.js'
+request = serverUtilityFunctions.requestAdapter
 config = require '../conf/compiled/conf.js'
 path = require 'path'
 

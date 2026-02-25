@@ -1,5 +1,6 @@
 assert = require 'assert'
-request = require 'request'
+serverUtilityFunctions = require "#{acasHome}/routes/ServerUtilityFunctions.js"
+request = serverUtilityFunctions.requestAdapter
 fs = require 'fs'
 
 

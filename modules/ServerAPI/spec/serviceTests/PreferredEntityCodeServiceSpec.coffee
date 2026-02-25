@@ -23,7 +23,8 @@
 # the individual entry returns no preferred id
 #########################################################################assert = require 'assert'
 assert = require 'assert'
-request = require 'request'
+serverUtilityFunctions = require "#{acasHome}/routes/ServerUtilityFunctions.js"
+request = serverUtilityFunctions.requestAdapter
 _ = require 'underscore'
 
 parseResponse = (jsonStr) ->

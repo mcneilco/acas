@@ -1,3 +1,7 @@
+config = require '../conf/compiled/conf.js'
+serverUtilityFunctions = require './ServerUtilityFunctions.js'
+request = serverUtilityFunctions.requestAdapter
+
 exports.setupAPIRoutes = (app) ->
 	app.get '/api/protocols/codename/:code', exports.protocolByCodename
 	app.get '/api/protocols/:id', exports.protocolById
@@ -34,8 +38,6 @@ serverUtilityFunctions = require './ServerUtilityFunctions.js'
 csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
 
 exports.protocolByCodenameInternal = (codeName, callback) ->
-	config = require '../conf/compiled/conf.js'
-	request = require 'request'
 	baseurl = config.all.client.service.persistence.fullpath+"protocols/codename/" + codeName
 	request(
 		method: 'GET'
@@ -63,9 +65,7 @@ exports.protocolByCodename = (req, resp) ->
 			stubSavedProtocol.lsKind = "default"
 		resp.end JSON.stringify stubSavedProtocol
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"protocols/codename/"+req.params.code
-		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		if req.user? && config.all.server.project.roles.enable
 			serverUtilityFunctions.getRestrictedEntityFromACASServerInternal baseurl, req.user.username, "metadata", "protocol metadata", (statusCode, json) =>
 			#if prot is deleted, need to check if user has privs to view deleted protocols
@@ -95,21 +95,16 @@ exports.protocolById = (req, resp) ->
 		protocolServiceTestJSON = require '../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'
 		resp.end JSON.stringify protocolServiceTestJSON.fullSavedProtocol
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"protocols/"+req.params.id
-		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 updateProt = (prot, testMode, callback) ->
-	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	serverUtilityFunctions.createLSTransaction prot.recordedDate, "updated protocol", (transaction) ->
 		prot = serverUtilityFunctions.insertTransactionIntoEntity transaction.id, prot
 		if testMode or global.specRunnerTestmode
 			callback prot
 		else
-			config = require '../conf/compiled/conf.js'
 			baseurl = config.all.client.service.persistence.fullpath+"protocols/"+prot.id
-			request = require 'request'
 			request(
 				method: 'PUT'
 				url: baseurl
@@ -130,7 +125,6 @@ updateProt = (prot, testMode, callback) ->
 			)
 
 postProtocol = (req, resp) ->
-	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	protToSave = req.body
 	serverUtilityFunctions.createLSTransaction protToSave.recordedDate, "new protocol", (transaction) ->
 		protToSave = serverUtilityFunctions.insertTransactionIntoEntity transaction.id, protToSave
@@ -164,9 +158,7 @@ postProtocol = (req, resp) ->
 				protToSave.id = 1
 			checkFilesAndUpdate protToSave
 		else
-			config = require '../conf/compiled/conf.js'
 			baseurl = config.all.client.service.persistence.fullpath+"protocols"
-			request = require 'request'
 			request(
 				method: 'POST'
 				url: baseurl
@@ -189,7 +181,6 @@ postProtocol = (req, resp) ->
 			)
 
 exports.createProtocolInternal = (protToSave, testMode, callback) ->
-	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 
 	serverUtilityFunctions.createLSTransaction protToSave.recordedDate, "new protocol", (transaction) ->
 		protToSave = serverUtilityFunctions.insertTransactionIntoEntity transaction.id, protToSave
@@ -222,9 +213,7 @@ exports.createProtocolInternal = (protToSave, testMode, callback) ->
 				protToSave.id = 1
 			checkFilesAndUpdate protToSave
 		else
-			config = require '../conf/compiled/conf.js'
 			baseurl = config.all.client.service.persistence.fullpath+"protocols"
-			request = require 'request'
 			request(
 				method: 'POST'
 				url: baseurl
@@ -308,9 +297,7 @@ exports.getProtocolLabelsInternal = (callback) ->
 		protocolServiceTestJSON = require '../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'
 		resp.end JSON.stringify protocolServiceTestJSON.lsLabels
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"protocollabels"
-		request = require 'request'
 		request(
 			method: 'GET'
 			url: baseurl
@@ -331,9 +318,7 @@ exports.lsLabels = (req, resp) ->
 		protocolServiceTestJSON = require '../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'
 		resp.end JSON.stringify protocolServiceTestJSON.lsLabels
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"protocollabels"
-		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 exports.protocolCodeList = (req, resp) ->
@@ -373,7 +358,6 @@ exports.protocolCodeList = (req, resp) ->
 		resp.json translateToCodes(labels)
 
 	else
-		config = require '../conf/compiled/conf.js'
 		#baseurl = config.all.client.service.persistence.fullpath+"protocollabels/codetable"
 		baseurl = config.all.client.service.persistence.fullpath+"protocols/codetable"
 
@@ -383,7 +367,6 @@ exports.protocolCodeList = (req, resp) ->
 			#baseurl += "/?protocolKind="+filterString
 			baseurl += "?lskind="+filterString
 
-		request = require 'request'
 		request(
 			method: 'GET'
 			url: baseurl
@@ -429,7 +412,6 @@ exports.getProtocolList = (protocolName, protocolKind, callback) ->
 					ignored: label.ignored
 		protCodes
 
-	config = require '../conf/compiled/conf.js'
 	baseurl = config.all.client.service.persistence.fullpath+"protocols/codetable"
 
 	if shouldFilterByName
@@ -437,7 +419,6 @@ exports.getProtocolList = (protocolName, protocolKind, callback) ->
 	else if shouldFilterByKind
 		baseurl += "?lskind="+filterString
 
-	request = require 'request'
 	request(
 		method: 'GET'
 		url: baseurl
@@ -466,9 +447,7 @@ exports.protocolKindCodeList = (req, resp) ->
 		protocolServiceTestJSON = require '../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'
 		resp.json translateToCodes(protocolServiceTestJSON.protocolKinds)
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"protocolkinds"
-		request = require 'request'
 		request(
 			method: 'GET'
 			url: baseurl
@@ -496,11 +475,9 @@ exports.genericProtocolSearch = (req, res) ->
 		authorRoutes.allowedProjectsInternal req.user, (statusCode, allowedUserProjects) ->
 			_ = require "underscore"
 			allowedProjectCodes = _.pluck(allowedUserProjects, "code")
-			config = require '../conf/compiled/conf.js'
 			baseurl = config.all.client.service.persistence.fullpath+"protocols/search?q="+req.params.searchTerm+"&projects=#{encodeURIComponent(allowedProjectCodes.join(','))}"
 			console.log "baseurl"
 			console.log baseurl
-			serverUtilityFunctions = require './ServerUtilityFunctions.js'
 			serverUtilityFunctions.getFromACASServer(baseurl, res)
 
 exports.deleteProtocol = (req, res) ->
@@ -509,12 +486,10 @@ exports.deleteProtocol = (req, res) ->
 		deletedProtocol = JSON.parse(JSON.stringify(protocolServiceTestJSON.fullDeletedProtocol))
 		res.end JSON.stringify deletedProtocol
 	else
-		config = require '../conf/compiled/conf.js'
 		protocolID = req.params.id
 		baseurl = config.all.client.service.persistence.fullpath+"protocols/browser/"+protocolID
 		console.log "baseurl"
 		console.log baseurl
-		request = require 'request'
 
 		request(
 			method: 'DELETE'
@@ -537,9 +512,7 @@ exports.getProtocolByLabel = (req, resp) ->
 		resp.json json
 		
 exports.getProtocolByLabelInternal = (label, callback) ->
-	config = require '../conf/compiled/conf.js'
 	url = config.all.client.service.persistence.fullpath+"protocols?FindByProtocolName&protocolName=#{encodeURIComponent(label)}"
-	request = require 'request'
 	request(
 		method: 'GET'
 		url: url
@@ -564,14 +537,12 @@ exports.protocolsByCodeNamesArrayInternal = (codeNamesArray, returnOption, testM
 	if testMode or global.specRunnerTestmode
 		callback JSON.stringify "stubsMode not implemented"
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"protocols/codename/jsonArray"
 		#returnOption are stub, fullobject
 		if returnOption?
 			baseurl += "?with=#{returnOption}"
 		console.log "protocolsByCodeNamesArray"
 		console.log baseurl
-		request = require 'request'
 		request(
 			method: 'POST'
 			url: baseurl
@@ -597,12 +568,10 @@ exports.bulkPutProtocols= (req, resp) ->
 
 exports.bulkPutProtocolsInternal = (protsArray, callback) ->
 	console.log "bulkPutProtocols"
-	config = require '../conf/compiled/conf.js'
 	baseurl = config.all.client.service.persistence.fullpath+"/protocols/jsonArray"
 	console.log "bulkPutProtocolsInternal"
 	console.log baseurl
 	console.log protsArray
-	request = require 'request'
 	request(
 		method: 'PUT'
 		url: baseurl
@@ -621,10 +590,8 @@ exports.bulkPutProtocolsInternal = (protsArray, callback) ->
 
 exports.getTemplateSELFile = (req, resp) ->
 	_ = require 'underscore'
-	config = require '../conf/compiled/conf.js'
 	experimentServiceRoutes = require './ExperimentServiceRoutes.js'
 	csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
-	request = require 'request'
 	csv = require 'csv-stringify/sync'
 
 	protocolCode = req.body.protocolCode

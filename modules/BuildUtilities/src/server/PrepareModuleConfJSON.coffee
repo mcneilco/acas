@@ -87,7 +87,8 @@ compiledModuleConfsFileName = "#{ACAS_HOME}/public/javascripts/conf/confJSON/Com
 fs.writeFileSync compiledModuleConfsFileName, jsonfilestring
 
 async = require 'async'
-request = require 'request'
+serverUtilityFunctions = require "#{ACAS_HOME}/routes/ServerUtilityFunctions.js"
+request = serverUtilityFunctions.requestAdapter
 data = require "#{ACAS_HOME}/public/javascripts/conf/confJSON/CompiledModuleConfJSONs.json"
 config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 

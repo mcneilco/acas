@@ -25,8 +25,10 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/cmpdRegAdmin/lotServices/reparent/lot', loginRoutes.ensureAuthenticated, loginRoutes.ensureCmpdRegAdmin, exports.reparentLot
 	app.post '/api/cmpdRegAdmin/lotServices/reparent/lot/jsonArray', loginRoutes.ensureAuthenticated, loginRoutes.ensureCmpdRegAdmin, exports.reparentLots
 
+serverUtilityFunctions = require './ServerUtilityFunctions.js'
+request = serverUtilityFunctions.requestAdapter
+
 exports.validateCmpdRegEntity = (req, resp) ->
-	request = require 'request'
 	config = require '../conf/compiled/conf.js'
 	entityType = req.params.entityType
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + "#{entityType}/validate?code=" + req.params.code
@@ -48,7 +50,6 @@ exports.validateCmpdRegEntity = (req, resp) ->
 	)
 
 exports.validateCmpdRegEntityBeforeSave = (req, resp) ->
-	request = require 'request'
 	config = require '../conf/compiled/conf.js'
 	entityType = req.params.entityType
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + "#{entityType}/validateBeforeSave"
@@ -80,7 +81,6 @@ exports.validateCmpdRegEntityBeforeSave = (req, resp) ->
 	)
 
 exports.getCmpdRegEntityById = (req, resp) ->
-	request = require 'request'
 	config = require '../conf/compiled/conf.js'
 	entityType = req.params.entityType
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + "#{entityType}/" + req.params.id
@@ -103,7 +103,6 @@ exports.getCmpdRegEntityById = (req, resp) ->
 	)
 
 exports.getCmpdRegEntityByCode = (req, resp) ->
-	request = require 'request'
 	config = require '../conf/compiled/conf.js'
 	entityType = req.params.entityType
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + "#{entityType}/findByCodeEquals?code=" + req.params.code
@@ -126,7 +125,6 @@ exports.getCmpdRegEntityByCode = (req, resp) ->
 	)
 
 exports.searchCmpdRegEntities = (req, resp) ->
-	request = require 'request'
 	config = require '../conf/compiled/conf.js'
 	entityType = req.params.entityType
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + "#{entityType}/search/?searchTerm=" + req.params.searchTerm
@@ -150,7 +148,6 @@ exports.searchCmpdRegEntities = (req, resp) ->
 	)
 
 exports.getSDFCmpdRegEntities = (req, resp) ->
-	request = require 'request'
 	config = require '../conf/compiled/conf.js'
 	entityType = req.params.entityType
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + "#{entityType}/sdf" 
@@ -174,7 +171,6 @@ exports.getSDFCmpdRegEntities = (req, resp) ->
 	)
 
 exports.getCmpdRegEntities = (req, resp) ->
-	request = require 'request'
 	config = require '../conf/compiled/conf.js'
 	entityType = req.params.entityType
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + "#{entityType}"
@@ -197,7 +193,6 @@ exports.getCmpdRegEntities = (req, resp) ->
 	)
 
 exports.saveCmpdRegEntity = (req, resp) ->
-	request = require 'request'
 	config = require '../conf/compiled/conf.js'
 	entityType = req.params.entityType
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + "#{entityType}/?dryrun=" + req.query.dryrun
@@ -221,7 +216,6 @@ exports.saveCmpdRegEntity = (req, resp) ->
 	)
 
 exports.updateCmpdRegEntity = (req, resp) ->
-	request = require 'request'
 	config = require '../conf/compiled/conf.js'
 	entityType = req.params.entityType
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + "#{entityType}"
@@ -245,7 +239,6 @@ exports.updateCmpdRegEntity = (req, resp) ->
 	)
 
 exports.editCmpdRegEntity = (req, resp) ->
-	request = require 'request'
 	config = require '../conf/compiled/conf.js'
 	entityType = req.params.entityType
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + "#{entityType}/edit/" + req.params.id + "/?dryrun=" + req.query.dryrun
@@ -268,7 +261,6 @@ exports.editCmpdRegEntity = (req, resp) ->
 	)
 
 exports.deleteCmpdRegEntity = (req, resp) ->
-	request = require 'request'
 	config = require '../conf/compiled/conf.js'
 	entityType = req.params.entityType
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + "#{entityType}/" + req.params.id
@@ -297,7 +289,6 @@ exports.deleteCmpdRegEntity = (req, resp) ->
 
 exports.reparentLot = (req, resp) ->
 	console.log 'in reparent lot'
-	request = require 'request'
 	config = require '../conf/compiled/conf.js'
 	cmpdRegRoutes = require './CmpdRegRoutes.js'
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parentLot/reparentLot'

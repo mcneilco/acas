@@ -145,7 +145,7 @@ exports.runRFunction = (req, rScript, rFunction, returnFunction, preValidationFu
 	exports.runRFunctionOutsideRequest req.body.user, req.body, rScript, rFunction, returnFunction, preValidationFunction, testMode, serviceRapacheFullPath
 
 exports.runRFunctionOutsideRequest = (username, argumentsJSON, rScript, rFunction, returnFunction, preValidationFunction, testMode, serviceRapacheFullPath) ->
-	request = require 'request'
+	request = exports.requestAdapter
 	config = require '../conf/compiled/conf.js'
 	if !serviceRapacheFullPath?
 		serviceRapacheFullPath = config.all.client.service.rapache.fullpath
@@ -174,7 +174,8 @@ exports.runRFunctionOutsideRequest = (username, argumentsJSON, rScript, rFunctio
 		console.log JSON.stringify(runRFunctionServiceTestJSON.runRFunctionResponse.hasError)
 		returnFunction.call @, JSON.stringify(runRFunctionServiceTestJSON.runRFunctionResponse)
 	else
-		request.post
+		request(
+			method: 'POST'
 			timeout: 86400000
 			url: serviceRapacheFullPath + "runfunction"
 			json: true
@@ -213,6 +214,7 @@ exports.runRFunctionOutsideRequest = (username, argumentsJSON, rScript, rFunctio
 						csUtilities.logUsage "Returned success from R function: "+rFunction, "NA", username
 				catch error
 					console.log error
+		)
 
 
 exports.runRScript = (rScript) ->
@@ -273,7 +275,7 @@ exports.getFromACASServer = (baseurl, resp) ->
 		resp.json json
 
 exports.getFromACASServerInternal = (baseurl, callback) ->
-	request = require 'request'
+	request = exports.requestAdapter
 	request(
 		method: 'GET'
 		url: baseurl
@@ -298,7 +300,7 @@ exports.getRestrictedEntityFromACASServerInternal = (baseurl, username,  project
 	userObject={'user':'username':username}
 	csUtilities.getProjectsInternal userObject, (statusCode, userProjects) =>
 		if statusCode == 200
-			request = require 'request'
+			request = exports.requestAdapter
 			_ = require 'underscore'
 			userProjectCodes = _.pluck userProjects, "code"
 			request(
@@ -408,7 +410,7 @@ exports.createLSTransaction2 = (date, options, callback) ->
 			version: 0
 	else
 		config = require '../conf/compiled/conf.js'
-		request = require 'request'
+		request = exports.requestAdapter
 		body = _.extend {recordedDate: date}, options
 		options =
 			method: 'POST'
@@ -436,7 +438,7 @@ exports.updateLSTransaction = (transaction, callback) ->
 			version: 0
 	else
 		config = require '../conf/compiled/conf.js'
-		request = require 'request'
+		request = exports.requestAdapter
 		body = transaction
 		options =
 			method: 'PUT'
@@ -2430,5 +2432,228 @@ exports.ContainerTube = ContainerTube
 exports.AnalysisGroup = AnalysisGroup
 exports.AnalysisGroupList = AnalysisGroupList
 exports.LocationContainer = LocationContainer
+
+# Request adapter that provides a request-like interface using fetch
+# Handles both callback-based and streaming/proxy patterns
+http = require 'http'
+https = require 'https'
+{ URL } = require 'url'
+
+# Helper: Parse options into normalized request parameters
+parseRequestOptions = (options) ->
+	if typeof options is 'string'
+		return {
+			url: options
+			method: 'GET'
+			body: undefined
+			json: false
+			headers: {}
+			qs: undefined
+		}
+	
+	# Normalize json option (can be boolean or object body)
+	json = options.json
+	body = options.body
+	if json? and typeof json is 'object'
+		body = json
+		json = true
+	
+	# Build headers
+	headers = options.headers or {}
+	
+	# Handle form data
+	if options.form?
+		params = new URLSearchParams()
+		for key, value of options.form
+			params.append(key, value)
+		body = params.toString()
+		headers['Content-Type'] = 'application/x-www-form-urlencoded'
+		json = false
+	
+	# Copy headers from incoming request if proxying
+	if options.incomingRequest?
+		for headerName, headerValue of options.incomingRequest.headers
+			unless headerName.toLowerCase() is 'host'
+				headers[headerName] = headerValue
+	
+	# Build URL with query string
+	url = options.url
+	if options.qs?
+		urlObj = new URL(url)
+		for key, value of options.qs
+			urlObj.searchParams.append(key, value)
+		url = urlObj.toString()
+	
+	return {
+		url: url
+		method: options.method or 'GET'
+		body: body
+		json: json
+		headers: headers
+	}
+
+# Helper: Parse response body based on json flag
+parseResponseBody = (response, wantJson, url) ->
+	# Always get text first (can only read body stream once)
+	textPromise = response.text()
+	
+	textPromise.then (text) ->
+		# Empty response
+		unless text
+			return null
+		
+		# Parse JSON if requested
+		if wantJson
+			try
+				parsed = JSON.parse(text)
+				return parsed
+			catch error
+				console.error "Failed to parse JSON response from #{url}: #{error.message}"
+				console.error "Response text:", text.substring(0, 200)
+				throw error
+		
+		# Return as text
+		return text
+
+# Helper: Convert fetch Response to request-compatible response object
+buildResponseObject = (response, parsedBody) ->
+	# Convert Headers to plain object
+	headers = {}
+	response.headers.forEach (value, key) ->
+		headers[key] = value
+	
+	return {
+		statusCode: response.status
+		headers: headers
+		body: parsedBody
+	}
+
+exports.requestAdapter = (options, callback) ->
+	parsed = parseRequestOptions(options)
+	
+	# Streaming mode (no callback)
+	unless callback?
+		return createStreamingRequest(parsed)
+	
+	# Callback mode - prepare request body
+	if parsed.json and parsed.body?
+		# Set Content-Type header (case-insensitive check to avoid duplicates)
+		hasContentType = Object.keys(parsed.headers).some (key) -> key.toLowerCase() is 'content-type'
+		unless hasContentType
+			parsed.headers['Content-Type'] = 'application/json'
+		if typeof parsed.body is 'object'
+			parsed.body = JSON.stringify(parsed.body)
+	
+	# Make fetch request
+	fetchOptions = {
+		method: parsed.method
+		headers: parsed.headers
+		redirect: 'manual'
+	}
+	
+	# Only include body for methods that support it
+	unless parsed.method in ['GET', 'HEAD']
+		fetchOptions.body = parsed.body
+	
+	fetchPromise = fetch(parsed.url, fetchOptions)
+	
+	fetchPromise
+		.then (response) ->
+			parsePromise = parseResponseBody(response, parsed.json, parsed.url)
+			parsePromise.then (parsedBody) ->
+				responseObj = buildResponseObject(response, parsedBody)
+				callback(null, responseObj, parsedBody)
+		.catch (error) ->
+			callback(error, null, null)
+
+# Create streaming request using http/https modules
+createStreamingRequest = (parsed) ->
+	urlObj = new URL(parsed.url)
+	isHttps = urlObj.protocol is 'https:'
+	requestModule = if isHttps then https else http
+	
+	reqOptions = {
+		hostname: urlObj.hostname
+		port: urlObj.port or (if isHttps then 443 else 80)
+		path: urlObj.pathname + (urlObj.search or '')
+		method: parsed.method
+		headers: parsed.headers
+	}
+	
+	{ Duplex } = require 'stream'
+	
+	stream = new Duplex(
+		write: (chunk, encoding, callback) ->
+			unless @httpRequest?
+				@httpRequest = requestModule.request reqOptions, (res) =>
+					# Store response for header forwarding
+					@httpResponse = res
+					res.on 'data', (chunk) => @push(chunk)
+					res.on 'end', => @push(null)
+					res.on 'error', (error) => @emit('error', error)
+				@httpRequest.on 'error', (error) => @emit('error', error)
+			
+			@httpRequest.write(chunk, encoding, callback)
+		
+		read: (size) ->
+			# Handled by response data events
+			return
+		
+		final: (callback) ->
+			if @httpRequest?
+				@httpRequest.end(callback)
+			else
+				# GET requests with no body
+				@httpRequest = requestModule.request reqOptions, (res) =>
+					# Store response for header forwarding
+					@httpResponse = res
+					res.on 'data', (chunk) => @push(chunk)
+					res.on 'end', => @push(null)
+					res.on 'error', (error) => @emit('error', error)
+				@httpRequest.on 'error', (error) => @emit('error', error)
+				@httpRequest.end()
+				callback()
+	)
+	
+	# Override pipe to automatically forward HTTP headers
+	originalPipe = stream.pipe.bind(stream)
+	stream.pipe = (destination, options) ->
+		# If piping to an HTTP response, forward headers when they arrive
+		if destination.writeHead? and typeof destination.writeHead is 'function'
+			handleResponse = (res) ->
+				# Whitelist safe headers to forward (avoid exposing internal/security headers)
+				safeHeaders = {}
+				headersToForward = [
+					'content-type'
+					'content-length'
+					'content-disposition'
+					'content-encoding'
+					'content-language'
+					'content-range'
+					'cache-control'
+					'expires'
+					'etag'
+					'last-modified'
+					'accept-ranges'
+				]
+				
+				for header in headersToForward
+					if res.headers[header]?
+						safeHeaders[header] = res.headers[header]
+				
+				destination.writeHead(res.statusCode, safeHeaders)
+			
+			# If response already received, forward immediately
+			if stream.httpResponse?
+				handleResponse(stream.httpResponse)
+			else
+				# Wait for response
+				stream.once 'data', ->
+					if stream.httpResponse?
+						handleResponse(stream.httpResponse)
+		
+		originalPipe(destination, options)
+	
+	stream
 
 AppLaunchParams = loginUser:username:"acas"

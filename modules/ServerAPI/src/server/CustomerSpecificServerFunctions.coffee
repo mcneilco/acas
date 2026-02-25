@@ -5,6 +5,8 @@
 ###
 ACAS_HOME="../../.."
 serverUtilityFunctions = require "#{ACAS_HOME}/routes/ServerUtilityFunctions.js"
+config = require "#{ACAS_HOME}/conf/compiled/conf.js"
+request = serverUtilityFunctions.requestAdapter
 fs = require 'fs'
 _ = require 'underscore'
 util = require 'util'
@@ -16,8 +18,6 @@ exports.logUsage = (action, data, username) ->
 	# global.logger.writeToLog("info", "logUsage", action, data, username, null)
 
 exports.authCheck = (user, pass, retFun) ->
-	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
-	request = require 'request'
 	request(
 		headers:
 			accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
@@ -47,8 +47,6 @@ exports.authCheck = (user, pass, retFun) ->
 	)
 
 exports.resetAuth = (email, retFun) ->
-	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
-	request = require 'request'
 	request(
 		headers:
 			accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
@@ -71,8 +69,6 @@ exports.resetAuth = (email, retFun) ->
 	)
 
 exports.changeAuth = (user, passOld, passNew, passNewAgain, retFun) ->
-	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
-	request = require 'request'
 	body =
 		username: user
 		oldPassword: passOld
@@ -101,9 +97,7 @@ exports.changeAuth = (user, passOld, passNew, passNewAgain, retFun) ->
 			retFun "connection_error "+error
 	)
 exports.getUser = (username, callback) ->
-	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 	if config.all.client.require.login
-		request = require 'request'
 		request(
 			headers:
 				accept: 'application/json'
@@ -146,7 +140,6 @@ exports.findByUsername = (username, fn) ->
 
 formatSystemRolesFromSSOProfile = (profile) =>
 	# Map Profile Attributes to ACAS/CmpdReg System Roles
-	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 	
 	# Parse the config which maps the profile attributes to system roles
 	profileGroupToACASRoles = JSON.parse(config.all.server.security.saml.profileAttributeToSystemRoles)
@@ -163,8 +156,6 @@ formatSystemRolesFromSSOProfile = (profile) =>
 
 exports.ssoLoginStrategy = (req, profile, callback) ->
 	exports.logUsage "login attempt", JSON.stringify(ip: req.ip, referer: req.headers['referer'], agent: req.headers['user-agent']), JSON.stringify(profile)
-	config = require '../../../conf/compiled/conf.js'
-	serverUtilityFunctions = require "#{ACAS_HOME}/routes/ServerUtilityFunctions.js"
 	authorRoutes = require '../../../routes/AuthorRoutes.js'
 	setupRoutes = require '../../../routes/SetupRoutes.js'
 
@@ -332,9 +323,7 @@ exports.getProjects = (req, resp) ->
 		resp.json response
 
 exports.getProjectsInternal = (req, callback) ->
-	config = require '../../../conf/compiled/conf.js'
 	url = config.all.client.service.persistence.fullpath+"authorization/projects?find=ByUserName&userName="+req.user.username+"&format=codeTable"
-	request = require 'request'
 	request(
 		method: 'GET'
 		url: url
@@ -356,9 +345,8 @@ exports.getProjectStubs = (req, resp) ->
 		resp.json response
 
 exports.getProjectStubsInternal = (callback) ->
-	config = require '../../../conf/compiled/conf.js'
-	request = require 'request'
-	request.get
+	request(
+		method: 'GET'
 		url: config.all.client.service.persistence.fullpath+"authorization/groupsAndProjects"
 		json: true
 	, (error, response, body) =>
@@ -377,6 +365,7 @@ exports.getProjectStubsInternal = (callback) ->
 			# else
 			# 	project.type = "UNRESTRICTED"
 		callback response.statusCode, acasGroupsAndProjects.projects
+	)
 
 exports.makeServiceRequestHeaders = (user) ->
 	username = if user? then user.username else "testmode"
@@ -393,7 +382,7 @@ exports.validateCloneAndGetTarget = (req, resp) ->
 	resp.json psProtocolServiceTestJSON.successfulCloneValidation
 
 exports.getAllAuthors = (opts, callback) ->
-	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
+
 	serverUtilityFunctions = require "#{ACAS_HOME}/routes/ServerUtilityFunctions.js"
 	baseurl = config.all.client.service.persistence.fullpath+"authors/codeTable"
 	if opts.roleName?
@@ -416,14 +405,14 @@ exports.getAllAuthors = (opts, callback) ->
 			callback statusCode, json
 
 exports.getAllAuthorObjectsInternal = (callback) ->
-	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
+
 	serverUtilityFunctions = require "#{ACAS_HOME}/routes/ServerUtilityFunctions.js"
 	baseurl = config.all.client.service.persistence.fullpath+"authors"
 	serverUtilityFunctions.getFromACASServerInternal baseurl, (statusCode, json) ->
 		callback statusCode, json
 
 exports.relocateEntityFile = (fileValue, entityCodePrefix, entityCode, callback) ->
-	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
+
 	uploadsPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path
 	oldPath = uploadsPath + fileValue.fileValue
 	relEntitiesFolder = serverUtilityFunctions.getRelativeFolderPathForPrefix(entityCodePrefix)
@@ -475,7 +464,7 @@ exports.relocateEntityFile = (fileValue, entityCodePrefix, entityCode, callback)
 									callback true
 
 exports.getDownloadUrl = (fileValue) ->
-	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
+
 	return config.all.client.datafiles.downloadurl.prefix+fileValue
 
 exports.getTestedEntityProperties = (propertyList, entityList, callback) ->
@@ -548,9 +537,8 @@ exports.getPreferredBatchIds = (requests, callback) ->
 
 		callback response
 	else #not spec mode
-		config = require "#{ACAS_HOME}/conf/compiled/conf.js"
-		request = require 'request'
-		request
+	
+		request(
 			method: 'POST'
 			url: config.all.server.service.external.preferred.batchid.url
 			json: true
@@ -563,6 +551,7 @@ exports.getPreferredBatchIds = (requests, callback) ->
 				console.log response
 				console.log json
 				callback null
+		)
 
 exports.getPreferredParentIds = (requests, callback) ->
 	if global.specRunnerTestmode
@@ -582,9 +571,8 @@ exports.getPreferredParentIds = (requests, callback) ->
 
 		callback response
 	else
-		config = require "#{ACAS_HOME}/conf/compiled/conf.js"
-		request = require 'request'
-		request
+	
+		request(
 			method: 'POST'
 			url: config.all.server.service.external.preferred.batchid.url+"/parent"
 			json: true
@@ -597,6 +585,7 @@ exports.getPreferredParentIds = (requests, callback) ->
 				console.log response
 				console.log json
 				callback null
+		)
 
 
 exports.getBatchBestLabels = (requests, callback) ->
@@ -615,9 +604,8 @@ exports.getBatchBestLabels = (requests, callback) ->
 
 		callback response
 	else #not spec mode
-		config = require "#{ACAS_HOME}/conf/compiled/conf.js"
-		request = require 'request'
-		request
+	
+		request(
 			method: 'POST'
 			url: config.all.server.service.external.preferred.batchid.url
 			json: true
@@ -630,6 +618,7 @@ exports.getBatchBestLabels = (requests, callback) ->
 				console.log response
 				console.log json
 				callback null
+		)
 
 exports.getParentBestLabels = (requests, callback) ->
 	if global.specRunnerTestmode
@@ -649,9 +638,8 @@ exports.getParentBestLabels = (requests, callback) ->
 
 		callback response
 	else
-		config = require "#{ACAS_HOME}/conf/compiled/conf.js"
-		request = require 'request'
-		request
+	
+		request(
 			method: 'POST'
 			url: config.all.server.service.external.preferred.batchid.url+"/parent"
 			json: true
@@ -664,6 +652,7 @@ exports.getParentBestLabels = (requests, callback) ->
 				console.log response
 				console.log json
 				callback null
+		)
 
 checkBatch_TestMode = (requestName) ->
 	idComps = requestName.split("_")
@@ -678,7 +667,7 @@ checkBatch_TestMode = (requestName) ->
 
 exports.checkRoles = (user, retFun) ->
 	exports.getUser user, (expectnull, author)->
-		config = require "#{ACAS_HOME}/conf/compiled/conf.js"
+	
 		if author?.roles? and config.all.client.roles?.loginRole?
 			roles = _.map author.roles, (role) ->
 				role.roleEntry.roleName
@@ -721,9 +710,8 @@ exports.getBatchProjects = (requests, callback) ->
 
 		callback response
 	else #not spec mode
-		config = require "#{ACAS_HOME}/conf/compiled/conf.js"
-		request = require 'request'
-		request
+	
+		request(
 			method: 'POST'
 			url: config.all.client.service.cmpdReg.persistence.fullpath+"projects/getBatchProjects"
 			json: true
@@ -736,6 +724,7 @@ exports.getBatchProjects = (requests, callback) ->
 				console.log response
 				console.log json
 				callback null
+		)
 
 exports.createPlate = (request, callback) ->
 	answer = null

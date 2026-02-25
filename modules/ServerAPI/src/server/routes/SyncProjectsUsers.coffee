@@ -25,10 +25,12 @@ exports.syncLiveDesignProjectsUsers = (req, resp) ->
 							resp.end "An error has occurred trying to sync projects and permissions with LiveDesign. Please contact an administrator."
 
 exports.getGroupsJSON = (callback) ->
-	request = require 'request'
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+	request = serverUtilityFunctions.requestAdapter
 	_ = require "underscore"
 	config = require '../conf/compiled/conf.js'
-	request.get
+	request(
+		method: 'GET'
 		url: config.all.client.service.persistence.fullpath+"authorization/groupsAndProjects"
 		json: true
 	, (error, response, body) =>
@@ -47,13 +49,16 @@ exports.getGroupsJSON = (callback) ->
 				groups: project.groups
 			groupsJSON.projects.push projectGroups
 		callback groupsJSON, acasGroupsAndProjects
+	)
 
 
 exports.getProjectsJSON = (callback) ->
-	request = require 'request'
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+	request = serverUtilityFunctions.requestAdapter
 	_ = require "underscore"
 	config = require '../conf/compiled/conf.js'
-	request.get
+	request(
+		method: 'GET'
 		url: config.all.client.service.persistence.fullpath+"authorization/groupsAndProjects"
 		json: true
 	, (error, response, body) =>
@@ -72,6 +77,7 @@ exports.getProjectsJSON = (callback) ->
 				project_desc: project.name
 			projectsJSON.projects.push projectEntry
 		callback projectsJSON
+	)
 
 exports.getConfigJSON = (callback) ->
 	config = require '../conf/compiled/conf.js'
