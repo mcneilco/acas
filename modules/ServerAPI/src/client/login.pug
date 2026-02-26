@@ -6,30 +6,61 @@ block content
                 div.brand #{logoText}
 
     div.container.loginContainer
-        div.span8.offset1
-            h3 Please Login
+        div.span5.offset3
             div.well
+                div.loginLogo
+                    img(src="/img/acas_logo.png", alt="ACAS", width="220")
+                - if (ssoAvailable)
+                    div.ssoSection
+                        - var ssoHref = '/login/sso'
+                        if redirectUrl
+                            - ssoHref = '/login/sso?redirect_url=' + redirectUrl
+                        a.btn.btn-info.ssoButton(href="#{ssoHref}", role="button")
+                            i.icon-lock &nbsp;
+                            | Log In with Single Sign-On (SSO)
+                        div.loginDividerOr
+                            span or
+
                 - var action = "/login"
-                - if (redirectUrl) action = '/login?redirect_url=' + encodeURIComponent(redirectUrl)
-                form.form-horizontal(action=action, method="post")
+                if redirectUrl
+                    - var action = '/login?redirect_url=' + encodeURIComponent(redirectUrl)
+                form.form-horizontal#loginForm(action="#{action}", method="post")
                     div.control-group
-                        label.control-label Username:
-                        div.controls
-                            input.span5(type="text", name="username")
+                        div.controls.loginInputGroup
+                            div.input-prepend
+                                span.add-on
+                                    i.icon-user
+                                input.span4(type="text", name="username", placeholder="Username")
                     div.control-group
-                        label.control-label Password:
-                        div.controls
-                            input.span5(type="password", name="password")
-                    hr.loginDivider
+                        div.controls.loginInputGroup
+                            div.input-prepend
+                                span.add-on
+                                    i.icon-lock
+                                input.span4(type="password", name="password", placeholder="Password")
                     div.form-horizontal
                         div.control-group
                             div.controls
                                 input.btn.btn-primary(type="submit", value="Submit")
                                 - if (resetPasswordOption)
                                     a.forgotPasswordLink(href="/passwordReset") Forgot your password?
-        - if (redirectUrl)
-            div.span7.offset1.alert.alert-success.loginError After login you will be redirected to #{redirectUrl}
-        - if (message == "Your new password is set.")
-            div.span7.offset1.alert.alert-success.loginError #{message}
-        - else if (message != "")
-            div.span7.offset1.alert.alert-error.loginError #{message}
+            - if (redirectUrl)
+                div.alert.alert-success.loginError After login you will be redirected to #{redirectUrl}
+            - if (message == "Your new password is set.")
+                div.alert.alert-success.loginError #{message}
+            - else if (message != "")
+                div.alert.alert-error.loginError #{message}
+
+    script(type="text/javascript").
+        (function () {
+            var form = document.getElementById('loginForm');
+            if (!form) return;
+            var inputs = form.querySelectorAll('input[type="text"], input[type="password"]');
+            for (var i = 0; i < inputs.length; i++) {
+                inputs[i].addEventListener('keydown', function (e) {
+                    var key = e.key || e.keyCode;
+                    if (key === 'Enter' || key === 13) {
+                        form.submit();
+                    }
+                });
+            }
+        })();
