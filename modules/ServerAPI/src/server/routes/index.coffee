@@ -101,6 +101,10 @@ exports.toPrint = (req, res, moduleLaunchParams) ->
 			firstName: "no",
 			lastName: "user"
 
+	controllerName = req.query.controller
+	if not controllerName? or not /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(controllerName)
+		return res.status(400).send('Invalid controller parameter')
+
 	return res.render 'toPrint',
 		title: config.all.client.moduleMenus.logoText+" Home"
 		scripts: scriptsToLoad
@@ -111,7 +115,7 @@ exports.toPrint = (req, res, moduleLaunchParams) ->
 			moduleLaunchParams: if moduleLaunchParams? then moduleLaunchParams else null
 			deployMode: global.deployMode
 			loggingToMongo: config.all.logging.usemongo
-		controller: req.query.controller
+		controller: controllerName
 
 exports.index = (req, res, moduleLaunchParams) ->
 	#"use strict"

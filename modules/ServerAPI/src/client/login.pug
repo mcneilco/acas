@@ -14,17 +14,16 @@ block content
                     div.ssoSection
                         - var ssoHref = '/login/sso'
                         if redirectUrl
-                            - ssoHref = '/login/sso?redirect_url=' + redirectUrl
-                        a.btn.btn-info.ssoButton(href="#{ssoHref}", role="button")
+                            - ssoHref = '/login/sso?redirect_url=' + encodeURIComponent(redirectUrl)
+                        a.btn.btn-info.ssoButton(href=ssoHref, role="button")
                             i.icon-lock &nbsp;
                             | Log In with Single Sign-On (SSO)
                         div.loginDividerOr
                             span or
 
                 - var action = "/login"
-                if redirectUrl
-                    - var action = '/login?redirect_url=' + redirectUrl
-                form.form-horizontal#loginForm(action="#{action}", method="post")
+                - if (redirectUrl) action = '/login?redirect_url=' + encodeURIComponent(redirectUrl)
+                form.form-horizontal#loginForm(action=action, method="post")
                     div.control-group
                         div.controls.loginInputGroup
                             div.input-prepend
