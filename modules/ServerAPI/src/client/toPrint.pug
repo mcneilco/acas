@@ -19,7 +19,12 @@ block content
                 // App = new app.AppView
                 window.servicesHostPrefix = "";
                 //TODO
-                window.appController = new !{controller}({
+                var controllerName = !{JSON.stringify(controller)};
+                var ControllerClass = window[controllerName];
+                if (typeof ControllerClass !== 'function') {
+                    throw new Error('Unknown controller: ' + controllerName);
+                }
+                window.appController = new ControllerClass({
                                 el: $('#appContainer')
                             });
                 window.appController.render();
