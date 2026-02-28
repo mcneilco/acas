@@ -750,6 +750,8 @@ exports.saveMetaLot = (req, resp) ->
 			console.log error
 			console.log json
 			console.log response
+			resp.statusCode = 500
+			resp.setHeader('Content-Type', 'application/json')
 			resp.end JSON.stringify {error: "something went wrong :("}
 	)
 
