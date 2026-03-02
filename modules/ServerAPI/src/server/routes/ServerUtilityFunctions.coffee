@@ -2488,30 +2488,44 @@ parseRequestOptions = (options) ->
 		body: body
 		json: json
 		headers: headers
+		timeout: options.timeout
 	}
 
 # Helper: Parse response body based on json flag
 parseResponseBody = (response, wantJson, url) ->
-	# Always get text first (can only read body stream once)
-	textPromise = response.text()
-	
-	textPromise.then (text) ->
-		# Empty response
-		unless text
-			return null
-		
-		# Parse JSON if requested
-		if wantJson
-			try
-				parsed = JSON.parse(text)
-				return parsed
-			catch error
+	# For JSON responses, use response.json() which is more memory-efficient
+	# than buffering to text then parsing
+	if wantJson
+		# Check Content-Type header to determine if response is actually JSON
+		contentType = response.headers.get('content-type') or ''
+		isJsonResponse = contentType.includes('application/json')
+
+		if isJsonResponse
+			# Use native JSON parsing (more efficient, streams internally)
+			return response.json().catch (error) ->
 				console.error "Failed to parse JSON response from #{url}: #{error.message}"
-				console.error "Response text:", text.substring(0, 200)
 				throw error
-		
-		# Return as text
-		return text
+		else
+			# Server returned non-JSON when we expected JSON
+			# Fall back to text and try to parse
+			return response.text().then (text) ->
+				unless text
+					return null
+				try
+					parsed = JSON.parse(text)
+					return parsed
+				catch error
+					console.error "Failed to parse JSON response from #{url}: #{error.message}"
+					console.error "Response text:", text.substring(0, 200)
+					throw error
+	else
+		# For non-JSON, buffer to text
+		# TODO: Consider streaming for large non-JSON responses
+		textPromise = response.text()
+		textPromise.then (text) ->
+			unless text
+				return null
+			return text
 
 # Helper: Convert fetch Response to request-compatible response object
 buildResponseObject = (response, parsedBody) ->
@@ -2542,7 +2556,7 @@ exports.requestAdapter = (options, callback) ->
 		if typeof parsed.body is 'object'
 			parsed.body = JSON.stringify(parsed.body)
 	
-	# Make fetch request
+	# Make fetch request with optional timeout
 	fetchOptions = {
 		method: parsed.method
 		headers: parsed.headers
@@ -2553,15 +2567,33 @@ exports.requestAdapter = (options, callback) ->
 	unless parsed.method in ['GET', 'HEAD']
 		fetchOptions.body = parsed.body
 
+	# Setup timeout using AbortController if timeout specified
+	timeoutId = null
+	if parsed.timeout?
+		controller = new AbortController()
+		fetchOptions.signal = controller.signal
+		timeoutId = setTimeout ->
+			controller.abort()
+		, parsed.timeout
+
 	fetchPromise = fetch(parsed.url, fetchOptions)
 
 	fetchPromise
 		.then (response) ->
+			# Clear timeout on success
+			if timeoutId?
+				clearTimeout(timeoutId)
 			parsePromise = parseResponseBody(response, parsed.json, parsed.url)
 			parsePromise.then (parsedBody) ->
 				responseObj = buildResponseObject(response, parsedBody)
 				callback(null, responseObj, parsedBody)
 		.catch (error) ->
+			# Clear timeout on error
+			if timeoutId?
+				clearTimeout(timeoutId)
+			# Provide clearer error message for timeout
+			if error.name is 'AbortError'
+				error.message = "Request timeout after #{parsed.timeout}ms"
 			callback(error, null, null)
 
 	# Explicitly return undefined to prevent Mocha from seeing both callback and Promise
@@ -2591,7 +2623,7 @@ createStreamingRequest = (parsed) ->
 	urlObj = new URL(parsed.url)
 	isHttps = urlObj.protocol is 'https:'
 	requestModule = if isHttps then https else http
-	
+
 	reqOptions = {
 		hostname: urlObj.hostname
 		port: urlObj.port or (if isHttps then 443 else 80)
@@ -2599,6 +2631,10 @@ createStreamingRequest = (parsed) ->
 		method: parsed.method
 		headers: parsed.headers
 	}
+
+	# Add timeout to request options if specified
+	if parsed.timeout?
+		reqOptions.timeout = parsed.timeout
 	
 	{ Duplex } = require 'stream'
 	
@@ -2612,7 +2648,11 @@ createStreamingRequest = (parsed) ->
 					res.on 'end', => @push(null)
 					res.on 'error', (error) => @emit('error', error)
 				@httpRequest.on 'error', (error) => @emit('error', error)
-			
+				if parsed.timeout?
+					@httpRequest.on 'timeout', =>
+						@httpRequest.destroy()
+						@emit('error', new Error("Request timeout after #{parsed.timeout}ms"))
+
 			@httpRequest.write(chunk, encoding, callback)
 		
 		read: (size) ->
@@ -2631,6 +2671,10 @@ createStreamingRequest = (parsed) ->
 					res.on 'end', => @push(null)
 					res.on 'error', (error) => @emit('error', error)
 				@httpRequest.on 'error', (error) => @emit('error', error)
+				if parsed.timeout?
+					@httpRequest.on 'timeout', =>
+						@httpRequest.destroy()
+						@emit('error', new Error("Request timeout after #{parsed.timeout}ms"))
 				@httpRequest.end()
 				callback()
 	)

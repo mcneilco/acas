@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "test": "mocha  --reporter spec src/spec/*/serviceTests/*Spec.js --timeout 5000 --no-bail",
+    "test": "mocha  --reporter spec src/spec/*/serviceTests/*Spec.js --timeout 5000 --no-bail --check-leaks",
     "start": "node app.js",
     "startstubs": "node app.js stubsMode",
     "debug": "node --inspect=5858 --nolazy app.js",
