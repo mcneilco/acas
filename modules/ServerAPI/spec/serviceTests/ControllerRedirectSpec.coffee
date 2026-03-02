@@ -1,7 +1,8 @@
 assert = require 'assert'
+fs = require 'fs'
+acasHome = '../../../..'
 serverUtilityFunctions = require "#{acasHome}/routes/ServerUtilityFunctions.js"
 request = serverUtilityFunctions.requestAdapter
-fs = require 'fs'
 
 
 config = require '../../../../conf/compiled/conf.js'

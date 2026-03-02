@@ -1,9 +1,9 @@
 assert = require 'assert'
-serverUtilityFunctions = require "#{acasHome}/routes/ServerUtilityFunctions.js"
-request = serverUtilityFunctions.requestAdapter
 _ = require 'underscore'
 fs = require 'fs'
 acasHome = '../../../..'
+serverUtilityFunctions = require "#{acasHome}/routes/ServerUtilityFunctions.js"
+request = serverUtilityFunctions.requestAdapter
 config = require "#{acasHome}/conf/compiled/conf.js"
 protocolServiceTestJSON = require "#{acasHome}/public/javascripts/spec/ServerAPI/testFixtures/ProtocolServiceTestJSON.js"
 

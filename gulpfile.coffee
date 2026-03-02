@@ -230,6 +230,12 @@ taskConfigs =
       dest: build + '/src/spec'
       options: _.extend _.clone(globalCoffeeOptions), {}
       renameFunction: getServiceTestsPath
+    ,
+      taskName: "serviceTestFixtures"
+      src: getGlob('modules/**/spec/testFixtures/*.coffee')
+      dest: build + '/src/spec'
+      options: _.extend _.clone(globalCoffeeOptions), {}
+      renameFunction: getTestFixuresPath
   ],
   execute: [
         taskName: "npmInstall"

@@ -21,11 +21,12 @@
 #
 # It is not a service error if the entity doesn't exist. Rather,
 # the individual entry returns no preferred id
-#########################################################################assert = require 'assert'
+#########################################################################
 assert = require 'assert'
+_ = require 'underscore'
+acasHome = '../../../..'
 serverUtilityFunctions = require "#{acasHome}/routes/ServerUtilityFunctions.js"
 request = serverUtilityFunctions.requestAdapter
-_ = require 'underscore'
 
 parseResponse = (jsonStr) ->
 	try
