@@ -29,8 +29,7 @@ exports.getGroupsJSON = (callback) ->
 	request = serverUtilityFunctions.requestAdapter
 	_ = require "underscore"
 	config = require '../conf/compiled/conf.js'
-	request(
-		method: 'GET'
+	request.get
 		url: config.all.client.service.persistence.fullpath+"authorization/groupsAndProjects"
 		json: true
 	, (error, response, body) =>
@@ -49,7 +48,6 @@ exports.getGroupsJSON = (callback) ->
 				groups: project.groups
 			groupsJSON.projects.push projectGroups
 		callback groupsJSON, acasGroupsAndProjects
-	)
 
 
 exports.getProjectsJSON = (callback) ->
@@ -57,8 +55,7 @@ exports.getProjectsJSON = (callback) ->
 	request = serverUtilityFunctions.requestAdapter
 	_ = require "underscore"
 	config = require '../conf/compiled/conf.js'
-	request(
-		method: 'GET'
+	request.get
 		url: config.all.client.service.persistence.fullpath+"authorization/groupsAndProjects"
 		json: true
 	, (error, response, body) =>
@@ -77,7 +74,6 @@ exports.getProjectsJSON = (callback) ->
 				project_desc: project.name
 			projectsJSON.projects.push projectEntry
 		callback projectsJSON
-	)
 
 exports.getConfigJSON = (callback) ->
 	config = require '../conf/compiled/conf.js'

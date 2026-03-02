@@ -174,8 +174,7 @@ exports.runRFunctionOutsideRequest = (username, argumentsJSON, rScript, rFunctio
 		console.log JSON.stringify(runRFunctionServiceTestJSON.runRFunctionResponse.hasError)
 		returnFunction.call @, JSON.stringify(runRFunctionServiceTestJSON.runRFunctionResponse)
 	else
-		request(
-			method: 'POST'
+		request.post
 			timeout: 86400000
 			url: serviceRapacheFullPath + "runfunction"
 			json: true
@@ -214,7 +213,6 @@ exports.runRFunctionOutsideRequest = (username, argumentsJSON, rScript, rFunctio
 						csUtilities.logUsage "Returned success from R function: "+rFunction, "NA", username
 				catch error
 					console.log error
-		)
 
 
 exports.runRScript = (rScript) ->

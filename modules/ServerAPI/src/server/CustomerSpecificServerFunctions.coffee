@@ -345,8 +345,7 @@ exports.getProjectStubs = (req, resp) ->
 		resp.json response
 
 exports.getProjectStubsInternal = (callback) ->
-	request(
-		method: 'GET'
+	request.get
 		url: config.all.client.service.persistence.fullpath+"authorization/groupsAndProjects"
 		json: true
 	, (error, response, body) =>
@@ -365,7 +364,6 @@ exports.getProjectStubsInternal = (callback) ->
 			# else
 			# 	project.type = "UNRESTRICTED"
 		callback response.statusCode, acasGroupsAndProjects.projects
-	)
 
 exports.makeServiceRequestHeaders = (user) ->
 	username = if user? then user.username else "testmode"
