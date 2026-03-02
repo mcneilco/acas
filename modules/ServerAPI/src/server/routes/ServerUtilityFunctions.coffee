@@ -2550,13 +2550,13 @@ exports.requestAdapter = (options, callback) ->
 		headers: parsed.headers
 		redirect: 'manual'
 	}
-	
+
 	# Only include body for methods that support it
 	unless parsed.method in ['GET', 'HEAD']
 		fetchOptions.body = parsed.body
-	
+
 	fetchPromise = fetch(parsed.url, fetchOptions)
-	
+
 	fetchPromise
 		.then (response) ->
 			parsePromise = parseResponseBody(response, parsed.json, parsed.url)
@@ -2565,6 +2565,28 @@ exports.requestAdapter = (options, callback) ->
 				callback(null, responseObj, parsedBody)
 		.catch (error) ->
 			callback(error, null, null)
+
+	# Explicitly return undefined to prevent Mocha from seeing both callback and Promise
+	return undefined
+
+# Convenience methods for common HTTP verbs (for backwards compatibility with old request library)
+exports.requestAdapter.get = (options, callback) ->
+	if typeof options is 'string'
+		options = { url: options }
+	options.method = 'GET'
+	exports.requestAdapter(options, callback)
+
+exports.requestAdapter.post = (options, callback) ->
+	options.method = 'POST'
+	exports.requestAdapter(options, callback)
+
+exports.requestAdapter.put = (options, callback) ->
+	options.method = 'PUT'
+	exports.requestAdapter(options, callback)
+
+exports.requestAdapter.delete = (options, callback) ->
+	options.method = 'DELETE'
+	exports.requestAdapter(options, callback)
 
 # Create streaming request using http/https modules
 createStreamingRequest = (parsed) ->
