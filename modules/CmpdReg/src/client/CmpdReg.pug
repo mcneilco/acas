@@ -1,5 +1,5 @@
 //extends layout
-//!!! 5
+//doctype html
 html#CmpdRegView
 	head
 		title= title
@@ -91,11 +91,11 @@ html#CmpdRegView
 		include ../public/CmpdReg/client/custom/LotView_Custom.inc
 
 		//end inserted by PrepareModuleIncludes
-		//-each script in scripts
+		//each script in scripts
 		//	script(type='text/javascript', src= script)
 body
 
-	script
+	script.
 		window.AppLaunchParams = !{JSON.stringify(AppLaunchParams)};
 		$(function() {
 			var currentWindowOnload = window.onload;

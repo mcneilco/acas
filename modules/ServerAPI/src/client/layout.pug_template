@@ -1,4 +1,4 @@
-!!! 5
+doctype html
 html
     head
 
@@ -24,9 +24,9 @@ html
         // inserted by PrepareModuleIncludes
 TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES
         // end inserted by PrepareModuleIncludes
-        -each script in scripts
+        each script in scripts
             script(type='text/javascript', src= script)
 
 
-      body
+    body
         block content

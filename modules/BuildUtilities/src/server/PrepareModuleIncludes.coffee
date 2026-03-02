@@ -40,7 +40,7 @@ insertToLayoutTemplate = (replaceRegex, includeLines, templateFileName, outputFi
 
 
 includeLines = prepIncludes()
-insertToLayoutTemplate /TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES/, includeLines, "#{ACAS_HOME}/views/layout.jade_template", "#{ACAS_HOME}/views/layout.jade"
+insertToLayoutTemplate /TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES/, includeLines, "#{ACAS_HOME}/views/layout.pug_template", "#{ACAS_HOME}/views/layout.pug"
 
 
 ##### prep scripts to load ##

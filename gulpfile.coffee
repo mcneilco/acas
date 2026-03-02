@@ -310,8 +310,8 @@ taskConfigs =
       dest: build+"/node_modules_customized"
       options: _.extend _.clone(globalCopyOptions), {}
     ,
-      taskName: "jade"
-      src: getGlob('modules/**/src/client/*.jade*')
+      taskName: "pug"
+      src: getGlob('modules/**/src/client/*.pug*')
       dest: build + '/views'
       options: _.extend _.clone(globalCopyOptions), {}
       flatten: true

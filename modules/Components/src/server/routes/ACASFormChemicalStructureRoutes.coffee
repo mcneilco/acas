@@ -5,8 +5,8 @@ exports.setupRoutes = (app, loginRoutes) ->
 
 exports.aCASFormChemicalRegStructureIndex = (req, res) ->
 	return res.render 'ACASFormChemicalRegStructure',
-		title: "ACASFormChemicalRegStructure.jade"
+		title: "ACASFormChemicalRegStructure.pug"
 
 exports.aCASFormChemicalSearchStructureIndex = (req, res) ->
 	return res.render 'ACASFormChemicalSearchStructure',
-		title: "ACASFormChemicalSearchStructure.jade"
+		title: "ACASFormChemicalSearchStructure.pug"

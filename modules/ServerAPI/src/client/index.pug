@@ -1,14 +1,16 @@
 extends layout
 block content
-    div(style="width:0;")
-        div#appContainer.container
+    div#appContainer
 
-    script
+
+
+    script.
         window.AppLaunchParams = !{JSON.stringify(AppLaunchParams)};
         window.addEventListener('load', function() {
             window.servicesHostPrefix = "";
-            window.appController = new CurveCuratorAppController({
+            window.appController = new ModuleMenusController({
                 el: $('#appContainer'),
+                menuListJSON: (typeof ModuleMenusConfiguration !== "undefined") ? ModuleMenusConfiguration : null
             });
             window.appController.render();
         });

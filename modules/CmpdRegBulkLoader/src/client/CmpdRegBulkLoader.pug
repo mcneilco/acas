@@ -3,14 +3,12 @@ block content
     div#appContainer
 
 
-
-    script
+    script.
         window.AppLaunchParams = !{JSON.stringify(AppLaunchParams)};
         window.addEventListener('load', function() {
             window.servicesHostPrefix = "";
-            window.appController = new ModuleMenusController({
+            window.appController = new CmpdRegBulkLoaderAppController({
                 el: $('#appContainer'),
-                menuListJSON: (typeof ModuleMenusConfiguration !== "undefined") ? ModuleMenusConfiguration : null
             });
             window.appController.render();
         });

@@ -1,13 +1,13 @@
 extends layout
 block content
-    div#appContainer
+    div(style="width:0;")
+        div#appContainer.container
 
-
-    script
+    script.
         window.AppLaunchParams = !{JSON.stringify(AppLaunchParams)};
         window.addEventListener('load', function() {
             window.servicesHostPrefix = "";
-            window.appController = new CmpdRegBulkLoaderAppController({
+            window.appController = new CurveCuratorAppController({
                 el: $('#appContainer'),
             });
             window.appController.render();
