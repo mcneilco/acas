@@ -2500,13 +2500,22 @@ parseResponseBody = (response, wantJson, url) ->
 		contentType = response.headers.get('content-type') or ''
 		isJsonResponse = contentType.includes('application/json')
 
-		if isJsonResponse
+		# Check if response might be empty (Content-Length: 0 or missing)
+		contentLength = response.headers.get('content-length')
+		isEmpty = contentLength is '0'
+
+		if isJsonResponse and not isEmpty
 			# Use native JSON parsing (more efficient, streams internally)
 			return response.json().catch (error) ->
+				# If JSON parsing fails, it might be an empty body
+				# Return null for empty responses instead of throwing
+				if error.message?.includes('Unexpected end of JSON input')
+					console.error "Empty or malformed JSON response from #{url}"
+					return null
 				console.error "Failed to parse JSON response from #{url}: #{error.message}"
 				throw error
 		else
-			# Server returned non-JSON when we expected JSON
+			# Server returned non-JSON when we expected JSON, or response might be empty
 			# Fall back to text and try to parse
 			return response.text().then (text) ->
 				unless text
@@ -2576,7 +2585,12 @@ exports.requestAdapter = (options, callback) ->
 			controller.abort()
 		, parsed.timeout
 
-	fetchPromise = fetch(parsed.url, fetchOptions)
+	# Wrap fetch in try/catch to handle synchronous URL parsing errors
+	try
+		fetchPromise = fetch(parsed.url, fetchOptions)
+	catch error
+		# Handle synchronous errors (e.g., invalid URL)
+		return callback(error, null, null)
 
 	fetchPromise
 		.then (response) ->
@@ -2644,6 +2658,8 @@ createStreamingRequest = (parsed) ->
 				@httpRequest = requestModule.request reqOptions, (res) =>
 					# Store response for header forwarding
 					@httpResponse = res
+					# Emit response event immediately for header forwarding
+					@emit('response', res)
 					res.on 'data', (chunk) => @push(chunk)
 					res.on 'end', => @push(null)
 					res.on 'error', (error) => @emit('error', error)
@@ -2654,19 +2670,21 @@ createStreamingRequest = (parsed) ->
 						@emit('error', new Error("Request timeout after #{parsed.timeout}ms"))
 
 			@httpRequest.write(chunk, encoding, callback)
-		
+
 		read: (size) ->
 			# Handled by response data events
 			return
-		
+
 		final: (callback) ->
 			if @httpRequest?
 				@httpRequest.end(callback)
 			else
-				# GET requests with no body
+				# No data was written - check if parsed.body should be sent
 				@httpRequest = requestModule.request reqOptions, (res) =>
 					# Store response for header forwarding
 					@httpResponse = res
+					# Emit response event immediately for header forwarding
+					@emit('response', res)
 					res.on 'data', (chunk) => @push(chunk)
 					res.on 'end', => @push(null)
 					res.on 'error', (error) => @emit('error', error)
@@ -2675,6 +2693,15 @@ createStreamingRequest = (parsed) ->
 					@httpRequest.on 'timeout', =>
 						@httpRequest.destroy()
 						@emit('error', new Error("Request timeout after #{parsed.timeout}ms"))
+
+				# If body was specified but never written (e.g., json:true with body option), write it now
+				if parsed.body?
+					bodyToSend = parsed.body
+					# Stringify if json mode requested
+					if parsed.json and typeof bodyToSend isnt 'string'
+						bodyToSend = JSON.stringify(bodyToSend)
+					@httpRequest.write(bodyToSend)
+
 				@httpRequest.end()
 				callback()
 	)
@@ -2711,10 +2738,9 @@ createStreamingRequest = (parsed) ->
 			if stream.httpResponse?
 				handleResponse(stream.httpResponse)
 			else
-				# Wait for response
-				stream.once 'data', ->
-					if stream.httpResponse?
-						handleResponse(stream.httpResponse)
+				# Wait for response event (fires immediately when response available)
+				stream.once 'response', (res) ->
+					handleResponse(res)
 		
 		originalPipe(destination, options)
 	

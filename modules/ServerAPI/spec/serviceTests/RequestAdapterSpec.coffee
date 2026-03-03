@@ -124,7 +124,7 @@ describe "Request Adapter", ->
 		it "should handle network errors gracefully", (done) ->
 			@timeout(5000)
 			request.get(
-				url: "http://localhost:99999/nonexistent"
+				url: "http://localhost:9999/nonexistent"
 				json: true
 			, (error, response, body) ->
 				assert error?, "should have an error"
