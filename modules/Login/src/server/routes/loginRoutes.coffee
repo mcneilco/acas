@@ -8,15 +8,16 @@ exports.setupAPIRoutes = (app) ->
 	app.get '/api/authors', exports.getAuthors
 
 exports.setupRoutes = (app, passport) ->
-	# If SAML is configured, make the default page the SAML login page.
-	if config.all.server.security.saml.use == true
-		app.get '/login', exports.ssoLogin, passport.authenticate('saml',{failureRedirect: '/', failureFlash: true})
-		app.post '/login/callback', passport.authenticate('saml', failureRedirect: '/login/ssoFailure', failureFlash: true), exports.ssoCallback
-	else
-		app.get '/login', exports.loginPage
+	# Unified login page - shows both SSO (if configured) and direct login options
+	app.get '/login', exports.loginPage
+	# /login/direct is legacy from when we had separate pages for SSO and direct login, but we keep it for backwards compatibility in case anyone has it bookmarked or linked
 	app.get '/login/direct', exports.loginPage
 	app.post '/login',
 		passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }), exports.loginPost
+	# SSO callback endpoint (if SAML is configured)
+	if config.all.server.security.saml.use == true
+		app.post '/login/callback', passport.authenticate('saml', failureRedirect: '/login/ssoFailure', failureFlash: true), exports.ssoCallback
+		app.get '/login/sso', exports.ssoLogin, passport.authenticate('saml',{failureRedirect: '/', failureFlash: true})
 	app.get '/logout*', exports.logout
 	app.post '/api/userAuthentication', exports.authenticationService
 	app.get '/passwordReset', exports.resetpage
@@ -43,7 +44,7 @@ exports.getRedirectUrl = (req) ->
 		console.log "redirecting to #{redirectUrl}"
 	else
 		parsedUrl = url.parse(req.originalUrl || req.url)
-		if parsedUrl.pathname? && parsedUrl.pathname != "/" && parsedUrl.pathname != "/login" && parsedUrl.pathname != "/login/direct" && parsedUrl.pathname != "/login/callback" && parsedUrl.pathname != config.all.client.basePath 
+		if parsedUrl.pathname? && parsedUrl.pathname != "/" && parsedUrl.pathname != "/login" && parsedUrl.pathname != "/login/direct" && parsedUrl.pathname != "/login/sso" && parsedUrl.pathname != "/login/callback" && parsedUrl.pathname != config.all.client.basePath 
 			redirectUrl = parsedUrl.path
 	return redirectUrl
 
@@ -65,6 +66,9 @@ exports.loginPage = (req, res) ->
 	else
 		resetPasswordOption = false
 
+	# Determine if SSO login is available
+	ssoAvailable = config.all.server.security.saml.use == true
+
 	res.render 'login',
 		title: "ACAS Login"
 		scripts: []
@@ -73,6 +77,7 @@ exports.loginPage = (req, res) ->
 		resetPasswordOption: resetPasswordOption
 		redirectUrl: redirectUrl
 		logoText: config.all.client.moduleMenus.logoText
+		ssoAvailable: ssoAvailable
 
 exports.resetPost = (req, res) ->
 	console.log req.session
@@ -131,13 +136,14 @@ exports.logout = (req, res) ->
 		res.redirect redirectMatch
 
 exports.ssoLogin = (req, res, next) ->
-	# Entry point for SSO login.
+	# Entry point for SSO login - set up RelayState from redirect_url query parameter
 	if req.query.redirect_url?
-		redirectUrl = req.query.redirect_url
+		req.query.RelayState = req.query.redirect_url
 	else
-		console.log "No redirect_url"
+		# Try to get redirect URL from the original request
 		redirectUrl = exports.getRedirectUrl(req)
-	req.query.RelayState = redirectUrl
+		if redirectUrl?
+			req.query.RelayState = redirectUrl
 	next()
 
 exports.ssoCallback = (req, res, next) ->
@@ -168,32 +174,20 @@ exports.ssoFailure = (req, res, next) ->
 		# If there is no error, this is likely a refresh of the page, so just redirect to the home page which will reprompt the user for SSO if need be.
 		res.redirect(config.all.client.basePath)
 
-exports.ssoRelayStateRedirect = (req, res, next) ->
-	# Redirects to /login?redirect_url=<redirect_url>
-	redirectUrl = exports.getRedirectUrl(req)
-	res.redirect(url.format(
-		pathname:"/login",
-		query: {
-			redirect_url: redirectUrl
-		}
-	))
-	
-
 exports.ensureAuthenticated = (req, res, next) ->
 	# Primary authentication check method.
-	# If the user is not authenticated, redirect to the appropriate login page based on the authentication strategy.
+	# If the user is not authenticated, redirect to the login page.
 	console.log "checking for login for path: "+req.url
 	if req.isAuthenticated()
 		return next()
 
-	# If SAML is enabled, then redirect to the SAML login page
-	if config.all.server.security.saml.use == true
-			exports.ssoRelayStateRedirect(req, res, next)
-	else
-		# If Authentication strategy is not SAML then send the login page
-		# And set the status code to 401
-		res.statusCode = 401
-		exports.loginPage(req, res, next)
+	# Store the original URL so we can redirect back after login
+	if req.session?
+		req.session.returnTo = req.url
+	
+	# Redirect to unified login page (which shows both SSO and direct login options)
+	res.statusCode = 401
+	exports.loginPage(req, res, next)
 
 exports.ensureCmpdRegAdmin = (req, res, next) ->
 	if req.session?.passport?.user?
