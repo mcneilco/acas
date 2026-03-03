@@ -750,7 +750,9 @@ exports.saveMetaLot = (req, resp) ->
 			console.log error
 			console.log json
 			console.log response
-			resp.end JSON.stringify {error: "something went wrong :("}
+			resp.statusCode = 500
+			resp.setHeader('Content-Type', 'application/json')
+			resp.end JSON.stringify [{level: "error", message: "Something went wrong. Please contact your administrator."}]
 	)
 
 exports.saveSalts = (req, resp) ->
