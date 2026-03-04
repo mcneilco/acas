@@ -361,6 +361,7 @@ client.security.authstrategy=${server.security.authstrategy}
 server.security.saml.use=false
 server.security.saml.entryPoint=https://<organization>.okta.com/app/<appName>/<issuerID>/sso/saml
 server.security.saml.issuer=http://www.okta.com/<issuerID>
+server.security.saml.audience=false
 # Embedded cert needs \\n in string to escape properly
 server.security.saml.cert=-----BEGIN CERTIFICATE-----\\nABC\\nXYZ\\n-----END CERTIFICATE-----
 server.security.saml.profileAttributeToSystemRoles=[{"ssoName":"ACASUser","lsKind":"ACAS","roleName":"ROLE_ACAS-USERS"},{"ssoName":"ACASAdmin","lsKind":"ACAS","roleName":"ROLE_ACAS-ADMINS"},{"ssoName":"CmpdRegUser","lsKind":"CmpdReg","roleName":"ROLE_CMPDREG-USERS"},{"ssoName":"CmpdRegAdmin","lsKind":"CmpdReg","roleName":"ROLE_CMPDREG-ADMINS"},{"ssoName":"CmpdRegReadOnlyUser","lsKind":"CmpdReg","roleName":"ROLE_CMPDREG-READONLY"},{"ssoName":"ACASCrossProjectLoaderUser","lsKind":"ACAS","roleName":"ROLE_ACAS-CROSS-PROJECT-LOADER"}]
