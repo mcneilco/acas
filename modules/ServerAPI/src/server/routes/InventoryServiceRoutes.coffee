@@ -3040,9 +3040,9 @@ checkDataTypeErrors = (fileEntryArray, callback) ->
 checkBatchCodesExist = (fileEntryArray, callback) ->
 	requests = []
 	_.each fileEntryArray, (entry) ->
-		request =
+		batchRequest =
 			requestName: entry.batchCode
-		requests.push request
+		requests.push batchRequest
 	csUtilities.getPreferredBatchIds requests, (batchIdResponse) ->
 		missingBatchCodes = []
 		_.each batchIdResponse, (batchCodeRequest) ->
