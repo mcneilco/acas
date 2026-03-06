@@ -10,7 +10,8 @@ exports.setupTypeOrKindInternal = (typeOrKind, roles, callback) ->
 	console.log roles
 	config = require '../conf/compiled/conf.js'
 	baseurl = config.all.client.service.persistence.fullpath+"setup/"+typeOrKind
-	request = require 'request'
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+	request = serverUtilityFunctions.requestAdapter
 	request(
 		method: 'POST'
 		url: baseurl

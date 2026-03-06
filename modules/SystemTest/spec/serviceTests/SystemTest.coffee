@@ -1,7 +1,8 @@
 assert = require 'assert'
-request = require 'request'
-_ = require 'underscore'
 acasHome = '../../../..'
+serverUtilityFunctions = require "#{acasHome}/routes/ServerUtilityFunctions.js"
+request = serverUtilityFunctions.requestAdapter
+_ = require 'underscore'
 systemTestRoutes = require "#{acasHome}/routes/SystemTestRoutes.js"
 experimentServiceTestJSON = require "#{acasHome}/public/javascripts/spec/ServerAPI/testFixtures/ExperimentServiceTestJSON.js"
 runRFunctionServiceTestJSON = require "#{acasHome}/public/javascripts/spec/ServerAPI/testFixtures/RunRFunctionServiceTestJSON.js"

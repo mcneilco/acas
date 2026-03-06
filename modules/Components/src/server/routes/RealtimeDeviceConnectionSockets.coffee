@@ -1,4 +1,5 @@
-request = require 'request'
+serverUtilityFunctions = require './ServerUtilityFunctions.js'
+request = serverUtilityFunctions.requestAdapter
 _ = require 'underscore'
 Promise = require 'promise'
 

@@ -25,7 +25,8 @@ exports.syncLiveDesignProjectsUsers = (req, resp) ->
 							resp.end "An error has occurred trying to sync projects and permissions with LiveDesign. Please contact an administrator."
 
 exports.getGroupsJSON = (callback) ->
-	request = require 'request'
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+	request = serverUtilityFunctions.requestAdapter
 	_ = require "underscore"
 	config = require '../conf/compiled/conf.js'
 	request.get
@@ -50,7 +51,8 @@ exports.getGroupsJSON = (callback) ->
 
 
 exports.getProjectsJSON = (callback) ->
-	request = require 'request'
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+	request = serverUtilityFunctions.requestAdapter
 	_ = require "underscore"
 	config = require '../conf/compiled/conf.js'
 	request.get

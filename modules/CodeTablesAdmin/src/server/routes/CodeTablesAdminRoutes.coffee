@@ -1,3 +1,7 @@
+config = require '../conf/compiled/conf.js'
+serverUtilityFunctions = require './ServerUtilityFunctions.js'
+request = serverUtilityFunctions.requestAdapter
+
 exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.get '/api/codeTablesAdmin/:entityType', exports.getCodeTablesEntities
 	app.get '/api/codeTablesAdmin/:entityType/d/:code', exports.validateCodeTablesEntity
@@ -15,8 +19,6 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.delete '/api/codeTablesAdmin/:id', loginRoutes.ensureAuthenticated, exports.deleteCodeTablesEntity
 
 exports.validateCodeTablesEntity = (req, resp) ->
-	request = require 'request'
-	config = require '../conf/compiled/conf.js'
 	entityType = req.params.entityType
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + "#{entityType}/validate?code=" + req.params.code
 	request(
@@ -37,8 +39,6 @@ exports.validateCodeTablesEntity = (req, resp) ->
 	)
 
 exports.validateCodeTablesEntityBeforeSave = (req, resp) ->
-	request = require 'request'
-	config = require '../conf/compiled/conf.js'
 	codeTableServiceRoutes = require "./CodeTableServiceRoutes.js"
 	searchTerm = req.params.searchTerm
 	codeTableServiceRoutes.getCodeTableValuesInternal req.params.codeType, req.params.codeKind, null, (results) ->
@@ -56,8 +56,6 @@ exports.validateCodeTablesEntityBeforeSave = (req, resp) ->
 		resp.json result
 
 exports.getCodeTablesEntityById = (req, resp) ->
-	request = require 'request'
-	config = require '../conf/compiled/conf.js'
 	entityType = req.params.entityType
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + "#{entityType}/" + req.params.id
 	request(
@@ -79,8 +77,6 @@ exports.getCodeTablesEntityById = (req, resp) ->
 	)
 
 exports.getCodeTablesEntityByCode = (req, resp) ->
-	request = require 'request'
-	config = require '../conf/compiled/conf.js'
 	entityType = req.params.entityType
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + "#{entityType}/findByCodeEquals?code=" + req.params.code
 	request(
@@ -102,8 +98,6 @@ exports.getCodeTablesEntityByCode = (req, resp) ->
 	)
 
 exports.searchCodeTablesEntities = (req, resp) ->
-	request = require 'request'
-	config = require '../conf/compiled/conf.js'
 	codeTableServiceRoutes = require "./CodeTableServiceRoutes.js"
 	searchTerm = req.params.searchTerm.toLowerCase().trim()
 	codeTableServiceRoutes.getCodeTableValuesInternal req.params.codeType, req.params.codeKind, '', (results) ->
@@ -117,8 +111,6 @@ exports.searchCodeTablesEntities = (req, resp) ->
 		resp.json searchResults
 
 exports.getCodeTablesEntities = (req, resp) ->
-	request = require 'request'
-	config = require '../conf/compiled/conf.js'
 	entityType = req.params.entityType
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + "#{entityType}"
 	request(

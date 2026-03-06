@@ -1,3 +1,7 @@
+config = require '../conf/compiled/conf.js'
+serverUtilityFunctions = require './ServerUtilityFunctions.js'
+request = serverUtilityFunctions.requestAdapter
+
 exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.get '/api/redirectToNewLiveDesignLiveReportForExperiment/:experimentCode', exports.redirectToNewLiveDesignLiveReportForExperiment
 	app.get '/api/getUrlForNewLiveDesignLiveReportForExperiment/:experimentCode', exports.getUrlForNewLiveDesignLiveReportForExperiment
@@ -19,7 +23,8 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/getLiveReportContentByExperimentName/:experimentName', loginRoutes.ensureAuthenticated, exports.getLiveReportContentByExperimentName
 
 config = require '../conf/compiled/conf.js'
-request = require 'request'
+serverUtilityFunctions = require './ServerUtilityFunctions.js'
+request = serverUtilityFunctions.requestAdapter
 _ = require 'underscore'
 
 exports.redirectToNewLiveDesignLiveReportForExperiment = (req, resp) ->
@@ -42,8 +47,6 @@ exports.getUrlForNewLiveDesignLiveReportForExperiment = (req, resp) ->
 
 exports.getUrlForNewLiveDesignLiveReportForExperimentInternal = (exptCode, username, callback) ->
   child_process = require('child_process')
-  config = require '../conf/compiled/conf.js'
-  request = require 'request'
 
   request.get
     url: config.all.client.service.rapache.fullpath+"ServerAPI/getCmpdAndResultType?experiment="+exptCode
@@ -112,8 +115,6 @@ exports.getLiveDesignReportContent = (req, resp) ->
 
 exports.getLiveDesignReportContentInternal = (liveDesignReportID, stripHTML, callback) ->
   exec = require('child_process').exec
-  config = require '../conf/compiled/conf.js'
-  request = require 'request'
 
   command = "python ./src/python/ServerAPI/export_live_report.py -i #{liveDesignReportID} -e #{config.all.client.service.result.viewer.liveDesign.baseUrl} -u #{config.all.client.service.result.viewer.liveDesign.username} -p #{config.all.client.service.result.viewer.liveDesign.password}"
   console.log "About to call python using command: "+command
@@ -134,8 +135,6 @@ exports.installLiveDesignPythonClient = (req, resp) ->
 
 exports.installLiveDesignPythonClientInternal = (callback) ->
   exec = require('child_process').exec
-  config = require '../conf/compiled/conf.js'
-  request = require 'request'
 
   command = "pip install --upgrade --force-reinstall --user #{config.all.client.service.result.viewer.liveDesign.baseUrl}/ldclient.tar.gz csvdiff"
   console.log "About to call pip using command: "+command
@@ -253,8 +252,6 @@ exports.compareLiveReportCsv = (req, resp) ->
 
 exports.compareLiveReportCsvInternal = (csv1, csv2, callback) ->
   exec = require('child_process').exec
-  config = require '../conf/compiled/conf.js'
-  request = require 'request'
 
   command = "python ./src/python/ServerAPI/compare_single_csv.py -b #{csv1} -a #{csv2}"
   console.log "About to call python using command: "+command
@@ -277,8 +274,6 @@ exports.deleteLiveDesignReport = (req, resp) ->
 
 exports.deleteLiveDesignReportInternal = (liveDesignReportID, callback) ->
   exec = require('child_process').exec
-  config = require '../conf/compiled/conf.js'
-  request = require 'request'
 
   command = "python ./src/python/ServerAPI/delete_live_report.py  -i #{liveDesignReportID} -e #{config.all.client.service.result.viewer.liveDesign.baseUrl} -u #{config.all.client.service.result.viewer.liveDesign.username} -p #{config.all.client.service.result.viewer.liveDesign.password}"
   console.log "About to call python using command: "+command

@@ -1,3 +1,6 @@
+config = require '../conf/compiled/conf.js'
+serverUtilityFunctions = require './ServerUtilityFunctions.js'
+request = serverUtilityFunctions.requestAdapter
 
 exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.get '/api/curves/stubs/:exptCode', exports.getCurveStubs
@@ -24,9 +27,7 @@ exports.getCurveStubs = (req, resp) ->
 			curveCuratorTestData = require '../public/spec/testFixtures/curveCuratorTestFixtures.js'
 			resp.end JSON.stringify curveCuratorTestData.curveCuratorThumbs
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.rapache.fullpath+"/experimentcode/curveids/?experimentcode="
-		request = require 'request'
 		request(
 			method: 'GET'
 			url: baseurl+req.params.exptCode
@@ -55,9 +56,7 @@ exports.getCurveDetail = (req, resp) ->
 			curveCuratorTestData = require '../public/src/spec/testFixtures/curveCuratorTestFixtures.js'
 			resp.end JSON.stringify curveCuratorTestData.curveDetail
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.rapache.fullpath+"/curve/detail/?id="
-		request = require 'request'
 		request(
 			method: 'GET'
 			url: baseurl+req.params.id
@@ -81,9 +80,7 @@ exports.getCurveDetailCurveIds = (req, resp) ->
 		curveCuratorTestData = require '../public/src/spec/testFixtures/curveCuratorTestFixtures.js'
 		resp.end JSON.stringify curveCuratorTestData.curveDetail
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.rapache.fullpath+"/curve/detail?"+req._parsedUrl.query
-		request = require 'request'
 		console.log JSON.stringify req.body
 		request(
 			method: 'POST'
@@ -108,9 +105,7 @@ exports.updateCurveUserFlag = (req, resp) ->
 		curveCuratorTestData = require '../public/src/spec/testFixtures/curveCuratorTestFixtures.js'
 		resp.end JSON.stringify curveCuratorTestData.curveDetail
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.rapache.fullpath+"/curve/flag/user"
-		request = require 'request'
 		console.log JSON.stringify req.body
 		request(
 			method: 'POST'
@@ -136,9 +131,7 @@ exports.updateCurveDetail = (req, resp) ->
 		curveCuratorTestData = require '../public/src/spec/testFixtures/curveCuratorTestFixtures.js'
 		resp.end JSON.stringify curveCuratorTestData.curveDetail
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.rapache.fullpath+"/curve/detail/"
-		request = require 'request'
 		console.log JSON.stringify req.body
 		request(
 			method: 'POST'
@@ -164,9 +157,7 @@ exports.updateCurveStub = (req, resp) ->
 		req.body.curveAttributes.flagUser = req.body.flagUser
 		resp.end JSON.stringify req.body
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.rapache.fullpath+"/curve/stub/"
-		request = require 'request'
 		console.log JSON.stringify req.body
 		request(
 			method: 'POST'
@@ -189,7 +180,6 @@ exports.updateCurveStub = (req, resp) ->
 exports.curveCuratorIndex = (req, resp) ->
 	global.specRunnerTestmode = if global.stubsMode then true else false
 	scriptPaths = require './RequiredClientScripts.js'
-	config = require '../conf/compiled/conf.js'
 	scriptsToLoad = scriptPaths.requiredScripts.concat(scriptPaths.applicationScripts)
 	if config.all.client.require.login
 		loginUserName = req.user.username
@@ -214,8 +204,6 @@ exports.curveCuratorIndex = (req, resp) ->
 			deployMode: global.deployMode
 
 exports.renderCurve = (req, resp) ->
-	request = require 'request'
-	config = require '../conf/compiled/conf.js'
 	redirectQuery = req._parsedUrl.query
 	rapacheCall = config.all.client.service.rapache.fullpath + '/curve/render/dr/?' + redirectQuery
 	if req.method == 'GET'
