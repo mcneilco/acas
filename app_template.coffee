@@ -26,7 +26,7 @@ startApp = ->
 	passport = require 'passport'
 	util = require 'util'
 	LocalStrategy = require('passport-local').Strategy
-	SamlStrategy = require('passport-saml').Strategy;
+	SamlStrategy = require('@node-saml/passport-saml').Strategy;
 	global.deployMode = config.all.client.deployMode
 
 	console.log "log level set to '#{console.level}'"
@@ -71,7 +71,8 @@ startApp = ->
 				callbackUrl: "#{config.all.client.fullpath}/login/callback"
 				entryPoint: config.all.server.security.saml.entryPoint
 				issuer: config.all.server.security.saml.issuer
-				cert: config.all.server.security.saml.cert
+				idpCert: config.all.server.security.saml.cert
+				audience: config.all.server.security.saml.audience
 				disableRequestedAuthnContext: config.all.server.security.saml.disableRequestedAuthnContext
 			}, csUtilities.ssoLoginStrategy)
 		else
