@@ -34,7 +34,7 @@ ACAS_TAG=master
 
 ## Using a Locally Built Roo Image
 
-When you've built a local roo-server image (see [../acas-roo-server/CLAUDE.md](../acas-roo-server/CLAUDE.md)), you need to update docker compose.yml to use it.
+When you've built a local roo-server image (see [CLAUDE.md in acas-roo-server repo](https://github.com/mcneilco/acas-roo-server/blob/master/CLAUDE.md)), you need to update docker compose.yml to use it.
 
 ### Steps:
 
@@ -115,7 +115,7 @@ After starting services, it takes time for all services to initialize. The ACAS 
 **Wait script** (based on `docker_bob_setup.sh`, waits up to 120 seconds):
 
 ```bash
-counter=0 && wait=120 && until $(curl --output /dev/null --silent --head --fail http://localhost:3001/api/authors) || [ $counter == $wait ]; do sleep 1; counter=$((counter+1)); done && if [ $counter == $wait ]; then echo "ACAS failed to start" && exit 1; else echo "ACAS started!"; fi
+counter=0; wait=120; while ! curl --output /dev/null --silent --head --fail http://localhost:3001/api/authors && [ "$counter" -lt "$wait" ]; do sleep 1; counter=$((counter+1)); done; if [ "$counter" -ge "$wait" ]; then echo "ACAS failed to start"; exit 1; else echo "ACAS started!"; fi
 ```
 
 ## Volumes
@@ -158,7 +158,7 @@ docker compose up -d
 ## Testing
 
 After starting services, run tests from the acasclient repository:
-- See [../acasclient/CLAUDE.md](../acasclient/CLAUDE.md) for testing workflow
+- See [CLAUDE.md in acasclient repo](https://github.com/mcneilco/acasclient/blob/main/CLAUDE.md) for testing workflow
 
 ## Troubleshooting
 
@@ -188,5 +188,5 @@ After starting services, run tests from the acasclient repository:
 
 ## Related Documentation
 
-- **Roo Server Build**: [../acas-roo-server/CLAUDE.md](../acas-roo-server/CLAUDE.md)
-- **Testing**: [../acasclient/CLAUDE.md](../acasclient/CLAUDE.md)
+- **Roo Server Build**: [CLAUDE.md in acas-roo-server repo](https://github.com/mcneilco/acas-roo-server/blob/master/CLAUDE.md)
+- **Testing**: [CLAUDE.md in acasclient repo](https://github.com/mcneilco/acasclient/blob/main/CLAUDE.md)
