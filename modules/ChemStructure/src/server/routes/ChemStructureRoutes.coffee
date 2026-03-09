@@ -150,7 +150,6 @@ exports.renderMolStructure = (req, resp) ->
 			method: 'POST'
 			url: baseurl
 			body: molecule
-			json: true
 		, (error, response, output) =>
 			if !error && response.statusCode == 200
 				console.log '$$$$$$$$$$$$$$$$ READY TO RESPOND $$$$$$$$$$$$'
@@ -186,7 +185,6 @@ exports.renderMolStructureBase64 = (req, resp) ->
 			method: 'POST'
 			url: baseurl
 			body: molecule
-			json: true
 		, (error, response, output) =>
 			if !error && response.statusCode == 200
 				resp.end output
@@ -255,10 +253,7 @@ exports.ketcherConvertSmiles = (req, resp) ->
 			method: 'POST'
 			url: baseurl
 			body: req.query.smiles
-			json: true
 		, (error, response, json) =>
-			console.log response
-			console.log json
 			if !error && response.statusCode == 200
 				statusMessage = "Ok.\n"
 				resp.end statusMessage+json
@@ -280,10 +275,7 @@ exports.ketcherLayout = (req, resp) ->
 			method: 'POST'
 			url: baseurl
 			body: req.body.moldata
-			json: true
 		, (error, response, json) =>
-			console.log response
-			console.log json
 			if !error && response.statusCode == 200
 				statusMessage = "Ok.\n"
 				resp.end statusMessage+json

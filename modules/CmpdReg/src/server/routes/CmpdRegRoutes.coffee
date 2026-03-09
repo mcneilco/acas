@@ -1208,7 +1208,6 @@ exports.ketcherConvertSmiles = (req, resp) ->
 			method: 'POST'
 			url: baseurl
 			body: data
-			json: true
 		, (error, response, json) =>
 			if !error && response.statusCode == 200 and json.indexOf('<') != 0
 				statusMessage = "Ok.\n"
@@ -1233,12 +1232,10 @@ exports.ketcherLayout = (req, resp) ->
 			parameters:
 				dim: 2
 				opts: ""
-		console.log data
 		request(
 			method: 'POST'
 			url: baseurl
 			body: data
-			json: true
 		, (error, response, json) =>
 			if !error && response.statusCode == 200 and json.indexOf('<') != 0
 				statusMessage = "Ok.\n"
