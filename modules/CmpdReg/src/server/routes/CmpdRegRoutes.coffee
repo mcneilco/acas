@@ -1355,9 +1355,10 @@ exports.renderMolStructureBase64CmpdReg = (req, resp) ->
 		method: 'POST'
 		url: baseurl
 		body: molecule
-		json: true
+		json: false
 	, (error, response, output) =>
 		if !error && response.statusCode == 200
+			resp.setHeader('Content-Type', 'text/plain')
 			resp.end output
 		else
 			console.log error
