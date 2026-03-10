@@ -1,3 +1,7 @@
+config = require '../conf/compiled/conf.js'
+serverUtilityFunctions = require './ServerUtilityFunctions.js'
+request = serverUtilityFunctions.requestAdapter
+
 exports.setupAPIRoutes = (app) ->
 	app.get '/api/experiments/codename/:code', exports.experimentByCodename
 	app.get '/api/experiments/experimentName/:name', exports.experimentByName
@@ -59,7 +63,7 @@ serverUtilityFunctions = require './ServerUtilityFunctions.js'
 csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
 _ = require 'underscore'
 config = require '../conf/compiled/conf.js'
-request = require 'request'
+request = serverUtilityFunctions.requestAdapter
 
 exports.experimentByCodename = (req, resp) ->
 	console.log req.params.code
@@ -78,8 +82,6 @@ exports.experimentByCodename = (req, resp) ->
 		resp.json expt
 
 	else
-		config = require '../conf/compiled/conf.js'
-		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		baseurl = config.all.client.service.persistence.fullpath+"experiments/codename/"+req.params.code
 		fullObjectFlag = "with=fullobject"
 		if req.query.fullObject
@@ -127,8 +129,6 @@ exports.experimentByName = (req, resp) ->
 		resp.end JSON.stringify [experimentServiceTestJSON.fullExperimentFromServer]
 
 	else
-		config = require '../conf/compiled/conf.js'
-		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		baseurl = config.all.client.service.persistence.fullpath+"experiments?findByName&name="+req.params.name
 		console.log baseurl
 #		fullObjectFlag = "with=fullobject"
@@ -152,9 +152,7 @@ exports.experimentsByProtocolCodenameInternal = (code, user, testMode, callback)
 		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
 		response.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"experiments/protocol/"+code
-		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		authorRoutes = require './AuthorRoutes.js'
 		authorRoutes.allowedProjectsInternal user, (statusCode, allowedUserProjects) ->
 			_ = require "underscore"
@@ -170,9 +168,7 @@ exports.experimentById = (req, resp) ->
 		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
 		resp.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"experiments/"+req.params.id
-		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 exports.experimentsAll = (req, resp) ->
@@ -181,26 +177,20 @@ exports.experimentsAll = (req, resp) ->
 		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
 		resp.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer
 	else
-		config = require '../conf/compiled/conf.js'
 		if req.query?.lsType? && req.query?.lsKind?
 			baseurl = config.all.client.service.persistence.fullpath+"experiments/bytypekind/"+req.query.lsType+"/"+req.query.lsKind
-			serverUtilityFunctions = require './ServerUtilityFunctions.js'
 			serverUtilityFunctions.getFromACASServer(baseurl, resp)
 		else
 			baseurl = config.all.client.service.persistence.fullpath+"experiments"
-			serverUtilityFunctions = require './ServerUtilityFunctions.js'
 			serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 updateExpt = (expt, testMode, callback) ->
-	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	serverUtilityFunctions.createLSTransaction expt.recordedDate, "updated experiment", (transaction) ->
 		expt = serverUtilityFunctions.insertTransactionIntoEntity transaction.id, expt
 		if testMode or global.specRunnerTestmode
 			callback expt
 		else
-			config = require '../conf/compiled/conf.js'
 			baseurl = config.all.client.service.persistence.fullpath+"experiments/"+expt.id
-			request = require 'request'
 			console.log "put expt"
 			console.log JSON.stringify expt
 			request(
@@ -224,7 +214,6 @@ updateExpt = (expt, testMode, callback) ->
 
 exports.postExperimentInternal = (exptToSave, testMode, callback) ->
 	console.log "posting experiment"
-	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 #	exptToSave = req.body
 	serverUtilityFunctions.createLSTransaction exptToSave.recordedDate, "new experiment", (transaction) ->
 		exptToSave = serverUtilityFunctions.insertTransactionIntoEntity transaction.id, exptToSave
@@ -259,9 +248,7 @@ exports.postExperimentInternal = (exptToSave, testMode, callback) ->
 		if testMode or global.specRunnerTestmode
 			checkFilesAndUpdate exptToSave
 		else
-			config = require '../conf/compiled/conf.js'
 			baseurl = config.all.client.service.persistence.fullpath+"experiments"
-			request = require 'request'
 			request(
 				method: 'POST'
 				url: baseurl
@@ -279,7 +266,6 @@ exports.postExperimentInternal = (exptToSave, testMode, callback) ->
 			)
 
 exports.saveNewExpriment = (exptToSave, testMode, callback) ->
-	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	#exptToSave = req.body
 	serverUtilityFunctions.createLSTransaction exptToSave.recordedDate, "new experiment", (transaction) ->
 		#console.log "exptToSave"
@@ -317,9 +303,7 @@ exports.saveNewExpriment = (exptToSave, testMode, callback) ->
 		if testMode or global.specRunnerTestmode
 			checkFilesAndUpdate exptToSave
 		else
-			config = require '../conf/compiled/conf.js'
 			baseurl = config.all.client.service.persistence.fullpath+"experiments"
-			request = require 'request'
 			request(
 				method: 'POST'
 				url: baseurl
@@ -501,7 +485,6 @@ exports.genericExperimentSearch = (req, res) ->
 		else
 			res.end JSON.stringify [experimentServiceTestJSON.fullExperimentFromServer, experimentServiceTestJSON.fullDeletedExperiment]
 	else
-		config = require '../conf/compiled/conf.js'
 		if req.user?.username?
 			username = req.user.username
 		else if req.query?.username?
@@ -538,7 +521,6 @@ exports.genericExperimentSearch = (req, res) ->
 			baseurl = config.all.client.service.persistence.fullpath+"experiments/search?q="+req.params.searchTerm+"&includeDeleted="+includeDeleted+"&projects=#{encodeURIComponent(allowedProjectCodes.join(','))}"
 			console.log "baseurl"
 			console.log baseurl
-			serverUtilityFunctions = require './ServerUtilityFunctions.js'
 			serverUtilityFunctions.getFromACASServer(baseurl, res)
 
 exports.editExperimentLookupAndRedirect = (req, res) ->
@@ -557,11 +539,9 @@ exports.deleteExperiment = (req, res) ->
 		deletedExperiment = JSON.parse(JSON.stringify(experimentServiceTestJSON.fullDeletedExperiment))
 		res.end JSON.stringify deletedExperiment
 	else
-		config = require '../conf/compiled/conf.js'
 		experimentId = req.params.id
 		baseurl = config.all.client.service.persistence.fullpath+"experiments/browser/"+experimentId
 		console.log baseurl
-		request = require 'request'
 
 		request(
 			method: 'DELETE'
@@ -598,11 +578,8 @@ exports.resultViewerURLByExperimentCodename = (request, resp) ->
 exports.resultViewerURLFromExperimentCodeName = (codeName, callback) ->
 	# Error callback should be json
 	_ = require '../public/lib/underscore.js'
-	config = require '../conf/compiled/conf.js'
 	if config.all.client.service.result && config.all.client.service.result.viewer and config.all.client.service.result.viewer.experimentPrefix? and config.all.client.service.result.viewer.protocolPrefix? and config.all.client.service.result.viewer.experimentNameColumn?
-		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		baseurl = config.all.client.service.persistence.fullpath+"experiments/codename/"+codeName
-		request = require 'request'
 		request
 			method: 'GET'
 			url: baseurl
@@ -614,7 +591,6 @@ exports.resultViewerURLFromExperimentCodeName = (codeName, callback) ->
 						resultViewerURL: ""
 				else
 					baseurl = config.all.client.service.persistence.fullpath+"protocols/"+experiment.protocol.id
-					request = require 'request'
 					request
 						method: 'GET'
 						url: baseurl
@@ -662,9 +638,7 @@ exports.experimentValueById = (req, resp) ->
 	else
 #		json = {message: "experiment state by id not implemented yet"}
 #		res.end JSON.stringify json
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"experimentvalues/"+req.params.id
-		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 exports.experimentValueByStateTypeKindAndValueTypeKind = (req, resp) ->
@@ -672,9 +646,7 @@ exports.experimentValueByStateTypeKindAndValueTypeKind = (req, resp) ->
 		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
 		resp.end JSON.stringify(experimentServiceTestJSON.experimentValueByStateTypeKindAndValueTypeKind[req.params.stateType][req.params.stateKind][req.params.valueType][req.params.valueKind])
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"/experiments/"+req.params.idOrCode+"/exptvalues/bystate/"+req.params.stateType+"/"+req.params.stateKind+"/byvalue/"+req.params.valueType+"/"+req.params.valueKind+"/json"
-		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 getItxExptExptsByFirstExpt = (firstExptId, callback) ->
@@ -682,9 +654,7 @@ getItxExptExptsByFirstExpt = (firstExptId, callback) ->
 		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
 		callback JSON.stringify [experimentServiceTestJSON.fullExperimentFromServer, experimentServiceTestJSON.fullDeletedExperiment]
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"/itxexperimentexperiments/findByFirstExperiment/"+firstExptId
-		request = require 'request'
 		request(
 			method: 'GET'
 			url: baseurl
@@ -711,9 +681,7 @@ getItxExptExptsBySecondExpt = (secondExptId, callback) ->
 		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
 		callback JSON.stringify [experimentServiceTestJSON.fullExperimentFromServer, experimentServiceTestJSON.fullDeletedExperiment]
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"/itxexperimentexperiments/findBySecondExperiment/"+secondExptId
-		request = require 'request'
 		request(
 			method: 'GET'
 			url: baseurl
@@ -740,12 +708,10 @@ postExptExptItxs = (exptExptItxs, testMode, callback) ->
 	if testMode or global.specRunnerTestmode
 		callback JSON.stringify "stubsMode not implemented"
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"/itxexperimentexperiments/jsonArray"
 		console.log "post expt expt itx body"
 		console.log exptExptItxs
 		console.log JSON.stringify exptExptItxs
-		request = require 'request'
 		request(
 			method: 'POST'
 			url: baseurl
@@ -775,9 +741,7 @@ putExptExptItxs = (exptExptItxs, testMode, callback) ->
 	if testMode or global.specRunnerTestmode
 		callback JSON.stringify "stubsMode not implemented"
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"/itxexperimentexperiments/jsonArray"
-		request = require 'request'
 		request(
 			method: 'PUT'
 			url: baseurl
@@ -1015,8 +979,6 @@ exports.postParentExperiment = (req, resp) ->
 #		console.log req.body.parentExperiment
 #		console.log "child experiments"
 #		console.log req.body.childExperiments
-		config = require '../conf/compiled/conf.js'
-		request = require 'request'
 
 		#post parent experiment first, get file value and update fileValues for childExperiments
 
@@ -1078,7 +1040,6 @@ exports.bulkPostExperiments = (req, resp) ->
 exports.bulkPostExperimentsInternal = (exptsArray, callback) ->
 	console.log "bulkPostExperiments"
 	console.log JSON.stringify exptsArray
-	config = require '../conf/compiled/conf.js'
 	baseurl = config.all.client.service.persistence.fullpath+"/experiments/jsonArray"
 	request(
 		method: 'POST'
@@ -1099,7 +1060,6 @@ exports.bulkPutExperiments = (req, resp) ->
 
 exports.bulkPutExperimentsInternal = (exptsArray, callback) ->
 	console.log "bulkPutExperiments"
-	config = require '../conf/compiled/conf.js'
 	baseurl = config.all.client.service.persistence.fullpath+"/experiments/jsonArray"
 	console.log "bulkPutExperimentsInternal"
 	console.log baseurl
@@ -1130,8 +1090,6 @@ exports.experimentsByTypeKind = (req, resp) ->
 		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
 		resp.end JSON.stringify [experimentServiceTestJSON.fullExperimentFromServer]
 	else
-		config = require '../conf/compiled/conf.js'
-		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		baseurl = config.all.client.service.persistence.fullpath+"experiments/bytypekind/"+req.params.lsType+"/"+req.params.lsKind
 		console.log baseurl
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
@@ -1142,11 +1100,9 @@ exports.getExperimentByLabel = (req, resp) ->
 		resp.json json
 
 exports.getExperimentByLabelInternal = (label, callback) ->
-	config = require '../conf/compiled/conf.js'
 	url = config.all.client.service.persistence.fullpath+"experiments?FindByExperimentName&experimentName=#{label}"
 	console.log "getExperimentByLabelInternal url"
 	console.log url
-	request = require 'request'
 	request(
 		method: 'GET'
 		url: url
@@ -1185,12 +1141,10 @@ exports.getExperimentCodeByLabel = (req, resp) ->
 		resp.json response
 
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"experiments/getCodeNameFromNameRequest?"
 		url = baseurl+"experimentType=#{req.params.exptType}&experimentKind=#{req.params.exptKind}"
 		console.log "getExperimentCodeByLabel url"
 		console.log url
-		request = require 'request'
 		request(
 			method: 'POST'
 			url: url
@@ -1208,8 +1162,6 @@ exports.getExperimentCodeByLabel = (req, resp) ->
 		)
 
 exports.getExperimentalMetadata = (req, resp) ->
-	request = require 'request'
-	config = require '../conf/compiled/conf.js'
 	redirectQuery = req._parsedUrl.query
 	rapacheCall = config.all.client.service.rapache.fullpath + '/getExperimentalMetadata?' + redirectQuery
 	req.pipe(request(rapacheCall)).pipe(resp)

@@ -1,3 +1,7 @@
+config = require '../conf/compiled/conf.js'
+serverUtilityFunctions = require './ServerUtilityFunctions.js'
+request = serverUtilityFunctions.requestAdapter
+
 exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.get '/api/authorByUsername/:username', exports.getAuthorByUsername
 	app.get '/api/authorModulePreferences/:userName/:moduleName', exports.getAuthorModulePreferences
@@ -24,7 +28,7 @@ serverUtilityFunctions = require './ServerUtilityFunctions.js'
 _ = require 'underscore'
 Backbone = require 'backbone'
 $ = require 'jquery'
-request = require 'request'
+request = serverUtilityFunctions.requestAdapter
 config = require '../conf/compiled/conf.js'
 Label = serverUtilityFunctions.Label
 LabelList = serverUtilityFunctions.LabelList
@@ -50,7 +54,6 @@ exports.allowedProjects = (req, resp) ->
 exports.allowedProjectsInternal = (user, callback) ->
 	csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
 	csUtilities.getProjectStubsInternal (statusCode, allProjects) ->
-		config = require '../conf/compiled/conf.js'
 		_ = require 'underscore'
 
 		# Filter out any projects that exist in the config for filtering projects
@@ -107,9 +110,7 @@ exports.getAuthorByUsernameInternal = (username, callback) ->
 		authorServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/AuthorServiceTestJSON.js'
 		resp.json authorServiceTestJSON.getAuthorByUsernameInternalResponse
 	else
-		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"authors?find=ByUserName&userName="+username
-		request = require 'request'
 		request(
 			method: 'GET'
 			url: baseurl
@@ -182,7 +183,6 @@ exports.updateAuthorInternal = (author, callback) ->
 		authorServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/AuthorServiceTestJSON.js'
 		callback authorServiceTestJSON.updateAuthor
 	else
-		config = require '../conf/compiled/conf.js'
 		# if author.has('transactionOptions')
 		# 	transactionOptions = author.get('transactionOptions')
 		# 	delete author.transactionOptions
@@ -196,7 +196,6 @@ exports.updateAuthorInternal = (author, callback) ->
 		# serverUtilityFunctions.createLSTransaction2 lsTransactionRecordedDate, transactionOptions, (transaction) ->
 		# 	authorToSave = serverUtilityFunctions.insertTransactionIntoBackboneModel transaction.id, author
 		baseurl = config.all.client.service.persistence.fullpath+"authors/"
-		request = require 'request'
 
 		request(
 			method: 'PUT'
@@ -217,8 +216,6 @@ exports.updateAuthorInternal = (author, callback) ->
 		)
 
 exports.createNewAuthorInternal = (author, cb) ->
-	config = require '../conf/compiled/conf.js'
-	request = require 'request'
 	request(
 		method: 'POST'
 		url: config.all.client.service.persistence.fullpath + "authors"
@@ -238,13 +235,11 @@ exports.genericAuthorSearch = (req, resp) ->
 	if req.query.testMode is true or global.specRunnerTestmode is true
 		resp.end JSON.stringify "Stubs mode not implemented yet for author search"
 	else
-		config = require '../conf/compiled/conf.js'
 		console.log "search req - generic author"
 		unless req.body.queryDTO?
 			req.body.queryDTO = {}
 		# req.body needs queryString and queryDTO
 		baseurl = config.all.client.service.persistence.fullpath+"authors/genericBrowserSearch"
-		request = require 'request'
 		request(
 			method: 'POST'
 			url: baseurl
@@ -272,11 +267,9 @@ exports.deleteAuthor = (req, resp) ->
 	if global.specRunnerTestmode
 		res.end JSON.stringify "stubs mode for deleting author not implemented"
 	else
-		config = require '../conf/compiled/conf.js'
 		authorId = req.params.id
 		baseurl = config.all.client.service.persistence.fullpath+"authors/"+authorId
 		console.log baseurl
-		request = require 'request'
 
 		request(
 			method: 'DELETE'
@@ -956,8 +949,6 @@ createOrSignupAuthorInternal = (author, cb) ->
 			cb err, savedAuthor
 
 exports.signupNewAuthorInternal = (author, cb) ->
-	config = require '../conf/compiled/conf.js'
-	request = require 'request'
 	request(
 		method: 'POST'
 		url: config.all.client.service.persistence.fullpath + "authors/signupAuthor"

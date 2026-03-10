@@ -1,5 +1,4 @@
 _ = require 'underscore'
-request = require 'request'
 
 exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.get '/entity/edit/codeName/:code', exports.redirectToEditor
@@ -11,6 +10,8 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/getControllerRedirectConf', loginRoutes.ensureAuthenticated, exports.getControllerRedirectConf
 
 config = require '../conf/compiled/conf.js'
+serverUtilityFunctions = require './ServerUtilityFunctions.js'
+request = serverUtilityFunctions.requestAdapter
 
 
 exports.redirectToEditor = (req, resp) ->

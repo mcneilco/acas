@@ -1,8 +1,9 @@
 assert = require 'assert'
-request = require 'request'
+acasHome = '../../../..'
+serverUtilityFunctions = require "#{acasHome}/routes/ServerUtilityFunctions.js"
+request = serverUtilityFunctions.requestAdapter
 _ = require 'underscore'
 fs = require 'fs'
-acasHome = '../../../..'
 config = require "#{acasHome}/conf/compiled/conf.js"
 csUtilities = require "#{acasHome}/src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js"
 
@@ -155,12 +156,14 @@ describe "Base ACAS Customer Specific Function Tests", ->
 					assert.equal @outputFileValue.fileValue, "protocols/PROT12345/test Work List (1).csv"
 				it "should return a fileValue with base file name in comments", ->
 					assert.equal @outputFileValue.comments, "test Work List (1).csv"
-				it "should remove the file from the old path", ->
+				it "should remove the file from the old path", (done) ->
 					fs.unlink @testFilePath, (err) =>
 						assert.equal err.errno, 34 #it should not be there to unlink
-				it "should add the file to the new path", ->
+						done()
+				it "should add the file to the new path", (done) ->
 					fs.unlink config.all.server.datafiles.relative_path + "/protocols/PROT12345/test Work List (1).csv", (err) =>
 						assert.equal err, null #it should be there to unlink, and we've cleaned up
+						done()
 			describe "when called for experiments", ->
 				before (done) ->
 					@testFilePath = config.all.server.datafiles.relative_path + "/test Work List (1).csv"
@@ -174,12 +177,14 @@ describe "Base ACAS Customer Specific Function Tests", ->
 				#					fs.unlink @testFilePath
 				it "should return a fileValue with the correct relative path for Experiment", ->
 					assert.equal @outputFileValue.fileValue, "experiments/EXPT12345/test Work List (1).csv"
-				it "should add the file to the new path", ->
+				it "should add the file to the new path", (done) ->
 					fs.unlink @testFilePath, (err) =>
 						assert.equal err.errno, 34 #it should not be there to unlink
-				it "should remove the file from the old path", ->
+						done()
+				it "should remove the file from the old path", (done) ->
 					fs.unlink config.all.server.datafiles.relative_path + "/experiments/EXPT12345/test Work List (1).csv", (err) =>
 						assert.equal err, null #it should be there to unlink, and we've cleaned up
+						done()
 			describe "when called for another kind of entity", ->
 				before (done) ->
 					@testFilePath = config.all.server.datafiles.relative_path + "/test Work List (1).csv"
@@ -193,12 +198,14 @@ describe "Base ACAS Customer Specific Function Tests", ->
 				#					fs.unlink @testFilePath
 				it "should return a fileValue with the correct relative path for Experiment", ->
 					assert.equal @outputFileValue.fileValue, "entities/parentThings/PT12345/test Work List (1).csv"
-				it "should add the file to the new path", ->
+				it "should add the file to the new path", (done) ->
 					fs.unlink @testFilePath, (err) =>
 						assert.equal err.errno, 34 #it should not be there to unlink
-				it "should remove the file from the old path", ->
+						done()
+				it "should remove the file from the old path", (done) ->
 					fs.unlink config.all.server.datafiles.relative_path + "/entities/parentThings/PT12345/test Work List (1).csv", (err) =>
 						assert.equal err, null #it should be there to unlink, and we've cleaned up
+						done()
 			describe "when called with nonexistant file", ->
 				before (done) ->
 					@testFilePath = config.all.server.datafiles.relative_path + "/test Work List (1).csv"

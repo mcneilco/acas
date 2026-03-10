@@ -1,5 +1,7 @@
 assert = require 'assert'
-request = require 'request'
+acasHome = '../../../..'
+serverUtilityFunctions = require "#{acasHome}/routes/ServerUtilityFunctions.js"
+request = serverUtilityFunctions.requestAdapter
 
 
 config = require '../../../../conf/compiled/conf.js'
@@ -28,7 +30,8 @@ describe "Entity Properties Services", ->
 				entityCodeList: ["FRD76","FRD2","FRD78"]
 			before (done) ->
 				@.timeout(20000)
-				request.post
+				request(
+					method: 'POST'
 					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/compound/parent/properties"
 					json: true
 					body: body
@@ -37,6 +40,7 @@ describe "Entity Properties Services", ->
 					@responseJSON = body
 					@serverResponse = response
 					done()
+					)
 			it "should return a success status code if in stubsMode, otherwise, this will fail", ->
 				assert.equal @serverResponse.statusCode,200
 			it "should return 3 entities", ->
@@ -53,7 +57,8 @@ describe "Entity Properties Services", ->
 			entityCodeList = ["FRD76","FRD2","FRD78"]
 			before (done) ->
 				@.timeout(20000)
-				request.post
+				request(
+					method: 'POST'
 					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/compound/parent/properties"
 					json: true
 					body:
@@ -64,6 +69,7 @@ describe "Entity Properties Services", ->
 					@responseJSON = body
 					@serverResponse = response
 					done()
+					)
 			it "should return a failure status code", ->
 				assert.equal @serverResponse.statusCode,500
 		describe "when invalid compounds sent with valid properties", ->
@@ -71,7 +77,8 @@ describe "Entity Properties Services", ->
 			entityCodeList = ["ERROR","ERROR1","ERROR2"]
 			before (done) ->
 				@.timeout(20000)
-				request.post
+				request(
+					method: 'POST'
 					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/compound/parent/properties"
 					json: true
 					body:
@@ -82,6 +89,7 @@ describe "Entity Properties Services", ->
 					@responseJSON = body
 					@serverResponse = response
 					done()
+					)
 			it "should return a success status code", ->
 				assert.equal @serverResponse.statusCode,200
 			it "should return 3 entities", ->
@@ -101,7 +109,8 @@ describe "Entity Properties Services", ->
 				entityCodeList: ["FRD76","FRD2","FRD78"]
 			before (done) ->
 				@.timeout(20000)
-				request.post
+				request(
+					method: 'POST'
 					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/compound/parent/properties/csv"
 					json: true
 					body: body
@@ -110,6 +119,7 @@ describe "Entity Properties Services", ->
 					@responseJSON = body
 					@serverResponse = response
 					done()
+					)
 			it "should return a success status code if in stubsMode, otherwise, this will fail", ->
 				assert.equal @serverResponse.statusCode,200
 			it "should return 5 rows including a trailing \\n", ->
@@ -132,7 +142,8 @@ describe "Tested Entity Properties Services", ->
 				entityIdStringLines: "FRD76\nFRD2\nFRD78\n"
 			before (done) ->
 				@.timeout(20000)
-				request.post
+				request(
+					method: 'POST'
 					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/testedEntities/properties"
 					json: true
 					body: body
@@ -141,6 +152,7 @@ describe "Tested Entity Properties Services", ->
 					@responseJSON = body
 					@serverResponse = response
 					done()
+					)
 			it "should return a success status code if in stubsMode, otherwise, this will fail", ->
 				assert.equal @serverResponse.statusCode,200
 			it "should return 5 rows including a trailing \\n", ->
@@ -159,7 +171,8 @@ describe "Tested Entity Properties Services", ->
 			entityList = "FRD76\nFRD2\nFRD78\n"
 			before (done) ->
 				@.timeout(20000)
-				request.post
+				request(
+					method: 'POST'
 					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/testedEntities/properties"
 					json: true
 					body:
@@ -170,6 +183,7 @@ describe "Tested Entity Properties Services", ->
 					@responseJSON = body
 					@serverResponse = response
 					done()
+					)
 			it "should return a failure status code", ->
 				assert.equal @serverResponse.statusCode,500
 		describe "when invalid compounds sent with valid properties", ->
@@ -177,7 +191,8 @@ describe "Tested Entity Properties Services", ->
 			entityList = "ERROR1\nERROR2\nERROR3\n"
 			before (done) ->
 				@.timeout(20000)
-				request.post
+				request(
+					method: 'POST'
 					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/testedEntities/properties"
 					json: true
 					body:
@@ -188,6 +203,7 @@ describe "Tested Entity Properties Services", ->
 					@responseJSON = body
 					@serverResponse = response
 					done()
+					)
 			it "should return an success status code", ->
 				assert.equal @serverResponse.statusCode,200
 			it "should return 5 rows including a trailing \n", ->

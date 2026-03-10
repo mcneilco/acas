@@ -24,7 +24,8 @@ exports.experimentsForProtocol = (req, resp) ->
 	console.log "baseurl"
 	console.log baseurl
 
-	request = require 'request'
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+	request = serverUtilityFunctions.requestAdapter
 	request(
 		method: 'GET'
 		url: baseurl

@@ -145,7 +145,7 @@ exports.runRFunction = (req, rScript, rFunction, returnFunction, preValidationFu
 	exports.runRFunctionOutsideRequest req.body.user, req.body, rScript, rFunction, returnFunction, preValidationFunction, testMode, serviceRapacheFullPath
 
 exports.runRFunctionOutsideRequest = (username, argumentsJSON, rScript, rFunction, returnFunction, preValidationFunction, testMode, serviceRapacheFullPath) ->
-	request = require 'request'
+	request = exports.requestAdapter
 	config = require '../conf/compiled/conf.js'
 	if !serviceRapacheFullPath?
 		serviceRapacheFullPath = config.all.client.service.rapache.fullpath
@@ -273,7 +273,7 @@ exports.getFromACASServer = (baseurl, resp) ->
 		resp.json json
 
 exports.getFromACASServerInternal = (baseurl, callback) ->
-	request = require 'request'
+	request = exports.requestAdapter
 	request(
 		method: 'GET'
 		url: baseurl
@@ -298,7 +298,7 @@ exports.getRestrictedEntityFromACASServerInternal = (baseurl, username,  project
 	userObject={'user':'username':username}
 	csUtilities.getProjectsInternal userObject, (statusCode, userProjects) =>
 		if statusCode == 200
-			request = require 'request'
+			request = exports.requestAdapter
 			_ = require 'underscore'
 			userProjectCodes = _.pluck userProjects, "code"
 			request(
@@ -408,7 +408,7 @@ exports.createLSTransaction2 = (date, options, callback) ->
 			version: 0
 	else
 		config = require '../conf/compiled/conf.js'
-		request = require 'request'
+		request = exports.requestAdapter
 		body = _.extend {recordedDate: date}, options
 		options =
 			method: 'POST'
@@ -436,7 +436,7 @@ exports.updateLSTransaction = (transaction, callback) ->
 			version: 0
 	else
 		config = require '../conf/compiled/conf.js'
-		request = require 'request'
+		request = exports.requestAdapter
 		body = transaction
 		options =
 			method: 'PUT'
@@ -2430,5 +2430,320 @@ exports.ContainerTube = ContainerTube
 exports.AnalysisGroup = AnalysisGroup
 exports.AnalysisGroupList = AnalysisGroupList
 exports.LocationContainer = LocationContainer
+
+# Request adapter that provides a request-like interface using fetch
+# Handles both callback-based and streaming/proxy patterns
+http = require 'http'
+https = require 'https'
+{ URL } = require 'url'
+
+# Helper: Parse options into normalized request parameters
+parseRequestOptions = (options) ->
+	if typeof options is 'string'
+		return {
+			url: options
+			method: 'GET'
+			body: undefined
+			json: false
+			headers: {}
+			qs: undefined
+		}
+	
+	# Normalize json option (can be boolean or object body)
+	json = options.json
+	body = options.body
+	if json? and typeof json is 'object'
+		body = json
+		json = true
+	
+	# Build headers
+	headers = options.headers or {}
+	
+	# Handle form data
+	if options.form?
+		params = new URLSearchParams()
+		for key, value of options.form
+			params.append(key, value)
+		body = params.toString()
+		headers['Content-Type'] = 'application/x-www-form-urlencoded'
+		json = false
+	
+	# Copy headers from incoming request if proxying
+	if options.incomingRequest?
+		for headerName, headerValue of options.incomingRequest.headers
+			unless headerName.toLowerCase() is 'host'
+				headers[headerName] = headerValue
+	
+	# Build URL with query string
+	url = options.url
+	if options.qs?
+		urlObj = new URL(url)
+		for key, value of options.qs
+			urlObj.searchParams.append(key, value)
+		url = urlObj.toString()
+	
+	return {
+		url: url
+		method: options.method or 'GET'
+		body: body
+		json: json
+		headers: headers
+		timeout: options.timeout
+	}
+
+# Helper: Parse response body based on json flag
+parseResponseBody = (response, wantJson, url) ->
+	# For JSON responses, use response.json() which is more memory-efficient
+	# than buffering to text then parsing
+	if wantJson
+		# Check Content-Type header to determine if response is actually JSON
+		contentType = response.headers.get('content-type') or ''
+		isJsonResponse = contentType.includes('application/json')
+
+		# Check if response might be empty (Content-Length: 0 or missing)
+		contentLength = response.headers.get('content-length')
+		isEmpty = contentLength is '0'
+
+		if isJsonResponse and not isEmpty
+			# Use native JSON parsing (more efficient, streams internally)
+			return response.json().catch (error) ->
+				# If JSON parsing fails, it might be an empty body
+				# Return null for empty responses instead of throwing
+				if error.message?.includes('Unexpected end of JSON input')
+					console.error "Empty or malformed JSON response from #{url}"
+					return null
+				console.error "Failed to parse JSON response from #{url}: #{error.message}"
+				throw error
+		else
+			# Server returned non-JSON when we expected JSON, or response might be empty
+			# Fall back to text and try to parse
+			return response.text().then (text) ->
+				unless text
+					return null
+				try
+					parsed = JSON.parse(text)
+					return parsed
+				catch error
+					console.error "Failed to parse JSON response from #{url}: #{error.message}"
+					console.error "Response text:", text.substring(0, 200)
+					throw error
+	else
+		# For non-JSON, buffer to text
+		# TODO: Consider streaming for large non-JSON responses
+		textPromise = response.text()
+		textPromise.then (text) ->
+			unless text
+				return null
+			return text
+
+# Helper: Convert fetch Response to request-compatible response object
+buildResponseObject = (response, parsedBody) ->
+	# Convert Headers to plain object
+	headers = {}
+	response.headers.forEach (value, key) ->
+		headers[key] = value
+	
+	return {
+		statusCode: response.status
+		headers: headers
+		body: parsedBody
+	}
+
+exports.requestAdapter = (options, callback) ->
+	parsed = parseRequestOptions(options)
+	
+	# Streaming mode (no callback)
+	unless callback?
+		return createStreamingRequest(parsed)
+	
+	# Callback mode - prepare request body
+	if parsed.json and parsed.body?
+		# Set Content-Type header (case-insensitive check to avoid duplicates)
+		hasContentType = Object.keys(parsed.headers).some (key) -> key.toLowerCase() is 'content-type'
+		unless hasContentType
+			parsed.headers['Content-Type'] = 'application/json'
+		if typeof parsed.body is 'object'
+			parsed.body = JSON.stringify(parsed.body)
+	
+	# Make fetch request with optional timeout
+	fetchOptions = {
+		method: parsed.method
+		headers: parsed.headers
+		redirect: 'manual'
+	}
+
+	# Only include body for methods that support it
+	unless parsed.method in ['GET', 'HEAD']
+		fetchOptions.body = parsed.body
+
+	# Setup timeout using AbortController if timeout specified
+	timeoutId = null
+	if parsed.timeout?
+		controller = new AbortController()
+		fetchOptions.signal = controller.signal
+		timeoutId = setTimeout ->
+			controller.abort()
+		, parsed.timeout
+
+	# Wrap fetch in try/catch to handle synchronous URL parsing errors
+	try
+		fetchPromise = fetch(parsed.url, fetchOptions)
+	catch error
+		# Handle synchronous errors (e.g., invalid URL)
+		return callback(error, null, null)
+
+	fetchPromise
+		.then (response) ->
+			# Clear timeout on success
+			if timeoutId?
+				clearTimeout(timeoutId)
+			parsePromise = parseResponseBody(response, parsed.json, parsed.url)
+			parsePromise.then (parsedBody) ->
+				responseObj = buildResponseObject(response, parsedBody)
+				callback(null, responseObj, parsedBody)
+		.catch (error) ->
+			# Clear timeout on error
+			if timeoutId?
+				clearTimeout(timeoutId)
+			# Provide clearer error message for timeout
+			if error.name is 'AbortError'
+				error.message = "Request timeout after #{parsed.timeout}ms"
+			callback(error, null, null)
+
+	# Explicitly return undefined to prevent Mocha from seeing both callback and Promise
+	return undefined
+
+# Convenience methods for common HTTP verbs (for backwards compatibility with old request library)
+exports.requestAdapter.get = (options, callback) ->
+	if typeof options is 'string'
+		options = { url: options }
+	options.method = 'GET'
+	exports.requestAdapter(options, callback)
+
+exports.requestAdapter.post = (options, callback) ->
+	options.method = 'POST'
+	exports.requestAdapter(options, callback)
+
+exports.requestAdapter.put = (options, callback) ->
+	options.method = 'PUT'
+	exports.requestAdapter(options, callback)
+
+exports.requestAdapter.delete = (options, callback) ->
+	options.method = 'DELETE'
+	exports.requestAdapter(options, callback)
+
+# Create streaming request using http/https modules
+createStreamingRequest = (parsed) ->
+	urlObj = new URL(parsed.url)
+	isHttps = urlObj.protocol is 'https:'
+	requestModule = if isHttps then https else http
+
+	reqOptions = {
+		hostname: urlObj.hostname
+		port: urlObj.port or (if isHttps then 443 else 80)
+		path: urlObj.pathname + (urlObj.search or '')
+		method: parsed.method
+		headers: parsed.headers
+	}
+
+	# Add timeout to request options if specified
+	if parsed.timeout?
+		reqOptions.timeout = parsed.timeout
+	
+	{ Duplex } = require 'stream'
+	
+	stream = new Duplex(
+		write: (chunk, encoding, callback) ->
+			unless @httpRequest?
+				@httpRequest = requestModule.request reqOptions, (res) =>
+					# Store response for header forwarding
+					@httpResponse = res
+					# Emit response event immediately for header forwarding
+					@emit('response', res)
+					res.on 'data', (chunk) => @push(chunk)
+					res.on 'end', => @push(null)
+					res.on 'error', (error) => @emit('error', error)
+				@httpRequest.on 'error', (error) => @emit('error', error)
+				if parsed.timeout?
+					@httpRequest.on 'timeout', =>
+						@httpRequest.destroy()
+						@emit('error', new Error("Request timeout after #{parsed.timeout}ms"))
+
+			@httpRequest.write(chunk, encoding, callback)
+
+		read: (size) ->
+			# Handled by response data events
+			return
+
+		final: (callback) ->
+			if @httpRequest?
+				@httpRequest.end(callback)
+			else
+				# No data was written - check if parsed.body should be sent
+				@httpRequest = requestModule.request reqOptions, (res) =>
+					# Store response for header forwarding
+					@httpResponse = res
+					# Emit response event immediately for header forwarding
+					@emit('response', res)
+					res.on 'data', (chunk) => @push(chunk)
+					res.on 'end', => @push(null)
+					res.on 'error', (error) => @emit('error', error)
+				@httpRequest.on 'error', (error) => @emit('error', error)
+				if parsed.timeout?
+					@httpRequest.on 'timeout', =>
+						@httpRequest.destroy()
+						@emit('error', new Error("Request timeout after #{parsed.timeout}ms"))
+
+				# If body was specified but never written (e.g., json:true with body option), write it now
+				if parsed.body?
+					bodyToSend = parsed.body
+					# Stringify if json mode requested
+					if parsed.json and typeof bodyToSend isnt 'string'
+						bodyToSend = JSON.stringify(bodyToSend)
+					@httpRequest.write(bodyToSend)
+
+				@httpRequest.end()
+				callback()
+	)
+	
+	# Override pipe to automatically forward HTTP headers
+	originalPipe = stream.pipe.bind(stream)
+	stream.pipe = (destination, options) ->
+		# If piping to an HTTP response, forward headers when they arrive
+		if destination.writeHead? and typeof destination.writeHead is 'function'
+			handleResponse = (res) ->
+				# Whitelist safe headers to forward (avoid exposing internal/security headers)
+				safeHeaders = {}
+				headersToForward = [
+					'content-type'
+					'content-length'
+					'content-disposition'
+					'content-encoding'
+					'content-language'
+					'content-range'
+					'cache-control'
+					'expires'
+					'etag'
+					'last-modified'
+					'accept-ranges'
+				]
+				
+				for header in headersToForward
+					if res.headers[header]?
+						safeHeaders[header] = res.headers[header]
+				
+				destination.writeHead(res.statusCode, safeHeaders)
+			
+			# If response already received, forward immediately
+			if stream.httpResponse?
+				handleResponse(stream.httpResponse)
+			else
+				# Wait for response event (fires immediately when response available)
+				stream.once 'response', (res) ->
+					handleResponse(res)
+		
+		originalPipe(destination, options)
+	
+	stream
 
 AppLaunchParams = loginUser:username:"acas"

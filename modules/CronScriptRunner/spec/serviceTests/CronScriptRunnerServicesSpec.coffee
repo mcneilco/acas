@@ -17,7 +17,8 @@ Basic requirements:
 ###
 
 assert = require 'assert'
-request = require 'request'
+serverUtilityFunctions = require '../../../../routes/ServerUtilityFunctions.js'
+request = serverUtilityFunctions.requestAdapter
 
 config = require '../../../../conf/compiled/conf.js'
 cronScriptRunnerTestJSON = require '../testFixtures/CronScriptRunnerTestJSON.js'
