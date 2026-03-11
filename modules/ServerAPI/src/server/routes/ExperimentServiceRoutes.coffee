@@ -6,6 +6,7 @@ exports.setupAPIRoutes = (app) ->
 	app.get '/api/experiments/codename/:code', exports.experimentByCodename
 	app.get '/api/experiments/experimentName/:name', exports.experimentByName
 	app.get '/api/experiments/protocolCodename/:code', exports.experimentsByProtocolCodename
+	app.get '/api/experiments/paginated', exports.getPaginatedExperiments
 	app.get '/api/experiments/:id', exports.experimentById
 	app.get '/api/experiments', exports.experimentsAll
 	app.get '/api/experiments/:idOrCode/exptvalues/bystate/:stateType/:stateKind/byvalue/:valueType/:valueKind', exports.experimentValueByStateTypeKindAndValueTypeKind
@@ -34,6 +35,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/experiments/codename/:code', loginRoutes.ensureAuthenticated, exports.experimentByCodename
 	app.get '/api/experiments/experimentName/:name', loginRoutes.ensureAuthenticated, exports.experimentByName
 	app.get '/api/experiments/protocolCodename/:code', loginRoutes.ensureAuthenticated, exports.experimentsByProtocolCodename
+	app.get '/api/experiments/paginated', loginRoutes.ensureAuthenticated, exports.getPaginatedExperiments
 	app.get '/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.experimentById
 	app.get '/api/experiments', loginRoutes.ensureAuthenticated, exports.experimentsAll
 	app.get '/api/experiments/:idOrCode/exptvalues/bystate/:stateType/:stateKind/byvalue/:valueType/:valueKind', loginRoutes.ensureAuthenticated, exports.experimentValueByStateTypeKindAndValueTypeKind
@@ -1165,3 +1167,68 @@ exports.getExperimentalMetadata = (req, resp) ->
 	redirectQuery = req._parsedUrl.query
 	rapacheCall = config.all.client.service.rapache.fullpath + '/getExperimentalMetadata?' + redirectQuery
 	req.pipe(request(rapacheCall)).pipe(resp)
+
+exports.getPaginatedExperiments = (req, resp) ->
+	if global.specRunnerTestmode
+		resp.json
+			results: []
+			totalRecords: 0
+			page: 0
+			pageSize: 25
+			totalPages: 0
+	else
+		authorRoutes = require './AuthorRoutes.js'
+		authorRoutes.allowedProjectsInternal req.user, (statusCode, allowedUserProjects) ->
+			if statusCode != 200
+				resp.statusCode = statusCode
+				resp.json error: true, message: "Could not get user projects"
+				return
+
+			_ = require "underscore"
+			allowedProjectCodes = _.pluck(allowedUserProjects, "code")
+
+			# Build the URL with query parameters
+			baseurl = config.all.client.service.persistence.fullpath + "experiments/paginated"
+			queryParams = []
+
+			# Add pagination parameters
+			if req.query.page?
+				queryParams.push "page=#{req.query.page}"
+			if req.query.pageSize?
+				queryParams.push "pageSize=#{req.query.pageSize}"
+			if req.query.sortBy?
+				queryParams.push "sortBy=#{encodeURIComponent(req.query.sortBy)}"
+			if req.query.sortOrder?
+				queryParams.push "sortOrder=#{encodeURIComponent(req.query.sortOrder)}"
+
+			# Add filter parameters
+			if req.query.recordedBy?
+				queryParams.push "recordedBy=#{encodeURIComponent(req.query.recordedBy)}"
+			if req.query.protocolCode?
+				queryParams.push "protocolCode=#{encodeURIComponent(req.query.protocolCode)}"
+			if req.query.dateFrom?
+				queryParams.push "dateFrom=#{req.query.dateFrom}"
+			if req.query.dateTo?
+				queryParams.push "dateTo=#{req.query.dateTo}"
+
+			if queryParams.length > 0
+				baseurl = "#{baseurl}?#{queryParams.join('&')}"
+
+			# Make the request with allowed projects header
+			request(
+				method: 'GET'
+				url: baseurl
+				json: true
+				headers:
+					'X-Allowed-Projects': allowedProjectCodes.join(',')
+			, (error, response, json) =>
+				if !error && response.statusCode == 200
+					resp.statusCode = response.statusCode
+					resp.json json
+				else
+					console.log 'got ajax error in getPaginatedExperiments'
+					console.log error
+					console.log json
+					resp.statusCode = response?.statusCode || 500
+					resp.json error: true, message: error || json
+			)
