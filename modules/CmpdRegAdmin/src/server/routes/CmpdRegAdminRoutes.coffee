@@ -267,7 +267,6 @@ exports.deleteCmpdRegEntity = (req, resp) ->
 	request(
 		method: 'DELETE'
 		url: cmpdRegCall
-		json: true
 		timeout: 6000000
 	, (error, response, json) =>
 		if !error && response.statusCode == 200
