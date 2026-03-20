@@ -1,0 +1,15 @@
+version: '2'
+
+# Docker Compose override for testing with uniqueNotebook=true
+#
+# Usage:
+#   docker-compose -f docker-compose.yml -f docker-compose.test-unique-notebook.yml up -d
+#
+# This enables the compound registration setting that enforces unique notebook pages
+# across all lots in the database.
+
+services:
+  acas:
+    environment:
+      # Override the uniqueNotebook setting to true
+      - ACAS_CLIENT_CMPDREG_SERVERSETTINGS_UNIQUENOTEBOOK=true
