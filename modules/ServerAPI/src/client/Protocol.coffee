@@ -220,7 +220,7 @@ class ProtocolBaseController extends BaseEntityController
 				if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
 					$.ajax
 						type: 'GET'
-						url: "/api/protocols/codename/"+window.AppLaunchParams.moduleLaunchParams.code
+						url: "/api/protocols/codename/"+encodeURIComponent(window.AppLaunchParams.moduleLaunchParams.code)
 						dataType: 'json'
 						error: (err) =>
 							alert 'Could not get protocol for code in this URL, creating new one'

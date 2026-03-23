@@ -56,7 +56,7 @@ class ProtocolSimpleSearchController extends AbstractFormController
 		unless protocolSearchTerm is ""
 			$.ajax
 				type: 'GET'
-				url: @searchUrl + protocolSearchTerm
+				url: @searchUrl + encodeURIComponent(protocolSearchTerm)
 				dataType: "json"
 				data:
 					testMode: false
@@ -272,7 +272,7 @@ class ProtocolBrowserController extends Backbone.View
 	getParentProtocol: (codeName) =>
 		$.ajax
 			type: 'GET'
-			url: "/api/protocols/parentProtocol/codename/"+codeName
+			url: "/api/protocols/parentProtocol/codename/"+encodeURIComponent(codeName)
 			dataType: 'json'
 			error: (err) ->
 				alert 'Error - Could not get parent protocol ' + codeName

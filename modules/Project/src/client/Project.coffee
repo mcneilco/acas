@@ -667,7 +667,7 @@ class ProjectController extends AbstractFormController
 	getProject: =>
 		$.ajax
 			type: 'GET'
-			url: "/api/things/project/project/codename/"+window.AppLaunchParams.moduleLaunchParams.code
+			url: "/api/things/project/project/codename/"+encodeURIComponent(window.AppLaunchParams.moduleLaunchParams.code)
 			dataType: 'json'
 			error: (err) =>
 				alert 'Could not get project for code in this URL, creating new one'
@@ -991,7 +991,7 @@ class ProjectController extends AbstractFormController
 			#validate codeName
 			$.ajax
 				type: 'GET'
-				url: "/api/things/project/project/codename/"+codeName
+				url: "/api/things/project/project/codename/"+encodeURIComponent(codeName)
 				dataType: 'json'
 				error: (err) =>
 					#codename is new
