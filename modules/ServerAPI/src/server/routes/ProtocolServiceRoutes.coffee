@@ -475,7 +475,7 @@ exports.genericProtocolSearch = (req, res) ->
 		authorRoutes.allowedProjectsInternal req.user, (statusCode, allowedUserProjects) ->
 			_ = require "underscore"
 			allowedProjectCodes = _.pluck(allowedUserProjects, "code")
-			baseurl = config.all.client.service.persistence.fullpath+"protocols/search?q="+req.params.searchTerm+"&projects=#{encodeURIComponent(allowedProjectCodes.join(','))}"
+			baseurl = config.all.client.service.persistence.fullpath+"protocols/search?q="+encodeURIComponent(req.params.searchTerm)+"&projects=#{encodeURIComponent(allowedProjectCodes.join(','))}"
 			console.log "baseurl"
 			console.log baseurl
 			serverUtilityFunctions.getFromACASServer(baseurl, res)
