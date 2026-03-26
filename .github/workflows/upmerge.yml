@@ -77,7 +77,7 @@ jobs:
                 owner: "${{ matrix.owner }}",
                 repo: "${{ matrix.repo }}",
                 state: "open",
-                head: sourceBranch,
+                head: `${{ matrix.owner }}:${sourceBranch}`,
                 base: targetBranch
               })
 
