@@ -64,7 +64,7 @@ class ExperimentSearchController extends AbstractFormController
 	doGenericExperimentSearch: (searchTerm) =>
 		$.ajax
 			type: 'GET'
-			url: "/api/experiments/genericSearch/#{searchTerm}"
+			url: "/api/experiments/genericSearch/#{encodeURIComponent(searchTerm)}"
 			dataType: "json"
 			data:
 				testMode: false
