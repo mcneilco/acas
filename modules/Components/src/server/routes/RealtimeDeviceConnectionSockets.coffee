@@ -1,7 +1,6 @@
 serverUtilityFunctions = require './ServerUtilityFunctions.js'
 request = serverUtilityFunctions.requestAdapter
 _ = require 'underscore'
-Promise = require 'promise'
 
 
 class BalanceAccess

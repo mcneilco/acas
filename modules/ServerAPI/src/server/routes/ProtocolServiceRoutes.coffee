@@ -592,7 +592,6 @@ exports.getTemplateSELFile = (req, resp) ->
 	_ = require 'underscore'
 	experimentServiceRoutes = require './ExperimentServiceRoutes.js'
 	csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
-	csv = require 'csv-stringify/sync'
 
 	protocolCode = req.body.protocolCode
 
@@ -787,7 +786,7 @@ exports.getTemplateSELFile = (req, resp) ->
 					
 
 				# Convert the data to a CSV string
-				csvString = csv.stringify(data, {header: false})
+				csvString = data.map((row) -> row.join(',')).join('\n')
 
 				resp.json csvString
 

@@ -1,6 +1,5 @@
 fs = require 'fs'
 glob = require 'glob'
-ncp = require 'ncp'
 
 TEMPLATE_SOURCE_Dir = "../conf/TemplateModule"
 TEMPLATE_REPLACE_STRING = "TemplateModule"
@@ -81,7 +80,7 @@ if moduleName is "-h"
 process.chdir REL_PATH_TO_MODULES
 
 
-ncp TEMPLATE_SOURCE_Dir, moduleName, (err) ->
+fs.cp TEMPLATE_SOURCE_Dir, moduleName, {recursive: true}, (err) ->
 	return console.error(err)  if err
 	files =  glob.sync moduleName+"/**"
 	for fname in files
@@ -91,7 +90,7 @@ ncp TEMPLATE_SOURCE_Dir, moduleName, (err) ->
 	console.log "Module and example files created."
 	if custom is "custom"
 		console.log "Your files are in the acas_custom directory. Remember to run 'grunt copy' to copy all of your acas_custom files into the base acas directory."
-		ncp "../../public/src/modules/ModuleMenus/src/client/ModuleMenusConfiguration.coffee", "ModuleMenus/src/client/ModuleMenusConfiguration.coffee", moduleName, (err) ->
+		fs.cp "../../public/src/modules/ModuleMenus/src/client/ModuleMenusConfiguration.coffee", "ModuleMenus/src/client/ModuleMenusConfiguration.coffee", {recursive: true}, (err) ->
 			return console.error(err)  if err
 	console.log "Please replace the contents of the files for your module. The current contents in these files may be used as example code."
 	console.log "To view your module in the GUI, edit the ModuleMenusConfiguration.coffee file in the modules/ModuleMenus directory."
