@@ -1,12 +1,29 @@
 
 properties = require "properties"
 _ = require "underscore"
-underscoreDeepExtend = require "underscore-deep-extend"
-_.mixin({deepExtend: underscoreDeepExtend(_)})
 fs = require 'fs'
-flat = require 'flat'
 glob = require 'glob'
 path = require 'path'
+
+flatten = (obj, prefix = '') ->
+  result = {}
+  for key, val of obj
+    fullKey = if prefix then "#{prefix}.#{key}" else key
+    if val? and typeof val is 'object' and not Array.isArray(val)
+      Object.assign(result, flatten(val, fullKey))
+    else
+      result[fullKey] = val
+  result
+
+deepExtend = (target, source) ->
+  for key, val of source
+    if val? and typeof val is 'object' and not Array.isArray(val)
+      target[key] ?= {}
+      deepExtend(target[key], val)
+    else
+      target[key] = val
+  target
+
 acasHome =  path.resolve "#{__dirname}/../../.."
 os = require 'os'
 propertiesParser = require "properties-parser"
@@ -32,7 +49,7 @@ writeClientJSONFormat = (conf) ->
 writePropertiesFormat = (conf) ->
 	fs = require('fs')
 
-	flatConf = flat.flatten conf
+	flatConf = flatten conf
 	configOut = ""
 	for attr, value of flatConf
 		if value != null
@@ -247,7 +264,7 @@ getProperties = (configDir) =>
 			else
 				conf.server.enableSpecRunner = true
 			if !conf.server?.file?.server?.path?
-				conf = _.deepExtend conf, server:file:server:path:"#{path.resolve acasHome+"/"+conf.server.datafiles.relative_path}"
+				conf = deepExtend conf, server:file:server:path:"#{path.resolve acasHome+"/"+conf.server.datafiles.relative_path}"
 
 			conf.server.run = user: do =>
 				return os.userInfo().username
