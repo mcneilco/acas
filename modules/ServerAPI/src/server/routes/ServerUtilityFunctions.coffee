@@ -93,11 +93,18 @@ exports.runRFunction_HIDDEN = (request, rScript, rFunction, returnFunction, preV
 		return
 
 	exec = require('child_process').exec
-	Tempfile = require 'temporary/lib/file'
+	fs = require 'fs'
+	os = require 'os'
+	makeTempFile = ->
+		filePath = path.join(os.tmpdir(), 'acas-' + Date.now() + '-' + Math.random().toString(36).slice(2))
+		fs.writeFileSync filePath, ''
+		path: filePath
+		writeFile: (data, callback) -> fs.writeFile filePath, data, callback
+		readFile: (options, callback) -> fs.readFile filePath, options, callback
 
-	rCommandFile = new Tempfile
-	requestJSONFile = new Tempfile
-	stdoutFile =  new Tempfile
+	rCommandFile = makeTempFile()
+	requestJSONFile = makeTempFile()
+	stdoutFile = makeTempFile()
 	requestJSONFile.writeFile JSON.stringify(request.body), =>
 
 		rCommand = 'tryCatch({ '
