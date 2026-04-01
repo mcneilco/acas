@@ -781,6 +781,11 @@ server.acas.standardizationBatchSize=1000
 # If standardizaiton dry run is running then a worker will pick up and contribute to dry run after a default of 60 seconds.
 client.cmpdreg.serverSettings.checkForDryRunStandardizationDelay=60000
 
+# Configures whether ACAS will automatically trigger a full restandardization (dry run + execute) on startup
+# when the standardization settings have changed and restandardization is needed.
+# Default is false, set to true to enable automatic restandardization on startup.
+client.cmpdreg.serverSettings.autoRestandardize=false
+
 # Sets cookie maxAge to 1440 minutes = 24 hours
 server.sessionTimeOutMinutes=1440
 
