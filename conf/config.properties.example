@@ -783,8 +783,8 @@ client.cmpdreg.serverSettings.checkForDryRunStandardizationDelay=60000
 
 # Configures whether ACAS will automatically trigger a full restandardization (dry run + execute) on startup
 # when the standardization settings have changed and restandardization is needed.
-# Default is false, set to true to enable automatic restandardization on startup.
-client.cmpdreg.serverSettings.autoRestandardize=false
+# Only supported when using the BBChem chemistry engine. Default is true.
+client.cmpdreg.serverSettings.autoRestandardize=true
 
 # Sets cookie maxAge to 1440 minutes = 24 hours
 server.sessionTimeOutMinutes=1440
