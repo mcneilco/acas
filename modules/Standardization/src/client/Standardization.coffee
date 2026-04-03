@@ -126,6 +126,9 @@ class StandardizationHistoryRowSummaryController extends Backbone.View
 	tagName: 'tr'
 	className: 'dataTableRow'
 
+	events: ->
+		"click .bv_downloadAutoDryRunReport": "handleAutoDryRunReportDownload"
+
 	initialize: (options) ->
 		@options = options
 		@template = _.template($('#StandardizationHistoryRowSummaryView').html())
@@ -181,10 +184,18 @@ class StandardizationHistoryRowSummaryController extends Backbone.View
 			standardizationStart: standardizationStart
 			standardizationComplete: standardizationComplete
 			standardizationReason: @model.get('standardizationReason')
+			hasAutoDryRunReport: @model.get('autoDryRunReportAvailable') == true
 
 
 		$(@el).html(@template(toDisplay))
 		@
+
+	handleAutoDryRunReportDownload: (event) =>
+		event.preventDefault()
+		historyId = $(event.currentTarget).data('history-id')
+		if !historyId?
+			return
+		window.location = "/cmpdReg/standardizationAutoDryRunReportFile?historyId=#{historyId}"
 
 class StandardizationHistorySummaryTableController extends Backbone.View
 
