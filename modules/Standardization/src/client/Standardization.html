@@ -111,6 +111,13 @@
     <td class='bv_standardizationStart'><%-standardizationStart%></td>
     <td class='bv_standardizationComplete'><%-standardizationComplete%></td>
     <td style="max-width: 100px; text-overflow: ellipsis; overflow: hidden;"class='bv_standardizationReason'><%-standardizationReason%></td>
+    <td class='bv_autoDryRunReport'>
+        <% if (hasAutoDryRunReport) { %>
+        <a href="#" class="bv_downloadAutoDryRunReport" data-history-id="<%-id%>">Download SDF</a>
+        <% } else { %>
+        -
+        <% } %>
+    </td>
 
 </script>
 
@@ -140,6 +147,7 @@
             <th style="width: 50px;">Standardization Start</th>
             <th style="width: 50px;">Standardization Complete</th>
             <th style="width: 100px;">Standardization Reason</th>
+            <th style="width: 80px;">Dry-Run Report</th>
         </tr>
         </thead>
         <tbody style="">
