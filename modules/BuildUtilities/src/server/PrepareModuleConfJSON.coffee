@@ -86,39 +86,41 @@ jsonfilestring = JSON.stringify allModulesTypesAndKinds
 compiledModuleConfsFileName = "#{ACAS_HOME}/public/javascripts/conf/confJSON/CompiledModuleConfJSONs.json"
 fs.writeFileSync compiledModuleConfsFileName, jsonfilestring
 
-async = require 'async'
 serverUtilityFunctions = require "#{ACAS_HOME}/routes/ServerUtilityFunctions.js"
 request = serverUtilityFunctions.requestAdapter
 data = require "#{ACAS_HOME}/public/javascripts/conf/confJSON/CompiledModuleConfJSONs.json"
 config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 
-async.forEachSeries typeKinds, ((typeOrKind, callback) ->
-	if typeOrKind == 'labelsequences'
-		_.each data[typeOrKind], (labelSeq) ->
-			if labelSeq.latestNumber?
-				labelSeq.startingNumber = labelSeq.latestNumber
-			delete labelSeq.latestNumber
-	baseurl = config.all.client.service.persistence.fullpath+"setup/"+typeOrKind
-	if data[typeOrKind]?
-		console.log "trying to save " + typeOrKind
-		request(
-			method: 'POST'
-			url: baseurl
-			body: JSON.stringify data[typeOrKind]
-			json: true
-			headers:
-				"Content-Type": 'application/json'
-			, (error, response, json) =>
-				if !error && response.statusCode == 201
-					console.log "successfully added " + typeOrKind
-				else
-					console.log 'got ajax error trying to setup type/kind ' + typeOrKind
-					console.log error
-					console.log json
-				callback()
-		)
-	else
-		console.log "no "+typeOrKind+" to save"
-		callback()
-), (err) ->
+processTypesAndKinds = ->
+	for typeOrKind in typeKinds
+		if typeOrKind == 'labelsequences'
+			_.each data[typeOrKind], (labelSeq) ->
+				if labelSeq.latestNumber?
+					labelSeq.startingNumber = labelSeq.latestNumber
+				delete labelSeq.latestNumber
+		baseurl = config.all.client.service.persistence.fullpath+"setup/"+typeOrKind
+		if data[typeOrKind]?
+			console.log "trying to save " + typeOrKind
+			await new Promise((resolve) ->
+				request(
+					method: 'POST'
+					url: baseurl
+					body: JSON.stringify data[typeOrKind]
+					json: true
+					headers:
+						"Content-Type": 'application/json'
+					, (error, response, json) =>
+						if !error && response.statusCode == 201
+							console.log "successfully added " + typeOrKind
+						else
+							console.log 'got ajax error trying to setup type/kind ' + typeOrKind
+							console.log error
+							console.log json
+						resolve()
+				)
+			)
+		else
+			console.log "no "+typeOrKind+" to save"
 	console.log "done adding types and kinds"
+
+processTypesAndKinds()
