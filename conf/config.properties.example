@@ -781,6 +781,19 @@ server.acas.standardizationBatchSize=1000
 # If standardizaiton dry run is running then a worker will pick up and contribute to dry run after a default of 60 seconds.
 client.cmpdreg.serverSettings.checkForDryRunStandardizationDelay=60000
 
+# Configures whether ACAS will automatically trigger a full restandardization (dry run + execute) on startup
+# when the standardization settings have changed and restandardization is needed.
+# Only supported when using the BBChem chemistry engine. Default is true.
+client.cmpdreg.serverSettings.autoRestandardize=true
+
+# Configures whether ACAS generates a dry-run SDF report before execute during auto-restandardization.
+# Default is false.
+client.cmpdreg.serverSettings.autoRestandardizationReportEnabled=true
+
+# Output directory used for auto-restandardization dry-run SDF reports.
+# This is intentionally separate from notebookSavePath, but defaults to privateUploads in the ACAS example config.
+client.cmpdreg.serverSettings.autoRestandardizationReportDirectory=/home/runner/build/privateUploads/cmpdreg/standardizationReports/
+
 # Sets cookie maxAge to 1440 minutes = 24 hours
 server.sessionTimeOutMinutes=1440
 

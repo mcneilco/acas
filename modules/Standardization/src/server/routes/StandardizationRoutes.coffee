@@ -5,6 +5,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/cmpdReg/standardizationDryRunSearch', exports.standardizationDryRunSearch
 	app.post '/cmpdReg/standardizationDryRunSearchExport', exports.standardizationDryRunSearchExport
 	app.get '/cmpdReg/standardizationDryRunFiles', exports.standardizationDryRunFiles
+	app.get '/cmpdReg/standardizationAutoDryRunReportFile', exports.standardizationAutoDryRunReportFile
 	app.get '/cmpdReg/standardizationDryRunStats', exports.getDryRunStats
 	app.get '/cmpdReg/standardizationExecute', exports.standardizationExecution
 
@@ -15,6 +16,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/cmpdReg/standardizationDryRunSearch', loginRoutes.ensureAuthenticated, exports.standardizationDryRunSearch
 	app.post '/cmpdReg/standardizationDryRunSearchExport', loginRoutes.ensureAuthenticated, exports.standardizationDryRunSearchExport
 	app.get '/cmpdReg/standardizationDryRunFiles', loginRoutes.ensureAuthenticated, exports.standardizationDryRunFiles
+	app.get '/cmpdReg/standardizationAutoDryRunReportFile', loginRoutes.ensureAuthenticated, exports.standardizationAutoDryRunReportFile
 	app.get '/cmpdReg/standardizationDryRunStats', loginRoutes.ensureAuthenticated, exports.getDryRunStats
 	app.get '/cmpdReg/standardizationExecute', loginRoutes.ensureAuthenticated, exports.standardizationExecution
 
@@ -230,6 +232,34 @@ exports.standardizationDryRunFiles = (req, resp) ->
 			console.log json
 			resp.statusCode = response.statusCode
 			resp.end error
+	)
+
+exports.standardizationAutoDryRunReportFile = (req, resp) ->
+	req.setTimeout 86400000
+	historyId = req.query?.historyId
+	if !historyId?
+		resp.statusCode = 400
+		resp.end "historyId is required"
+		return
+
+	url = config.all.client.service.cmpdReg.persistence.fullpath + '/standardization/dryRunAutoReportFile?historyId=' + encodeURIComponent(historyId)
+	request(
+		method: 'GET'
+		url: url
+		encoding: null
+		timeout: 86400000
+	, (error, response, body) =>
+		if !error && response?.statusCode == 200
+			contentType = response.headers['content-type'] or 'chemical/x-mdl-sdfile'
+			contentDisposition = response.headers['content-disposition'] or ('attachment; filename=standardization-dry-run-report-history-' + historyId + '.sdf')
+			resp.writeHead(200, {
+				'Content-Type': contentType
+				'Content-Disposition': contentDisposition
+			})
+			resp.end body
+		else
+			resp.statusCode = response?.statusCode or 500
+			resp.end error or body
 	)
 
 
