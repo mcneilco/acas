@@ -243,26 +243,30 @@ exports.standardizationAutoDryRunReportFile = (req, resp) ->
 		return
 
 	url = config.all.client.service.cmpdReg.persistence.fullpath + '/standardization/dryRunAutoReportFile?historyId=' + encodeURIComponent(historyId)
-	request(
+	upstream = request(
 		method: 'GET'
 		url: url
-		encoding: null
 		timeout: 86400000
-	, (error, response, body) =>
-		if !error && response?.statusCode == 200
-			contentType = response.headers['content-type'] or 'chemical/x-mdl-sdfile'
-			contentDisposition = response.headers['content-disposition'] or ('attachment; filename=standardization-dry-run-report-history-' + historyId + '.sdf')
-			resp.writeHead(200, {
-				'Content-Type': contentType
-				'Content-Disposition': contentDisposition
-			})
-			resp.end body
-		else
-			resp.statusCode = response?.statusCode or 500
-			resp.end error or body
 	)
 
+	upstream.on 'response', (response) ->
+		contentType = response.headers['content-type'] or 'chemical/x-mdl-sdfile'
+		contentDisposition = response.headers['content-disposition'] or ('attachment; filename=standardization-dry-run-report-history-' + historyId + '.sdf')
+		headers =
+			'Content-Type': contentType
+			'Content-Disposition': contentDisposition
 
+		if response.headers['content-length']?
+			headers['Content-Length'] = response.headers['content-length']
+
+		resp.writeHead(response.statusCode or 500, headers)
+
+	upstream.on 'error', (error) ->
+		return if resp.headersSent
+		resp.statusCode = 500
+		resp.end error?.message or 'Request failed'
+
+	upstream.pipe resp
 exports.getDryRunStats = (req, resp) ->
 	req.setTimeout 86400000
 	url = config.all.client.service.cmpdReg.persistence.fullpath + '/standardization/dryRunStats'
