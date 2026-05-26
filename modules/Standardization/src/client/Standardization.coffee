@@ -195,7 +195,7 @@ class StandardizationHistoryRowSummaryController extends Backbone.View
 		historyId = $(event.currentTarget).data('history-id')
 		if !historyId?
 			return
-		window.location = "/cmpdReg/standardizationAutoDryRunReportFile?historyId=#{historyId}"
+		window.location = "/cmpdReg/standardizationAutoDryRunReportFile?historyId=#{encodeURIComponent(historyId)}"
 
 class StandardizationHistorySummaryTableController extends Backbone.View
 
