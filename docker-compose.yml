@@ -18,7 +18,6 @@ services:
     volumes:
      - filestore:/home/runner/build/privateUploads
      - logs:/home/runner/logs
-     - /home/runner/build/bin
      - /home/runner/build/src/r
      - /home/runner/build/conf
     # Add chemaxon marvinjs here
