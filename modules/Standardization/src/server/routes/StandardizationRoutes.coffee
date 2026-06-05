@@ -178,9 +178,11 @@ exports.standardizationDryRunSearchExport = (req, resp) ->
 
 	request(
 		method: 'POST'
-		body: req.body
+		body: JSON.stringify(req.body)
 		url: url
-		json: true
+		headers:
+			'Content-Type': 'application/json'
+		json: false
 		timeout: 86400000
 	, (error, response, json) =>
 		console.log "standardizationDryRunFiles response" + JSON.stringify(response)
@@ -197,8 +199,8 @@ exports.standardizationDryRunSearchExport = (req, resp) ->
 			console.log 'Error with standardization dry run files'
 			console.log error
 			console.log json
-			resp.statusCode = response.statusCode
-			resp.end error
+			resp.statusCode = response?.statusCode or 500
+			resp.end if error? then JSON.stringify(error) else (json or 'Unable to export dry run files')
 	)
 
 exports.standardizationDryRunFiles = (req, resp) ->
@@ -211,7 +213,7 @@ exports.standardizationDryRunFiles = (req, resp) ->
 		method: 'POST'
 		body: filePath
 		url: url
-		json: true
+		json: false
 		timeout: 86400000
 	, (error, response, json) =>
 		console.log "standardizationDryRunFiles response" + JSON.stringify(response)
@@ -228,8 +230,8 @@ exports.standardizationDryRunFiles = (req, resp) ->
 			console.log 'Error with standardization dry run files'
 			console.log error
 			console.log json
-			resp.statusCode = response.statusCode
-			resp.end error
+			resp.statusCode = response?.statusCode or 500
+			resp.end if error? then JSON.stringify(error) else (json or 'Unable to fetch dry run files')
 	)
 
 
