@@ -5,6 +5,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/cmpdReg/standardizationDryRunSearch', exports.standardizationDryRunSearch
 	app.post '/cmpdReg/standardizationDryRunSearchExport', exports.standardizationDryRunSearchExport
 	app.get '/cmpdReg/standardizationDryRunFiles', exports.standardizationDryRunFiles
+	app.get '/cmpdReg/standardizationAutoDryRunReportFile', exports.standardizationAutoDryRunReportFile
 	app.get '/cmpdReg/standardizationDryRunStats', exports.getDryRunStats
 	app.get '/cmpdReg/standardizationExecute', exports.standardizationExecution
 
@@ -15,6 +16,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/cmpdReg/standardizationDryRunSearch', loginRoutes.ensureAuthenticated, exports.standardizationDryRunSearch
 	app.post '/cmpdReg/standardizationDryRunSearchExport', loginRoutes.ensureAuthenticated, exports.standardizationDryRunSearchExport
 	app.get '/cmpdReg/standardizationDryRunFiles', loginRoutes.ensureAuthenticated, exports.standardizationDryRunFiles
+	app.get '/cmpdReg/standardizationAutoDryRunReportFile', loginRoutes.ensureAuthenticated, exports.standardizationAutoDryRunReportFile
 	app.get '/cmpdReg/standardizationDryRunStats', loginRoutes.ensureAuthenticated, exports.getDryRunStats
 	app.get '/cmpdReg/standardizationExecute', loginRoutes.ensureAuthenticated, exports.standardizationExecution
 
@@ -234,7 +236,39 @@ exports.standardizationDryRunFiles = (req, resp) ->
 			resp.end if error? then JSON.stringify(error) else (json or 'Unable to fetch dry run files')
 	)
 
+exports.standardizationAutoDryRunReportFile = (req, resp) ->
+	req.setTimeout 86400000
+	historyId = req.query?.historyId
+	if !historyId?
+		resp.statusCode = 400
+		resp.end "historyId is required"
+		return
 
+	url = config.all.client.service.cmpdReg.persistence.fullpath + '/standardization/dryRunAutoReportFile?historyId=' + encodeURIComponent(historyId)
+	upstream = request(
+		method: 'GET'
+		url: url
+		timeout: 86400000
+	)
+
+	upstream.on 'response', (response) ->
+		contentType = response.headers['content-type'] or 'chemical/x-mdl-sdfile'
+		contentDisposition = response.headers['content-disposition'] or ('attachment; filename=standardization-dry-run-report-history-' + historyId + '.sdf')
+		headers =
+			'Content-Type': contentType
+			'Content-Disposition': contentDisposition
+
+		if response.headers['content-length']?
+			headers['Content-Length'] = response.headers['content-length']
+
+		resp.writeHead(response.statusCode or 500, headers)
+
+	upstream.on 'error', (error) ->
+		return if resp.headersSent
+		resp.statusCode = 500
+		resp.end error?.message or 'Request failed'
+
+	upstream.pipe resp
 exports.getDryRunStats = (req, resp) ->
 	req.setTimeout 86400000
 	url = config.all.client.service.cmpdReg.persistence.fullpath + '/standardization/dryRunStats'
