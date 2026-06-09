@@ -20,8 +20,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   && ln -sf /usr/bin/python3 /usr/bin/python \
   && rm -rf /var/lib/apt/lists/*
 
-# Base python deps used by the runtime LiveDesign scripts.
-RUN pip install --no-cache-dir --break-system-packages requests psycopg2-binary
+# Debian marks its Python as externally managed (PEP 668). acas installs the
+# LiveDesign ldclient into the user site at runtime (ServerAPI Bootstrap.coffee),
+# so allow pip to write there without passing --break-system-packages each call.
+ENV PIP_BREAK_SYSTEM_PACKAGES=1
+
+# Base python deps used by the runtime LiveDesign scripts. (truststore -- a
+# runtime dep of the ldclient that acas installs with --no-deps -- is pinned in
+# requirements.txt below, which is the single source for it.)
+RUN pip install --no-cache-dir --break-system-packages \
+      requests psycopg2-binary
 
 # node:slim ships a `node` user/group at UID/GID 1000; drop it so runner can take 1000.
 RUN userdel -r node 2>/dev/null || true; groupdel node 2>/dev/null || true; \
