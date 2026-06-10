@@ -1,2 +1,7 @@
 requests>=2.0.0, <3.0.0
 Deprecated==1.2.10
+# Required by the LiveDesign ldclient, which ACAS installs at runtime with
+# --no-deps (modules/ServerAPI/src/server/Bootstrap.coffee), so its truststore
+# dependency must be pre-installed here. Without it the ldclient cannot establish
+# a TLS connection to LiveDesign. See ACAS-991.
+truststore>=0.9.0
