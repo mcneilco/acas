@@ -1,40 +1,40 @@
-FROM quay.io/centos/centos:stream9
+FROM node:20.20.2-slim
 
-# Update
-RUN \
-  dnf update -y && \
-  dnf upgrade -y && \
-# tar for pulling down node
-# git required for some npm packages
-# postgresql for utility scripts
-  dnf install -y tar git && \
-  dnf install -y fontconfig urw-fonts iputils postgresql && \
-  dnf clean all
+# Runtime and build dependencies:
+#  - git: required by some npm packages and downstream gulp builds
+#  - curl: bin/acas.sh polls the roo persistence service before starting
+#  - python3 + pip: the LiveDesign integration scripts the app shells out to
+#  - fontconfig + fonts-urw-base35: fonts for server-side image/PDF rendering
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      git tar curl ca-certificates \
+      python3 python3-pip \
+      fontconfig fonts-urw-base35 \
+  && ln -sf /usr/bin/python3 /usr/bin/python \
+  && rm -rf /var/lib/apt/lists/*
 
-#Install python dependencies
-RUN   dnf install -y python311 python3.11-pip initscripts
-RUN   alternatives --install /usr/bin/python python /usr/bin/python3.11 1
-RUN   alternatives --install /usr/bin/pip pip /usr/bin/pip3.11 1
-RUN		pip install argparse requests psycopg2-binary
-COPY    --chown=runner:runner requirements.txt $ACAS_BASE/requirements.txt
-RUN    pip install -r $ACAS_BASE/requirements.txt
+# Debian marks its Python as externally managed (PEP 668). acas installs the
+# LiveDesign ldclient into the user site at runtime (ServerAPI Bootstrap.coffee),
+# so allow pip to write there without passing --break-system-packages each call.
+ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
-# node
-ENV NPM_CONFIG_LOGLEVEL warn
-ENV NODE_VERSION 20.x
-RUN curl -fsSL https://rpm.nodesource.com/setup_$NODE_VERSION | bash - && \
-  dnf install -y nodejs
+# Python deps for the runtime LiveDesign scripts.
+RUN pip install --no-cache-dir --break-system-packages \
+      requests psycopg2-binary
 
-# ACAS
-RUN	    useradd -u 1000 -ms /bin/bash runner
-ENV     APP_NAME ACAS
-ENV     BUILD_PATH /home/runner/build
-ENV     ACAS_BASE /home/runner/acas
-ENV     ACAS_CUSTOM /home/runner/acas_custom
-ENV     ACAS_SHARED /home/runner/acas_shared
-ENV     APACHE Redhat
-RUN     npm install -g gulp@4.0.2 forever@3.0.4 coffeescript@2.5.1
+# node:slim ships a `node` user/group at UID/GID 1000; drop it so runner can take 1000.
+RUN userdel -r node 2>/dev/null || true; groupdel node 2>/dev/null || true; \
+    useradd -u 1000 -ms /bin/bash runner
+
+ENV     APP_NAME=ACAS \
+        BUILD_PATH=/home/runner/build \
+        ACAS_BASE=/home/runner/acas \
+        ACAS_CUSTOM=/home/runner/acas_custom \
+        ACAS_SHARED=/home/runner/acas_shared
+
+RUN     npm install -g gulp@4.0.2 coffeescript@2.5.1
 COPY    --chown=runner:runner package.json $ACAS_BASE/package.json
+COPY    --chown=runner:runner requirements.txt $ACAS_BASE/requirements.txt
+RUN     pip install --no-cache-dir --break-system-packages -r $ACAS_BASE/requirements.txt
 USER    runner
 WORKDIR $ACAS_BASE
 
@@ -66,4 +66,4 @@ RUN     gulp execute:prepare_config_files
 USER	runner
 
 EXPOSE 3000
-CMD     ["/bin/sh","bin/acas.sh", "run"]
+CMD     ["bin/acas.sh", "run"]
