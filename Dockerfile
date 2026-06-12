@@ -1,18 +1,10 @@
-# acas base image.
-#
-# This is a *base* image: downstream images (acas_custom_schrodinger) and the
-# dev docker-compose run `gulp build` / `gulp dev` on top of it, so the Node
-# build toolchain (gulp, coffeescript, git) must remain installed here. The
-# security-baseline win is the runtime base itself: the former full-distro,
-# rolling-tag quay.io/centos/centos:stream9 is replaced by the minimal,
-# version-pinned node:20.20.2-slim.
 FROM node:20.20.2-slim
 
-# Runtime + build deps (Debian-slim equivalents of the old centos set):
+# Runtime and build dependencies:
 #  - git: required by some npm packages and downstream gulp builds
 #  - curl: bin/acas.sh polls the roo persistence service before starting
 #  - python3 + pip: the LiveDesign integration scripts the app shells out to
-#  - fontconfig + fonts-urw-base35: parity with the old fontconfig/urw-fonts
+#  - fontconfig + fonts-urw-base35: fonts for server-side image/PDF rendering
 RUN apt-get update && apt-get install -y --no-install-recommends \
       git tar curl ca-certificates \
       python3 python3-pip \
@@ -25,9 +17,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # so allow pip to write there without passing --break-system-packages each call.
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
-# Base python deps used by the runtime LiveDesign scripts. (truststore -- a
-# runtime dep of the ldclient that acas installs with --no-deps -- is pinned in
-# requirements.txt below, which is the single source for it.)
+# Python deps for the runtime LiveDesign scripts.
 RUN pip install --no-cache-dir --break-system-packages \
       requests psycopg2-binary
 
@@ -41,9 +31,6 @@ ENV     APP_NAME=ACAS \
         ACAS_CUSTOM=/home/runner/acas_custom \
         ACAS_SHARED=/home/runner/acas_shared
 
-# forever is intentionally not installed: in a container the runtime
-# (Docker/Kubernetes) is the process manager. bin/acas.sh runs node in the
-# foreground as PID 1.
 RUN     npm install -g gulp@4.0.2 coffeescript@2.5.1
 COPY    --chown=runner:runner package.json $ACAS_BASE/package.json
 COPY    --chown=runner:runner requirements.txt $ACAS_BASE/requirements.txt
