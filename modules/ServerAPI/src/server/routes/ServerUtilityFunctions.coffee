@@ -288,6 +288,22 @@ exports.getFromACASServerInternal = (baseurl, callback) ->
 			callback 500, {error: true, message:error}
 	)
 
+exports.getFromACASServerInternalPreserveResponseStatus = (baseurl, callback) ->
+	request = exports.requestAdapter
+	request(
+		method: 'GET'
+		url: baseurl
+		json: true
+	, (error, response, json) =>
+		if !error && response?
+			callback response.statusCode, json
+		else
+			console.log 'got ajax error'
+			console.log error
+			console.log json
+			callback 500, {error: true, message:error}
+	)
+
 exports.getRestrictedEntityFromACASServer = (baseurl, username, projectStateType, projectStateKind, resp) ->
 	exports.getRestrictedEntityFromACASServerInternal baseurl, username,  projectStateType, projectStateKind, (statusCode, json) ->
 		resp.statusCode = statusCode

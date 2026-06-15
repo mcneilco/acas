@@ -161,7 +161,7 @@ exports.experimentsByProtocolCodenameInternal = (code, user, testMode, callback)
 			allowedProjectCodes = _.pluck(allowedUserProjects, "code")
 			baseurl = "#{baseurl}?projects=#{encodeURIComponent(allowedProjectCodes.join(','))}"
 
-			serverUtilityFunctions.getFromACASServerInternal baseurl, (statusCode, value) ->
+			serverUtilityFunctions.getFromACASServerInternalPreserveResponseStatus baseurl, (statusCode, value) ->
 				callback(statusCode, value)
 
 exports.experimentById = (req, resp) ->
