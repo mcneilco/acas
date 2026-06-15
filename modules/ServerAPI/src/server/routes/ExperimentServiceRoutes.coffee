@@ -13,6 +13,10 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/experiments', exports.postExperiment
 	app.put '/api/experiments/:id', exports.putExperiment
 	app.get '/api/experiments/resultViewerURL/:code', exports.resultViewerURLByExperimentCodename
+	app.delete '/api/experiments/expired/database/', exports.deleteExpiredExperimentsDatabase
+	app.delete '/api/experiments/expired/folders/', exports.deleteExpiredExperimentsFolders
+	app.delete '/api/experiments/expired/complete/', exports.deleteExpiredExperimentsComplete
+	app.delete '/api/experiments/expired', exports.deleteExpiredExperiments
 	app.delete '/api/experiments/:id', exports.deleteExperiment
 	app.get '/api/getItxExptExptsByFirstExpt/:firstExptId', exports.getItxExptExptsByFirstExpt
 	app.get '/api/getItxExptExptsBySecondExpt/:secondExptId', exports.getItxExptExptsBySecondExpt
@@ -42,6 +46,10 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/experiments', loginRoutes.ensureAuthenticated, exports.postExperiment
 	app.put '/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.putExperiment
 	app.get '/api/experiments/genericSearch/:searchTerm', loginRoutes.ensureAuthenticated, exports.genericExperimentSearch
+	app.delete '/api/experiments/expired/database', loginRoutes.ensureAuthenticated, exports.deleteExpiredExperimentsDatabase
+	app.delete '/api/experiments/expired/folders', loginRoutes.ensureAuthenticated, exports.deleteExpiredExperimentsFolders
+	app.delete '/api/experiments/expired/complete', loginRoutes.ensureAuthenticated, exports.deleteExpiredExperimentsComplete
+	app.delete '/api/experiments/expired', loginRoutes.ensureAuthenticated, exports.deleteExpiredExperiments
 	app.delete '/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.deleteExperiment
 	app.get '/api/experiments/resultViewerURL/:code', loginRoutes.ensureAuthenticated, exports.resultViewerURLByExperimentCodename
 	app.get '/api/experiments/values/:id', loginRoutes.ensureAuthenticated, exports.experimentValueById
@@ -62,6 +70,9 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/getExperimentalMetadata', loginRoutes.ensureAuthenticated, exports.getExperimentalMetadata
 
 serverUtilityFunctions = require './ServerUtilityFunctions.js'
+fs = require 'fs'
+path = require 'path'
+
 csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
 _ = require 'underscore'
 config = require '../conf/compiled/conf.js'
@@ -1232,3 +1243,190 @@ exports.getPaginatedExperiments = (req, resp) ->
 					resp.statusCode = response?.statusCode || 500
 					resp.json error: true, message: error || json
 			)
+
+# Hard delete proxy to just call the ACAS server
+exports.deleteExpiredExperimentsDatabase = (req, resp) ->
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.persistence.fullpath+"experiments/retention/hard-delete"
+	console.log baseurl
+	request = require 'request'
+	console.log "calling retention hard delete service at #{baseurl}"
+	request(
+		method: 'POST'
+		url: baseurl
+		json: true
+	, (error, response, json) =>
+		console.log response.statusCode
+		console.log json
+		if !error and !json.error
+			resp.json json
+		else
+			console.log 'got ajax error trying to call retention hard delete service'
+			resp.statusCode = 500
+			resp.json json.errorMessages
+	)
+
+
+# Function to update experiment value via persistence API
+updateExperimentValue = (codeName, stateType, stateKind, valueType, valueKind, value, callback) ->
+	config = require '../conf/compiled/conf.js'
+	request = require 'request'
+	baseurl = config.all.client.service.persistence.fullpath + "values/experiment/#{codeName}/bystate/#{stateType}/#{stateKind}/byvalue/#{valueType}/#{valueKind}/"
+	console.log "Updating experiment value at #{baseurl} with value #{value}"
+	request(
+		method: 'PUT'
+		url: baseurl
+		body: value
+		json: true
+	, (error, response, json) =>
+		if !error && response.statusCode == 200
+			console.log "Successfully updated experiment #{codeName} value"
+			callback null, json
+		else
+			console.log "Failed to update experiment #{codeName} value: #{error}"
+			callback error || { statusCode: response.statusCode, body: json }
+	)
+
+# Complete deletion proxy to call the ACAS server retention/complete-deletion endpoint
+exports.deleteExpiredExperimentsComplete = (req, resp) ->
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.persistence.fullpath+"experiments/retention/complete-deletion"
+	console.log baseurl
+	request = require 'request'
+	console.log "calling complete deletion service at #{baseurl}"
+	request(
+		method: 'POST'
+		url: baseurl
+		json: true
+	, (error, response, json) =>
+		console.log response.statusCode
+		console.log json
+		if !error and !json.error
+			resp.json json
+		else
+			console.log 'got ajax error trying to call complete deletion service'
+			resp.statusCode = 500
+			resp.json json.errorMessages
+	)
+
+# Calls /awaiting-files-deletion and deletes experiment folders for each code
+exports.deleteExpiredExperimentsFolders = (req, resp) ->
+	config = require '../conf/compiled/conf.js'
+	request = require 'request'
+	# Adjust this URL if the endpoint is external or needs full path
+	baseurl = config.all.client.service.persistence.fullpath + '/experiments/retention/awaiting-files-deletion'
+	request(
+		method: 'GET'
+		url: baseurl
+		json: true
+	, (error, response, codes) =>
+		if error or response.statusCode != 200
+			resp.statusCode = 500
+			return resp.json { error: true, message: 'Failed to fetch experiment codes', detail: error }
+		if not Array.isArray(codes)
+			resp.statusCode = 500
+			return resp.json { error: true, message: 'Response is not an array', detail: codes }
+
+		deleted = []
+		failed = []
+		completed = 0
+		total = codes.length
+
+		processComplete = ->
+			resp.json { deleted, failed }
+
+		# Handle empty array case
+		if total == 0
+			return processComplete()
+
+		# Process each experiment code
+		processExperiment = (code) ->
+			try
+				prefix = serverUtilityFunctions.getPrefixFromEntityCode(code)
+				relPath = serverUtilityFunctions.getRelativeFolderPathForPrefix(prefix)
+				data_files_root = config.all.server.datafiles.relative_path
+			  
+				if not relPath?
+					failed.push { code, error: 'No relative path for prefix' }
+					completed++
+					if completed == total then processComplete()
+					return
+				
+				folderPath = path.join(data_files_root, relPath, code)
+				console.log "Processing experiment #{code} with folder #{folderPath}"
+				
+				folderDeleted = false
+				folderError = null
+				
+				if fs.existsSync(folderPath)
+					try
+						fs.rmSync(folderPath, { recursive: true, force: true })
+						console.log "Folder deleted for experiment #{code}"
+						folderDeleted = true
+					catch deleteErr
+						folderError = "Failed to delete folder: #{deleteErr.message}"
+						console.log "Failed to delete folder for #{code}: #{deleteErr.message}"
+				else
+					console.log "Folder does not exist for experiment #{code}"
+				
+				# Update experiment value regardless of folder deletion result
+				currentTimestamp = new Date().getTime().toString()
+				updateExperimentValue code, "metadata", "experiment metadata", "dateValue", "files deleted date", currentTimestamp, (err, result) ->
+					if err
+						console.log "Failed to update experiment value for #{code}: #{JSON.stringify(err)}"
+						if folderError
+							failed.push { code, error: "#{folderError} AND failed to update experiment value: #{JSON.stringify(err)}" }
+						else
+							failed.push { code, error: "Failed to update experiment value: #{JSON.stringify(err)}" }
+					else
+						console.log "Successfully updated experiment value for #{code}"
+						if folderError
+							failed.push { code, error: folderError }
+						else
+							deleted.push code
+					
+					completed++
+					if completed == total then processComplete()
+			catch err
+				failed.push { code, error: err.message }
+				completed++
+				if completed == total then processComplete()
+
+		for code in codes
+			processExperiment(code)
+	)
+
+# Combined function that deletes both expired experiments and their folders
+exports.deleteExpiredExperiments = (req, resp) ->
+	console.log "Starting complete expired experiments cleanup (database + folders + retention)"
+	
+	# First hard delete experiments from database
+	exports.deleteExpiredExperimentsDatabase req, {
+		json: (dbResult) ->
+			console.log "Database deletion completed:", dbResult
+			
+			# Then delete folders and update experiment values
+			exports.deleteExpiredExperimentsFolders req, {
+				json: (folderResult) ->
+					console.log "Folder deletion completed:", folderResult
+					
+					# Finally call complete deletion to fully delete experiments
+					exports.deleteExpiredExperimentsComplete req, {
+						json: (completeDeletionResult) ->
+							console.log "Complete deletion completed:", completeDeletionResult
+							
+							# Combine all results
+							combinedResult = {
+								databaseDeletion: dbResult,
+								folderDeletion: folderResult,
+								completeDeletion: completeDeletionResult
+							}
+							
+							resp.json combinedResult
+						statusCode: 200
+					}
+				statusCode: 200
+			}
+		statusCode: 200
+	}
+
