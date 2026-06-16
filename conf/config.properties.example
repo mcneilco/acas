@@ -479,7 +479,7 @@ client.protocol.strictEndpointMatchingDefault=false
 client.protocol.endpointManager.enabled=true
 
 # Protocols and experiments which should be hidden (to non-admin users) in the protocol/expt browser when the status is in the config below
-client.entity.hideStatuses=[]
+client.entity.hideStatuses=["deleted"]
 
 # client.entity.editingRoles/deletingRoles determine which users can edit/delete protocols/expts. Leave config empty if all users can edit/delete
 # use 'entityScientist' if want to restrict privileges to user saved in the scientist value
@@ -488,7 +488,8 @@ client.entity.hideStatuses=[]
 # client.entity.deletingRoles=entityScientist,projectAdmin,admin
 client.entity.editingRoles=
 client.entity.deletingRoles=
-client.entity.viewDeletedRoles=projectAdmin,ROLE_ACAS-ADMINS
+#client.entity.viewDeletedRoles=projectAdmin,ROLE_ACAS-ADMINS
+client.entity.viewDeletedRoles=
 
 client.protocol.showAssayTreeRule=false
 client.protocol.showCurveDisplayParams=true
