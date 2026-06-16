@@ -493,10 +493,11 @@ client.entity.viewDeletedRoles=
 
 # Experiment retention purge (runs inside roo). Permanently deletes experiments that have been
 # soft-deleted/overwritten longer than their protocol's "deleted experiment retention days" value,
-# in per-batch-committed chunks. Disabled by default; only one pod runs each scheduled time.
+# in per-batch-committed chunks. Only one pod runs each scheduled time.
 # (Folder deletion reuses server.service.persistence.filePath and server.nodeapi.path below.)
-# Enable the scheduled purge.
-server.experiment.retention.enabled=false
+# Enable the scheduled purge. Note: only protocols that have a "deleted experiment retention days"
+# value purge anything; protocols without it are never touched. Set false to disable entirely.
+server.experiment.retention.enabled=true
 # When to run (6-field Spring cron). Default 05:00 daily, interpreted in cronZone (UTC).
 server.experiment.retention.cron=0 0 5 * * *
 server.experiment.retention.cronZone=UTC
