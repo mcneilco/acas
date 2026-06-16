@@ -497,8 +497,8 @@ client.entity.viewDeletedRoles=
 # (Folder deletion reuses server.service.persistence.filePath and server.nodeapi.path below.)
 # Enable the scheduled purge.
 server.experiment.retention.enabled=false
-# When to run (6-field Spring cron). Default 02:00 daily, interpreted in cronZone (UTC).
-server.experiment.retention.cron=0 0 2 * * *
+# When to run (6-field Spring cron). Default 05:00 daily, interpreted in cronZone (UTC).
+server.experiment.retention.cron=0 0 5 * * *
 server.experiment.retention.cronZone=UTC
 # Rows deleted per committed batch (bounds transaction size for very large experiments).
 server.experiment.retention.batchSize=100000
