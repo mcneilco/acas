@@ -491,6 +491,21 @@ client.entity.deletingRoles=
 #client.entity.viewDeletedRoles=projectAdmin,ROLE_ACAS-ADMINS
 client.entity.viewDeletedRoles=
 
+# Experiment retention purge (runs inside roo). Permanently deletes experiments that have been
+# soft-deleted/overwritten longer than their protocol's "deleted experiment retention days" value,
+# in per-batch-committed chunks. Disabled by default; only one pod runs each scheduled time.
+# Enable the scheduled purge.
+server.experiment.retention.enabled=false
+# When to run (6-field Spring cron). Default 02:00 daily. cronZone blank = server time zone.
+server.experiment.retention.cron=0 0 2 * * *
+server.experiment.retention.cronZone=
+# Rows deleted per committed batch (bounds transaction size for very large experiments).
+server.experiment.retention.batchSize=100000
+# Root of the experiment data-files volume as mounted in roo (used to delete experiment folders).
+server.experiment.retention.dataFilesRoot=${server.service.persistence.filePath}
+# Base URL of the acas internal API roo calls to resolve experiment folder paths.
+server.experiment.retention.acasBaseUrl=${server.nodeapi.path}
+
 client.protocol.showAssayTreeRule=false
 client.protocol.showCurveDisplayParams=true
 client.protocol.notebook.require=false
