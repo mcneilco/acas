@@ -503,6 +503,11 @@ server.experiment.retention.cron=0 0 5 * * *
 server.experiment.retention.cronZone=UTC
 # Rows deleted per committed batch (bounds transaction size for very large experiments).
 server.experiment.retention.batchSize=100000
+# Optional system-wide retention days applied to experiments whose protocol has no per-protocol
+# "deleted experiment retention days" value (a per-protocol value still overrides this). Blank =
+# no global policy (only protocols with their own value are ever purged). Use with care: a value
+# here makes every soft-deleted/overwritten experiment older than this eligible, across all protocols.
+server.experiment.retention.globalDays=
 
 client.protocol.showAssayTreeRule=false
 client.protocol.showCurveDisplayParams=true
