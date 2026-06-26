@@ -149,8 +149,7 @@ exports.deleteCodeTableInternal = (codeTableEntry, callback) ->
 				console.log 'got ajax error trying to delete code table'
 				console.log error
 				console.log json
-				callback response.statusCode, response.json
+				callback response.statusCode, json
 		)
-
 
 
