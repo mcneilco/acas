@@ -1,7 +1,7 @@
 const assert = require('chai').assert;
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
-const sta = require('../src/server/ServiceTokenAuth.js');
+const sta = require('../src/server/routes/ServiceTokenAuth.js');
 
 const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
   modulusLength: 2048,

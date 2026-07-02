@@ -1,7 +1,7 @@
 
 config = require '../conf/compiled/conf.js'
 csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
-serviceTokenAuth = require '../ServiceTokenAuth.js'
+serviceTokenAuth = require './ServiceTokenAuth.js'
 url = require 'url'
 
 exports.setupAPIRoutes = (app) ->
