@@ -408,6 +408,7 @@ exports.tokenLogin = (req, resp) ->
 
 	serviceTokenAuth.authenticate match[1], verifierConfig, (err, claims) ->
 		if err
+			console.error "Service token verification failed: #{err.message}"
 			resp.statusCode = 401
 			return resp.json error: true, message: "Invalid service token"
 
@@ -417,7 +418,10 @@ exports.tokenLogin = (req, resp) ->
 			return resp.json error: true, message: "Token missing user_email"
 
 		csUtilities.getUser email, (user_err, user) ->
-			unless user? and exports.checkHasRole(user, config.all.client.roles.loginRole)
+			if user_err or not user?
+				resp.statusCode = 403
+				return resp.json error: true, message: "User not authorized"
+			unless exports.checkHasRole(user, config.all.client.roles.loginRole)
 				resp.statusCode = 403
 				return resp.json error: true, message: "User not authorized"
 			req.login user, (loginErr) ->
