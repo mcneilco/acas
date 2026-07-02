@@ -359,6 +359,9 @@ client.security.authstrategy=${server.security.authstrategy}
 # Examples configs using okta but can use any SAML login IDP
 
 server.security.saml.use=false
+# When set, metadataUrl is used as the source of truth for entryPoint, issuer, and cert.
+# Leave metadataUrl empty to use the explicit entryPoint, issuer, and cert settings below.
+server.security.saml.metadataUrl=
 server.security.saml.entryPoint=https://<organization>.okta.com/app/<appName>/<issuerID>/sso/saml
 server.security.saml.issuer=http://www.okta.com/<issuerID>
 server.security.saml.audience=false
