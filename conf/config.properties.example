@@ -373,6 +373,14 @@ server.security.saml.logoutRedirectURL=https://<organization>.okta.com
 server.security.saml.roles.sync=false
 server.security.saml.disableRequestedAuthnContext=true
 
+## Service-token login (generic trusted-issuer). Values are issuer-agnostic:
+## point jwksUrl/trustedIssuers at whatever service you trust to assert users.
+server.security.serviceToken.use            = false
+server.security.serviceToken.jwksUrl        = <trusted-issuer-jwks-url>
+server.security.serviceToken.trustedIssuers = <trusted-issuer>
+server.security.serviceToken.audience       = acas
+server.security.serviceToken.clockSkewSec   = 30
+
 #Controls whether Roo syncs the AuthorRole table with authorities granted in LDAP
 server.security.syncLdapAuthRoles=false
 #to make syncLdapAuthRoles config accessible to the client
@@ -808,10 +816,3 @@ server.sessionTimeOutMinutes=1440
 client.about.acas.version=0.0.0
 client.about.acas.buildTime=1970-01-01T00:00:00Z
 client.about.acas.revision=UNKNOWN
-
-## Service-token login (generic trusted-issuer). Values are issuer-agnostic.
-server.security.serviceToken.use            = false
-server.security.serviceToken.jwksUrl        = <trusted-issuer-jwks-url>
-server.security.serviceToken.trustedIssuers = <trusted-issuer>
-server.security.serviceToken.audience       = acas
-server.security.serviceToken.clockSkewSec   = 30
