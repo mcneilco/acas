@@ -1,6 +1,7 @@
 
 config = require '../conf/compiled/conf.js'
 csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
+serviceTokenAuth = require '../ServiceTokenAuth.js'
 url = require 'url'
 
 exports.setupAPIRoutes = (app) ->
@@ -14,6 +15,7 @@ exports.setupRoutes = (app, passport) ->
 	app.get '/login/direct', exports.loginPage
 	app.post '/login',
 		passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }), exports.loginPost
+	app.post '/login/token', exports.tokenLogin
 	# SSO callback endpoint (if SAML is configured)
 	if config.all.server.security.saml.use == true
 		app.post '/login/callback', passport.authenticate('saml', failureRedirect: '/login/ssoFailure', failureFlash: true), exports.ssoCallback
@@ -386,3 +388,43 @@ exports.getAuthorsInternal = (opts, callback) ->
 	csUtilities.getAllAuthors(opts, (statusCode, response) ->
 		callback statusCode, response
 	)
+exports.tokenLogin = (req, resp) ->
+	stConfig = config.all.server?.security?.serviceToken
+	unless stConfig?.use is true or stConfig?.use is "true"
+		resp.statusCode = 404
+		return resp.json error: true, message: "Not found"
+
+	authz = req.headers?.authorization or ""
+	match = authz.match /^Bearer\s+(.+)$/i
+	unless match
+		resp.statusCode = 401
+		return resp.json error: true, message: "Missing bearer token"
+
+	verifierConfig =
+		jwksUrl: stConfig.jwksUrl
+		trustedIssuers: (stConfig.trustedIssuers or "").split(",").map((s) -> s.trim())
+		audience: stConfig.audience
+		clockSkewSec: parseInt(stConfig.clockSkewSec or 30, 10)
+
+	serviceTokenAuth.authenticate match[1], verifierConfig, (err, claims) ->
+		if err
+			resp.statusCode = 401
+			return resp.json error: true, message: "Invalid service token"
+
+		email = claims.user_email or claims.email
+		unless email
+			resp.statusCode = 401
+			return resp.json error: true, message: "Token missing user_email"
+
+		csUtilities.getUser email, (user_err, user) ->
+			unless user? and exports.checkHasRole(user, config.all.client.roles.loginRole)
+				resp.statusCode = 403
+				return resp.json error: true, message: "User not authorized"
+			req.login user, (loginErr) ->
+				if loginErr
+					resp.statusCode = 500
+					return resp.json error: true, message: "Session error"
+				resp.json
+					connect_sid: req.sessionID
+					expires: req.session?.cookie?.expires
+					user: { username: user.username, email: email }
