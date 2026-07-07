@@ -95,7 +95,7 @@ exports.postCodeTableInternal = (codeTableEntry, callback) ->
 				console.log 'got ajax error trying to save new code table'
 				console.log error
 				console.log json
-				callback response.statusCode, response.json
+				callback response.statusCode, json
 		)
 
 exports.putCodeTable = (req, resp) ->
@@ -123,7 +123,7 @@ exports.putCodeTableInternal = (codeTableEntry, callback) ->
 				console.log 'got ajax error trying to update code table'
 				console.log error
 				console.log response
-				callback response.statusCode, response.json
+				callback response.statusCode, json
 		)
 
 exports.deleteCodeTable = (req, resp) ->
@@ -151,5 +151,4 @@ exports.deleteCodeTableInternal = (codeTableEntry, callback) ->
 				console.log json
 				callback response.statusCode, json
 		)
-
 
