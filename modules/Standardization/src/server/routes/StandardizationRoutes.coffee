@@ -264,11 +264,19 @@ exports.standardizationAutoDryRunReportFile = (req, resp) ->
 		resp.writeHead(response.statusCode or 500, headers)
 
 	upstream.on 'error', (error) ->
-		return if resp.headersSent
+		if resp.headersSent
+			resp.end()
+			return
 		resp.statusCode = 500
 		resp.end error?.message or 'Request failed'
 
-	upstream.pipe resp
+	upstream.on 'data', (chunk) ->
+		resp.write chunk
+
+	upstream.on 'end', ->
+		resp.end()
+
+	upstream.end()
 exports.getDryRunStats = (req, resp) ->
 	req.setTimeout 86400000
 	url = config.all.client.service.cmpdReg.persistence.fullpath + '/standardization/dryRunStats'
