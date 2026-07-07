@@ -27,7 +27,6 @@ startApp = ->
 	util = require 'util'
 	LocalStrategy = require('passport-local').Strategy
 	SamlStrategy = require('@node-saml/passport-saml').Strategy;
-	samlMetadata = require './src/javascripts/ServerAPI/SamlMetadata.js'
 	global.deployMode = config.all.client.deployMode
 
 	console.log "log level set to '#{console.level}'"
@@ -67,8 +66,15 @@ startApp = ->
 
 	if config.all.server.security.saml.use == true
 		if csUtilities.ssoLoginStrategy?
-			samlOptions = await samlMetadata.getSamlStrategyOptions config.all
-			passport.use new SamlStrategy(samlOptions, csUtilities.ssoLoginStrategy)
+			passport.use new SamlStrategy({
+				passReqToCallback: true
+				callbackUrl: "#{config.all.client.fullpath}/login/callback"
+				entryPoint: config.all.server.security.saml.entryPoint
+				issuer: config.all.server.security.saml.issuer
+				idpCert: config.all.server.security.saml.cert
+				audience: config.all.server.security.saml.audience
+				disableRequestedAuthnContext: config.all.server.security.saml.disableRequestedAuthnContext
+			}, csUtilities.ssoLoginStrategy)
 		else
 			console.error("NOT USING SSO configs! config.all.server.security.saml.use is set true but CustomerSpecificServerFunction 'ssoLoginStrategy' is not defined.")
 
@@ -207,6 +213,3 @@ startApp = ->
 			console.log "system test completed"
 
 startApp()
-	.catch (error) ->
-		console.error "Failed to start ACAS Node server: #{error.stack or error}"
-		process.exit 1
