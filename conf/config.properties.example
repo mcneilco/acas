@@ -359,11 +359,21 @@ client.security.authstrategy=${server.security.authstrategy}
 # Examples configs using okta but can use any SAML login IDP
 
 server.security.saml.use=false
+
+# When set, metadataUrl is used to derive the IdP entryPoint, issuer, and cert.
+# Leave metadataUrl empty to use the explicit IdP settings below.
+server.security.saml.metadataUrl=
+
+# Passport-SAML settings. entryPoint, issuer, and cert are used when metadataUrl is empty.
+# audience and disableRequestedAuthnContext still apply when metadataUrl is set.
 server.security.saml.entryPoint=https://<organization>.okta.com/app/<appName>/<issuerID>/sso/saml
 server.security.saml.issuer=http://www.okta.com/<issuerID>
 server.security.saml.audience=false
 # Embedded cert needs \\n in string to escape properly
 server.security.saml.cert=-----BEGIN CERTIFICATE-----\\nABC\\nXYZ\\n-----END CERTIFICATE-----
+server.security.saml.disableRequestedAuthnContext=true
+
+# ACAS-specific SSO profile mapping and role sync settings.
 server.security.saml.profileAttributeToSystemRoles=[{"ssoName":"ACASUser","lsKind":"ACAS","roleName":"ROLE_ACAS-USERS"},{"ssoName":"ACASAdmin","lsKind":"ACAS","roleName":"ROLE_ACAS-ADMINS"},{"ssoName":"CmpdRegUser","lsKind":"CmpdReg","roleName":"ROLE_CMPDREG-USERS"},{"ssoName":"CmpdRegAdmin","lsKind":"CmpdReg","roleName":"ROLE_CMPDREG-ADMINS"},{"ssoName":"CmpdRegReadOnlyUser","lsKind":"CmpdReg","roleName":"ROLE_CMPDREG-READONLY"},{"ssoName":"ACASCrossProjectLoaderUser","lsKind":"ACAS","roleName":"ROLE_ACAS-CROSS-PROJECT-LOADER"}]
 server.security.saml.userNameAttribute=nameID
 server.security.saml.firstNameAttribute=firstName
@@ -371,7 +381,6 @@ server.security.saml.lastNameAttribute=lastName
 server.security.saml.emailAttribute=email
 server.security.saml.logoutRedirectURL=https://<organization>.okta.com
 server.security.saml.roles.sync=false
-server.security.saml.disableRequestedAuthnContext=true
 
 #Controls whether Roo syncs the AuthorRole table with authorities granted in LDAP
 server.security.syncLdapAuthRoles=false
