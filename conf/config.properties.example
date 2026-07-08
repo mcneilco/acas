@@ -382,6 +382,14 @@ server.security.saml.emailAttribute=email
 server.security.saml.logoutRedirectURL=https://<organization>.okta.com
 server.security.saml.roles.sync=false
 
+## Service-token login (generic trusted-issuer). Values are issuer-agnostic:
+## point jwksUrl/trustedIssuers at whatever service you trust to assert users.
+server.security.serviceToken.use            = false
+server.security.serviceToken.jwksUrl        = <trusted-issuer-jwks-url>
+server.security.serviceToken.trustedIssuers = <trusted-issuer>
+server.security.serviceToken.audience       = acas
+server.security.serviceToken.clockSkewSec   = 30
+
 #Controls whether Roo syncs the AuthorRole table with authorities granted in LDAP
 server.security.syncLdapAuthRoles=false
 #to make syncLdapAuthRoles config accessible to the client
