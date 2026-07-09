@@ -182,12 +182,6 @@
 			,
 				typeName: "codeValue"
 				kindName: "agonist batch code"
-			,
-				typeName: "dateValue"
-				kindName: "database deleted date"
-			,
-				typeName: "dateValue"
-				kindName: "files deleted date"
 			]
 
 		labeltypes:
