@@ -13,6 +13,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/experiments', exports.postExperiment
 	app.put '/api/experiments/:id', exports.putExperiment
 	app.get '/api/experiments/resultViewerURL/:code', exports.resultViewerURLByExperimentCodename
+	app.post '/api/experiments/folders-for-codes', exports.getFoldersForCodes
 	app.delete '/api/experiments/:id', exports.deleteExperiment
 	app.get '/api/getItxExptExptsByFirstExpt/:firstExptId', exports.getItxExptExptsByFirstExpt
 	app.get '/api/getItxExptExptsBySecondExpt/:secondExptId', exports.getItxExptExptsBySecondExpt
@@ -42,6 +43,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/experiments', loginRoutes.ensureAuthenticated, exports.postExperiment
 	app.put '/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.putExperiment
 	app.get '/api/experiments/genericSearch/:searchTerm', loginRoutes.ensureAuthenticated, exports.genericExperimentSearch
+	app.post '/api/experiments/folders-for-codes', loginRoutes.ensureAuthenticated, exports.getFoldersForCodes
 	app.delete '/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.deleteExperiment
 	app.get '/api/experiments/resultViewerURL/:code', loginRoutes.ensureAuthenticated, exports.resultViewerURLByExperimentCodename
 	app.get '/api/experiments/values/:id', loginRoutes.ensureAuthenticated, exports.experimentValueById
@@ -62,6 +64,9 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/getExperimentalMetadata', loginRoutes.ensureAuthenticated, exports.getExperimentalMetadata
 
 serverUtilityFunctions = require './ServerUtilityFunctions.js'
+fs = require 'fs'
+path = require 'path'
+
 csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
 _ = require 'underscore'
 config = require '../conf/compiled/conf.js'
@@ -1232,3 +1237,19 @@ exports.getPaginatedExperiments = (req, resp) ->
 					resp.statusCode = response?.statusCode || 500
 					resp.json error: true, message: error || json
 			)
+
+# Read-only: resolve experiment folder paths (relative to the data-files root) for the given
+# codes. Used by roo's retention purge, which deletes the folders on its mounted volume.
+exports.getFoldersForCodes = (req, resp) ->
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+	path = require 'path'
+	codes = req.body?.codes
+	unless Array.isArray(codes)
+		resp.statusCode = 400
+		return resp.json { error: true, message: "Request body must include a 'codes' array" }
+	result = {}
+	for code in codes
+		prefix = serverUtilityFunctions.getPrefixFromEntityCode(code)
+		relPath = if prefix? then serverUtilityFunctions.getRelativeFolderPathForPrefix(prefix) else null
+		result[code] = if relPath? then path.join(relPath, code) else null
+	resp.json result
