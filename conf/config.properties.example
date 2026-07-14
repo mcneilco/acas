@@ -382,6 +382,14 @@ server.security.saml.emailAttribute=email
 server.security.saml.logoutRedirectURL=https://<organization>.okta.com
 server.security.saml.roles.sync=false
 
+## Service-token login (generic trusted-issuer). Values are issuer-agnostic:
+## point jwksUrl/trustedIssuers at whatever service you trust to assert users.
+server.security.serviceToken.use            = false
+server.security.serviceToken.jwksUrl        = <trusted-issuer-jwks-url>
+server.security.serviceToken.trustedIssuers = <trusted-issuer>
+server.security.serviceToken.audience       = acas
+server.security.serviceToken.clockSkewSec   = 30
+
 #Controls whether Roo syncs the AuthorRole table with authorities granted in LDAP
 server.security.syncLdapAuthRoles=false
 #to make syncLdapAuthRoles config accessible to the client
@@ -499,6 +507,24 @@ client.entity.editingRoles=
 client.entity.deletingRoles=
 #client.entity.viewDeletedRoles=projectAdmin,ROLE_ACAS-ADMINS
 client.entity.viewDeletedRoles=
+
+# Experiment retention purge (runs inside roo). Permanently deletes experiments that have been
+# soft-deleted/overwritten longer than their protocol's "deleted experiment retention days" value,
+# in per-batch-committed chunks. Only one pod runs each scheduled time.
+# (Folder deletion reuses server.service.persistence.filePath and server.nodeapi.path below.)
+# Enable the scheduled purge. Note: only protocols that have a "deleted experiment retention days"
+# value purge anything; protocols without it are never touched. Set false to disable entirely.
+server.experiment.retention.enabled=true
+# When to run (6-field Spring cron). Default 05:00 daily, interpreted in cronZone (UTC).
+server.experiment.retention.cron=0 0 5 * * *
+server.experiment.retention.cronZone=UTC
+# Rows deleted per committed batch (bounds transaction size for very large experiments).
+server.experiment.retention.batchSize=100000
+# Optional system-wide retention days applied to experiments whose protocol has no per-protocol
+# "deleted experiment retention days" value (a per-protocol value still overrides this). Blank =
+# no global policy (only protocols with their own value are ever purged). Use with care: a value
+# here makes every soft-deleted/overwritten experiment older than this eligible, across all protocols.
+server.experiment.retention.globalDays=
 
 client.protocol.showAssayTreeRule=false
 client.protocol.showCurveDisplayParams=true

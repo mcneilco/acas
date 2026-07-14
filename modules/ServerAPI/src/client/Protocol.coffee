@@ -103,7 +103,10 @@ class Protocol extends BaseEntity
 			maxY.set numericValue: 120.0
 
 		maxY
-			
+
+	getDeletedExperimentRetentionDays: ->
+		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "protocol metadata", "numericValue", "deleted experiment retention days"
+
 	getStrictEndpointMatching: ->
 		strictEndpointMatching = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "protocol metadata", "codeValue", "strict endpoint matching"		
 		if strictEndpointMatching.get('codeValue') is undefined or strictEndpointMatching.get('codeValue') is ""
@@ -204,6 +207,7 @@ class ProtocolBaseController extends BaseEntityController
 			"click .bv_creationDateIcon": "handleCreationDateIconClicked"
 			"keyup .bv_maxY": "handleCurveDisplayMaxChanged"
 			"keyup .bv_minY": "handleCurveDisplayMinChanged"
+			"keyup .bv_deletedExperimentRetentionDays": "handleDeletedExperimentRetentionDaysChanged"
 			"click .bv_closeDeleteProtocolModal": "handleCloseProtocolModal"
 			"click .bv_confirmDeleteProtocolButton": "handleConfirmDeleteProtocolClicked"
 			"click .bv_cancelDelete": "handleCancelDeleteClicked"
@@ -346,6 +350,14 @@ class ProtocolBaseController extends BaseEntityController
 			@$('.bv_minY').val(@model.getCurveDisplayMin().get('numericValue'))
 		else
 			@$('.bv_group_curveDisplayWrapper').hide()
+		retentionDays = @model.getDeletedExperimentRetentionDays().get('numericValue')
+		@$('.bv_deletedExperimentRetentionDays').val(if retentionDays? then retentionDays else "")
+		isRetentionAdmin = false
+		if window.conf.roles?.acas?.adminRole?
+			adminRoles = window.conf.roles.acas.adminRole.split(",")
+			isRetentionAdmin = UtilityFunctions::testUserHasRole(window.AppLaunchParams?.loginUser, adminRoles)
+		unless isRetentionAdmin
+			@$('.bv_deletedExperimentRetentionDays').attr('disabled', 'disabled')
 		showRequiredEntityType = false
 		if window.conf.protocol?.requiredEntityType?.save?
 			showRequiredEntityType = window.conf.protocol.requiredEntityType.save
@@ -546,6 +558,12 @@ class ProtocolBaseController extends BaseEntityController
 		unless value is ""
 			value = parseFloat value
 		@handleValueChanged "CurveDisplayMin", value
+
+	handleDeletedExperimentRetentionDaysChanged: =>
+		value = UtilityFunctions::getTrimmedInput @$('.bv_deletedExperimentRetentionDays')
+		unless value is ""
+			value = parseInt value, 10
+		@handleValueChanged "DeletedExperimentRetentionDays", value
 
 	handleStrictEndpointMatchingChanged: =>
 		value = $('.bv_strictEndpointMatchingInputCheckbox').is(":checked")

@@ -492,10 +492,23 @@ class SaltBrowserController extends Backbone.View
 			error: (errorMsg) =>
 				@$(".bv_deleteSaltStatus").show()
 				@$(".bv_deletingStatusIndicator").hide()
-				@$(".bv_deleteErrorMessage").html errorMsg.responseText
+				@$(".bv_deleteErrorMessage").text @getDeleteSaltErrorMessage(errorMsg)
 				@$(".bv_errorDeletingSaltMessage").show()
 
 		)
+
+	getDeleteSaltErrorMessage: (response) =>
+		noServerMessage = "The server has no error message. Please contact support for additional help."
+		errorMsg = response?.responseText
+		return noServerMessage unless errorMsg
+		try
+			errorJSON = JSON.parse(errorMsg)
+			if _.isArray(errorJSON)
+				return errorJSON[0]?.message or noServerMessage
+			else
+				return errorJSON.message or errorJSON.error or errorMsg
+		catch e
+			return errorMsg
 
 	handleCancelDeleteClicked: =>
 		@$(".bv_confirmDeleteSalt").modal('hide')
