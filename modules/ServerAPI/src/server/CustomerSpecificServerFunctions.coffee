@@ -10,6 +10,7 @@ request = serverUtilityFunctions.requestAdapter
 fs = require 'fs'
 _ = require 'underscore'
 util = require 'util'
+liveDesignRoleMapping = require './LiveDesignRoleMapping.js'
 
 exports.logUsage = (action, data, username) ->
 # no ACAS logging service yet
@@ -154,6 +155,50 @@ formatSystemRolesFromSSOProfile = (profile) =>
 			})
 	return roles
 
+syncLiveDesignSystemRoles = (savedAuthor, liveDesignRoles, authorRoutes, setupRoutes) ->
+	liveDesignSystemRoles = liveDesignRoleMapping.formatSystemRolesFromLiveDesignRoles(
+		liveDesignRoles,
+		config.all.server.security.saml.liveDesignRoleToSystemRoles)
+	managedRoleKeys = liveDesignRoleMapping.getManagedSystemRoleKeys(
+		config.all.server.security.saml.liveDesignRoleToSystemRoles)
+
+	if liveDesignSystemRoles.length > 0
+		[err, saveResult] = await serverUtilityFunctions.promisifyRequestResponseStatus(
+			setupRoutes.setupTypeOrKindInternal, ["lsroles", liveDesignSystemRoles])
+		throw err if err?
+
+	savedManagedSystemRoles = authorRoutes.getRolesByLsType(savedAuthor.authorRoles, "System").filter (role) ->
+		managedRoleKeys.has("#{role.lsKind}/#{role.roleName}")
+
+	diffSystemRolesWithSaved = util.promisify(authorRoutes.diffSystemRolesWithSaved)
+	[err, diffResult] = await serverUtilityFunctions.promiseCatch(
+		diffSystemRolesWithSaved(savedAuthor.userName, liveDesignSystemRoles, savedManagedSystemRoles, ["lsType", "lsKind", "roleName"]))
+	throw err if err?
+
+	if diffResult.rolesToAdd.length > 0 or diffResult.rolesToDelete.length > 0
+		syncRoles = util.promisify(authorRoutes.syncRoles)
+		[err, updatedAuthor] = await serverUtilityFunctions.promiseCatch(
+			syncRoles(savedAuthor, diffResult.rolesToAdd, diffResult.rolesToDelete))
+		throw err if err?
+
+exports.getLiveDesignRoles = (username, requestAdapter = request) ->
+	liveDesignConfig = config.all.client.service.result.viewer.liveDesign
+	url = liveDesignRoleMapping.getLiveDesignRoleApiUrl(liveDesignConfig.baseUrl, username)
+
+	new Promise (resolve, reject) ->
+		requestAdapter.get
+			url: url
+			auth:
+				user: liveDesignConfig.username
+				pass: liveDesignConfig.password
+				sendImmediately: true
+			json: true
+		, (error, response, body) ->
+			return reject(error) if error?
+			return reject(new Error("LiveDesign role request failed with status #{response?.statusCode}")) unless response?.statusCode is 200
+			return reject(new Error("LiveDesign role response is missing roles")) unless Array.isArray(body?.roles)
+			resolve(body.roles)
+
 exports.ssoLoginStrategy = (req, profile, callback) ->
 	exports.logUsage "login attempt", JSON.stringify(ip: req.ip, referer: req.headers['referer'], agent: req.headers['user-agent']), JSON.stringify(profile)
 	authorRoutes = require '../../../routes/AuthorRoutes.js'
@@ -231,7 +276,15 @@ exports.ssoLoginStrategy = (req, profile, callback) ->
 			console.error("Got error saving new author #{err} during sso login strategy Author json: #{JSON.stringify(author)}")
 			return callback null, false, message: "Got error trying to save author"
 
-	if config.all.server.security.saml.roles.sync
+	roleSource = config.all.server.security.saml.roles.source ? 'idp'
+	if roleSource is 'livedesign'
+		try
+			liveDesignRoles = await exports.getLiveDesignRoles(userName)
+			await syncLiveDesignSystemRoles(savedAuthor, liveDesignRoles, authorRoutes, setupRoutes)
+		catch error
+			console.error("Got error synchronizing LiveDesign roles during SSO login: #{error}")
+			return callback null, false, message: "Unable to retrieve roles from LiveDesign"
+	else if roleSource is 'idp' and config.all.server.security.saml.roles.sync
 		console.log "Checking for roles to sync"
 
 		# Format sso groups into ACAS system roles [{roleName: , lsType: 'System', lsKind: 'ACAS'/'CmpdReg'}]

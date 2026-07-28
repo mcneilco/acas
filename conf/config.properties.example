@@ -375,6 +375,14 @@ server.security.saml.disableRequestedAuthnContext=true
 
 # ACAS-specific SSO profile mapping and role sync settings.
 server.security.saml.profileAttributeToSystemRoles=[{"ssoName":"ACASUser","lsKind":"ACAS","roleName":"ROLE_ACAS-USERS"},{"ssoName":"ACASAdmin","lsKind":"ACAS","roleName":"ROLE_ACAS-ADMINS"},{"ssoName":"CmpdRegUser","lsKind":"CmpdReg","roleName":"ROLE_CMPDREG-USERS"},{"ssoName":"CmpdRegAdmin","lsKind":"CmpdReg","roleName":"ROLE_CMPDREG-ADMINS"},{"ssoName":"CmpdRegReadOnlyUser","lsKind":"CmpdReg","roleName":"ROLE_CMPDREG-READONLY"},{"ssoName":"ACASCrossProjectLoaderUser","lsKind":"ACAS","roleName":"ROLE_ACAS-CROSS-PROJECT-LOADER"}]
+# Select the authorization source for SAML users. Keep idp for the legacy
+# profileAttributeToSystemRoles behavior. Set livedesign to obtain mapped roles
+# from GET <liveDesign.baseUrl>/livedesign/api/roles/user/{username} using the
+# configured LiveDesign service account.
+server.security.saml.roles.source=idp
+# LiveDesign API enum values are case-sensitive. In livedesign mode, these are
+# the only ACAS/CmpdReg system roles synchronized; other System roles are kept.
+server.security.saml.liveDesignRoleToSystemRoles=[{"liveDesignRole":"ACAS_USER","lsKind":"ACAS","roleName":"ROLE_ACAS-USERS"},{"liveDesignRole":"ACAS_ADMINISTRATOR","lsKind":"ACAS","roleName":"ROLE_ACAS-ADMINS"},{"liveDesignRole":"CREG_USER","lsKind":"CmpdReg","roleName":"ROLE_CMPDREG-USERS"},{"liveDesignRole":"CREG_ADMINISTRATOR","lsKind":"CmpdReg","roleName":"ROLE_CMPDREG-ADMINS"},{"liveDesignRole":"CREG_READ_ONLY","lsKind":"CmpdReg","roleName":"ROLE_CMPDREG-READONLY"},{"liveDesignRole":"ACAS_CROSS_PROJECT_LOADER","lsKind":"ACAS","roleName":"ROLE_ACAS-CROSS-PROJECT-LOADER"}]
 server.security.saml.userNameAttribute=nameID
 server.security.saml.firstNameAttribute=firstName
 server.security.saml.lastNameAttribute=lastName
