@@ -5,7 +5,7 @@ FROM node:20.20.2-slim
 #  - curl: bin/acas.sh polls the roo persistence service before starting
 #  - python3 + pip: the LiveDesign integration scripts the app shells out to
 #  - fontconfig + fonts-urw-base35: fonts for server-side image/PDF rendering
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
       git tar curl ca-certificates \
       python3 python3-pip \
       fontconfig fonts-urw-base35 \
