@@ -20,6 +20,7 @@ exports.getManagedSystemRoleKeys = (mapping) ->
 
 exports.formatSystemRolesFromLiveDesignRoles = (liveDesignRoles, mapping) ->
 	roles = new Set(liveDesignRoles ? [])
+	roleKeys = new Set
 
 	parseMapping(mapping)
 		.filter (roleMapping) -> roles.has(roleMapping.liveDesignRole)
@@ -27,9 +28,8 @@ exports.formatSystemRolesFromLiveDesignRoles = (liveDesignRoles, mapping) ->
 			lsType: 'System'
 			lsKind: roleMapping.lsKind
 			roleName: roleMapping.roleName
-
-exports.getLiveDesignRoleApiUrl = (baseUrl, username) ->
-	normalizedBaseUrl = baseUrl.replace(/\/+$/, '')
-	unless normalizedBaseUrl.endsWith('/livedesign/api')
-		normalizedBaseUrl += if normalizedBaseUrl.endsWith('/livedesign') then '/api' else '/livedesign/api'
-	"#{normalizedBaseUrl}/roles/user/#{encodeURIComponent(username)}"
+		.filter (role) ->
+			roleKey = "#{role.lsType}/#{role.lsKind}/#{role.roleName}"
+			return false if roleKeys.has(roleKey)
+			roleKeys.add(roleKey)
+			true

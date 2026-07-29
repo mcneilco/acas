@@ -10,6 +10,7 @@ request = serverUtilityFunctions.requestAdapter
 fs = require 'fs'
 _ = require 'underscore'
 util = require 'util'
+childProcess = require 'child_process'
 liveDesignRoleMapping = require './LiveDesignRoleMapping.js'
 
 exports.logUsage = (action, data, username) ->
@@ -156,9 +157,11 @@ formatSystemRolesFromSSOProfile = (profile) =>
 	return roles
 
 syncLiveDesignSystemRoles = (savedAuthor, liveDesignRoles, authorRoutes, setupRoutes) ->
+	console.log("Found #{liveDesignRoles.length} LiveDesign roles for author #{savedAuthor.userName}: #{JSON.stringify(liveDesignRoles)}")
 	liveDesignSystemRoles = liveDesignRoleMapping.formatSystemRolesFromLiveDesignRoles(
 		liveDesignRoles,
 		config.all.server.security.saml.liveDesignRoleToSystemRoles)
+	console.log("Mapped #{liveDesignSystemRoles.length} LiveDesign roles to ACAS system roles for author #{savedAuthor.userName}: #{JSON.stringify(liveDesignSystemRoles)}")
 	managedRoleKeys = liveDesignRoleMapping.getManagedSystemRoleKeys(
 		config.all.server.security.saml.liveDesignRoleToSystemRoles)
 
@@ -181,23 +184,34 @@ syncLiveDesignSystemRoles = (savedAuthor, liveDesignRoles, authorRoutes, setupRo
 			syncRoles(savedAuthor, diffResult.rolesToAdd, diffResult.rolesToDelete))
 		throw err if err?
 
-exports.getLiveDesignRoles = (username, requestAdapter = request) ->
+exports.getLiveDesignRoles = (username, spawnProcess = childProcess.spawn) ->
 	liveDesignConfig = config.all.client.service.result.viewer.liveDesign
-	url = liveDesignRoleMapping.getLiveDesignRoleApiUrl(liveDesignConfig.baseUrl, username)
+	args = [
+		'./src/python/ServerAPI/acas_ldclient/acasldclient.py'
+		'--ldserver', liveDesignConfig.baseUrl
+		'--user', liveDesignConfig.username
+		'--password', liveDesignConfig.password
+		'--method', 'get_user'
+		'--args', username
+	]
 
 	new Promise (resolve, reject) ->
-		requestAdapter.get
-			url: url
-			auth:
-				user: liveDesignConfig.username
-				pass: liveDesignConfig.password
-				sendImmediately: true
-			json: true
-		, (error, response, body) ->
-			return reject(error) if error?
-			return reject(new Error("LiveDesign role request failed with status #{response?.statusCode}")) unless response?.statusCode is 200
-			return reject(new Error("LiveDesign role response is missing roles")) unless Array.isArray(body?.roles)
-			resolve(body.roles)
+		subprocess = spawnProcess 'python', args
+		stdout = ''
+		stderr = ''
+		subprocess.stdout.setEncoding? 'utf8'
+		subprocess.stderr.setEncoding? 'utf8'
+		subprocess.stdout.on 'data', (data) -> stdout += data.toString()
+		subprocess.stderr.on 'data', (data) -> stderr += data.toString()
+		subprocess.on 'error', (error) -> reject(error)
+		subprocess.on 'close', (exitCode) ->
+			return reject(new Error("LiveDesign role lookup script failed with exit code #{exitCode}: #{stderr}")) unless exitCode is 0
+			try
+				liveDesignUser = JSON.parse stdout
+			catch parseError
+				return reject(new Error("LiveDesign role lookup script returned invalid JSON: #{parseError.message}"))
+			return reject(new Error("LiveDesign role lookup script returned roles in an invalid format")) unless Array.isArray(liveDesignUser?.liveDesignRoles)
+			resolve(liveDesignUser.liveDesignRoles)
 
 exports.ssoLoginStrategy = (req, profile, callback) ->
 	exports.logUsage "login attempt", JSON.stringify(ip: req.ip, referer: req.headers['referer'], agent: req.headers['user-agent']), JSON.stringify(profile)

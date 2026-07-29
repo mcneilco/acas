@@ -193,6 +193,15 @@ def get_users(client, ls_type = None, ls_kind = None, role_name = None, use_acas
             acas_users = []
     return acas_users
 
+def get_user_roles(client, username):
+    """Return effective LiveDesign role values for one user via ldclient."""
+    roles = client.get_roles_for_users_by_username([username])
+    return [
+        role.role.value if hasattr(role.role, 'value') else str(role.role)
+        for role in roles
+        if role.username == username
+    ]
+
 def ld_user_to_acas_user(ld_user, roles):
     acas_user = {
         'id': ld_user["id"],
@@ -261,6 +270,7 @@ def get_user(client, username, use_acas_only_acl_groups = True):
         })
         logger.info(description)
     acas_user = ld_user_to_acas_user(user, roles)
+    acas_user['liveDesignRoles'] = get_user_roles(client, username)
     return acas_user
 
 def get_projects(client):
