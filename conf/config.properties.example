@@ -375,6 +375,16 @@ server.security.saml.disableRequestedAuthnContext=true
 
 # ACAS-specific SSO profile mapping and role sync settings.
 server.security.saml.profileAttributeToSystemRoles=[{"ssoName":"ACASUser","lsKind":"ACAS","roleName":"ROLE_ACAS-USERS"},{"ssoName":"ACASAdmin","lsKind":"ACAS","roleName":"ROLE_ACAS-ADMINS"},{"ssoName":"CmpdRegUser","lsKind":"CmpdReg","roleName":"ROLE_CMPDREG-USERS"},{"ssoName":"CmpdRegAdmin","lsKind":"CmpdReg","roleName":"ROLE_CMPDREG-ADMINS"},{"ssoName":"CmpdRegReadOnlyUser","lsKind":"CmpdReg","roleName":"ROLE_CMPDREG-READONLY"},{"ssoName":"ACASCrossProjectLoaderUser","lsKind":"ACAS","roleName":"ROLE_ACAS-CROSS-PROJECT-LOADER"}]
+# Select the authorization source for SAML users. Keep idp for the legacy
+# profileAttributeToSystemRoles behavior. Set livedesign to obtain mapped,
+# effective roles through ACAS's Python ldclient bridge using the configured
+# LiveDesign service account.
+server.security.saml.roles.source=idp
+# LiveDesign ldclient role values are case-sensitive. In livedesign mode, these are
+# the only ACAS/CmpdReg system roles synchronized; other System roles are kept.
+# Administrator mappings deliberately include their required user role; duplicate
+# mappings are de-duplicated when LiveDesign supplies both roles explicitly.
+server.security.saml.liveDesignRoleToSystemRoles=[{"liveDesignRole":"AcasUser","lsKind":"ACAS","roleName":"ROLE_ACAS-USERS"},{"liveDesignRole":"AcasAdministrator","lsKind":"ACAS","roleName":"ROLE_ACAS-ADMINS"},{"liveDesignRole":"AcasAdministrator","lsKind":"ACAS","roleName":"ROLE_ACAS-USERS"},{"liveDesignRole":"CregUser","lsKind":"CmpdReg","roleName":"ROLE_CMPDREG-USERS"},{"liveDesignRole":"CregAdministrator","lsKind":"CmpdReg","roleName":"ROLE_CMPDREG-ADMINS"},{"liveDesignRole":"CregAdministrator","lsKind":"CmpdReg","roleName":"ROLE_CMPDREG-USERS"},{"liveDesignRole":"CregReadOnly","lsKind":"CmpdReg","roleName":"ROLE_CMPDREG-READONLY"},{"liveDesignRole":"AcasCrossProjectLoader","lsKind":"ACAS","roleName":"ROLE_ACAS-CROSS-PROJECT-LOADER"}]
 server.security.saml.userNameAttribute=nameID
 server.security.saml.firstNameAttribute=firstName
 server.security.saml.lastNameAttribute=lastName
