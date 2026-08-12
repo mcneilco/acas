@@ -677,19 +677,20 @@ exports.regSearch = (req, resp) ->
 		method: 'POST'
 		url: cmpdRegCall
 		body: JSON.stringify req.body
-		json: true
+		json: false
 		timeout: 6000000
-	, (error, response, json) =>
-		if !error
-			console.log JSON.stringify json
+	, (error, response, body) =>
+		if response
+			console.log body
 			resp.statusCode = response.statusCode
-			resp.setHeader('Content-Type', 'application/json')
-			resp.end JSON.stringify json
+			resp.setHeader('Content-Type', response.headers['content-type'] or 'application/json')
+			resp.end body
 		else
 			console.log 'got ajax error trying to do registration search'
 			console.log error
-			console.log json
+			console.log body
 			console.log response
+			resp.statusCode = 500
 			resp.end JSON.stringify {error: "something went wrong :("}
 	)
 
