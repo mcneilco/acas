@@ -429,6 +429,5 @@ exports.tokenLogin = (req, resp) ->
 					resp.statusCode = 500
 					return resp.json error: true, message: "Session error"
 				resp.json
-					connect_sid: req.sessionID
 					expires: req.session?.cookie?.expires
 					user: { username: user.username, email: email }
