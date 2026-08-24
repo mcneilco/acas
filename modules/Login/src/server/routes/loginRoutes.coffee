@@ -388,6 +388,10 @@ exports.getAuthorsInternal = (opts, callback) ->
 	csUtilities.getAllAuthors(opts, (statusCode, response) ->
 		callback statusCode, response
 	)
+
+exports.getServiceTokenEmail = (claims) ->
+	claims.sub or claims.user_email or claims.email
+
 exports.tokenLogin = (req, resp) ->
 	stConfig = config.all.server?.security?.serviceToken
 	unless stConfig?.use is true or stConfig?.use is "true"
@@ -412,7 +416,7 @@ exports.tokenLogin = (req, resp) ->
 			resp.statusCode = 401
 			return resp.json error: true, message: "Invalid service token"
 
-		email = claims.user_email or claims.email
+		email = exports.getServiceTokenEmail claims
 		unless email
 			resp.statusCode = 401
 			return resp.json error: true, message: "Token missing user_email"
@@ -429,6 +433,5 @@ exports.tokenLogin = (req, resp) ->
 					resp.statusCode = 500
 					return resp.json error: true, message: "Session error"
 				resp.json
-					connect_sid: req.sessionID
 					expires: req.session?.cookie?.expires
 					user: { username: user.username, email: email }
