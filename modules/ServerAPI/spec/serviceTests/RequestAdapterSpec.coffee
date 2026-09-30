@@ -1,4 +1,5 @@
 assert = require 'assert'
+http = require 'http'
 _ = require 'underscore'
 acasHome = '../../../..'
 serverUtilityFunctions = require "#{acasHome}/routes/ServerUtilityFunctions.js"
@@ -183,6 +184,67 @@ describe "Request Adapter", ->
 				assert.equal response.statusCode, 200
 				done()
 			)
+
+		describe "Undici dispatcher for timeouts over five minutes (ACAS-1022)", ->
+			# Undici's headersTimeout/bodyTimeout default to 300s and live on the dispatcher,
+			# so an AbortController deadline alone cannot push a request past five minutes.
+			# Reading the Agent's options is how we assert the caller's timeout got through
+			# without waiting five minutes for a live request to prove it.
+			agentTimeouts = (agent) ->
+				for symbol in Object.getOwnPropertySymbols(agent)
+					options = agent[symbol]
+					if options? and typeof options is 'object' and 'headersTimeout' of options
+						return {headersTimeout: options.headersTimeout, bodyTimeout: options.bodyTimeout}
+				null
+
+			it "should not override the default for timeouts Undici already honors", ->
+				assert.equal serverUtilityFunctions.getFetchDispatcher(undefined), null
+				assert.equal serverUtilityFunctions.getFetchDispatcher(2000), null
+				assert.equal serverUtilityFunctions.getFetchDispatcher(300000), null
+
+			it "should build a dispatcher matching the caller timeout", ->
+				dispatcher = serverUtilityFunctions.getFetchDispatcher(86400000)
+				assert dispatcher?, "should have a dispatcher for a 24 hour timeout"
+				assert.deepEqual agentTimeouts(dispatcher), {headersTimeout: 86400000, bodyTimeout: 86400000}
+
+			it "should reuse one dispatcher per timeout so pooling survives", ->
+				first = serverUtilityFunctions.getFetchDispatcher(6000000)
+				second = serverUtilityFunctions.getFetchDispatcher(6000000)
+				assert.strictEqual first, second
+				assert.notStrictEqual first, serverUtilityFunctions.getFetchDispatcher(86400000)
+
+			# End to end proof, opt in because it has to outlast Undici's 300s default.
+			# RUN_LONG_FETCH_TIMEOUT_REPRO=1 ./node_modules/.bin/mocha \
+			#   src/spec/ServerAPI/serviceTests/RequestAdapterSpec.js \
+			#   --grep "honor a long caller timeout" --timeout 330000
+			longRepro = if process.env.RUN_LONG_FETCH_TIMEOUT_REPRO is '1' then it else it.skip
+			longRepro "should honor a long caller timeout when response headers are delayed", (done) ->
+				@timeout(330000)
+				responseTimer = null
+				server = http.createServer (req, res) ->
+					responseTimer = setTimeout ->
+						res.writeHead 200, {'Content-Type': 'application/json'}
+						res.end('{"ok":true}')
+					, 305000
+
+				finish = (error) ->
+					clearTimeout(responseTimer) if responseTimer?
+					server.close -> done(error)
+
+				server.listen 0, '127.0.0.1', ->
+					request.get(
+						url: "http://127.0.0.1:#{server.address().port}/delayed-headers"
+						timeout: 86400000
+						json: true
+					, (error, response, body) ->
+						return finish(error) if error?
+						try
+							assert.equal response.statusCode, 200
+							assert.deepEqual body, {ok: true}
+						catch assertionError
+							return finish(assertionError)
+						finish()
+					)
 
 	describe "Headers", ->
 		it "should support custom headers", (done) ->

@@ -2436,6 +2436,21 @@ exports.LocationContainer = LocationContainer
 http = require 'http'
 https = require 'https'
 { URL } = require 'url'
+{ Agent } = require 'undici'
+
+# Undici (the engine behind Node's global fetch) enforces its own headersTimeout and
+# bodyTimeout, both defaulting to 300s. They live on the dispatcher, so an AbortController
+# deadline cannot extend them and a caller asking for a longer timeout still fails at five
+# minutes (ACAS-1022). Hand fetch a dispatcher whose timeouts match the caller instead.
+# Agents are cached per timeout value so connection pooling survives.
+UNDICI_DEFAULT_TIMEOUT = 300000
+longTimeoutDispatchers = new Map()
+exports.getFetchDispatcher = getFetchDispatcher = (timeout) ->
+	# Anything at or under Undici's own default already behaves correctly.
+	return null unless timeout? and timeout > UNDICI_DEFAULT_TIMEOUT
+	unless longTimeoutDispatchers.has(timeout)
+		longTimeoutDispatchers.set(timeout, new Agent(headersTimeout: timeout, bodyTimeout: timeout))
+	longTimeoutDispatchers.get(timeout)
 
 # Helper: Parse options into normalized request parameters
 parseRequestOptions = (options) ->
@@ -2584,6 +2599,9 @@ exports.requestAdapter = (options, callback) ->
 		timeoutId = setTimeout ->
 			controller.abort()
 		, parsed.timeout
+		# Stop Undici's 300s default from firing before the caller's deadline
+		dispatcher = getFetchDispatcher(parsed.timeout)
+		fetchOptions.dispatcher = dispatcher if dispatcher?
 
 	# Wrap fetch in try/catch to handle synchronous URL parsing errors
 	try
