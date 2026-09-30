@@ -2436,21 +2436,14 @@ exports.LocationContainer = LocationContainer
 http = require 'http'
 https = require 'https'
 { URL } = require 'url'
-{ Agent } = require 'undici'
+{ Agent, setGlobalDispatcher } = require 'undici'
 
-# Undici (the engine behind Node's global fetch) enforces its own headersTimeout and
-# bodyTimeout, both defaulting to 300s. They live on the dispatcher, so an AbortController
-# deadline cannot extend them and a caller asking for a longer timeout still fails at five
-# minutes (ACAS-1022). Hand fetch a dispatcher whose timeouts match the caller instead.
-# Agents are cached per timeout value so connection pooling survives.
-UNDICI_DEFAULT_TIMEOUT = 300000
-longTimeoutDispatchers = new Map()
-exports.getFetchDispatcher = getFetchDispatcher = (timeout) ->
-	# Anything at or under Undici's own default already behaves correctly.
-	return null unless timeout? and timeout > UNDICI_DEFAULT_TIMEOUT
-	unless longTimeoutDispatchers.has(timeout)
-		longTimeoutDispatchers.set(timeout, new Agent(headersTimeout: timeout, bodyTimeout: timeout))
-	longTimeoutDispatchers.get(timeout)
+# Node's global fetch runs on Undici, which enforces its own 300s headersTimeout and
+# bodyTimeout. An AbortController can only end a request early, so a caller asking for a
+# longer timeout, or none, still failed after five minutes of server silence (ACAS-1022).
+# node-fetch and the request package, which ACAS used before 2026.2, had no such limit.
+# Turn Undici's timers off for every fetch in the process and leave deadlines to callers.
+setGlobalDispatcher(new Agent(headersTimeout: 0, bodyTimeout: 0))
 
 # Helper: Parse options into normalized request parameters
 parseRequestOptions = (options) ->
@@ -2599,9 +2592,6 @@ exports.requestAdapter = (options, callback) ->
 		timeoutId = setTimeout ->
 			controller.abort()
 		, parsed.timeout
-		# Stop Undici's 300s default from firing before the caller's deadline
-		dispatcher = getFetchDispatcher(parsed.timeout)
-		fetchOptions.dispatcher = dispatcher if dispatcher?
 
 	# Wrap fetch in try/catch to handle synchronous URL parsing errors
 	try

@@ -1,5 +1,6 @@
 assert = require 'assert'
 http = require 'http'
+{ getGlobalDispatcher } = require 'undici'
 _ = require 'underscore'
 acasHome = '../../../..'
 serverUtilityFunctions = require "#{acasHome}/routes/ServerUtilityFunctions.js"
@@ -185,33 +186,18 @@ describe "Request Adapter", ->
 				done()
 			)
 
-		describe "Undici dispatcher for timeouts over five minutes (ACAS-1022)", ->
+		describe "No five minute cap on fetch (ACAS-1022)", ->
 			# Undici's headersTimeout/bodyTimeout default to 300s and live on the dispatcher,
 			# so an AbortController deadline alone cannot push a request past five minutes.
-			# Reading the Agent's options is how we assert the caller's timeout got through
-			# without waiting five minutes for a live request to prove it.
-			agentTimeouts = (agent) ->
-				for symbol in Object.getOwnPropertySymbols(agent)
-					options = agent[symbol]
+			# Reading the global Agent's options checks the timers are off without waiting
+			# five minutes for a live request to prove it.
+			it "should turn off Undici's timers on the global fetch dispatcher", ->
+				dispatcher = getGlobalDispatcher()
+				for symbol in Object.getOwnPropertySymbols(dispatcher)
+					options = dispatcher[symbol]
 					if options? and typeof options is 'object' and 'headersTimeout' of options
-						return {headersTimeout: options.headersTimeout, bodyTimeout: options.bodyTimeout}
-				null
-
-			it "should not override the default for timeouts Undici already honors", ->
-				assert.equal serverUtilityFunctions.getFetchDispatcher(undefined), null
-				assert.equal serverUtilityFunctions.getFetchDispatcher(2000), null
-				assert.equal serverUtilityFunctions.getFetchDispatcher(300000), null
-
-			it "should build a dispatcher matching the caller timeout", ->
-				dispatcher = serverUtilityFunctions.getFetchDispatcher(86400000)
-				assert dispatcher?, "should have a dispatcher for a 24 hour timeout"
-				assert.deepEqual agentTimeouts(dispatcher), {headersTimeout: 86400000, bodyTimeout: 86400000}
-
-			it "should reuse one dispatcher per timeout so pooling survives", ->
-				first = serverUtilityFunctions.getFetchDispatcher(6000000)
-				second = serverUtilityFunctions.getFetchDispatcher(6000000)
-				assert.strictEqual first, second
-				assert.notStrictEqual first, serverUtilityFunctions.getFetchDispatcher(86400000)
+						timeouts = {headersTimeout: options.headersTimeout, bodyTimeout: options.bodyTimeout}
+				assert.deepEqual timeouts, {headersTimeout: 0, bodyTimeout: 0}
 
 			# End to end proof, opt in because it has to outlast Undici's 300s default.
 			# RUN_LONG_FETCH_TIMEOUT_REPRO=1 ./node_modules/.bin/mocha \
@@ -220,31 +206,48 @@ describe "Request Adapter", ->
 			longRepro = if process.env.RUN_LONG_FETCH_TIMEOUT_REPRO is '1' then it else it.skip
 			longRepro "should honor a long caller timeout when response headers are delayed", (done) ->
 				@timeout(330000)
-				responseTimer = null
+				responseTimers = []
 				server = http.createServer (req, res) ->
-					responseTimer = setTimeout ->
+					responseTimers.push setTimeout ->
 						res.writeHead 200, {'Content-Type': 'application/json'}
 						res.end('{"ok":true}')
 					, 305000
 
+				# A 24 hour timeout, no timeout at all (e.g. bulk loader registerSdf) and a direct fetch
+				# call must all wait it out
+				pending = 3
+				failed = false
 				finish = (error) ->
-					clearTimeout(responseTimer) if responseTimer?
+					return if failed
+					failed = error?
+					return unless failed or --pending is 0
+					clearTimeout(timer) for timer in responseTimers
 					server.close -> done(error)
 
 				server.listen 0, '127.0.0.1', ->
-					request.get(
-						url: "http://127.0.0.1:#{server.address().port}/delayed-headers"
-						timeout: 86400000
-						json: true
-					, (error, response, body) ->
-						return finish(error) if error?
-						try
-							assert.equal response.statusCode, 200
+					url = "http://127.0.0.1:#{server.address().port}/delayed-headers"
+					fetch(url)
+						.then (response) ->
+							assert.equal response.status, 200
+							response.json()
+						.then (body) ->
 							assert.deepEqual body, {ok: true}
-						catch assertionError
-							return finish(assertionError)
-						finish()
-					)
+							finish()
+						.catch finish
+					for timeout in [86400000, undefined]
+						request.get(
+							url: url
+							timeout: timeout
+							json: true
+						, (error, response, body) ->
+							return finish(error) if error?
+							try
+								assert.equal response.statusCode, 200
+								assert.deepEqual body, {ok: true}
+							catch assertionError
+								return finish(assertionError)
+							finish()
+						)
 
 	describe "Headers", ->
 		it "should support custom headers", (done) ->
