@@ -2436,6 +2436,14 @@ exports.LocationContainer = LocationContainer
 http = require 'http'
 https = require 'https'
 { URL } = require 'url'
+{ Agent, setGlobalDispatcher } = require 'undici'
+
+# Node's global fetch runs on Undici, which enforces its own 300s headersTimeout and
+# bodyTimeout. An AbortController can only end a request early, so a caller asking for a
+# longer timeout, or none, still failed after five minutes of server silence (ACAS-1022).
+# node-fetch and the request package, which ACAS used before 2026.2, had no such limit.
+# Turn Undici's timers off for every fetch in the process and leave deadlines to callers.
+setGlobalDispatcher(new Agent(headersTimeout: 0, bodyTimeout: 0))
 
 # Helper: Parse options into normalized request parameters
 parseRequestOptions = (options) ->
