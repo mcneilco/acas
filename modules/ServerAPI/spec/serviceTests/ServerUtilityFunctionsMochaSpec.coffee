@@ -18,6 +18,24 @@ parseResponse = (jsonStr) ->
 
 
 describe "Server Utiilty Function Tests", ->
+	describe "getFromACASServerInternalPreserveResponseStatus", ->
+		originalRequestAdapter = null
+
+		beforeEach ->
+			originalRequestAdapter = servUtilities.requestAdapter
+
+		afterEach ->
+			servUtilities.requestAdapter = originalRequestAdapter
+
+		it "should preserve not found responses from the ACAS server", (done) ->
+			servUtilities.requestAdapter = (options, callback) ->
+				callback null, {statusCode: 404}, []
+
+			servUtilities.getFromACASServerInternalPreserveResponseStatus "http://example.test/missing", (statusCode, json) ->
+				assert.equal statusCode, 404
+				assert.deepEqual json, []
+				done()
+
 	describe "File Value filtering", ->
 		describe "get fileValues from thing", ->
 			before (done) ->
@@ -77,5 +95,3 @@ describe "Server Utiilty Function Tests", ->
 			assert.equal @modEnt.lsStates[0].lsTransaction, 8354
 		it "should have a trans in the values", ->
 			assert.equal @modEnt.lsStates[0].lsValues[0].lsTransaction, 8354
-
-
