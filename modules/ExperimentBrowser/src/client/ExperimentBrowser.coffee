@@ -366,7 +366,7 @@ class ExperimentBrowserController extends Backbone.View
 		experimentMetadata = @experimentSummaryTable.collection.models
 		
 		#collect the codes of the experiments that are currently shown
-		table = $(".bv_experimentTableController .dataTables_wrapper .table").DataTable()
+		table = @experimentSummaryTable.$("table").DataTable()
 		filteredExperimentCodes = table.rows({search: 'applied'}).data().toArray().map (experiment) ->
 			experiment[0]
 		
