@@ -834,8 +834,8 @@ client.cmpdreg.serverSettings.checkForDryRunStandardizationDelay=60000
 
 # Configures whether ACAS will automatically trigger a full restandardization (dry run + execute) on startup
 # when the standardization settings have changed and restandardization is needed.
-# Only supported when using the BBChem chemistry engine. Default is true.
-client.cmpdreg.serverSettings.autoRestandardize=true
+# Only supported when using the BBChem chemistry engine. Default is false.
+client.cmpdreg.serverSettings.autoRestandardize=false
 
 # Configures whether ACAS generates a dry-run SDF report during dry-run standardization.
 # This applies to both manual and automatic dry-run execution when enabled.
