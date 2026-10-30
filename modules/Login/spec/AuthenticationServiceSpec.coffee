@@ -4,27 +4,6 @@ describe 'User authentication Service testing', ->
 			typeof @serviceReturn != 'undefined'
 
 
-	describe 'when auth service called', ->
-		beforeEach ->
-			runs ->
-				$.ajax
-					type: 'POST'
-					url: "api/userAuthentication"
-					data:
-						user: "bob" # credentials for test user
-						password: "secret"
-					success: (json) =>
-						@serviceReturn = json
-					error: (err) =>
-						console.log 'got ajax error'
-						@serviceReturn = null
-					dataType: 'json'
-
-		it 'should return succesfull credentials (expect to fail without valid creds in this spec file)', ->
-			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
-			runs ->
-				expect(@serviceReturn.status).toContain "Success"
-
 	describe 'when user lookup called with valid username', ->
 		beforeEach ->
 			runs ->

@@ -21,7 +21,6 @@ exports.setupRoutes = (app, passport) ->
 		app.post '/login/callback', passport.authenticate('saml', failureRedirect: '/login/ssoFailure', failureFlash: true), exports.ssoCallback
 		app.get '/login/sso', exports.ssoLogin, passport.authenticate('saml',{failureRedirect: '/', failureFlash: true})
 	app.get '/logout*', exports.logout
-	app.post '/api/userAuthentication', exports.authenticationService
 	app.get '/passwordReset', exports.resetpage
 	app.post '/passwordReset',
 		exports.resetAuthenticationService,
@@ -29,9 +28,10 @@ exports.setupRoutes = (app, passport) ->
 	app.post '/api/userResetAuthentication', exports.resetAuthenticationService
 	app.get '/passwordChange', exports.ensureAuthenticated, exports.changePage
 	app.post '/passwordChange',
+		exports.ensureAuthenticated,
 		exports.changeAuthenticationService,
 		exports.changePost
-	app.post '/api/userChangeAuthentication', exports.changeAuthenticationService
+	app.post '/api/userChangeAuthentication', exports.ensureAuthenticated, exports.changeAuthenticationService
 	app.get '/api/authors', exports.ensureAuthenticated, exports.getAuthors
 	app.get '/api/users/:username', exports.ensureAuthenticated, exports.getUsers
 	app.get '/login/ssoFailure', exports.ssoFailure
@@ -256,42 +256,6 @@ exports.getUsers = (req, resp) ->
 			delete user.password
 			resp.json user
 	csUtilities.getUser req.params.username, callback
-
-exports.authenticationService = (req, resp) ->
-	callback = (results) ->
-		console.log results
-		if results.indexOf("Success")>=0
-			console.log "in authentication service success"
-			resp.json
-				status: "Success"
-		else
-			console.log "in authentication service fail"
-			resp.json
-				status: "Fail"
-
-	if global.specRunnerTestmode
-		callback("Success")
-	else
-		csUtilities.authCheck req.body.user, req.body.password, callback
-
-exports.ensureAuthenticatedService = (req, resp, next) ->
-	callback = (results) ->
-		console.log results
-		if results.indexOf("Success")>=0
-			console.log "in authentication service success"
-			next()
-		else
-			console.log "in authentication service fail"
-			resp.json
-				status: "Fail"
-
-	console.log "ensureAuthenticatedService -- req.body"
-	console.log req.body
-
-	if global.specRunnerTestmode
-		callback("Success")
-	else
-		csUtilities.authCheck req.body.user, req.body.password, callback
 
 exports.resetAuthenticationService = (req, resp) ->
 	callback = (results) ->
