@@ -100,10 +100,10 @@ jobs:
           echo "username=bob" >> ~/.acas/credentials
           echo "password=secret" >> ~/.acas/credentials
           echo "url=http://localhost:3000" >> ~/.acas/credentials
-      - name: Set Up Python 3.8
+      - name: Set Up Python 3.13
         uses: actions/setup-python@v5
         with:
-          python-version: 3.8
+          python-version: "3.13"
       - name: Display Python version
         run: python -c "import sys; print(sys.version)"
       - name: Install acasclient and dependencies
