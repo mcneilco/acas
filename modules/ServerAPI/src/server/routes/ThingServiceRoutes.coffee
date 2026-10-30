@@ -38,11 +38,11 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/things/getMultipleKinds/:lsType/:lsKindsList', loginRoutes.ensureAuthenticated, exports.thingsByTypeAndKinds
 	app.get '/api/things/:lsType/:lsKind/codename/:code', loginRoutes.ensureAuthenticated, exports.thingByCodeName
 	app.get '/api/things/:lsType/:lsKind/:code', loginRoutes.ensureAuthenticated, exports.thingByCodeName
-	app.get '/api/things/:lsType/:lsKind/:labelType/:labelKind/:labelText', exports.getThingsByTypeKindAndLabelTypeKindText
-	app.put '/api/things/:lsType/:lsKind/:labelType/:labelKind/:labelText', exports.putThing
+	app.get '/api/things/:lsType/:lsKind/:labelType/:labelKind/:labelText', loginRoutes.ensureAuthenticated, exports.getThingsByTypeKindAndLabelTypeKindText
+	app.put '/api/things/:lsType/:lsKind/:labelType/:labelKind/:labelText', loginRoutes.ensureAuthenticated, exports.putThing
 	app.post '/api/getThingCodeByLabel/:thingType?/:thingKind?', loginRoutes.ensureAuthenticated, exports.getThingCodeByLabel
-	app.post '/api/things/:lsType/:lsKind', exports.postThingParent
-	app.post '/api/things/:lsType/:lsKind/:parentCode', exports.postThingBatch
+	app.post '/api/things/:lsType/:lsKind', loginRoutes.ensureAuthenticated, exports.postThingParent
+	app.post '/api/things/:lsType/:lsKind/:parentCode', loginRoutes.ensureAuthenticated, exports.postThingBatch
 	app.put '/api/things/:lsType/:lsKind/:code', loginRoutes.ensureAuthenticated, exports.putThing
 	app.get '/api/batches/:lsKind/parentCodeName/:parentCode', loginRoutes.ensureAuthenticated, exports.batchesByParentCodeName
 	app.post '/api/validateName', loginRoutes.ensureAuthenticated, exports.validateName
