@@ -65,7 +65,7 @@
     "puppeteer": "^5.5.0",
     "serve-favicon": "^2.5.0",
     "semver": "7.5.2",
-    "socket.io": "2.4.1",
+    "socket.io": "2.5.1",
     "style-loader": "2.0.0",
     "temporary": "1.1.0",
     "underscore": "1.13.8",
