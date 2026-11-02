@@ -1,4 +1,4 @@
-FROM node:20.20.2-slim
+FROM node:22.23.4-slim
 
 # Runtime and build dependencies:
 #  - git: required by some npm packages and downstream gulp builds
@@ -31,7 +31,10 @@ ENV     APP_NAME=ACAS \
         ACAS_CUSTOM=/home/runner/acas_custom \
         ACAS_SHARED=/home/runner/acas_shared
 
-RUN     npm install -g gulp@4.0.2 coffeescript@2.5.1
+# Global `gulp` command only needs the CLI; it always delegates to the project's
+# local gulp (node_modules/gulp). The full gulp@4 package pulled in vulnerable
+# braces/micromatch@3 that package.json overrides can't reach in a global install.
+RUN     npm install -g gulp-cli@3.1.0 coffeescript@2.5.1
 COPY    --chown=runner:runner package.json $ACAS_BASE/package.json
 COPY    --chown=runner:runner requirements.txt $ACAS_BASE/requirements.txt
 RUN     pip install --no-cache-dir --break-system-packages -r $ACAS_BASE/requirements.txt
