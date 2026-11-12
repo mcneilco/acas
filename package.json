@@ -17,7 +17,6 @@
   "dependencies": {
     "backbone": "^1.4.0",
     "body-parser": "^1.19.0",
-    "bootstrap": "4.5.3",
     "chai": "^4.2.0",
     "connect-flash": "~0.1.1",
     "cookie-parser": "^1.4.5",
@@ -31,12 +30,10 @@
     "glob": "7.1.6",
     "helmet": "^4.6.0",
     "pug": "3.0.3",
-    "jasmine-core": "^3.6.0",
     "jquery": "^3.5.1",
     "jsonwebtoken": "^9",
     "jszip": "3.10.1",
     "jwks-rsa": "^3",
-    "less": "^3.12.2",
     "connect-pg-simple": "10.0.0",
     "method-override": "^3.0.0",
     "mocha": "8.2.1",
@@ -60,22 +57,15 @@
   },
   "devDependencies": {
     "coffeescript": "2.5.1",
-    "del": "^6.0.0",
     "gulp": "^4.0.2",
     "gulp-coffee": "^3.0.3",
     "gulp-coffeeify": "0.1.8",
-    "gulp-copy": "^4.0.1",
-    "gulp-exec": "^5.0.0",
     "gulp-flatten": "^0.4.0",
     "gulp-if": "^3.0.0",
     "gulp-json-editor": "^2.5.4",
     "gulp-notify": "^3.2.0",
     "gulp-plumber": "^1.2.1",
     "gulp-rename": "^2.0.0",
-    "gulp-replace": "^1.0.0",
-    "gulp-run": "^1.7.1",
-    "gulp-watch": "^5.0.1",
-    "gutil": "^1.6.4",
     "through2": "^4.0.2",
     "yargs": "^16.1.1"
   },
@@ -85,9 +75,6 @@
       "chokidar": "^3.6.0"
     },
     "glob-watcher": {
-      "chokidar": "^3.6.0"
-    },
-    "gulp-watch": {
       "chokidar": "^3.6.0"
     },
     "js-yaml@^3": "^3.15.2",
