@@ -171,4 +171,6 @@ exports.deleteCodeTablesEntity = (req, resp) ->
 	codeTableServiceRoutes.deleteCodeTableInternal {id: req.params.id}, (statusCode, response) ->
 		console.log(statusCode)
 		console.log(response)
+		resp.statusCode = statusCode
+		resp.setHeader('Content-Type', 'application/json')
 		resp.json response

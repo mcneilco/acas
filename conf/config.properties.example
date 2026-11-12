@@ -359,19 +359,46 @@ client.security.authstrategy=${server.security.authstrategy}
 # Examples configs using okta but can use any SAML login IDP
 
 server.security.saml.use=false
+
+# When set, metadataUrl is used to derive the IdP entryPoint, issuer, and cert.
+# Leave metadataUrl empty to use the explicit IdP settings below.
+server.security.saml.metadataUrl=
+
+# Passport-SAML settings. entryPoint, issuer, and cert are used when metadataUrl is empty.
+# audience and disableRequestedAuthnContext still apply when metadataUrl is set.
 server.security.saml.entryPoint=https://<organization>.okta.com/app/<appName>/<issuerID>/sso/saml
 server.security.saml.issuer=http://www.okta.com/<issuerID>
 server.security.saml.audience=false
 # Embedded cert needs \\n in string to escape properly
 server.security.saml.cert=-----BEGIN CERTIFICATE-----\\nABC\\nXYZ\\n-----END CERTIFICATE-----
+server.security.saml.disableRequestedAuthnContext=true
+
+# ACAS-specific SSO profile mapping and role sync settings.
 server.security.saml.profileAttributeToSystemRoles=[{"ssoName":"ACASUser","lsKind":"ACAS","roleName":"ROLE_ACAS-USERS"},{"ssoName":"ACASAdmin","lsKind":"ACAS","roleName":"ROLE_ACAS-ADMINS"},{"ssoName":"CmpdRegUser","lsKind":"CmpdReg","roleName":"ROLE_CMPDREG-USERS"},{"ssoName":"CmpdRegAdmin","lsKind":"CmpdReg","roleName":"ROLE_CMPDREG-ADMINS"},{"ssoName":"CmpdRegReadOnlyUser","lsKind":"CmpdReg","roleName":"ROLE_CMPDREG-READONLY"},{"ssoName":"ACASCrossProjectLoaderUser","lsKind":"ACAS","roleName":"ROLE_ACAS-CROSS-PROJECT-LOADER"}]
+# Select the authorization source for SAML users. Keep idp for the legacy
+# profileAttributeToSystemRoles behavior. Set livedesign to obtain mapped,
+# effective roles through ACAS's Python ldclient bridge using the configured
+# LiveDesign service account.
+server.security.saml.roles.source=idp
+# LiveDesign ldclient role values are case-sensitive. In livedesign mode, these are
+# the only ACAS/CmpdReg system roles synchronized; other System roles are kept.
+# Administrator mappings deliberately include their required user role; duplicate
+# mappings are de-duplicated when LiveDesign supplies both roles explicitly.
+server.security.saml.liveDesignRoleToSystemRoles=[{"liveDesignRole":"AcasUser","lsKind":"ACAS","roleName":"ROLE_ACAS-USERS"},{"liveDesignRole":"AcasAdministrator","lsKind":"ACAS","roleName":"ROLE_ACAS-ADMINS"},{"liveDesignRole":"AcasAdministrator","lsKind":"ACAS","roleName":"ROLE_ACAS-USERS"},{"liveDesignRole":"CregUser","lsKind":"CmpdReg","roleName":"ROLE_CMPDREG-USERS"},{"liveDesignRole":"CregAdministrator","lsKind":"CmpdReg","roleName":"ROLE_CMPDREG-ADMINS"},{"liveDesignRole":"CregAdministrator","lsKind":"CmpdReg","roleName":"ROLE_CMPDREG-USERS"},{"liveDesignRole":"CregReadOnly","lsKind":"CmpdReg","roleName":"ROLE_CMPDREG-READONLY"},{"liveDesignRole":"AcasCrossProjectLoader","lsKind":"ACAS","roleName":"ROLE_ACAS-CROSS-PROJECT-LOADER"}]
 server.security.saml.userNameAttribute=nameID
 server.security.saml.firstNameAttribute=firstName
 server.security.saml.lastNameAttribute=lastName
 server.security.saml.emailAttribute=email
 server.security.saml.logoutRedirectURL=https://<organization>.okta.com
 server.security.saml.roles.sync=false
-server.security.saml.disableRequestedAuthnContext=true
+
+## Service-token login (generic trusted-issuer). Values are issuer-agnostic:
+## point jwksUrl/trustedIssuers at whatever service you trust to assert users.
+server.security.serviceToken.use            = false
+server.security.serviceToken.jwksUrl        = <trusted-issuer-jwks-url>
+server.security.serviceToken.trustedIssuers = <trusted-issuer>
+server.security.serviceToken.audience       = acas
+server.security.serviceToken.clockSkewSec   = 30
 
 #Controls whether Roo syncs the AuthorRole table with authorities granted in LDAP
 server.security.syncLdapAuthRoles=false
@@ -491,6 +518,24 @@ client.entity.deletingRoles=
 #client.entity.viewDeletedRoles=projectAdmin,ROLE_ACAS-ADMINS
 client.entity.viewDeletedRoles=
 
+# Experiment retention purge (runs inside roo). Permanently deletes experiments that have been
+# soft-deleted/overwritten longer than their protocol's "deleted experiment retention days" value,
+# in per-batch-committed chunks. Only one pod runs each scheduled time.
+# (Folder deletion reuses server.service.persistence.filePath and server.nodeapi.path below.)
+# Enable the scheduled purge. Note: only protocols that have a "deleted experiment retention days"
+# value purge anything; protocols without it are never touched. Set false to disable entirely.
+server.experiment.retention.enabled=true
+# When to run (6-field Spring cron). Default 05:00 daily, interpreted in cronZone (UTC).
+server.experiment.retention.cron=0 0 5 * * *
+server.experiment.retention.cronZone=UTC
+# Rows deleted per committed batch (bounds transaction size for very large experiments).
+server.experiment.retention.batchSize=100000
+# Optional system-wide retention days applied to experiments whose protocol has no per-protocol
+# "deleted experiment retention days" value (a per-protocol value still overrides this). Blank =
+# no global policy (only protocols with their own value are ever purged). Use with care: a value
+# here makes every soft-deleted/overwritten experiment older than this eligible, across all protocols.
+server.experiment.retention.globalDays=
+
 client.protocol.showAssayTreeRule=false
 client.protocol.showCurveDisplayParams=true
 client.protocol.notebook.require=false
@@ -506,6 +551,12 @@ server.sel.experimentStatus=approved
 server.sel.protocolStatus=created
 server.sel.assayStage=unassigned
 server.sel.validateDoseResponseCurves=true
+
+# Supported operator types, to add additional operator types you may need to update modules/GenericDataParser/conf/genericDataParserConfJSON.coffee
+# the config below is recommended for new installations
+# server.sel.supportedOperators=>,<,>=,<=,=
+# the config below matches the original hard-coded behavior
+server.sel.supportedOperators=>,<
 
 # Default protocol/experiment description when loaded through experiment loader
 # server.sel.protocolDescription=${client.protocol.label} created by generic data parser
@@ -780,6 +831,20 @@ server.acas.standardizationBatchSize=1000
 # Configures how often a check is done to see if standardizaiton dry run is running.
 # If standardizaiton dry run is running then a worker will pick up and contribute to dry run after a default of 60 seconds.
 client.cmpdreg.serverSettings.checkForDryRunStandardizationDelay=60000
+
+# Configures whether ACAS will automatically trigger a full restandardization (dry run + execute) on startup
+# when the standardization settings have changed and restandardization is needed.
+# Only supported when using the BBChem chemistry engine. Default is false.
+client.cmpdreg.serverSettings.autoRestandardize=false
+
+# Configures whether ACAS generates a dry-run SDF report during dry-run standardization.
+# This applies to both manual and automatic dry-run execution when enabled.
+# Default is true.
+client.cmpdreg.serverSettings.standardizationDryRunReportEnabled=true
+
+# Output directory used for dry-run SDF reports.
+# This is intentionally separate from notebookSavePath, but defaults to privateUploads in the ACAS example config.
+client.cmpdreg.serverSettings.standardizationDryRunReportDirectory=/home/runner/build/privateUploads/cmpdreg/standardizationReports/
 
 # Sets cookie maxAge to 1440 minutes = 24 hours
 server.sessionTimeOutMinutes=1440

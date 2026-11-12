@@ -267,22 +267,24 @@ exports.deleteCmpdRegEntity = (req, resp) ->
 	request(
 		method: 'DELETE'
 		url: cmpdRegCall
+		json: false
 		timeout: 6000000
-	, (error, response, json) =>
-		if !error && response.statusCode == 200
-			console.log JSON.stringify json
+	, (error, response, body) =>
+		if !error && response?
+			deleteResponse = body
+			if typeof body == 'string'
+				try
+					deleteResponse = JSON.parse body
+				catch parseError
+					deleteResponse = message: body
+			console.log JSON.stringify deleteResponse
 			resp.statusCode = response.statusCode
 			resp.setHeader('Content-Type', 'application/json')
-			resp.json json
-		if response.statusCode == 409
-			console.log "Conflict! something is preventing CmpdRegEntity to be removed."
-			resp.statusCode = response.statusCode
-			resp.setHeader('Content-Type', 'application/json')
-			resp.json json
+			resp.json deleteResponse
 		else
 			resp.statusCode = 404
 			console.log "got ajax error trying to delete #{entityType}"
-			console.log json
+			console.log body
 			resp.end JSON.stringify {error: "something went wrong :("}
 	)
 

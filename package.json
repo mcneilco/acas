@@ -22,18 +22,20 @@
     "connect-flash": "~0.1.1",
     "cookie-parser": "^1.4.5",
     "cron": "1.8.2",
-    "each": "1.2.2",
     "csv-parse": "^4.14.1",
+    "each": "1.2.2",
     "errorhandler": "^1.5.1",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
     "forever-monitor": "3.0.3",
     "glob": "7.1.6",
     "helmet": "^4.6.0",
-    "pug": "3.0.2",
+    "pug": "3.0.3",
     "jasmine-core": "^3.6.0",
     "jquery": "^3.5.1",
+    "jsonwebtoken": "^9",
     "jszip": "3.10.1",
+    "jwks-rsa": "^3",
     "less": "^3.12.2",
     "connect-pg-simple": "10.0.0",
     "method-override": "^3.0.0",
@@ -41,7 +43,7 @@
     "mochawesome": "^6.2.1",
     "mongojs": "3.1.0",
     "morgan": "^1.10.0",
-    "multer": "^1.4.2",
+    "multer": "^2.0.2",
     "passport": "0.6.0",
     "passport-local": "1.0.0",
     "@node-saml/passport-saml": "^5.1.0",
@@ -49,10 +51,12 @@
     "properties": "1.2.1",
     "properties-parser": "0.3.1",
     "serve-favicon": "^2.5.0",
-    "socket.io": "2.4.1",
-    "underscore": "1.12.1",
+    "socket.io": "2.5.1",
+    "underscore": "1.13.8",
+    "undici": "6.29.1",
     "winston": "3.3.3",
-    "winston-mongodb": "5.0.5"
+    "winston-mongodb": "5.0.5",
+    "xml2js": "^0.6.2"
   },
   "devDependencies": {
     "coffeescript": "2.5.1",
@@ -74,5 +78,24 @@
     "gutil": "^1.6.4",
     "through2": "^4.0.2",
     "yargs": "^16.1.1"
+  },
+  "overrides": {
+    "cross-spawn": "^7.0.6",
+    "forever-monitor": {
+      "chokidar": "^3.6.0"
+    },
+    "glob-watcher": {
+      "chokidar": "^3.6.0"
+    },
+    "gulp-watch": {
+      "chokidar": "^3.6.0"
+    },
+    "js-yaml@^3": "^3.15.2",
+    "micromatch@^3": "^4.0.8",
+    "minimatch@^3": "^3.1.5",
+    "nanoid@^3": "^3.3.18",
+    "serialize-javascript@^5": "^7.0.5",
+    "uuid@^8": "^11.1.1",
+    "validator@^10": "^13.15.22"
   }
 }

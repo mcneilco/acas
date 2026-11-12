@@ -5,6 +5,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/cmpdReg/standardizationDryRunSearch', exports.standardizationDryRunSearch
 	app.post '/cmpdReg/standardizationDryRunSearchExport', exports.standardizationDryRunSearchExport
 	app.get '/cmpdReg/standardizationDryRunFiles', exports.standardizationDryRunFiles
+	app.get '/cmpdReg/standardizationAutoDryRunReportFile', exports.standardizationAutoDryRunReportFile
 	app.get '/cmpdReg/standardizationDryRunStats', exports.getDryRunStats
 	app.get '/cmpdReg/standardizationExecute', exports.standardizationExecution
 
@@ -15,6 +16,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/cmpdReg/standardizationDryRunSearch', loginRoutes.ensureAuthenticated, exports.standardizationDryRunSearch
 	app.post '/cmpdReg/standardizationDryRunSearchExport', loginRoutes.ensureAuthenticated, exports.standardizationDryRunSearchExport
 	app.get '/cmpdReg/standardizationDryRunFiles', loginRoutes.ensureAuthenticated, exports.standardizationDryRunFiles
+	app.get '/cmpdReg/standardizationAutoDryRunReportFile', loginRoutes.ensureAuthenticated, exports.standardizationAutoDryRunReportFile
 	app.get '/cmpdReg/standardizationDryRunStats', loginRoutes.ensureAuthenticated, exports.getDryRunStats
 	app.get '/cmpdReg/standardizationExecute', loginRoutes.ensureAuthenticated, exports.standardizationExecution
 
@@ -178,9 +180,11 @@ exports.standardizationDryRunSearchExport = (req, resp) ->
 
 	request(
 		method: 'POST'
-		body: req.body
+		body: JSON.stringify(req.body)
 		url: url
-		json: true
+		headers:
+			'Content-Type': 'application/json'
+		json: false
 		timeout: 86400000
 	, (error, response, json) =>
 		console.log "standardizationDryRunFiles response" + JSON.stringify(response)
@@ -197,8 +201,8 @@ exports.standardizationDryRunSearchExport = (req, resp) ->
 			console.log 'Error with standardization dry run files'
 			console.log error
 			console.log json
-			resp.statusCode = response.statusCode
-			resp.end error
+			resp.statusCode = response?.statusCode or 500
+			resp.end if error? then JSON.stringify(error) else (json or 'Unable to export dry run files')
 	)
 
 exports.standardizationDryRunFiles = (req, resp) ->
@@ -211,7 +215,7 @@ exports.standardizationDryRunFiles = (req, resp) ->
 		method: 'POST'
 		body: filePath
 		url: url
-		json: true
+		json: false
 		timeout: 86400000
 	, (error, response, json) =>
 		console.log "standardizationDryRunFiles response" + JSON.stringify(response)
@@ -228,11 +232,51 @@ exports.standardizationDryRunFiles = (req, resp) ->
 			console.log 'Error with standardization dry run files'
 			console.log error
 			console.log json
-			resp.statusCode = response.statusCode
-			resp.end error
+			resp.statusCode = response?.statusCode or 500
+			resp.end if error? then JSON.stringify(error) else (json or 'Unable to fetch dry run files')
 	)
 
+exports.standardizationAutoDryRunReportFile = (req, resp) ->
+	req.setTimeout 86400000
+	historyId = req.query?.historyId
+	if !historyId?
+		resp.statusCode = 400
+		resp.end "historyId is required"
+		return
 
+	url = config.all.client.service.cmpdReg.persistence.fullpath + '/standardization/dryRunAutoReportFile?historyId=' + encodeURIComponent(historyId)
+	upstream = request(
+		method: 'GET'
+		url: url
+		timeout: 86400000
+	)
+
+	upstream.on 'response', (response) ->
+		contentType = response.headers['content-type'] or 'chemical/x-mdl-sdfile'
+		contentDisposition = response.headers['content-disposition'] or ('attachment; filename=standardization-dry-run-report-history-' + historyId + '.sdf')
+		headers =
+			'Content-Type': contentType
+			'Content-Disposition': contentDisposition
+
+		if response.headers['content-length']?
+			headers['Content-Length'] = response.headers['content-length']
+
+		resp.writeHead(response.statusCode or 500, headers)
+
+	upstream.on 'error', (error) ->
+		if resp.headersSent
+			resp.end()
+			return
+		resp.statusCode = 500
+		resp.end error?.message or 'Request failed'
+
+	upstream.on 'data', (chunk) ->
+		resp.write chunk
+
+	upstream.on 'end', ->
+		resp.end()
+
+	upstream.end()
 exports.getDryRunStats = (req, resp) ->
 	req.setTimeout 86400000
 	url = config.all.client.service.cmpdReg.persistence.fullpath + '/standardization/dryRunStats'

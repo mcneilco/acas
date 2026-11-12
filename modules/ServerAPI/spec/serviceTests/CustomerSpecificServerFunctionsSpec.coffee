@@ -1,4 +1,5 @@
 assert = require 'assert'
+EventEmitter = require('events').EventEmitter
 acasHome = '../../../..'
 serverUtilityFunctions = require "#{acasHome}/routes/ServerUtilityFunctions.js"
 request = serverUtilityFunctions.requestAdapter
@@ -16,6 +17,23 @@ parseResponse = (jsonStr) ->
 
 
 describe "Base ACAS Customer Specific Function Tests", ->
+	describe "LiveDesign SSO role lookup", ->
+		it "retrieves ldclient role values from the Python user bridge", async ->
+			spawnProcess = (command, args) ->
+				assert.equal command, 'python'
+				assert.ok args.includes('--method')
+				assert.ok args.includes('get_user')
+				process = new EventEmitter
+				process.stdout = new EventEmitter
+				process.stderr = new EventEmitter
+				global.process.nextTick ->
+					process.stdout.emit 'data', '{"liveDesignRoles":["AcasUser","AcasAdministrator"]}'
+					process.emit 'close', 0
+				process
+
+			roles = await csUtilities.getLiveDesignRoles('ld-user@example.com', spawnProcess)
+			assert.deepEqual roles, ['AcasUser', 'AcasAdministrator']
+
 	describe "User information testing", ->
 		if process.env.NODE_ENV == "integration"
 			describe "User creation", ->

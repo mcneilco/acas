@@ -296,15 +296,21 @@ class AbstractCodeTablesAdminBrowserController extends Backbone.View
 				@$(".bv_okayButton").removeClass "hide"
 				@$(".bv_deletingStatusIndicator").addClass "hide"
 				@$(".bv_errorDeletingCodeTablesAdminMessage").removeClass "hide"
-				errorMsg = response.responseText
-				if (errorMsg)
-					errorJSON = JSON.parse(errorMsg)
-					# Grabbing the first (and assumingly only) error and displaying the message in placeholder element 
-					@$('.bv_deleteCodeTablesAdminErrorMessageHolder').html errorJSON[0].message
-				else
-					noServerMessage = "The server has no error message. Please contact support for additional help."
-					@$('.bv_deleteCodeTablesAdminErrorMessageHolder').html noServerMessage
+				@$('.bv_deleteCodeTablesAdminErrorMessageHolder').html @getDeleteCodeTablesAdminErrorMessage(response)
 		)
+
+	getDeleteCodeTablesAdminErrorMessage: (response) =>
+		noServerMessage = "The server has no error message. Please contact support for additional help."
+		errorMsg = response?.responseText
+		return noServerMessage unless errorMsg
+		try
+			errorJSON = JSON.parse(errorMsg)
+			if _.isArray(errorJSON)
+				return errorJSON[0]?.message or noServerMessage
+			else
+				return errorJSON.message or errorJSON.error or errorMsg
+		catch e
+			return errorMsg
 
 	handleCancelDeleteClicked: =>
 		@$(".bv_confirmDeleteCodeTablesAdmin").modal('hide')

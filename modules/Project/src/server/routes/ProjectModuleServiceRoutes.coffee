@@ -92,7 +92,7 @@ saveRolekinds = (rolekind, callback) ->
 		else
 			console.log "error saving project role kind"
 			console.log response.statusCode
-			console.log response.json
+			console.log json
 			callback "saveFailed for project rolekind"
 	)
 

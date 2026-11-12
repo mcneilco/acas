@@ -145,6 +145,9 @@
 			,
 				typeName: "codeValue"
 				kindName: "strict endpoint matching"
+			, 				
+				typeName: "numericValue"
+				kindName: "deleted experiment retention days"
 			]
 
 		labeltypes:
