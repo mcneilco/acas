@@ -785,8 +785,15 @@ exports.getTemplateSELFile = (req, resp) ->
 					data.push(endpointNameRowString.split(','))
 					
 
-				# Convert the data to a CSV string
-				csvString = data.map((row) -> row.join(',')).join('\n')
+				# Convert the data to a CSV string (same output as csv-stringify's defaults:
+				# quote fields containing a comma, quote or \n; newline after every row)
+				csvField = (value) ->
+					return '' unless value?
+					value = (if value then '1' else '') if typeof value is 'boolean'
+					value = value.getTime() if value instanceof Date
+					value = String(value)
+					if /[",\n]/.test(value) then '"' + value.replace(/"/g, '""') + '"' else value
+				csvString = data.map((row) -> row.map(csvField).join(',') + '\n').join('')
 
 				resp.json csvString
 

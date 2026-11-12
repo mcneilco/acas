@@ -5,24 +5,18 @@ fs = require 'fs'
 glob = require 'glob'
 path = require 'path'
 
-flatten = (obj, prefix = '') ->
-  result = {}
-  for key, val of obj
+# Same output as flat.flatten (flat 5.x defaults): recurse into non-empty plain objects and
+# arrays (array items get index keys, e.g. "a.0"); keep everything else, including {} and [], as-is.
+flatten = (obj, prefix = '', result = {}) ->
+  for key in Object.keys(obj)
+    val = obj[key]
     fullKey = if prefix then "#{prefix}.#{key}" else key
-    if val? and typeof val is 'object' and not Array.isArray(val)
-      Object.assign(result, flatten(val, fullKey))
+    type = Object::toString.call(val)
+    if (type is '[object Object]' or type is '[object Array]') and Object.keys(val).length
+      flatten(val, fullKey, result)
     else
       result[fullKey] = val
   result
-
-deepExtend = (target, source) ->
-  for key, val of source
-    if val? and typeof val is 'object' and not Array.isArray(val)
-      target[key] ?= {}
-      deepExtend(target[key], val)
-    else
-      target[key] = val
-  target
 
 acasHome =  path.resolve "#{__dirname}/../../.."
 os = require 'os'
@@ -264,7 +258,9 @@ getProperties = (configDir) =>
 			else
 				conf.server.enableSpecRunner = true
 			if !conf.server?.file?.server?.path?
-				conf = deepExtend conf, server:file:server:path:"#{path.resolve acasHome+"/"+conf.server.datafiles.relative_path}"
+				conf.server.file ?= {}
+				conf.server.file.server ?= {}
+				conf.server.file.server.path = path.resolve acasHome+"/"+conf.server.datafiles.relative_path
 
 			conf.server.run = user: do =>
 				return os.userInfo().username
