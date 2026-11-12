@@ -1,6 +1,5 @@
 _ = require 'underscore'
 Backbone = require 'backbone'
-$ = require 'jquery'
 path = require 'path'
 util = require 'util'
 

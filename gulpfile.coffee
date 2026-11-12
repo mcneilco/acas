@@ -5,17 +5,13 @@ coffee = require('gulp-coffee')
 flatten = require('gulp-flatten')
 rename = require('gulp-rename')
 plumber = require('gulp-plumber')
-jeditor = require('gulp-json-editor')
 argv = require('yargs').argv
 path = require('path')
 gulpif = require('gulp-if')
 _ = require('underscore')
-notify = require("gulp-notify")
-coffeeify = require('gulp-coffeeify')
 through = require('through2')
 
 node = undefined
-os = require('os');
 
 # ---------------------------------------------- Functions
 getGlob = (paths) ->
@@ -96,6 +92,19 @@ addREnvironmentCleanUp = (file,contents) ->
     cleanFunction = "DONE;racas::checkMemoryLimitAndKillSelf();racas::cleanEnvironment();"
     contents = "#{contents}\r\n#{cleanFunction}\r\n"
   return contents
+
+# Edit the JSON in a file's contents with editFn (replaces gulp-json-editor)
+jeditor = (editFn) ->
+  through.obj (file, enc, next) ->
+    if file.isNull()
+      return next null, file
+    try
+      json = JSON.parse file.contents.toString('utf8')
+      json = editFn(json) ? json
+      file.contents = Buffer.from(JSON.stringify(json, null, 2) + '\n')
+      next null, file
+    catch err
+      next err
 
 modify = (options = {}) ->
   through.obj (file, enc, next) ->
@@ -446,17 +455,7 @@ createExecuteTask = (options) =>
 onError = (err) ->
   @emit 'end'
   process.stdout.write '\x07'
-  if os.platform() == 'darwin'
-    notify.onError(
-      title: '<%= error.message %>'
-      # subtitle: 'Failure!'
-      message: 'Error: <%= error.stack %>'
-      sound: false) err
-  else
-    notify.onError((options, callback) ->
-      console.log "\x1b[34m[#{options.message}]\x1b[0m \x1b[31mError: #{options.stack}\x1b[0m"
-      return
-    ) err
+  console.log "\x1b[34m[#{err.message}]\x1b[0m \x1b[31mError: #{err.stack}\x1b[0m"
 
 
 createTask = (options, type) ->
@@ -468,22 +467,13 @@ createTask = (options, type) ->
   shouldFlatten = options.flatten ? false
   renameFunction = options.renameFunction
   modifyFunction = options.modifyFunction
-  shouldCoffeify = (file) ->
-    if type=="coffee" && (file.path.indexOf("client/ExcelApp") > -1)
-       return true
-    else
-      return false
   shouldCoffee = (file) ->
-    if type=="coffee" && !(file.path.indexOf("client/ExcelApp") > -1)
-       return true
-    else
-      return false
+    type == "coffee"
   gulp.task taskName, ->
     gulp.src(src, _.extend(taskOptions, {since: gulp.lastRun(taskName)}))
     .pipe(plumber({errorHandler: onError}))
     .pipe(gulpif(shouldFlatten,flatten()))
     .pipe(gulpif(modifyFunction?, modify(fileModifier: modifyFunction)))
-    .pipe(gulpif(shouldCoffeify, coffeeify({options:{paths:[build+ '/node_modules']}})))
     .pipe(gulpif(shouldCoffee,coffee(bare: true)))
     .pipe(gulpif(renameFunction?,rename(renameFunction)))
     .pipe gulp.dest(dest, {mode: 0o0777})

@@ -1,12 +1,7 @@
 exports.setupRoutes = (app, loginRoutes) ->
-	app.get '/api/logger/', loginRoutes.ensureAuthenticated, exports.getAllLogStatements
-	app.get '/api/logger/:level/:application/:user', loginRoutes.ensureAuthenticated, exports.getAllLogStatementOfLevel
-	app.get '/api/logger/applicationSources', loginRoutes.ensureAuthenticated, exports.getApplicationSources
-	app.get '/api/logger/users', loginRoutes.ensureAuthenticated, exports.getUsers
-	app.get '/api/logger/query/afterTimeStamp/:timestamp', loginRoutes.ensureAuthenticated, exports.getAllLogStatementsAfterTimeStamp
-	app.get '/api/logger/query/beforeTimeStamp/:timestamp', loginRoutes.ensureAuthenticated, exports.getAllLogStatementsBeforeTimeStamp
-	app.get '/api/loggerQueryBetweenTimeStamps/:start/:end', loginRoutes.ensureAuthenticated, exports.getAllLogStatementsBetweenTimeStamps
 	app.get '/api/logFile', loginRoutes.ensureAuthenticated, exports.getLogFlatFile
+
+exports.getLogFlatFile
 
 config = require('../conf/compiled/conf.js')
 

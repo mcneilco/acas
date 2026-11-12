@@ -27,7 +27,6 @@ exports.setupRoutes = (app, loginRoutes) ->
 serverUtilityFunctions = require './ServerUtilityFunctions.js'
 _ = require 'underscore'
 Backbone = require 'backbone'
-$ = require 'jquery'
 request = serverUtilityFunctions.requestAdapter
 config = require '../conf/compiled/conf.js'
 Label = serverUtilityFunctions.Label

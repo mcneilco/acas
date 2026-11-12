@@ -19,10 +19,8 @@ class LoggingController1 extends Backbone.View
 class LoggingController extends Backbone.View
 	initialize: (options) ->
 		@options = options
-		if AppLaunchParams.loggingToMongo
-			@loggingApp = new MongoLoggingController()
-		else
-			@loggingApp = new FileLoggingController()
+		# MongoDB logging was removed; logs are always read from the flat file
+		@loggingApp = new FileLoggingController()
 
 	render: =>
 		$(@el).empty()
