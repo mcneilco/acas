@@ -230,8 +230,14 @@ exports.writeLiveReportContentToCSVByExperimentNameInternal = (experimentName, s
   exports.getLiveReportContentByExperimentNameInternal experimentName, stripHTML, deleteLiveReport, (content) =>
     if content?
       fs = require 'fs'
-      Tempfile = require 'temporary/lib/file'
-      tempFile =  new Tempfile
+      path = require 'path'
+      os = require 'os'
+      makeTempFile = ->
+        filePath = path.join(os.tmpdir(), 'acas-' + Date.now() + '-' + Math.random().toString(36).slice(2))
+        fs.writeFileSync filePath, ''
+        path: filePath
+        writeFile: (data, callback) -> fs.writeFile filePath, data, callback
+      tempFile = makeTempFile()
       tempFile.writeFile content, (err) =>
         if err?
           console.error err

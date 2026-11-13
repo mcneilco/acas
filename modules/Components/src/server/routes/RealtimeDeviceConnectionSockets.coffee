@@ -1,7 +1,6 @@
 serverUtilityFunctions = require './ServerUtilityFunctions.js'
 request = serverUtilityFunctions.requestAdapter
 _ = require 'underscore'
-Promise = require 'promise'
 
 
 class BalanceAccess
@@ -207,17 +206,18 @@ class DeviceSocketController
 		socket.join(payload.deviceUrl)
 		@usersInRoom[socket.id] = payload.deviceUrl
 		balanceAccess = @balances[payload.deviceUrl]
-		balanceAccessPromise = balanceAccess.connectClient(socket.id, payload.userName, socket)
-		balanceAccessPromise.then(() =>
+		onConnected = () =>
 			@currentlyConnectedSocket = socket
 			socket.broadcast.to(@usersInRoom[socket.id]).emit('balance_reserved', {status: "not_available", userName: payload.userName, clientId: socket.id, balanceUrl: @usersInRoom[socket.id]})
 			return callback(null, 'Connected to device')
-		)
-		balanceAccessPromise.catch((err) =>
+		onRejected = (err) =>
 			if err.status is "not_available"
 				return callback({status: "not_available", userName: err.connectedUser.userName, clientId: err.connectedUser.clientId}, null)
 			else
 				return callback({status: err.status}, null)
+		# The trailing catch covers a handler that throws, so no rejection goes unhandled
+		balanceAccess.connectClient(socket.id, payload.userName, socket).then(onConnected, onRejected).catch((err) =>
+			console.error "handleConnectToDevice: unexpected error", err
 		)
 
 	emitEventToCurrentlyConnectedClient: (eventName, payload) =>
@@ -288,12 +288,12 @@ class DeviceSocketController
 
 	handleZeroBalance: (socket) ->
 		balanceAccess = @balances[@usersInRoom[socket.id]]
-		balanceAccessPromise = balanceAccess.zeroBalance()
-		balanceAccessPromise.then(() =>
+		onZeroed = () =>
 			console.log "balanceAccessPromise.then"
-		)
-		balanceAccessPromise.catch((err) =>
+		onRejected = (err) =>
 			console.log "balanceAccessPromise.catch err"
+		balanceAccess.zeroBalance().then(onZeroed, onRejected).catch((err) =>
+			console.error "handleZeroBalance: unexpected error", err
 		)
 		socket.broadcast.emit('in_use')
 

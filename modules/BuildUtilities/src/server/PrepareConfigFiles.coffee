@@ -1,12 +1,23 @@
 
 properties = require "properties"
 _ = require "underscore"
-underscoreDeepExtend = require "underscore-deep-extend"
-_.mixin({deepExtend: underscoreDeepExtend(_)})
 fs = require 'fs'
-flat = require 'flat'
 glob = require 'glob'
 path = require 'path'
+
+# Same output as flat.flatten (flat 5.x defaults): recurse into non-empty plain objects and
+# arrays (array items get index keys, e.g. "a.0"); keep everything else, including {} and [], as-is.
+flatten = (obj, prefix = '', result = {}) ->
+  for key in Object.keys(obj)
+    val = obj[key]
+    fullKey = if prefix then "#{prefix}.#{key}" else key
+    type = Object::toString.call(val)
+    if (type is '[object Object]' or type is '[object Array]') and Object.keys(val).length
+      flatten(val, fullKey, result)
+    else
+      result[fullKey] = val
+  result
+
 acasHome =  path.resolve "#{__dirname}/../../.."
 os = require 'os'
 propertiesParser = require "properties-parser"
@@ -32,7 +43,7 @@ writeClientJSONFormat = (conf) ->
 writePropertiesFormat = (conf) ->
 	fs = require('fs')
 
-	flatConf = flat.flatten conf
+	flatConf = flatten conf
 	configOut = ""
 	for attr, value of flatConf
 		if value != null
@@ -247,7 +258,9 @@ getProperties = (configDir) =>
 			else
 				conf.server.enableSpecRunner = true
 			if !conf.server?.file?.server?.path?
-				conf = _.deepExtend conf, server:file:server:path:"#{path.resolve acasHome+"/"+conf.server.datafiles.relative_path}"
+				conf.server.file ?= {}
+				conf.server.file.server ?= {}
+				conf.server.file.server.path = path.resolve acasHome+"/"+conf.server.datafiles.relative_path
 
 			conf.server.run = user: do =>
 				return os.userInfo().username

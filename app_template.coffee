@@ -16,7 +16,6 @@ startApp = ->
 	methodOverride = require('method-override')
 	session = require('express-session')
 	PostgresqlStore = require('connect-pg-simple')(session)
-	bodyParser = require('body-parser')
 	errorHandler = require('errorhandler')
 	cookieParser = require('cookie-parser')
 	helmet = require("helmet");
@@ -126,8 +125,8 @@ startApp = ->
 	app.use flash()
 	app.use passport.initialize()
 	app.use passport.session pauseStream:  true
-	app.use(bodyParser.json({limit: '1000mb', extended: true}))
-	app.use(bodyParser.urlencoded({limit: '1000mb', extended: true,parameterLimit: 1000000}))
+	app.use(express.json({limit: '1000mb', extended: true}))
+	app.use(express.urlencoded({limit: '1000mb', extended: true,parameterLimit: 1000000}))
 	app.use(express.static(path.join(__dirname, 'public')))
 
 	loginRoutes.setupRoutes(app, passport)

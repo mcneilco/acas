@@ -14,7 +14,6 @@ startApp = ->
 	logger = require('morgan')
 	methodOverride = require('method-override')
 	session = require('express-session')
-	bodyParser = require('body-parser')
 	errorHandler = require('errorhandler')
 	cookieParser = require('cookie-parser')
 
@@ -37,8 +36,8 @@ startApp = ->
 	app.use(logger('dev'))
 	app.use(methodOverride())
 
-	app.use(bodyParser.json({limit: '100mb'}))
-	app.use(bodyParser.urlencoded({limit: '100mb', extended: true, parameterLimit: 1000000}))
+	app.use(express.json({limit: '100mb'}))
+	app.use(express.urlencoded({limit: '100mb', extended: true, parameterLimit: 1000000}))
 	app.use express.static path.join(__dirname, 'public')
 
 

@@ -592,7 +592,6 @@ exports.getTemplateSELFile = (req, resp) ->
 	_ = require 'underscore'
 	experimentServiceRoutes = require './ExperimentServiceRoutes.js'
 	csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
-	csv = require 'csv-stringify/sync'
 
 	protocolCode = req.body.protocolCode
 
@@ -786,8 +785,15 @@ exports.getTemplateSELFile = (req, resp) ->
 					data.push(endpointNameRowString.split(','))
 					
 
-				# Convert the data to a CSV string
-				csvString = csv.stringify(data, {header: false})
+				# Convert the data to a CSV string (same output as csv-stringify's defaults:
+				# quote fields containing a comma, quote or \n; newline after every row)
+				csvField = (value) ->
+					return '' unless value?
+					value = (if value then '1' else '') if typeof value is 'boolean'
+					value = value.getTime() if value instanceof Date
+					value = String(value)
+					if /[",\n]/.test(value) then '"' + value.replace(/"/g, '""') + '"' else value
+				csvString = data.map((row) -> row.map(csvField).join(',') + '\n').join('')
 
 				resp.json csvString
 
